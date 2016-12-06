@@ -50,7 +50,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $lEcheances = $echeanciers->select('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300);
+        $lEcheances = $echeanciers->getRepaidRepaymentToNotify(0, 300);
         $settings->get('Facebook', 'type');
         $sFB      = $settings->value;
 
@@ -59,20 +59,19 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
         foreach ($lEcheances as $e) {
             if (
-                $transactions->exist($e['id_echeancier'], 'id_echeancier')
-                && $lenders->get($e['id_lender'], 'id_lender_account')
+                $echeanciers->get($e['id_echeancier'], 'id_echeancier')
+                && $loans->get($echeanciers->id_loan)
+                && $lenders->get($loans->id_lender, 'id_lender_account')
                 && $clients->get($lenders->id_client_owner, 'id_client')
             ) {
-                $echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                $rembNet = bcdiv($transactions->sum(' id_echeancier = ' . $e['id_echeancier'], 'montant'), 100, 2);
-                $transactions->get($e['id_echeancier'], 'type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' AND id_echeancier');
+                $rembNet = bcdiv($transactions->sum(' id_echeancier = ' . $echeanciers->id_echeancier, 'montant'), 100, 2);
+                $transactions->get($echeanciers->id_echeancier, 'type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' AND id_echeancier');
 
                 if (1 == $clients->status) {
-                    $projects->get($e['id_project'], 'id_project');
+                    $projects->get($echeanciers->id_project, 'id_project');
                     $companies->get($projects->id_company, 'id_company');
 
-                    $loans->get($e['id_loan']);
-                    $lastRepaymentLender = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND id_loan = ' . $loans->id_loan . ' AND status = 0 AND id_lender = ' . $e['id_lender']));
+                    $lastRepaymentLender = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND id_loan = ' . $loans->id_loan . ' AND status = 0 AND id_lender = ' . $echeanciers->id_lender));
 
                     $dernierStatut     = $projects_status_history->select('id_project = ' . $projects->id_project, 'id_project_status_history DESC', 0, 1);
                     $dateDernierStatut = $dernierStatut[0]['added'];
@@ -87,8 +86,8 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $solde             = $ficelle->formatNumber($getsolde) . $euros;
 
                     $notifications->type       = \notifications::TYPE_REPAYMENT;
-                    $notifications->id_lender  = $e['id_lender'];
-                    $notifications->id_project = $e['id_project'];
+                    $notifications->id_lender  = $echeanciers->id_lender;
+                    $notifications->id_project = $echeanciers->id_project;
                     $notifications->amount     = bcmul($rembNet, 100);
                     $notifications->create();
 
@@ -110,7 +109,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                             'url'                   => $sUrl,
                             'prenom_p'              => $clients->prenom,
                             'mensualite_p'          => $rembNetEmail,
-                            'mensualite_avantfisca' => bcdiv($e['montant'], 100, 2),
+                            'mensualite_avantfisca' => bcdiv($echeanciers->montant, 100, 2),
                             'nom_entreprise'        => $companies->name,
                             'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
                             'solde_p'               => $solde,

@@ -28,11 +28,13 @@
 
 class echeanciers extends echeanciers_crud
 {
-    const STATUS_PENDING          = 0;
-    const STATUS_REPAID           = 1;
-    const STATUS_PARTIALLY_REPAID = 2;
-    const IS_NOT_EARLY_REFUND     = 0;
-    const IS_EARLY_REFUND         = 1;
+    const STATUS_PENDING                  = 0;
+    const STATUS_REPAID                   = 1;
+    const STATUS_PARTIALLY_REPAID         = 2;
+    const IS_NOT_EARLY_REFUND             = 0;
+    const IS_EARLY_REFUND                 = 1;
+    const STATUS_REPAYMENT_EMAIL_NOT_SENT = 0;
+    const STATUS_REPAYMENT_EMAIL_SENT     = 1;
 
     public function __construct($bdd, $params = '')
     {
@@ -1243,6 +1245,33 @@ class echeanciers extends echeanciers_crud
         }
         $statement->closeCursor();
         return $data;
+    }
+
+    public function getRepaidRepaymentToNotify($offset = 0, $limit = 100)
+    {
+        $query = 'SELECT e.*
+                  FROM echeanciers e
+                  INNER join transactions t ON t.id_echeancier = e.id_echeancier
+                  WHERE e.status = :repaid
+                  AND e.status_email_remb = :not_sent
+                  GROUP BY e.id_echeancier
+                  LIMIT :limit OFFSET :offset';
+
+        $bind = [
+            'repaid'   => self::STATUS_REPAID,
+            'not_sent' => self::STATUS_REPAYMENT_EMAIL_NOT_SENT,
+            'limit'    => $limit,
+            'offset'   => $offset,
+        ];
+
+        $type = [
+            'limit' => \PDO::PARAM_INT,
+            'offset' => \PDO::PARAM_INT,
+        ];
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
 }
