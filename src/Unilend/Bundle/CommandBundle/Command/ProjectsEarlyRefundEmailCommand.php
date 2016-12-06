@@ -90,7 +90,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                 'montant'            => $ficelle->formatNumber($project->amount, 0),
                 'nb_preteurs'        => count($projectLenders),
                 'duree'              => $project->period,
-                'duree_financement'  => (new \DateTime($project->date_publication_full))->diff(new \DateTime($project->date_retrait_full))->d,
+                'duree_financement'  => (new \DateTime($project->date_publication))->diff(new \DateTime($project->date_retrait))->d,
                 'date_financement'   => \DateTime::createFromFormat('Y-m-d H:i:s', $borrowerTransaction->added)->format('d/m/Y'),
                 'date_remboursement' => \DateTime::createFromFormat('Y-m-d H:i:s', $sfpmeiFeedIncoming->added)->format('d/m/Y'),
                 'lien_fb'            => $facebookLink,

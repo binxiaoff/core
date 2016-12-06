@@ -73,8 +73,7 @@ class BorrowerAccountController extends Controller
                 $closingDate = new \DateTime();
                 $closingDate->modify('+5 minutes');
 
-                $project->date_retrait_full = $closingDate->format('Y-m-d H:i:s');
-                $project->date_retrait      = $closingDate->format('Y-m-d');
+                $project->date_retrait = $closingDate->format('Y-m-d H:i:s');
                 $project->update();
             }
         }
@@ -714,7 +713,7 @@ class BorrowerAccountController extends Controller
             $projectsFunding[$key] = $projectsFunding[$key] + [
                 'average_ir'       => round($projects->getAverageInterestRate(), 2),
                 'funding_progress' => min(100, round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1)),
-                'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait_full'])
+                'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait'])
             ];
         }
         return $projectsFunding;
