@@ -242,7 +242,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdBackpayline(\Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline $idBackpayline = null)
+    public function setBackpayline(\Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline $idBackpayline = null)
     {
         $this->idBackpayline = $idBackpayline;
 
@@ -254,7 +254,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline
      */
-    public function getIdBackpayline()
+    public function getBackpayline()
     {
         return $this->idBackpayline;
     }
@@ -266,7 +266,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdDirectDebit(\Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements $idDirectDebit = null)
+    public function setDirectDebit(\Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements $idDirectDebit = null)
     {
         $this->idDirectDebit = $idDirectDebit;
 
@@ -278,7 +278,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements
      */
-    public function getIdDirectDebit()
+    public function getDirectDebit()
     {
         return $this->idDirectDebit;
     }
@@ -290,7 +290,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdLoan(\Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan = null)
+    public function setLoan(\Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan = null)
     {
         $this->idLoan = $idLoan;
 
@@ -302,7 +302,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
      */
-    public function getIdLoan()
+    public function getLoan()
     {
         return $this->idLoan;
     }
@@ -314,7 +314,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdPaymentSchedule(\Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur $idPaymentSchedule = null)
+    public function setPaymentSchedule(\Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur $idPaymentSchedule = null)
     {
         $this->idPaymentSchedule = $idPaymentSchedule;
 
@@ -326,7 +326,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur
      */
-    public function getIdPaymentSchedule()
+    public function getPaymentSchedule()
     {
         return $this->idPaymentSchedule;
     }
@@ -338,7 +338,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
+    public function setProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
     {
         $this->idProject = $idProject;
 
@@ -350,7 +350,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      */
-    public function getIdProject()
+    public function getProject()
     {
         return $this->idProject;
     }
@@ -362,7 +362,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdRepaymentSchedule(\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers $idRepaymentSchedule = null)
+    public function setRepaymentSchedule(\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers $idRepaymentSchedule = null)
     {
         $this->idRepaymentSchedule = $idRepaymentSchedule;
 
@@ -374,7 +374,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
      */
-    public function getIdRepaymentSchedule()
+    public function getRepaymentSchedule()
     {
         return $this->idRepaymentSchedule;
     }
@@ -386,7 +386,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdTransfer(\Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $idTransfer = null)
+    public function setTransfer(\Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $idTransfer = null)
     {
         $this->idTransfer = $idTransfer;
 
@@ -398,7 +398,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Transfer
      */
-    public function getIdTransfer()
+    public function getTransfer()
     {
         return $this->idTransfer;
     }
@@ -410,7 +410,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdWalletCreditor(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWalletCreditor = null)
+    public function setWalletCreditor(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWalletCreditor = null)
     {
         $this->idWalletCreditor = $idWalletCreditor;
 
@@ -422,7 +422,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      */
-    public function getIdWalletCreditor()
+    public function getWalletCreditor()
     {
         return $this->idWalletCreditor;
     }
@@ -434,7 +434,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdWalletDebtor(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWalletDebtor = null)
+    public function setWalletDebtor(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWalletDebtor = null)
     {
         $this->idWalletDebtor = $idWalletDebtor;
 
@@ -446,7 +446,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      */
-    public function getIdWalletDebtor()
+    public function getWalletDebtor()
     {
         return $this->idWalletDebtor;
     }
@@ -458,7 +458,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdWelcomeOffer(\Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails $idWelcomeOffer = null)
+    public function setWelcomeOffer(\Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails $idWelcomeOffer = null)
     {
         $this->idWelcomeOffer = $idWelcomeOffer;
 
@@ -470,7 +470,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails
      */
-    public function getIdWelcomeOffer()
+    public function getWelcomeOffer()
     {
         return $this->idWelcomeOffer;
     }
@@ -482,7 +482,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdWireTransferIn(\Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $idWireTransferIn = null)
+    public function setWireTransferIn(\Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $idWireTransferIn = null)
     {
         $this->idWireTransferIn = $idWireTransferIn;
 
@@ -494,7 +494,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions
      */
-    public function getIdWireTransferIn()
+    public function getWireTransferIn()
     {
         return $this->idWireTransferIn;
     }
@@ -506,7 +506,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdWireTransferOut(\Unilend\Bundle\CoreBusinessBundle\Entity\Virements $idWireTransferOut = null)
+    public function setWireTransferOut(\Unilend\Bundle\CoreBusinessBundle\Entity\Virements $idWireTransferOut = null)
     {
         $this->idWireTransferOut = $idWireTransferOut;
 
@@ -518,7 +518,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Virements
      */
-    public function getIdWireTransferOut()
+    public function getWireTransferOut()
     {
         return $this->idWireTransferOut;
     }
@@ -530,7 +530,7 @@ class Operation
      *
      * @return Operation
      */
-    public function setIdType(\Unilend\Bundle\CoreBusinessBundle\Entity\OperationType $idType = null)
+    public function setType(\Unilend\Bundle\CoreBusinessBundle\Entity\OperationType $idType = null)
     {
         $this->idType = $idType;
 
@@ -542,7 +542,7 @@ class Operation
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType
      */
-    public function getIdType()
+    public function getType()
     {
         return $this->idType;
     }

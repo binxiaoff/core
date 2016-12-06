@@ -22,9 +22,9 @@ class Wallet
     /**
      * @var string
      *
-     * @ORM\Column(name="engaged_balance", type="decimal", precision=12, scale=2, nullable=true)
+     * @ORM\Column(name="committed_balance", type="decimal", precision=12, scale=2, nullable=true)
      */
-    private $engagedBalance;
+    private $committedBalance;
 
     /**
      * @var \DateTime
@@ -96,27 +96,27 @@ class Wallet
     }
 
     /**
-     * Set engagedBalance
+     * Set committedBalance
      *
-     * @param string $engagedBalance
+     * @param string $committedBalance
      *
      * @return Wallet
      */
-    public function setEngagedBalance($engagedBalance)
+    public function setCommittedBalance($committedBalance)
     {
-        $this->engagedBalance = $engagedBalance;
+        $this->committedBalance = $committedBalance;
 
         return $this;
     }
 
     /**
-     * Get engagedBalance
+     * Get committedBalance
      *
      * @return string
      */
-    public function getEngagedBalance()
+    public function getCommittedBalance()
     {
-        return $this->engagedBalance;
+        return $this->committedBalance;
     }
 
     /**
