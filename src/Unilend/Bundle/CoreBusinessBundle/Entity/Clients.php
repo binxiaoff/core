@@ -195,6 +195,20 @@ class Clients
     private $type;
 
     /**
+     * @var int
+     *
+     * @ORM\Column(name="funds_origin", type="int", nullable=false)
+     */
+    private $fundsOrigin;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="funds_origin_detail", type="string", nullable=false)
+     */
+    private $fundsOriginDetail;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="etape_inscription_preteur", type="integer", nullable=false)
@@ -1333,5 +1347,53 @@ class Clients
     public function getIdClient()
     {
         return $this->idClient;
+    }
+
+    /**
+     * Get fundsOrigin
+     *
+     * @return integer
+     */
+    public function getFundsOrigin()
+    {
+        return $this->fundsOrigin;
+    }
+
+    /**
+     * Set fundsOrigin
+     *
+     * @param int $fundsOrigin
+     *
+     * @return Clients
+     */
+    public function setFundsOrigin($fundsOrigin)
+    {
+        $this->fundsOrigin = $fundsOrigin;
+
+        return $this;
+    }
+
+    /**
+     * Get fundsOrigineDetail
+     *
+     * @return string
+     */
+    public function getFundsOriginDetail()
+    {
+        return $this->fundsOriginDetail;
+    }
+
+    /**
+     * Set fundsOriginDetail
+     *
+     * @param string $fundsOriginDetail
+     *
+     * @return Clients
+     */
+    public function setFundsOriginDetail($fundsOriginDetail)
+    {
+        $this->fundsOriginDetail = $fundsOriginDetail;
+
+        return $this;
     }
 }
