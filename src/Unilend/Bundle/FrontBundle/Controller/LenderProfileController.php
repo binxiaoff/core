@@ -1210,10 +1210,10 @@ class LenderProfileController extends Controller
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-swift'));
         }
 
-        $newFundsOrigin = $request->request->get('funds_origin', $lenderAccount->origine_des_fonds);
+        $newFundsOrigin = $request->request->get('funds_origin', $client->funds_origin);
 
         if (false === empty($newFundsOrigin)) {
-            $lenderAccount->origine_des_fonds = $newFundsOrigin;
+            $client->funds_origin = $newFundsOrigin;
             $historyContent .= '<li>' . $translator->trans('lender-profile_fiscal-tab-bank-info-section-funds-origin-label') . '</li>';
         } else {
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-funds-origin'));
