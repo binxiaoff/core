@@ -73,8 +73,8 @@ class ClientStatusManager
     }
 
     /**
-     * @param int    $iClientId
-     * @param string $sContent
+     * @param \clients $client
+     * @param $sContent
      */
     public function changeClientStatusTriggeredByClientAction(\clients $client, $sContent)
     {
