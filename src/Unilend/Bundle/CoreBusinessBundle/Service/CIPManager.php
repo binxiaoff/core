@@ -598,7 +598,7 @@ class CIPManager
         $totalAmount = bcdiv($bid->amount, 100, 2);
         $totalAmount = bcadd($totalAmount, (string) $lenderBids, 2);
 
-        if (bccomp($totalAmount, $thresholdAmount, 2) < 0) {
+        if (bccomp($totalAmount, $thresholdAmount, 2) <= 0) {
             return false;
         }
 

@@ -2,8 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use \Symfony\Component\HttpFoundation\Response;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,8 +21,6 @@ class AutolendController extends Controller
     {
         /** @var AutoBidSettingsManager $autoBidSettingsManager */
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-        /** @var \clients $client */
-        $client = $this->getClient();
         /** @var \lenders_accounts $lendersAccounts */
         $lendersAccounts = $this->getLenderAccount();
 
@@ -34,8 +30,6 @@ class AutolendController extends Controller
 
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        /** @var \clients_status $clientStatus */
-        $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
         /** @var \autobid $autobid */
@@ -84,7 +78,6 @@ class AutolendController extends Controller
         foreach ($projectPeriods as $period) {
             $template['projectPeriods'][$period['id_period']] = $period;
         }
-        $clientStatus->getLastStatut($client->id_client);
 
         $settings->get('date-premier-projet-tunnel-de-taux', 'type');
         $startingDate = $settings->value;
@@ -281,18 +274,6 @@ class AutolendController extends Controller
         } else {
             return 'already-off';
         }
-    }
-
-    private function getClient()
-    {
-        /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($clientId);
-
-        return $client;
     }
 
     private function getLenderAccount()

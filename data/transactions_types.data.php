@@ -54,6 +54,7 @@ class transactions_types extends transactions_types_crud
     const TYPE_LENDER_RECOVERY_REPAYMENT           = 26;
     const TYPE_LENDER_REPAYMENT_CAPITAL            = 27;
     const TYPE_LENDER_REPAYMENT_INTERESTS          = 28;
+    const TYPE_LENDER_BALANCE_TRANSFER             = 30;
 
     public function __construct($bdd, $params = '')
     {

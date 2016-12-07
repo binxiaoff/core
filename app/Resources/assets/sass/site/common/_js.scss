@@ -23,6 +23,11 @@ $js-site-mobile-menu-closing: '.ui-site-mobile-menu-closing';
 $js-site-search-open: '.ui-site-search-open';
 $js-site-mobile-search-open: '.ui-site-mobile-search-open';
 
+// User menu states (applied to <html>)
+$js-site-user-mobile-menu-open: '.ui-site-user-mobile-menu-open';
+$js-site-user-mobile-menu-opening: '.ui-site-user-mobile-menu-opening';
+$js-site-user-mobile-menu-closing: '.ui-site-user-mobile-menu-closing';
+
 // Represents when the current (logged in) user is involved with something (project, etc.)
 $js-current-user-involved: '.ui-current-user-involved';
 

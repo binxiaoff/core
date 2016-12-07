@@ -1060,7 +1060,7 @@ class MailerManager
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
                     $sProjectsListHTML = '';
-                    $iProjectsCount    = count($aMailNotifications);
+                    $iProjectsCount    = 0;
 
                     foreach ($aMailNotifications as $aMailNotification) {
                         $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);

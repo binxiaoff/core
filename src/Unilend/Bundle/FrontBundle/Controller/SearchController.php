@@ -21,7 +21,7 @@ class SearchController extends Controller
      */
     public function searchAction(Request $request)
     {
-        return $this->redirectToRoute('search_result', ['query' => urlencode($request->request->get('search'))]);
+        return empty($request->request->get('search')) ? $this->redirectToRoute('faq-preteur') : $this->redirectToRoute('search_result', ['query' => urlencode($request->request->get('search'))]);
     }
 
     /**

@@ -81,7 +81,7 @@ class LenderDashboardController extends Controller
         }
 
         $ongoingBidsByProject = [];
-        $newPublishedProjects = [];
+        $publishedProjects    = [];
 
         foreach ($ongoingProjects as $iKey => $aProject) {
             $project->get($aProject['id_project']);
@@ -100,24 +100,21 @@ class LenderDashboardController extends Controller
                 $ongoingBidsByProject[$iKey]['aPendingBids'] = $bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'], $lender->id_lender_account);
             }
 
-            if ((new \DateTime($aProject['date_publication_full']))->diff(new \DateTime($this->getUser()->getLastLoginDate()))->days > 0 && $aProject['daysLeft'] >= 0) {
-                $company->get($aProject['id_company']);
-                $newPublishedProjects[] = [
-                    'title'            => $aProject['title'],
-                    'slug'             => $aProject['slug'],
-                    'company_address'  => (false === empty($company->city) ? $company->city . ', ' : '') . $company->zip,
-                    'amount'           => $aProject['amount'],
-                    'days_left'        => $aProject['daysLeft'],
-                    'risk'             => $aProject['risk'],
-                    'average_rate'     => $aProject['avgrate'],
-                    'bid_count'        => count($bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'])),
-                    'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
-                    'end_date'         => $aProject['date_retrait_full'],
-                    'funding_duration' => $projectStats->days
-                ];
-            }
+            $company->get($aProject['id_company']);
+            $publishedProjects[] = [
+                'title'            => $aProject['title'],
+                'slug'             => $aProject['slug'],
+                'company_address'  => (false === empty($company->city) ? $company->city . ', ' : '') . $company->zip,
+                'amount'           => $aProject['amount'],
+                'days_left'        => $aProject['daysLeft'],
+                'risk'             => $aProject['risk'],
+                'average_rate'     => $aProject['avgrate'],
+                'bid_count'        => count($bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'])),
+                'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
+                'end_date'         => $aProject['date_retrait_full'],
+                'funding_duration' => $projectStats->days
+            ];
         }
-
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
@@ -166,7 +163,7 @@ class LenderDashboardController extends Controller
                 ],
                 'ongoingBids'        => $bid->counter('id_lender_account = ' . $lender->id_lender_account . ' AND status = ' . \bids::STATUS_BID_PENDING),
                 'ongoingProjects'    => $ongoingBidsByProject,
-                'newOngoingProjects' => $newPublishedProjects,
+                'publishedProjects'  => $publishedProjects,
                 'timeAxis'           => [
                     'month'   => $monthAxisData['monthAxis'],
                     'quarter' => $quarterAxisData['quarterAxis'],

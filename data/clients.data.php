@@ -266,13 +266,14 @@ class clients extends clients_crud
             $where .= ' AND c.status LIKE "%' . $status . '%"';
         }
 
-        $result   = array();
+        $result   = [];
         $resultat = $this->bdd->query('
             SELECT c.*,
                 co.*
             FROM clients c
-            LEFT JOIN companies co ON c.id_client = co.id_client_owner
+              INNER JOIN companies co ON c.id_client = co.id_client_owner
             WHERE ' . $where . '
+              AND c.type NOT IN (' . implode(',', [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER, \clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) .')
             GROUP BY c.id_client
             ORDER BY c.id_client DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''))
         );
@@ -741,8 +742,8 @@ class clients extends clients_crud
             FROM echeanciers_emprunteur
             WHERE
                 id_project IN (' . implode(',', $aProjects) . ')
-                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
                 AND status_emprunteur = 1
+                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
                 AND status_ra = 0
             GROUP BY id_project, DATE(date_echeance_emprunteur_reel)';
 
@@ -890,37 +891,17 @@ class clients extends clients_crud
     }
 
     /**
-     * Retrieve old pattern that lender must use in bank transfer label (with '?' or '' instead of accented characters)
-     * @param $sClientId
-     * @param $sMatchPattern
+     * Check whether given pattern corresponds to actual lender pattern
+     * @param int    $clientId
+     * @param string $pattern
      * @return bool
      */
-    public function isLenderPattern($sClientId, $sMatchPattern)
+    public function isLenderPattern($clientId, $pattern)
     {
-        $this->get($sClientId);
+        $pattern       = str_replace(' ', '', $pattern);
+        $lenderPattern = str_replace(' ', '', $this->getLenderPattern($clientId));
 
-        $aStrTrans = array(
-            'À' => '?', 'à' => '?', 'Á' => '?', 'á' => '?', 'Â' => '?', 'â' => '?', 'Ã' => '?', 'ã' => '?', 'Ä' => '?',
-            'ä' => '?', 'Å' => '?', 'å' => '?', 'Æ' => '?', 'æ' => '?', 'Ç' => '?', 'ç' => '?', 'È' => '?', 'è' => '?',
-            'É' => '?', 'é' => '?', 'Ê' => '?', 'ê' => '?', 'Ë' => '?', 'ë' => '?', 'Ì' => '?', 'ì' => '?', 'Í' => '?',
-            'í' => '?', 'Î' => '?', 'î' => '?', 'Ï' => '?', 'ï' => '?', 'Ñ' => '?', 'ñ' => '?', 'Ò' => '?', 'ò' => '?',
-            'Ó' => '?', 'ó' => '?', 'Ô' => '?', 'ô' => '?', 'Õ' => '?', 'õ' => '?', 'Ö' => '?', 'ö' => '?', 'Ø' => '?',
-            'ø' => '?', 'Œ' => '?', 'œ' => '?', 'ß' => '?', 'Ù' => '?', 'ù' => '?', 'Ú' => '?', 'ú' => '?',
-            'Û' => '?', 'û' => 'u', 'Ü' => '?', 'ü' => '?', 'Ý' => '?', 'ý' => '?', 'Ÿ' => '?', 'ÿ' => '?'
-        );
-
-        $sPattern = str_replace(' ', '',
-            str_pad($this->id_client, 6, 0, STR_PAD_LEFT)
-            . mb_strtoupper(
-                strtr(substr($this->prenom, 0, 1), $aStrTrans)
-                . strtr($this->nom, $aStrTrans)
-            ));
-
-        if (false !== strpos($sMatchPattern, $sPattern) || false !== strpos($sMatchPattern, str_replace('?', '', $sPattern))) {
-            return true;
-        } else {
-            return false;
-        }
+        return (false !== strpos($pattern, $lenderPattern));
     }
 
     public function getDuplicates($sLastName, $sFirstName, $sBirthdate)

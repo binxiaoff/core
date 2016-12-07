@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
@@ -120,6 +121,8 @@ class LenderSubscriptionController extends Controller
         $ficelle = Loader::loadLib('ficelle');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var LocationManager $locationManager */
+        $locationManager = $this->get('unilend.service.location_manager');
 
         /** @var array $post */
         $post = $request->request->all();
@@ -195,10 +198,12 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($bCountryCheckOk) {
-            if (\pays_v2::COUNTRY_FRANCE == $post['client_country_of_birth'] ) {
-                $inseePlaceOfBirth = (false === empty($post['client_insee_place_of_birth']) && $cities->get($post['client_insee_place_of_birth'], 'insee')) ? $cities->insee : $post['client_place_of_birth'];
-                $placeOfBirth = $cities->ville;
-                unset($cities);
+            if (\pays_v2::COUNTRY_FRANCE == $post['client_country_of_birth'] && false === empty($post['client_insee_place_of_birth']))  {
+                $inseeExists       = $locationManager->checkFrenchCityInsee($post['client_insee_place_of_birth']);
+                $placeOfBirth      = preg_replace(['/[0-9]+/', '/\(\)/'], '', $post['client_place_of_birth']);
+                $cityExists        = $locationManager->checkFrenchCity($placeOfBirth);
+                $inseeAndCityMatch = $cities->exist($post['client_insee_place_of_birth'], 'ville = "' . $placeOfBirth . '" AND insee');
+                $inseePlaceOfBirth = ($inseeExists && $cityExists && $inseeAndCityMatch) ? $post['client_insee_place_of_birth'] : $post['client_place_of_birth'];
             } else {
                 /** @var \insee_pays $inseeCountries */
                 $inseeCountries = $this->get('unilend.service.entity_manager')->getRepository('insee_pays');
@@ -649,6 +654,8 @@ class LenderSubscriptionController extends Controller
         if (false === $response instanceof \clients){
             return $response;
         }
+        /** @var ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
@@ -702,7 +709,6 @@ class LenderSubscriptionController extends Controller
         } else {
             $lenderAccount->bic               = trim(strtoupper($post['bic']));
             $lenderAccount->iban              = trim(strtoupper(str_replace(' ', '', $post['iban'])));
-            $lenderAccount->cni_passeport     = 1;
             $lenderAccount->motif             = $client->getLenderPattern($client->id_client);
             $lenderAccount->origine_des_fonds = $post['funds_origin'];
             $lenderAccount->update();
@@ -710,9 +716,7 @@ class LenderSubscriptionController extends Controller
             $client->etape_inscription_preteur = 2;
             $client->update();
 
-            /** @var \clients_status_history $clientStatusHistory */
-            $clientStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('clients_status_history');
-            $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client);
+            $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($client, $post);
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
@@ -894,7 +898,6 @@ class LenderSubscriptionController extends Controller
                 $transaction->id_langue        = 'fr';
                 $transaction->date_transaction = date('Y-m-d h:i:s');
                 $transaction->status           = \transactions::STATUS_PENDING;
-                $transaction->etat             = 0;
                 $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
                 $transaction->type_transaction = \transactions_types::TYPE_LENDER_SUBSCRIPTION;
                 $transaction->create();
@@ -1145,11 +1148,10 @@ class LenderSubscriptionController extends Controller
                 }
 
                 $client->get($this->getUser()->getClientId());
-                /** @var \clients_status $clientStatus */
-                $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
-                $clientStatus->getLastStatut($client->id_client);
+                /** @var ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
-                if ($clientStatus->status >= \clients_status::MODIFICATION){
+                if ($clientStatusManager->getLastClientStatus($client) >= \clients_status::MODIFICATION){
                     return $this->redirectToRoute('lender_dashboard');
                 }
 
@@ -1437,4 +1439,5 @@ class LenderSubscriptionController extends Controller
         $fundsOriginList = explode(';', $settings->value);
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
+
 }

@@ -458,8 +458,7 @@ class dossiersController extends bootstrap
                             $transactions->id_langue        = 'fr';
                             $transactions->id_loan_remb     = $l['id_loan'];
                             $transactions->date_transaction = date('Y-m-d H:i:s');
-                            $transactions->status           = 1;
-                            $transactions->etat             = 1;
+                            $transactions->status           = \transactions::STATUS_VALID;
                             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                             $transactions->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
                             $transactions->create();
@@ -1306,7 +1305,7 @@ class dossiersController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->lClients = $this->clients->select('nom LIKE "%' . $this->params[0] . '%" OR prenom LIKE "%' . $this->params[0] . '%"');
+            $this->lClients = $this->clients->searchEmprunteurs('', $this->params[0], '', $this->params[0]);
         }
     }
 
@@ -1409,6 +1408,9 @@ class dossiersController extends bootstrap
         $this->companies        = $this->loadData('companies');
         $this->projects         = $this->loadData('projects');
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
+        $clientManager = $this->get('unilend.service.client_manager');
+
         if (isset($_POST['send_create_etape1'])) {
             if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
                 header('Location: ' . $this->lurl . '/dossiers/add/create_etape2/' . $_POST['id_client']);
@@ -1420,9 +1422,20 @@ class dossiersController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'create_etape2') {
-            if (false === isset($this->params[1]) || false === $this->clients->get($this->params[1], 'id_client')) {
+            if (
+                false === isset($this->params[1])
+                || false === $this->clients->get($this->params[1], 'id_client')
+                || $clientManager->isLender($this->clients)
+            ) {
                 $this->clients_adresses = $this->loadData('clients_adresses');
 
+                $this->clients->etape_inscription_preteur  = 0;
+                $this->clients->status_inscription_preteur = 0;
+                $this->clients->type                       = 0;
+                $this->clients->source                     = '';
+                $this->clients->source2                    = '';
+                $this->clients->source3                    = '';
+                $this->clients->slug_origine               = '';
                 $this->clients->create();
 
                 $this->clients_adresses->id_client = $this->clients->id_client;
@@ -1456,6 +1469,12 @@ class dossiersController extends bootstrap
             $this->projects->get($this->params[0]);
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
+
+            // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
+            if ($clientManager->isLender($this->clients)){
+                $this->clients->email = '';
+            }
+
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
@@ -1701,8 +1720,7 @@ class dossiersController extends bootstrap
                                 $this->transactions->id_echeancier    = $e['id_echeancier'];
                                 $this->transactions->id_langue        = 'fr';
                                 $this->transactions->date_transaction = $repaymentDate;
-                                $this->transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                                $this->transactions->etat             = \transactions::STATUS_VALID;
+                                $this->transactions->status           = \transactions::STATUS_VALID;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
                                 $capitalTransactionId = $this->transactions->create();
@@ -1724,8 +1742,7 @@ class dossiersController extends bootstrap
                                 $this->transactions->id_echeancier    = $e['id_echeancier'];
                                 $this->transactions->id_langue        = 'fr';
                                 $this->transactions->date_transaction = $repaymentDate;
-                                $this->transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                                $this->transactions->etat             = \transactions::STATUS_VALID;
+                                $this->transactions->status           = \transactions::STATUS_VALID;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
                                 $this->transactions->create();
@@ -1914,8 +1931,7 @@ class dossiersController extends bootstrap
                         $this->transactions->id_echeancier_emprunteur = $RembEmpr['id_echeancier_emprunteur'];
                         $this->transactions->id_langue                = 'fr';
                         $this->transactions->date_transaction         = date('Y-m-d H:i:s');
-                        $this->transactions->status                   = \transactions::PAYMENT_STATUS_OK;
-                        $this->transactions->etat                     = \transactions::STATUS_VALID;
+                        $this->transactions->status                   = \transactions::STATUS_VALID;
                         $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                         $this->transactions->create();
@@ -2105,8 +2121,7 @@ class dossiersController extends bootstrap
                         $this->transactions->id_project       = $this->projects->id_project;
                         $this->transactions->id_langue        = 'fr';
                         $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                        $this->transactions->status           = 1;
-                        $this->transactions->etat             = 1;
+                        $this->transactions->status           = \transactions::STATUS_VALID;
                         $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT;
                         $this->transactions->create();
@@ -2144,8 +2159,7 @@ class dossiersController extends bootstrap
                         $this->transactions->id_echeancier_emprunteur = 0; // pas d'echeance emprunteur
                         $this->transactions->id_langue                = 'fr';
                         $this->transactions->date_transaction         = date('Y-m-d H:i:s');
-                        $this->transactions->status                   = 1;
-                        $this->transactions->etat                     = 1;
+                        $this->transactions->status                   = \transactions::STATUS_VALID;
                         $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                         $this->transactions->id_loan_remb             = 0;
@@ -2186,6 +2200,12 @@ class dossiersController extends bootstrap
         $this->echeanciers      = $this->loadData('echeanciers');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->projects         = $this->loadData('projects');
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
+        $this->lenderManager = $this->get('unilend.service.lender_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        $this->loanManager = $this->get('unilend.service.loan_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             /** @var \loans $oLoans */
@@ -2210,6 +2230,12 @@ class dossiersController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions              = $this->loadData('receptions');
+
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        $this->loanManager = $this->get('unilend.service.loan_manager');
+        $this->loan->get($this->params[1]);
 
         $this->lRemb = $this->echeanciers->getRepaymentWithTaxDetails($this->params[1]);
 
