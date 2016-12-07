@@ -222,5 +222,14 @@
         <service id="unilend.service.company_balance_sheet_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager">
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>
+
+        <service id="unilend.service.wallet_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WalletManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+        </service>
+
+        <service id="unilend.service.operation_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\OperationManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.wallet_manager"/>
+        </service>
     </services>
 </container>
