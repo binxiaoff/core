@@ -78,7 +78,7 @@ class Wallet
      *
      * @return Wallet
      */
-    public function setBalance($availableBalance)
+    public function setAvailableBalance($availableBalance)
     {
         $this->availableBalance = $availableBalance;
 
