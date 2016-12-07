@@ -884,13 +884,23 @@ class ProjectsController extends Controller
         }
 
         /** @var UserLender $user */
-        $user          = $this->getUser();
+        $user = $this->getUser();
+
+        if (false === ($user instanceof UserLender)) {
+            return new JsonResponse([
+                'error'    => true,
+                'title'    => $translator->trans('project-detail_modal-bid-error-disconnected-lender-title'),
+                'messages' => [$translator->trans('project-detail_modal-bid-error-disconnected-lender-message')]
+            ]);
+        }
+
         $clientId      = $user->getClientId();
         $lenderBalance = $entityManager->getRepository('transactions')->getSolde($clientId);
 
         if ($lenderBalance < $amount) {
             return new JsonResponse([
                 'error'    => true,
+                'title'    => $translator->trans('project-detail_modal-bid-error-amount-title'),
                 'messages' => [$translator->trans('project-detail_side-bar-bids-low-balance')]
             ]);
         }
@@ -931,6 +941,7 @@ class ProjectsController extends Controller
 
             return new JsonResponse([
                 'error'    => true,
+                'title'    => $translator->trans('project-detail_modal-bid-error-amount-title'),
                 'messages' => $translatedReasons
             ]);
         }
