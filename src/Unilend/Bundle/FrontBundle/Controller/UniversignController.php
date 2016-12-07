@@ -242,7 +242,7 @@ class UniversignController extends Controller
             'pdf_link'    => $proxy->url_pdf,
             'pdf_display' => ($proxy->status == \projects_pouvoir::STATUS_SIGNED),
             'faq_url'     => $settings->value,
-            'document'    => 'mandate',
+            'document'    => 'proxy',
             'status'      => $this->getProxyStatusLabel($proxy)
         ];
 

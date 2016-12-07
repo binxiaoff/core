@@ -63,8 +63,14 @@ class UniversignManager
     {
         $this->logger->notice('Proxy status: ' . $proxy->status . ' - Creation of PDF to send to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
+        try {
+            $pdfParameters = $this->getPdfParameters('proxy', $proxy->id_pouvoir);
+        } catch (\Exception $universignException) {
+            return false;
+        }
+
         $soapClient  = new Client($this->universignURL);
-        $soapRequest = new Request('requester.requestTransaction', [new Value($this->getPdfParameters('proxy', $proxy->id_pouvoir), "struct")]);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
         $soapResult  = $soapClient->send($soapRequest);
 
         $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
@@ -126,8 +132,14 @@ class UniversignManager
     {
         $this->logger->notice('Mandate status: ' . $mandate->status . ' - Creation of PDF to send to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
 
+        try {
+            $pdfParameters = $this->getPdfParameters('mandate', $mandate->id_mandat);
+        } catch (\Exception $universignException) {
+            return false;
+        }
+
         $soapClient  = new Client($this->universignURL);
-        $soapRequest = new Request('requester.requestTransaction', [new Value($this->getPdfParameters('mandate', $mandate->id_mandat), "struct")]);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
         $soapResult  = $soapClient->send($soapRequest);
 
         $this->logger->notice('Mandate sent to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
@@ -199,8 +211,14 @@ class UniversignManager
     {
         $this->logger->notice('TOS status: ' . $tos->status . ' - Creation of PDF to send to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
 
+        try {
+            $pdfParameters = $this->getPdfParameters('tos', $tos->id);
+        } catch (\Exception $universignException) {
+            return false;
+        }
+
         $soapClient  = new Client($this->universignURL);
-        $soapRequest = new Request('requester.requestTransaction', [new Value($this->getPdfParameters('tos', $tos->id), "struct")]);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
         $soapResult  = $soapClient->send($soapRequest);
 
         $this->logger->notice('Tos sent to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
@@ -248,6 +266,7 @@ class UniversignManager
      * @param string $documentType
      * @param string $documentId
      * @return array
+     * @throws \Exception
      */
     private function getPdfParameters($documentType, $documentId)
     {
@@ -291,7 +310,8 @@ class UniversignManager
                 $doc_name     = $this->rootDir . '/../protected/pdf/cgv_emprunteurs/' . $documentName;
                 break;
             default:
-                return [];
+                $this->logger->error('Unknown Universign document type : ' . $documentType . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                throw new \Exception('Unknown Universign document type : ' . $documentType . '  id : ' . $documentId);
         }
 
         $returnPage = [
