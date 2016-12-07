@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class WalletBalanceHistory
 {
@@ -192,5 +193,15 @@ class WalletBalanceHistory
     public function getIdOperation()
     {
         return $this->idOperation;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
     }
 }
