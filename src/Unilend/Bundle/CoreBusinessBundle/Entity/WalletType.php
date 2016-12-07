@@ -12,6 +12,17 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class WalletType
 {
+    const LENDER                           = 'lender';
+    const BORROWER                         = 'borrower';
+    const UNILEND                          = 'unilend';
+    const TAX_PRELEVEMENTS_OBLIGATOIRES    = 'tax_prelevements_obligatoires';
+    const TAX_RETENUES_A_LA_SOURCE         = 'tax_retenues_a_la_source';
+    const TAX_CSG                          = 'tax_csg';
+    const TAX_PRELEVEMENTS_SOCIAUX         = 'tax_prelevements_sociaux';
+    const TAX_CONTRIBUTIONS_ADDITIONNELLES = 'tax_contributions_additionnelles';
+    const TAX_PRELEVEMENTS_DE_SOLIDARITE   = 'tax_prelevements_de_solidarite';
+    const TAX_CRDS                         = 'tax_crds';
+
     /**
      * @var string
      *

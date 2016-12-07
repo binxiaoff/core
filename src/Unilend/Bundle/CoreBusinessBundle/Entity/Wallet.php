@@ -15,9 +15,9 @@ class Wallet
     /**
      * @var string
      *
-     * @ORM\Column(name="balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="available_balance", type="decimal", precision=12, scale=2, nullable=false)
      */
-    private $balance;
+    private $availableBalance;
 
     /**
      * @var string
@@ -72,27 +72,27 @@ class Wallet
 
 
     /**
-     * Set balance
+     * Set availableBalance
      *
-     * @param string $balance
+     * @param string $availableBalance
      *
      * @return Wallet
      */
-    public function setBalance($balance)
+    public function setBalance($availableBalance)
     {
-        $this->balance = $balance;
+        $this->availableBalance = $availableBalance;
 
         return $this;
     }
 
     /**
-     * Get balance
+     * Get availableBalance
      *
      * @return string
      */
-    public function getBalance()
+    public function getAvailableBalance()
     {
-        return $this->balance;
+        return $this->availableBalance;
     }
 
     /**
