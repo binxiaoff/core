@@ -243,7 +243,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $request->getSession()->set('captchaInformation', $aCaptchaInformation);
         }
 
-        $loginLog->pseudo      = $this->getCredentials($request);['username'];
+        $loginLog->pseudo      = $this->getCredentials($request)['username'];
         $loginLog->IP          = $request->getClientIp();
         $loginLog->date_action = date('Y-m-d H:i:s');
         $loginLog->retour      = $exception->getMessage();
