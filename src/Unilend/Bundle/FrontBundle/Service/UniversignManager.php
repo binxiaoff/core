@@ -74,6 +74,7 @@ class UniversignManager
         $soapResult  = $soapClient->send($soapRequest);
 
         $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
+
         if ($soapResult->faultCode()) {
             $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
 
@@ -241,7 +242,6 @@ class UniversignManager
      */
     public function signTos(\project_cgv $tos)
     {
-
         $soapClient  = new Client($this->universignURL);
         $soapRequest = new Request('requester.getDocumentsByTransactionId', [new Value($tos->id_universign, "string")]);
         $soapResult  = $soapClient->send($soapRequest);
