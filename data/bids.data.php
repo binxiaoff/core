@@ -284,12 +284,16 @@ class bids extends bids_crud
         $this->bdd->query($sShuffle);
     }
 
-    public function getBidsSummary($iProjectId)
+    /**
+     * @param int $projectId
+     * @return array
+     */
+    public function getBidsSummary($projectId)
     {
-        $aBidsByRate = array();
+        $bidsByRate = array();
 
-        if ($iProjectId) {
-            $sQuery = '
+        if ($projectId) {
+            $sql = '
                 SELECT
                     rate,
                     COUNT(*) AS bidsCount,
@@ -298,16 +302,19 @@ class bids extends bids_crud
                     SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount,
                     IF(SUM(amount) > 0, ROUND(SUM(IF(status = 2, 0, ROUND(amount / 100, 2))) / SUM(ROUND(amount / 100, 2)) * 100, 1), 100) AS activePercentage
                 FROM bids
-                WHERE id_project = ' . $iProjectId . '
+                WHERE id_project = ' . $projectId . '
                 GROUP BY rate
                 ORDER BY rate DESC';
-            $rQuery = $this->bdd->query($sQuery);
-            while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-                $aBidsByRate[$aRow['rate']] = $aRow;
+
+            $query = $this->bdd->query($sql);
+            while ($row = $this->bdd->fetch_assoc($query)) {
+                // Array keys cannot be float type and we need to remove the 0 decimal
+                $rate = (string) ((float) $row['rate']);
+                $bidsByRate[$rate] = $row;
             }
         }
 
-        return $aBidsByRate;
+        return $bidsByRate;
     }
 
     /**
