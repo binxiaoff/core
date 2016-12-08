@@ -197,14 +197,14 @@ class Clients
     /**
      * @var int
      *
-     * @ORM\Column(name="funds_origin", type="int", nullable=false)
+     * @ORM\Column(name="funds_origin", type="int", nullable=true)
      */
     private $fundsOrigin;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="funds_origin_detail", type="string", nullable=false)
+     * @ORM\Column(name="funds_origin_detail", type="string", nullable=true)
      */
     private $fundsOriginDetail;
 
