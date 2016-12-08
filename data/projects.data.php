@@ -195,7 +195,7 @@ class projects extends projects_crud
 
         $select = '
             SELECT p.*,
-                DATEDIFF(p.date_retrait_full, NOW()) AS daysLeft,
+                DATEDIFF(p.date_retrait, NOW()) AS daysLeft,
                 CASE WHEN status = :fundingStatus
                     THEN "1"
                     ELSE "2"
@@ -222,12 +222,12 @@ class projects extends projects_crud
 
         switch ($sortField) {
             case self::SORT_FIELD_SECTOR:
-                $order = 'c.sector ' . $sortDirection . ', p.date_retrait_full DESC, p.status ASC';
+                $order = 'c.sector ' . $sortDirection . ', p.date_retrait DESC, p.status ASC';
                 $tables .= '
                     INNER JOIN companies c ON p.id_company = c.id_company';
                 break;
             case self::SORT_FIELD_AMOUNT:
-                $order = 'p.amount ' . $sortDirection . ', p.date_retrait_full DESC, p.status ASC';
+                $order = 'p.amount ' . $sortDirection . ', p.date_retrait DESC, p.status ASC';
                 break;
             case self::SORT_FIELD_RATE:
                 $select .= ',
@@ -236,11 +236,11 @@ class projects extends projects_crud
                         WHEN p.status IN (' . implode(', ', [\projects_status::PRET_REFUSE, \projects_status::EN_FUNDING, \projects_status::AUTO_BID_PLACED, \projects_status::A_FUNDER]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project AND status IN (0, 1))
                         WHEN p.status IN (' . implode(', ', [\projects_status::FUNDING_KO]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project)
                     END AS avg_rate';
-                $order = 'avg_rate ' . $sortDirection . ', p.date_retrait_full DESC, p.status ASC';
+                $order = 'avg_rate ' . $sortDirection . ', p.date_retrait DESC, p.status ASC';
                 break;
             case self::SORT_FIELD_RISK:
                 $sortDirection = $sortDirection === self::SORT_DIRECTION_DESC ? self::SORT_DIRECTION_ASC : self::SORT_DIRECTION_DESC;
-                $order         = 'p.risk ' . $sortDirection . ', p.date_retrait_full DESC, p.status ASC';
+                $order         = 'p.risk ' . $sortDirection . ', p.date_retrait DESC, p.status ASC';
                 break;
             case self::SORT_FIELD_END:
             default:
@@ -447,7 +447,7 @@ class projects extends projects_crud
         $sql    = '
             SELECT COUNT(*)
             FROM projects
-            WHERE date_publication_full >= (SELECT added FROM clients WHERE id_client = ' . $client . ')
+            WHERE date_publication >= (SELECT added FROM clients WHERE id_client = ' . $client . ')
                 AND status IN (' . $statusString . ')';
         $result = $this->bdd->query($sql);
         $record = $this->bdd->result($result);
@@ -741,7 +741,7 @@ class projects extends projects_crud
         if (null !== $startingDate) {
             $bind['starting_date']    = $startingDate;
             $type['starting_date']    = \PDO::PARAM_STR;
-            $wherePublished = ' AND DATE(p.date_publication_full) >=  :starting_date';
+            $wherePublished = ' AND DATE(p.date_publication) >=  :starting_date';
         }
 
         $sQuery = '
@@ -905,8 +905,8 @@ class projects extends projects_crud
                     FROM (
                      SELECT
                        date_funded,
-                       date_publication_full,
-                       ROUND(TIMESTAMPDIFF(SECOND, date_publication_full, date_funded) / 60) AS DurationFunding -- minutes
+                       date_publication,
+                       ROUND(TIMESTAMPDIFF(SECOND, date_publication, date_funded) / 60) AS DurationFunding -- minutes
                      FROM projects
                      WHERE date_funded != "0000-00-00" AND date_retrait > :date
                     ) AS t ';
@@ -1091,7 +1091,7 @@ class projects extends projects_crud
 
         $query = 'SELECT count(projects.id_project)
                     FROM projects
-                    WHERE ROUND(TIMESTAMPDIFF(SECOND, date_publication_full, date_funded)/120) <= 24
+                    WHERE ROUND(TIMESTAMPDIFF(SECOND, date_publication, date_funded)/120) <= 24
                     AND date_funded >= :startDate AND status >= ' . \projects_status::FUNDE;
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);
@@ -1120,7 +1120,7 @@ class projects extends projects_crud
                   FROM projects
                     WHERE date_funded != \'0000-00-00 00:00:00\'
                     GROUP BY id_project
-                    ORDER BY SECOND(TIMEDIFF(date_funded, date_publication_full)) ASC, amount DESC
+                    ORDER BY SECOND(TIMEDIFF(date_funded, date_publication)) ASC, amount DESC
                     LIMIT 1';
 
         $statement = $this->bdd->executeQuery($query);

@@ -176,8 +176,8 @@ class NotificationDisplayManager
                     $content = $this->translator->trans('lender-notifications_new-project-content', [
                         '%projectUrl%'      => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
                         '%projectTitle%'    => $project->title,
-                        '%publicationDate%' => date('d/m/Y', strtotime($project->date_publication_full)),
-                        '%publicationTime%' => date('H:i', strtotime($project->date_publication_full)),
+                        '%publicationDate%' => date('d/m/Y', strtotime($project->date_publication)),
+                        '%publicationTime%' => date('H:i', strtotime($project->date_publication)),
                         '%amount%'          => $ficelle->formatNumber($project->amount, 0),
                         '%duration%'        => $project->period
                     ]);
