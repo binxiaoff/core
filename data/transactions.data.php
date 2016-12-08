@@ -508,7 +508,7 @@ class transactions extends transactions_crud
     {
         $queryBuilder = $this->bdd->createQueryBuilder();
         $queryBuilder
-            ->select('id_client')
+            ->select('DISTINCT id_client')
             ->from('transactions', 't')
             ->innerJoin('t', 'lenders_accounts', 'la', 't.id_client = la.id_client_owner')
             ->andWhere('t.status = ' . self::STATUS_VALID)
