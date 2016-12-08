@@ -4,6 +4,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ClientStatusManager
@@ -14,15 +16,19 @@ class ClientStatusManager
     private $notificationManager;
     /** @var  AutoBidSettingsManager */
     private $autoBidSettingsManager;
+    /** @var  \Doctrine\ORM\EntityManager*/
+    private $em;
 
     public function __construct(
         EntityManager $entityManager,
         NotificationManager $notificationManager,
-        AutoBidSettingsManager $autoBidSettingsManager
+        AutoBidSettingsManager $autoBidSettingsManager,
+        EntityManager $em
     ) {
         $this->entityManager          = $entityManager;
         $this->notificationManager    = $notificationManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
+        $this->em                     = $em;
     }
 
     /**
@@ -56,10 +62,24 @@ class ClientStatusManager
     }
 
     /**
-     * @param \clients $client
+     * @param \clients|Clients $client
      * @return mixed
      */
-    public function getLastClientStatus(\clients $client)
+    public function getLastClientStatus($client)
+    {
+        if ($client instanceof  \clients) {
+            return $this->getLastClientStatusLegacy($client);
+        }
+
+        $clientRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Clients');
+        /** @var ClientsStatus $clientStatusEntity */
+        $clientStatusEntity = $clientRepository->getLastClientStatus($client->getIdClient());
+        return $clientStatusEntity->getLabel();
+    }
+
+
+
+    private function getLastClientStatusLegacy(\clients $client)
     {
         /** @var \clients_status $clientsStatus */
         $clientsStatus        = $this->entityManager->getRepository('clients_status');

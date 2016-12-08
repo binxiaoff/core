@@ -1,6 +1,9 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
@@ -11,13 +14,17 @@ class LenderManager
 {
     /** @var EntityManager */
     private $oEntityManager;
-    /** @var  ClientManager */
-    private $clientManager;
+    /** @var  \Doctrine\ORM\EntityManager */
+    private $em;
 
-    public function __construct(EntityManager $oEntityManager, ClientManager $clientManager)
+    public function __construct
+    (
+        EntityManager $oEntityManager,
+        \Doctrine\ORM\EntityManager $em
+    )
     {
         $this->oEntityManager = $oEntityManager;
-        $this->clientManager = $clientManager;
+        $this->em             = $em;
     }
 
     /**
@@ -31,7 +38,7 @@ class LenderManager
         $oClient = $this->oEntityManager->getRepository('clients');
 
         if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE
-            && $this->clientManager->isValidated($oClient)
+            && $this->isValidated($oClient)
         ) {
             return true;
         }
@@ -150,5 +157,55 @@ class LenderManager
             }
         }
         return false;
+    }
+
+    /**
+     * Retrieve pattern that lender must use in bank transfer label
+     * @param Clients $client
+     * @return string
+     */
+    public function getLenderPattern(Clients $client)
+    {
+        $oToolkit = new \ficelle();
+
+        return mb_strtoupper(
+            str_pad($client->getIdClient(), 6, 0, STR_PAD_LEFT) .
+            substr($oToolkit->stripAccents($client->getPrenom()), 0, 1) .
+            $oToolkit->stripAccents($client->getNom())
+        );
+    }
+
+    /**
+     * @param \clients $client
+     */
+    public function saveLenderTermsOfUse(Clients $client)
+    {
+        if (in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+            $type = 'Lien conditions generales inscription preteur particulier';
+        } else {
+            $type = 'Lien conditions generales inscription preteur societe';
+        }
+
+        /** @var Settings $settingsEntity */
+        $settingsEntity =  $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $type]);
+
+        $termsOfUse = new AcceptationsLegalDocs();
+        $termsOfUse->setIdLegalDoc($settingsEntity->getValue());
+        $termsOfUse->setIdClient($client->getIdClient());
+
+        $this->em->persist($client);
+        $this->em->flush();
+    }
+
+    /**
+     * @param \clients $client
+     * @return bool
+     */
+    public function isValidated(\clients $client)
+    {
+        /** @var \clients_status $lastClientStatus */
+        $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
+        $lastClientStatus->getLastStatut($client->id_client);
+        return $lastClientStatus->status == \clients_status::VALIDATED;
     }
 }

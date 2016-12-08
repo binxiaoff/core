@@ -3,6 +3,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
@@ -14,19 +16,33 @@ class ClientManager
 {
     const SESSION_KEY_TOS_ACCEPTED = 'user_legal_doc_accepted';
 
+    /** @var EntityManager */
+    private $oEntityManager;
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
     /** @var TokenStorageInterface */
     private $tokenStorage;
     /** @var RequestStack */
     private $requestStack;
+    /** @var WalletCreationManager */
+    private $walletCreationManager;
+    /** @var \Doctrine\ORM\EntityManager */
+    private $em;
 
-    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager, TokenStorageInterface $tokenStorage, RequestStack $requestStack)
-    {
+    public function __construct(
+        EntityManager $oEntityManager,
+        ClientSettingsManager $oClientSettingsManager,
+        TokenStorageInterface $tokenStorage,
+        RequestStack $requestStack,
+        WalletCreationManager $walletCreationManager,
+        \Doctrine\ORM\EntityManager $em
+    ) {
         $this->oEntityManager         = $oEntityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
         $this->tokenStorage           = $tokenStorage;
         $this->requestStack           = $requestStack;
+        $this->walletCreationManager  = $walletCreationManager;
+        $this->em                     = $em;
     }
 
 
@@ -182,16 +198,21 @@ class ClientManager
         return $oClient->etape_inscription_preteur;
     }
 
-    /**
-     * @param \clients $client
-     * @return bool
-     */
-    public function isValidated(\clients $client)
+
+    public function createClient(Clients $client, ClientsAdresses $clientsAddress, $typeId)
     {
-        /** @var \clients_status $lastClientStatus */
-        $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
-        $lastClientStatus->getLastStatut($client->id_client);
-        return $lastClientStatus->status == \clients_status::VALIDATED;
+        if (false === is_null($client->getIdClient())) {
+            return false;
+        }
+
+        $this->em->persist($client);
+        $this->em->flush();
+
+        $clientsAddress->setIdClient($client->getIdClient());
+        $this->em->persist($clientsAddress);
+        $this->em->flush();
+
+        return $this->walletCreationManager->createWallet($client, $typeId);
     }
 
 }

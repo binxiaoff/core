@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="clients_adresses", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="type", columns={"type"}), @ORM\Index(name="defaut", columns={"defaut"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ClientsAdresses
 {
@@ -29,147 +30,147 @@ class ClientsAdresses
     /**
      * @var boolean
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="boolean", nullable=true)
      */
     private $type;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom_adresse", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom_adresse", type="string", length=191, nullable=true)
      */
     private $nomAdresse;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="civilite", type="string", nullable=false)
+     * @ORM\Column(name="civilite", type="string", nullable=true)
      */
     private $civilite;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom", type="string", length=191, nullable=true)
      */
     private $nom;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="prenom", type="string", length=191, nullable=false)
+     * @ORM\Column(name="prenom", type="string", length=191, nullable=true)
      */
     private $prenom;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="societe", type="string", length=191, nullable=false)
+     * @ORM\Column(name="societe", type="string", length=191, nullable=true)
      */
     private $societe;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="adresse1", type="string", length=191, nullable=false)
+     * @ORM\Column(name="adresse1", type="string", length=191, nullable=true)
      */
     private $adresse1;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="adresse2", type="string", length=191, nullable=false)
+     * @ORM\Column(name="adresse2", type="string", length=191, nullable=true)
      */
     private $adresse2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="adresse3", type="string", length=191, nullable=false)
+     * @ORM\Column(name="adresse3", type="string", length=191, nullable=true)
      */
     private $adresse3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="cp", type="string", length=191, nullable=false)
+     * @ORM\Column(name="cp", type="string", length=191, nullable=true)
      */
     private $cp;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ville", type="string", length=191, nullable=false)
+     * @ORM\Column(name="ville", type="string", length=191, nullable=true)
      */
     private $ville;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_pays", type="integer", nullable=false)
+     * @ORM\Column(name="id_pays", type="integer", nullable=true)
      */
     private $idPays;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="telephone", type="string", length=191, nullable=false)
+     * @ORM\Column(name="telephone", type="string", length=191, nullable=true)
      */
     private $telephone;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="mobile", type="string", length=191, nullable=false)
+     * @ORM\Column(name="mobile", type="string", length=191, nullable=true)
      */
     private $mobile;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="commentaire", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="commentaire", type="text", length=16777215, nullable=true)
      */
     private $commentaire;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="meme_adresse_fiscal", type="boolean", nullable=false)
+     * @ORM\Column(name="meme_adresse_fiscal", type="boolean", nullable=true)
      */
     private $memeAdresseFiscal;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="adresse_fiscal", type="string", length=191, nullable=false)
+     * @ORM\Column(name="adresse_fiscal", type="string", length=191, nullable=true)
      */
     private $adresseFiscal;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ville_fiscal", type="string", length=191, nullable=false)
+     * @ORM\Column(name="ville_fiscal", type="string", length=191, nullable=true)
      */
     private $villeFiscal;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="cp_fiscal", type="string", length=191, nullable=false)
+     * @ORM\Column(name="cp_fiscal", type="string", length=191, nullable=true)
      */
     private $cpFiscal;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_pays_fiscal", type="integer", nullable=false)
+     * @ORM\Column(name="id_pays_fiscal", type="integer", nullable=true)
      */
     private $idPaysFiscal;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="boolean", nullable=true)
      */
     private $status;
 
@@ -183,7 +184,7 @@ class ClientsAdresses
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -806,5 +807,23 @@ class ClientsAdresses
     public function getIdAdresse()
     {
         return $this->idAdresse;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

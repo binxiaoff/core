@@ -10,8 +10,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\PaylineManager;
@@ -25,11 +32,8 @@ class LenderSubscriptionController extends Controller
      */
     public function personalInformationAction(Request $request)
     {
-        /** @var \clients $client */
-        $client   = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client, $request->getUri());
-
-        if (false === $response instanceof \clients){
+        $response = $this->checkProgressAndRedirect($request->getUri());
+        if (false === $response instanceof Clients){
             return $response;
         }
 
@@ -108,10 +112,8 @@ class LenderSubscriptionController extends Controller
      */
     public function personalInformationPersonFormAction(Request $request)
     {
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo());
-        if (false === $response instanceof \clients){
+        $response = $this->checkProgressAndRedirect($request->getPathInfo());
+        if (false === $response instanceof Clients){
             return $response;
         }
 
@@ -221,64 +223,61 @@ class LenderSubscriptionController extends Controller
             $request->getSession()->set('subscriptionPersonalInformationFormData', $post);
             return $this->redirectToRoute('lender_subscription_personal_information');
         } else {
-            /** @var \lenders_accounts $lenderAccount */
-            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-            /** @var \clients_adresses $clientAddress */
-            $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-            /** @var SourceManager $sourceManager */
-            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
+            $clientEntity = new Clients();
+            $usedName     = isset($post['client_used_name']) ? $ficelle->majNom($post['client_used_name']) : '';
+            $clientType   = ($post['client_country_of_birth'] == \nationalites_v2::NATIONALITY_FRENCH) ? \clients::TYPE_PERSON : \clients::TYPE_PERSON_FOREIGNER;
+            $birthDate    = new \DateTime($post['client_year_of_birth'] . '-' . $post['client_month_of_birth'] . '-' . $post['client_day_of_birth']);
 
-            $client->source                     = $sourceManager->getSource(SourceManager::SOURCE1);
-            $client->source2                    = $sourceManager->getSource(SourceManager::SOURCE2);
-            $client->source3                    = $sourceManager->getSource(SourceManager::SOURCE3);
-            $client->slug_origine               = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
-            $client->civilite                   = $post['client_form_of_address'];
-            $client->nom                        = $ficelle->majNom($post['client_name']);
-            $client->nom_usage                  = isset($post['client_used_name']) ? $ficelle->majNom($post['client_used_name']) : '';
-            $client->prenom                     = $ficelle->majNom($post['client_first_name']);
-            $client->email                      = $post['client_email'];
-            $client->secrete_question           = $post['client_secret_question'];
-            $client->secrete_reponse            = md5($post['client_secret_answer']);
-            // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
-            $client->password                   = password_hash($post['client_password'], PASSWORD_DEFAULT);
-            $client->mobile                     = str_replace([' ', '.'], '', $post['client_mobile']);
-            $client->ville_naissance            = $placeOfBirth;
-            $client->insee_birth                = $inseePlaceOfBirth;
-            $client->id_pays_naissance          = $post['client_country_of_birth'];
-            $client->id_nationalite             = $post['client_nationality'];
-            $client->naissance                  = $post['client_year_of_birth'] . '-' . $post['client_month_of_birth'] . '-' . $post['client_day_of_birth'];
-            $client->id_langue                  = 'fr';
-            $client->type                       = ($client->id_nationalite == \nationalites_v2::NATIONALITY_FRENCH) ? \clients::TYPE_PERSON : \clients::TYPE_PERSON_FOREIGNER;
-            $client->slug                       = $ficelle->generateSlug($client->prenom . '-' . $client->nom);
-            $client->status                     = \clients::STATUS_ONLINE;
-            $client->status_inscription_preteur = 1;
-            $client->etape_inscription_preteur  = 1;
-            $client->create();
+            $clientEntity
+                ->setCivilite($post['client_form_of_address'])
+                ->setNom($post['client_name'])
+                ->setPrenom($post['client_first_name'])
+                ->setNomUsage($usedName)
+                ->setEmail($post['client_email'])
+                ->setSecreteQuestion($post['client_secret_question'])
+                ->setSecreteReponse(md5($post['client_secret_answer']))
+                ->setPassword(password_hash($post['client_password'], PASSWORD_DEFAULT)) // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
+                ->setMobile($post['client_mobile'])
+                ->setVilleNaissance($placeOfBirth)
+                ->setInseeBirth($inseePlaceOfBirth)
+                ->setIdPaysNaissance($post['client_country_of_birth'])
+                ->setIdNationalite($post['client_country_of_birth'])
+                ->setNaissance($birthDate)
+                ->setIdLangue('fr')
+                ->setSlug($ficelle->generateSlug($post['client_first_name'] . '-' . $post['client_name']))
+                ->setStatus(\clients::STATUS_ONLINE)
+                ->setStatusInscriptionPreteur(1)
+                ->setEtapeInscriptionPreteur(1)
+                ->setType($clientType);
 
-            $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->email);
-            $request->getSession()->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $client->id_client);
+            $this->addClientSources($clientEntity);
 
-            $clientAddress->adresse_fiscal      = $post['fiscal_address_street'];
-            $clientAddress->ville_fiscal        = $post['fiscal_address_city'];
-            $clientAddress->cp_fiscal           = $post['fiscal_address_zip'];
-            $clientAddress->id_pays_fiscal      = $post['fiscal_address_country'];
-            $clientAddress->meme_adresse_fiscal = $post['same_postal_address'] ? 1 : 0;
-            $clientAddress->adresse1            = $post['same_postal_address'] ? $post['fiscal_address_street'] : $post['postal_address_street'];
-            $clientAddress->ville               = $post['same_postal_address'] ? $post['fiscal_address_city'] : $post['postal_address_city'];
-            $clientAddress->cp                  = $post['same_postal_address'] ? $post['fiscal_address_zip'] : $post['postal_address_zip'];
-            $clientAddress->id_pays             = $post['same_postal_address'] ? $post['fiscal_address_country'] : $post['postal_address_country'];
-            $clientAddress->id_client           = $client->id_client;
-            $clientAddress->create();
+            $clientAddressEntity = new ClientsAdresses();
 
-            $lenderAccount->id_client_owner = $client->id_client;
-            $lenderAccount->status          = \lenders_accounts::LENDER_STATUS_ONLINE;
-            $lenderAccount->create();
+            $postalAddress = $post['same_postal_address'] ? $post['fiscal_address_street'] : $post['postal_address_street'];
+            $postalCity    = $post['same_postal_address'] ? $post['fiscal_address_city'] : $post['postal_address_city'];
+            $postalZip     = $post['same_postal_address'] ? $post['fiscal_address_zip'] : $post['postal_address_zip'];
+            $postalCountry = $post['same_postal_address'] ? $post['fiscal_address_country'] : $post['postal_address_country'];
+            $sameAddress   = $post['same_postal_address'] ? 1 : 0;
 
-            $this->saveTermsOfUse($client);
-            $this->saveClientHistoryAction($client, $post);
-            $this->sendSubscriptionStartConfirmationEmail($client);
+            $clientAddressEntity->setAdresseFiscal($post['fiscal_address_street'])
+                ->setVilleFiscal($post['fiscal_address_city'])
+                ->setCpFiscal($post['fiscal_address_zip'])
+                ->setIdPaysFiscal($post['fiscal_address_country'])
+                ->setMemeAdresseFiscal($sameAddress)
+                ->setAdresse1($postalAddress)
+                ->setVille($postalCity)
+                ->setCp($postalZip)
+                ->setIdPays($postalCountry);
 
-            return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
+            /** @var ClientManager $clientManager */
+            $clientManager = $this->get('unilend.service.client_manager');
+            $clientManager->createClient($clientEntity, $clientAddressEntity, WalletType::LENDER);
+
+            $this->addClientToDataLayer($request, $clientEntity);
+            $this->saveClientHistoryAction($clientEntity, $post);
+            $this->sendSubscriptionStartConfirmationEmail($clientEntity);
+            return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $clientEntity->getHash()]);
         }
     }
 
@@ -482,31 +481,32 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
      */
-    private function sendSubscriptionStartConfirmationEmail(\clients $client)
+    private function sendSubscriptionStartConfirmationEmail(Clients $client)
     {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Facebook', 'type');
-        $lien_fb = $settings->value;
-        $settings->get('Twitter', 'type');
-        $lien_tw = $settings->value;
+        $settingRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings');
+        /** @var Settings $facebookSetting */
+        $faceBookSetting = $settingRepository->findOneBy(['type' => 'Facebook']);
+        /** @var Settings $twitterSetting */
+        $twitterSetting = $settingRepository->findOneBy(['type' => 'Twitter']);
+        /** @var LenderManager $lenderManager */
+        $lenderManager = $this->get('unilend.service.lender_manager');
 
         $varMail = [
             'surl'           => $this->get('assets.packages')->getUrl(''),
             'url'            => $this->get('assets.packages')->getUrl(''),
-            'prenom'         => $client->prenom,
-            'email_p'        => $client->email,
-            'motif_virement' => $client->getLenderPattern($client->id_client),
-            'lien_fb'        => $lien_fb,
-            'lien_tw'        => $lien_tw,
+            'prenom'         => $client->getPrenom(),
+            'email_p'        => $client->getEmail(),
+            'motif_virement' => $lenderManager->getLenderPattern($client),
+            'lien_fb'        => $faceBookSetting->getValue(),
+            'lien_tw'        => $twitterSetting->getValue(),
             'annee'          => date('Y')
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $varMail);
-        $message->setTo($client->email);
+        $message->setTo($client->getEmail());
         $mailer = $this->get('mailer');
         $mailer->send($message);
     }
@@ -578,28 +578,7 @@ class LenderSubscriptionController extends Controller
         }
     }
 
-    /**
-     * @param \clients $client
-     */
-    private function saveTermsOfUse(\clients $client)
-    {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
 
-        if (in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
-            $settings->get('Lien conditions generales inscription preteur particulier', 'type');
-            $termsOfUseVersion = $settings->value;
-        } else {
-            $settings->get('Lien conditions generales inscription preteur societe', 'type');
-            $termsOfUseVersion = $settings->value;
-        }
-
-        /** @var \acceptations_legal_docs $termsOfUse */
-        $termsOfUse = $this->get('unilend.service.entity_manager')->getRepository('acceptations_legal_docs');
-        $termsOfUse->id_legal_doc = $termsOfUseVersion;
-        $termsOfUse->id_client    = $client->id_client;
-        $termsOfUse->create();
-    }
 
     /**
      * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents")
@@ -1118,16 +1097,21 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
      * @param string $requestPathInfo
      * @param string|null $clientHash
-     * @return \clients|\Symfony\Component\HttpFoundation\RedirectResponse
+     * @return Clients|\Symfony\Component\HttpFoundation\RedirectResponse
      */
-    private function checkProgressAndRedirect(\clients &$client, $requestPathInfo, $clientHash = null)
+    private function checkProgressAndRedirect($requestPathInfo, $clientHash = null)
     {
-        if (false === empty($client->id_client) || (false === is_null($clientHash) && $client->get($clientHash, 'hash'))) {
-            if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur >= 1 && $client->etape_inscription_preteur <= 3) {
-                $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur,$client->hash);
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientEntity = new Clients();
+
+        if (false === is_null($clientHash)) {
+            /** @var Clients $clientEntity */
+            $clientEntity = $clientRepository->findOneBy(['hash' => $clientHash]);
+            if (\clients::STATUS_ONLINE == $clientEntity->getStatus() && $clientEntity->getEtapeInscriptionPreteur() >= 1 && $clientEntity->getEtapeInscriptionPreteur() <= 3) {
+                $redirectRoute = $this->getSubscriptionStepRedirectRoute($clientEntity->getEtapeInscriptionPreteur(), $clientEntity->getHash());
                 if ($requestPathInfo !== $redirectRoute) {
                     return $this->redirect($redirectRoute);
                 }
@@ -1137,32 +1121,37 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
-
             if ($this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')) {
                 return $this->redirectToRoute('projects_list');
             }
 
             if ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER')) {
-                if (false === is_null($clientHash) && $client->get($clientHash, 'hash') && $client->id_client != $this->getUser()->getClientId()) {
-                    return $this->redirectToRoute('projects_list');
+                if (false === is_null($clientHash)) {
+                    /** @var Clients $clientEntity */
+                    $clientEntity = $clientRepository->findOneBy(['hash' => $clientHash]);
+                    if ($clientEntity->getIdClient() != $this->getUser()->getClientId()) {
+                        return $this->redirectToRoute('projects_list');
+                    }
                 }
 
-                $client->get($this->getUser()->getClientId());
+                /** @var Clients $clientEntity */
+                $clientEntity = $clientRepository->find($this->getUser()->getClientId());
+
                 /** @var ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
-                if ($clientStatusManager->getLastClientStatus($client) >= \clients_status::MODIFICATION){
+                if ($clientStatusManager->getLastClientStatus($clientEntity) >= \clients_status::MODIFICATION){
                     return $this->redirectToRoute('lender_dashboard');
                 }
 
-                $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
+                $redirectRoute = $this->getSubscriptionStepRedirectRoute($clientEntity->getEtapeInscriptionPreteur(), $clientEntity->getHash());
                 if ($requestPathInfo !== $redirectRoute) {
                     return $this->redirect($redirectRoute);
                 }
             }
         }
 
-        return $client;
+        return $clientEntity;
     }
 
     private function getSubscriptionStepRedirectRoute($alreadyCompletedStep, $clientHash = null)
@@ -1186,12 +1175,12 @@ class LenderSubscriptionController extends Controller
      * @param \clients $client
      * @param $post
      */
-    private function saveClientHistoryAction(\clients $client, $post)
+    private function saveClientHistoryAction(Clients $client, $post)
     {
         $formId     = '';
-        $clientType = in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
+        $clientType = in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
 
-        switch ($client->etape_inscription_preteur) {
+        switch ($client->getEtapeInscriptionPreteur()) {
             case 1:
                 $post['client_password']              = md5($post['client_password']);
                 $post['client_password_confirmation'] = md5($post['client_password_confirmation']);
@@ -1208,7 +1197,7 @@ class LenderSubscriptionController extends Controller
         $clientHistoryActions->histo(
             $formId,
             'inscription etape ' . $client->etape_inscription_preteur . ' ' . $clientType,
-            $client->id_client, serialize(['id_client' => $client->id_client, 'post' => $post])
+            $client->id_client, serialize(['id_client' => $client->getIdClient(), 'post' => $post])
         );
     }
 
@@ -1438,6 +1427,23 @@ class LenderSubscriptionController extends Controller
         }
         $fundsOriginList = explode(';', $settings->value);
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
+    }
+
+    private function addClientSources(Clients &$client)
+    {
+        /** @var SourceManager $sourceManager */
+        $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
+
+        $client->setSource($sourceManager->getSource(SourceManager::SOURCE1))
+            ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
+            ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
+            ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
+    }
+
+    private function addClientToDataLayer(Request $request, Clients $clientEntity)
+    {
+        $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $clientEntity->getEmail());
+        $request->getSession()->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $clientEntity->getIdClient());
     }
 
 }

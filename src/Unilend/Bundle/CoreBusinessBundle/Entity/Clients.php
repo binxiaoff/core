@@ -3,12 +3,15 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 /**
  * Clients
  *
  * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"}), @ORM\Index(name="idx_client_spe", columns={"status_pre_emp"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Clients
 {
@@ -24,138 +27,138 @@ class Clients
      *
      * @ORM\Column(name="id_langue", type="string", length=5, nullable=false)
      */
-    private $idLangue;
+    private $idLangue = 'fr';
 
     /**
      * @var integer
      *
      * @ORM\Column(name="id_partenaire", type="integer", nullable=false)
      */
-    private $idPartenaire;
+    private $idPartenaire = 0;
 
     /**
      * @var integer
      *
      * @ORM\Column(name="id_partenaire_subcode", type="integer", nullable=false)
      */
-    private $idPartenaireSubcode;
+    private $idPartenaireSubcode = 0;
 
     /**
      * @var string
      *
      * @ORM\Column(name="id_facebook", type="string", length=45, nullable=false)
      */
-    private $idFacebook;
+    private $idFacebook = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="id_linkedin", type="string", length=45, nullable=false)
      */
-    private $idLinkedin;
+    private $idLinkedin = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="id_viadeo", type="string", length=45, nullable=false)
      */
-    private $idViadeo;
+    private $idViadeo = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="id_twitter", type="string", length=45, nullable=false)
      */
-    private $idTwitter;
+    private $idTwitter = '';
 
     /**
      * @var string
      *
-     * @ORM\Column(name="civilite", type="string", nullable=false)
+     * @ORM\Column(name="civilite", type="string", nullable=true)
      */
     private $civilite;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom", type="string", length=191, nullable=true)
      */
     private $nom;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom_usage", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom_usage", type="string", length=191, nullable=true)
      */
     private $nomUsage;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="prenom", type="string", length=191, nullable=false)
+     * @ORM\Column(name="prenom", type="string", length=191, nullable=true)
      */
     private $prenom;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="slug", type="string", length=191, nullable=false)
+     * @ORM\Column(name="slug", type="string", length=191, nullable=true)
      */
     private $slug;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="fonction", type="string", length=191, nullable=false)
+     * @ORM\Column(name="fonction", type="string", length=191, nullable=true)
      */
     private $fonction;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="naissance", type="date", nullable=false)
+     * @ORM\Column(name="naissance", type="date", nullable=true)
      */
     private $naissance;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_pays_naissance", type="integer", nullable=false)
+     * @ORM\Column(name="id_pays_naissance", type="integer", nullable=true)
      */
     private $idPaysNaissance;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ville_naissance", type="string", length=191, nullable=false)
+     * @ORM\Column(name="ville_naissance", type="string", length=191, nullable=true)
      */
     private $villeNaissance;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="insee_birth", type="string", length=16, nullable=false)
+     * @ORM\Column(name="insee_birth", type="string", length=16, nullable=true)
      */
     private $inseeBirth;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_nationalite", type="integer", nullable=false)
+     * @ORM\Column(name="id_nationalite", type="integer", nullable=true)
      */
     private $idNationalite;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="telephone", type="string", length=191, nullable=false)
+     * @ORM\Column(name="telephone", type="string", length=191, nullable=true)
      */
     private $telephone;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="mobile", type="string", length=191, nullable=false)
+     * @ORM\Column(name="mobile", type="string", length=191, nullable=true)
      */
     private $mobile;
 
@@ -169,35 +172,35 @@ class Clients
     /**
      * @var string
      *
-     * @ORM\Column(name="password", type="string", length=191, nullable=false)
+     * @ORM\Column(name="password", type="string", length=191, nullable=true)
      */
     private $password;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="secrete_question", type="string", length=191, nullable=false)
+     * @ORM\Column(name="secrete_question", type="string", length=191, nullable=true)
      */
     private $secreteQuestion;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="secrete_reponse", type="string", length=191, nullable=false)
+     * @ORM\Column(name="secrete_reponse", type="string", length=191, nullable=true)
      */
     private $secreteReponse;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="boolean", nullable=true)
      */
     private $type;
 
     /**
-     * @var int
+     * @var integer
      *
-     * @ORM\Column(name="funds_origin", type="int", nullable=true)
+     * @ORM\Column(name="funds_origin", type="integer", nullable=true)
      */
     private $fundsOrigin;
 
@@ -211,91 +214,91 @@ class Clients
     /**
      * @var integer
      *
-     * @ORM\Column(name="etape_inscription_preteur", type="integer", nullable=false)
+     * @ORM\Column(name="etape_inscription_preteur", type="integer", nullable=true)
      */
     private $etapeInscriptionPreteur;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="status_inscription_preteur", type="boolean", nullable=false)
+     * @ORM\Column(name="status_inscription_preteur", type="boolean", nullable=true)
      */
     private $statusInscriptionPreteur;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="status_pre_emp", type="boolean", nullable=false)
+     * @ORM\Column(name="status_pre_emp", type="boolean", nullable=true)
      */
     private $statusPreEmp;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="cni_passeport", type="string", length=191, nullable=false)
+     * @ORM\Column(name="cni_passeport", type="string", length=191, nullable=true)
      */
     private $cniPasseport;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="signature", type="string", length=191, nullable=false)
+     * @ORM\Column(name="signature", type="string", length=191, nullable=true)
      */
     private $signature;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="source", type="string", length=191, nullable=false)
+     * @ORM\Column(name="source", type="string", length=191, nullable=true)
      */
     private $source;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="source2", type="string", length=191, nullable=false)
+     * @ORM\Column(name="source2", type="string", length=191, nullable=true)
      */
     private $source2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="source3", type="string", length=191, nullable=false)
+     * @ORM\Column(name="source3", type="string", length=191, nullable=true)
      */
     private $source3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="slug_origine", type="string", length=191, nullable=false)
+     * @ORM\Column(name="slug_origine", type="string", length=191, nullable=true)
      */
     private $slugOrigine;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="origine", type="boolean", nullable=false)
+     * @ORM\Column(name="origine", type="boolean", nullable=true)
      */
     private $origine;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="optin1", type="boolean", nullable=false)
+     * @ORM\Column(name="optin1", type="boolean", nullable=true)
      */
     private $optin1;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="optin2", type="boolean", nullable=false)
+     * @ORM\Column(name="optin2", type="boolean", nullable=true)
      */
     private $optin2;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="boolean", nullable=true)
      */
     private $status;
 
@@ -309,14 +312,14 @@ class Clients
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="lastlogin", type="datetime", nullable=false)
+     * @ORM\Column(name="lastlogin", type="datetime", nullable=true)
      */
     private $lastlogin;
 
@@ -556,7 +559,7 @@ class Clients
      */
     public function setNom($nom)
     {
-        $this->nom = $nom;
+        $this->nom = $this->normalizeName($nom);
 
         return $this;
     }
@@ -580,7 +583,11 @@ class Clients
      */
     public function setNomUsage($nomUsage)
     {
-        $this->nomUsage = $nomUsage;
+        if (empty($nomUsage)) {
+            $this->nomUsage = '';
+        } else {
+            $this->nomUsage = $this->normalizeName($nomUsage);
+        }
 
         return $this;
     }
@@ -604,7 +611,7 @@ class Clients
      */
     public function setPrenom($prenom)
     {
-        $this->prenom = $prenom;
+        $this->prenom = $this->normalizeName($prenom);
 
         return $this;
     }
@@ -796,7 +803,7 @@ class Clients
      */
     public function setTelephone($telephone)
     {
-        $this->telephone = $telephone;
+        $this->telephone = $this->cleanPhoneNumber($telephone);
 
         return $this;
     }
@@ -820,7 +827,7 @@ class Clients
      */
     public function setMobile($mobile)
     {
-        $this->mobile = $mobile;
+        $this->mobile = $this->cleanPhoneNumber($mobile);
 
         return $this;
     }
@@ -1350,6 +1357,72 @@ class Clients
     }
 
     /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setHashValue()
+    {
+        if (is_null($this->hash)) {
+            try{
+                $this->hash = $this->generateHash();
+            } catch (UnsatisfiedDependencyException $exception){
+
+            }
+        }
+    }
+
+    /**
+     * @param $name
+     *
+     * @return string
+     */
+    private function normalizeName($name)
+    {
+        $name = strtolower($name);
+
+        $pos = strrpos($name, '-');
+        if ($pos === false) {
+            return ucwords($name);
+        } else {
+            $tabName = explode('-', $name);
+            $newName = '';
+            $i      = 0;
+            foreach ($tabName as $name) {
+                $newName .= ($i == 0 ? '' : '-') . ucwords($name);
+                $i++;
+            }
+            return $newName;
+        }
+    }
+
+    /**
+     * @param string $number
+     *
+     * @return string
+     */
+    private function cleanPhoneNumber($number)
+    {
+        return str_replace([' ', '.'], '', $number);
+    }
+
+    /**
      * Get fundsOrigin
      *
      * @return integer
@@ -1374,7 +1447,7 @@ class Clients
     }
 
     /**
-     * Get fundsOrigineDetail
+     * Get fundsOriginDetail
      *
      * @return string
      */
@@ -1395,5 +1468,15 @@ class Clients
         $this->fundsOriginDetail = $fundsOriginDetail;
 
         return $this;
+    }
+
+    public function generateHash()
+    {
+        try {
+            $uuid4 = Uuid::uuid4();
+            return $uuid4->toString();
+        } catch (UnsatisfiedDependencyException $e) {
+            echo 'Caught exception: ' . $e->getMessage() . "\n";
+        }
     }
 }
