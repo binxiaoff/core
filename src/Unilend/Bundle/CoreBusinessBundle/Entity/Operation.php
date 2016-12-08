@@ -147,16 +147,6 @@ class Operation
     private $idLoan;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Bids
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Bids")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid")
-     * })
-     */
-    private $idBid;
-
-    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
@@ -306,30 +296,6 @@ class Operation
     public function getLoan()
     {
         return $this->idLoan;
-    }
-
-    /**
-     * Set idBid
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Bids $idBid
-     *
-     * @return Operation
-     */
-    public function setBid(\Unilend\Bundle\CoreBusinessBundle\Entity\Bids $idBid = null)
-    {
-        $this->idBid = $idBid;
-
-        return $this;
-    }
-
-    /**
-     * Get idBid
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Bids
-     */
-    public function getBid()
-    {
-        return $this->idBid;
     }
 
     /**
