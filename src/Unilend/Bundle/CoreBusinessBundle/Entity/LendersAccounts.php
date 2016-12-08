@@ -43,20 +43,6 @@ class LendersAccounts
     /**
      * @var integer
      *
-     * @ORM\Column(name="origine_des_fonds", type="integer", nullable=false)
-     */
-    private $origineDesFonds;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="precision", type="string", length=191, nullable=false)
-     */
-    private $precision;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="id_partenaire", type="integer", nullable=false)
      */
     private $idPartenaire;
@@ -222,54 +208,6 @@ class LendersAccounts
     public function getBic()
     {
         return $this->bic;
-    }
-
-    /**
-     * Set origineDesFonds
-     *
-     * @param integer $origineDesFonds
-     *
-     * @return LendersAccounts
-     */
-    public function setOrigineDesFonds($origineDesFonds)
-    {
-        $this->origineDesFonds = $origineDesFonds;
-
-        return $this;
-    }
-
-    /**
-     * Get origineDesFonds
-     *
-     * @return integer
-     */
-    public function getOrigineDesFonds()
-    {
-        return $this->origineDesFonds;
-    }
-
-    /**
-     * Set precision
-     *
-     * @param string $precision
-     *
-     * @return LendersAccounts
-     */
-    public function setPrecision($precision)
-    {
-        $this->precision = $precision;
-
-        return $this;
-    }
-
-    /**
-     * Get precision
-     *
-     * @return string
-     */
-    public function getPrecision()
-    {
-        return $this->precision;
     }
 
     /**

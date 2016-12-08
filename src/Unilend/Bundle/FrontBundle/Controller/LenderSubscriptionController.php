@@ -710,10 +710,10 @@ class LenderSubscriptionController extends Controller
             $lenderAccount->bic               = trim(strtoupper($post['bic']));
             $lenderAccount->iban              = trim(strtoupper(str_replace(' ', '', $post['iban'])));
             $lenderAccount->motif             = $client->getLenderPattern($client->id_client);
-            $lenderAccount->origine_des_fonds = $post['funds_origin'];
             $lenderAccount->update();
 
             $client->etape_inscription_preteur = 2;
+            $client->funds_origin              = $post['funds_origin'];
             $client->update();
 
             $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);

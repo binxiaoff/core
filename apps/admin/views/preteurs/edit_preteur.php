@@ -404,23 +404,23 @@
             <?php if ($this->origine_fonds[0] != false) : ?>
                 <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) : ?>
                     <tr class="particulier">
-                        <th colspan="2" style="text-align:left;"><label for="origines">Quelle est l'origine des fonds que vous déposer sur Unilend ?</label></th>
+                        <th colspan="2" style="text-align:left;"><label for="origines">Quelle est l'origine des fonds que vous déposez sur Unilend ?</label></th>
                     </tr>
                     <tr class="particulier">
                         <td colspan="2">
                             <select name="origine_des_fonds" id="origine_des_fonds" class="select">
                                 <option value="0">Choisir</option>
                                 <?php foreach ($this->origine_fonds as $k => $origine_fonds) : ?>
-                                    <option <?= ($this->lenders_accounts->origine_des_fonds == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>" ><?= $origine_fonds ?></option>
+                                    <option <?= ($this->clients->funds_origin == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>" ><?= $origine_fonds ?></option>
                                 <?php endforeach; ?>
-                                <option <?= ($this->lenders_accounts->origine_des_fonds == 1000000 ? 'selected' : '') ?> value="1000000">Autre</option>
+                                <option <?= ($this->clients->funds_origin == 1000000 ? 'selected' : '') ?> value="1000000">Autre</option>
                             </select>
                         </td>
                     </tr>
                     <tr class="particulier">
                         <td colspan="2">
                             <div id="row_precision" style="display:none;">
-                                <input type="text" id="preciser" name="preciser" value="<?= ($this->lenders_accounts->precision != '' ? $this->lenders_accounts->precision : '') ?>" class="input_large">
+                                <input type="text" id="preciser" name="preciser" value="<?= ($this->clients->funds_origin_detail != '' ? $this->clients->funds_origin_detail : '') ?>" class="input_large">
                             </div>
                         </td>
                     </tr>
@@ -1097,7 +1097,7 @@
         }
     });
 
-    <?php if ($this->lenders_accounts->origine_des_fonds == 1000000): ?>
+    <?php if ($this->clients->funds_origin == 1000000): ?>
         $("#row_precision").show();
     <?php endif; ?>
 </script>

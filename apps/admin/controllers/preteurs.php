@@ -426,26 +426,21 @@ class preteursController extends bootstrap
 
                 $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
 
-                $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
-                $this->clients->mobile            = str_replace(' ', '', $_POST['mobile']);
-                $this->clients->ville_naissance   = $_POST['com-naissance'];
-                $this->clients->insee_birth       = $_POST['insee_birth'];
-                $this->clients->naissance         = $oBirthday->format('Y-m-d');
-                $this->clients->id_pays_naissance = $_POST['id_pays_naissance'];
-                $this->clients->id_nationalite    = $_POST['nationalite'];
-                $this->clients->id_langue         = 'fr';
-                $this->clients->type              = 1;
-                $this->clients->fonction          = '';
+                $this->clients->telephone           = str_replace(' ', '', $_POST['phone']);
+                $this->clients->mobile              = str_replace(' ', '', $_POST['mobile']);
+                $this->clients->ville_naissance     = $_POST['com-naissance'];
+                $this->clients->insee_birth         = $_POST['insee_birth'];
+                $this->clients->naissance           = $oBirthday->format('Y-m-d');
+                $this->clients->id_pays_naissance   = $_POST['id_pays_naissance'];
+                $this->clients->id_nationalite      = $_POST['nationalite'];
+                $this->clients->id_langue           = 'fr';
+                $this->clients->type                = 1;
+                $this->clients->fonction            = '';
+                $this->clients->funds_origin        = $_POST['origine_des_fonds'];
+                $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
                 $this->clients->update();
 
                 $this->lenders_accounts->id_company_owner = 0;
-
-                $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
-                if ($this->lenders_accounts->origine_des_fonds == '1000000') {
-                    $this->lenders_accounts->precision = $_POST['preciser'];
-                } else {
-                    $this->lenders_accounts->precision = '';
-                }
 
                 foreach ($_FILES as $field => $file) {
                     // Field name = attachment type id
@@ -695,12 +690,9 @@ class preteursController extends bootstrap
                     $this->companies->create();
                 }
 
-                $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
-                if ($this->lenders_accounts->origine_des_fonds == '1000000') {
-                    $this->lenders_accounts->precision = $_POST['preciser'];
-                } else {
-                    $this->lenders_accounts->precision = '';
-                }
+                $this->clients->funds_origin        = $_POST['origine_des_fonds'];
+                $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
+                $this->clients->update();
 
                 foreach ($_FILES as $field => $file) {
                     $iAttachmentType = $field;
