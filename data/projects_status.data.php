@@ -61,7 +61,7 @@ class projects_status extends projects_status_crud
     const LIQUIDATION_JUDICIAIRE  = 150;
     const DEFAUT                  = 160;
 
-    const NON_ELIGIBLE_REASON_PRODUCT_NON_FOUND              = 'product_non_found';
+    const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND              = 'product_not_found';
     const NON_ELIGIBLE_REASON_INACTIVE                       = 'entity_inactive';
     const NON_ELIGIBLE_REASON_UNKNOWN_SIREN                  = 'unknown_siren';
     const NON_ELIGIBLE_REASON_PROCEEDING                     = 'in_proceeding';
