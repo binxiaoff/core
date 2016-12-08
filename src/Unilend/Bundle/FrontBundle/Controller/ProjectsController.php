@@ -530,7 +530,7 @@ class ProjectsController extends Controller
             /** @var \bids $bidEntity */
             $bidEntity = $entityManager->getRepository('bids');
 
-            $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate LIKE ' . $rate, 'ordre ASC');
+            $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate = ' . $rate, 'ordre ASC');
             $template['bids'] = [];
 
             foreach ($bids as $bid) {
