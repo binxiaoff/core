@@ -1033,9 +1033,8 @@ class transfertsController extends bootstrap
             }
 
             /** @var \loans $loans */
-            $loans = $this->loadData('loans');
-            $loansInRepayment = $loans->getLoansForProjectsWithStatus($originalLender->id_lender_account, array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE]));
-
+            $loans                 = $this->loadData('loans');
+            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalLender->id_lender_account, array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE]));
             $originalClientBalance = $clientManager->getClientBalance($originalClient);
 
             if (isset($_POST['succession_check'])) {
@@ -1084,7 +1083,7 @@ class transfertsController extends bootstrap
                 $newLender->get($transfer->id_client_receiver, 'id_client_owner');
 
                 $numberLoans  = 0;
-                foreach ($loans->getLoansForProjectsWithStatus($originalLender->id_lender_account, array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE])) as $loan) {
+                foreach ($loansInRepayment as $loan) {
                     $loans->get($loan['id_loan']);
                     $this->transferLoan($transfer, $loanTransfer, $loans, $newLender, $originalClient, $newOwner);
                     $loans->unsetData();

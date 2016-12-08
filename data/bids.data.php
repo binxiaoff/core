@@ -169,15 +169,22 @@ class bids extends bids_crud
 
     public function getNbPreteurs($id_project)
     {
-        $sql = 'SELECT count(DISTINCT id_lender_account) FROM `bids` WHERE id_project = ' . $id_project . ' AND status = 0';
+        $sql = '
+            SELECT COUNT(DISTINCT id_lender_account) 
+            FROM bids 
+            WHERE id_project = ' . $id_project . ' AND status = ' . self::STATUS_BID_PENDING;
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function getProjectMaxRate(\projects $project)
     {
-        $result = $this->bdd->query('SELECT MAX(rate) FROM bids WHERE id_project = ' . $project->id_project . ' AND status = 0');
+        $result = $this->bdd->query('
+            SELECT MAX(rate) 
+            FROM bids 
+            WHERE id_project = ' . $project->id_project . ' AND status = ' . self::STATUS_BID_PENDING);
+
         return round($this->bdd->result($result), 1);
     }
 

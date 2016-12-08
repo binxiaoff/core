@@ -131,16 +131,15 @@ class preteursController extends bootstrap
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
         }
 
-        // le nombre de prets effectué
         $this->loans    = $this->loadData('loans');
-        $this->nb_pret  = $this->loans->counter('id_lender = "' . $this->lenders_accounts->id_lender_account . '" AND status = 0');
+        $this->nb_pret  = $this->loans->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = ' . \loans::STATUS_ACCEPTED);
         $this->txMoyen  = $this->loans->getAvgPrets($this->lenders_accounts->id_lender_account);
         $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
 
         if (isset($this->params[1])) {
-            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = 0');
+            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . \loans::STATUS_ACCEPTED);
         } else {
-            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = YEAR(CURDATE()) AND status = 0');
+            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . \loans::STATUS_ACCEPTED);
         }
 
         $this->SumDepot       = $this->transactions->getLenderDepositedAmount($this->lenders_accounts);

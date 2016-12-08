@@ -724,7 +724,7 @@ class protectedController extends bootstrap
 
         if (isset($this->params[0]) && $clients->get($this->params[0], 'hash') && isset($this->params[1])) {
             /** @var \loans $loans */
-            $loans           = $this->loadData('loans');
+            $loans = $this->loadData('loans');
             /** @var \lenders_accounts $lendersAccounts */
             $lendersAccounts = $this->loadData('lenders_accounts');
             $lendersAccounts->get($clients->id_client, 'id_client_owner');
