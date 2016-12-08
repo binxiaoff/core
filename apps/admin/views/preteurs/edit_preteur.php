@@ -756,7 +756,8 @@
                                             Compte validé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />par <?= $this->users->name ?></td>
                                         <?php else : ?>
                                             <?= $historyEntry['content'] . ' le ' . date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
-                                            <br>par <?= $this->users->name ?>
+                                            <br>par <?= (-1 != $a['id_user']) ? $this->users->name : ' le CRON de validation automatique Greenpoint'?></td>
+
                                         <?php endif; ?>
                                     </td>
                                 </tr>

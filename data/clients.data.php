@@ -1240,4 +1240,39 @@ class clients extends clients_crud
 
         return $aCountByCategories;
     }
+
+    /**
+     * @param array $clientStatus
+     * @param array $attachmentTypes
+     * @return array
+     */
+    public function getClientsToAutoValidate(array $clientStatus, array $attachmentTypes)
+    {
+        $bind = ['client_status_id' => $clientStatus, 'attachment_type_id' => $attachmentTypes];
+        $type = ['client_status_id' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'attachment_type_id' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY];
+
+        $sql = "
+        SELECT
+          c.id_client,
+          gpa.final_status,
+          gpa.revalidate,
+          gpa.id_attachment,
+          a.id_type
+        
+        FROM clients_status_history csh
+          INNER JOIN greenpoint_kyc kyc ON kyc.id_client = csh.id_client
+          INNER JOIN greenpoint_attachment gpa ON gpa.id_client = csh.id_client
+          INNER JOIN attachment a ON a.id = gpa.id_attachment AND a.id_type IN (:attachment_type_id)
+          INNER JOIN clients c ON c.id_client = csh.id_client
+          INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
+          INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
+        WHERE csh.id_client_status_history = (SELECT MAX(csh1.id_client_status_history)
+                                              FROM clients_status_history csh1
+                                              WHERE csh1.id_client = csh.id_client
+                                              LIMIT 1)
+              AND cs.status IN (:client_status_id) AND kyc.status = 999";
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($sql, $bind, $type);
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
