@@ -95,8 +95,7 @@ class transfertsController extends bootstrap
                 $transactions->montant          = $this->receptions->montant;
                 $transactions->id_langue        = 'fr';
                 $transactions->date_transaction = date('Y-m-d H:i:s');
-                $transactions->status           = 1;
-                $transactions->etat             = 1;
+                $transactions->status           = \transactions::STATUS_VALID;
                 $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
                 $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $transactions->create();
@@ -121,8 +120,7 @@ class transfertsController extends bootstrap
                 $transactions->montant          = $this->receptions->montant;
                 $transactions->id_langue        = 'fr';
                 $transactions->date_transaction = date('Y-m-d H:i:s');
-                $transactions->status           = 1;
-                $transactions->etat             = 1;
+                $transactions->status           = \transactions::STATUS_VALID;
                 $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
                 $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $transactions->create();
@@ -147,7 +145,7 @@ class transfertsController extends bootstrap
         $echeanciers            = $this->loadData('echeanciers');
         $projects_remb          = $this->loadData('projects_remb');
 
-        $eche   = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $id_project, 'ordre ASC');
+        $eche   = $echeanciers_emprunteur->select('id_project = ' . $id_project . ' AND status_emprunteur = 0', 'ordre ASC');
         $newsum = $montant / 100;
 
         foreach ($eche as $e) {
@@ -209,24 +207,34 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $preteurs                            = $this->loadData('clients');
-        $receptions                          = $this->loadData('receptions');
-        $lenders                             = $this->loadData('lenders_accounts');
-        $transactions                        = $this->loadData('transactions');
-        $wallets                             = $this->loadData('wallets_lines');
-        $bank                                = $this->loadData('bank_lines');
-        $this->notifications                 = $this->loadData('notifications');
+        /** @var \clients $preteurs */
+        $preteurs = $this->loadData('clients');
+        /** @var \receptions $receptions */
+        $receptions = $this->loadData('receptions');
+        /** @var \lenders_accounts $lenders */
+        $lenders = $this->loadData('lenders_accounts');
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
+        /** @var \wallets_lines $wallets */
+        $wallets = $this->loadData('wallets_lines');
+        /** @var \bank_lines $bank */
+        $bank = $this->loadData('bank_lines');
+        /** @var \notifications notifications */
+        $this->notifications = $this->loadData('notifications');
+        /** @var \clients_gestion_notifications clients_gestion_notifications */
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+        /** @var \clients_gestion_mails_notif clients_gestion_mails_notif */
+        $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
         $this->loadData('clients_gestion_type_notif'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
         $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
+        /** @var \settings setting */
         $this->setting = $this->loadData('settings');
 
         if (
             isset($_POST['id_client'], $_POST['id_reception'], $_SESSION['controlDoubleAttr'])
             && $preteurs->get($_POST['id_client'], 'id_client')
             && $receptions->get($_POST['id_reception'], 'id_reception')
-            && false === $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND id_virement')
+            && false === $transactions->get($_POST['id_reception'], 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
             && $_SESSION['controlDoubleAttr'] == md5($_SESSION['user']['id_user'])
         ) {
             unset($_SESSION['controlDoubleAttr']);
@@ -240,8 +248,7 @@ class transfertsController extends bootstrap
             $transactions->montant          = $receptions->montant;
             $transactions->id_langue        = 'fr';
             $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = 1;
-            $transactions->etat             = 1;
+            $transactions->status           = \transactions::STATUS_VALID;
             $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
             $transactions->create();
@@ -323,26 +330,29 @@ class transfertsController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-
-        $preteurs     = $this->loadData('clients');
-        $receptions   = $this->loadData('receptions');
+        /**@var \clients $preteurs */
+        $preteurs = $this->loadData('clients');
+        /** @var \receptions $receptions */
+        $receptions = $this->loadData('receptions');
+        /** @var \transactions $transactions */
         $transactions = $this->loadData('transactions');
-        $wallets      = $this->loadData('wallets_lines');
-        $bank         = $this->loadData('bank_lines');
+        /** @var \wallets_lines $wallets */
+        $wallets = $this->loadData('wallets_lines');
+        /** @var \bank_lines $bank */
+        $bank = $this->loadData('bank_lines');
 
         if (
             isset($_POST['id_client'], $_POST['id_reception'])
             && $preteurs->get($_POST['id_client'], 'id_client')
             && $receptions->get($_POST['id_reception'], 'id_reception')
-            && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND id_virement')
+            && $transactions->get($_POST['id_reception'], 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
         ) {
             $wallets->get($transactions->id_transaction, 'id_transaction');
 
             $bank->delete($wallets->id_wallet_line, 'id_wallet_line');
             $wallets->delete($transactions->id_transaction, 'id_transaction');
 
-            $transactions->etat   = 3;
-            $transactions->status = 0;
+            $transactions->status = \transactions::STATUS_CANCELED;
             $transactions->update();
 
             $receptions->id_client = 0;
@@ -357,24 +367,30 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $projects               = $this->loadData('projects');
-        $receptions             = $this->loadData('receptions');
-        $transactions           = $this->loadData('transactions');
-        $bank_unilend           = $this->loadData('bank_unilend');
-        $echeanciers            = $this->loadData('echeanciers');
+        /** @var \projects $projects */
+        $projects = $this->loadData('projects');
+        /** @var \receptions $receptions */
+        $receptions = $this->loadData('receptions');
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
+        /** @var \bank_unilend $bank_unilend */
+        $bank_unilend = $this->loadData('bank_unilend');
+        /** @var \echeanciers $echeanciers */
+        $echeanciers = $this->loadData('echeanciers');
+        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-        $projects_remb          = $this->loadData('projects_remb');
+        /** @var \projects_remb $projects_remb */
+        $projects_remb = $this->loadData('projects_remb');
 
         if (
             isset($_POST['id_project'], $_POST['id_reception'])
             && $projects->get($_POST['id_project'], 'id_project')
             && $receptions->get($_POST['id_reception'], 'id_reception')
-            && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
+            && $transactions->get($_POST['id_reception'], 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
         ) {
             $bank_unilend->delete($transactions->id_transaction, 'id_transaction');
 
-            $transactions->etat    = 3;
-            $transactions->status  = 0;
+            $transactions->status  = \transactions::STATUS_CANCELED;
             $transactions->id_user = $_SESSION['user']['id_user'];
             $transactions->update();
 
@@ -384,7 +400,7 @@ class transfertsController extends bootstrap
             $receptions->remb       = 0;
             $receptions->update();
 
-            $eche   = $echeanciers_emprunteur->select('status_emprunteur = 1 AND id_project = ' . $_POST['id_project'], 'ordre DESC');
+            $eche   = $echeanciers_emprunteur->select('id_project = ' . $_POST['id_project'] . ' AND status_emprunteur = 1', 'ordre DESC');
             $newsum = $receptions->montant / 100;
 
             foreach ($eche as $e) {
@@ -419,23 +435,33 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $projects               = $this->loadData('projects');
-        $companies              = $this->loadData('companies');
-        $clients                = $this->loadData('clients');
-        $receptions             = $this->loadData('receptions');
-        $transactions           = $this->loadData('transactions');
-        $new_transactions       = $this->loadData('transactions');
-        $bank_unilend           = $this->loadData('bank_unilend');
-        $echeanciers            = $this->loadData('echeanciers');
+        /** @var \projects $projects */
+        $projects = $this->loadData('projects');
+        /** @var \companies $companies */
+        $companies = $this->loadData('companies');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
+        /** @var \receptions $receptions */
+        $receptions = $this->loadData('receptions');
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
+        /** @var \transactions $new_transactions */
+        $new_transactions = $this->loadData('transactions');
+        /** @var \bank_lines $bank_unilend */
+        $bank_unilend = $this->loadData('bank_unilend');
+        /** @var \echeanciers $echeanciers */
+        $echeanciers = $this->loadData('echeanciers');
+        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-        $projects_remb          = $this->loadData('projects_remb');
+        /** @var \projects_remb $projects_remb */
+        $projects_remb = $this->loadData('projects_remb');
 
         if (
             isset($_POST['id_project'], $_POST['id_reception'])
             && $projects->get($_POST['id_project'], 'id_project')
             && $receptions->get($_POST['id_reception'], 'id_reception')
-            && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
-            && false === $new_transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION . ' AND id_prelevement')
+            && $transactions->get($_POST['id_reception'], 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
+            && false === $new_transactions->get($_POST['id_reception'], 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION . ' AND id_prelevement')
         ) {
             $companies->get($projects->id_company, 'id_company');
             $clients->get($companies->id_client_owner, 'id_client');
@@ -445,8 +471,7 @@ class transfertsController extends bootstrap
             $new_transactions->montant          = - $receptions->montant;
             $new_transactions->id_langue        = 'fr';
             $new_transactions->date_transaction = date('Y-m-d H:i:s');
-            $new_transactions->status           = 1;
-            $new_transactions->etat             = 1;
+            $new_transactions->status           = \transactions::STATUS_VALID;
             $new_transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
             $new_transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
             $new_transactions->id_user          = $_SESSION['user']['id_user'];
@@ -462,7 +487,7 @@ class transfertsController extends bootstrap
             $receptions->remb      = 0;
             $receptions->update();
 
-            $eche   = $echeanciers_emprunteur->select('status_emprunteur = 1 AND id_project = ' . $projects->id_project, 'ordre DESC');
+            $eche   = $echeanciers_emprunteur->select('id_project = ' . $projects->id_project . ' AND status_emprunteur = 1', 'ordre DESC');
             $newsum = $receptions->montant / 100;
 
             foreach ($eche as $e) {
@@ -556,8 +581,8 @@ class transfertsController extends bootstrap
             );
 
             $iSumOfAllWelcomeOffersDistributed      = $oWelcomeOfferDetails->sum('type = 0 AND id_offre_bienvenue = ' . $this->offres_bienvenues->id_offre_bienvenue . ' AND status <> 2', 'montant');
-            $iSumOfPhysicalWelcomeOfferTransactions = $oTransactions->sum('status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
-            $iSumOfVirtualWelcomeOfferTransactions  = $oTransactions->sum('status = 1 AND etat = 1 AND type_transaction IN(' . implode(',', $aVirtualWelcomeOfferTransactions) . ')', 'montant');
+            $iSumOfPhysicalWelcomeOfferTransactions = $oTransactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
+            $iSumOfVirtualWelcomeOfferTransactions  = $oTransactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction IN(' . implode(',', $aVirtualWelcomeOfferTransactions) . ')', 'montant');
             $iAvailableAmountForWelcomeOffers       = $iSumOfPhysicalWelcomeOfferTransactions - $iSumOfVirtualWelcomeOfferTransactions;
 
             $oStartWelcomeOffer = \DateTime::createFromFormat('Y-m-d', $this->offres_bienvenues->debut);
@@ -591,8 +616,7 @@ class transfertsController extends bootstrap
                 $oTransactions->id_offre_bienvenue_detail = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
                 $oTransactions->id_langue                 = 'fr';
                 $oTransactions->date_transaction          = date('Y-m-d H:i:s');
-                $oTransactions->status                    = 1;
-                $oTransactions->etat                      = 1;
+                $oTransactions->status                    = \transactions::STATUS_VALID;
                 $oTransactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
                 $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER;
                 $oTransactions->create();
@@ -812,8 +836,7 @@ class transfertsController extends bootstrap
                     $transactions->id_langue        = 'fr';
                     $transactions->id_project       = $project->id_project;
                     $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                    $transactions->etat             = \transactions::STATUS_VALID;
+                    $transactions->status           = \transactions::STATUS_VALID;
                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                     $transactions->type_transaction = \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
                     $transactions->id_transaction   = $transactions->create();
@@ -892,7 +915,7 @@ class transfertsController extends bootstrap
                     $oInvoiceCounter = $this->loadData('compteur_factures');
                     $oInvoice        = $this->loadData('factures');
 
-                    $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND status = 1 AND etat = 1 AND id_project');
+                    $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND status = ' . \transactions::STATUS_VALID . ' AND id_project');
 
                     /** @var \tax_type $taxType */
                     $taxType = $this->loadData('tax_type');
@@ -961,6 +984,263 @@ class transfertsController extends bootstrap
                 $this->aProjects[$iProject]['rib']     = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['path'] : '';
                 $this->aProjects[$iProject]['id_rib']  = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['id'] : '';
             }
+        }
+    }
+
+    public function _succession()
+    {
+        if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
+            $clientManager = $this->get('unilend.service.client_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+            $clientStatusManager = $this->get('unilend.service.client_status_manager');
+            /** @var \clients $originalClient */
+            $originalClient = $this->loadData('clients');
+            /** @var \clients $newOwner */
+            $newOwner = $this->loadData('clients');
+            /** @var \attachment $transferDocument */
+            $transferDocument = $this->loadData('attachment');
+
+            if (
+                false === empty($_POST['id_client_to_transfer'])
+                && (false === is_numeric($_POST['id_client_to_transfer'])
+                    || false === $originalClient->get($_POST['id_client_to_transfer'])
+                    || false === $clientManager->isLender($originalClient))) {
+                $this->addErrorMessageAndRedirect('Le défunt n\'est pas un prêteur');
+            }
+
+            if (
+                false === empty($_POST['id_client_receiver'])
+                && (false === is_numeric($_POST['id_client_receiver'])
+                    || false === $newOwner->get($_POST['id_client_receiver'])
+                    || false === $clientManager->isLender($newOwner))
+            ) {
+                $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
+            }
+
+            /** @var \lenders_accounts $originalLender */
+            $originalLender = $this->loadData('lenders_accounts');
+            $originalLender->get($originalClient->id_client, 'id_client_owner');
+
+            if ($clientStatusManager->getLastClientStatus($newOwner) != \clients_status::VALIDATED) {
+                $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
+            }
+
+            /** @var \bids $bids */
+            $bids = $this->loadData('bids');
+            if ($bids->exist($originalLender->id_lender_account, 'status = ' . \bids::STATUS_BID_PENDING . ' AND id_lender_account ')) {
+                $this->addErrorMessageAndRedirect('Le défunt a des bids en cours.');
+            }
+
+            /** @var \loans $loans */
+            $loans                 = $this->loadData('loans');
+            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalLender->id_lender_account, array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE]));
+            $originalClientBalance = $clientManager->getClientBalance($originalClient);
+
+            if (isset($_POST['succession_check'])) {
+                $_SESSION['succession']['check'] = [
+                    'accountBalance' => $originalClientBalance,
+                    'numberLoans'    => count($loansInRepayment),
+                    'formerClient'   => [
+                        'nom'       => $originalClient->nom,
+                        'prenom'    => $originalClient->prenom,
+                        'id_client' => $originalClient->id_client
+                    ],
+                    'newOwner'       => [
+                        'nom'       => $newOwner->nom,
+                        'prenom'    => $newOwner->prenom,
+                        'id_client' => $newOwner->id_client
+                    ]
+                ];
+            }
+
+            if (isset($_POST['succession_validate'])) {
+                if (empty($_FILES['transfer_document']['name'])) {
+                    $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
+                }
+
+                /** @var \transfer $transfer */
+                $transfer                     = $this->loadData('transfer');
+                $transfer->id_client_origin   = $originalClient->id_client;
+                $transfer->id_client_receiver = $newOwner->id_client;
+                $transfer->id_transfer_type  = \transfer_type::TYPE_INHERITANCE;
+                $transfer->create();
+
+                $this->uploadTransferDocument($transferDocument, $transfer, 'transfer_document');
+
+                /** @var \transactions $transactions */
+                $transactions          = $this->loadData('transactions');
+                $originalClientBalance = $clientManager->getClientBalance($originalClient);
+                $this->transferAccountBalance($transfer, $transactions, $originalClientBalance);
+
+                /** @var \loan_transfer $loanTransfer */
+                $loanTransfer = $this->loadData('loan_transfer');
+                /** @var \lenders_accounts $originalLender */
+                $originalLender = $this->loadData('lenders_accounts');
+                $originalLender->get($transfer->id_client_origin, 'id_client_owner');
+                /** @var \lenders_accounts $newLender */
+                $newLender = $this->loadData('lenders_accounts');
+                $newLender->get($transfer->id_client_receiver, 'id_client_owner');
+
+                $numberLoans  = 0;
+                foreach ($loansInRepayment as $loan) {
+                    $loans->get($loan['id_loan']);
+                    $this->transferLoan($transfer, $loanTransfer, $loans, $newLender, $originalClient, $newOwner);
+                    $loans->unsetData();
+                    $numberLoans += 1;
+                }
+                /** @var \lenders_accounts_stats_queue $lenderStatQueue */
+                $lenderStatQueue = $this->loadData('lenders_accounts_stats_queue');
+                $lenderStatQueue->addLenderToQueue($newLender);
+                $lenderStatQueue->addLenderToQueue($originalLender);
+
+                $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
+                try {
+                    $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
+                } catch (\Exception $exception){
+                    $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
+                }
+
+                $clientStatusManager->addClientStatus($newOwner, $_SESSION['user']['id_user'], $clientStatusManager->getLastClientStatus($newOwner), 'Reçu solde ('. $this->ficelle->formatNumber($originalClientBalance) .') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
+
+                $_SESSION['succession']['success'] = [
+                    'accountBalance' => $originalClientBalance,
+                    'numberLoans'    => $numberLoans,
+                    'formerClient'   => [
+                        'nom'    => $originalClient->nom,
+                        'prenom' => $originalClient->prenom
+                    ],
+                    'newOwner'       => [
+                        'nom'    => $newOwner->nom,
+                        'prenom' => $newOwner->prenom
+                    ]
+                ];
+            }
+
+            header('Location: ' . $this->lurl . '/transferts/succession');
+            die;
+        }
+    }
+
+    /**
+     * @param \transfer $transfer
+     * @param \transactions $transactions
+     * @param $accountBalance
+     */
+    private function transferAccountBalance(\transfer $transfer, \transactions $transactions, $accountBalance)
+    {
+        $transactions->id_client        = $transfer->id_client_origin;
+        $transactions->montant          = -$accountBalance * 100;
+        $transactions->status           = \transactions::STATUS_VALID;
+        $transactions->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
+        $transactions->date_transaction = date('Y-m-d h:i:s');
+        $transactions->id_langue        = 'fr';
+        $transactions->id_transfer      = $transfer->id_transfer;
+        $transactions->create();
+
+        $transactions->unsetData();
+
+        $transactions->id_client        =$transfer->id_client_receiver;
+        $transactions->montant          = $accountBalance * 100;
+        $transactions->status           = \transactions::STATUS_VALID;
+        $transactions->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
+        $transactions->date_transaction = date('Y-m-d h:i:s');
+        $transactions->id_langue        = 'fr';
+        $transactions->id_transfer      = $transfer->id_transfer;
+        $transactions->create();
+    }
+
+    private function transferLoan(\transfer $transfer, \loan_transfer $loanTransfer, \loans $loans, \lenders_accounts $newLender, \clients $originalClient, \clients $newOwner)
+    {
+        $loanTransfer->id_transfer = $transfer->id_transfer;
+        $loanTransfer->id_loan     = $loans->id_loan;
+        $loanTransfer->create();
+
+        $loans->id_transfer = $loanTransfer->id_loan_transfer;
+        $loans->id_lender   = $newLender->id_lender_account;
+        $loans->update();
+
+        $loanTransfer->unsetData();
+        $this->transferRepaymentSchedule($loans, $newLender);
+        $this->transferLoanPdf($loans, $originalClient, $newOwner);
+        $this->deleteClaimsPdf($loans, $originalClient);
+    }
+
+    /**
+     * @param \loans $loans
+     * @param \lenders_accounts $newLender
+     */
+    private function transferRepaymentSchedule(\loans $loans, \lenders_accounts $newLender)
+    {
+        /** @var \echeanciers $repaymentSchedule */
+        $repaymentSchedule = $this->loadData('echeanciers');
+
+        foreach ($repaymentSchedule->select('id_loan = ' . $loans->id_loan) as $repayment){
+            $repaymentSchedule->get($repayment['id_echeancier']);
+            $repaymentSchedule->id_lender = $newLender->id_lender_account;
+            $repaymentSchedule->update();
+            $repaymentSchedule->unsetData();
+        }
+    }
+
+    /**
+     * @param string $errorMessage
+     */
+    private function addErrorMessageAndRedirect($errorMessage)
+    {
+        $_SESSION['succession']['error'] = $errorMessage;
+        header('Location: ' . $this->lurl . '/transferts/succession');
+        die;
+    }
+
+    /**
+     * @param \attachment $attachment
+     * @param \transfer $transfer
+     * @param string $field
+     * @return \attachment
+     */
+    private function uploadTransferDocument(\attachment $attachment, \transfer $transfer, $field)
+    {
+        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+            $this->attachment_type = $this->loadData('attachment_type');
+        }
+
+        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
+            $this->upload = $this->loadLib('upload');
+        }
+
+        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($attachment, $this->attachment_type, $this->path));
+        }
+
+        $newName = '';
+        if (isset($_FILES[$field]['name']) && $fileInfo = pathinfo($_FILES[$field]['name'])) {
+            $newName = mb_substr($fileInfo['filename'], 0, 20) . '_' . $transfer->id_client_origin . '_' . $transfer->id_client_receiver . '_' . $transfer->id_transfer;
+        }
+
+        $idAttachment = $this->attachmentHelper->upload($transfer->id_transfer, \attachment::TRANSFER, \attachment_type::TRANSFER_CERTIFICATE, $field, $this->upload, $newName);
+        $attachment->get($idAttachment);
+
+        return $attachment;
+    }
+
+    private function transferLoanPdf(\loans $loan, \clients $originalClient, \clients $newOwner)
+    {
+        $oldFilePath = $this->path . 'protected/pdf/contrat/contrat-' . $originalClient->hash . '-' . $loan->id_loan . '.pdf';
+        $newFilePath = $this->path . 'protected/pdf/contrat/contrat-' . $newOwner->hash . '-' . $loan->id_loan . '.pdf';
+
+        if (file_exists($oldFilePath)) {
+            rename($oldFilePath, $newFilePath);
+        }
+    }
+
+    private function deleteClaimsPdf(\loans $loan, \clients $originalClient)
+    {
+        $filePath      = $this->path . 'protected/pdf/declaration_de_creances/' . $loan->id_project . '/';
+        $filePath      = ($loan->id_project == '1456') ? $filePath : $filePath . $originalClient->id_client . '/';
+        $filePath      = $filePath . 'declaration-de-creances' . '-' . $originalClient->hash . '-' . $loan->id_loan . '.pdf';
+        if (file_exists($filePath)) {
+            unlink($filePath);
         }
     }
 }

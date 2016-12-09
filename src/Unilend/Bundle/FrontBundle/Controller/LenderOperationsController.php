@@ -23,7 +23,7 @@ class LenderOperationsController extends Controller
      */
     const TYPE_REPAYMENT_TRANSACTION = 5;
 
-    // This is public in order to make it usebable for old PDF controller
+    // This is public in order to make it useable for old PDF controller
     public static $transactionTypeList = [
         1 => [
             \transactions_types::TYPE_LENDER_SUBSCRIPTION,
@@ -38,18 +38,21 @@ class LenderOperationsController extends Controller
             \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
             \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
             \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT,
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER
         ],
         2 => [
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
             \transactions_types::TYPE_DIRECT_DEBIT,
-            \transactions_types::TYPE_LENDER_WITHDRAWAL
+            \transactions_types::TYPE_LENDER_WITHDRAWAL,
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER
         ],
         3 => [
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            \transactions_types::TYPE_DIRECT_DEBIT
+            \transactions_types::TYPE_DIRECT_DEBIT,
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER
         ],
         4 => [\transactions_types::TYPE_LENDER_WITHDRAWAL],
         5 => [\transactions_types::TYPE_LENDER_LOAN],
@@ -253,7 +256,8 @@ class LenderOperationsController extends Controller
             \transactions_types::TYPE_WELCOME_OFFER                => $translator->trans('preteur-operations-vos-operations_offre-de-bienvenue'),
             \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION   => $translator->trans('preteur-operations-vos-operations_retrait-offre'),
             \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
-            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-parrain')
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER      => $translator->trans('preteur-operations-vos-operations_balance-transfer')
         );
 
         foreach ($operations as $t) {
@@ -312,27 +316,28 @@ class LenderOperationsController extends Controller
             } elseif (in_array($t['type_transaction'], array_keys($aTranslations))) {
 
                 $array_type_transactions = [
-                    1  => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    2  => [
+                    \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('lender-operations_operation-label-money-deposit'),
+                    \transactions_types::TYPE_LENDER_LOAN                    => [
                         1 => $translator->trans('lender-operations_operation-label-current-offer'),
                         2 => $translator->trans('lender-operations_operation-label-rejected-offer'),
                         3 => $translator->trans('lender-operations_operation-label-accepted-offer')
                     ],
-                    3  => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    4  => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    5  => [
+                    \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('lender-operations_operation-label-money-deposit'),
+                    \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('lender-operations_operation-label-money-deposit'),
+                    self::TYPE_REPAYMENT_TRANSACTION                         => [
                         1 => $translator->trans('lender-operations_operation-label-refund'),
                         2 => $translator->trans('lender-operations_operation-label-recovery')
                     ],
-                    7  => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    8  => $translator->trans('lender-operations_operation-label-money-withdrawal'),
-                    16 => $translator->trans('lender-operations_operation-label-welcome-offer'),
-                    17 => $translator->trans('lender-operations_operation-label-welcome-offer-withdrawal'),
-                    19 => $translator->trans('lender-operations_operation-label-godson-gain'),
-                    20 => $translator->trans('lender-operations_operation-label-godfather-gain'),
-                    22 => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
-                    23 => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
-                    26 => $translator->trans('lender-operations_operation-label-lender-recovery')
+                    \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('lender-operations_operation-label-money-deposit'),
+                    \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('lender-operations_operation-label-money-withdrawal'),
+                    \transactions_types::TYPE_WELCOME_OFFER                  => $translator->trans('lender-operations_operation-label-welcome-offer'),
+                    \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => $translator->trans('lender-operations_operation-label-welcome-offer-withdrawal'),
+                    \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('lender-operations_operation-label-godson-gain'),
+                    \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('lender-operations_operation-label-godfather-gain'),
+                    \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
+                    \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
+                    \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('lender-operations_operation-label-lender-recovery'),
+                    \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
                 ];
 
                 if (isset($array_type_transactions[$t['type_transaction']])) {
@@ -541,13 +546,13 @@ class LenderOperationsController extends Controller
 
         $client->get($this->getUser()->getClientId());
 
-        $array_type_transactions = array(
+        $array_type_transactions = [
             \transactions_types::TYPE_LENDER_SUBSCRIPTION          => $translator->trans('lender-operations_operation-label-money-deposit'),
-            \transactions_types::TYPE_LENDER_LOAN                  => array(
+            \transactions_types::TYPE_LENDER_LOAN                  => [
                 1 => $translator->trans('lender-operations_operation-label-current-offer'),
                 2 => $translator->trans('lender-operations_operation-label-rejected-offer'),
                 3 => $translator->trans('lender-operations_operation-label-accepted-offer')
-            ),
+            ],
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT    => $translator->trans('lender-operations_operation-label-money-deposit'),
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT  => $translator->trans('lender-operations_operation-label-money-deposit'),
             \transactions_types::TYPE_DIRECT_DEBIT                 => $translator->trans('lender-operations_operation-label-money-deposit'),
@@ -557,8 +562,9 @@ class LenderOperationsController extends Controller
             \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $translator->trans('lender-operations_operation-label-godson-gain'),
             \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('lender-operations_operation-label-godfather-gain'),
             \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT    => $translator->trans('lender-operations_operation-label-lender-recovery')
-        );
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT    => $translator->trans('lender-operations_operation-label-lender-recovery'),
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER      => $translator->trans('preteur-operations-vos-operations_balance-transfer')
+        ];
 
         $sLastOperation = $lenderOperationsIndex->getLastOperationDate($this->getUser()->getClientId());
 

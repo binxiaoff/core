@@ -15,7 +15,7 @@
         </li>
         {% if isCIPActive %}
             <li role="presentation" class="{% if app.request.attributes.get('_route') in ['cip_index', 'cip_continue_questionnaire', 'cip_start_questionnaire'] %}active{% endif %}">
-                <a href="{{ path('cip_index') }}">Conseils en investissement</a>
+                <a href="{{ path('cip_index') }}">{% trans %} lender-profile_tab-title-cip {% endtrans %}</a>
             </li>
         {% endif %}
     </ul>

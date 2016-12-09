@@ -33,9 +33,6 @@ class transactions extends transactions_crud
     const PAYMENT_TYPE_AMEX       = 2;
     const PAYMENT_TYPE_MASTERCARD = 3;
 
-    const PAYMENT_STATUS_NOK = 0;
-    const PAYMENT_STATUS_OK  = 1;
-
     const STATUS_PENDING  = 0;
     const STATUS_VALID    = 1;
     const STATUS_CANCELED = 3;
@@ -98,8 +95,7 @@ class transactions extends transactions_crud
         $sql = '
             SELECT SUM(montant) AS solde
             FROM transactions
-            WHERE etat = 1
-                AND status = 1
+            WHERE status = ' . self::STATUS_VALID . '
                 AND id_client = ' . $id_client;
 
         $result = $this->bdd->query($sql);
@@ -118,8 +114,7 @@ class transactions extends transactions_crud
         $sql = '
             SELECT SUM(montant) AS solde
             FROM transactions
-            WHERE etat = 1
-                AND status = 1
+            WHERE status = ' . self::STATUS_VALID . '
                 AND id_client = ' . $id_client . '
                 AND type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ')
                 AND DATE(added) <= "' . $dateLimite . '"';
@@ -183,7 +178,7 @@ class transactions extends transactions_crud
             (
               SELECT SUM(t2.montant)
               FROM transactions t2
-              WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < t.date_transaction OR t2.date_transaction = t.date_transaction AND t2.id_transaction <= t.id_transaction)
+              WHERE t2.status = ' . self::STATUS_VALID . ' AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < t.date_transaction OR t2.date_transaction = t.date_transaction AND t2.id_transaction <= t.id_transaction)
             ) AS solde,
             CASE t.type_transaction
             WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN (
@@ -221,8 +216,7 @@ class transactions extends transactions_crud
             LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
           WHERE t.date_transaction >= "' . $lastIndexedOperationDate . '"
                 AND t.type_transaction IN (' . implode(',', array_keys($transactionTypeLabel)) . ')
-                AND t.status = 1
-                AND t.etat = 1
+                AND t.status = ' . self::STATUS_VALID . '
                 AND t.id_client = ' . $clientId . '
         ) UNION ALL (
           SELECT
@@ -239,7 +233,7 @@ class transactions extends transactions_crud
             (
               SELECT SUM(t2.montant)
               FROM transactions t2
-              WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < date_tri OR t2.date_transaction = date_tri AND t2.id_transaction <= t.id_transaction)
+              WHERE t2.status = ' . self::STATUS_VALID . ' AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < date_tri OR t2.date_transaction = date_tri AND t2.id_transaction <= t.id_transaction)
             ) AS solde,
             p.title AS title,
             lo.id_loan AS bdc,
@@ -253,8 +247,7 @@ class transactions extends transactions_crud
             INNER JOIN projects_status_history psh ON psh.id_project = lo.id_project
           WHERE lo.status = 0
                 AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_LOAN . '
-                AND t.status = 1
-                AND t.etat = 1
+                AND t.status = ' . self::STATUS_VALID . '
                 AND t.id_client = ' . $clientId . '
                 AND psh.id_project_status_history = (
             SELECT MIN(id_project_status_history)
@@ -277,7 +270,7 @@ class transactions extends transactions_crud
             (
               SELECT SUM(t2.montant) + (SELECT SUM(montant) FROM transactions WHERE id_echeancier = t.id_echeancier)
               FROM transactions t2
-              WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < date_tri OR t2.date_transaction = date_tri AND t2.id_transaction < t.id_transaction)
+              WHERE t2.status = ' . self::STATUS_VALID . ' AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < date_tri OR t2.date_transaction = date_tri AND t2.id_transaction < t.id_transaction)
             ) AS solde,
             p.title AS title,
             (
@@ -293,8 +286,7 @@ class transactions extends transactions_crud
             LEFT JOIN transactions interests ON t.id_echeancier = interests.id_echeancier AND interests.type_transaction = 28
           WHERE t.date_transaction >= "' . $lastIndexedOperationDate . '"
                 AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
-                AND t.status = 1
-                AND t.etat = 1
+                AND t.status = ' . self::STATUS_VALID . '
                 AND t.id_client = ' . $clientId . '
         )
         ORDER BY date_tri DESC';
@@ -326,8 +318,7 @@ class transactions extends transactions_crud
                 DATE(t.date_transaction) AS jour
             FROM transactions t
             WHERE LEFT(t.added, 7) = :transaction_date
-                AND t.etat = 1
-                AND t.status = 1
+                AND t.status = ' . self::STATUS_VALID . '
                 AND t.type_transaction IN(:transaction_type)
             GROUP BY t.type_transaction, DATE(t.date_transaction)
         ';
@@ -361,8 +352,7 @@ class transactions extends transactions_crud
             FROM transactions t
             INNER JOIN lenders_accounts l ON t.id_client = l.id_client_owner
             WHERE LEFT(t.added, 7) = :transaction_date
-                AND t.etat = 1
-                AND t.status = 1
+                AND t.status = ' . self::STATUS_VALID . '
                 AND t.type_transaction = :transaction_type
                 AND l.type_transfert = 2
             GROUP BY DATE(t.date_transaction)
@@ -500,8 +490,7 @@ class transactions extends transactions_crud
         $queryBuilder
             ->select('SUM(montant) / 100')
             ->from('transactions')
-            ->andWhere('etat = 1')
-            ->andWhere('status = 1')
+            ->andWhere('status = ' . self::STATUS_VALID)
             ->andWhere('id_client = :id_client')
             ->andWhere('type_transaction IN (:types)')
             ->setParameter('id_client', $lender->id_client_owner)

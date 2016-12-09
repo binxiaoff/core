@@ -138,7 +138,7 @@ class BidManager
         }
 
         $oCurrentDate = new \DateTime();
-        $oEndDate  = new \DateTime($project->date_retrait_full);
+        $oEndDate     = new \DateTime($project->date_retrait);
         if ($project->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($project->date_fin);
         }
@@ -191,8 +191,7 @@ class BidManager
         $oTransaction->montant          = -$fAmountX100;
         $oTransaction->id_langue        = 'fr';
         $oTransaction->date_transaction = date('Y-m-d H:i:s');
-        $oTransaction->status           = \transactions::PAYMENT_STATUS_OK;
-        $oTransaction->etat             = \transactions::STATUS_VALID;
+        $oTransaction->status           = \transactions::STATUS_VALID;
         $oTransaction->id_project       = $iProjectId;
         $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $oTransaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
@@ -395,8 +394,7 @@ class BidManager
         $oTransaction->montant          = $fAmountX100;
         $oTransaction->id_langue        = 'fr';
         $oTransaction->date_transaction = date('Y-m-d H:i:s');
-        $oTransaction->status           = \transactions::PAYMENT_STATUS_OK;
-        $oTransaction->etat             = \transactions::STATUS_VALID;
+        $oTransaction->status           = \transactions::STATUS_VALID;
         $oTransaction->id_project       = $oBid->id_project;
         $oTransaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
         $oTransaction->id_bid_remb      = $oBid->id_bid;

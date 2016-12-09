@@ -1,0 +1,324 @@
+//
+// Unilend Logged in User Mobile Menu
+//
+
+$time-transition: 0.2s;
+$width-site-user-mobile-menu: 250px;
+$c-mobile-menu-bg: $c-black;
+$c-mobile-menu-fg: $c-white;
+$c-mobile-menu-mix-d2: mix($c-mobile-menu-fg, $c-mobile-menu-bg, 25%);
+$c-mobile-menu-mix-d:  mix($c-mobile-menu-fg, $c-mobile-menu-bg, 33%);
+$c-mobile-menu-mix:    mix($c-mobile-menu-fg, $c-mobile-menu-bg, 50%);
+$c-mobile-menu-mix-l:  mix($c-mobile-menu-fg, $c-mobile-menu-bg, 66%);
+$c-mobile-menu-mix-l2: mix($c-mobile-menu-fg, $c-mobile-menu-bg, 75%);
+
+.site-user-mobile-menu {
+  display: none;
+}
+
+// Enabled only on xs/sm devices
+@include devices('xs', 'sm') {
+  // Ensure the site has an overlay
+  .site {
+    &:after {
+      display: block;
+      content: '';
+      width: 0;
+      height: 0;
+      overflow: hidden;
+
+      background: $c-mobile-menu-fg;
+      opacity: 0;
+
+      pointer-events: none;
+    }
+  }
+
+  // The outer part of the menu
+  // Effectively a shell to display the inner contents
+  .site-user-mobile-menu {
+    display: block;
+    width: 0;
+    height: 100%;
+    overflow: hidden;
+
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: $depth-site-header + 10;
+
+    background: $c-mobile-menu-bg;
+    color: $c-mobile-menu-mix;
+    outline: none;
+
+    // Get the 3d engine happening
+    transform: rotateZ(0);
+    backface-visibility: hidden;
+
+    // The inner part of the menu
+    .site-user-mobile-menu-inner {
+      box-sizing: border-box;
+      width: $width-site-user-mobile-menu;
+      padding: 15px 20px 20px;
+      overflow: auto;
+
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+    }
+
+    .user-menu-close {
+      display: block;
+      padding: 15px 10px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+
+    a {
+      color: $c-mobile-menu-mix-l2;
+
+      @include link-states(
+        $link: (
+          color: $c-mobile-menu-mix-l
+        ),
+        $visited: (
+          color: $c-mobile-menu-mix-l
+        ),
+        $active: (
+          color: $c-mobile-menu-mix-l
+        )
+      );
+    }
+
+    .user-greeting {
+      color: $c-mobile-menu-mix;
+      font-size: $fs-base * .9;
+      font-style: italic;
+      line-height: $lh-base;
+
+      .user-name {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        color: $c-mobile-menu-fg;
+        font-size: $fs-base * 1.1;
+        font-style: normal;
+      }
+    }
+
+    .site-user-nav {
+      margin-top: 20px;
+      margin-bottom: 20px;
+
+      .pip {
+        vertical-align: super;
+      }
+
+      ul, li {
+        @include block-list;
+      }
+
+      a {
+        color: $c-mobile-menu-mix-l2;
+
+        @include link-states(
+          $link: (
+            color: $c-mobile-menu-mix-l2
+          ),
+          $visited: (
+            color: $c-mobile-menu-mix-l2
+          ),
+          $active: (
+            color: $c-mobile-menu-mix-l2
+          )
+        );
+      }
+    }
+
+    .user-nav-major,
+    .user-nav-minor {
+      font-size: $fs-base * .8;
+      line-height: $lh-base;
+
+      a {
+        display: block;
+        position: relative;
+        padding-top: 8px;
+        padding-bottom: 2px;
+
+        .icon {
+          display: block;
+          box-sizing: border-box;
+          width: 40px;
+          padding-top: 8px;
+          padding-bottom: 2px;
+
+          position: absolute;
+          left: 0;
+          top: 0;
+
+          font-size: $fs-base * 1.2;
+          line-height: inherit;
+          opacity: .8;
+          text-align: center;
+        }
+
+        .label {
+          padding-left: 40px;
+        }
+      }
+
+      &.active {
+        a {
+          color: $c-mobile-menu-fg !important;
+
+          .icon {
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    .user-nav-major {
+      border-bottom: solid 1px $c-mobile-menu-mix-d2;
+      font-size: $fs-base;
+      line-height: $lh-base;
+
+      a {
+        padding-top: 6px;
+        padding-bottom: 6px;
+
+        .icon {
+          padding-top: 6px;
+          padding-bottom: 6px;
+        }
+      }
+    }
+
+    .user-nav-minor {
+      a {
+        color: $c-mobile-menu-mix-l;
+
+        @include link-states(
+          $link: (
+            color: $c-mobile-menu-mix-l
+          ),
+          $visited: (
+            color: $c-mobile-menu-mix-l
+          ),
+          $active: (
+            color: $c-mobile-menu-fg
+          )
+        );
+
+        .icon {
+          font-size: $fs-base;
+        }
+      }
+    }
+
+    .user-site-admin-nav,
+    .user-site-tagline,
+    .user-site-copyright {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 15px;
+
+      color: $c-mobile-menu-mix;
+      font-size: 14px;
+      font-size: $fs-base * .8;
+      line-height: $lh-base * .9;
+    }
+
+    .user-site-admin-nav {
+      a {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 6px;
+
+        @include link-states(
+          $link: (
+            color: $c-mobile-menu-mix
+          ),
+          $visited: (
+            color: $c-mobile-menu-mix
+          ),
+          $active: (
+            color: $c-mobile-menu-mix-l
+          )
+        )
+      }
+    }
+
+    // transform: translateX($width-site-user-mobile-menu);
+    user-select: none;
+    pointer-events: none;
+
+    // Opened
+    #{$js-site-user-mobile-menu-open} & {
+      pointer-events: auto;
+    }
+  }
+
+  // Base transition state styles
+  #{$js-site-user-mobile-menu-open},
+  #{$js-site-user-mobile-menu-opening},
+  #{$js-site-user-mobile-menu-closing} {
+    html, body {
+      overflow: hidden;
+    }
+
+    .site {
+      user-select: none;
+      pointer-events: none;
+
+      &:after {
+        width: 100%;
+        height: 100%;
+
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: $depth-site-header + 1;
+
+        pointer-events: auto;
+      }
+    }
+  }
+
+  // Transitions applied only on transition states
+  #{$js-site-user-mobile-menu-opening},
+  #{$js-site-user-mobile-menu-closing} {
+    .site {
+      transition: transform $time-transition;
+      transition-timing-function: ease-in-out;
+
+      &:after {
+        transition: opacity $time-transition;
+      }
+    }
+
+    .site-user-mobile-menu {
+      transition: width $time-transition;
+      transition-timing-function: ease-in-out;
+    }
+  }
+
+  // Opening / Open state
+  #{$js-site-user-mobile-menu-open},
+  #{$js-site-user-mobile-menu-opening} {
+    .site:after {
+      opacity: .8;
+    }
+
+    .site-user-mobile-menu {
+      width: $width-site-user-mobile-menu;
+    }
+  }
+}

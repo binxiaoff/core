@@ -57,8 +57,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
                 $oTransactions->id_offre_bienvenue_detail = $aWelcomeOffer['id_offre_bienvenue_detail'];
                 $oTransactions->id_langue                 = 'fr';
                 $oTransactions->date_transaction          = date('Y-m-d H:i:s');
-                $oTransactions->status                    = \transactions::PAYMENT_STATUS_OK;
-                $oTransactions->etat                      = \transactions::STATUS_VALID;
+                $oTransactions->status                    = \transactions::STATUS_VALID;
                 $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION;
                 $oTransactions->create();
 

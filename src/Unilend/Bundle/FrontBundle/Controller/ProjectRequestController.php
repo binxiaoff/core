@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -209,7 +208,7 @@ class ProjectRequestController extends Controller
         $this->project->status                               = \projects_status::DEMANDE_SIMULATEUR;
         $this->project->create();
 
-        return $this->start(\projects_status::COMPLETUDE_ETAPE_2);
+        return $this->start();
     }
 
     /**
@@ -231,14 +230,13 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        return $this->start(\projects_status::DEMANDE_SIMULATEUR);
+        return $this->start();
     }
 
     /**
-     * @param int $status
      * @return Response
      */
-    private function start($status)
+    private function start()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -258,14 +256,17 @@ class ProjectRequestController extends Controller
         try {
             $altares = $this->get('unilend.service.altares');
             $result  = $altares->isEligible($this->project);
-
             $altares->setCompanyData($this->company);
+            $altares->setProjectData($this->project);
 
             if (false === $result['eligible']) {
+                $projectManager = $this->get('unilend.service.project_manager');
+                $motif          = implode(',', $result['reason']);
+                $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $this->project, 0, $motif);
+
                 return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
             }
 
-            $altares->setProjectData($this->project);
             $altares->setCompanyBalance($this->company);
 
             /** @var \companies_bilans $companyAccount */
@@ -278,7 +279,7 @@ class ProjectRequestController extends Controller
             }
         } catch (\Exception $exception) {
             if ($altaresStatus) {
-                $settingsAltaresStatus->value = 0;
+                $settingsAltaresStatus->value = '0';
                 $settingsAltaresStatus->update();
 
                 $logger->error(
@@ -288,19 +289,16 @@ class ProjectRequestController extends Controller
 
                 mail($alertEmail, '[ALERTE] Altares is down', 'Date ' . date('Y-m-d H:i:s') . '. ' . $exception->getMessage());
             }
-
-            $this->project->retour_altares = Altares::RESPONSE_CODE_WS_ERROR;
-            $this->project->update();
         }
 
         if (! $altaresStatus) {
-            $settingsAltaresStatus->value = 1;
+            $settingsAltaresStatus->value = '1';
             $settingsAltaresStatus->update();
 
             mail($alertEmail, '[INFO] Altares is up', 'Date ' . date('Y-m-d H:i:s') . '. Altares is up now.');
         }
 
-        return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
+        return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);
     }
 
     /**
@@ -586,12 +584,12 @@ class ProjectRequestController extends Controller
                 $this->project->id_product = $products[0]->id_product;
                 $this->project->update();
             }
+
+            if (empty($products)){
+                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NON_FOUND);
+            }
         } catch (\Exception $exception) {
             $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
-        }
-
-        if (empty($products)){
-            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'Eligible à aucun produit');
         }
 
         return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETUDE_ETAPE_3);
@@ -672,7 +670,7 @@ class ProjectRequestController extends Controller
         if (empty($this->company->rcs)) {
             $template['form']['values'] = [
                 'ag_2035' => isset($values['ag_2035']) ? $values['ag_2035'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
-                ];
+            ];
             $template['rcs'] = false;
         } else {
             $template['form']['values'] = [
@@ -682,7 +680,6 @@ class ProjectRequestController extends Controller
             ];
             $template['rcs'] = true;
         }
-
 
         $template['project'] = [
             'amount'                   => $this->project->amount,
@@ -821,19 +818,19 @@ class ProjectRequestController extends Controller
         }
 
         if (isset($values['dl']) && $values['dl'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Fonds propres négatifs');
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
         }
 
         if (isset($values['fl']) && $values['fl'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faible');
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if (isset($values['gg']) &&$values['gg'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'REX négatif');
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
         }
 
         if (isset($values['ag_2035']) &&$values['ag_2035'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faible');
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if ('true' === $request->request->get('extra_files')) {
@@ -1338,43 +1335,41 @@ class ProjectRequestController extends Controller
                 $title    = $translator->trans('project-request_end-page-rejection-title');
                 $subtitle = $translator->trans('project-request_end-page-rejection-subtitle');
 
-                switch ($this->project->retour_altares) {
-                    case Altares::RESPONSE_CODE_PROCEDURE:
-                        $message = $translator->trans('project-request_end-page-collective-proceeding-message');
-                        break;
-                    case Altares::RESPONSE_CODE_INACTIVE:
-                    case Altares::RESPONSE_CODE_UNKNOWN_SIREN:
-                        $message = $translator->trans('project-request_end-page-no-siren-message');
-                        break;
-                    case Altares::RESPONSE_CODE_NOT_REGISTERED:
-                        $message = $translator->trans('project-request_end-page-not-commercial-company-message');
-                        break;
-                    case Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK:
-                    case Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES:
-                        $message = $translator->trans('project-request_end-page-negative-operating-result-message');
-                        break;
-                    case Altares::RESPONSE_CODE_ELIGIBLE:
-                        if (
-                            $this->project->fonds_propres_declara_client < 0
-                            || $this->project->resultat_exploitation_declara_client < 0
-                            || $this->project->ca_declara_client <= \projects::MINIMUM_REVENUE
-                        ) {
-                            $message = $translator->trans('project-request_end-page-negative-operating-result-message');
-                        }
-                        break;
-                    default:
-                        $message = $translator->trans('project-request_end-page-external-rating-rejection-default-message');
-                        break;
+                /** @var \projects_status_history $projectStatusHistory */
+                $projectStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('projects_status_history');
+                $projectStatusHistory->loadLastProjectHistory($this->project->id_project);
+
+                $rejectReasons = explode(',', $projectStatusHistory->content);
+
+                // Display only one reason (priority defined in TST-51)
+                if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
+                    $message = $translator->trans('project-request_end-page-collective-proceeding-message');
+                } else if (
+                    in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
+                ) {
+                    $message = $translator->trans('project-request_end-page-no-siren-message');
+                } else if (
+                    in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
+                ) {
+                    $message = $translator->trans('project-request_end-page-negative-operating-result-message');
+                } else if (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NON_FOUND, $rejectReasons)) {
+                    $message = $translator->trans('project-request_end-page-product-not-found-message');
+                } else {
+                    $message = $translator->trans('project-request_end-page-external-rating-rejection-default-message');
                 }
                 break;
         }
 
         $template = [
-            'addMoreFiles' => $addMoreFiles,
-            'message'      => $message,
-            'title'        => $title,
-            'subtitle'     => $subtitle,
-            'project'      => [
+            'addMoreFiles'   => $addMoreFiles,
+            'message'        => $message,
+            'title'          => $title,
+            'subtitle'       => $subtitle,
+            'project'        => [
                 'hash' => $this->project->hash
             ]
         ];
@@ -1588,13 +1583,10 @@ class ProjectRequestController extends Controller
 
         switch ($this->project->status) {
             case \projects_status::DEMANDE_SIMULATEUR:
-                if ($route !== self::PAGE_ROUTE_SIMULATOR_START && empty($this->project->retour_altares)) {
+                if ($route !== self::PAGE_ROUTE_SIMULATOR_START) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_SIMULATOR_START, ['hash' => $hash]);
-                } elseif ($route !== self::PAGE_ROUTE_CONTACT && false === empty($this->project->retour_altares)) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
                 }
                 break;
-            case \projects_status::PAS_3_BILANS:
             case \projects_status::NOTE_EXTERNE_FAIBLE:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_PROSPECT])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
@@ -1636,16 +1628,16 @@ class ProjectRequestController extends Controller
      * Redirect to corresponding route and update status
      * @param string $route
      * @param int    $projectStatus
-     * @param string $rejectionMessage
+     * @param string $message
      * @return Response
      */
-    private function redirectStatus($route, $projectStatus, $rejectionMessage = '')
+    private function redirectStatus($route, $projectStatus, $message = '')
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
 
         if ($this->project->status != $projectStatus) {
-            $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $projectStatus, $this->project, 0, $rejectionMessage);
+            $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $projectStatus, $this->project, 0, $message);
         }
 
         return $this->redirectToRoute($route, ['hash' => $this->project->hash]);

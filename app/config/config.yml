@@ -96,11 +96,11 @@ monolog:
             handler: error_handler
         error_handler:
             type: group
-            members: [file_error]
+            members: [error_file]
 #            members: [file_error, slack_error]
-        file_error:
+        error_file:
             type: rotating_file
-            level: error
+            level: info
             path: "%kernel.logs_dir%/error.%kernel.environment%.log"
             max_files: 90
             date_format: 'Y-m-d'
@@ -112,19 +112,15 @@ monolog:
 #            channel: '#it-releases'
 #            bot_name: 'Symfony Bot'
 
-        console:
-            type: fingers_crossed
-            action_level: info
-            handler: console_handler
-        filter_console:
+        console_filter:
             type: filter
-            handler: console
+            handler: console_handler
             max_level: warning
             channels: console
         console_handler:
             type: group
-            members: [file_console, console_console]
-        file_console:
+            members: [console_file, console_console]
+        console_file:
             type: rotating_file
             path: "%kernel.logs_dir%/console.%kernel.environment%.log"
             level: info
@@ -134,22 +130,32 @@ monolog:
         console_console:
             type: console
 
-        site:
-            type: fingers_crossed
-            action_level: info
-            handler: site_handler
-        filter_site:
+        site_filter:
             type: filter
-            handler: site
+            handler: site_handler
             max_level: warning
-            channels: !console
+            channels: ['!console', '!translation']
         site_handler:
             type: rotating_file
-            level: info
+            level: warning
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
             max_files: 90
             file_permission: 0664
             date_format: 'Y-m-d'
+
+        translation_filter:
+            type: filter
+            handler: translation_handler
+            max_level: warning
+            channels: translation
+        translation_handler:
+            type: rotating_file
+            level: warning
+            path: "%kernel.logs_dir%/translation.%kernel.environment%.log"
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Y-m-d'
+            channels: translation
 
 swiftmailer:
     transport: '%mailer_transport%'
@@ -200,3 +206,11 @@ knp_snappy:
 
 ekino_new_relic:
     enabled: false
+
+sonata_cache:
+    caches:
+        symfony:
+            token: ddb80e7065db6ecee2f3768704d
+            php_cache_enabled: true
+            types: [translations]
+            servers: "%sonata_cache.servers%"

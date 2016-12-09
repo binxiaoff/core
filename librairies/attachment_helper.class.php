@@ -2,8 +2,9 @@
 
 class attachment_helper
 {
-    const PATH_LENDER = 'protected/lenders/';
-    const PATH_PROJECT = 'protected/projects/';
+    const PATH_LENDER   = 'protected/lenders/';
+    const PATH_PROJECT  = 'protected/projects/';
+    const PATH_TRANSFER = 'protected/lenders/transfer/';
 
     /** @var  attachment */
     private $oAttachment;
@@ -104,10 +105,16 @@ class attachment_helper
         switch ($sOwnerType) {
             case attachment::LENDER:
                 return self::PATH_LENDER . $this->getLendersDocumentPath($iDocumentType) . '/';
+                break;
             case attachment::PROJECT:
                 return self::PATH_PROJECT . $this->getProjectsDocumentPath($iDocumentType) . '/';
+                break;
+            case attachment::TRANSFER:
+                return self::PATH_TRANSFER;
+                break;
             default:
                 return null;
+                break;
         }
     }
 

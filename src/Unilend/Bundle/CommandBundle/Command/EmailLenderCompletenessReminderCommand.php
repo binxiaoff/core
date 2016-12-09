@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -36,6 +37,8 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
         $clients_status_history = $this->oEntityManager->getRepository('clients_status_history');
         /** @var \settings $settings */
         $settings = $this->oEntityManager->getRepository('settings');
+        /** @var ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->getContainer()->get('unilend.service.client_status_manager');
 
         $settings->get('Facebook', 'type');
         $sFacebookLink = $settings->value;
@@ -43,19 +46,20 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
         $sTwitterLink = $settings->value;
 
         $iTimeMinus8D = mktime(0, 0, 0, date("m"), date("d") - 8, date("Y"));
-        $aLenders     = $clients->selectPreteursByStatus('20', '', 'added_status DESC');
+        $aLenders     = $clients->selectPreteursByStatus(\clients_status::COMPLETENESS, '', 'added_status DESC');
 
         foreach ($aLenders as $aLender) {
             $timestamp_date = $this->oDate->formatDateMySqlToTimeStamp($aLender['added_status']);
+            $clients->get($aLender['id_client']);
 
             if ($timestamp_date <= $iTimeMinus8D) {
                 $clients_status_history->get($aLender['id_client_status_history'], 'id_client_status_history');
                 $this->sendReminderEmail($aLender, $sTwitterLink, $sFacebookLink, $clients_status_history->content);
-                $clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aLender['id_client'], $clients_status_history->content);
+                $clientStatusManager->addClientStatus($clients, \users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $clients_status_history->content);
             }
         }
 
-        $aLenders = $clients->selectPreteursByStatus('30', '', 'added_status DESC');
+        $aLenders = $clients->selectPreteursByStatus(\clients_status::COMPLETENESS_REMINDER, '', 'added_status DESC');
 
         $iTimeMinus8D  = mktime(0, 0, 0, date("m"), date("d") - 8, date("Y"));
         $iTimeMinus30D = mktime(0, 0, 0, date("m"), date("d") - 30, date("Y"));
@@ -65,16 +69,17 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
             $aClientLastStatus = $clients_status_history->get_last_statut($aLender['id_client']);
             $iRevivalNumber    = $aClientLastStatus['numero_relance'];
             $timestamp_date    = $this->oDate->formatDateMySqlToTimeStamp($aLender['added_status']);
+            $clients->get($aLender['id_client']);
 
             if ($timestamp_date <= $iTimeMinus8D && $iRevivalNumber == 0) {// Reminder D+15
                 $bSendReminder = true;
-                $clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aLender['id_client'], $aClientLastStatus['content'], 2);
+                $clientStatusManager->addClientStatus($clients, \users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aClientLastStatus['content'], 2);
             } elseif ($timestamp_date <= $iTimeMinus8D && $iRevivalNumber == 2) {// Reminder D+30
                 $bSendReminder = true;
-                $clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aLender['id_client'], $aClientLastStatus['content'], 3);
+                $clientStatusManager->addClientStatus($clients, \users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aClientLastStatus['content'], 3);
             } elseif ($timestamp_date <= $iTimeMinus30D && $iRevivalNumber == 3) {// Reminder D+60
                 $bSendReminder = true;
-                $clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aLender['id_client'], $aClientLastStatus['content'], 4);
+                $clientStatusManager->addClientStatus($clients, \users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aClientLastStatus['content'], 4);
             }
 
             if (true === $bSendReminder) {

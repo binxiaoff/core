@@ -15,6 +15,7 @@ class RecoveryManager
      * TODO : replace it when doing the Recovery project
      */
     const MCS_COMMISSION_AND_TAX = 0.844;
+    const RECOVERY_TAX_DATE_CHANGE = '2016-04-19';
 
     /** @var LoggerInterface */
     private $logger;

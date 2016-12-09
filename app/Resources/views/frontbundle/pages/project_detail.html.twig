@@ -318,6 +318,12 @@
                                 <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                             {% endif %}
 
+                            {% if conditions.displayCipDisclaimer %}
+                                <p class="text-align-center">
+                                    <a href="/var/dirs/{{ project.slug }}.pdf" class="link">Télécharger le document d’information réglementaire synthétique</a>
+                                </p>
+                            {% endif %}
+
                             {% if conditions.warningLending %}
                                 <div class="message-alert">
                                     <p>{% trans %} project-detail_non-payment-warning {% endtrans %}</p>
