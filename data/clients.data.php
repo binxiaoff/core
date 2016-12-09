@@ -240,45 +240,39 @@ class clients extends clients_crud
         }
     }
 
-    public function searchEmprunteurs($ref = '', $nom = '', $email = '', $prenom = '', $societe = '', $siret = '', $status = '', $start = '', $nb = '')
+    public function searchEmprunteurs($searchType, $nom, $prenom, $email = '', $societe = '', $siren = '')
     {
-        $where = '1 = 1';
+        $conditions = [
+            'c.nom LIKE "%' . $nom . '%"',
+            'c.prenom LIKE "%' . $prenom . '%"',
+        ];
 
-        if ($ref != '') {
-            $where .= ' AND c.id_client IN(' . $ref . ')';
-        }
-        if ($nom != '') {
-            $where .= ' AND c.nom LIKE "%' . $nom . '%"';
-        }
         if ($email != '') {
-            $where .= ' AND c.email LIKE "%' . $email . '%"';
+            $conditions[] = 'c.email LIKE "%' . $email . '%"';
         }
-        if ($prenom != '') {
-            $where .= ' AND c.prenom LIKE "%' . $prenom . '%"';
-        }
+
         if ($societe != '') {
-            $where .= ' AND co.name LIKE "%' . $societe . '%"';
+            $conditions[] = 'co.name LIKE "%' . $societe . '%"';
         }
-        if ($siret != '') {
-            $where .= ' AND co.siren LIKE "%' . $siret . '%"';
-        }
-        if ($status != '') {
-            $where .= ' AND c.status LIKE "%' . $status . '%"';
+
+        if ($siren != '') {
+            $conditions[] = 'co.siren LIKE "%' . $siren . '%"';
         }
 
         $result   = [];
-        $resultat = $this->bdd->query('
-            SELECT c.*,
+        $query    = '
+            SELECT 
+                c.*,
                 co.*
             FROM clients c
-              INNER JOIN companies co ON c.id_client = co.id_client_owner
-            WHERE ' . $where . '
-              AND c.type NOT IN (' . implode(',', [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER, \clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) .')
+            INNER JOIN companies co ON c.id_client = co.id_client_owner
+            WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
+                AND c.type NOT IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]) .')
             GROUP BY c.id_client
-            ORDER BY c.id_client DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''))
-        );
+            ORDER BY c.id_client DESC';
+        $resultat = $this->bdd->query($query);
 
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;

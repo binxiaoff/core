@@ -1305,7 +1305,7 @@ class dossiersController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->lClients = $this->clients->searchEmprunteurs('', $this->params[0], '', $this->params[0]);
+            $this->lClients = $this->clients->searchEmprunteurs('OR', $this->params[0], $this->params[0]);
         }
     }
 
