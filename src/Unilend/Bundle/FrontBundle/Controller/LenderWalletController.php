@@ -390,17 +390,15 @@ class LenderWalletController extends Controller
                     ]);
                 } else {
                     $logger->warning('The payment was canceled or an error code was returned by payline. Client ID: ' . $client->id_client . ' - Payline response: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-                    return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
                 }
             } else {
                 $logger->error('Empty response from Payline, Client ID: ' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-                return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
             }
         } else {
             $clientId = $this->getUser()->getClientId();
             $logger->error('Payline has returned wrong parameters: token or hash not found, hash: ' . $hash . ' - ' . json_encode($paylineParameter) . ' - Client ID: ' . $clientId, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientId]);
-            return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
         }
+        return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
     }
 
     /**
