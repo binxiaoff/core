@@ -7,8 +7,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
@@ -31,11 +31,9 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
-        /** @var ClientManager $clientManager */
-        $clientManager = $this->getContainer()->get('unilend.service.client_manager');
 
         try {
-            $result = $clientManager->getClientsForAutoValidation();
+            $result = $this->getClientsForAutoValidation();
 
             foreach ($result as $clientId => $item) {
                 $client->get($clientId);
@@ -44,6 +42,53 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         } catch (\Exception $exception) {
             $logger->error('An exception occurred. Exception message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function getClientsForAutoValidation()
+    {
+        $clientStatus   = [\clients_status::TO_BE_CHECKED, \clients_status::COMPLETENESS_REPLY, \clients_status::MODIFICATION];
+        $attachmentType = [\attachment_type::CNI_PASSPORTE, \attachment_type::JUSTIFICATIF_DOMICILE, \attachment_type::RIB];
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var \clients $client */
+        $client = $entityManager->getRepository('clients');
+
+        $result            = $client->getClientsToAutoValidate($clientStatus, $attachmentType);
+        $clientsToValidate = [];
+
+        if (false === empty($result)) {
+            foreach ($result as $row) {
+                $clientsToValidate[$row['id_client']][$row['id_type']] = [
+                    'revalidate'   => $row['revalidate'],
+                    'final_status' => $row['final_status']
+                ];
+            }
+            unset($result);
+
+            foreach ($clientsToValidate as $clientId => $attachments) {
+                $attachmentTypesFound = array_keys($attachments);
+
+                foreach ($attachmentType as $id) {
+                    // Check if all required attachments are present
+                    if (false === in_array($id, $attachmentTypesFound)) {
+                        unset($clientsToValidate[$clientId]);
+                        continue 2;
+                    }
+                }
+
+                foreach ($attachments as $attachment) {
+                    // Check if it is the final status and that no revalidation is required
+                    if (\greenpoint_attachment::REVALIDATE_YES == $attachment['revalidate'] || \greenpoint_attachment::FINAL_STATUS_NO == $attachment['final_status']) {
+                        unset($clientsToValidate[$clientId]);
+                        continue 2;
+                    }
+                }
+            }
+        }
+        return $clientsToValidate;
     }
 
     /**
@@ -77,46 +122,24 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         if (false === empty($existingClient) && $existingClient['id_client'] != $client->id_client) {
             $logger->warning('Processing client id: ' . $client->id_client . ' - Duplicate client found: ' . json_encode($existingClient), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             return;
-        } elseif (0 == $clientStatusHistory->counter('id_client = ' . $client->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) { // On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
+        } elseif (1 == $client->origine && 0 == $clientStatusHistory->counter('id_client = ' . $client->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) {
             $response = $welcomeOfferManager->createWelcomeOffer($client);
-            $logger->info('id_client : ' . $client->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $client->id_client]);
+            $logger->info('Client ID: ' . $client->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $client->id_client]);
         }
         $lenderAccount->get($client->id_client, 'id_client_owner');
         $clientAddress->get($client->id_client, 'id_client');
         $clientStatusHistory->addStatus(\users::USER_ID_CRON, \clients_status::VALIDATED, $client->id_client, 'Validation automatique basée sur Green Point');
+
         $serialize = serialize(array('id_client' => $client->id_client, 'attachment_data' => $attachment));
         $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
 
         /** @var \clients_gestion_notifications $clientNotifications */
         $clientNotifications = $entityManager->getRepository('clients_gestion_notifications');
-        /** @var \clients_gestion_type_notif $clientNotificationType */
-        $clientNotificationType = $entityManager->getRepository('clients_gestion_type_notif');
 
         if (false == $clientNotifications->select('id_client = ' . $client->id_client)) {
-            foreach ($clientNotificationType->select() as $notificationType) {
-                $clientNotifications->id_client = $client->id_client;
-                $clientNotifications->id_notif  = $notificationType['id_client_gestion_type_notif'];
-
-                if (in_array($notificationType['id_client_gestion_type_notif'], [\clients_gestion_type_notif::TYPE_BID_REJECTED, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT, \clients_gestion_type_notif::TYPE_DEBIT])) {
-                    $clientNotifications->immediatement = 1;
-                } else {
-                    $clientNotifications->immediatement = 0;
-                }
-
-                if (in_array($notificationType['id_client_gestion_type_notif'], [\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, \clients_gestion_type_notif::TYPE_REPAYMENT])) {
-                    $clientNotifications->quotidienne = 1;
-                } else {
-                    $clientNotifications->quotidienne = 0;
-                }
-
-                if (in_array($notificationType['id_client_gestion_type_notif'], [\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED])) {
-                    $clientNotifications->hebdomadaire = 1;
-                } else {
-                    $clientNotifications->hebdomadaire = 0;
-                }
-                $clientNotifications->mensuelle = 0;
-                $clientNotifications->create();
-            }
+            /** @var NotificationManager $notificationManager */
+            $notificationManager = $this->getContainer()->get('unilend.service.notification_manager');
+            $notificationManager->generateDefaultNotificationSettings($client);
         }
 
         if ($clientStatusHistory->counter('id_client = ' . $client->id_client . ' AND id_client_status = 5') > 0) {

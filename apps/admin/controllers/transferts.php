@@ -521,31 +521,10 @@ class transfertsController extends bootstrap
 
     public function _rattrapage_offre_bienvenue()
     {
-        $this->dates             = $this->loadLib('dates');
-        $this->offres_bienvenues = $this->loadData('offres_bienvenues');
-        $this->clients           = $this->loadData('clients');
-        $this->companies         = $this->loadData('companies');
-        /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
-        $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
-        /** @var \transactions $oTransactions */
-        $oTransactions = $this->loadData('transactions');
-        /** @var \wallets_lines $oWalletsLines */
-        $oWalletsLines = $this->loadData('wallets_lines');
-        /** @var \bank_unilend $oBankUnilend */
-        $oBankUnilend = $this->loadData('bank_unilend');
+        /** @var \clients clients */
+        $this->clients = $this->loadData('clients');
         /** @var \lenders_accounts $oLendersAccounts */
         $oLendersAccounts = $this->loadData('lenders_accounts');
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
-
-        if (isset($this->params[0])) {
-            $this->clients->get($this->params[0]);
-            $this->companies->get('id_client_owner', $this->clients->id_client);
-        }
-        $this->offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue');
-
-        $oSettings->get('Offre de bienvenue motif', 'type');
-        $sWelcomeOfferMotive = $oSettings->value;
 
         unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
 
@@ -563,101 +542,26 @@ class transfertsController extends bootstrap
                 $this->aClientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer($_POST['id']);
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['id'] = $_POST['id'];
             } else {
-                $_SESSION['freeow']['title']   = 'Recherche non abouti';
+                $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez soit la liste des ID clients soit un interval de date';
                 $_SESSION['freeow']['message'] = 'Il faut une date de d&eacutebut et de fin ou ID(s)!';
             }
         }
 
-        if (isset($_POST['affect_welcome_offer']) && isset($this->params[0]) && isset($this->params[1])) {
-            $this->clients->get($this->params[0]);
-            $this->offres_bienvenues->get($this->params[1]);
-            $oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
+        if (isset($_POST['affect_welcome_offer']) && isset($this->params[0])) {
+            if($this->clients->get($this->params[0])&& $oLendersAccounts->get($this->clients->id_client, 'id_client_owner')) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
+                $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+                $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
 
-            $bOfferValid                      = false;
-            $bEnoughMoneyLeft                 = false;
-            $aVirtualWelcomeOfferTransactions = array(
-                \transactions_types::TYPE_WELCOME_OFFER,
-                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION
-            );
-
-            $iSumOfAllWelcomeOffersDistributed      = $oWelcomeOfferDetails->sum('type = 0 AND id_offre_bienvenue = ' . $this->offres_bienvenues->id_offre_bienvenue . ' AND status <> 2', 'montant');
-            $iSumOfPhysicalWelcomeOfferTransactions = $oTransactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
-            $iSumOfVirtualWelcomeOfferTransactions  = $oTransactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction IN(' . implode(',', $aVirtualWelcomeOfferTransactions) . ')', 'montant');
-            $iAvailableAmountForWelcomeOffers       = $iSumOfPhysicalWelcomeOfferTransactions - $iSumOfVirtualWelcomeOfferTransactions;
-
-            $oStartWelcomeOffer = \DateTime::createFromFormat('Y-m-d', $this->offres_bienvenues->debut);
-            $oEndWelcomeOffer   = \DateTime::createFromFormat('Y-m-d', $this->offres_bienvenues->fin);
-            $oToday             = new \DateTime();
-
-            if ($oStartWelcomeOffer <= $oToday && $oEndWelcomeOffer >= $oToday) {
-                $bOfferValid = true;
-            } else {
-                $_SESSION['freeow']['title']   = 'Offre de bienvenue non cr&eacute;dit&eacute;';
-                $_SESSION['freeow']['message'] = 'Il n\'y a plus d\'offre valide en cours !';
-            }
-
-            if ($iSumOfAllWelcomeOffersDistributed <= $this->offres_bienvenues->montant_limit && $iAvailableAmountForWelcomeOffers >= $this->offres_bienvenues->montant) {
-                $bEnoughMoneyLeft = true;
-            } else {
-                $_SESSION['freeow']['title']   = 'Offre de bienvenue non cr&eacute;dit&eacute;';
-                $_SESSION['freeow']['message'] = 'Il n\'y a plus assez d\'argent disponible !';
-            }
-
-            if ($bOfferValid && $bEnoughMoneyLeft) {
-                $oWelcomeOfferDetails->id_offre_bienvenue = $this->offres_bienvenues->id_offre_bienvenue;
-                $oWelcomeOfferDetails->motif              = $sWelcomeOfferMotive;
-                $oWelcomeOfferDetails->id_client          = $this->clients->id_client;
-                $oWelcomeOfferDetails->montant            = $this->offres_bienvenues->montant;
-                $oWelcomeOfferDetails->status             = 0;
-                $oWelcomeOfferDetails->create();
-
-                $oTransactions->id_client                 = $this->clients->id_client;
-                $oTransactions->montant                   = $oWelcomeOfferDetails->montant;
-                $oTransactions->id_offre_bienvenue_detail = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
-                $oTransactions->id_langue                 = 'fr';
-                $oTransactions->date_transaction          = date('Y-m-d H:i:s');
-                $oTransactions->status                    = \transactions::STATUS_VALID;
-                $oTransactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
-                $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER;
-                $oTransactions->create();
-
-                $oWalletsLines->id_lender                = $oLendersAccounts->id_lender_account;
-                $oWalletsLines->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-                $oWalletsLines->id_transaction           = $oTransactions->id_transaction;
-                $oWalletsLines->status                   = 1;
-                $oWalletsLines->type                     = 1;
-                $oWalletsLines->amount                   = $oWelcomeOfferDetails->montant;
-                $oWalletsLines->create();
-
-                $oBankUnilend->id_transaction = $oTransactions->id_transaction;
-                $oBankUnilend->montant        = - $oWelcomeOfferDetails->montant;
-                $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
-                $oBankUnilend->create();
-
-                $oMailTemplate = $this->loadData('mail_templates');
-                $oMailTemplate->get('offre-de-bienvenue', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
-
-                $oSettings->get('Facebook', 'type');
-                $sFacebook = $oSettings->value;
-
-                $oSettings->get('Twitter', 'type');
-                $sTwitter = $oSettings->value;
-
-                $aVariables = array(
-                    'surl'            => $this->surl,
-                    'url'             => $this->furl,
-                    'prenom_p'        => $this->clients->prenom,
-                    'projets'         => $this->furl . '/projets-a-financer',
-                    'offre_bienvenue' => $this->ficelle->formatNumber($oWelcomeOfferDetails->montant / 100),
-                    'lien_fb'         => $sFacebook,
-                    'lien_tw'         => $sTwitter
-                );
-
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('offre-de-bienvenue', $aVariables);
-                $message->setTo($this->clients->email);
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
+                switch ($response['code']) {
+                    case 0:
+                        $_SESSION['freeow']['title']   = 'Offre de bienvenue cr&eacute;dit&eacute;';
+                        break;
+                    default:
+                        $_SESSION['freeow']['title']   = 'Offre de bienvenue non cr&eacute;dit&eacute;';
+                        break;
+                }
+                $_SESSION['freeow']['message'] = $response['message'];
             }
         }
     }

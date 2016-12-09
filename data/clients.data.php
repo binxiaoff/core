@@ -965,10 +965,10 @@ class clients extends clients_crud
                     companies.name,
                     DATE(c.added) AS date_creation,
                     (
-                        SELECT MAX(DATE(csh.added))
+                        SELECT MAX(csh.added)
                         FROM
                             clients_status_history csh
-                            LEFT JOIN clients ON clients.id_client = csh.id_client
+                            INNER JOIN clients ON clients.id_client = csh.id_client
                             INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
                         WHERE
                             cs.status = '. \clients_status::VALIDATED . '
@@ -982,9 +982,10 @@ class clients extends clients_crud
                     clients c
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
                 WHERE
-                    NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
-                    AND DATE(c.added) BETWEEN DATE("' . $sStartDate . '") AND DATE(' . $sEndDate . ') ' . $sWhereID;
+                    DATE(c.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
+                    AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
+                    AND NOT EXISTS (SELECT t.id_transaction FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
+                    ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);
 
@@ -1257,8 +1258,7 @@ class clients extends clients_crud
           gpa.final_status,
           gpa.revalidate,
           gpa.id_attachment,
-          a.id_type
-        
+          a.id_type        
         FROM clients_status_history csh
           INNER JOIN greenpoint_kyc kyc ON kyc.id_client = csh.id_client
           INNER JOIN greenpoint_attachment gpa ON gpa.id_client = csh.id_client

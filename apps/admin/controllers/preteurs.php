@@ -536,53 +536,26 @@ class preteursController extends bootstrap
                         $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                         die;
-                    } elseif (0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) { // On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
+                    } elseif (1 == $this->clients->origine && 0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) {
                         $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
-                        $logger->info('id_client : ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
+                        $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
                     } else {
-                        $logger->info('id_client : ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past.', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
+                        $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or the origine != 1.', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
                     }
 
                     $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
 
+                    /** @var \clients_gestion_notifications clients_gestion_notifications */
                     $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-                    $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
 
-                    $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-                    $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+                    $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
                     if (false == $this->lNotifs) {
-                        foreach ($this->lTypeNotifs as $n) {
-                            $this->clients_gestion_notifications->id_client = $this->clients->id_client;
-                            $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
-                            $id_notif                                       = $n['id_client_gestion_type_notif'];
-
-                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_BID_REJECTED, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT, \clients_gestion_type_notif::TYPE_DEBIT))) {
-                                $this->clients_gestion_notifications->immediatement = 1;
-                            } else {
-                                $this->clients_gestion_notifications->immediatement = 0;
-                            }
-
-                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, \clients_gestion_type_notif::TYPE_REPAYMENT))) {
-                                $this->clients_gestion_notifications->quotidienne = 1;
-                            } else {
-                                $this->clients_gestion_notifications->quotidienne = 0;
-                            }
-
-                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED))) {
-                                $this->clients_gestion_notifications->hebdomadaire = 1;
-                            } else {
-                                $this->clients_gestion_notifications->hebdomadaire = 0;
-                            }
-
-                            $this->clients_gestion_notifications->mensuelle = 0;
-                            $this->clients_gestion_notifications->create();
-                        }
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
+                        $notificationManager = $this->get('unilend.service.notification_manager');
+                        $notificationManager->generateDefaultNotificationSettings($this->clients);
                     }
 
-                    // Mail au client particulier //
-                    // Recuperation du modele de mail
-                    // modif ou inscription
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
                         $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
                     } else {
@@ -819,7 +792,7 @@ class preteursController extends bootstrap
                 'id'    => $this->attachments[$iType]['id']
             );
 
-            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label']) && 0 == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['revalidate']) {
+            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label']) && \greenpoint_attachment::REVALIDATE_NO == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['revalidate']) {
                 $aDataToDisplay[$iType]['greenpoint_label'] = $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'];
 
                 if (1 == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['final_status']) {
@@ -1094,8 +1067,8 @@ class preteursController extends bootstrap
 
         if (is_numeric($mResult)) {
             $this->oGreenPointAttachment->get($mResult, 'id_attachment');
-            $this->oGreenPointAttachment->revalidate   = 1;
-            $this->oGreenPointAttachment->final_status = 0;
+            $this->oGreenPointAttachment->revalidate   = \greenpoint_attachment::REVALIDATE_YES;
+            $this->oGreenPointAttachment->final_status = \greenpoint_attachment::FINAL_STATUS_NO;
             $this->oGreenPointAttachment->update();
         }
         $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::LENDER, $iAttachmentType, $field, $this->upload, $sNewName);

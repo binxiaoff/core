@@ -1235,8 +1235,8 @@ class LenderSubscriptionController extends Controller
         $result = $attachmentHelper->attachmentExists($attachments, $lenderAccountId, \attachment::LENDER, $attachmentType);
         if (is_numeric($result)) {
             $greenPointAttachment->get($result, 'id_attachment');
-            $greenPointAttachment->revalidate   = 1;
-            $greenPointAttachment->final_status = 0;
+            $greenPointAttachment->revalidate   = \greenpoint_attachment::REVALIDATE_YES;
+            $greenPointAttachment->final_status = \greenpoint_attachment::FINAL_STATUS_NO;
             $greenPointAttachment->update();
         }
 
