@@ -64,6 +64,7 @@ class PaylineManager
      * @param array $response
      * @param array $paylineParameter
      * @param string $partnerId
+     * @param int $locationCall
      * @return bool
      */
     public function handlePaylineReturn(\clients $client, $response, $paylineParameter, $partnerId, $locationCall)
@@ -136,7 +137,7 @@ class PaylineManager
             $transaction->status         = \transactions::STATUS_CANCELED;
             $transaction->update();
 
-        } else { // Payment error
+        } else {
             mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $client->id_client . ') : ' . serialize($response));
         }
         return false;

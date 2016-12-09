@@ -363,10 +363,13 @@ class LenderWalletController extends Controller
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
         /** @var LoggerInterface $logger */
-        $logger                    = $this->get('logger');
-        $paylineParameter['token'] = $request->request->get('token', $request->query->get('token'));
+        $logger = $this->get('logger');
 
-        if (true === $client->get($hash, 'hash') || false === empty($paylineParameter['token'])) {
+        $paylineParameter = [
+            'token' => $request->request->get('token', $request->query->get('token'))
+        ];
+
+        if (true === $client->get($hash, 'hash') && false === empty($paylineParameter['token'])) {
             /** @var \paylineSDK $payline */
             $payline = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
 
@@ -386,16 +389,16 @@ class LenderWalletController extends Controller
                         'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)
                     ]);
                 } else {
-                    $logger->warning('The payment was canceled or an error code was returned by payline. hash=' . $hash . '. Current connected client id=' . $client->id_client . ' - Payline response=' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                    $logger->warning('The payment was canceled or an error code was returned by payline. Client ID: ' . $client->id_client . ' - Payline response: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
                     return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
                 }
             } else {
-                $logger->error('Empty response from payline, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                $logger->error('Empty response from Payline, Client ID: ' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
                 return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
             }
         } else {
             $clientId = $this->getUser()->getClientId();
-            $logger->error('Pyline has returned wrong parameters: token or hash not found, hash=' . $hash . ' - ' . json_encode($paylineParameter) . ' - Current connected client id=' . $clientId, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientId]);
+            $logger->error('Payline has returned wrong parameters: token or hash not found, hash: ' . $hash . ' - ' . json_encode($paylineParameter) . ' - Client ID: ' . $clientId, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientId]);
             return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
         }
     }
