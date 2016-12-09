@@ -36,17 +36,10 @@ class thickboxController extends bootstrap
         $this->projects = $this->loadData('projects');
         $this->projects->get($this->params[0], 'id_project');
 
-        $this->time_retrait = strtotime($this->projects->date_retrait);
-
-        $date               = explode('-', $this->projects->date_retrait);
-        $this->date_retrait = $date[2] . '/' . $date[1] . '/' . $date[0];
-
-        $date      = explode(' ', $this->projects->date_retrait_full);
-        $heure_min = explode(':', $date[1]);
-
-        $this->heure_date_retrait  = $heure_min[0];
-        $this->minute_date_retrait = $heure_min[1];
-
+        $endOfPublicationDate      = \DateTime::createFromFormat('Y-m-d H:i:s', $this->projects->date_retrait);
+        $this->date_retrait        = $endOfPublicationDate->format('d/m/Y');
+        $this->heure_date_retrait  = $endOfPublicationDate->format('H');
+        $this->minute_date_retrait = $endOfPublicationDate->format('i');
     }
 
     public function _popup_confirmation_send_email()

@@ -73,8 +73,7 @@ class BorrowerAccountController extends Controller
                 $closingDate = new \DateTime();
                 $closingDate->modify('+5 minutes');
 
-                $project->date_retrait_full = $closingDate->format('Y-m-d H:i:s');
-                $project->date_retrait      = $closingDate->format('Y-m-d');
+                $project->date_retrait = $closingDate->format('Y-m-d H:i:s');
                 $project->update();
             }
         }
@@ -714,7 +713,7 @@ class BorrowerAccountController extends Controller
             $projectsFunding[$key] = $projectsFunding[$key] + [
                 'average_ir'       => round($projects->getAverageInterestRate(), 2),
                 'funding_progress' => min(100, round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1)),
-                'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait_full'])
+                'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait'])
             ];
         }
         return $projectsFunding;
@@ -740,7 +739,7 @@ class BorrowerAccountController extends Controller
 
             if (false === in_array($project['status'],[\projects_status::REMBOURSEMENT_ANTICIPE,\projects_status::REMBOURSE])) {
                $aNextRepayment = $repaymentSchedule->select(
-                   'status_emprunteur = 0 AND id_project = ' . $project['id_project'],
+                   'id_project = ' . $project['id_project'] . ' AND status_emprunteur = 0',
                    'date_echeance_emprunteur ASC',
                    '',
                    1

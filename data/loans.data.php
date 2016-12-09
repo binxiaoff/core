@@ -64,7 +64,7 @@ class loans extends loans_crud
         $sql = 'SELECT count(*) FROM `loans` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result);
     }
 
     public function exist($id, $field = 'id_loan')
@@ -96,7 +96,7 @@ class loans extends loans_crud
         $sql = 'SELECT COUNT(DISTINCT id_lender) FROM `loans` WHERE id_project = ' . $id_project . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
-        return (int)$this->bdd->result($result, 0, 0);
+        return (int) $this->bdd->result($result);
     }
 
     public function getProjectLoansByLender($id_project)
@@ -147,7 +147,7 @@ class loans extends loans_crud
 
     public function getProjectsCount($id_lender)
     {
-        $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
+        $sql = 'SELECT COUNT(DISTINCT id_project) FROM loans WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result));
@@ -155,9 +155,9 @@ class loans extends loans_crud
 
     public function getLoansCount($id_lender)
     {
-        $sql = 'SELECT count(DISTINCT id_loan) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = 0';
+        $sql = 'SELECT COUNT(DISTINCT id_loan) FROM loans WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result));
+        return (int) $this->bdd->result($result);
     }
 
     // retourne la moyenne des prets validés d'un projet
@@ -186,57 +186,36 @@ class loans extends loans_crud
     // retourne la moyenne des prets validés d'un preteur
     public function getAvgPrets($id_lender)
     {
-        $sql = 'SELECT IFNULL(ROUND(SUM(rate * amount) / SUM(amount), 2), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
-
-        $result = $this->bdd->query($sql);
-        return $this->bdd->result($result);
+        $result = $this->bdd->query('
+            SELECT IFNULL(ROUND(SUM(rate * amount) / SUM(amount), 2), 0)
+            FROM loans 
+            WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED
+        );
+        return (float) $this->bdd->result($result);
     }
 
     // sum prêtée d'un lender
     public function sumPrets($id_lender)
     {
-        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
-
-        $result  = $this->bdd->query($sql);
-        $montant = (int)($this->bdd->result($result, 0, 0));
-        if ($montant > 0) {
-            $montant = $montant / 100;
-        } else {
-            $montant = 0;
-        }
-        return $montant;
-    }
-
-    // sum prêtée d'un lender sur un mois
-    public function sumPretsByMonths($id_lender, $month, $year)
-    {
-
-        $sql = '
-            SELECT SUM(amount)
+        $result  = $this->bdd->query('
+            SELECT 
+            IFNULL(ROUND(SUM(amount) / 100, 2), 0) 
             FROM loans
-            WHERE id_lender = ' . $id_lender . '
-                AND status = ' . self::STATUS_ACCEPTED . '
-                AND LEFT(added, 7) = "' . $year . '-' . $month . '"';
-
-        $result  = $this->bdd->query($sql);
-        $montant = (int)($this->bdd->result($result, 0, 0));
-        return $montant > 0 ? $montant / 100 : 0;
+            WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED
+        );
+        return (float) $this->bdd->result($result);
     }
 
     // sum prêtée d'un du projet
     public function sumPretsProjet($id_project)
     {
+        $sql = '
+            SELECT IFNULL(ROUND(SUM(amount) / 100, 2), 0)
+            FROM loans 
+            WHERE id_project = ' . $id_project;
 
-        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_project = ' . $id_project;
-
-        $result  = $this->bdd->query($sql);
-        $montant = (int)($this->bdd->result($result, 0, 0));
-        if ($montant > 0) {
-            $montant = $montant / 100;
-        } else {
-            $montant = 0;
-        }
-        return $montant;
+        $result = $this->bdd->query($sql);
+        return (float) $this->bdd->result($result);
     }
 
     public function sum($where = '', $champ)
@@ -248,9 +227,7 @@ class loans extends loans_crud
         $sql = 'SELECT SUM(' . $champ . ') FROM `loans` ' . $where;
 
         $result = $this->bdd->query($sql);
-        $return = (int)($this->bdd->result($result, 0, 0));
-
-        return $return;
+        return (int) $this->bdd->result($result);
     }
 
     // On recup la liste des loans d'un preteur en les regoupant par projet
@@ -298,7 +275,7 @@ class loans extends loans_crud
             INNER JOIN companies c ON p.id_company = c.id_company
             INNER JOIN projects_status ps ON p.status = ps.status
             WHERE id_lender = ' . $iLenderAccountId . '
-                AND l.status = 0
+                AND l.status = ' . self::STATUS_ACCEPTED . '
                 ' . (null === $iYear ? '' : 'AND YEAR(l.added) = "' . $iYear . '"') . '
                 ' . (null === $iProjectStatus ? '' : 'AND p.status = ' . $iProjectStatus) . '
             GROUP BY l.id_project
@@ -433,7 +410,6 @@ class loans extends loans_crud
 
     public function sumLoansByCohort()
     {
-
         $query = 'SELECT SUM(loans.amount)/100 AS amount,
                     (
                         SELECT
@@ -453,6 +429,24 @@ class loans extends loans_crud
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param int $idLender
+     * @param array $projectStatus
+     * @return mixed
+     */
+    public function getLoansForProjectsWithStatus($idLender, array $projectStatus)
+    {
+        $query = 'SELECT *
+                    FROM loans
+                      INNER JOIN projects ON loans.id_project = projects.id_project
+                    WHERE projects.status IN (:projectStatus)
+                          AND loans.id_lender = :idLender';
+
+        $statement = $this->bdd->executeQuery($query, ['projectStatus' => $projectStatus, 'idLender' => $idLender], ['projectStatus' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY]);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }

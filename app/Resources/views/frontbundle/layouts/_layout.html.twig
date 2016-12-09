@@ -63,10 +63,16 @@
             {% endblock %}
         </div>
 
+        {# Debug tools #}
         {% if app.environment == 'dev' %}
             {% block debug %}
                 {% include 'partials/site/debug.html.twig' %}
             {% endblock %}
+        {% endif %}
+
+        {# Site User Mobile Menu #}
+        {% if app.user is defined and app.user is not empty %}
+            {% include 'partials/site/user-mobile-menu.html.twig' %}
         {% endif %}
 
         <div class="modal-spinner">
@@ -82,7 +88,7 @@
             </div>
         </div>
 
-        <div rel="templates" style="display:none">
+        <div rel="templates" style="display:none" aria-hidden="true">
             {% block modals %}
                 {# Place page-specific modals in this block and then use the `data-modal-toggle="#modal-id"` attribute on the anchor/button element you want to use to show it,
                    e.g. <a href="javascript:;" data-modal-toggle="#modal-tos">Open the TOS model</a> #}

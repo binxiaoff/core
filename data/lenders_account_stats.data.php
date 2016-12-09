@@ -49,8 +49,9 @@ class lenders_account_stats extends lenders_account_stats_crud
                 e.date_echeance_reel AS date,
                 CASE WHEN e.status_ra = 1 THEN e.capital_rembourse ELSE e.capital_rembourse + e.interets_rembourses END AS montant
             FROM echeanciers e
+              INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                e.id_lender = ' . $iLendersAccountId . '
+                l.id_lender = ' . $iLendersAccountId . '
                 AND e.status = 1
 
         UNION ALL
@@ -59,9 +60,10 @@ class lenders_account_stats extends lenders_account_stats_crud
                 e.date_echeance AS date,
                 e.capital + e.interets AS montant
             FROM echeanciers e
-            INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                e.id_lender = ' . $iLendersAccountId . '
+                l.id_lender = ' . $iLendersAccountId . '
                 AND e.status = 0
                 AND p.status = ' . \projects_status::REMBOURSEMENT . '
 
@@ -71,9 +73,10 @@ class lenders_account_stats extends lenders_account_stats_crud
                 e.date_echeance AS date,
                 CASE WHEN e.date_echeance < NOW() THEN "0" ELSE e.capital + e.interets END AS montant
             FROM echeanciers e
-            INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                e.id_lender = ' . $iLendersAccountId . '
+                l.id_lender = ' . $iLendersAccountId . '
                 AND e.status = 0
                 AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X]) . ')
 
@@ -96,9 +99,10 @@ class lenders_account_stats extends lenders_account_stats_crud
                 ) > 180 THEN "0" ELSE e.capital + e.interets END
                 END AS montant
             FROM echeanciers e
-            INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                e.id_lender = ' . $iLendersAccountId . '
+                l.id_lender = ' . $iLendersAccountId . '
                 AND e.status = 0
                 AND p.status = ' . \projects_status::RECOUVREMENT . '
 
@@ -108,22 +112,26 @@ class lenders_account_stats extends lenders_account_stats_crud
                 e.date_echeance AS date,
                 "0" AS montant
             FROM echeanciers e
-            INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                e.id_lender = ' . $iLendersAccountId . '
+                l.id_lender = ' . $iLendersAccountId . '
                 AND e.status = 0
                 AND p.status IN (' . implode(',', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ')
 
         UNION ALL
-
-                 SELECT
-                  date_transaction AS date,
-                  montant
-                FROM transactions
-                INNER JOIN lenders_accounts ON transactions.id_client = lenders_accounts.id_client_owner
-                WHERE
-                lenders_accounts.id_lender_account = ' . $iLendersAccountId . '
-                AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+        
+        SELECT
+          date_transaction AS date,
+          montant
+        FROM transactions t
+          INNER JOIN lenders_accounts la ON t.id_client = la.id_client_owner
+          INNER JOIN loans l ON la.id_lender_account = l.id_lender AND l.id_project = t.id_project
+          INNER JOIN loan_transfer lt ON l.id_transfer  = lt.id_transfer
+          INNER JOIN transfer ON lt.id_transfer = transfer.id_transfer
+        WHERE
+          type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
+          AND (la.id_lender_account = ' . $iLendersAccountId . ' OR t.id_client = transfer.id_client_origin)';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($result)) {

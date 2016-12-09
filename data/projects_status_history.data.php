@@ -82,16 +82,6 @@ class projects_status_history extends projects_status_history_crud
         return false;
     }
 
-    public function addStatusAndReturnID($id_user, $status, $id_project)
-    {
-        $result                  = $this->bdd->query('SELECT id_project_status FROM `projects_status` WHERE status = ' . $status);
-        $this->id_project        = $id_project;
-        $this->id_project_status = (int) $this->bdd->result($result, 0, 0);
-        $this->id_user           = $id_user;
-
-        return $this->create();
-    }
-
     public function getHistoryDetails($id_project)
     {
         $sql = '

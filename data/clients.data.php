@@ -742,8 +742,8 @@ class clients extends clients_crud
             FROM echeanciers_emprunteur
             WHERE
                 id_project IN (' . implode(',', $aProjects) . ')
-                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
                 AND status_emprunteur = 1
+                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
                 AND status_ra = 0
             GROUP BY id_project, DATE(date_echeance_emprunteur_reel)';
 

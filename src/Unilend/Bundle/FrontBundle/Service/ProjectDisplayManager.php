@@ -113,7 +113,7 @@ class ProjectDisplayManager
             'projectDescription'   => $project->objectif_loan,
             'companyDescription'   => $project->presentation_company,
             'repaymentDescription' => $project->means_repayment,
-            'startDate'            => $project->date_publication_full,
+            'startDate'            => $project->date_publication,
             'endDate'              => $end,
             'fundedDate'           => $project->date_funded,
             'projectNeed'          => $project->id_project_need,
@@ -158,8 +158,8 @@ class ProjectDisplayManager
         $projectRateSettings = $this->entityManager->getRepository('project_rate_settings');
         $projectRateSettings->get($this->projectManager->getProjectRateRange($project));
 
-        $projectData['minRate'] = $projectRateSettings->rate_min;
-        $projectData['maxRate'] = $projectRateSettings->rate_max;
+        $projectData['minRate'] = (float) $projectRateSettings->rate_min;
+        $projectData['maxRate'] = (float) $projectRateSettings->rate_max;
 
         if ($alreadyFunded >= $project->amount) {
             $projectData['costFunded']    = $project->amount;
@@ -317,7 +317,7 @@ class ProjectDisplayManager
      */
     public function getFundingDuration(\projects $project)
     {
-        $startFundingPeriod = new \DateTime($project->date_publication_full);
+        $startFundingPeriod = new \DateTime($project->date_publication);
         $endFundingPeriod   = new \DateTime($project->date_funded);
 
         return $startFundingPeriod->diff($endFundingPeriod);

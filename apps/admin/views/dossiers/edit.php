@@ -634,17 +634,11 @@
                                 ?>
                                 <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
                                 <?php
-                                // Récupération de la date enregistrée
-                                $tab_date_publication_full  = explode(" ", $this->projects->date_publication_full);
+                                $tab_date_publication_full  = explode(" ", $this->projects->date_publication);
                                 $tab_date_publication_full2 = explode(":", $tab_date_publication_full[1]);
                                 $heure_date_publication     = $tab_date_publication_full2[0];
                                 $minute_date_publication    = $tab_date_publication_full2[1];
                                 $seconde_date_publication   = $tab_date_publication_full2[2];
-
-                                //Si vide valeur par defaut
-                                if ($heure_date_publication == '00') {
-                                    $heure_date_publication = $this->HdebutFunding;
-                                }
                                 ?>
                                 &agrave;
                                 <select name="date_publication_heure" class="selectMini">
@@ -666,11 +660,7 @@
                                 </select>
                                 <?php
                             } else {
-                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
-                                    echo $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') . ' 07:00';
-                                } else {
-                                    echo $this->dates->formatDate($this->projects->date_publication_full, 'd/m/Y H:i');
-                                }
+                                echo $this->dates->formatDate($this->projects->date_publication, 'd/m/Y H:i');
                             }
                             ?>
                         </td>
@@ -683,17 +673,11 @@
                                 ?>
                                 <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
                                 <?php
-                                // Récupération de la date enregistrée
-                                $tab_date_retrait_full  = explode(" ", $this->projects->date_retrait_full);
+                                $tab_date_retrait_full  = explode(" ", $this->projects->date_retrait);
                                 $tab_date_retrait_full2 = explode(":", $tab_date_retrait_full[1]);
                                 $heure_date_retrait     = $tab_date_retrait_full2[0];
                                 $minute_date_retrait    = $tab_date_retrait_full2[1];
                                 $seconde_date_retrait   = $tab_date_retrait_full2[2];
-
-                                // si vide valeur par defaut
-                                if ($heure_date_retrait == '00') {
-                                    $heure_date_retrait = $this->HfinFunding;
-                                }
                                 ?>
                                 &agrave;
                                 <select name="date_retrait_heure" class="selectMini">
@@ -716,11 +700,7 @@
                                 </select>
                                 <?php
                             } else {
-                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
-                                    echo $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') . ' 16:00';
-                                } else {
-                                    echo $this->dates->formatDate($this->projects->date_retrait_full, 'd/m/Y H:i');
-                                }
+                                echo $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y H:i');
 
                                 if ($this->projects->status < \projects_status::FUNDE) {
                                     ?>

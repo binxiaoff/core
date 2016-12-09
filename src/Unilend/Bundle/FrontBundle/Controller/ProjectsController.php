@@ -530,7 +530,7 @@ class ProjectsController extends Controller
             /** @var \bids $bidEntity */
             $bidEntity = $entityManager->getRepository('bids');
 
-            $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate LIKE ' . $rate, 'ordre ASC');
+            $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate = ' . $rate, 'ordre ASC');
             $template['bids'] = [];
 
             foreach ($bids as $bid) {
@@ -841,7 +841,6 @@ class ProjectsController extends Controller
         if ($pageDescription !== 'seo_project-detail-description') {
             $seoPage->addMeta('name', 'description', $pageDescription);
         }
-
     }
 
     /**
@@ -884,10 +883,17 @@ class ProjectsController extends Controller
             ]);
         }
 
-        $response = [];
         /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
+        $user          = $this->getUser();
+        $clientId      = $user->getClientId();
+        $lenderBalance = $entityManager->getRepository('transactions')->getSolde($clientId);
+
+        if ($lenderBalance < $amount) {
+            return new JsonResponse([
+                'error'    => true,
+                'messages' => [$translator->trans('project-detail_side-bar-bids-low-balance')]
+            ]);
+        }
 
         /** @var \lenders_accounts $lenderAccount */
         $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
@@ -909,8 +915,9 @@ class ProjectsController extends Controller
             $product->get($project->id_product);
 
             $translatedReasons = [];
-            $amountRest = 0;
-            $amountMax = $productManager->getMaxEligibleAmount($product);
+            $amountRest        = 0;
+            $amountMax         = $productManager->getMaxEligibleAmount($product);
+
             foreach ($reasons as $reason) {
                 if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
                     $amountRest = $productManager->getAmountLenderCanStillBid($lender, $project);
@@ -921,16 +928,17 @@ class ProjectsController extends Controller
 
                 $translatedReasons[] = $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, $pendingBidAmount,['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]);
             }
+
             return new JsonResponse([
-                'error'   => true,
+                'error'    => true,
                 'messages' => $translatedReasons
             ]);
         }
 
         $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
 
-        $validationNeeded       = $cipManager->isCIPValidationNeeded($bid);
-        $response['validation'] = $validationNeeded;
+        $validationNeeded = $cipManager->isCIPValidationNeeded($bid);
+        $response         = ['validation' => $validationNeeded];
 
         if ($validationNeeded) {
             $evaluation = $cipManager->getCurrentEvaluation($lender);
