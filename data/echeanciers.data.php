@@ -539,7 +539,7 @@ class echeanciers extends echeanciers_crud
             WHERE e.status IN(' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND l.status = 0
                 AND (
-                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
+                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
                     OR unpaid.date_echeance IS NOT NULL
                 )';
 
@@ -1033,7 +1033,7 @@ class echeanciers extends echeanciers_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND echeanciers.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers
                         WHERE echeanciers.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
@@ -1218,7 +1218,7 @@ class echeanciers extends echeanciers_crud
                               INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                               WHERE ps2.status = ' . \projects_status::PROBLEME . '
                               AND psh2.id_project = e.id_project
-                              ORDER BY psh2.id_project_status_history DESC
+                              ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                               LIMIT 1
                               )) > 180)), TRUE, FALSE) = FALSE
                   GROUP BY year, quarter, month) as t

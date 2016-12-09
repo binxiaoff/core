@@ -909,7 +909,7 @@ class transfertsController extends bootstrap
 
                 $oMailerManager->sendBorrowerBill($project);
 
-                $aRepaymentHistory = $projectsStatusHistory->select('id_project = ' . $project->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
+                $aRepaymentHistory = $projectsStatusHistory->select('id_project = ' . $project->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC, id_project_status_history DESC', 0, 1);
 
                 if (false === empty($aRepaymentHistory)) {
                     $oInvoiceCounter = $this->loadData('compteur_factures');

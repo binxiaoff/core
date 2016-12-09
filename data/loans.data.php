@@ -247,9 +247,9 @@ class loans extends loans_crud
                 c.city,
                 c.zip,
                 p.risk,
-                ps.status AS project_status,
+                p.status AS project_status,
                 ps.label AS project_status_label,
-                psh.added AS status_change,
+                (SELECT psh.added FROM projects_status_history psh WHERE p.id_project = psh.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status_change,
                 SUM(ROUND(l.amount / 100, 2)) AS amount,
                 ROUND(SUM(rate * l.amount) / SUM(l.amount), 2) AS rate,
                 COUNT(l.id_loan) AS nb_loan,
@@ -271,11 +271,9 @@ class loans extends loans_crud
                 ) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status IN (' . implode(', ', $aPyedRepayment) . ') AND e3.date_echeance = (SELECT MIN(e4.date_echeance) FROM echeanciers e4 WHERE e4.id_loan = l.id_loan AND e4.status IN (' . implode(', ', $aPyedRepayment) . ') ) LIMIT 1)) AS last_perceived_repayment,
                 (SELECT SUM(ROUND(e.montant / 100, 2)) FROM echeanciers e WHERE e.id_project = l.id_project AND e.ordre = 1 AND e.id_lender = l.id_lender) AS monthly_repayment_amount
             FROM loans l
-            LEFT JOIN projects p ON l.id_project = p.id_project
-            LEFT JOIN companies c ON p.id_company = c.id_company
-            LEFT JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON p.id_project = plsh.id_project
-            LEFT JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
-            LEFT JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+            INNER JOIN projects p ON l.id_project = p.id_project
+            INNER JOIN companies c ON p.id_company = c.id_company
+            INNER JOIN projects_status ps ON p.status = ps.status
             WHERE id_lender = ' . $iLenderAccountId . '
                 AND l.status = ' . self::STATUS_ACCEPTED . '
                 ' . (null === $iYear ? '' : 'AND YEAR(l.added) = "' . $iYear . '"') . '
@@ -424,7 +422,7 @@ class loans extends loans_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND loans.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM loans
                       INNER JOIN projects on loans.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
