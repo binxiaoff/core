@@ -252,7 +252,8 @@ class transactions extends transactions_crud
                 AND psh.id_project_status_history = (
             SELECT id_project_status_history
             FROM projects_status_history psh1
-            WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8 ORDER BY psh1.added ASC, psh1.id_project_status_history ASC LIMIT 1
+            WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8
+            ORDER BY psh1.added ASC, psh1.id_project_status_history ASC LIMIT 1
           )
           GROUP BY lo.id_loan
         ) UNION ALL (

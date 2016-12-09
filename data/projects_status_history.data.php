@@ -73,7 +73,7 @@ class projects_status_history extends projects_status_history_crud
 
     public function getBeforeLastStatus($iProjectId)
     {
-        $result = $this->select('id_project=' . $iProjectId, 'added DESC, id_project_Status_history DESC', 1, 1);
+        $result = $this->select('id_project=' . $iProjectId, 'added DESC, id_project_status_history DESC', 1, 1);
 
         if (isset($result[0]) && false === empty($result[0])) {
             return $result[0]['id_project_status'];
@@ -150,7 +150,7 @@ class projects_status_history extends projects_status_history_crud
                 IFNULL(DATEDIFF(next_status.added, base_status.added), "") AS diff_days,
                 IFNULL(next_status.added, "") AS added
             FROM projects_status_history base_status
-            LEFT JOIN projects_status_history next_status ON next_status.id_project_status_history = (SELECT id_project_status_history FROM projects_status_history WHERE id_project = base_status.id_project AND ((added > base_status.added) OR (added = base_status.added AND id_project_status_history > base_status.id_project_status_history)) AND id_project_status != base_status.id_project_status ORDER BY added ASC, id_project_status_history ASC LIMIT 1)
+            LEFT JOIN projects_status_history next_status ON next_status.id_project_status_history = (SELECT id_project_status_history FROM projects_status_history WHERE id_project = base_status.id_project AND (added > base_status.added OR (added = base_status.added AND id_project_status_history > base_status.id_project_status_history)) AND id_project_status != base_status.id_project_status ORDER BY added ASC, id_project_status_history ASC LIMIT 1)
             LEFT JOIN projects_status ps ON next_status.id_project_status = ps.id_project_status
             WHERE base_status.id_project_status_history IN (' . implode(', ', $aBaseStatusId) . ')
             GROUP BY id_project_status_history
@@ -210,7 +210,8 @@ class projects_status_history extends projects_status_history_crud
         $sQuery = '
             SELECT id_project_status_history
             FROM projects_status_history
-            WHERE id_project = ' . $iProjectId . '  ORDER BY added DESC, id_project_Status_history DESC LIMIT 1';
+            WHERE id_project = ' . $iProjectId . '
+            ORDER BY added DESC, id_project_status_history DESC LIMIT 1';
         return $this->get($this->bdd->result($this->bdd->query($sQuery), 0, 0));
     }
 
