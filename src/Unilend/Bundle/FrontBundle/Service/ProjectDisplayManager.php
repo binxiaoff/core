@@ -158,8 +158,8 @@ class ProjectDisplayManager
         $projectRateSettings = $this->entityManager->getRepository('project_rate_settings');
         $projectRateSettings->get($this->projectManager->getProjectRateRange($project));
 
-        $projectData['minRate'] = $projectRateSettings->rate_min;
-        $projectData['maxRate'] = $projectRateSettings->rate_max;
+        $projectData['minRate'] = (float) $projectRateSettings->rate_min;
+        $projectData['maxRate'] = (float) $projectRateSettings->rate_max;
 
         if ($alreadyFunded >= $project->amount) {
             $projectData['costFunded']    = $project->amount;
