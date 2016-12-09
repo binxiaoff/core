@@ -69,7 +69,9 @@
                 {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
                     <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
                 {% elseif conditions.canBid %}
-                    <p>{% trans %} project-detail_project-funding-in-progress-make-an-offer {% endtrans %}</p>
+                    {% if project.maxValidRate > project.minRate %}
+                        <p>{% trans %} project-detail_project-funding-in-progress-make-an-offer {% endtrans %}</p>
+                    {% endif %}
 
                     {% if lender.bidResult is defined %}
                         <p class="{% if lender.bidResult.error is defined %} c-error {% elseif lender.bidResult.success is defined %} c-success {% else %} c-t2 {% endif %}">
@@ -99,12 +101,12 @@
                                             <div class="col-input">
                                                 <select id="bid-interest" name="invest[interest]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-bid-rate>
                                                     <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
-                                                    {% if (project.percentFunded < 100) %}
-                                                        {% set adjustment = 0 %}
+                                                    {% if project.percentFunded < 100 %}
+                                                        {% set max = project.maxValidRate|round(1) %}
                                                     {% else %}
-                                                        {% set adjustment = 0.1 %}
+                                                        {% set max = (project.maxValidRate - 0.1)|round(1) %}
                                                     {% endif %}
-                                                    {% for rate in range(project.maxValidRate - adjustment, project.minRate, 0.1) %}
+                                                    {% for rate in range(max, project.minRate, 0.1) %}
                                                         <option value="{{ rate }}"{% if app.session.flashBag.has('cipBid') and app.session.flashBag.peek('cipBid')[0].rate == rate %} selected="selected"{% endif %}>{{ rate|localizednumberwithprecision(1) }} %</option>
                                                     {% endfor %}
                                                 </select>

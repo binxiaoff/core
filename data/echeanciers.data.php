@@ -39,11 +39,6 @@ class echeanciers extends echeanciers_crud
     public function __construct($bdd, $params = '')
     {
         parent::echeanciers($bdd, $params);
-        \Unilend\core\Loader::loadData('clients');
-        \Unilend\core\Loader::loadData('loans');
-        \Unilend\core\Loader::loadData('projects_status');
-        \Unilend\core\Loader::loadData('tax_type');
-        \Unilend\core\Loader::loadData('transactions_types');
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

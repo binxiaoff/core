@@ -50,18 +50,6 @@ class dates
         return $date_fr;
     }
 
-    /*
-     * converti une date mysql au format fr avec le mois au format alphabetique
-     */
-    public function formatDateMysqltoFrTxtMonth($date, $ln = "fr")
-    {
-        $d = explode(' ', $date);
-        $d = explode('-', $d[0]);
-        $m = (int) ($d[1]);
-        $d = (int) ($d[2]) . ' ' . $this->tableauMois[$ln][$m] . ' ' . $d[0];
-        return $d;
-    }
-
     /**
      * converti une date mysql au format fr en supprimant l'heure
      **/
@@ -70,18 +58,6 @@ class dates
         $d = explode(' ', $date);
         $d = explode('-', $d[0]);
         return $d[2] . '/' . $d[1] . '/' . $d[0];
-    }
-
-    /**
-     * converti une date mysql au format fr en integrant l'heure
-     * /*/
-    public function formatDateMysqltoFr_HourIn($date)
-    {
-        $h = explode(' ', $date);
-        $d = explode('-', $h[0]);
-
-        $date_fr = $d[2] . '/' . $d[1] . '/' . $d[0] . ' ' . $h[1];
-        return $date_fr;
     }
 
     /**
@@ -112,15 +88,6 @@ class dates
         $timestamp = mktime($hour, $minute, $second, $month, $day, $year);
 
         return $timestamp;
-    }
-
-    /**
-     * converti une date fr au format mysql
-     **/
-    public function formatDateFrToMysql($date)
-    {
-        $d = explode('/', $date);
-        return $d[2] . '-' . $d[1] . '-' . $d[0];
     }
 
     //-----------------------------------------------------------------------------------------

@@ -172,22 +172,11 @@ class dossiersController extends bootstrap
             $this->settings->get('Cabinet de recouvrement', 'type');
             $this->cab = $this->settings->value;
 
-            $this->settings->get('Heure debut periode funding', 'type');
-            $this->debutFunding = $this->settings->value;
-
-            $this->settings->get('Heure fin periode funding', 'type');
-            $this->finFunding = $this->settings->value;
             /** @var \tax_type $taxType */
             $taxType = $this->loadData('tax_type');
 
             $taxRate        = $taxType->getTaxRateByCountry('fr');
             $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
-
-            $debutFunding        = explode(':', $this->debutFunding);
-            $this->HdebutFunding = $debutFunding[0];
-
-            $finFunding        = explode(':', $this->finFunding);
-            $this->HfinFunding = $finFunding[0];
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
@@ -602,13 +591,13 @@ class dossiersController extends bootstrap
 
                     if ($this->projects->status >= \projects_status::PREP_FUNDING) {
                         if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
-                            $this->projects->date_publication      = $this->dates->formatDateFrToMysql($_POST['date_publication']);
-                            $this->projects->date_publication_full = $this->projects->date_publication . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':0';
+                            $publicationDate                  = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
+                            $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
                         }
 
                         if (isset($_POST['date_retrait']) && ! empty($_POST['date_retrait'])) {
-                            $this->projects->date_retrait      = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
-                            $this->projects->date_retrait_full = $this->projects->date_retrait . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':0';
+                            $endOfPublicationDate         = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
+                            $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
                         }
 
                         if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
@@ -810,14 +799,10 @@ class dossiersController extends bootstrap
                 }
 
                 if ($form_ok == true) {
-                    $date = explode('/', $_POST['date_de_retrait']);
-                    $date = $date[2] . '-' . $date[1] . '-' . $date[0];
+                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_de_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
 
-                    $dateComplete = $date . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
-                    // on check si la date est superieur a la date actuelle
-                    if (strtotime($dateComplete) > time()) {
-                        $this->projects->date_retrait_full = $dateComplete;
-                        $this->projects->date_retrait      = $date;
+                    if ($endOfPublicationDate > new \DateTime()) {
+                        $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
                         $this->projects->update();
                     }
                 }
@@ -1846,9 +1831,9 @@ class dossiersController extends bootstrap
                                     $message->setTo($this->clients->email);
                                     $mailer = $this->get('mailer');
                                     $mailer->send($message);
-                                } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
+                                } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement') == true) {
                                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                    $this->clients_gestion_mails_notif->immediatement = 1;
                                     $this->clients_gestion_mails_notif->update();
 
                                     $this->loans->get($e['id_loan']);
