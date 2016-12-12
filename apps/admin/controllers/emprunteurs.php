@@ -56,15 +56,8 @@ class emprunteursController extends bootstrap
         }
 
         if (isset($_POST['form_search_emprunteur'])) {
-            if ($_POST['status'] == 'choisir') {
-                $statut = '';
-            } else {
-                $statut = $_POST['status'];
-            }
+            $this->lClients = $this->clients->searchEmprunteurs('AND', $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['societe'], $_POST['siren']);
 
-            // Recuperation de la liste des clients
-            $this->lClients = $this->clients->searchEmprunteurs('', $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['societe'], $_POST['siret'], $statut);
-            // Mise en session du message
             $_SESSION['freeow']['title']   = 'Recherche d\'un client';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         }
@@ -77,7 +70,6 @@ class emprunteursController extends bootstrap
             $this->clients->telephone       = str_replace(' ', '', $_POST['telephone']);
             $this->clients->id_langue       = 'fr';
 
-            // cni/passeport
             if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/clients/cni_passeport/');
                 if ($this->upload->doUpload('cni_passeport')) {
@@ -87,7 +79,7 @@ class emprunteursController extends bootstrap
                     $this->clients->cni_passeport = $this->upload->getName();
                 }
             }
-            // fichier_rib
+
             if (isset($_FILES['signature']) && $_FILES['signature']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/clients/signature/');
                 if ($this->upload->doUpload('signature')) {

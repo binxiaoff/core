@@ -28,20 +28,17 @@
 
 class echeanciers extends echeanciers_crud
 {
-    const STATUS_PENDING          = 0;
-    const STATUS_REPAID           = 1;
-    const STATUS_PARTIALLY_REPAID = 2;
-    const IS_NOT_EARLY_REFUND     = 0;
-    const IS_EARLY_REFUND         = 1;
+    const STATUS_PENDING                  = 0;
+    const STATUS_REPAID                   = 1;
+    const STATUS_PARTIALLY_REPAID         = 2;
+    const IS_NOT_EARLY_REFUND             = 0;
+    const IS_EARLY_REFUND                 = 1;
+    const STATUS_REPAYMENT_EMAIL_NOT_SENT = 0;
+    const STATUS_REPAYMENT_EMAIL_SENT     = 1;
 
     public function __construct($bdd, $params = '')
     {
         parent::echeanciers($bdd, $params);
-        \Unilend\core\Loader::loadData('clients');
-        \Unilend\core\Loader::loadData('loans');
-        \Unilend\core\Loader::loadData('projects_status');
-        \Unilend\core\Loader::loadData('tax_type');
-        \Unilend\core\Loader::loadData('transactions_types');
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -389,6 +386,40 @@ class echeanciers extends echeanciers_crud
         return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
             ->fetchColumn(0), 100, 2);
     }
+    /**
+     * @param int $projectId
+     * @param DateTime $startDate
+     * @return string
+     * @throws Exception
+     */
+    public function getTotalComingCapitalByProject($projectId, DateTime $startDate = null)
+    {
+        if ($startDate === null) {
+            $startDate = new DateTime();
+        }
+        $bind     = [
+            'id_project'        => $projectId,
+            'loan_status'      => \loans::STATUS_ACCEPTED,
+            'repayment_status' => self::STATUS_PENDING,
+            'date_echeance'    => $startDate->format('Y-m-d')
+        ];
+        $bindType = [
+            'id_project'       => \PDO::PARAM_INT,
+            'loan_status'      => \PDO::PARAM_INT,
+            'repayment_status' => \PDO::PARAM_INT,
+            'date_echeance'    => \PDO::PARAM_STR
+        ];
+        $query    = '
+            SELECT SUM(e.capital)
+            FROM echeanciers e
+            INNER JOIN loans l ON e.id_loan = l.id_loan
+            WHERE l.status = :loan_status
+              AND e.id_project = :id_project
+              AND e.status = :repayment_status
+              AND date(e.date_echeance) > :date_echeance';
+        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
+            ->fetchColumn(0), 100, 2);
+    }
 
     /**
      * @param int $lenderId
@@ -470,7 +501,8 @@ class echeanciers extends echeanciers_crud
                 SUM(interets) AS interets,
                 status_emprunteur
             FROM echeanciers
-            WHERE id_project = :id_project GROUP BY ordre';
+            WHERE id_project = :id_project 
+            GROUP BY ordre';
 
         $res       = [];
         $statement = $this->bdd->executeQuery($sql,
@@ -507,7 +539,7 @@ class echeanciers extends echeanciers_crud
             WHERE e.status IN(' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND l.status = 0
                 AND (
-                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
+                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
                     OR unpaid.date_echeance IS NOT NULL
                 )';
 
@@ -566,7 +598,7 @@ class echeanciers extends echeanciers_crud
 
     public function onMetAjourLesDatesEcheances($projectId, $ordre, $date_echeance, $date_echeance_emprunteur)
     {
-        $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $projectId . '" AND ordre = "' . $ordre . '" ';
+        $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $projectId . ' AND status_emprunteur = 0 AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
     }
 
@@ -1001,7 +1033,7 @@ class echeanciers extends echeanciers_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND echeanciers.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers
                         WHERE echeanciers.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
@@ -1110,37 +1142,37 @@ class echeanciers extends echeanciers_crud
               SUM(t.rawInterests) AS rawInterests,
               SUM(t.repaidTaxes) AS repaidTaxes,
               ROUND(SUM(t.upcomingTaxes), 2) AS upcomingTaxes FROM (
-              
+
                   SELECT
-                    LEFT(e.date_echeance_reel, 7)        AS month,
-                    QUARTER(e.date_echeance_reel)        AS quarter,
-                    YEAR(e.date_echeance_reel)           AS year,
-                    SUM(ROUND(e.capital_rembourse / 100, 2))  AS capital,
-                    SUM(ROUND(e.interets_rembourses / 100, 2)) AS rawInterests,
-                    SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction) , 0)) AS repaidTaxes,
-                    NULL AS upcomingTaxes
-                  FROM echeanciers e
-                    LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                  WHERE e.id_lender = :id_lender AND e.status = 1
-                  GROUP BY year, quarter, month
-            
+                      LEFT(t_interest.date_transaction, 7)        AS month,
+                      QUARTER(t_interest.date_transaction)        AS quarter,
+                      YEAR(t_interest.date_transaction)           AS year,
+                      SUM(ROUND(t_capital.montant / 100, 2))  AS capital,
+                      SUM(ROUND(t_interest.montant / 100, 2)) AS rawInterests,
+                      SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t_interest.id_transaction) , 0)) AS repaidTaxes,
+                      NULL AS upcomingTaxes
+                    FROM lenders_accounts la
+                      INNER JOIN transactions t_capital ON t_capital.id_client = la.id_client_owner AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                      LEFT JOIN transactions t_interest ON t_interest.id_echeancier = t_capital.id_echeancier AND t_interest.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                    WHERE la.id_lender_account = :id_lender 
+                    GROUP BY year, quarter, month
+
                   UNION ALL
-                  
+
                   SELECT
                     LEFT(t.date_transaction, 7)        AS month,
                     QUARTER(t.date_transaction)        AS quarter,
                     YEAR(t.date_transaction)           AS year,
-                    SUM(ROUND((t.montant / 100) / 0.844, 2))  AS capital,
+                    SUM(ROUND((t.montant/100)/ 0.844, 2))  AS capital,
                     NULL AS rawInterests,
                     NULL AS repaidTaxes,
                     NULL AS upcomingTaxes
-                  FROM transactions t
-                    INNER JOIN lenders_accounts l ON t.id_client = l.id_client_owner
+                  FROM lenders_accounts l
+                    INNER JOIN transactions t ON t.id_client = l.id_client_owner AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
                   WHERE
                     l.id_lender_account = :id_lender
-                    AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
                   GROUP BY year, quarter, month
-            
+
                   UNION ALL
 
                   SELECT
@@ -1186,13 +1218,11 @@ class echeanciers extends echeanciers_crud
                               INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                               WHERE ps2.status = ' . \projects_status::PROBLEME . '
                               AND psh2.id_project = e.id_project
-                              ORDER BY psh2.id_project_status_history DESC
+                              ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                               LIMIT 1
                               )) > 180)), TRUE, FALSE) = FALSE
                   GROUP BY year, quarter, month) as t
-            GROUP BY t.year, t.quarter, t.month
-            ORDER BY t.year, t.quarter, t.month ASC
-        ';
+            GROUP BY t.year, t.quarter, t.month';
 
         /** @var \Doctrine\DBAL\Cache\QueryCacheProfile $oQCProfile */
         $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__));
@@ -1211,6 +1241,33 @@ class echeanciers extends echeanciers_crud
         }
         $statement->closeCursor();
         return $data;
+    }
+
+    public function getRepaidRepaymentToNotify($offset = 0, $limit = 100)
+    {
+        $query = 'SELECT e.*
+                  FROM echeanciers e
+                  INNER join transactions t ON t.id_echeancier = e.id_echeancier
+                  WHERE e.status = :repaid
+                  AND e.status_email_remb = :not_sent
+                  GROUP BY e.id_echeancier
+                  LIMIT :limit OFFSET :offset';
+
+        $bind = [
+            'repaid'   => self::STATUS_REPAID,
+            'not_sent' => self::STATUS_REPAYMENT_EMAIL_NOT_SENT,
+            'limit'    => $limit,
+            'offset'   => $offset,
+        ];
+
+        $type = [
+            'limit' => \PDO::PARAM_INT,
+            'offset' => \PDO::PARAM_INT,
+        ];
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
 }

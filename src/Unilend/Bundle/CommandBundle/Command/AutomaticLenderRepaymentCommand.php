@@ -63,7 +63,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
             $repaymentLog->nb_pret_remb     = 0;
             $repaymentLog->create();
 
-            $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
+            $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'added DESC, id_project_status_history DESC', 0, 1);
             $dateDernierStatut = $dernierStatut[0]['added'];
             $timeAdd           = strtotime($dateDernierStatut);
             $day               = date('d', $timeAdd);

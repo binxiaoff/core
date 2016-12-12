@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -686,7 +685,7 @@ class ProjectRequestController extends Controller
         if (empty($this->company->rcs)) {
             $template['form']['values'] = [
                 'ag_2035' => isset($values['ag_2035']) ? $values['ag_2035'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
-                ];
+            ];
             $template['rcs'] = false;
         } else {
             $template['form']['values'] = [
@@ -696,7 +695,6 @@ class ProjectRequestController extends Controller
             ];
             $template['rcs'] = true;
         }
-
 
         $template['project'] = [
             'amount'                   => $this->project->amount,

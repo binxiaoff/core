@@ -109,35 +109,6 @@ class ClientManager
     }
 
     /**
-     * @param int    $iClientId
-     * @param string $sContent
-     */
-    public function changeClientStatusTriggeredByClientAction($iClientId, $sContent)
-    {
-        /** @var \clients_status_history $oClientStatusHistory */
-        $oClientStatusHistory = $this->oEntityManager->getRepository('clients_status_history');
-        /** @var \clients_status $oLastClientStatus */
-        $oLastClientStatus = $this->oEntityManager->getRepository('clients_status');
-        $oLastClientStatus->getLastStatut($iClientId);
-
-        switch ($oLastClientStatus->status) {
-            case \clients_status::COMPLETENESS:
-            case \clients_status::COMPLETENESS_REMINDER:
-            case \clients_status::COMPLETENESS_REPLY:
-                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $iClientId, $sContent);
-                break;
-            case \clients_status::VALIDATED:
-                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $iClientId, $sContent);
-                break;
-            case \clients_status::TO_BE_CHECKED:
-            default:
-                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $iClientId, $sContent);
-                break;
-        }
-    }
-
-
-    /**
      * @param \clients $oClient
      *
      * @return bool
@@ -186,14 +157,6 @@ class ClientManager
         return (bool)$oClient->status;
     }
 
-    public function getCurrentClientStatus(\clients $oClient)
-    {
-        /** @var \clients_status $lastClientStatus */
-        $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
-        $lastClientStatus->getLastStatut($oClient->id_client);
-        return $lastClientStatus->status;
-    }
-
     public function hasAcceptedCurrentTerms(\clients $oClient)
     {
         /** @var \acceptations_legal_docs $acceptedTerms */
@@ -217,6 +180,18 @@ class ClientManager
     public function getClientSubscriptionStep(\clients $oClient)
     {
         return $oClient->etape_inscription_preteur;
+    }
+
+    /**
+     * @param \clients $client
+     * @return bool
+     */
+    public function isValidated(\clients $client)
+    {
+        /** @var \clients_status $lastClientStatus */
+        $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
+        $lastClientStatus->getLastStatut($client->id_client);
+        return $lastClientStatus->status == \clients_status::VALIDATED;
     }
 
 }

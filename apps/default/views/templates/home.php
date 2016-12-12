@@ -120,12 +120,12 @@
                                     if ($aProject['date_fin'] != '0000-00-00 00:00:00') {
                                         $endDateTime = new \DateTime($aProject['date_fin']);
                                     } else {
-                                        $endDateTime = new \DateTime($aProject['date_retrait_full']);
+                                        $endDateTime = new \DateTime($aProject['date_retrait']);
                                     }
                                     $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
                                     $dateRest = str_replace('[#date#]', $endDate, $this->lng['home']['termine']);
                                 } else {
-                                    $tab_date_retrait = explode(' ', $aProject['date_retrait_full']);
+                                    $tab_date_retrait = explode(' ', $aProject['date_retrait']);
                                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
                                     $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
                                     ?>
@@ -190,12 +190,12 @@
                             if ($aProject['date_fin'] != '0000-00-00 00:00:00') {
                                 $endDateTime = new \DateTime($aProject['date_fin']);
                             } else {
-                                $endDateTime = new \DateTime($aProject['date_retrait_full']);
+                                $endDateTime = new \DateTime($aProject['date_retrait']);
                             }
                             $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
                             $dateRest = str_replace('[#date#]', $endDate, $this->lng['home']['termine']);
                         } else {
-                            $heure_retrait = date('H:i', strtotime($aProject['date_retrait_full']));
+                            $heure_retrait = date('H:i', strtotime($aProject['date_retrait']));
                             ?>
                             <script>
                                 var cible<?= $aProject['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>');

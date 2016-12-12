@@ -38,7 +38,7 @@ class SearchService
         $result = $tree->search($query, $includeProjects);
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://unilend.desk.com/api/v2/articles/search?text=' . urlencode($query));
+        curl_setopt($ch, CURLOPT_URL, 'https://unilend.desk.com/api/v2/articles/search?text=' . urlencode($query) . '&sort_field=score&sort_direction=desc');
         curl_setopt($ch, CURLOPT_TIMEOUT, 3);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
@@ -62,9 +62,6 @@ class SearchService
                 }
 
                 $result = array_merge(array('desk' => $deskResult), $result);
-                usort($result['desk'], function($firstElement, $secondElement) {
-                    return strcmp($firstElement['title'], $secondElement['title']);
-                });
             }
         }
 

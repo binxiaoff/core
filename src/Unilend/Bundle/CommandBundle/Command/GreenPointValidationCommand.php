@@ -43,14 +43,24 @@ EOF
         /** @var LoggerInterface $oLogger */
         $oLogger = $this->getContainer()->get('monolog.logger.console');
 
-        $aStatusToCheck = array(
+        $aStatusToCheck           = [
             \clients_status::TO_BE_CHECKED,
             \clients_status::COMPLETENESS_REPLY,
             \clients_status::MODIFICATION
-        );
-
-        $aQueryID        = array();
-        $aClientsToCheck = $oClients->selectLendersByLastStatus($aStatusToCheck);
+        ];
+        $attachmentTypeToValidate = [
+            \attachment_type::CNI_PASSPORTE,
+            \attachment_type::JUSTIFICATIF_DOMICILE,
+            \attachment_type::ATTESTATION_HEBERGEMENT_TIERS,
+            \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT,
+            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+            \attachment_type::RIB,
+            \attachment_type::DELEGATION_POUVOIR,
+            \attachment_type::KBIS,
+            \attachment_type::JUSTIFICATIF_FISCAL,
+        ];
+        $aQueryID                 = [];
+        $aClientsToCheck          = $oClients->selectLendersByLastStatus($aStatusToCheck);
 
         if (false === empty($aClientsToCheck)) {
             /** @var \lenders_accounts $oLendersAccount */
@@ -62,12 +72,12 @@ EOF
             /** @var \attachment_type $oAttachmentType */
             $oAttachmentType = $oEntityManager->getRepository('attachment_type');
             /** @var \attachment_helper $oAttachmentHelper */
-            $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->getContainer()->getParameter('kernel.root_dir') . '/../'));
+            $oAttachmentHelper = Loader::loadLib('attachment_helper', [$oAttachment, $oAttachmentType, $this->getContainer()->getParameter('kernel.root_dir') . '/../']);
 
             foreach ($aClientsToCheck as $iClientId => $aClient) {
-                $aAttachments = $oLendersAccount->getAttachments($aClient['id_lender_account']);
+                $aAttachments = $oLendersAccount->getAttachments($aClient['id_lender_account'], $attachmentTypeToValidate);
                 /** @var array $aAttachmentsToRevalidate */
-                $aAttachmentsToRevalidate = array();
+                $aAttachmentsToRevalidate = [];
 
                 if (false === empty($aAttachments)) {
                     foreach ($aAttachments as $iAttachmentTypeId => $aAttachment) {
@@ -80,7 +90,7 @@ EOF
                         $sFullPath       = realpath($sAttachmentPath);
 
                         if (false == $sFullPath) {
-                            $oLogger->error('Attachment not found (ID ' . $aAttachment['id'] . ')', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                            $oLogger->error('Attachment not found (ID ' . $aAttachment['id'] . ')', ['class' => __CLASS__, 'function' => __FUNCTION__]);
                             continue;
                         }
 
@@ -109,7 +119,7 @@ EOF
                         } catch (\Exception $oException) {
                             $oLogger->error(
                                 'Greenpoint was unable to process data (client ' . $iClientId . ') - Message: ' . $oException->getMessage() . ' - Code: ' . $oException->getCode(),
-                                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $iClientId)
+                                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $iClientId]
                             );
                         }
                     }
@@ -135,14 +145,14 @@ EOF
      */
     private function getGreenPointData($iClientId, $iAttachmentId, $sPath, array $aClient, $sType)
     {
-        $aData = array(
+        $aData = [
             'files'    => new \CURLFile($sPath),
             'dossier'  => $iClientId,
             'document' => $iAttachmentId,
             'detail'   => 1,
             'nom'      => $this->getFamilyNames($aClient['nom'], $aClient['nom_usage']),
             'prenom'   => $aClient['prenom']
-        );
+        ];
 
         switch ($sType) {
             case 'idcontrol':
@@ -238,7 +248,7 @@ EOF
             if (isset($aResponse['resource']) && is_array($aResponse['resource'])) {
                 $aGreenPointData = greenPointStatus::getGreenPointData($aResponse['resource'], $iAttachmentTypeId, $iAttachmentId, $iClientId, $aResponse['code']);
             } else {
-                $aGreenPointData = greenPointStatus::getGreenPointData(array(), $iAttachmentTypeId, $iAttachmentId, $iClientId, $aResponse['code']);
+                $aGreenPointData = greenPointStatus::getGreenPointData([], $iAttachmentTypeId, $iAttachmentId, $iClientId, $aResponse['code']);
             }
 
             foreach ($aGreenPointData['greenpoint_attachment'] as $sKey => $mValue) {
