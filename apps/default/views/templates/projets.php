@@ -70,7 +70,7 @@
 
                         $this->companies->get($aProject['id_company'], 'id_company');
 
-                        $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $aProject['date_retrait_full']);
+                        $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $aProject['date_retrait']);
 
                         if ($inter['mois'] > 0) {
                             $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
@@ -91,12 +91,12 @@
                                     if ($aProject['date_fin'] != '0000-00-00 00:00:00') {
                                         $endDateTime = new \DateTime($aProject['date_fin']);
                                     } else {
-                                        $endDateTime = new \DateTime($aProject['date_retrait_full']);
+                                        $endDateTime = new \DateTime($aProject['date_retrait']);
                                     }
                                     $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
                                     $dateRest = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
                                 } else {
-                                    $tab_date_retrait = explode(' ', $aProject['date_retrait_full']);
+                                    $tab_date_retrait = explode(' ', $aProject['date_retrait']);
                                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
                                     $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
                                     ?>
@@ -172,7 +172,7 @@
 
                 $this->companies->get($project['id_company'], 'id_company');
 
-                $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']);
+                $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait']);
                 if ($inter['mois'] > 0)
                     $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
                 else
@@ -188,12 +188,12 @@
                 if ($project['date_fin'] != '0000-00-00 00:00:00') {
                     $endDateTime = new \DateTime($project['date_fin']);
                 } else {
-                    $endDateTime = new \DateTime($project['date_retrait_full']);
+                    $endDateTime = new \DateTime($project['date_retrait']);
                 }
                 $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
                 $dateRest = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
                 } else {
-                    $heure_retrait = date('H:i', strtotime($project['date_retrait_full']));
+                    $heure_retrait = date('H:i', strtotime($project['date_retrait']));
                     ?>
                     <script type="text/javascript">
                         var cible<?= $project['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>:00');

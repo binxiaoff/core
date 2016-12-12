@@ -377,6 +377,11 @@ class preteursController extends bootstrap
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
 
+        /** @var \greenpoint_attachment_detail $greenPointDetail */
+        $greenPointDetail      = $this->loadData('greenpoint_attachment_detail');
+        $this->lenderIdentityMRZData = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORTE);
+        $this->hostIdentityMRZData = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+
         if (isset($_POST['send_completude'])) {
             $this->sendCompletenessRequest();
             $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][ $this->clients->id_client ]);

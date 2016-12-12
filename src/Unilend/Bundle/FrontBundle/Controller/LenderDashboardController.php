@@ -91,10 +91,10 @@ class LenderDashboardController extends Controller
                 $ongoingBidsByProject[$iKey] = [
                     'title'            => $aProject['title'],
                     'amount'           => $aProject['amount'],
-                    'publication_date' => $aProject['date_publication_full'],
+                    'publication_date' => $aProject['date_publication'],
                     'days_left'        => $aProject['daysLeft'],
-                    'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
-                    'end_date'         => $aProject['date_retrait_full'],
+                    'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
+                    'end_date'         => $aProject['date_retrait'],
                     'funding_duration' => $projectStats->days
                 ];
                 $ongoingBidsByProject[$iKey]['aPendingBids'] = $bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'], $lender->id_lender_account);
@@ -110,8 +110,8 @@ class LenderDashboardController extends Controller
                 'risk'             => $aProject['risk'],
                 'average_rate'     => $aProject['avgrate'],
                 'bid_count'        => count($bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'])),
-                'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
-                'end_date'         => $aProject['date_retrait_full'],
+                'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
+                'end_date'         => $aProject['date_retrait'],
                 'funding_duration' => $projectStats->days
             ];
         }

@@ -163,7 +163,7 @@ class projects_status extends projects_status_crud
             WHERE id_project = ' . $id_project . '
                 AND MONTH(added) = ' . $month . '
                 AND YEAR(added) = ' . $year . '
-            ORDER BY id_project_status_history DESC
+            ORDER BY projects_status_history.added DESC, id_project_status_history DESC
             LIMIT 1';
 
         $result            = $this->bdd->query($sql);

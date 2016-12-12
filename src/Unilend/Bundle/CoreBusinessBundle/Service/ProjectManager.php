@@ -705,19 +705,13 @@ class ProjectManager
         }
     }
 
-    public function getProjectEndDate(\projects $oProject)
+    /**
+     * @param \projects $project
+     * @return \DateTime
+     */
+    public function getProjectEndDate(\projects $project)
     {
-        /** @var \settings $oSettings */
-        $oSettings = $this->oEntityManager->getRepository('settings');
-        $oEndDate  = new \DateTime($oProject->date_retrait_full);
-        if ($oProject->date_fin != '0000-00-00 00:00:00') {
-            $oEndDate = new \DateTime($oProject->date_fin);
-        }
-        if ($oEndDate->format('H') === '00' && $oSettings->get('Heure fin periode funding', 'type')) {
-            $iEndHour = (int)$oSettings->value;
-            $oEndDate->add(new \DateInterval('PT' . $iEndHour . 'H'));
-        }
-        return $oEndDate;
+        return $project->date_fin != '0000-00-00 00:00:00' ? new \DateTime($project->date_fin) : new \DateTime($project->date_retrait);
     }
 
     public function addProjectStatus($iUserId, $iProjectStatus, \projects &$oProject, $iReminderNumber = 0, $sContent = '')
@@ -727,10 +721,6 @@ class ProjectManager
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         $oProjectStatus->get($iProjectStatus, 'status');
-
-        if ($this->oLogger instanceof LoggerInterface && empty($oProjectStatus->id_project_status)) {
-            $this->oLogger->error('Trying to insert empty status for project ' . $oProject->id_project . ' - Trace: ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), array('id_project' => $oProject->id_project));
-        }
 
         $oProjectsStatusHistory->id_project        = $oProject->id_project;
         $oProjectsStatusHistory->id_project_status = $oProjectStatus->id_project_status;
@@ -815,7 +805,7 @@ class ProjectManager
     {
         if ($oProject->status_solde == 0) {
             $oFunded    = new \DateTime();
-            $oPublished = new \DateTime($oProject->date_publication_full);
+            $oPublished = new \DateTime($oProject->date_publication);
 
             if ($oFunded < $oPublished) {
                 $oFunded = $oPublished;

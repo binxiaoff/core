@@ -73,7 +73,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
                     $lastRepaymentLender = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND id_loan = ' . $loans->id_loan . ' AND status = 0 AND id_lender = ' . $echeanciers->id_lender));
 
-                    $dernierStatut     = $projects_status_history->select('id_project = ' . $projects->id_project, 'id_project_status_history DESC', 0, 1);
+                    $dernierStatut     = $projects_status_history->select('id_project = ' . $projects->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
                     $dateDernierStatut = $dernierStatut[0]['added'];
                     $timeAdd           = strtotime($dateDernierStatut);
                     $day               = date('d', $timeAdd);
