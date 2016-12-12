@@ -34,7 +34,7 @@ class WalletManager
     private function credit(Operation $operation, Wallet $creditor = null)
     {
         if ($creditor instanceof Wallet) {
-            if ($operation->getType()->getLabel() === OperationType::LENDER_BID) {
+            if ($operation->getType()->getLabel() === OperationType::LENDER_LOAN) {
                 $balance = bcadd($creditor->getCommittedBalance(), $operation->getAmount(), 2);
                 if ($balance < 0) {
                     new \DomainException('The balance must not be lower than zero');
@@ -97,6 +97,6 @@ class WalletManager
             $this->entityManager->persist($walletSnap);
         }
 
-        $this->entityManager->flush([$creditor, $debtor]);
+        $this->entityManager->flush();
     }
 }

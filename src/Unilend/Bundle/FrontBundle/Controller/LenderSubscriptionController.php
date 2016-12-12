@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -19,12 +20,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
-use Unilend\Bundle\FrontBundle\Service\PaylineManager;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
 
@@ -841,81 +842,26 @@ class LenderSubscriptionController extends Controller
         if ($response instanceof RedirectResponse){
             return $response;
         }
-
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-
         $post = $request->request->all();
         $this->get('session')->set('subscriptionStep3WalletData', $post);
 
-        if (isset($post['amount']) && $post['clientId'] == $client->id_client) {
+        if (isset($post['amount'])) {
             /** @var \ficelle $ficelle */
             $ficelle = Loader::loadLib('ficelle');
             $amount  = $ficelle->cleanFormatedNumber($post['amount']);
 
             if (is_numeric($amount) && $amount >= LenderWalletController::MIN_DEPOSIT_AMOUNT && $amount <= LenderWalletController::MAX_DEPOSIT_AMOUNT) {
-                $amount = (number_format($amount, 2, '.', '') * 100);
-                /** @var \lenders_accounts $lenderAccount */
-                $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-                $lenderAccount->get($client->id_client, 'id_client_owner');
+                $em = $this->get('doctrine.orm.entity_manager');
+                $walletType = $em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::LENDER]);
+                $wallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->id_client, 'idType' => $walletType]);
 
-                $lenderAccount->fonds          = $amount;
-                $lenderAccount->type_transfert = \lenders_accounts::MONEY_TRANSFER_TYPE_CARD;
-                $lenderAccount->update();
+                $successUrl = $this->generateUrl('lender_subscription_money_transfer', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
+                $cancelUrl = $this->generateUrl('lender_subscription_money_deposit', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-                /** @var \clients_adresses $clientAddresses */
-                $clientAddresses = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-                $clientAddresses->get($client->id_client, 'id_client');
+                $redirectUrl = $this->get('unilend.frontbundle.service.payline_manager')->pay($amount, $wallet, $successUrl, $cancelUrl);
 
-                /** @var \transactions $transaction */
-                $transaction                   = $this->get('unilend.service.entity_manager')->getRepository('transactions');
-                $transaction->id_client        = $client->id_client;
-                $transaction->montant          = $amount;
-                $transaction->id_langue        = 'fr';
-                $transaction->date_transaction = date('Y-m-d h:i:s');
-                $transaction->status           = \transactions::STATUS_PENDING;
-                $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
-                $transaction->type_transaction = \transactions_types::TYPE_LENDER_SUBSCRIPTION;
-                $transaction->create();
-
-                $paylineParameter = [];
-                require_once $this->getParameter('path.payline') . 'include.php';
-                /** @var \paylineSDK $payline */
-                $payline                  = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
-                $payline->returnURL       = $this->get('assets.packages')->getUrl('') . $this->generateUrl('lender_subscription_money_transfer', ['hash' => $client->hash]);
-                $payline->cancelURL       = $payline->returnURL;
-                $payline->notificationURL = NOTIFICATION_URL;
-
-                $paylineParameter['payment']['amount']   = $amount;
-                $paylineParameter['payment']['currency'] = ORDER_CURRENCY;
-                $paylineParameter['payment']['action']   = PAYMENT_ACTION;
-                $paylineParameter['payment']['mode']     = PAYMENT_MODE;
-
-                $paylineParameter['order']['ref']      = $transaction->id_transaction;
-                $paylineParameter['order']['amount']   = $amount;
-                $paylineParameter['order']['currency'] = ORDER_CURRENCY;
-
-                $paylineParameter['payment']['contractNumber'] = CONTRACT_NUMBER;
-                $contracts                                     = explode(";", CONTRACT_NUMBER_LIST);
-                $paylineParameter['contracts']                 = $contracts;
-                $secondContracts                               = explode(";", SECOND_CONTRACT_NUMBER_LIST);
-                $paylineParameter['secondContracts']           = $secondContracts;
-
-                $logger->info('Calling Payline::doWebPayment: return URL=' . $payline->returnURL . ' Transmetted data: ' . json_encode($paylineParameter), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-
-                $result = $payline->doWebPayment($paylineParameter);
-                $logger->info('Payline response : ' . json_encode(['$result']), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-
-                $transaction->get($transaction->id_transaction, 'id_transaction');
-                $transaction->serialize_payline = serialize($result);
-                $transaction->update();
-
-                if (isset($result)) {
-                    if ($result['result']['code'] == '00000') {
-                        return $this->redirect($result['redirectURL']);
-                    } elseif (isset($result)) {
-                        mail('alertesit@unilend.fr', 'unilend erreur payline', 'alimentation preteur (client : ' . $client->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
-                    }
+                if (false !== $redirectUrl) {
+                    return $this->redirect($redirectUrl);
                 }
             }
         }
@@ -929,8 +875,6 @@ class LenderSubscriptionController extends Controller
      */
     public function paymentAction(Request $request)
     {
-        require_once $this->getParameter('path.payline') . 'include.php';
-
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         /** @var LoggerInterface $logger */
@@ -941,40 +885,32 @@ class LenderSubscriptionController extends Controller
         $ficelle = Loader::loadLib('ficelle');
 
         if ($client->get($request->query->get('hash'), 'hash')) {
-            $paylineParameter = [];
-            /** @var \paylineSDK $payline */
-            $payline = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
-            $paylineParameter['token'] = $request->request->get('token', $request->query->get('token'));
+            $token = $request->query->get('token');
+            $version = $request->query->get('version', Backpayline::WS_DEFAULT_VERSION);
 
-            if (true === empty($paylineParameter['token'])) {
+            if (true === empty($token)) {
                 $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
                 return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
             }
 
-            $paylineParameter['version'] = $request->request->get('version', '3');
-            $response                    = $payline->getWebPaymentDetails($paylineParameter);
-            $partnerId                   = $request->getSession()->get('id_partenaire', '');
+            $paylineManager = $this->get('unilend.frontbundle.service.payline_manager');
+            $paidAmountInCent = $paylineManager->handlePaylineReturn($token, $version);
 
-            if (false === empty($response)) {
-                /** @var PaylineManager $paylineManager */
-                $paylineManager = $this->get('unilend.frontbundle.service.payline_manager');
-                $paylineManager->setLogger($logger);
+            if (false !== $paidAmountInCent) {
+                /** @var \clients_history $clientHistory */
+                $clientHistory            = $this->get('unilend.service.entity_manager')->getRepository('clients_history');
+                $clientHistory->id_client = $client->id_client;
+                $clientHistory->status    = \clients_history::STATUS_ACTION_ACCOUNT_CREATION;
+                $clientHistory->create();
 
-                if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_SUBSCRIPTION)) {
-
-                    /** @var \clients_history $clientHistory */
-                    $clientHistory            = $this->get('unilend.service.entity_manager')->getRepository('clients_history');
-                    $clientHistory->id_client = $client->id_client;
-                    $clientHistory->status    = \clients_history::STATUS_ACTION_ACCOUNT_CREATION;
-                    $clientHistory->create();
-
-                    $this->sendInternalMoneyTransferNotification($client, $response);
-                    $this->addFlash(
-                        'moneyTransferSuccess',
-                        $translator->trans('lender-subscription_money-transfer-success-message', ['%depositAmount%' => $ficelle->formatNumber(bcdiv($response['payment']['amount'], 100, 2), 2)])
-                    );
-                    $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
-                }
+                $paidAmount = bcdiv($paidAmountInCent, 100, 2);
+                $this->sendInternalMoneyTransferNotification($client, $paidAmount);
+                $this->addFlash(
+                    'moneyTransferSuccess',
+                    $translator->trans('lender-subscription_money-transfer-success-message', ['%depositAmount%' => $ficelle->formatNumber($paidAmount, 2)])
+                );
+                $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
+            } else {
                 $this->addFlash('moneyTransferError', $translator->trans('lender-subscription_money-transfer-error-message'));
                 return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
             }
@@ -1319,7 +1255,7 @@ class LenderSubscriptionController extends Controller
         $mailer->send($message);
     }
 
-    private function sendInternalMoneyTransferNotification(\clients $client, $response)
+    private function sendInternalMoneyTransferNotification(\clients $client, $amount)
     {
         /** @var \settings $settings */
         $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
@@ -1332,7 +1268,7 @@ class LenderSubscriptionController extends Controller
             '$id_preteur' => $client->id_client,
             '$nom'        => $client->nom,
             '$prenom'     => $client->prenom,
-            '$montant'    => bcdiv($response['payment']['amount'], 100, 2)
+            '$montant'    => $amount
         );
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
