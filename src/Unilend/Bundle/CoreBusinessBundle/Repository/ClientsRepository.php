@@ -17,14 +17,14 @@ class ClientsRepository extends EntityRepository
         $cb = $this->createQueryBuilder('c');
         $cb->select('cs')
             ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idStatus = cs.idStatus')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
             ->where('csh.idClient = :idClient')
             ->orderBy('csh.added', 'DESC')
             ->addOrderBy('csh.idClientStatusHistory',  'DESC')
             ->setMaxResults(1)
             ->setParameter('idClient', $idClient);
         $query = $cb->getQuery();
-        $result = $query->getSingleResult();
+        $result = $query->getOneOrNullResult();
 
         return $result;
     }

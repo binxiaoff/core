@@ -184,7 +184,7 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="unilend.service.notification_manager" />
             <argument type="service" id="unilend.service.autobid_settings_manager" />
-            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
         </service>
 
         <service id="unilend.service.recovery_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager">
