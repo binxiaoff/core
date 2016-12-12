@@ -76,6 +76,7 @@ class UniversignManager
         $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
         if ($soapResult->faultCode()) {
+
             $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
 
             return false;
@@ -103,10 +104,10 @@ class UniversignManager
         if ($soapResult->faultCode()) {
             $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
         } else {
-            $doc['name']    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
-            $doc['content'] = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
+            $documentName    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
+            $documentContent = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
 
-            file_put_contents($this->rootDir . '/../protected/pdf/pouvoir/' . $doc['name'], $doc['content']);
+            file_put_contents($this->rootDir . '/../protected/pdf/pouvoir/' . $documentName, $documentContent);
             $proxy->status = \projects_pouvoir::STATUS_SIGNED;
             $proxy->update();
 
@@ -182,10 +183,10 @@ class UniversignManager
         if ($soapResult->faultCode()) {
             $this->notifyError($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
         } else {
-            $doc['name']    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
-            $doc['content'] = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
+            $documentName    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
+            $documentContent = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
 
-            file_put_contents($this->rootDir . '/../protected/pdf/mandat/' . $doc['name'], $doc['content']);
+            file_put_contents($this->rootDir . '/../protected/pdf/mandat/' . $documentName, $documentContent);
             $mandate->status = \clients_mandats::STATUS_SIGNED;
             $mandate->update();
 
@@ -251,10 +252,10 @@ class UniversignManager
         if ($soapResult->faultCode()) {
             $this->notifyError($tos->id, 'tos', $tos->id_project, $soapResult);
         } else {
-            $doc['name']    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
-            $doc['content'] = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
+            $documentName    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
+            $documentContent = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
 
-            file_put_contents($this->rootDir . '/../protected/pdf/cgv_emprunteurs/' . $doc['name'], $doc['content']);
+            file_put_contents($this->rootDir . '/../protected/pdf/cgv_emprunteurs/' . $documentName, $documentContent);
             $tos->status = \project_cgv::STATUS_SIGN_UNIVERSIGN;
             $tos->update();
 
@@ -368,16 +369,16 @@ class UniversignManager
         $settings->get('DebugMailIt', 'type');
 
         $varMail = [
-            '$surl'            => $this->assetsPackages->getUrl(''),
-            '$sujetMail'       => 'Unilend - Erreur Universign',
-            '$documentType'    => $documentType,
-            '$documentId'      => $documentId,
-            '$soapErrorCode'   => $soapResult->faultCode(),
-            '$soapErrorReason' => $soapResult->faultString()
+            '[SURL]'              => $this->assetsPackages->getUrl(''),
+            '[SUJET_MAIL]'        => 'Unilend - Erreur Universign',
+            '[DOCUMENT_TYPE]'     => $documentType,
+            '[DOCUMENT_ID]'       => $documentId,
+            '[SOAP_ERROR_CODE]'   => $soapResult->faultCode(),
+            '[SOAP_ERROR_REASON]' => $soapResult->faultString()
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('notification-erreur-universign', $varMail);
+        $message = $this->messageProvider->newMessage('notification-erreur-universign', $varMail, false);
         $message->setTo($settings->value);
         $this->mailer->send($message);
 
