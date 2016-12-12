@@ -106,8 +106,12 @@
                                                     {% else %}
                                                         {% set max = (project.maxValidRate - 0.1)|round(1) %}
                                                     {% endif %}
-                                                    {% for rate in range(max, project.minRate, 0.1) %}
-                                                        <option value="{{ rate }}"{% if app.session.flashBag.has('cipBid') and app.session.flashBag.peek('cipBid')[0].rate == rate %} selected="selected"{% endif %}>{{ rate|localizednumberwithprecision(1) }} %</option>
+                                                    {#
+                                                        0.0999 is a trick for fixing an issue wit floats
+                                                         If max value is 5.1 and project.minRate is 5, there is a warning "range(): step exceeds the specified range"
+                                                    #}
+                                                    {% for rate in range(max, project.minRate, 0.0999) %}
+                                                        <option value="{{ rate|round(1) }}"{% if app.session.flashBag.has('cipBid') and app.session.flashBag.peek('cipBid')[0].rate == rate %} selected="selected"{% endif %}>{{ rate|localizednumberwithprecision(1) }} %</option>
                                                     {% endfor %}
                                                 </select>
                                             </div>
