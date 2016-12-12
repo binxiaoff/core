@@ -79,7 +79,7 @@
                                 <dt>{{ 'borrower-profile_iban'|trans|upper }}</dt>
                                 <dd>{{ company.iban|split('', 4)|join(' ') }}</dd>
                             </dl>
-                            <p>{{ 'borrower-profile_bank-information-modification-message'|trans }}</p>
+                            <p>{{ 'borrower-profile_bank-information-modification-message'|trans|raw }}</p>
                         </section>
                     </section><!-- /.ui-toggle-group -->
                     <a href="{{ path('borrower_account_contact') }}" class="btn-primary borrower-profil-button-modification">{{ 'borrower-profile_ask-to-modify-these-information'|trans }}</a>
