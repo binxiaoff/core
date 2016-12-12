@@ -190,12 +190,13 @@ class pdfController extends bootstrap
             && $project->get($this->params[1], 'id_project')
             && $company->get($this->clients->id_client, 'id_client_owner')
             && $project->id_company == $company->id_company
+            && $project->status != \projects_status::PRET_REFUSE
         ) {
             $path            = $this->path . 'protected/pdf/mandat/';
             $namePDFClient   = 'MANDAT-UNILEND-' . $project->slug . '-' . $this->clients->id_client;
             $mandates        = $this->loadData('clients_mandats');
             $projectMandates = $mandates->select(
-                'id_project = ' . $project->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . \clients_mandats::STATUS_PENDING . ',' . \clients_mandats::STATUS_SIGNED . ',' . \clients_mandats::STATUS_CANCELED . ')',
+                'id_project = ' . $project->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . \clients_mandats::STATUS_PENDING . ',' . \clients_mandats::STATUS_SIGNED . ')',
                 'id_mandat DESC'
             );
 
@@ -316,7 +317,10 @@ class pdfController extends bootstrap
         if (isset($this->params[0], $this->params[1]) && $this->clients->get($this->params[0], 'hash')) {
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-            if ($this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
+            if (
+                $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
+                && $this->projects->status != \projects_status::PRET_REFUSE
+            ) {
                 $this->oProjectsPouvoir = $this->loadData('projects_pouvoir');
 
                 $signed        = false;
