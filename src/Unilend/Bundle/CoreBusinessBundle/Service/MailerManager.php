@@ -213,14 +213,7 @@ class MailerManager
         $oBorrower->get($oCompany->id_client_owner, 'id_client');
 
         if ($oBorrower->status == 1) {
-            $endHour = substr($oProject->date_retrait_full, 11, 5);
-
-            if ($endHour == '00:00') {
-                $this->oSettings->get('Heure fin periode funding', 'type');
-                $endHour = $this->oSettings->value;
-            }
-
-            $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $oProject->date_retrait . ' ' . $endHour . ':00');
+            $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $oProject->date_retrait);
 
             if ($inter['mois'] > 0) {
                 $remainingDuration = $inter['mois'] . ' mois';
@@ -305,14 +298,7 @@ class MailerManager
         /** @var \loans $loan */
         $loan = $this->oEntityManager->getRepository('loans');
 
-        $endHour = substr($project->date_retrait_full, 11, 5);
-
-        if ($endHour == '00:00') {
-            $this->oSettings->get('Heure fin periode funding', 'type');
-            $endHour = $this->oSettings->value;
-        }
-
-        $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->date_retrait . ' ' . $endHour . ':00');
+        $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->date_retrait);
 
         if ($inter['mois'] > 0) {
             $remainingDuration = $inter['mois'] . ' mois';
@@ -498,18 +484,7 @@ class MailerManager
             $oProject->get($oBid->id_project);
             $oCompany->get($oProject->id_company);
 
-            /** @var \settings $oSettings */
-            $oSettings = $this->oEntityManager->getRepository('settings');
-            $oEndDate  = new \DateTime($oProject->date_retrait_full);
-            if ($oProject->date_fin != '0000-00-00 00:00:00') {
-                $oEndDate = new \DateTime($oProject->date_fin);
-            }
-            if ($oEndDate->format('H') === '00') {
-                $oSettings->get('Heure fin periode funding', 'type');
-                $iEndHour = (int)$oSettings->value;
-                $oEndDate->add(new \DateInterval('PT' . $iEndHour . 'H'));
-            }
-
+            $oEndDate   = $oProject->date_fin != '0000-00-00 00:00:00' ? new \DateTime($oProject->date_fin) : new \DateTime($oProject->date_retrait);
             $oNow       = new \DateTime();
             $sInterval  = $this->formatDateDiff($oNow, $oEndDate);
             $bIsAutoBid = false === empty($oBid->id_autobid);
@@ -785,8 +760,8 @@ class MailerManager
             $sMailClient = $oClients->email;
         }
 
-        $oPublicationDate = $oProject->date_publication_full != '0000-00-00 00:00:00' ? new \DateTime($oProject->date_publication_full) : new \DateTime($oProject->date_publication);
-        $oEndDate         = $oProject->date_retrait_full != '0000-00-00 00:00:00' ? new \DateTime($oProject->date_retrait_full) : $oEndDate = new \DateTime($oProject->date_retrait);
+        $oPublicationDate = new \DateTime($oProject->date_publication);
+        $oEndDate         = new \DateTime($oProject->date_retrait);
 
         $oFundingTime = $oPublicationDate->diff($oEndDate);
         $iFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
@@ -872,11 +847,12 @@ class MailerManager
 
             /** @var \echeanciers $paymentSchedule */
             $paymentSchedule = $this->oEntityManager->getRepository('echeanciers');
-
             /** @var \accepted_bids $acceptedBids */
             $acceptedBids = $this->oEntityManager->getRepository('accepted_bids');
             /** @var \underlying_contract $contract */
             $contract = $this->oEntityManager->getRepository('underlying_contract');
+            /** @var \clients_gestion_mails_notif $clientMailNotifications */
+            $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
 
             $contracts     = $contract->select();
             $contractLabel = [];
@@ -934,9 +910,7 @@ class MailerManager
                                         <td style="' . $sStyleTD . '">' . $this->oFicelle->formatNumber($aFirstPayment['montant'] / 100) . ' &euro;</td>
                                         <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
 
-                    if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
-                        /** @var \clients_gestion_mails_notif $clientMailNotifications */
-                        $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+                    if ($clientNotifications->getNotif($lender->id_client_owner, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                         $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $lender->id_client_owner . ' AND id_loan');
                         $clientMailNotifications->immediatement = 1;
                         $clientMailNotifications->update();
@@ -1061,7 +1035,7 @@ class MailerManager
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
                     $sProjectsListHTML = '';
-                    $iProjectsCount    = count($aMailNotifications);
+                    $iProjectsCount    = 0;
 
                     foreach ($aMailNotifications as $aMailNotification) {
                         $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
@@ -1071,13 +1045,7 @@ class MailerManager
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        $oProject->get($aMailNotification['id_project']);
-
-                        /** @var \projects_status $oProjectStatus */
-                        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
-                        $oProjectStatus->getLastStatut($oProject->id_project);
-
-                        if (\projects_status::EN_FUNDING == $oProjectStatus->status) {
+                        if (\projects_status::EN_FUNDING == $oProject->status) {
                             $sProjectsListHTML .= '
                                 <tr style="color:#b20066;">
                                     <td  style="font-family:Arial;font-size:14px;height: 25px;">
@@ -1175,9 +1143,6 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \translations $translations */
-        $translations                    = $this->oEntityManager->getRepository('textes');
-        $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
@@ -1915,7 +1880,7 @@ class MailerManager
             'raison_sociale'     => $company->name,
             'montant'            => $ficelle->formatNumber($projects->amount, 0),
             'duree'              => $projects->period,
-            'duree_financement'  => (new \DateTime($projects->date_publication_full))->diff(new \DateTime($projects->date_retrait_full))->d,
+            'duree_financement'  => (new \DateTime($projects->date_publication))->diff(new \DateTime($projects->date_retrait))->d,
             'nb_preteurs'        => $loans->getNbPreteurs($projects->id_project),
             'lien_fb'            => $this->getFacebookLink(),
             'lien_tw'            => $this->getTwitterLink(),

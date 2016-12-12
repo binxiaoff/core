@@ -1,9 +1,9 @@
 <div class="dashboard-tabs-nav">
     <ul class="nav nav-dashboard-tabs">
-        <li role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_wallet_deposit' %}active{% endif %}">
+        <li role="presentation"{% if app.request.attributes.get('_route') == 'lender_wallet_deposit' %} class="active"{% endif %}>
             <a href="{{ path('lender_wallet_deposit') }}">{% trans %} lender-wallet_deposit {% endtrans %}</a>
         </li>
-        <li role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_wallet_withdrawal' %}active{% endif %}">
+        <li role="presentation"{% if app.request.attributes.get('_route') == 'lender_wallet_withdrawal' %} class="active"{% endif %}>
             <a href="{{ path('lender_wallet_withdrawal') }}">{% trans %} lender-wallet_withdrawal {% endtrans %}</a>
         </li>
     </ul>

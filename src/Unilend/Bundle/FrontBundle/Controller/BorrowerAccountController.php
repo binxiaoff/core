@@ -14,7 +14,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
 class BorrowerAccountController extends Controller
@@ -74,8 +73,7 @@ class BorrowerAccountController extends Controller
                 $closingDate = new \DateTime();
                 $closingDate->modify('+5 minutes');
 
-                $project->date_retrait_full = $closingDate->format('Y-m-d H:i:s');
-                $project->date_retrait      = $closingDate->format('Y-m-d');
+                $project->date_retrait = $closingDate->format('Y-m-d H:i:s');
                 $project->update();
             }
         }
@@ -201,8 +199,20 @@ class BorrowerAccountController extends Controller
         $clientsMandat = $this->get('unilend.service.entity_manager')->getRepository('clients_mandats');
 
         foreach ($projectsPostFunding as $iKey => $aProject) {
-            $projectsPostFunding[$iKey]['pouvoir'] = $projectsPouvoir->select('id_project = ' . $aProject['id_project'])[0];
-            $projectsPostFunding[$iKey]['mandat']  = $clientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC')[0];
+            $pouvoir = $projectsPouvoir->select('id_project = ' . $aProject['id_project']);
+            if ($pouvoir) {
+                $projectsPostFunding[$iKey]['pouvoir']  = $pouvoir[0];
+            } else {
+                $projectsPostFunding[$iKey]['pouvoir'] = [];
+            }
+
+            $mandat = $clientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC');
+            if ($mandat) {
+                $projectsPostFunding[$iKey]['mandat']  = $mandat[0];
+            } else {
+                $projectsPostFunding[$iKey]['mandat'] = [];
+            }
+
         }
 
         /** @var \factures $oInvoices */
@@ -392,7 +402,7 @@ class BorrowerAccountController extends Controller
         }
 
         $borrowerOperations = $client->getDataForBorrowerOperations($projectsIds, $start, $end, $operation);
-        $translator         = $this->get('unilend.service.translation_manager');
+        $translator         = $this->get('translator');
 
         $response = new StreamedResponse();
         $response->setCallback(function () use ($borrowerOperations, $translator) {
@@ -405,7 +415,7 @@ class BorrowerAccountController extends Controller
                 fputcsv(
                     $handle,
                     [
-                        $translator->selectTranslation('borrower-operation', $operation['type']),
+                        $translator->trans('borrower-operation_' . $operation['type']),
                         $operation['id_project'],
                         $date,
                         number_format($operation['montant'], 2, ',', ''),
@@ -436,8 +446,8 @@ class BorrowerAccountController extends Controller
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
 
         $filter = $request->query->get('filter');
-        $start  = \Datetime::createFromFormat('d/m/Y', $filter['start']);
-        $end    = \Datetime::createFromFormat('d/m/Y', $filter['end']);
+        $start  = \DateTime::createFromFormat('d/m/Y', $filter['start']);
+        $end    = \DateTime::createFromFormat('d/m/Y', $filter['end']);
 
         if ($filter['op'] !== 'all') {
             $operation = (int)$filter['op'];
@@ -464,12 +474,9 @@ class BorrowerAccountController extends Controller
         $fileName = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
         $fullPath = $rootDir . '/protected/operations_export_pdf/' . $client->id_client . '/' . $fileName;
 
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
+        $translator = $this->get('translator');
 
-        $pdfController->lng['espace-emprunteur']                 = $translationManager->getAllTranslationsForSection('espace-emprunteur');
-        $pdfController->lng['preteur-operations-vos-operations'] = $translationManager->getAllTranslationsForSection('preteur-operations-vos-operations');
-        $pdfController->lng['preteur-operations-pdf']            = $translationManager->getAllTranslationsForSection('preteur-operations-pdf');
+        $pdfController->translator          = $translator;
         $pdfController->aBorrowerOperations = $client->getDataForBorrowerOperations($projectsIds, $start, $end, $operation);
         $pdfController->companies = $this->get('unilend.service.entity_manager')->getRepository('companies');
         $pdfController->companies->get($client->id_client, 'id_client_owner');
@@ -509,11 +516,11 @@ class BorrowerAccountController extends Controller
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
         $project->get($projectId, 'id_project');
 
-        $translator = $this->get('unilend.service.translation_manager');
+        $translator = $this->get('translator');
         switch ($type) {
             case 'l':
                 $aColumnHeaders = array('ID Préteur', 'Nom ou Raison Sociale', 'Prénom', 'Mouvement', 'Montant', 'Date');
-                $sType          = $translator->selectTranslation('borrower-operation', 'mouvement-deblocage-des-fonds');
+                $sType          = $translator->trans('borrower-operation_mouvement-deblocage-des-fonds');
                 $aData          = $project->getLoansAndLendersForProject();
                 $sFilename      = 'details_prets';
                 break;
@@ -528,7 +535,7 @@ class BorrowerAccountController extends Controller
                     'Intérets',
                     'Date'
                 );
-                $sType          = $translator->selectTranslation('borrower-operation', 'mouvement-remboursement');
+                $sType          = $translator->trans('borrower-operation_mouvement-remboursement');
                 $aData          = $project->getDuePaymentsAndLenders(null, $repaymentOrder);
                 $oDateTime      = \DateTime::createFromFormat('Y-m-d H:i:s', $aData[0]['date']);
                 $sDate          = $oDateTime->format('mY');
@@ -706,7 +713,7 @@ class BorrowerAccountController extends Controller
             $projectsFunding[$key] = $projectsFunding[$key] + [
                 'average_ir'       => round($projects->getAverageInterestRate(), 2),
                 'funding_progress' => min(100, round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1)),
-                'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait_full'])
+                'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait'])
             ];
         }
         return $projectsFunding;
@@ -732,7 +739,7 @@ class BorrowerAccountController extends Controller
 
             if (false === in_array($project['status'],[\projects_status::REMBOURSEMENT_ANTICIPE,\projects_status::REMBOURSE])) {
                $aNextRepayment = $repaymentSchedule->select(
-                   'status_emprunteur = 0 AND id_project = ' . $project['id_project'],
+                   'id_project = ' . $project['id_project'] . ' AND status_emprunteur = 0',
                    'date_echeance_emprunteur ASC',
                    '',
                    1

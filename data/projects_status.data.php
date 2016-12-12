@@ -61,6 +61,16 @@ class projects_status extends projects_status_crud
     const LIQUIDATION_JUDICIAIRE  = 150;
     const DEFAUT                  = 160;
 
+    const NON_ELIGIBLE_REASON_PRODUCT_NON_FOUND              = 'product_non_found';
+    const NON_ELIGIBLE_REASON_INACTIVE                       = 'entity_inactive';
+    const NON_ELIGIBLE_REASON_UNKNOWN_SIREN                  = 'unknown_siren';
+    const NON_ELIGIBLE_REASON_PROCEEDING                     = 'in_proceeding';
+    const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES = 'negative_raw_operating_incomes';
+    const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK         = 'negative_capital_stock';
+    const NON_ELIGIBLE_REASON_LOW_SCORE                      = 'low_score';
+    const NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL        = 'negative_equity_capital';
+    const NON_ELIGIBLE_REASON_LOW_TURNOVER                   = 'low_turnover';
+
     /**
      * List of projects with pending repayments
      * @var array $runningRepayment
@@ -153,7 +163,7 @@ class projects_status extends projects_status_crud
             WHERE id_project = ' . $id_project . '
                 AND MONTH(added) = ' . $month . '
                 AND YEAR(added) = ' . $year . '
-            ORDER BY id_project_status_history DESC
+            ORDER BY projects_status_history.added DESC, id_project_status_history DESC
             LIMIT 1';
 
         $result            = $this->bdd->query($sql);

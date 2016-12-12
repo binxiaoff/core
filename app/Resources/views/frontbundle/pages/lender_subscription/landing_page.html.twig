@@ -59,11 +59,8 @@
                             <p>{% trans %} lender-landing-page_promo-section-step-3-text {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div><!-- /.promos -->
-
                 </div><!-- /.site-wrap -->
             </div><!-- /.page-content -->
-
-            {# include 'partials/components/list-socialmedia.twig' #}
         </div><!-- /.hero-wrap -->
 
         <div class="site-wrap block-copy-lp-footer">
@@ -81,14 +78,11 @@
 
         {# Hidden text until made visible through the fancybox #}
         <div class="hide-accessible">
-
             <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
                 <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %} </h3>
                 {% trans %} lender-landing-page_welcome-offer-conditions-text {% endtrans %}
             </div><!-- /#dialog-conditions-content -->
-
         </div><!-- /.hide-accessible -->
-
     </article><!-- /.page -->
 {% endblock %}
 
@@ -110,7 +104,7 @@
                             {% endfor %}
                         </ul>
                         <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
-                        <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}-
+                        <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %} -
                             <a href="{{ path('mentions-legales') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a>
                         </p>
                     {% endblock %}
@@ -151,4 +145,3 @@
         <![endif]-->
     {% endblock %}
 {% endblock %}
-

@@ -64,6 +64,7 @@ class PaylineManager
      * @param array $response
      * @param array $paylineParameter
      * @param string $partnerId
+     * @param int $locationCall
      * @return bool
      */
     public function handlePaylineReturn(\clients $client, $response, $paylineParameter, $partnerId, $locationCall)
@@ -91,12 +92,11 @@ class PaylineManager
         $backPayline->create();
 
         if ($response['result']['code'] == '00000') {
-            if ($transaction->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
+            if ($transaction->get($response['order']['ref'], 'status = ' . \transactions::STATUS_PENDING . ' AND id_transaction')) {
                 $transaction->id_backpayline   = $backPayline->id_backpayline;
                 $transaction->montant          = $response['payment']['amount'];
                 $transaction->id_langue        = 'fr';
                 $transaction->date_transaction = date('Y-m-d H:i:s');
-                $transaction->etat             = 1;
                 $transaction->status           = \transactions::STATUS_VALID;
                 /** @todo id_partenaire is set from db table : partenaires.id_partenaire */
                 $transaction->id_partenaire    = $partnerId;
@@ -134,11 +134,10 @@ class PaylineManager
         } elseif ($response['result']['code'] == '02319') { // Payment cancelled
             $transaction->get($response['order']['ref'], 'id_transaction');
             $transaction->id_backpayline = $backPayline->id_backpayline;
-            $transaction->statut         = '0';
-            $transaction->etat           = '3';
+            $transaction->status         = \transactions::STATUS_CANCELED;
             $transaction->update();
 
-        } else { // Payment error
+        } else {
             mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $client->id_client . ') : ' . serialize($response));
         }
         return false;

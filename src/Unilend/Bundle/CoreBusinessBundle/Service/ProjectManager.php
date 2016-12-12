@@ -175,11 +175,6 @@ class ProjectManager
                     $iRejectedBids++;
                     $oBid->update();
                 }
-
-                if (1 != $oBid->checked) {
-                    $oBid->checked = 1;
-                    $oBid->update();
-                }
             }
 
             $aLogContext['Project ID']    = $oProject->id_project;
@@ -204,8 +199,6 @@ class ProjectManager
 
     /**
      * @param \projects $oProject
-     *
-     * @return bool
      */
     public function autoBid(\projects $oProject)
     {
@@ -284,10 +277,6 @@ class ProjectManager
     {
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
-        /** @var \loans $oLoan */
-        $oLoan = $this->oEntityManager->getRepository('loans');
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::BID_TERMINATED, $oProject);
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
@@ -333,15 +322,29 @@ class ProjectManager
                 $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
-        $contractTypes = array_column($this->productManager->getProjectAvailableContractTypes($oProject), 'label');
-        if(in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_BDC, $contractTypes)) {
+        /** @var \product $product */
+        $product = $this->oEntityManager->getRepository('product');
+        $product->get($oProject->id_product);
+        $contractTypes = array_column($this->productManager->getAvailableContracts($product), 'label');
+        if (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_BDC, $contractTypes)) {
             $this->buildLoanIFPAndBDC($oProject);
+        } elseif (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_MINIBON, $contractTypes)) {
+            $this->buildLoanIFPAndMinibon($oProject);
         } elseif (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes)) {
             $this->buildLoanIFP($oProject);
         }
     }
 
-    private function buildLoanIFPAndBDC($project)
+    private function buildLoanIFPAndMinibon($project)
+    {
+        $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_MINIBON);
+    }
+
+    private function buildLoanIFPAndBDC($project) {
+        $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_BDC);
+    }
+
+    private function buildIFPBasedMixLoan($project, $additionalContract)
     {
         /** @var \bids $bid */
         $bid = $this->oEntityManager->getRepository('bids');
@@ -366,10 +369,10 @@ class ProjectManager
             $IFPLoanAmountMax = $contractAttrVars[0];
         }
 
-        if (false === $contract->get(\underlying_contract::CONTRACT_BDC, 'label')) {
-            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_BDC . 'does not exist.');
+        if (false === $contract->get($additionalContract, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . $additionalContract . 'does not exist.');
         }
-        $BDCContractId = $contract->id_contract;
+        $additionalContractId = $contract->id_contract;
 
         foreach ($aLenderList as $aLender) {
             $iLenderId   = $aLender['id_lender_account'];
@@ -395,7 +398,7 @@ class ProjectManager
                             'amount' => $fBidAmount
                         );
                     } else {
-                        // Greater than IFP max amount ? create BDC loan, split it if needed.
+                        // Greater than IFP max amount ? create additional contract loan, split it if needed.
                         $bIFPContract = false;
                         $fDiff        = bcsub(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2);
 
@@ -405,7 +408,7 @@ class ProjectManager
                         $loan->id_project       = $project->id_project;
                         $loan->amount           = $fDiff * 100;
                         $loan->rate             = $aBid['rate'];
-                        $loan->id_type_contract = $BDCContractId;
+                        $loan->id_type_contract = $additionalContractId;
                         $this->oLoanManager->create($loan);
 
                         $fRest = $fBidAmount - $fDiff;
@@ -439,7 +442,7 @@ class ProjectManager
                     $loan->id_project       = $project->id_project;
                     $loan->amount           = $aBid['amount'];
                     $loan->rate             = $aBid['rate'];
-                    $loan->id_type_contract = $BDCContractId;
+                    $loan->id_type_contract = $additionalContractId;
                     $this->oLoanManager->create($loan);
                 }
             }
@@ -710,19 +713,13 @@ class ProjectManager
         }
     }
 
-    public function getProjectEndDate(\projects $oProject)
+    /**
+     * @param \projects $project
+     * @return \DateTime
+     */
+    public function getProjectEndDate(\projects $project)
     {
-        /** @var \settings $oSettings */
-        $oSettings = $this->oEntityManager->getRepository('settings');
-        $oEndDate  = new \DateTime($oProject->date_retrait_full);
-        if ($oProject->date_fin != '0000-00-00 00:00:00') {
-            $oEndDate = new \DateTime($oProject->date_fin);
-        }
-        if ($oEndDate->format('H') === '00' && $oSettings->get('Heure fin periode funding', 'type')) {
-            $iEndHour = (int)$oSettings->value;
-            $oEndDate->add(new \DateInterval('PT' . $iEndHour . 'H'));
-        }
-        return $oEndDate;
+        return $project->date_fin != '0000-00-00 00:00:00' ? new \DateTime($project->date_fin) : new \DateTime($project->date_retrait);
     }
 
     public function addProjectStatus($iUserId, $iProjectStatus, \projects &$oProject, $iReminderNumber = 0, $sContent = '')
@@ -823,7 +820,7 @@ class ProjectManager
     {
         if ($oProject->status_solde == 0) {
             $oFunded    = new \DateTime();
-            $oPublished = new \DateTime($oProject->date_publication_full);
+            $oPublished = new \DateTime($oProject->date_publication);
 
             if ($oFunded < $oPublished) {
                 $oFunded = $oPublished;

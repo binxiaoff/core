@@ -11,10 +11,13 @@ class LenderManager
 {
     /** @var EntityManager */
     private $oEntityManager;
+    /** @var  ClientManager */
+    private $clientManager;
 
-    public function __construct(EntityManager $oEntityManager)
+    public function __construct(EntityManager $oEntityManager, ClientManager $clientManager)
     {
         $this->oEntityManager = $oEntityManager;
+        $this->clientManager = $clientManager;
     }
 
     /**
@@ -24,13 +27,11 @@ class LenderManager
      */
     public function canBid(\lenders_accounts $oLenderAccount)
     {
-        /** @var \clients_status $oClientStatus */
-        $oClientStatus = $this->oEntityManager->getRepository('clients_status');
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
 
         if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE
-            && $oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == \clients_status::VALIDATED
+            && $this->clientManager->isValidated($oClient)
         ) {
             return true;
         }
@@ -132,5 +133,22 @@ class LenderManager
         }
 
         return $badSettings;
+    }
+
+
+    public function hasTransferredLoans(\lenders_accounts $lender)
+    {
+        /** @var \transfer $transfer */
+        $transfer = $this->oEntityManager->getRepository('transfer');
+        /** @var \loan_transfer $loanTransfer */
+        $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
+        $transfersWithLenderInvolved = $transfer->select('id_client_origin = ' . $lender->id_client_owner . ' OR id_client_receiver = ' . $lender->id_client_owner);
+
+        foreach ($transfersWithLenderInvolved as $transfer) {
+            if ($loanTransfer->exist($transfer['id_transfer'], 'id_transfer')){
+               return true;
+            }
+        }
+        return false;
     }
 }

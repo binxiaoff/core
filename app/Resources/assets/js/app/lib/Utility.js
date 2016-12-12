@@ -61,6 +61,12 @@ var Utility = {
   // Click event
   clickEvent: 'click', //$html.is('.has-touchevents') ? 'touchend' : 'click',
 
+  // Input start event depending on device
+  inputStartEvent: $html.is('.has-touchevents') ? 'touchstart' : 'mousedown',
+
+  // Input end event depending on device
+  inputEndEvent: $html.is('.has-touchevents') ? 'touchend' : 'mouseup',
+
   // Transition end event
   transitionEndEvent: 'transitionend webkitTransitionEnd oTransitionEnd otransitionend',
 
@@ -226,6 +232,35 @@ var Utility = {
 
     // Default to string
     return input
+  },
+
+  // Convert a string to an array
+  // @method convertStringToArray
+  // @param {String} input
+  // @returns {Array}
+  convertStringToArray: function (input, delimiter) {
+    // Already an array
+    if (input instanceof Array) {
+      return input
+    }
+
+    // Default delimiter is comma or whitespace
+    if (!delimiter) {
+      delimiter = /[,\s\t\r\n]+/
+    }
+
+    // Create delimiter RegExp
+    if (!(delimiter instanceof RegExp)) {
+      delimiter = new RegExp(Utility.reEscape(delimiter))
+    }
+
+    // Test if the input string has the delimiter and split by the delimiter
+    if (delimiter.test(input)) {
+      return input.split(delimiter)
+    }
+
+    // Convert the plain string to an array with one item
+    return [input]
   },
 
   // Convert a string to JSON or just return the string if can't
@@ -1225,7 +1260,7 @@ var Utility = {
       if (!equalHeights.hasOwnProperty(groupName)) equalHeights[groupName] = 0
 
       // Only apply to certain breakpoints
-      if (applyToBp) {
+      if (applyToBp && typeof applyToBp === 'string') {
         applyToBp = applyToBp.split(/[ ,]+/)
 
         // Test breakpoint
@@ -1248,7 +1283,7 @@ var Utility = {
       var originalHeight = $elem.attr('data-equal-height-original')
 
       // Only apply to certain breakpoints
-      if (applyToBp) {
+      if (applyToBp && typeof applyToBp === 'string') {
         applyToBp = applyToBp.split(/[ ,]+/)
 
         // Test breakpoint
@@ -1308,10 +1343,8 @@ var Utility = {
     // Update equal heights
     Utility.setEqualHeights()
 
-    // Trigger the WatchScroll watcher refresh on the window
-    if (window.watchWindow) {
-      window.watchWindow.refresh()
-    }
+    // @trigger doc `WatchScroll:refresh` [targetElem]
+    $doc.trigger('WatchScroll:refresh', [window])
 
     // @trigger doc `UI:update:afterresize`
     $doc.trigger('UI:update:afterresize')

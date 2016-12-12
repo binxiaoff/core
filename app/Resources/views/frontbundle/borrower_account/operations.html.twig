@@ -26,7 +26,7 @@
                             </button>
                             <button type="submit" name="action" value="export" class="btn-default">
                                 <span class="icon fa-excel-u32"></span>
-                                <span class="label">{{ 'borrower-operation_csv-export-button'|trans }}</span>
+                                <span class="label">{{ 'borrower-operation_csv-export'|trans }}</span>
                             </button>
                         </div>
                     </header><!-- /.panel-header -->
@@ -182,7 +182,7 @@
                                         <tr class="table-mydocuments-item list-files">
                                             <td>{{ project.id_project }}</td>
                                             <td>
-                                                {% if project.pouvoir.status == constant('\\projects_pouvoir::STATUS_SIGNED') %}
+                                                {% if project.pouvoir is not empty and project.pouvoir.status == constant('\\projects_pouvoir::STATUS_SIGNED') %}
                                                     <div class="document-download">
                                                     <a href="/pdf/pouvoir/{{ app.user.hash }}/{{ project.id_project }}" target="_blank">
                                                         <img class="document-download" src="{{ siteurlmedia('dashboard/file-bond-28x38.png') }}" alt="{% trans %} borrower-document_contracts-proxy-download-link-placeholder {% endtrans %}"/>
@@ -194,7 +194,7 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {% if project.mandat.status == constant('\\clients_mandats::STATUS_SIGNED') %}
+                                                {% if project.mandat is not empty and project.mandat.status == constant('\\clients_mandats::STATUS_SIGNED') %}
                                                     <div class="document-download">
                                                     <a href="/pdf/mandat/{{ app.user.hash }}/{{ project.id_project }}" target="_blank">
                                                         <img class="document-download" src="{{ siteurlmedia('dashboard/file-contract-28x38.png') }}" alt="{% trans %} borrower-document_contracts-mandate-download-link-placeholder {% endtrans %}"/>

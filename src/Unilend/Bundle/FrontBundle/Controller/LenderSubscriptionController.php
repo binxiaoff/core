@@ -10,7 +10,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\PaylineManager;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -40,19 +42,12 @@ class LenderSubscriptionController extends Controller
         $template['externalCounselList'] = json_decode($settings->value, true);
 
         /** @var LocationManager $locationManager */
-        $locationManager           = $this->get('unilend.service.location_manager');
-        $template['countries']     = $locationManager->getCountries();
-        $template['nationalities'] = $locationManager->getNationalities();
+        $locationManager = $this->get('unilend.service.location_manager');
 
-        /** @var \tree $tree */
-        $tree = $this->get('unilend.service.entity_manager')->getRepository('tree');
-        $settings->get('Lien conditions generales inscription preteur societe', 'type');
-        $tree->get(['id_tree' => $settings->value]);
+        $template['countries']             = $locationManager->getCountries();
+        $template['nationalities']         = $locationManager->getNationalities();
         $template['termsOfUseLegalEntity'] = $this->generateUrl('lenders_terms_of_sales', ['type' => 'morale']);
-
-        $settings->get('Lien conditions generales inscription preteur particulier', 'type');
-        $tree->get(['id_tree' => $settings->value]);
-        $template['termsOfUsePerson'] = $this->generateUrl('lenders_terms_of_sales');
+        $template['termsOfUsePerson']      = $this->generateUrl('lenders_terms_of_sales');
 
         $formData = $request->getSession()->get('subscriptionPersonalInformationFormData', []);
         $request->getSession()->remove('subscriptionPersonalInformationFormData');
@@ -126,6 +121,8 @@ class LenderSubscriptionController extends Controller
         $ficelle = Loader::loadLib('ficelle');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var LocationManager $locationManager */
+        $locationManager = $this->get('unilend.service.location_manager');
 
         /** @var array $post */
         $post = $request->request->all();
@@ -201,10 +198,12 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($bCountryCheckOk) {
-            if (\pays_v2::COUNTRY_FRANCE == $post['client_country_of_birth'] ) {
-                $inseePlaceOfBirth = (false === empty($post['client_insee_place_of_birth']) && $cities->get($post['client_insee_place_of_birth'], 'insee')) ? $cities->insee : $post['client_place_of_birth'];
-                $placeOfBirth = $cities->ville;
-                unset($cities);
+            if (\pays_v2::COUNTRY_FRANCE == $post['client_country_of_birth'] && false === empty($post['client_insee_place_of_birth']))  {
+                $inseeExists       = $locationManager->checkFrenchCityInsee($post['client_insee_place_of_birth']);
+                $placeOfBirth      = preg_replace(['/[0-9]+/', '/\(\)/'], '', $post['client_place_of_birth']);
+                $cityExists        = $locationManager->checkFrenchCity($placeOfBirth);
+                $inseeAndCityMatch = $cities->exist($post['client_insee_place_of_birth'], 'ville = "' . $placeOfBirth . '" AND insee');
+                $inseePlaceOfBirth = ($inseeExists && $cityExists && $inseeAndCityMatch) ? $post['client_insee_place_of_birth'] : $post['client_place_of_birth'];
             } else {
                 /** @var \insee_pays $inseeCountries */
                 $inseeCountries = $this->get('unilend.service.entity_manager')->getRepository('insee_pays');
@@ -655,6 +654,8 @@ class LenderSubscriptionController extends Controller
         if (false === $response instanceof \clients){
             return $response;
         }
+        /** @var ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
@@ -708,7 +709,6 @@ class LenderSubscriptionController extends Controller
         } else {
             $lenderAccount->bic               = trim(strtoupper($post['bic']));
             $lenderAccount->iban              = trim(strtoupper(str_replace(' ', '', $post['iban'])));
-            $lenderAccount->cni_passeport     = 1;
             $lenderAccount->motif             = $client->getLenderPattern($client->id_client);
             $lenderAccount->origine_des_fonds = $post['funds_origin'];
             $lenderAccount->update();
@@ -716,9 +716,7 @@ class LenderSubscriptionController extends Controller
             $client->etape_inscription_preteur = 2;
             $client->update();
 
-            /** @var \clients_status_history $clientStatusHistory */
-            $clientStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('clients_status_history');
-            $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client);
+            $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($client, $post);
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
@@ -900,7 +898,6 @@ class LenderSubscriptionController extends Controller
                 $transaction->id_langue        = 'fr';
                 $transaction->date_transaction = date('Y-m-d h:i:s');
                 $transaction->status           = \transactions::STATUS_PENDING;
-                $transaction->etat             = 0;
                 $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
                 $transaction->type_transaction = \transactions_types::TYPE_LENDER_SUBSCRIPTION;
                 $transaction->create();
@@ -1016,25 +1013,9 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageAction()
     {
-        /** @var \blocs $block */
-        $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
-        /** @var \blocs_elements $blockElement */
-        $blockElement = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
-        /** @var \elements $elements */
-        $elements = $client = $this->get('unilend.service.entity_manager')->getRepository('elements');
-
-        $partners = [];
-        if ($block->get('partenaires', 'slug')) {
-            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
-            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                $partners[] = [
-                    'alt' => $element['complement'],
-                    'src' => $element['value']
-                ];
-            }
-        }
-
-        return $this->render('pages/lender_subscription/landing_page.html.twig', ['partners' => $partners]);
+        /** @var ContentManager $contentManager */
+        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+        return $this->render('pages/lender_subscription/landing_page.html.twig', ['partners' => $contentManager->getFooterPartners()]);
     }
 
     /**
@@ -1044,25 +1025,9 @@ class LenderSubscriptionController extends Controller
      */
     public function figaroLandingPageAction()
     {
-        /** @var \blocs $block */
-        $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
-        /** @var \blocs_elements $blockElement */
-        $blockElement = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
-        /** @var \elements $elements */
-        $elements = $client = $this->get('unilend.service.entity_manager')->getRepository('elements');
-
-        $partners = [];
-        if ($block->get('partenaires', 'slug')) {
-            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
-            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                $partners[] = [
-                    'alt' => $element['complement'],
-                    'src' => $element['value']
-                ];
-            }
-        }
-
-        return $this->render('pages/lender_subscription/partners/figaro.html.twig', ['partners' => $partners]);
+        /** @var ContentManager $contentManager */
+        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+        return $this->render('pages/lender_subscription/partners/figaro.html.twig', ['partners' => $contentManager->getFooterPartners()]);
     }
 
     /**
@@ -1072,30 +1037,24 @@ class LenderSubscriptionController extends Controller
      */
     public function capitalLandingPageAction()
     {
-        /** @var \blocs $block */
-        $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
-        /** @var \blocs_elements $blockElement */
-        $blockElement = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
-        /** @var \elements $elements */
-        $elements = $client = $this->get('unilend.service.entity_manager')->getRepository('elements');
+        try {
+            $xmlContent = @file_get_contents('http://www.capital.fr/wrapper-unend.xml');
 
-        $partners = [];
-        if ($block->get('partenaires', 'slug')) {
-            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
-            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                $partners[] = [
-                    'alt' => $element['complement'],
-                    'src' => $element['value']
-                ];
+            if (false === $xmlContent) {
+                throw new \Exception('Could not load remote XML');
             }
+
+            /** @var ContentManager $contentManager */
+            $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+            $xml            = new \SimpleXMLElement($xmlContent);
+            $content        = explode('<!--CONTENT_ZONE-->', (string) $xml->content);
+            $header         = str_replace(['<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'], ['Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'], $content[0]);
+            $footer         = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
+
+            return $this->render('pages/lender_subscription/partners/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $contentManager->getFooterPartners()]);
+        } catch (\Exception $exception) {
+            return $this->redirectToRoute('lender_landing_page');
         }
-
-        $xml     = new \SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
-        $content = explode('<!--CONTENT_ZONE-->', (string) $xml->content);
-
-        $header = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
-        $footer = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-        return $this->render('pages/lender_subscription/partners/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $partners]);
     }
 
     /**
@@ -1198,11 +1157,10 @@ class LenderSubscriptionController extends Controller
                 }
 
                 $client->get($this->getUser()->getClientId());
-                /** @var \clients_status $clientStatus */
-                $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
-                $clientStatus->getLastStatut($client->id_client);
+                /** @var ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
-                if ($clientStatus->status >= \clients_status::MODIFICATION){
+                if ($clientStatusManager->getLastClientStatus($client) >= \clients_status::MODIFICATION){
                     return $this->redirectToRoute('lender_dashboard');
                 }
 
@@ -1227,7 +1185,7 @@ class LenderSubscriptionController extends Controller
                 $redirectRoute = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
                 break;
             default :
-                $redirectRoute = $this->generateUrl('project_list');
+                $redirectRoute = $this->generateUrl('projects_list');
         }
 
         return $redirectRoute;
@@ -1300,7 +1258,7 @@ class LenderSubscriptionController extends Controller
      */
     public function getBirthPlaceAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             return new JsonResponse($locationManager->getCities($request->query->get('birthPlace'), true));
@@ -1315,7 +1273,7 @@ class LenderSubscriptionController extends Controller
      */
     public function getCityAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             return new JsonResponse($locationManager->getCities($request->query->get('city')));
@@ -1330,7 +1288,7 @@ class LenderSubscriptionController extends Controller
      */
     public function getZipAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             return new JsonResponse($locationManager->getCities($request->query->get('zip')));
@@ -1345,7 +1303,7 @@ class LenderSubscriptionController extends Controller
      */
     public function checkAgeAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var \dates $dates */
             $dates = Loader::loadLib('dates');
             /** @var TranslatorInterface $translator */
@@ -1484,11 +1442,11 @@ class LenderSubscriptionController extends Controller
                 $settings->get("Liste deroulante origine des fonds", 'type');
                 break;
             default:
-                $settings->get("Liste deroulante origine des fonds", 'type');
+                $settings->get("Liste deroulante origine des fonds societe", 'type');
                 break;
         }
         $fundsOriginList = explode(';', $settings->value);
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
-}
 
+}

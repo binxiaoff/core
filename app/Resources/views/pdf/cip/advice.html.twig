@@ -1,0 +1,28 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block content %}
+        <div class="row">
+            <p>{% trans with { '%clientName%' : clientName } %} lender-evaluation_pdf-introduction {% endtrans %}</p>
+            <ul>
+                <li>
+                    <span class="c-p1">{% trans %} lender-evaluation_risk-aware-money-loss {% endtrans %}</span><br>
+                    {% trans %} lender-evaluation_question-aware-money-loss-yes-explanation {% endtrans %}
+                </li>
+                <li>
+                    <span class="c-p1">{% trans %} lender-evaluation_risk-aware-progressive-capital-repayments {% endtrans %}</span><br>
+                    {% trans %} lender-evaluation_question-aware-progressive-capital-repayment-yes-explanation {% endtrans %}
+                </li>
+                <li>
+                    <span class="c-p1">{% trans %} lender-evaluation_risk-aware-risk-return {% endtrans %}</span><br>
+                    {% trans %} lender-evaluation_question-aware-risk-return-yes-explanation {% endtrans %}
+                </li>
+                <li>
+                    <span class="c-p1">{% trans %} lender-evaluation_risk-aware-divide-investments {% endtrans %}</span><br>
+                    {% trans %} lender-evaluation_question-aware-money-loss-yes-explanation {% endtrans %}
+                </li>
+            </ul>
+        </div>
+        <div class="row">
+            {{ advice|raw }}
+        </div>
+{% endblock %}

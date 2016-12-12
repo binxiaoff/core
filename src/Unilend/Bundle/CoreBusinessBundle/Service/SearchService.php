@@ -38,7 +38,7 @@ class SearchService
         $result = $tree->search($query, $includeProjects);
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://unilend.desk.com/api/v2/articles/search?text=' . urlencode($query));
+        curl_setopt($ch, CURLOPT_URL, 'https://unilend.desk.com/api/v2/articles/search?text=' . urlencode($query) . '&sort_field=score&sort_direction=desc');
         curl_setopt($ch, CURLOPT_TIMEOUT, 3);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
@@ -50,18 +50,18 @@ class SearchService
             $response = json_decode($response, true);
 
             if (isset($response['_embedded']['entries']) && false === empty($response['_embedded']['entries'])) {
-                $result['desk'] = [];
+                $deskResult = [];
 
                 foreach ($response['_embedded']['entries'] as $entry) {
-                    $result['desk'][] = [
-                        'title' => $entry['subject'],
-                        'url'   => $entry['public_url']
-                    ];
+                    if (true == $entry['in_support_center']) {
+                        $deskResult[] = [
+                            'title' => $entry['subject'],
+                            'url'   => $entry['public_url']
+                        ];
+                    }
                 }
 
-                usort($result['desk'], function($firstElement, $secondElement) {
-                    return strcmp($firstElement['title'], $secondElement['title']);
-                });
+                $result = array_merge(array('desk' => $deskResult), $result);
             }
         }
 

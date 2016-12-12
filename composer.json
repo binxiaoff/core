@@ -17,6 +17,7 @@
   "require": {
     "php": ">=5.5.9",
     "knplabs/knp-snappy": "0.4.*",
+    "knplabs/knp-snappy-bundle": "^1.4",
     "phpxmlrpc/phpxmlrpc": "4.0.*",
     "phpoffice/phpexcel": "1.8.*",
     "mailjet/mailjet-apiv3-php": "^1.1",
@@ -37,7 +38,8 @@
     "twig/extensions": "^1.3",
     "xynnn/google-tag-manager-bundle": "^2.0",
     "sonata-project/seo-bundle": "^2.0",
-    "ekino/newrelic-bundle": "^1.3"
+    "ekino/newrelic-bundle": "^1.3",
+    "sonata-project/cache-bundle": "^2.3"
   },
   "require-dev": {
     "sensio/generator-bundle": "^3.0"

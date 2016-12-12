@@ -1,6 +1,5 @@
 <?php
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 $loader = require __DIR__.'/../../app/autoload.php';
 include __DIR__ . '/../../core/controller.class.php';
@@ -29,13 +28,9 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
 
 header('X-Server: ' . exec('hostname'));
 
-require __DIR__ . '/prepend.php';
-
 $kernel = new AppKernel('prod', false);
 $request  = Request::createFromGlobals();
 $response = $kernel->handle($request);
 $response->send();
 
 $kernel->terminate($request, $response);
-
-require __DIR__ . '/append.php';

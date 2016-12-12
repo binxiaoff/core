@@ -90,8 +90,8 @@
                     <?php endif; ?>
                     <li><a href="<?= $this->lurl ?>/stats/etape_inscription" title="Etape d'inscription">Etape d'inscription</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/requete_source_emprunteurs" title="Requete source emprunteurs">Sources emprunteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/requete_revenus_csv" title="Requete revenus">Requete revenus</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/requete_beneficiaires" title="Requete beneficiaires">Requete beneficiaires</a></li>
+                    <li><a href="<?= $this->lurl ?>/stats/requete_revenus_download" title="Requete revenus">Requete revenus</a></li>
+                    <li><a href="<?= $this->lurl ?>/stats/requete_beneficiaires_csv" title="Requete beneficiaires">Requete beneficiaires</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/requete_infosben" title="Requete infosben">Requete infosben</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/requete_encheres" title="Requete Toutes les enchères">Requete Toutes les enchères</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/tous_echeanciers_pour_projet" title="Echeanciers projet">Echeanciers projet</a></li>
@@ -139,6 +139,7 @@
                     <li><a href="<?= $this->lurl ?>/transferts/non_attribues" title="Non attribués">Non attribués</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/rattrapage_offre_bienvenue" title="Rattrapage offre de bienvenue">Rattrapage offre de bienvenue</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/deblocage" title="Déblocage">Déblocage des fonds</a></li>
+                    <li><a href="<?= $this->lurl ?>/transferts/succession" title="Succession">Succession (Transfert de solde et prêts)</a></li>
                 </ul>
             </li>
         <?php endif; ?>

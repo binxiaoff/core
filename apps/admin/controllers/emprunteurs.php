@@ -56,15 +56,8 @@ class emprunteursController extends bootstrap
         }
 
         if (isset($_POST['form_search_emprunteur'])) {
-            if ($_POST['status'] == 'choisir') {
-                $statut = '';
-            } else {
-                $statut = $_POST['status'];
-            }
+            $this->lClients = $this->clients->searchEmprunteurs('AND', $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['societe'], $_POST['siren']);
 
-            // Recuperation de la liste des clients
-            $this->lClients = $this->clients->searchEmprunteurs('', $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['societe'], $_POST['siret'], $statut);
-            // Mise en session du message
             $_SESSION['freeow']['title']   = 'Recherche d\'un client';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         }
@@ -77,7 +70,6 @@ class emprunteursController extends bootstrap
             $this->clients->telephone       = str_replace(' ', '', $_POST['telephone']);
             $this->clients->id_langue       = 'fr';
 
-            // cni/passeport
             if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/clients/cni_passeport/');
                 if ($this->upload->doUpload('cni_passeport')) {
@@ -87,7 +79,7 @@ class emprunteursController extends bootstrap
                     $this->clients->cni_passeport = $this->upload->getName();
                 }
             }
-            // fichier_rib
+
             if (isset($_FILES['signature']) && $_FILES['signature']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/clients/signature/');
                 if ($this->upload->doUpload('signature')) {
@@ -165,10 +157,11 @@ class emprunteursController extends bootstrap
         $this->clients          = $this->loadData('clients');
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->companies        = $this->loadData('companies');
+        $companySection         = $this->loadData('company_sector');
 
-        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager  = $this->get('unilend.service.translation_manager');
-        $this->lSecteurs = $translationManager->getTranslatedCompanySectorList();
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator = $this->get('translator');
+        $this->lSecteurs  = $companySection->select();
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client')) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
@@ -200,10 +193,11 @@ class emprunteursController extends bootstrap
         $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
         $this->clients->history  = '';
         $this->settings          = $this->loadData('settings');
+        $companySection          = $this->loadData('company_sector');
 
-        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager  = $this->get('unilend.service.translation_manager');
-        $this->lSecteurs = $translationManager->getTranslatedCompanySectorList();
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator = $this->get('translator');
+        $this->lSecteurs  = $companySection->select();
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');

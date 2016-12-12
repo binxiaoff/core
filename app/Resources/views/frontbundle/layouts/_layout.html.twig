@@ -1,5 +1,4 @@
 {# Basic Page Layout #}
-{% set bodyClassNames = '' %}
 
 <!DOCTYPE html>
 <!--[if lt IE 9]><html lang="{{ app.request.locale }}" class="lt-ie9 no-js"><![endif]-->
@@ -33,6 +32,7 @@
         <link rel="shortcut icon" href="{{ asset('favicons/favicon.ico', 'gulp') }}">
         <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml', 'gulp') }}">
         <meta name="theme-color" content="#ffffff">
+        {% include 'partials/site/vwo_script.html.twig' %}
     </head>
     <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }} {% if is_granted('ROLE_LENDER') %} ui-user-type-lender {% endif %} {% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower {% endif %} {% else %} ui-no-user {% endif %} {% if bodyClassNames is defined %} {{ bodyClassNames }} {% endif %}">
         {{ google_tag_manager() }}
@@ -59,14 +59,20 @@
             {% endif %}
 
             {% block siteFooter %}
-                {{ render(controller('UnilendFrontBundle:Main:footer')) }}
+                {{ render(controller('UnilendFrontBundle:Main:footer', {'route': app.request.attributes.get('_route')})) }}
             {% endblock %}
         </div>
 
+        {# Debug tools #}
         {% if app.environment == 'dev' %}
             {% block debug %}
                 {% include 'partials/site/debug.html.twig' %}
             {% endblock %}
+        {% endif %}
+
+        {# Site User Mobile Menu #}
+        {% if app.user is defined and app.user is not empty %}
+            {% include 'partials/site/user-mobile-menu.html.twig' %}
         {% endif %}
 
         <div class="modal-spinner">
@@ -82,7 +88,7 @@
             </div>
         </div>
 
-        <div rel="templates" style="display:none">
+        <div rel="templates" style="display:none" aria-hidden="true">
             {% block modals %}
                 {# Place page-specific modals in this block and then use the `data-modal-toggle="#modal-id"` attribute on the anchor/button element you want to use to show it,
                    e.g. <a href="javascript:;" data-modal-toggle="#modal-tos">Open the TOS model</a> #}

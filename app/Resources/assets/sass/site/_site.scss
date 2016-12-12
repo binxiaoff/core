@@ -52,8 +52,10 @@
 @import 'components/lists/myoffers';
 @import 'components/jobs';
 @import 'components/modal';
+@import 'components/modals/modal-bid-confirmation';
 @import 'components/spinner';
 @import 'components/spinner-button';
+@import 'components/progress-bar';
 @import 'components/mosaic';
 @import 'components/feature';
 @import 'components/person';
@@ -86,6 +88,7 @@
 @import 'components/site/search';
 @import 'components/site/footer';
 @import 'components/site/mobile-menu';
+@import 'components/site/user-mobile-menu';
 
 // -- Page
 @import 'components/page';

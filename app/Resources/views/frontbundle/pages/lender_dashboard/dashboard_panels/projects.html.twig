@@ -8,11 +8,11 @@
     {% endblock %}
     {% block panelContent %}
         <div class="message">
-            <p>{% transchoice newOngoingProjects|length with {'%count%' : newOngoingProjects|length} %} lender-dashboard-projects_new-projects-legend {% endtranschoice %}</p>
+            <p>{% transchoice publishedProjects|length with {'%count%' : publishedProjects|length} %} lender-dashboard-projects_new-projects-legend {% endtranschoice %}</p>
         </div>
-        {% if newOngoingProjects|length > 0 %}
+        {% if publishedProjects|length > 0 %}
             <ul class="list-projects">
-                {% for project in newOngoingProjects %}
+                {% for project in publishedProjects %}
                     <li class="project">
                         <div class="project-name">{{ project.title }}</div>
                         <div class="project-location">{{ project.company_address }}</div>
@@ -22,7 +22,7 @@
                                 <span class="sr-only">{% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span>
                             </span>
                         </div>
-                        <div class="project-interest">{{ project.average_rate|localizednumber }}&nbsp;%</div>
+                        <div class="project-interest">{{ project.average_rate|localizednumberwithprecision(1) }}&nbsp;%</div>
                         <div class="project-period">
                             {% if project.finished %}
                                 {{ 'lender-dashboard-projects_project-status-finished'|trans }}

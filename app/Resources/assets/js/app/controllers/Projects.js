@@ -1,15 +1,19 @@
 /*
- * Project List component
+ * Projects controller
  */
 
 var $ = require('jquery')
 var Utility = require('Utility')
+var WatchScroll = require('WatchScroll')
 var __ = require('__')
 
 var $win = $(window)
 var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
+
+// The watchWindow WatchScroll instance
+var watchWindow = new WatchScroll.Watcher(window)
 
 // Seconds as units for projects
 var secondsAsUnits = [{
@@ -124,7 +128,8 @@ $doc.on('ready', function () {
   // Add to window WatchScroll watcher means to make project-single-menu fixed
   if ($projectSingleMenu.length > 0) {
     updateProjectSingleNavOffsetTop()
-    window.watchWindow
+
+    watchWindow
       .watch(window, function (params) {
         // @debug console.log($win.scrollTop() >= projectSingleNavOffsetTop)
         if (typeof projectSingleNavOffsetTop !== 'undefined' && $win.scrollTop() >= projectSingleNavOffsetTop) {
@@ -280,7 +285,7 @@ $doc.on('ready', function () {
 
   // Debounce update of sticky within the watchWindow to reduce jank
   if ($projectSingleInfoWrap.length > 0) {
-    window.watchWindow.watch(window, offsetProjectSingleInfo)
+    watchWindow.watch(window, offsetProjectSingleInfo)
     offsetProjectSingleInfo()
   }
 
@@ -295,11 +300,24 @@ $doc.on('ready', function () {
    * Project Single monthly repayment estimation
    */
   var monthlyRepaymentTimeout
+  var cacheMonthlyRepaymentData = {
+    amount: undefined,
+    duration: undefined,
+    rate: undefined
+  }
 
   function estimateMonthlyRepayment () {
     var amount = $('#bid-amount').val()
     var duration = $('#bid-duration').val()
     var rate = $('#bid-interest option:selected').val()
+    var $message = $('#repayment-estimation')
+
+    // Error: no values set, or set to already calculated values (avoids firing operation on unchanged values)
+    if (!amount || !duration || !rate || (amount === cacheMonthlyRepaymentData.amount && duration === cacheMonthlyRepaymentData.duration && rate === cacheMonthlyRepaymentData.rate)) {
+      return
+    }
+
+    $message.html('').removeClass('c-error')
 
     // @trigger elem `Spinner:showLoading`
     $('#bid-amount').trigger('Spinner:showLoading')
@@ -308,6 +326,7 @@ $doc.on('ready', function () {
       $.ajax({
         url: '/projects/monthly_repayment',
         method: 'POST',
+        global: false,
         data: {
           amount: amount,
           duration: duration,
@@ -315,26 +334,39 @@ $doc.on('ready', function () {
         },
         success: function (data) {
           if (data.success && data.message) {
-            var messageContent = $('<p>').addClass('c-t2').html(data.message)
-            var messageHolder = $('form.project-single-form-invest .btn-toolbar').next('.field-help')
-            messageHolder.html(messageContent)
+            // Save values
+            cacheMonthlyRepaymentData = {
+              amount: amount,
+              duration: duration,
+              rate: rate
+            }
+
+            // Output message
+            $message.html(data.message)
           } else if (data.error && data.message) {
-            console.log(data.message)
+            console.warn(data.message, data)
           } else {
-            console.log('Unknown state')
+            console.warn('Unknown error', data)
           }
         },
         error: function () {
           console.log('Unable to estimate monthly repayments')
+        },
+        complete: function () {
+          // @trigger elem `Spinner:hideLoading`
+          $('#bid-amount').trigger('Spinner:hideLoading')
         }
       })
+    } else if (amount && amount < 20) {
+      messageHolder.html('')
     }
   }
 
-  $doc.on('change keyup', '#bid-amount, #bid-interest', function () {
+  // When the amount/interest is changed, recalculate the monthly repayment estimate
+  $doc.on('keyup change', '#bid-amount, #bid-interest', function () {
     if (monthlyRepaymentTimeout) {
       clearTimeout(monthlyRepaymentTimeout)
     }
-    monthlyRepaymentTimeout = setTimeout(estimateMonthlyRepayment, 250)
+    monthlyRepaymentTimeout = setTimeout(estimateMonthlyRepayment, 1000)
   })
 })

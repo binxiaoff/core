@@ -8,13 +8,13 @@
             }, type: "numeric"
         });
 
-        $(".tablesorter").tablesorter({headers: {7: {sorter: false}, 8: {sorter: false}}});
+        $(".tablesorter").tablesorter({headers: {8: {sorter: false}, 9: {sorter: false}}});
         <?php if ($this->nb_lignes != '') { ?>
         $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
         <?php } ?>
     });
 
-    <?php if (isset($_SESSION['freeow'])) { ?>
+    <?php if (isset($_SESSION['freeow'])) : ?>
     $(document).ready(function () {
         var title, message, opts, container;
         title = "<?=$_SESSION['freeow']['title']?>";
@@ -24,14 +24,16 @@
         $('#freeow-tr').freeow(title, message, opts);
     });
     <?php unset($_SESSION['freeow']); ?>
-    <?php } ?>
+    <?php endif; ?>
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
         <li><a href="<?= $this->lurl ?>/dossiers" title="Dossiers">Dossiers</a> -</li>
         <li><a href="<?= $this->lurl ?>/dossiers/remboursements" title="Remboursements">Remboursements</a> -</li>
-        <li><a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $this->params[0] ?>" title="Detail remboursements">Detail remboursements</a> -</li>
+        <li>
+            <a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $this->params[0] ?>" title="Detail remboursements">Detail remboursements</a> -
+        </li>
         <li>Detail prêteur</li>
     </ul>
     <h1>Liste des <?= count($this->lLenders) ?> derniers remboursements</h1>
@@ -47,56 +49,63 @@
         </tr>
     </table>
     <br/>
-    <?php if (count($this->lLenders) > 0) { ?>
+    <?php if (count($this->lLenders) > 0) : ?>
         <table class="tablesorter">
             <thead>
             <tr>
-                <th>id enchere</th>
+                <th>id prêt</th>
                 <th>Montant en €</th>
                 <th>Taux en %</th>
                 <th>Mensualité de<br/> remboursement</th>
                 <th>Nom</th>
                 <th>Prénom</th>
-                <th>id preteur</th>
+                <th>id client</th>
                 <th>PDF</th>
-                <th></th>
+                <th>Ancien proprietaire</th>
+                <th>Echéancier preteur</th>
             </tr>
             </thead>
             <tbody>
             <?php
             $i = 1;
-
-            foreach ($this->lLenders as $r) {
-                $this->projects->get($r['id_project'], 'id_project');
-                $this->lenders_accounts->get($r['id_lender'], 'id_lender_account');
+            foreach ($this->lLenders as $loan) :
+                $this->projects->get($loan['id_project'], 'id_project');
+                $this->loan->get($loan['id_loan']);
+                $this->lenders_accounts->get($loan['id_lender'], 'id_lender_account');
                 $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-
-                $lesEcheances = $this->echeanciers->select('id_loan = ' . $r['id_loan']);
+                $lesEcheances = $this->echeanciers->select('id_loan = ' . $loan['id_loan']);
                 ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><?= $r['id_loan'] ?></td>
-                    <td class="right"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?></td>
-                    <td class="right"><?= $this->ficelle->formatNumber($r['rate'], 1) ?></td>
+                    <td><?= $loan['id_loan'] ?></td>
+                    <td class="right"><?= $this->ficelle->formatNumber($loan['amount'] / 100) ?></td>
+                    <td class="right"><?= $this->ficelle->formatNumber($loan['rate'], 1) ?></td>
                     <td class="right"><?= $this->ficelle->formatNumber($lesEcheances[0]['montant'] / 100) ?></td>
                     <td><?= $this->clients->nom ?></td>
                     <td><?= $this->clients->prenom ?></td>
                     <td><?= $this->clients->id_client ?></td>
                     <td>
-                        <a href="<?= $this->furl . '/pdf/contrat/' . $this->clients->hash . '/' . $r['id_loan'] ?>">PDF</a>
+                        <a href="<?= $this->furl . '/pdf/contrat/' . $this->clients->hash . '/' . $loan['id_loan'] ?>">PDF</a>
                     </td>
                     <td align="center">
-                        <a target="_blank" href="<?= $this->lurl ?>/dossiers/detail_echeance_preteur/<?= $r['id_project'] ?>/<?= $r['id_loan'] ?>">
+                        <a target="_blank" href="<?= $this->lurl ?>/dossiers/detail_echeance_preteur/<?= $loan['id_project'] ?>/<?= $loan['id_loan'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/modif.png" alt="detail"/>
                         </a>
+                    </td>
+                    <td>
+                        <?php if (false === empty($loan['id_transfer'])) :
+                        /** @var \lenders_accounts $formerOwner */
+                        $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
+                        <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php
                 $i++;
-            }
+            endforeach;
             ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != '') { ?>
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -111,7 +120,7 @@
                     </td>
                 </tr>
             </table>
-        <?php } ?>
-    <?php } ?>
+        <?php endif; ?>
+    <?php endif; ?>
 </div>
 <?php unset($_SESSION['freeow']); ?>

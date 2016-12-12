@@ -320,7 +320,7 @@ h3.round-number {
   transition: background-color 0.2s;
 
   &.pip-has-many {
-    line-height: 14px;
+    line-height: $height-pip;
 
     &:before {
       content: '';
@@ -329,7 +329,6 @@ h3.round-number {
       height: 6px;
       background-color: $c-white;
       border-radius: 6px;
-      vertical-align: middle;
     }
 
     .pip-number {
@@ -374,7 +373,6 @@ h3.round-number {
   padding: 7px 0;
 
   background-color: $c-white;
-  border: solid 2px $c-p1;
   color: $c-p1;
   font-weight: bold;
   text-align: center;
@@ -404,6 +402,13 @@ h3.round-number {
 
   &.bg-p1 {
     background-color: $c-p1;
+    border: solid 2px $c-p1;
+    color: $c-white;
+  }
+
+  &.bg-p2 {
+    background-color: $c-p2;
+    border: solid 2px $c-p2;
     color: $c-white;
   }
 

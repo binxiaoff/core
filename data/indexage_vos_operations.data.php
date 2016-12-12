@@ -142,7 +142,7 @@ class indexage_vos_operations extends indexage_vos_operations_crud
         return bcdiv(bcadd($balance, $bidSum, 2), 100, 2);
     }
 
-    public function getLenderOperations(array $transactionType, $clientId, $startDate, $endDate, $projectId = null, $orderBy = 'date_operation DESC, id_transaction DESC')
+    public function getLenderOperations(array $transactionType, $clientId, $startDate, $endDate, $projectId = null)
     {
         $bind     = [
             'transactionType' => $transactionType,
@@ -194,7 +194,7 @@ class indexage_vos_operations extends indexage_vos_operations_crud
             $bind['projectId']     = $projectId;
             $bindType['projectId'] = \PDO::PARAM_INT;
         }
-        $sql .= ' ORDER BY ' . $orderBy;
+        $sql .= ' ORDER BY date_operation DESC, id_transaction DESC';
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $bindType);
         return $statement->fetchAll(\PDO::FETCH_ASSOC);

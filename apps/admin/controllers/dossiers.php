@@ -1,6 +1,5 @@
 <?php
 
-use Unilend\librairies\Altares;
 use \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use \Psr\Log\LoggerInterface;
 use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
@@ -121,6 +120,11 @@ class dossiersController extends bootstrap
         $this->clients_prescripteurs         = $this->loadData('clients');
         $this->companies_prescripteurs       = $this->loadData('companies');
         $this->settings                      = $this->loadData('settings');
+        /** @var borrowing_motive $borrowingMotive */
+        $borrowingMotive                     = $this->loadData('borrowing_motive');
+        $companyTaxFormType                  = $this->loadData('company_tax_form_type');
+        /** @var \company_balance_type $companyBalanceDetailsType */
+        $companyBalanceDetailsType           = $this->loadData('company_balance_type');
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
@@ -128,10 +132,20 @@ class dossiersController extends bootstrap
         $productManager = $this->get('unilend.service_product.product_manager');
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator = $this->get('translator');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+        $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator = $this->get('translator');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->settings->get('Durée des prêts autorisées', 'type');
             $this->dureePossible = explode(',', $this->settings->value);
+            $this->taxFormTypes =  $companyTaxFormType->select();
+
+            $this->allTaxFormTypes = [];
+            foreach ($this->taxFormTypes as $formType) {
+                $this->allTaxFormTypes[$formType['label']] = $companyBalanceDetailsType->select('id_company_tax_form_type = '.$formType['id_type']);
+            }
             /** @var product $product */
             $product = $this->loadData('product');
 
@@ -153,30 +167,16 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-            $translationManager  = $this->get('unilend.service.translation_manager');
-            $this->lSecteurs = $translationManager->getTranslatedCompanySectorList();
-            $this->aBorrowingMotives = $translationManager->getTranslatedBorrowingMotiveList();
+            $this->aBorrowingMotives = $borrowingMotive->select();
 
             $this->settings->get('Cabinet de recouvrement', 'type');
             $this->cab = $this->settings->value;
 
-            $this->settings->get('Heure debut periode funding', 'type');
-            $this->debutFunding = $this->settings->value;
-
-            $this->settings->get('Heure fin periode funding', 'type');
-            $this->finFunding = $this->settings->value;
             /** @var \tax_type $taxType */
             $taxType = $this->loadData('tax_type');
 
             $taxRate        = $taxType->getTaxRateByCountry('fr');
             $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
-
-            $debutFunding        = explode(':', $this->debutFunding);
-            $this->HdebutFunding = $debutFunding[0];
-
-            $finFunding        = explode(':', $this->finFunding);
-            $this->HfinFunding = $finFunding[0];
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
@@ -214,7 +214,7 @@ class dossiersController extends bootstrap
             $this->aAnnualAccountsDates = array();
             $this->aAnalysts            = $this->users->select('(status = 1 AND id_user_type = 2) OR id_user = ' . $this->projects->id_analyste);
             $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = ' . $this->projects->id_commercial);
-            $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
+            $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC');
             $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added DESC');
             $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
@@ -237,26 +237,19 @@ class dossiersController extends bootstrap
                 $aAnnualAccountsIds            = array_column($this->lbilans, 'id_bilan');
                 $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
                 $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
-                $this->aBalanceSheets          = $this->company_balance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
-
+                $this->aBalanceSheets          = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
+                foreach ($aAnnualAccountsIds as $balanceId) {
+                    $this->companies_bilans->get($balanceId);
+                    $this->incomeStatements[$balanceId] = $companyBalanceSheetManager->getIncomeStatement($this->companies_bilans);
+                }
                 if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
                     foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
-                        $oAssetsDebts                                     = new \companies_actif_passif($this->bdd);
-                        $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
-                        $oAssetsDebts->immobilisations_corporelles        = 0;
-                        $oAssetsDebts->immobilisations_incorporelles      = 0;
-                        $oAssetsDebts->immobilisations_financieres        = 0;
-                        $oAssetsDebts->stocks                             = 0;
-                        $oAssetsDebts->creances_clients                   = 0;
-                        $oAssetsDebts->disponibilites                     = 0;
-                        $oAssetsDebts->valeurs_mobilieres_de_placement    = 0;
-                        $oAssetsDebts->capitaux_propres                   = 0;
-                        $oAssetsDebts->provisions_pour_risques_et_charges = 0;
-                        $oAssetsDebts->amortissement_sur_immo             = 0;
-                        $oAssetsDebts->dettes_financieres                 = 0;
-                        $oAssetsDebts->dettes_fournisseurs                = 0;
-                        $oAssetsDebts->autres_dettes                      = 0;
-                        $oAssetsDebts->create();
+                        if ($this->aBalanceSheets[$iAnnualAccountsId]['form_type'] == \company_tax_form_type::FORM_2033) {
+                            /** @var companies_actif_passif $oAssetsDebts */
+                            $oAssetsDebts                                     = $this->loadData('companies_actif_passif');
+                            $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
+                            $oAssetsDebts->create();
+                        }
                     }
                     $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
                 }
@@ -286,18 +279,15 @@ class dossiersController extends bootstrap
 
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
-            /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-            $translationManager = $this->get('unilend.service.translation_manager');
-            $aTranslations      = $translationManager->getAllTranslationsForSection('projet');
 
             foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
                 if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
-                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $aTranslations['completude-photos'];
+                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
                 } else {
                     $this->completude_wording[] = $aAttachment['label'];
                 }
             }
-            $this->completude_wording[] = $aTranslations['completude-charge-affaires'];
+            $this->completude_wording[] = $this->translator->trans('projet_completude-charge-affaires');
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
@@ -333,60 +323,44 @@ class dossiersController extends bootstrap
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
-            } elseif (isset($_POST['add_annual_accounts'])) {
+            } elseif (isset($_POST['add_annual_accounts'], $_POST['tax_form_type']) && is_numeric($_POST['tax_form_type']) && $companyTaxFormType->get($_POST['tax_form_type'])) {
                 $aLastAnnualAccounts                                 = current($this->aAllAnnualAccounts);
                 $oClosingDate = new \DateTime($aLastAnnualAccounts['cloture_exercice_fiscal']);
                 $this->companies_bilans->id_company                  = $this->projects->id_company;
                 $this->companies_bilans->cloture_exercice_fiscal     = $oClosingDate->add(new \DateInterval('P12M'))->format('Y-m-d');
                 $this->companies_bilans->duree_exercice_fiscal       = 12;
+                $this->companies_bilans->id_company_tax_form_type    = $_POST['tax_form_type'];
                 $this->companies_bilans->ca                          = 0;
                 $this->companies_bilans->resultat_brute_exploitation = 0;
                 $this->companies_bilans->resultat_exploitation       = 0;
                 $this->companies_bilans->investissements             = 0;
                 $this->companies_bilans->create();
 
-                $this->companies_actif_passif->id_bilan = $this->companies_bilans->id_bilan;
-                $this->companies_actif_passif->create();
-
+                if ($companyTaxFormType->label == \company_tax_form_type::FORM_2035) {
+                    $this->companies_actif_passif->id_bilan = $this->companies_bilans->id_bilan;
+                    $this->companies_actif_passif->create();
+                }
                 $this->projects->id_dernier_bilan = $this->companies_bilans->id_bilan;
                 $this->projects->update();
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
+            } elseif (isset($_POST['submit-button'], $_POST['id_annual_accounts_remove']) && 'Supprimer' === $_POST['submit-button'] && is_numeric($_POST['id_annual_accounts_remove'])) {
+                $this->companies_bilans->get($_POST['id_annual_accounts_remove']);
+                $companyBalanceSheetManager->removeBalanceSheet($this->companies_bilans, $this->projects);
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
             } elseif (isset($this->params[1]) && $this->params[1] == 'altares') {
                 if (false === empty($this->companies->siren)) {
-                    $oAltares = new Altares();
-                    $oResult  = $oAltares->getEligibility($this->companies->siren);
-
-                    if ($oResult->exception == '' && isset($oResult->myInfo) && is_object($oResult->myInfo)) {
-                        if (false === empty($oResult->myInfo->codeRetour)) {
-                            $this->projects->retour_altares = $oResult->myInfo->codeRetour;
-                            $this->projects->update();
-                        }
-
-                        $oAltares->setCompanyData($this->companies, $oResult->myInfo);
-                        $oAltares->setProjectData($this->projects, $oResult->myInfo);
-
-                        // @todo Revert when TMA-749 is resolved
-                        if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
-                            /** @var LoggerInterface $logger */
-                            $logger = $this->get('logger');
-                            $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                        }
-
-                        $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
-                        $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
-
-                        if ($oResult->myInfo->eligibility === 'Non' || $oInterval->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {
-                            $_SESSION['freeow']['title']   = 'Données Altares';
-                            $_SESSION['freeow']['message'] = 'Société non éligible';
-                        } else {
-                            $oAltares->setCompanyBalance($this->companies);
-
-                            $_SESSION['freeow']['title']   = 'Données Altares';
-                            $_SESSION['freeow']['message'] = 'Données Altares récupéré !';
-                        }
-                    } else {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
+                    $oAltares = $this->get('unilend.service.altares');
+                    try {
+                        $oAltares->setCompanyData($this->companies);
+                        $oAltares->setProjectData($this->projects);
+                        $oAltares->setCompanyBalance($this->companies);
+                        $_SESSION['freeow']['title']   = 'Données Altares';
+                        $_SESSION['freeow']['message'] = 'Données Altares récupéré !';
+                    } catch (\Exception $exception) {
                         $_SESSION['freeow']['title']   = 'Données Altares';
                         $_SESSION['freeow']['message'] = 'Données Altares erreur !';
                     }
@@ -464,7 +438,7 @@ class dossiersController extends bootstrap
                             $clients->get($lenders->id_client_owner, 'id_client');
 
                             $loans->get($l['id_loan'], 'id_loan');
-                            $loans->status = 1;
+                            $loans->status = \loans::STATUS_REJECTED;
                             $loans->update();
 
                             // On redonne l'argent aux preteurs
@@ -473,8 +447,7 @@ class dossiersController extends bootstrap
                             $transactions->id_langue        = 'fr';
                             $transactions->id_loan_remb     = $l['id_loan'];
                             $transactions->date_transaction = date('Y-m-d H:i:s');
-                            $transactions->status           = 1;
-                            $transactions->etat             = 1;
+                            $transactions->status           = \transactions::STATUS_VALID;
                             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                             $transactions->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
                             $transactions->create();
@@ -611,20 +584,20 @@ class dossiersController extends bootstrap
                     }
 
                     if ($this->projects->status <= \projects_status::A_FUNDER) {
-                        $sector = $translationManager->selectTranslation('company-sector', 'sector-' . $this->companies->sector);
+                        $sector = $this->translator->trans('company-sector_sector-' . $this->companies->sector);
                         $this->settings->get('Prefixe URL pages projet', 'type');
                         $this->projects->slug = $this->ficelle->generateSlug($this->settings->value . '-' . $sector . '-' . $this->companies->city . '-' . substr(md5($this->projects->title . $this->projects->id_project), 0, 7));
                     }
 
                     if ($this->projects->status >= \projects_status::PREP_FUNDING) {
                         if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
-                            $this->projects->date_publication      = $this->dates->formatDateFrToMysql($_POST['date_publication']);
-                            $this->projects->date_publication_full = $this->projects->date_publication . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':0';
+                            $publicationDate                  = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
+                            $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
                         }
 
                         if (isset($_POST['date_retrait']) && ! empty($_POST['date_retrait'])) {
-                            $this->projects->date_retrait      = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
-                            $this->projects->date_retrait_full = $this->projects->date_retrait . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':0';
+                            $endOfPublicationDate         = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
+                            $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
                         }
 
                         if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
@@ -638,7 +611,7 @@ class dossiersController extends bootstrap
 
                     $this->projects->update();
 
-                    if ($_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
+                    if (isset($_POST['current_status']) && $_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
 
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
                             $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
@@ -826,28 +799,18 @@ class dossiersController extends bootstrap
                 }
 
                 if ($form_ok == true) {
-                    $date = explode('/', $_POST['date_de_retrait']);
-                    $date = $date[2] . '-' . $date[1] . '-' . $date[0];
+                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_de_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
 
-                    $dateComplete = $date . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
-                    // on check si la date est superieur a la date actuelle
-                    if (strtotime($dateComplete) > time()) {
-                        $this->projects->date_retrait_full = $dateComplete;
-                        $this->projects->date_retrait      = $date;
+                    if ($endOfPublicationDate > new \DateTime()) {
+                        $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
                         $this->projects->update();
                     }
                 }
-            }
-            if ($product instanceof \product && $product->id_product) {
-                $eligibleNeeds = $productManager->getAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
-            } else {
-                $eligibleNeeds = [];
             }
 
             /** @var \project_need $oProjectNeed */
             $oProjectNeed = $this->loadData('project_need');
             $needs        = $oProjectNeed->getTree();
-            $this->filterEligibleNeeds($needs, $eligibleNeeds);
             $this->aNeeds = $needs;
 
             if (in_array($this->projects->status, [\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE])) {
@@ -928,7 +891,11 @@ class dossiersController extends bootstrap
     {
         $fTotal = 0.0;
         foreach ($aBalances as $sBalance) {
-            $fTotal += $aBalanceSheet[$sBalance];
+            if ('-' === substr($sBalance, 0, 1)) {
+                $fTotal -= $aBalanceSheet['details'][substr($sBalance, 1)];
+            } else {
+                $fTotal += $aBalanceSheet['details'][$sBalance];
+            }
         }
         return $fTotal;
     }
@@ -949,7 +916,7 @@ class dossiersController extends bootstrap
         // Disable automatic refund
         $this->projects->remb_auto = 1;
         $this->projects->update();
-
+        /** @var \projects_remb $projects_remb */
         $projects_remb        = $this->loadData('projects_remb');
         $aAutomaticRepayments = $projects_remb->select('status = 0 AND id_project = ' . $this->projects->id_project);
 
@@ -963,6 +930,7 @@ class dossiersController extends bootstrap
 
         // Disable automatic debits
         if (in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT))) {
+            /** @var \prelevements $prelevements */
             $prelevements  = $this->loadData('prelevements');
             $aDirectDebits = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
 
@@ -1056,7 +1024,7 @@ class dossiersController extends bootstrap
             }
         }
 
-        $aFundingDate = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history ASC', 0, 1);
+        $aFundingDate = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $iFundingTime = strtotime($aFundingDate[0]['added']);
 
         $aReplacements = $aReplacements + array(
@@ -1139,7 +1107,7 @@ class dossiersController extends bootstrap
                 break;
             case \projects_status::REDRESSEMENT_JUDICIAIRE:
                 $iNotificationType  = \notifications::TYPE_PROJECT_RECEIVERSHIP;
-                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROCEDURE_SAUVEGARDE . ')', 'id_project_status_history ASC', 0, 1);
+                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROCEDURE_SAUVEGARDE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
                     $sEmailTypePerson  = 'preteur-projet-statut-redressement-judiciaire';
@@ -1151,7 +1119,7 @@ class dossiersController extends bootstrap
                 break;
             case \projects_status::LIQUIDATION_JUDICIAIRE:
                 $iNotificationType  = \notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
-                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . \projects_status::PROCEDURE_SAUVEGARDE . ', ' . \projects_status::REDRESSEMENT_JUDICIAIRE . '))', 'id_project_status_history ASC', 0, 1);
+                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . \projects_status::PROCEDURE_SAUVEGARDE . ', ' . \projects_status::REDRESSEMENT_JUDICIAIRE . '))', 'added ASC, id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
                     $sEmailTypePerson  = 'preteur-projet-statut-liquidation-judiciaire';
@@ -1166,12 +1134,12 @@ class dossiersController extends bootstrap
                 $sEmailTypePerson  = 'preteur-projet-statut-defaut-personne-physique';
                 $sEmailTypeSociety = 'preteur-projet-statut-defaut-personne-morale';
 
-                $aCompulsoryLiquidation = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::LIQUIDATION_JUDICIAIRE . ')', 'id_project_status_history ASC', 0, 1);
+                $aCompulsoryLiquidation = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::LIQUIDATION_JUDICIAIRE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
                 $aCommonReplacements['date_annonce_liquidation_judiciaire'] = date('d/m/Y', strtotime($aCompulsoryLiquidation[0]['added']));
                 break;
         }
 
-        $aRepaymentStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history ASC', 0, 1);
+        $aRepaymentStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $aCommonReplacements['annee_projet'] = date('Y', strtotime($aRepaymentStatus[0]['added']));
 
         if (in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
@@ -1275,11 +1243,13 @@ class dossiersController extends bootstrap
 
         /** @var company_rating $oCompanyRating */
         $oCompanyRating = $this->loadData('company_rating');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+        $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
 
         $this->aRatings                 = $oCompanyRating->getHistoryRatingsByType($this->oProject->id_company_rating_history);
         $this->aAnnualAccounts          = $oAnnualAccounts->select('id_company = ' . $this->oCompany->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
         $aAnnualAccountsIds             = array_column($this->aAnnualAccounts, 'id_bilan');
-        $this->aBalanceSheets           = $oCompanyBalance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
+        $this->aBalanceSheets           = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds)['details'];
         $this->bIsProblematicCompany    = $this->oCompany->countProblemsBySIREN() > 0;
         $this->iDeclaredRevenue         = $this->oProject->ca_declara_client;
         $this->iDeclaredOperatingIncome = $this->oProject->resultat_exploitation_declara_client;
@@ -1321,7 +1291,7 @@ class dossiersController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->lClients = $this->clients->select('nom LIKE "%' . $this->params[0] . '%" OR prenom LIKE "%' . $this->params[0] . '%"');
+            $this->lClients = $this->clients->searchEmprunteurs('OR', $this->params[0], $this->params[0]);
         }
     }
 
@@ -1424,6 +1394,9 @@ class dossiersController extends bootstrap
         $this->companies        = $this->loadData('companies');
         $this->projects         = $this->loadData('projects');
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
+        $clientManager = $this->get('unilend.service.client_manager');
+
         if (isset($_POST['send_create_etape1'])) {
             if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
                 header('Location: ' . $this->lurl . '/dossiers/add/create_etape2/' . $_POST['id_client']);
@@ -1435,9 +1408,20 @@ class dossiersController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'create_etape2') {
-            if (false === isset($this->params[1]) || false === $this->clients->get($this->params[1], 'id_client')) {
+            if (
+                false === isset($this->params[1])
+                || false === $this->clients->get($this->params[1], 'id_client')
+                || $clientManager->isLender($this->clients)
+            ) {
                 $this->clients_adresses = $this->loadData('clients_adresses');
 
+                $this->clients->etape_inscription_preteur  = 0;
+                $this->clients->status_inscription_preteur = 0;
+                $this->clients->type                       = 0;
+                $this->clients->source                     = '';
+                $this->clients->source2                    = '';
+                $this->clients->source3                    = '';
+                $this->clients->slug_origine               = '';
                 $this->clients->create();
 
                 $this->clients_adresses->id_client = $this->clients->id_client;
@@ -1471,22 +1455,24 @@ class dossiersController extends bootstrap
             $this->projects->get($this->params[0]);
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
+
+            // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
+            if ($clientManager->isLender($this->clients)){
+                $this->clients->email = '';
+            }
+
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
-                $oAltares = new Altares();
-                $oResult  = $oAltares->getEligibility($this->companies->siren);
-                $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
+                $oAltares = $this->get('unilend.service.altares');
+                try {
+                    $oAltares->setCompanyData($this->companies);
+                    $oAltares->setProjectData($this->projects);
+                    $oAltares->setCompanyBalance($this->companies);
+                } catch (\Exception $exception) {
 
-                // @todo Revert when TMA-749 is resolved
-                if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
-                    /** @var LoggerInterface $logger */
-                    $logger = $this->get('logger');
-                    $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
                 }
-
-                $oAltares->setProjectData($this->projects, $oResult->myInfo);
-                $oAltares->setCompanyBalance($this->companies);
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                 die;
@@ -1586,7 +1572,7 @@ class dossiersController extends bootstrap
             $this->nbPeteurs = $this->loans->getNbPreteurs($this->projects->id_project);
 
             $lRembs            = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project);
-            $dernierStatut     = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'id_project_status_history DESC', 0, 1);
+            $dernierStatut     = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
             $dateDernierStatut = $dernierStatut[0]['added'];
 
             $this->nbRembEffet  = 0;
@@ -1644,7 +1630,7 @@ class dossiersController extends bootstrap
                         $this->projects_remb->update();
                     }
                 } elseif ($_POST['remb_auto'] == 0) {
-                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED . ' AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '" AND date_remb_preteurs_reel = "0000-00-00 00:00:00"');
+                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED . ' AND DATE(date_remb_preteurs) >= "' . date('Y-m-d') . '" AND date_remb_preteurs_reel = "0000-00-00 00:00:00"');
 
                     foreach ($listdesRembauto as $rembauto) {
                         $this->projects_remb->get($rembauto['id_project_remb'], 'id_project_remb');
@@ -1720,8 +1706,7 @@ class dossiersController extends bootstrap
                                 $this->transactions->id_echeancier    = $e['id_echeancier'];
                                 $this->transactions->id_langue        = 'fr';
                                 $this->transactions->date_transaction = $repaymentDate;
-                                $this->transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                                $this->transactions->etat             = \transactions::STATUS_VALID;
+                                $this->transactions->status           = \transactions::STATUS_VALID;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
                                 $capitalTransactionId = $this->transactions->create();
@@ -1743,8 +1728,7 @@ class dossiersController extends bootstrap
                                 $this->transactions->id_echeancier    = $e['id_echeancier'];
                                 $this->transactions->id_langue        = 'fr';
                                 $this->transactions->date_transaction = $repaymentDate;
-                                $this->transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                                $this->transactions->etat             = \transactions::STATUS_VALID;
+                                $this->transactions->status           = \transactions::STATUS_VALID;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
                                 $this->transactions->create();
@@ -1848,9 +1832,9 @@ class dossiersController extends bootstrap
                                     $message->setTo($this->clients->email);
                                     $mailer = $this->get('mailer');
                                     $mailer->send($message);
-                                } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
+                                } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement') == true) {
                                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                    $this->clients_gestion_mails_notif->immediatement = 1;
                                     $this->clients_gestion_mails_notif->update();
 
                                     $this->loans->get($e['id_loan']);
@@ -1933,8 +1917,7 @@ class dossiersController extends bootstrap
                         $this->transactions->id_echeancier_emprunteur = $RembEmpr['id_echeancier_emprunteur'];
                         $this->transactions->id_langue                = 'fr';
                         $this->transactions->date_transaction         = date('Y-m-d H:i:s');
-                        $this->transactions->status                   = \transactions::PAYMENT_STATUS_OK;
-                        $this->transactions->etat                     = \transactions::STATUS_VALID;
+                        $this->transactions->status                   = \transactions::STATUS_VALID;
                         $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                         $this->transactions->create();
@@ -2124,8 +2107,7 @@ class dossiersController extends bootstrap
                         $this->transactions->id_project       = $this->projects->id_project;
                         $this->transactions->id_langue        = 'fr';
                         $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                        $this->transactions->status           = 1;
-                        $this->transactions->etat             = 1;
+                        $this->transactions->status           = \transactions::STATUS_VALID;
                         $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT;
                         $this->transactions->create();
@@ -2163,8 +2145,7 @@ class dossiersController extends bootstrap
                         $this->transactions->id_echeancier_emprunteur = 0; // pas d'echeance emprunteur
                         $this->transactions->id_langue                = 'fr';
                         $this->transactions->date_transaction         = date('Y-m-d H:i:s');
-                        $this->transactions->status                   = 1;
-                        $this->transactions->etat                     = 1;
+                        $this->transactions->status                   = \transactions::STATUS_VALID;
                         $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                         $this->transactions->id_loan_remb             = 0;
@@ -2205,6 +2186,12 @@ class dossiersController extends bootstrap
         $this->echeanciers      = $this->loadData('echeanciers');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->projects         = $this->loadData('projects');
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
+        $this->lenderManager = $this->get('unilend.service.lender_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        $this->loanManager = $this->get('unilend.service.loan_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             /** @var \loans $oLoans */
@@ -2230,11 +2217,17 @@ class dossiersController extends bootstrap
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions              = $this->loadData('receptions');
 
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        $this->loanManager = $this->get('unilend.service.loan_manager');
+        $this->loan->get($this->params[1]);
+
         $this->lRemb = $this->echeanciers->getRepaymentWithTaxDetails($this->params[1]);
 
         // on check si on est en remb anticipé
         // ON recup la date de statut remb
-        $dernierStatut = $this->projects_status_history->select('id_project = ' . $this->params[0], 'id_project_status_history DESC', 0, 1);
+        $dernierStatut = $this->projects_status_history->select('id_project = ' . $this->params[0], 'added DESC, id_project_status_history DESC', 0, 1);
 
         $this->projects_status->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
         $this->montant_ra = 0;
@@ -2282,7 +2275,7 @@ class dossiersController extends bootstrap
             }
             // on check si on est en remb anticipé
             // ON recup la date de statut remb
-            $dernierStatut    = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'id_project_status_history DESC', 0, 1);
+            $dernierStatut    = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
             $this->montant_ra = 0;
 
             $this->projects_status->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
@@ -2935,26 +2928,115 @@ class dossiersController extends bootstrap
         echo json_encode($aNames);
     }
 
-    private function filterEligibleNeeds(&$needsTree, $eligibleNeeds)
+    protected function generateBalanceLineHtml($codes, $formType, $extraClass = '')
     {
-        if (false === empty($eligibleNeeds)) {
-            foreach ($needsTree as $index => &$need) {
-                if (in_array($need['id_project_need'], $eligibleNeeds)) {
-                    continue;
-                }
+        $html = '';
+        foreach($codes as $code) {
+            $index = array_search($code, array_column($this->allTaxFormTypes[$formType], 'code'));
+            $field = $this->allTaxFormTypes[$formType][$index];
 
-                if (isset($need['children'])) {
-                    $this->filterEligibleNeeds($need['children'], $eligibleNeeds);
-                } else {
-                    if (false === in_array($need['id_project_need'], $eligibleNeeds)) {
-                        unset($needsTree[$index]);
+            $html .= '<tr class="' . $extraClass . '"> <td>' . $field['label'] . '</td> <td width="45">' . $field['code'] . '</td>';
+            $iColumn                 = 0;
+            $iPreviousBalanceSheetId = null;
+
+            foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
+                if ($formType != $aBalanceSheet['form_type']) {
+                    $html .= '<td></td>';
+                    if ($iColumn) {
+                        $html .= '<td></td>';
                     }
-                }
-                if (empty($need['children'])) {
-                    unset($needsTree[$index]);
-                }
+                } else {
+                    $value = isset($aBalanceSheet['details'][$field['code']]) ? $aBalanceSheet['details'][$field['code']] : 0;
+                    if ($iColumn) {
+                        $previousValue = isset($this->aBalanceSheets[$iPreviousBalanceSheetId]['details'][$field['code']]) ? $this->aBalanceSheets[$iPreviousBalanceSheetId]['details'][$field['code']] : 0;
+                        $movement      = empty($value) || empty($previousValue) ? 'N/A' : round(($previousValue - $value) / abs($value) * 100) . '&nbsp;%';
+                        $html .= '<td>' . $movement . '</td>';
 
+                    }
+                    $formatedValue = $this->ficelle->formatNumber($value, 0);
+                    $tabIndex      = 420 + $iColumn;
+                    $html .= '<td><input type="text" class="numbers" name="box[' . $iBalanceSheetId . '][' . $field['code'] . ']" value="' . $formatedValue . '" tabindex="' . $tabIndex . '"/>&nbsp;€</td>';
+
+                    $iPreviousBalanceSheetId = $iBalanceSheetId;
+                }
+                $iColumn++;
             }
+            $html .= '</tr>';
+        }
+
+        return $html;
+    }
+
+    protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '')
+    {
+        $html = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
+        $iPreviousTotal = null;
+        $iColumn = 0;
+        foreach ($this->aBalanceSheets as $aBalanceSheet) {
+            if ($formType != $aBalanceSheet['form_type']) {
+                $html .= '<td></td>';
+                if ($iColumn) {
+                    $html .= '<td></td>';
+                }
+            } else {
+                $iTotal = $this->sumBalances($codes, $aBalanceSheet);
+
+                if ($iColumn) {
+                    $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
+                    $html .= '<td>' . $movement . '</td>';
+                }
+                $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
+                $html .= '<td id="'.$domId . '">' . $formatedValue . '</td>';
+                $iPreviousTotal = $iTotal;
+            }
+            $iColumn ++;
+        }
+        $html .= '</tr>';
+
+        return $html;
+    }
+
+    protected function generateBalanceGroupHtml($totalLabel, $code, $formType)
+    {
+        return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $code, $formType);
+    }
+
+    protected function generateBalanceTotalLineHtml($label, $codes, $formType, $domId = '')
+    {
+        $html = '<tr><th colspan="2">' . $label . '</th>';
+        $iPreviousTotal = null;
+        $iIndex         = 0;
+        $iColumn        = 0;
+        foreach ($this->aBalanceSheets as $aBalanceSheet) {
+            if ($formType != $aBalanceSheet['form_type']) {
+                $html .= '<th></th>';
+                if ($iColumn) {
+                    $html .= '<th></th>';
+                }
+            } else {
+                $iTotal = $this->sumBalances($codes, $aBalanceSheet);
+
+                if ($iColumn) {
+                    $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
+                    $html .= '<th>' . $movement . '</th>';
+                }
+                $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
+                $html .= '<th id="'.$domId . $iIndex++ . '">' . $formatedValue . '</th>';
+                $iPreviousTotal = $iTotal;
+            }
+            $iColumn ++;
+        }
+        $html .= '</tr>';
+
+        return $html;
+    }
+
+    protected function negtive($case)
+    {
+        if ('-' === substr($case, 0, 1)) {
+            return substr($case, 1);
+        } else {
+            return '-' . $case;
         }
     }
 }

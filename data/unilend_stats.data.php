@@ -237,17 +237,22 @@ class unilend_stats extends unilend_stats_crud
         return $aValuesIRR;
     }
 
-    public function getIRRValuesByCohort($year)
+    /**
+     * @param string $cohortStartDate
+     * @param string $cohortEndDate
+     * @return array
+     */
+    public function getIRRValuesByCohort($cohortStartDate, $cohortEndDate)
     {
         $query =   '
             SELECT
-                montant - montant_unilend AS montant,
-                date_transaction AS date
+              montant - montant_unilend AS montant,
+              date_transaction AS date
             FROM transactions
-              WHERE type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
-                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                        WHERE psh.id_project = transactions.id_project
-                        ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+            WHERE type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
+            AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                  WHERE psh.id_project = transactions.id_project
+                  ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate
 
         UNION ALL
 
@@ -271,9 +276,9 @@ class unilend_stats extends unilend_stats_crud
                         AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = 1
-                 AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                        WHERE psh.id_project = ee.id_project
-                        ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+                 AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                  WHERE psh.id_project = ee.id_project
+                  ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate
 
         UNION ALL
 
@@ -300,9 +305,9 @@ class unilend_stats extends unilend_stats_crud
                 ) = 0
                 AND p.status = ' . \projects_status::REMBOURSEMENT . '
                 AND ee.id_project > 0
-                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                            WHERE psh.id_project = ee.id_project
-                            ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+                AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                  WHERE psh.id_project = ee.id_project
+                  ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate
 
         UNION ALL
 
@@ -329,9 +334,9 @@ class unilend_stats extends unilend_stats_crud
                 ) = 0
                 AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X]) . ')
                 AND ee.id_project > 0
-                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                        WHERE psh.id_project = ee.id_project
-                        ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+                AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                  WHERE psh.id_project = ee.id_project
+                  ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate
 
         UNION ALL
 
@@ -370,9 +375,9 @@ class unilend_stats extends unilend_stats_crud
                 ) = 0
                 AND p.status = ' . \projects_status::RECOUVREMENT . '
                 AND ee.id_project > 0
-                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                        WHERE psh.id_project = ee.id_project
-                        ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+                AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                  WHERE psh.id_project = ee.id_project
+                  ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate
 
         UNION ALL
 
@@ -399,9 +404,9 @@ class unilend_stats extends unilend_stats_crud
                 ) = 0
                 AND p.status IN (' . implode(',', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ')
                 AND ee.id_project > 0
-                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                    WHERE psh.id_project = ee.id_project
-                    ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+                AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                  WHERE psh.id_project = ee.id_project
+                  ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate
 
         UNION ALL
 
@@ -410,13 +415,12 @@ class unilend_stats extends unilend_stats_crud
                   date_transaction AS Date
                 FROM transactions
                 WHERE type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
-                AND
-                    (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                          WHERE psh.id_project = transactions.id_project ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+                AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                  WHERE psh.id_project = transactions.id_project
+                  ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate 
                 GROUP BY date_transaction';
 
-        $statement = $this->bdd->executeQuery($query, ['year' => $year], ['year' => \PDO::PARAM_STR]);
-        $records   = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $records = $this->bdd->executeQuery($query, ['startDate' => $cohortStartDate, 'endDate' => $cohortEndDate])->fetchAll(PDO::FETCH_ASSOC);
         $valuesIRR = [];
 
         foreach ($records as $record) {

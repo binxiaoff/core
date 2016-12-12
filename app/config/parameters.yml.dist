@@ -20,6 +20,9 @@ parameters:
     url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
     url.host_admin:                 'admin.local.unilend.fr' # for Front to know the url BO
     url.host_default:               'www.local.unilend.fr' # for BO to know the url Front
+
+    sonata_cache.servers:
+        - { domain: www.local.unilend.fr, ip: 192.168.110.12, port: 443 }
     # End of parameters managed also by Ansible
 
     dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
@@ -51,3 +54,7 @@ parameters:
     mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
 
     security.bcrypt.cost:           13
+
+    new_relic.front_app_name:       Unilend-front
+    new_relic.back_app_name:        Unilend-backoffice
+    new_relic.console_app_name:     Unilend-batchjobs

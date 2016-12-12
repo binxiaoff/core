@@ -272,7 +272,7 @@
                     <tr>
                         <th><label for="sector">Secteur de la société :</label></th>
                         <td>
-                            <?= $this->lSecteurs[$this->companies->sector] ?>
+                            <?= $this->translator->trans('company-sector_sector-' . $this->companies->sector) ?>
                         </td>
                     </tr>
                     <tr>
@@ -377,8 +377,8 @@
                         <td>
                             <select name="motive" id="motive" class="select" style="width:160px;background-color:#AAACAC;">
                                 <option<?= (is_null($this->projects->id_borrowing_motive) ? ' selected' : '') ?> value="0">Non renseigné</option>
-                                <?php foreach ($this->aBorrowingMotives as $key => $motive) : ?>
-                                    <option<?= ($this->projects->id_borrowing_motive == $key ? ' selected' : '') ?> value="<?= $key ?>"><?= $motive ?> </option>
+                                <?php foreach ($this->aBorrowingMotives as $motive) : ?>
+                                    <option<?= ($this->projects->id_borrowing_motive == $motive['id_motive'] ? ' selected' : '') ?> value="<?= $motive['id_motive'] ?>"><?= $this->translator->trans('borrowing-motive_motive-' . $motive['id_motive']) ?> </option>
                                 <?php endforeach ?>
                             </select>
                         </td>
@@ -634,17 +634,11 @@
                                 ?>
                                 <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
                                 <?php
-                                // Récupération de la date enregistrée
-                                $tab_date_publication_full  = explode(" ", $this->projects->date_publication_full);
+                                $tab_date_publication_full  = explode(" ", $this->projects->date_publication);
                                 $tab_date_publication_full2 = explode(":", $tab_date_publication_full[1]);
                                 $heure_date_publication     = $tab_date_publication_full2[0];
                                 $minute_date_publication    = $tab_date_publication_full2[1];
                                 $seconde_date_publication   = $tab_date_publication_full2[2];
-
-                                //Si vide valeur par defaut
-                                if ($heure_date_publication == '00') {
-                                    $heure_date_publication = $this->HdebutFunding;
-                                }
                                 ?>
                                 &agrave;
                                 <select name="date_publication_heure" class="selectMini">
@@ -666,11 +660,7 @@
                                 </select>
                                 <?php
                             } else {
-                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
-                                    echo $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') . ' 07:00';
-                                } else {
-                                    echo $this->dates->formatDate($this->projects->date_publication_full, 'd/m/Y H:i');
-                                }
+                                echo $this->dates->formatDate($this->projects->date_publication, 'd/m/Y H:i');
                             }
                             ?>
                         </td>
@@ -683,17 +673,11 @@
                                 ?>
                                 <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
                                 <?php
-                                // Récupération de la date enregistrée
-                                $tab_date_retrait_full  = explode(" ", $this->projects->date_retrait_full);
+                                $tab_date_retrait_full  = explode(" ", $this->projects->date_retrait);
                                 $tab_date_retrait_full2 = explode(":", $tab_date_retrait_full[1]);
                                 $heure_date_retrait     = $tab_date_retrait_full2[0];
                                 $minute_date_retrait    = $tab_date_retrait_full2[1];
                                 $seconde_date_retrait   = $tab_date_retrait_full2[2];
-
-                                // si vide valeur par defaut
-                                if ($heure_date_retrait == '00') {
-                                    $heure_date_retrait = $this->HfinFunding;
-                                }
                                 ?>
                                 &agrave;
                                 <select name="date_retrait_heure" class="selectMini">
@@ -716,11 +700,7 @@
                                 </select>
                                 <?php
                             } else {
-                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
-                                    echo $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') . ' 16:00';
-                                } else {
-                                    echo $this->dates->formatDate($this->projects->date_retrait_full, 'd/m/Y H:i');
-                                }
+                                echo $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y H:i');
 
                                 if ($this->projects->status < \projects_status::FUNDE) {
                                     ?>
@@ -902,7 +882,13 @@
         <?php $this->fireView('blocs/etape3'); ?>
         <?php $this->fireView('blocs/etape4_1'); ?>
         <?php $this->fireView('blocs/etape4_2'); ?>
-        <?php $this->fireView('blocs/etape4_3'); ?>
+        <?php
+        $formTypes = array_column($this->aBalanceSheets, 'form_type', 'form_type');
+        if (1 === count($formTypes)
+            && array_values($formTypes)[0] == company_tax_form_type::FORM_2033) {
+            $this->fireView('blocs/etape4_3');
+        }
+        ?>
         <?php $this->fireView('blocs/etape4_4'); ?>
         <?php $this->fireView('blocs/etape5'); ?>
         <?php $this->fireView('blocs/etape6'); ?>

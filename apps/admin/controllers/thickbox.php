@@ -36,17 +36,10 @@ class thickboxController extends bootstrap
         $this->projects = $this->loadData('projects');
         $this->projects->get($this->params[0], 'id_project');
 
-        $this->time_retrait = strtotime($this->projects->date_retrait);
-
-        $date               = explode('-', $this->projects->date_retrait);
-        $this->date_retrait = $date[2] . '/' . $date[1] . '/' . $date[0];
-
-        $date      = explode(' ', $this->projects->date_retrait_full);
-        $heure_min = explode(':', $date[1]);
-
-        $this->heure_date_retrait  = $heure_min[0];
-        $this->minute_date_retrait = $heure_min[1];
-
+        $endOfPublicationDate      = \DateTime::createFromFormat('Y-m-d H:i:s', $this->projects->date_retrait);
+        $this->date_retrait        = $endOfPublicationDate->format('d/m/Y');
+        $this->heure_date_retrait  = $endOfPublicationDate->format('H');
+        $this->minute_date_retrait = $endOfPublicationDate->format('i');
     }
 
     public function _popup_confirmation_send_email()
@@ -62,12 +55,15 @@ class thickboxController extends bootstrap
 
         if (isset($this->params[0]) && $oProjects->get($this->params[0])) {
             $oProjectsStatusHistory = $this->loadData('projects_status_history');
-            $aProjectHistory        = $oProjectsStatusHistory->select('id_project = ' . $oProjects->id_project, 'id_project_status_history ASC');
+            $aProjectHistory        = $oProjectsStatusHistory->select('id_project = ' . $oProjects->id_project, 'added ASC, id_project_status_history ASC');
 
             if (false === empty($aProjectHistory)) {
-                $oProjectsStatus               = $this->loadData('projects_status');
+                /** @var \projects_status $oProjectsStatus */
+                $oProjectsStatus = $this->loadData('projects_status');
+                /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
                 $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
-                $oUsers                        = $this->loadData('users');
+                /** @var \users $oUsers */
+                $oUsers = $this->loadData('users');
 
                 $this->aProjectHistoryDetails = $oProjectsStatusHistoryDetails->select(
                     'id_project_status_history IN (' . implode(', ', array_column($aProjectHistory, 'id_project_status_history')) . ')',
@@ -109,11 +105,10 @@ class thickboxController extends bootstrap
                 $this->bReceiver         = false;
                 $this->bAskEmailBorrower = true;
 
-                /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-                $translationManager         = $this->get('unilend.service.translation_manager');
-                $aProjectTexts              = $translationManager->getAllTranslationsForSection('projet');
-                $this->sInfoStatusChange    = trim($aProjectTexts['info-passage-statut-probleme']);
-                $this->mailInfoStatusChange = trim($aProjectTexts['mail-info-passage-statut-probleme']);
+                /** @var \Symfony\Component\Translation\TranslatorInterface  $translator*/
+                $translator         = $this->get('translator');
+                $this->sInfoStatusChange    = trim($translator->trans('projet_info-passage-statut-probleme'));
+                $this->mailInfoStatusChange = trim($translator->trans('projet_mail-info-passage-statut-probleme'));
 
                 break;
             case \projects_status::PROBLEME_J_X:
@@ -175,6 +170,15 @@ class thickboxController extends bootstrap
             $oProjectsStatusHistoryDetails->get($oProjectsStatusHistory->id_project_status_history, 'id_project_status_history');
 
             $this->sPreviousReceiver = $oProjectsStatusHistoryDetails->receiver;
+        }
+    }
+
+    public function _confirm_tax_exemption()
+    {
+        if ('uncheck' === $this->params[1]){
+            $this->message = 'Le préteur ne sera pas exonéré pour l\'année ' . $this->params[0] . '<br>une fois les modifications sauvegardées';
+        } elseif ('check' === $this->params[1]) {
+            $this->message = 'Le préteur sera exonéré pour l\'année ' . $this->params[0] . '<br>une fois les modifications sauvegardées';
         }
     }
 }

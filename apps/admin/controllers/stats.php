@@ -301,394 +301,194 @@ class statsController extends bootstrap
         }
     }
 
-    public function _requete_donnees_financieres()
-    {
-        $this->lEmpr = $this->bdd->query("
-            SELECT p.id_project as id_project, c.name,
-            (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
-            title, p.added,
-            (SELECT label FROM projects_status ps WHERE ps.id_project_status = (SELECT id_project_status FROM projects_status_history psh WHERE psh.id_project = p.id_project ORDER BY id_project_status_history DESC LIMIT 1)) AS status,
-            IFNULL(cr.value, 0) AS score_altares,
-            c.risk, p.amount,p.period,
-            (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
-            (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
-            (SELECT ca FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as ca2013,
-
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as rbe2011,
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as rbe2012,
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as rbe2013,
-
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as rex2011,
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as rex2012,
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as rex2013,
-
-            (SELECT investissements FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as invest2011,
-            (SELECT investissements FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as invest2012,
-            (SELECT investissements FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as invest2013,
-
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as immocorp2011,
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as immocorp2012,
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as immocorp2013,
-
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as immoincorp2011,
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as immoincorp2012,
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as immoincorp2013,
-
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as immofin2011,
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as immofin2012,
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as immofin2013,
-
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as stock2011,
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as stock2012,
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as stock2013,
-
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as creances2011,
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as creances2012,
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as creances2013,
-
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as dispo2011,
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as dispo2012,
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as dispo2013,
-
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as valeursmob2011,
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as valeursmob2012,
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as valeursmob2013,
-
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as cp2011,
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as cp2012,
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as cp2013,
-
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as provisions2011,
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as provisions2012,
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as provisions2013,
-
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as ammort2011,
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as ammort2012,
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as ammort2013,
-
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as dettesfin2011,
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as dettesfin2012,
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as dettesfin2013,
-
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as dettesfour2011,
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as dettesfour2012,
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as dettesfour2013,
-
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as autresdettes2011,
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as autresdettes2012,
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as autresdettes2013,
-            c.forme,c.date_creation
-            FROM projects p
-            LEFT JOIN company_rating cr ON p.id_company_rating_history > 0 AND cr.id_company_rating_history = p.id_company_rating_history AND cr.type = 'score_altares'
-            JOIN companies c ON c.id_company = p.id_company
-            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)"
-        );
-    }
-
-    public function _requete_donnees_financieres_csv()
-    {
-        $this->autoFireView = false;
-        $this->hideDecoration();
-
-        $this->lEmpr = $this->bdd->query("
-            SELECT p.id_project as id_project, c.name,
-            (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
-            title, p.added,
-            (SELECT label FROM projects_status ps WHERE ps.id_project_status = (SELECT id_project_status FROM projects_status_history psh WHERE psh.id_project = p.id_project ORDER BY id_project_status_history DESC LIMIT 1)) AS status,
-            IFNULL(cr.value, 0) AS score_altares,
-            c.risk, p.amount,p.period,
-            (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
-            (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
-            (SELECT ca FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as ca2013,
-
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as rbe2011,
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as rbe2012,
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as rbe2013,
-
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as rex2011,
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as rex2012,
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as rex2013,
-
-            (SELECT investissements FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as invest2011,
-            (SELECT investissements FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as invest2012,
-            (SELECT investissements FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as invest2013,
-
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as immocorp2011,
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as immocorp2012,
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as immocorp2013,
-
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as immoincorp2011,
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as immoincorp2012,
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as immoincorp2013,
-
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as immofin2011,
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as immofin2012,
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as immofin2013,
-
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as stock2011,
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as stock2012,
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as stock2013,
-
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as creances2011,
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as creances2012,
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as creances2013,
-
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as dispo2011,
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as dispo2012,
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as dispo2013,
-
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as valeursmob2011,
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as valeursmob2012,
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as valeursmob2013,
-
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as cp2011,
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as cp2012,
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as cp2013,
-
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as provisions2011,
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as provisions2012,
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as provisions2013,
-
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as ammort2011,
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as ammort2012,
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as ammort2013,
-
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as dettesfin2011,
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as dettesfin2012,
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as dettesfin2013,
-
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as dettesfour2011,
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as dettesfour2012,
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as dettesfour2013,
-
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as autresdettes2011,
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as autresdettes2012,
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as autresdettes2013,
-            c.forme,c.date_creation
-
-            FROM projects p
-            LEFT JOIN company_rating cr ON p.id_company_rating_history > 0 AND cr.id_company_rating_history = p.id_company_rating_history AND cr.type = 'score_altares'
-            JOIN companies c ON c.id_company = p.id_company
-            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)"
-        );
-
-        $csv = "";
-        $i = 1;
-        while ($e = $this->bdd->fetch_array($this->lEmpr)) {
-            if ($i == 1) {
-                foreach ($e as $key => $field) {
-                    if (! is_numeric($key)) {
-                        $csv .= $key . "; ";
-                    }
-                }
-                $csv .= " \n";
-            }
-
-            foreach ($e as $key => $field) {
-                if (! is_numeric($key)) {
-                    $csv .= $field . "; ";
-                }
-            }
-            $csv .= " \n";
-            $i++;
-        }
-
-        $titre = 'requete_dossiers' . date('Ymd');
-        header("Content-type: application/vnd.ms-excel");
-        header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-
-        print(utf8_decode($csv));
-    }
-
-    public function _requete_beneficiaires()
-    {
-        $this->companies        = $this->loadData('companies');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->villes           = $this->loadData('villes');
-        $this->pays             = $this->loadData('pays_v2');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->loans            = $this->loadData('loans');
-        $this->insee_pays       = $this->loadData('insee_pays');
-
-        /** @var \tax_type $taxTypes */
-        $taxTypes = $this->loadData('tax_type');
-        $taxTypes->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
-        $this->retenuesource = $taxTypes->rate;
-        $this->lPre = $this->clients->selectPreteursByStatus(
-            '20, 30, 40, 50, 60',
-            '(
-                SELECT COUNT(*) 
-                FROM transactions 
-                WHERE status = 1 
-                    AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
-                    AND id_client = c.id_client
-                    AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
-            ) >= 1'
-        );
-    }
-
     public function _requete_beneficiaires_csv()
     {
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $this->companies        = $this->loadData('companies');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->villes           = $this->loadData('villes');
-        $this->pays             = $this->loadData('pays_v2');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->loans            = $this->loadData('loans');
-        $this->insee_pays       = $this->loadData('insee_pays');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
+        /** @var \clients_adresses $clientAddress */
+        $clientAddress = $this->loadData('clients_adresses');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->loadData('lenders_accounts');
+        /** @var \companies $company */
+        $company = $this->loadData('companies');
+        /** @var \pays_v2 $countries */
+        $countries = $this->loadData('pays_v2');
+        /** @var \villes $cities */
+        $cities = $this->loadData('villes');
+        /** @var \insee_pays $inseeCountries */
+        $inseeCountries = $this->loadData('insee_pays');
         /** @var \tax_type $taxTypes */
         $taxTypes = $this->loadData('tax_type');
-        $taxTypes->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
-        $this->retenuesource = $taxTypes->rate;
-        $this->lPre = $this->clients->selectPreteursByStatus(
-            '20, 30, 40, 50, 60',
-            '(
-                SELECT COUNT(*) 
-                FROM transactions 
-                WHERE status = 1 
-                    AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
-                    AND id_client = c.id_client
-                    AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
-            ) >= 1'
-        );
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
 
-        $aData = array();
-        foreach ($this->lPre as $e) {
-            $this->clients_adresses->get($e['id_client'], 'id_client');
-            $this->lenders_accounts->get($e['id_client'], 'id_client_owner');
-            $entreprise = false;
-            if ($this->companies->get($e['id_client'], 'id_client_owner') && in_array($e['type'], array(2, 4))) {
-                $entreprise = true;
-                if ($this->companies->id_pays == 0) {
-                    $this->companies->id_pays = 1;
-                }
-                $this->pays->get($this->companies->id_pays, 'id_pays');
-                $isoFiscal = $this->pays->iso;
+        $clientList = $transactions->getClientsWithLoanRelatedTransactions(date('Y'));
+        $data = [];
 
-                $ville_paysFiscal = $this->companies->city;
+        $filename = 'requete_beneficiaires' . date('Ymd');
+        $headers = ['id_client', 'Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
 
-                $cp = substr($this->companies->zip, 0, 2);
-                if ($cp[0] == 0) {
-                    $cp = substr($cp, 1);
+        foreach ($clientList as $client) {
+            $clients->get($client['id_client']);
+            $clientAddress->get($clients->id_client, 'id_client');
+            $lenderAccount->get($clients->id_client, 'id_client_owner');
+            $fiscalAndLocationData = [];
+
+            if (in_array($clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+                $fiscalAndLocationData = [
+                    'address'    => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->adresse_fiscal) ? trim($clientAddress->adresse1) : trim($clientAddress->adresse_fiscal),
+                    'zip'        => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->cp_fiscal) ? trim($clientAddress->cp) : trim($clientAddress->cp_fiscal),
+                    'city'       => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->ville_fiscal) ? trim($clientAddress->ville) : trim($clientAddress->ville_fiscal),
+                    'id_country' => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->id_pays_fiscal) ? $clientAddress->id_pays : $clientAddress->id_pays_fiscal
+                ];
+
+                if (0 == $fiscalAndLocationData['id_country']) {
+                    $fiscalAndLocationData['id_country'] = 1;
                 }
 
-                // Code commune insee ville
-                $codeCom = $this->villes->getInseeCode($this->companies->zip, $this->companies->city);
-                $codeComNaissance = '';
-                $retenuesource    = '';
-                $sLieuNaissance = '';
-            } else {
-                $this->etranger = 0;
+                $countries->get($fiscalAndLocationData['id_country'], 'id_pays');
+                $fiscalAndLocationData['isoFiscal'] = $countries->iso;
+                $countries->unsetData();
 
-                // fr/resident etranger
-                if ($e['id_nationalite'] <= 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                    $this->etranger = 1;
-                } // no fr/resident etranger
-                elseif ($e['id_nationalite'] > 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                    $this->etranger = 2;
-                }
+                if ($fiscalAndLocationData['id_country'] > \pays_v2::COUNTRY_FRANCE) {
+                    $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
+                    $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
-                // on veut adresse fiscal
-                if ($this->clients_adresses->meme_adresse_fiscal == 1) {
-                    $adresse_fiscal = trim($this->clients_adresses->adresse1);
-                    $cp_fiscal      = trim($this->clients_adresses->cp);
-                    $ville_fiscal   = trim($this->clients_adresses->ville);
-                    $id_pays_fiscal = ($this->clients_adresses->id_pays == 0 ? 1 : $this->clients_adresses->id_pays);
+                    $countries->get($fiscalAndLocationData['id_country'], 'id_pays');
+                    $fiscalAndLocationData['city'] = $countries->fr;
+                    $inseeCountries->getByCountryIso(trim($countries->iso));
+                    $fiscalAndLocationData['zip'] = $inseeCountries->COG;
+                    $countries->unsetData();
+                    $inseeCountries->unsetData();
+
+                    $taxTypes->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+                    $fiscalAndLocationData['deductedAtSource'] = $this->ficelle->formatNumber($taxTypes->rate) . '%';
                 } else {
-                    $adresse_fiscal = trim($this->clients_adresses->adresse_fiscal);
-                    $cp_fiscal      = trim($this->clients_adresses->cp_fiscal);
-                    $ville_fiscal   = trim($this->clients_adresses->ville_fiscal);
-                    $id_pays_fiscal = ($this->clients_adresses->id_pays_fiscal == 0 ? 1 : $this->clients_adresses->id_pays_fiscal);
+                    $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
+                    $fiscalAndLocationData['location']  = ''; //commune fiscal
                 }
 
-                // date naissance
-                $nais      = explode('-', $e['naissance']);
-                $naissance = $nais[2] . '/' . $nais[1] . '/' . $nais[0];
+                $fiscalAndLocationData['birth_country'] = (0 == $clients->id_pays_naissance) ? 1 : $clients->id_pays_naissance;
+                $countries->get($fiscalAndLocationData['birth_country'], 'id_pays');
+                $fiscalAndLocationData['isoBirth'] = $countries->iso;
+                $countries->unsetData();
 
-                // Iso fiscal
-                if ($this->clients_adresses->id_pays_fiscal == 0) {
-                    $this->clients_adresses->id_pays_fiscal = 1;
-                }
-                $this->pays->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
-                $isoFiscal = $this->pays->iso;
-
-                if ($e['id_pays_naissance'] == 0) {
-                    $id_pays_naissance = 1;
+                if (\pays_v2::COUNTRY_FRANCE >= $fiscalAndLocationData['birth_country']) {
+                    $fiscalAndLocationData['birthPlace'] = $clients->ville_naissance;
+                    $fiscalAndLocationData['inseeBirth'] = '00000';
                 } else {
-                    $id_pays_naissance = $e['id_pays_naissance'];
-                }
-                $this->pays->get($id_pays_naissance, 'id_pays');
-                $isoNaissance = $this->pays->iso;
+                    $countries->get($clients->id_pays_naissance, 'id_pays');
+                    $fiscalAndLocationData['birthPlace'] = $countries->fr;
+                    $countries->unsetData();
 
-                if ($this->etranger == 0) {
-                    // Code commune insee ville
-                    $codeCom = $this->villes->getInseeCode($cp_fiscal, $ville_fiscal);
-                    $commune = '';
-                    $cp      = $cp_fiscal;
-                    $retenuesource = '';
-                    $ville_paysFiscal = $ville_fiscal;
-                } else {
-                    $codeCom = $cp_fiscal;
-                    $commune = $ville_fiscal;
-
-                    if ($id_pays_fiscal == 0) {
-                        $id_pays = 1;
-                    } else {
-                        $id_pays = $id_pays_fiscal;
+                    if (empty($clients->insee_birth)) {
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $locationManager */
+                        $locationManager = $this->get('unilend.service.location_manager');
+                        $cityList = $locationManager->getCities($clients->ville_naissance, true);
+                        if (1 < count($cityList)) {
+                            $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
+                        } else {
+                            $cities->get($clients->ville_naissance, 'ville');
+                            $fiscalAndLocationData['inseeBirth'] = empty($cities->insee) ? '00000': $cities->insee;
+                        }
+                        $cities->unsetData();
                     }
-                    $this->pays->get($id_pays, 'id_pays');
-
-                    $this->insee_pays->getByCountryIso(trim($this->pays->iso));
-                    $cp = $this->insee_pays->COG;
-
-                    $retenuesource = $this->ficelle->formatNumber($this->retenuesource) . '%';
-
-                    if ($id_pays_fiscal == 0) {
-                        $id_pays = 1;
-                    } else {
-                        $id_pays = $id_pays_fiscal;
-                    }
-                    $this->pays->get($id_pays, 'id_pays');
-                    $paysFiscal = $this->pays->fr;
-
-                    $ville_paysFiscal = $paysFiscal;
                 }
 
-                if (1 >= $e['id_pays_naissance']) {
-                    $sLieuNaissance = $e['ville_naissance'];
-                } else {
-                    $this->pays->get($e['id_pays_naissance'], 'id_pays');
-                    $sLieuNaissance = $this->pays->fr;
-                }
+                $fiscalAndLocationData['deductedAtSource'] = '';
 
-                $this->clients->get($e['id_client'], 'id_client');
-                $codeComNaissance = $this->clients->insee_birth == '' ? '00000' : $this->clients->insee_birth;
-                $depNaiss = substr($codeComNaissance, 0, 2);
-            } // fin particulier
+                unset($fiscalAndLocationData['birth_country']);
+                $this->addPersonLineToBeneficiaryQueryData($data, $lenderAccount, $clients, $fiscalAndLocationData);
+            }
 
-            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
-            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($e['nom'])));
-            $id_client = $e['id_client'];
-            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-            $motif     = substr($motif, 0, 10);
-
-            if ($entreprise == true) {
-                $aData[] = array($motif, $this->companies->name, '', '', '', '', '', '', '', '', $this->companies->siret, $isoFiscal, '', str_replace(';', ',', $this->companies->adresse1), $codeCom, '', $this->companies->zip, $ville_paysFiscal, '', $isoFiscal, 'X', $retenuesource, 'N', $this->companies->phone, '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
-            } else {
-                $aData[] = array($motif, $e['nom'], $e['civilite'], $e['nom'], $e['prenom'], $naissance, $depNaiss, $codeComNaissance, $sLieuNaissance, '', '', $isoFiscal, '', str_replace(';', ',', $adresse_fiscal), $codeCom, $commune, $cp, $ville_paysFiscal, '', $isoNaissance, 'X', $retenuesource, 'N', $e['telephone'], '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
+            if ($company->get($clients->id_client, 'id_client_owner') && in_array($clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                $company->id_pays = (0 == $company->id_pays) ? 1 : $company->id_pays;
+                $countries->get($company->id_pays, 'id_pays');
+                $fiscalAndLocationData['isoFiscal']   = $countries->iso;
+                $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($company->zip, $company->city);
+                $this->addLegalEntityLineToBeneficiaryQueryData($data, $company, $lenderAccount, $clients, $fiscalAndLocationData);
             }
         }
 
-        $this->exportCSV($aData, 'requete_beneficiaires' . date('Ymd'), array('Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''));
+        $this->exportCSV($data, $filename, $headers);
+    }
+
+    private function addPersonLineToBeneficiaryQueryData(&$data, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
+    {
+        /** @var \DateTime $birthDate */
+        $birthDate = \DateTime::createFromFormat('Y-m-d', $clients->naissance);
+
+        $data[] = [
+            $clients->id_client,
+            $clients->getLenderPattern($clients->id_client),
+            $clients->nom,
+            $clients->civilite,
+            $clients->nom,
+            $clients->prenom,
+            $birthDate->format('d/m/Y'),
+            empty($clients->insee_birth) ? substr($fiscalAndLocationData['inseeBirth'], 0, 2) : substr($clients->insee_birth, 0, 2),
+            empty($clients->insee_birth) ? $fiscalAndLocationData['inseeBirth'] : $clients->insee_birth,
+            $fiscalAndLocationData['birthPlace'],
+            '',
+            '',
+            $fiscalAndLocationData['isoFiscal'],
+            '',
+            str_replace(';', ',', $fiscalAndLocationData['address']),
+            $fiscalAndLocationData['inseeFiscal'],
+            $fiscalAndLocationData['location'],//commune fiscal
+            $fiscalAndLocationData['zip'],
+            $fiscalAndLocationData['city'],
+            '',
+            $fiscalAndLocationData['isoBirth'],
+            'X',
+            $fiscalAndLocationData['deductedAtSource'],
+            'N',
+            $clients->telephone,
+            '',
+            $lenderAccount->iban,
+            $lenderAccount->bic,
+            $clients->email,
+            ''
+        ];
+    }
+
+    private function addLegalEntityLineToBeneficiaryQueryData(&$data, \companies $company, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
+    {
+        $data[] = [
+            $clients->id_client,
+            $clients->getLenderPattern($clients->id_client),
+            $company->name,
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            $company->siret,
+            $fiscalAndLocationData['isoFiscal'],
+            '',
+            str_replace(';', ',', $company->adresse1),
+            $fiscalAndLocationData['inseeFiscal'],
+            '',
+            $company->zip,
+            $company->city,
+            '',
+            $fiscalAndLocationData['isoFiscal'],
+            'X',
+            '',
+            'N',
+            $company->phone,
+            '',
+            $lenderAccount->iban,
+            $lenderAccount->bic,
+            $clients->email,
+            ''
+        ];
     }
 
     public function _requete_infosben()
@@ -740,202 +540,34 @@ class statsController extends bootstrap
         print(utf8_decode($csv));
     }
 
-    public function _requete_revenus_csv()
+    /**
+     * File generated by cron QueriesLenderRevenueCommand.php
+     * Only November to March
+     */
+    public function _requete_revenus_download()
     {
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $this->companies        = $this->loadData('companies');
-        $this->emprunteur       = $this->loadData('clients');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->projects         = $this->loadData('projects');
-        $this->loans            = $this->loadData('loans');
-        $this->echeanciers      = $this->loadData('echeanciers');
+        $fileName = 'requete_revenus' . date('Ymd') . '.csv';
+        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
 
-        $header = "Code Entreprise;CodeBénéficiaire;CodeV;Date;Montant;Monnaie;Nombre;VAP;";
-        $header = utf8_encode($header);
-
-        $csv = "";
-        $csv .= $header . " \n";
-
-        if (in_array(date('m'), ['01', '02', '03'])) {
-            $annee = (date('Y')-1);
+        if (file_exists($filePath)) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/force-download');
+            header("Content-Disposition: attachment; filename=\"" . basename($fileName) . "\";");
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($filePath));
+            ob_clean();
+            flush();
+            readfile($filePath);
+            exit;
         } else {
-            $annee = date('Y');
+            echo "Le fichier n'a pas été généré cette nuit. Le cron s'execuet que de novembre à mars";
         }
-
-        $date = '31/12/' . $annee;
-
-        $oCountry = $this->loadData('pays_v2');
-        $aCountries = $oCountry->getZoneB040Countries();
-
-        foreach($aCountries as $aCountry) {
-            $aZoneB040CountryIds[] = $aCountry['id_pays'];
-        }
-
-        $sql = '
-              SELECT
-                c.id_client,
-                c.prenom,
-                c.nom,
-                SUM(e.interets_rembourses),
-                SUM(ROUND(retenues_source.amount / 100, 2)),
-                SUM(ROUND(prelevements_obligatoires.amount / 100, 2))
-              FROM lenders_accounts la
-                INNER JOIN clients c ON (la.id_client_owner = c.id_client)
-                LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
-                LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
-                LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
-              WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
-                AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID .  ')
-                AND e.status_ra = 0
-              GROUP BY c.id_client';
-        $resultat = $this->bdd->query($sql);
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($record[1]))), 0, 1);
-            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($record[2])));
-            $id_client = $record[0];
-            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-            $cbene     = substr($motif, 0, 10);
-
-            // personne morale OU resident fiscal etranger
-            if ($record[4] > 0) {
-                // Retenues à la source
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "2;";
-                $csv .= $date . ";";
-                $csv .= number_format($record[4], 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            // Interets
-            $csv .= "1;";
-            $csv .= $cbene . ";";
-            $csv .= "53;";
-            $csv .= $date . ";";
-            $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
-            $csv .= "EURO;";
-            $csv .= ";";
-            $csv .= ";";
-            $csv .= " \n";
-
-            if ($record[5] > 0) {
-                // prélèvements obligatoires
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "54;";
-                $csv .= $date . ";";
-                $csv .= number_format($record[5], 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            $aSum = $this->getLine_66_81_82_118($id_client, $annee, $aZoneB040CountryIds);
-            if (isset($aSum['sum_66']) && $aSum['sum_66'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "66;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_66'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            if (isset($aSum['sum_81']) && $aSum['sum_81'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "81;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_81'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            if (isset($aSum['sum_82']) && $aSum['sum_82'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "82;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_82'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            if (isset($aSum['sum_118']) && $aSum['sum_118'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "118;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_118'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-        }
-
-        $sql = '
-          SELECT
-            c.id_client,
-            c.prenom,
-            c.nom,
-            SUM(lo.amount)
-          FROM loans lo
-            INNER JOIN
-            (
-              SELECT psh.id_project, MIN(psh.added) as first_added
-              FROM projects_status_history psh
-                INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-              WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
-              GROUP BY psh.id_project
-              HAVING YEAR(first_added) = ' . $annee . '
-            ) p ON p.id_project = lo.id_project
-            INNER JOIN lenders_accounts la ON la.id_lender_account = lo.id_lender
-            INNER JOIN clients c ON la.id_client_owner = c.id_client
-            GROUP BY c.id_client';
-
-        $resultat = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            // cbéné
-            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($record[1]))), 0, 1);
-            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($record[2])));
-            $id_client = $record[0];
-            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-            $cbene     = substr($motif, 0, 10);
-
-            // capitaux souscrit
-            $csv .= "1;";
-            $csv .= $cbene . ";";
-            $csv .= "117;";
-            $csv .= $date . ";";
-            $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
-            $csv .= "EURO;";
-            $csv .= ";";
-            $csv .= ";";
-            $csv .= " \n";
-        }
-
-        $titre = 'requete_revenus' . date('Ymd');
-        header("Content-type: application/vnd.ms-excel");
-        header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-
-        print(utf8_decode($csv));
     }
 
     public function _requete_encheres()
@@ -1025,145 +657,6 @@ class statsController extends bootstrap
         }
     }
 
-    public function _donnees_financieres_emprumteurs()
-    {
-        $this->sql = 'SELECT p.id_project as id_project, c.name,
-            (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
-            title, p.added,
-            (SELECT label FROM projects_status ps WHERE ps.id_project_status = (SELECT id_project_status FROM projects_status_history psh WHERE psh.id_project = p.id_project ORDER BY id_project_status_history LIMIT 1)) as status,
-            IFNULL(cr.value, 0) AS score_altares,
-            c.risk, p.amount,p.period,
-            (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
-            (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
-            (SELECT ca FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as ca2013,
-            (SELECT ca FROM companies_bilans cb WHERE date=2014 and cb.id_company = c.id_company) as ca2014,
-
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as rbe2011,
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as rbe2012,
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as rbe2013,
-            (SELECT resultat_brute_exploitation FROM companies_bilans cb WHERE date=2014 and cb.id_company = c.id_company) as rbe2014,
-
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as rex2011,
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as rex2012,
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as rex2013,
-            (SELECT resultat_exploitation FROM companies_bilans cb WHERE date=2014 and cb.id_company = c.id_company) as rex2014,
-
-            (SELECT investissements FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as invest2011,
-            (SELECT investissements FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as invest2012,
-            (SELECT investissements FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as invest2013,
-            (SELECT investissements FROM companies_bilans cb WHERE date=2014 and cb.id_company = c.id_company) as invest2014,
-
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as immocorp2011,
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as immocorp2012,
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as immocorp2013,
-            (SELECT immobilisations_corporelles FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as immocorp2014,
-
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as immoincorp2011,
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as immoincorp2012,
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as immoincorp2013,
-            (SELECT immobilisations_incorporelles FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as immoincorp2014,
-
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as immofin2011,
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as immofin2012,
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as immofin2013,
-            (SELECT immobilisations_financieres FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as immofin2014,
-
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as stock2011,
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as stock2012,
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as stock2013,
-            (SELECT stocks FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as stock2014,
-
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as creances2011,
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as creances2012,
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as creances2013,
-            (SELECT creances_clients FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as creances2014,
-
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as dispo2011,
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as dispo2012,
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as dispo2013,
-            (SELECT disponibilites FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as dispo2014,
-
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as valeursmob2011,
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as valeursmob2012,
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as valeursmob2013,
-            (SELECT valeurs_mobilieres_de_placement FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as valeursmob2014,
-
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as cp2011,
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as cp2012,
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as cp2013,
-            (SELECT capitaux_propres FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as cp2014,
-
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as provisions2011,
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as provisions2012,
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as provisions2013,
-            (SELECT provisions_pour_risques_et_charges FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as provisions2014,
-
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as ammort2011,
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as ammort2012,
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as ammort2013,
-            (SELECT amortissement_sur_immo FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as ammort2014,
-
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as dettesfin2011,
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as dettesfin2012,
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as dettesfin2013,
-            (SELECT dettes_financieres FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as dettesfin2014,
-
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as dettesfour2011,
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as dettesfour2012,
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as dettesfour2013,
-            (SELECT dettes_fournisseurs FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as dettesfour2014,
-
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2011 and cap.id_company = c.id_company) as autresdettes2011,
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as autresdettes2012,
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as autresdettes2013,
-            (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as autresdettes2014,
-            c.forme,c.date_creation
-
-            FROM projects p
-            LEFT JOIN company_rating cr ON p.id_company_rating_history > 0 AND cr.id_company_rating_history = p.id_company_rating_history AND cr.type = \'score_altares\'
-            JOIN companies c ON c.id_company = p.id_company
-            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)';
-
-        if (isset($this->params[0]) && $this->params[0] == 'csv') {
-            $this->autoFireView = false;
-            $this->hideDecoration();
-
-            $titre = 'donnees_financieres_emprunteurs_' . date('Ymd');
-            header("Content-type: application/vnd.ms-excel");
-            header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-
-            $header = "id_project;name;source;title;added;status;altares_scoreVingt;risk;amount;period;ca2011;ca2012;ca2013;ca2014;rbe2011;rbe2012;rbe2013;rbe2014;rex2011;rex2012;rex2013;rex2014;invest2011;invest2012;invest2013;invest2014;immocorp2011;immocorp2012;immocorp2013;immocorp2014;immoincorp2011;immoincorp2012;immoincorp2013;immoincorp2014;immofin2011;immofin2012;immofin2013;immofin2014;stock2011;stock2012;stock2013;stock2014;creances2011;creances2012;creances2013;creances2014;dispo2011;dispo2012;dispo2013;dispo2014;valeursmob2011;valeursmob2012;valeursmob2013;valeursmob2014;cp2011;cp2012;cp2013;cp2014;provisions2011;provisions2012;provisions2013;provisions2014;ammort2011;ammort2012;ammort2013;ammort2014;dettesfin2011;dettesfin2012;dettesfin2013;dettesfin2014;dettesfour2011;dettesfour2012;dettesfour2013;dettesfour2014;autresdettes2011;autresdettes2012;autresdettes2013;autresdettes2014;forme;date_creation";
-            $header = utf8_encode($header);
-
-            $csv = "";
-            $csv .= $header . " \n";
-
-            $resultat = $this->bdd->query($this->sql);
-            while ($record = $this->bdd->fetch_array($resultat)) {
-                for ($a = 0; $a <= 45; $a++) {
-                    $csv .= $record[$a] . ";";
-                }
-                $csv .= " \n";
-            }
-
-            print(utf8_decode($csv));
-        }
-    }
-
-    private function exportQueryCSV($sQuery, $sFileName, array $aHeaders = null)
-    {
-        $aResult = array();
-        $rQuery = $this->bdd->query($sQuery);
-        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-            $aResult[] = $aRow;
-        }
-
-        if (count($aResult) > 0 && is_null($aHeaders)) {
-            $aHeaders = array_keys($aResult[0]);
-        }
-        $this->exportCSV($aResult, $sFileName, $aHeaders);
-    }
-
     private function exportCSV($aData, $sFileName, array $aHeaders = null)
     {
         $this->bdd->close();
@@ -1201,78 +694,6 @@ class statsController extends bootstrap
         $oWriter->save('php://output');
 
         die;
-    }
-
-    private function getLine_66_81_82_118($iClient, $iYear, $aZoneB040CountryIds)
-    {
-        $iSum66 = 0;
-        $iSum81 = 0;
-        $iSum82 = 0;
-        $iSum118 = 0;
-
-        $sql = "SELECT
-                  la.id_lender_account,
-                  e.interets,
-                  ROUND(retenues_source.amount / 100, 2), as retenues_source
-                  e.date_echeance_reel,
-                  e.status_ra,
-                  e.capital,
-                  c.type
-                FROM lenders_accounts la
-                  INNER JOIN clients c ON la.id_client_owner = c.id_client
-                  LEFT JOIN echeanciers e ON e.id_lender = la.id_lender_account
-                  LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND " . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . "
-                  LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = " . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . "
-                WHERE YEAR(e.date_echeance_reel) = $iYear
-                  AND e.status = IN (" . \echeanciers::STATUS_REPAID . ", " . \echeanciers::STATUS_PARTIALLY_REPAID .  ")
-                  AND c.id_client = $iClient";
-
-        $resultat = $this->bdd->query($sql);
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            if ('1' === $record['type'] || '3' === $record['type']) {
-                $bForeigner = false;
-                $bZoneB040Country = false;
-
-                $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
-                        WHERE id_lender = {$record['id_lender_account']}
-                        AND added <= '{$record['date_echeance_reel']}'
-                        ORDER BY added DESC LIMIT 1";
-                $oQueryResident = $this->bdd->query($sSqlResident);
-                $aRow = $this->bdd->fetch_array($oQueryResident);
-
-                if (0 !== $this->bdd->num_rows($oQueryResident) && 0 < $aRow['resident_etranger']) {
-                    $bForeigner = true;
-                    if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
-                        $bZoneB040Country = true;
-                    }
-                }
-                unset($oQueryResident, $aRow);
-
-                // Exclude "remboursement anticipé" for calculating interests
-                if('0' === $record['status_ra']) {
-                    if(false === $bForeigner) { //code 66
-                        $iSum66 += $record['interets'];
-                    } else if (true === $bZoneB040Country) {
-                        $iSum81 += $record['interets'] - $record['retenues_source']*100;
-                    }
-                }
-
-                if (true === $bZoneB040Country) {
-                    $iSum82 += $record['capital'];
-                }
-            }
-            $iSum118 += $record['capital'];
-
-            unset($record);
-        }
-
-        return array(
-            'sum_66'  => $iSum66,
-            'sum_81'  => $iSum81,
-            'sum_82'  => $iSum82,
-            'sum_118' => $iSum118,
-        );
     }
 
     public function _autobid_statistic()

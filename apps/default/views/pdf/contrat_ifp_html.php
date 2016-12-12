@@ -130,7 +130,7 @@
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">R.C.S.</div>
+                        <div class="col-long">SIREN</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->siren ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -297,92 +297,6 @@
             </div>
         </div>
         <div>
-            <h3>DERNIER BILAN CERTIFIE SINCERE DE L’EMPRUNTEUR</h3>
-            <h5>Actif</h5>
-            <div class="list">
-                <ul>
-                    <li>
-                        Immobilisations corporelles :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Immobilisations incorporelles :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Immobilisations financières :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Stocks :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Créances clients :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Disponibilités :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Valeurs mobilières de placement :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <?php if ($this->l_AP[0]['comptes_regularisation_actif'] != 0) : ?>
-                        <li>
-                            Comptes de régularisation
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_actif'], 0) ?>&nbsp;&euro;</div>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-            <div class="total-row" style="white-space:nowrap; text-align:left;">
-                Total actif :
-                <div style="display:inline;float: right;"><?= $this->ficelle->formatNumber($this->totalActif, 0) ?>&nbsp;&euro;</div>
-            </div>
-            <br>
-            <h5>Passif</h5>
-            <div class="list">
-                <ul>
-                    <li>
-                        Capitaux propres :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Provisions pour risques et charges :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Amortissements sur immobilisations  :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-
-                    <li>
-                        Dettes financières :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Dettes fournisseurs :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <li>
-                        Autres dettes :
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes'], 0) ?>&nbsp;&euro;</div>
-                    </li>
-                    <?php if ($this->l_AP[0]['comptes_regularisation_passif'] != 0) : ?>
-                        <li>
-                            Comptes de régularisation
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_passif'], 0) ?>&nbsp;&euro;</div>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-            <div class="total-row" style="white-space:nowrap; text-align:left;">
-                Total passif :
-                <div style="display:inline;float: right;"><?= $this->ficelle->formatNumber($this->totalPassif, 0) ?>&nbsp;&euro;</div>
-            </div>
-            <br><br>
             <?= $this->bloc_pdf_contrat['conditions-ifp'] ?>
             <br>
             <br>

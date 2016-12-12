@@ -65,14 +65,13 @@ class PaylineController extends Controller
                 $settings->get('DebugAlertesBusiness', 'type');
                 $to = $settings->value;
 
-                if ($transaction->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
+                if ($transaction->get($response['order']['ref'], 'status = ' . \transactions::STATUS_PENDING . ' AND id_transaction')) {
 
                     $transaction->id_backpayline   = $backPayline->id_backpayline;
                     $transaction->montant          = $response['payment']['amount'];
                     $transaction->id_langue        = 'fr';
                     $transaction->date_transaction = date('Y-m-d H:i:s');
-                    $transaction->status           = '1';
-                    $transaction->etat             = '1';
+                    $transaction->status           = \transactions::STATUS_VALID;
                     $transaction->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
                     $transaction->update();
 

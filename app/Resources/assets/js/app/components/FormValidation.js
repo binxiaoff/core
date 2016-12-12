@@ -896,14 +896,21 @@ FormValidation.prototype.rules = {
     if (inputType) {
       switch (inputType.toLowerCase()) {
         case 'number':
-          if (/[^\d-\.]+/.test(inputValidation.value)) {
+          if (/[^\d\-\.\,]+/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Field accepts only numbers', 'error-field-input-type-number')
             })
           }
           break
-
+        case 'currency':
+          if (!(/^[\d]+((,|\.)([\d]{1,2}))?$/.test(inputValidation.value))) {
+            inputValidation.errors.push({
+              type: 'inputType',
+              description: __.__('Field accepts only numbers', 'error-field-input-type-currency')
+            })
+          }
+          break
         case 'tel':
         case 'phone':
         case 'telephone':

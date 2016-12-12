@@ -58,11 +58,15 @@ class tax extends tax_crud
                 FROM tax
                 WHERE added BETWEEN :start_date AND :end_date' . $taxTypeWhere . '
                 GROUP BY id_tax_type';
-        $aResult = $this->bdd->executeQuery(
+
+        $statement = $this->bdd->executeQuery(
             $sql,
             array('start_date' => $startDate, 'end_date' => $endDate, 'tax_type' => $taxType),
             array('start_date' => \PDO::PARAM_STR, 'end_date' => \PDO::PARAM_STR, 'tax_type' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
-            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)));
+        $aResult = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
         $aDailyTax = [];
         foreach ($aResult as $aRow) {
             $aDailyTax[$aRow['id_tax_type']] = $aRow['daily_amount'];

@@ -3,6 +3,7 @@
  *
  * Set and manage callbacks to occur on element's scroll top/left value
  * Hopefully helps to avoid jank
+ * Also enables detecting elements in relation to another for extra functions (mark navigation, etc.)
  */
 
 // Watch element for scroll left/top and perform callback if:
@@ -12,6 +13,7 @@
 
 // Dependencies
 var $ = require('jquery')
+var Utility = require('Utility')
 var Bounds = require('ElementBounds')
 var raf = require('raf')
 
@@ -24,6 +26,9 @@ var $win = $(window)
 var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
+
+// A collection of all the applied watchscroll watchers
+var WATCHSCROLL_WATCHERS = []
 
 /*
  * WatchScroll
@@ -140,11 +145,22 @@ var WatchScroll = {
     var self = this
 
     /*
-     * Properties
+     * Element to be watched
      */
     self.$elem = $(elem) // jQuery
     self.elem = self.$elem[0] // Normal HTMLElement
-    self.listeners = [] // List of listeners
+
+    // Check if a watcher for this element already exists and use that, rather than creating another
+    if (self.elem.hasOwnProperty('WatchScrollWatcher')) {
+      // @debug
+      // console.log('new WatchScroll.Watcher: using elem\'s existing watcher', self.elem, self.elem.WatchScrollWatcher)
+      return self.elem.WatchScrollWatcher
+    }
+
+    /*
+     * Properties
+     */
+    self.listeners = [] // List of listeners on this watcher
 
     /*
      * Options
@@ -430,7 +446,7 @@ var WatchScroll = {
             break;
         }
 
-      // Keyword actions representing state: enter, leave, visible, hidden
+        // Keyword actions representing state: enter, leave, visible, hidden
       } else {
         state = self.getTargetState(target)
         if (state.match(action)) {
@@ -467,7 +483,12 @@ var WatchScroll = {
       self.checkListeners()
     })
 
-    // @debug console.log(self.elem)
+    // Attach the instance to the element
+    self.elem.WatchScrollWatcher = self
+
+    // Add the watcher to the watchscroll watchers
+    WATCHSCROLL_WATCHERS.push(self)
+
     return self
   },
 
@@ -517,5 +538,17 @@ var WatchScroll = {
     return self
   }
 }
+
+// Refresh all of the WatchScroll watchers
+$doc.on('WatchScroll:refresh', function (event, targetElem) {
+  if (WATCHSCROLL_WATCHERS.length > 0) {
+    for (var i = 0; i < WATCHSCROLL_WATCHERS.length; i++) {
+      var watcher = WATCHSCROLL_WATCHERS[i]
+      if (!targetElem || targetElem && watcher.elem === targetElem) {
+        watcher.refresh()
+      }
+    }
+  }
+})
 
 module.exports = WatchScroll

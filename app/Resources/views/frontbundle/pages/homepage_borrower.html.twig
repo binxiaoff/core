@@ -184,8 +184,8 @@
                                         <label for="esim-input-reason">{% trans %} home-borrower_simulator-borrowing-motif-title {% endtrans %}</label>
                                         <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="motive">
                                             <option value="">{% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}</option>
-                                            {% for id, motive in borrowingMotives %}
-                                                <option value="{{ id }}">{{ motive }}</option>
+                                            {% for motive in borrowingMotives %}
+                                                <option value="{{ motive.id_motive }}">{{ ('borrowing-motive_motive-' ~ motive.id_motive)|trans }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -255,7 +255,7 @@
                                         <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full">
                                             {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
                                         </a>
-                                        <button class="btn-submit btn-alternate btn-size-full" >
+                                        <button class="btn-submit btn-alternate btn-size-full" data-spinnerbutton>
                                             {% trans %} home-borrower_simulator-footer-validate-button {% endtrans %}
                                         </button>
                                     </div>

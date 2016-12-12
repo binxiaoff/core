@@ -240,44 +240,39 @@ class clients extends clients_crud
         }
     }
 
-    public function searchEmprunteurs($ref = '', $nom = '', $email = '', $prenom = '', $societe = '', $siret = '', $status = '', $start = '', $nb = '')
+    public function searchEmprunteurs($searchType, $nom, $prenom, $email = '', $societe = '', $siren = '')
     {
-        $where = '1 = 1';
+        $conditions = [
+            'c.nom LIKE "%' . $nom . '%"',
+            'c.prenom LIKE "%' . $prenom . '%"',
+        ];
 
-        if ($ref != '') {
-            $where .= ' AND c.id_client IN(' . $ref . ')';
-        }
-        if ($nom != '') {
-            $where .= ' AND c.nom LIKE "%' . $nom . '%"';
-        }
         if ($email != '') {
-            $where .= ' AND c.email LIKE "%' . $email . '%"';
-        }
-        if ($prenom != '') {
-            $where .= ' AND c.prenom LIKE "%' . $prenom . '%"';
-        }
-        if ($societe != '') {
-            $where .= ' AND co.name LIKE "%' . $societe . '%"';
-        }
-        if ($siret != '') {
-            $where .= ' AND co.siren LIKE "%' . $siret . '%"';
-        }
-        if ($status != '') {
-            $where .= ' AND c.status LIKE "%' . $status . '%"';
+            $conditions[] = 'c.email LIKE "%' . $email . '%"';
         }
 
-        $result   = array();
-        $resultat = $this->bdd->query('
-            SELECT c.*,
+        if ($societe != '') {
+            $conditions[] = 'co.name LIKE "%' . $societe . '%"';
+        }
+
+        if ($siren != '') {
+            $conditions[] = 'co.siren LIKE "%' . $siren . '%"';
+        }
+
+        $result   = [];
+        $query    = '
+            SELECT 
+                c.*,
                 co.*
             FROM clients c
-            LEFT JOIN companies co ON c.id_client = co.id_client_owner
-            WHERE ' . $where . '
+            INNER JOIN companies co ON c.id_client = co.id_client_owner
+            WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
+                AND c.type NOT IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]) .')
             GROUP BY c.id_client
-            ORDER BY c.id_client DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''))
-        );
+            ORDER BY c.id_client DESC';
+        $resultat = $this->bdd->query($query);
 
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -416,37 +411,87 @@ class clients extends clients_crud
     }
 
     /**
-     * @param array $aLastStatus list of last status to use separated by a column
+     * @param array $clientStatus list of last status to use
      * @return array
      */
-    public function selectLendersByLastStatus(array $aLastStatus = array())
+    public function selectLendersByLastStatus(array $clientStatus = array())
     {
-        $sSql = '
-            SELECT c.id_client, c.nom, c.prenom, c.nom_usage, c.naissance, c.email,
-                   ca.adresse1, ca.adresse2, ca.adresse3, ca.ville, ca.cp, p.iso, p.fr,
-                   la.id_lender_account, la.iban, la.bic,
-                   csh.added,
-                   cs.status, cs.label
+        $naturalPerson = [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER];
+        $legalEntity   = [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER];
+        $bind          = [
+            'naturalPerson' => $naturalPerson,
+            'legalEntity'   => $legalEntity
+        ];
+        $type          = [
+            'naturalPerson' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'legalEntity'   => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+        ];
+        $sSql          = '
+            SELECT
+              c.id_client,
+              c.nom,
+              c.prenom,
+              c.nom_usage,
+              c.naissance,
+              c.email,
+              -- Address
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN ca.adresse_fiscal
+                WHEN c.type IN (:legalEntity) THEN CONCAT(com.adresse1, \' \', IFNULL(com.adresse2, \'\'))
+              END AS adresse_fiscal,
+              -- City
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN ca.ville_fiscal
+                WHEN c.type IN (:legalEntity) THEN com.city
+              END AS ville_fiscal,
+              -- Zip code
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN ca.cp_fiscal
+                WHEN c.type IN (:legalEntity) THEN com.zip
+              END AS cp_fiscal,
+              -- Country ISO
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN person_country.iso
+                WHEN c.type IN (:legalEntity) THEN legal_entity_country.iso
+              END AS iso,
+              -- Country label
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN person_country.fr
+                WHEN c.type IN (:legalEntity) THEN legal_entity_country.fr
+              END AS fr,
+              la.id_lender_account,
+              la.iban,
+              la.bic,
+              csh.added,
+              cs.status,
+              cs.label
             FROM clients_status_history csh
-            INNER JOIN clients c ON c.id_client = csh.id_client
-            INNER JOIN clients_adresses ca ON c.id_client = ca.id_client
-            INNER JOIN pays_v2 p ON p.id_pays = ca.id_pays
-            INNER JOIN lenders_accounts la ON la.id_client_owner = csh.id_client
-            INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
+              INNER JOIN clients c ON c.id_client = csh.id_client
+              LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
+              LEFT JOIN companies com ON com.id_client_owner = c.id_client
+              LEFT JOIN pays_v2 person_country ON person_country.id_pays = ca.id_pays_fiscal
+              LEFT JOIN pays_v2 legal_entity_country ON legal_entity_country.id_pays = com.id_pays
+              INNER JOIN lenders_accounts la ON la.id_client_owner = csh.id_client
+              INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
             WHERE csh.id_client_status_history = (
-                SELECT MAX(csh1.id_client_status_history)
-                FROM clients_status_history csh1
-                WHERE csh1.id_client = csh.id_client
+              SELECT MAX(csh1.id_client_status_history)
+              FROM clients_status_history csh1
+              WHERE csh1.id_client = csh.id_client
             )';
-        if (false === empty($aLastStatus)) {
-            $sSql .= ' AND cs.status IN (' . implode(', ', $aLastStatus) . ' ) ';
+        if (false === empty($clientStatus)) {
+            $bind['clientStatus'] = $clientStatus;
+            $type['clientStatus'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+            $sSql .= ' AND cs.status IN (:clientStatus) ';
         }
-        $oResult = $this->bdd->query($sSql);
-        $aResult = array();
-        while ($aRecord = $this->bdd->fetch_assoc($oResult)) {
-            $aResult[$aRecord['id_client']] = $aRecord;
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($sSql, $bind, $type);
+
+        $result = array();
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $result[$row['id_client']] = $row;
         }
-        return $aResult;
+        $statement->closeCursor();
+        return $result;
     }
 
     public function update_added($date, $id_client)
@@ -691,8 +736,8 @@ class clients extends clients_crud
             FROM echeanciers_emprunteur
             WHERE
                 id_project IN (' . implode(',', $aProjects) . ')
-                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
                 AND status_emprunteur = 1
+                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
                 AND status_ra = 0
             GROUP BY id_project, DATE(date_echeance_emprunteur_reel)';
 
@@ -840,37 +885,17 @@ class clients extends clients_crud
     }
 
     /**
-     * Retrieve old pattern that lender must use in bank transfer label (with '?' or '' instead of accented characters)
-     * @param $sClientId
-     * @param $sMatchPattern
+     * Check whether given pattern corresponds to actual lender pattern
+     * @param int    $clientId
+     * @param string $pattern
      * @return bool
      */
-    public function isLenderPattern($sClientId, $sMatchPattern)
+    public function isLenderPattern($clientId, $pattern)
     {
-        $this->get($sClientId);
+        $pattern       = str_replace(' ', '', $pattern);
+        $lenderPattern = str_replace(' ', '', $this->getLenderPattern($clientId));
 
-        $aStrTrans = array(
-            'À' => '?', 'à' => '?', 'Á' => '?', 'á' => '?', 'Â' => '?', 'â' => '?', 'Ã' => '?', 'ã' => '?', 'Ä' => '?',
-            'ä' => '?', 'Å' => '?', 'å' => '?', 'Æ' => '?', 'æ' => '?', 'Ç' => '?', 'ç' => '?', 'È' => '?', 'è' => '?',
-            'É' => '?', 'é' => '?', 'Ê' => '?', 'ê' => '?', 'Ë' => '?', 'ë' => '?', 'Ì' => '?', 'ì' => '?', 'Í' => '?',
-            'í' => '?', 'Î' => '?', 'î' => '?', 'Ï' => '?', 'ï' => '?', 'Ñ' => '?', 'ñ' => '?', 'Ò' => '?', 'ò' => '?',
-            'Ó' => '?', 'ó' => '?', 'Ô' => '?', 'ô' => '?', 'Õ' => '?', 'õ' => '?', 'Ö' => '?', 'ö' => '?', 'Ø' => '?',
-            'ø' => '?', 'Œ' => '?', 'œ' => '?', 'ß' => '?', 'Ù' => '?', 'ù' => '?', 'Ú' => '?', 'ú' => '?',
-            'Û' => '?', 'û' => 'u', 'Ü' => '?', 'ü' => '?', 'Ý' => '?', 'ý' => '?', 'Ÿ' => '?', 'ÿ' => '?'
-        );
-
-        $sPattern = str_replace(' ', '',
-            str_pad($this->id_client, 6, 0, STR_PAD_LEFT)
-            . mb_strtoupper(
-                strtr(substr($this->prenom, 0, 1), $aStrTrans)
-                . strtr($this->nom, $aStrTrans)
-            ));
-
-        if (false !== strpos($sMatchPattern, $sPattern) || false !== strpos($sMatchPattern, str_replace('?', '', $sPattern))) {
-            return true;
-        } else {
-            return false;
-        }
+        return (false !== strpos($pattern, $lenderPattern));
     }
 
     public function getDuplicates($sLastName, $sFirstName, $sBirthdate)

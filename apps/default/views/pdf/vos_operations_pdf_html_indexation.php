@@ -96,7 +96,7 @@
                     <td><?= $t['bdc'] ?></td>
                     <td class="companieleft"><?= $t['libelle_projet'] ?></td>
                     <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                    <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
+                    <td <?= $couleur ?>><?= $this->ficelle->formatNumber(\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT == $t['type_transaction'] ? $this->recoveryManager->getAmountWithRecoveryTax($t['montant_operation'] / 100) : $t['montant_operation'] / 100) ?> €</td>
                     <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
                 </tr>
                 <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
@@ -195,7 +195,7 @@
         }
     }
 
-    $soldetotal = $this->transactions->getSoldeDateLimite($t['id_client'],$this->date_fin);
+    $soldetotal = $this->transactions->getSoldeDateLimite($t['id_client'], $this->date_fin);
     ?>
     <tr>
         <td colspan="7" ></td>
@@ -208,7 +208,7 @@
     </tr>
     <tr>
         <th colspan="2" class="pdfSolde"><?= $this->lng['preteur-operations-pdf']['solde-de-votre-compte'] ?></th>
-        <td style="font-size: 17px;font-weight:bold;"><?= str_replace('[#DATE#]', date('d-m-Y',strtotime($this->date_fin)), $this->lng['preteur-operations-pdf']['date-recap']) ?></td>
+        <td style="font-size: 17px;font-weight:bold;"><?= str_replace('[#DATE#]', date('d/m/Y', strtotime($this->date_fin)), $this->lng['preteur-operations-pdf']['date-recap']) ?></td>
         <td></td>
         <td style="font-size: 17px;font-weight:bold;"><?= str_replace('[#TOTAL#]', $this->ficelle->formatNumber($soldetotal), $this->lng['preteur-operations-pdf']['solde-recap']) ?></td>
     </tr>

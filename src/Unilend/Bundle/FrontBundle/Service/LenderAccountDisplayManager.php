@@ -3,8 +3,10 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\librairies\CacheKeys;
 
 class LenderAccountDisplayManager
 {
@@ -16,23 +18,34 @@ class LenderAccountDisplayManager
     private $translator;
     /** @var CacheItemPoolInterface */
     private $cachePool;
+    /** CIPManager */
+    private $cipManager;
 
-    public function __construct(EntityManager $entityManager, LocationManager $locationManager, TranslatorInterface $translator, CacheItemPoolInterface $cachePool)
-    {
-        $this->entityManager      = $entityManager;
-        $this->locationManager    = $locationManager;
-        $this->translator         = $translator;
-        $this->cachePool          = $cachePool;
+    public function __construct(
+        EntityManager $entityManager,
+        LocationManager $locationManager,
+        TranslatorInterface $translator,
+        CacheItemPoolInterface $cachePool,
+        CIPManager $cipManager
+    ) {
+        $this->entityManager   = $entityManager;
+        $this->locationManager = $locationManager;
+        $this->translator      = $translator;
+        $this->cachePool       = $cachePool;
+        $this->cipManager      = $cipManager;
     }
 
     public function getActivityForProject(\lenders_accounts $lenderAccount, $projectId, $projectStatus)
     {
-        $lenderActivity = [
-            'bids' => $this->getBidsForProject($projectId, $lenderAccount)
-        ];
+        /** @var \projects $project */
+        $project = $this->entityManager->getRepository('projects');
+        $project->get($projectId);
+
+        $lenderActivity['isAdvised'] = $this->isProjectAdvisedForLender($project, $lenderAccount);
+        $lenderActivity['bids']      = $this->getBidsForProject($project->id_project, $lenderAccount);
 
         if ($projectStatus >= \projects_status::FUNDE) {
-            $lenderActivity['loans'] = $this->getLoansForProject($projectId, $lenderAccount);
+            $lenderActivity['loans'] = $this->getLoansForProject($project->id_project, $lenderAccount);
         }
 
         return $lenderActivity;
@@ -156,7 +169,7 @@ class LenderAccountDisplayManager
             $lendersAccounts = $this->entityManager->getRepository('lenders_accounts');
             try {
                 $projectsCountByRegion = $lendersAccounts->countProjectsForLenderByRegion($lenderId);
-                $cachedItem->set($projectsCountByRegion)->expiresAfter(86400);
+                $cachedItem->set($projectsCountByRegion)->expiresAfter(CacheKeys::DAY);
                 $this->cachePool->save($cachedItem);
             } catch (\Exception $exception) {
                 return [];
@@ -192,4 +205,18 @@ class LenderAccountDisplayManager
         }
     }
 
+    /**
+     * @param \projects $project
+     * @param \lenders_accounts $lender
+     *
+     * @return bool
+     */
+    public function isProjectAdvisedForLender(\projects $project, \lenders_accounts $lender)
+    {
+        if (false === $this->cipManager->hasValidEvaluation($lender)) {
+           return false;
+        }
+        $periodLimitation = $this->cipManager->getIndicators($lender)[CIPManager::INDICATOR_PROJECT_DURATION];
+        return is_null($periodLimitation) || $project->period <= $periodLimitation;
+    }
 }
