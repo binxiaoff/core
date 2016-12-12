@@ -71,14 +71,15 @@ class ClientStatusManager
             return $this->getLastClientStatusLegacy($client);
         }
 
-        $clientRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Clients');
         /** @var ClientsStatus $clientStatusEntity */
-        $clientStatusEntity = $clientRepository->getLastClientStatus($client->getIdClient());
+        $clientStatusEntity = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getLastClientStatus($client->getIdClient());
         return $clientStatusEntity->getLabel();
     }
 
-
-
+    /**
+     * @param \clients $client
+     * @return mixed
+     */
     private function getLastClientStatusLegacy(\clients $client)
     {
         /** @var \clients_status $clientsStatus */

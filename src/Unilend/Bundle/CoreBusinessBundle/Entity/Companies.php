@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class Companies
 {
@@ -22,154 +23,147 @@ class Companies
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_partenaire", type="integer", nullable=false)
+     * @ORM\Column(name="id_partenaire", type="integer", nullable=true)
      */
     private $idPartenaire;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_partenaire_subcode", type="integer", nullable=false)
+     * @ORM\Column(name="id_partenaire_subcode", type="integer", nullable=true)
      */
     private $idPartenaireSubcode;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="email_facture", type="string", length=191, nullable=false)
+     * @ORM\Column(name="email_facture", type="string", length=191, nullable=true)
      */
     private $emailFacture;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="name", type="text", length=16777215, nullable=true)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="forme", type="string", length=191, nullable=false)
+     * @ORM\Column(name="forme", type="string", length=191, nullable=true)
      */
     private $forme;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="siren", type="string", length=15, nullable=false)
+     * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      */
     private $siren;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="siret", type="string", length=14, nullable=false)
+     * @ORM\Column(name="siret", type="string", length=14, nullable=true)
      */
     private $siret;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="iban", type="string", length=28, nullable=false)
+     * @ORM\Column(name="iban", type="string", length=28, nullable=true)
      */
     private $iban;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="bic", type="string", length=100, nullable=false)
+     * @ORM\Column(name="bic", type="string", length=100, nullable=true)
      */
     private $bic;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="execices_comptables", type="boolean", nullable=false)
+     * @ORM\Column(name="execices_comptables", type="boolean", nullable=true)
      */
     private $execicesComptables;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="rcs", type="string", length=45, nullable=false)
+     * @ORM\Column(name="rcs", type="string", length=45, nullable=true)
      */
     private $rcs;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="tribunal_com", type="string", length=191, nullable=false)
+     * @ORM\Column(name="tribunal_com", type="string", length=191, nullable=true)
      */
     private $tribunalCom;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="activite", type="string", length=191, nullable=false)
+     * @ORM\Column(name="activite", type="string", length=191, nullable=true)
      */
     private $activite;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="lieu_exploi", type="string", length=191, nullable=false)
+     * @ORM\Column(name="lieu_exploi", type="string", length=191, nullable=true)
      */
     private $lieuExploi;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="tva", type="float", precision=10, scale=0, nullable=false)
-     */
-    private $tva;
-
-    /**
-     * @var float
-     *
-     * @ORM\Column(name="capital", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="capital", type="float", precision=10, scale=0, nullable=true)
      */
     private $capital;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_creation", type="date", nullable=false)
+     * @ORM\Column(name="date_creation", type="date", nullable=true)
      */
     private $dateCreation;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="adresse1", type="string", length=191, nullable=false)
+     * @ORM\Column(name="adresse1", type="string", length=191, nullable=true)
      */
     private $adresse1;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="adresse2", type="string", length=191, nullable=false)
+     * @ORM\Column(name="adresse2", type="string", length=191, nullable=true)
      */
     private $adresse2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="zip", type="string", length=10, nullable=false)
+     * @ORM\Column(name="zip", type="string", length=10, nullable=true)
      */
     private $zip;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="city", type="string", length=191, nullable=false)
+     * @ORM\Column(name="city", type="string", length=191, nullable=true)
      */
     private $city;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_pays", type="integer", nullable=false)
+     * @ORM\Column(name="id_pays", type="integer", nullable=true)
      */
     private $idPays;
 
@@ -190,105 +184,105 @@ class Companies
     /**
      * @var string
      *
-     * @ORM\Column(name="phone", type="string", length=45, nullable=false)
+     * @ORM\Column(name="phone", type="string", length=45, nullable=true)
      */
     private $phone;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="status_adresse_correspondance", type="boolean", nullable=false)
+     * @ORM\Column(name="status_adresse_correspondance", type="boolean", nullable=true)
      */
     private $statusAdresseCorrespondance;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="status_client", type="boolean", nullable=false)
+     * @ORM\Column(name="status_client", type="boolean", nullable=true)
      */
     private $statusClient;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="status_conseil_externe_entreprise", type="integer", nullable=false)
+     * @ORM\Column(name="status_conseil_externe_entreprise", type="integer", nullable=true)
      */
     private $statusConseilExterneEntreprise;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="preciser_conseil_externe_entreprise", type="string", length=191, nullable=false)
+     * @ORM\Column(name="preciser_conseil_externe_entreprise", type="string", length=191, nullable=true)
      */
     private $preciserConseilExterneEntreprise;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="civilite_dirigeant", type="string", nullable=false)
+     * @ORM\Column(name="civilite_dirigeant", type="string", nullable=true)
      */
     private $civiliteDirigeant;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom_dirigeant", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom_dirigeant", type="string", length=191, nullable=true)
      */
     private $nomDirigeant;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="prenom_dirigeant", type="string", length=191, nullable=false)
+     * @ORM\Column(name="prenom_dirigeant", type="string", length=191, nullable=true)
      */
     private $prenomDirigeant;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="fonction_dirigeant", type="string", length=191, nullable=false)
+     * @ORM\Column(name="fonction_dirigeant", type="string", length=191, nullable=true)
      */
     private $fonctionDirigeant;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="email_dirigeant", type="string", length=191, nullable=false)
+     * @ORM\Column(name="email_dirigeant", type="string", length=191, nullable=true)
      */
     private $emailDirigeant;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="phone_dirigeant", type="string", length=45, nullable=false)
+     * @ORM\Column(name="phone_dirigeant", type="string", length=45, nullable=true)
      */
     private $phoneDirigeant;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="sector", type="integer", nullable=false)
+     * @ORM\Column(name="sector", type="integer", nullable=true)
      */
     private $sector;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="risk", type="string", length=45, nullable=false)
+     * @ORM\Column(name="risk", type="string", length=45, nullable=true)
      */
     private $risk;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="code_naf", type="string", length=5, nullable=false)
+     * @ORM\Column(name="code_naf", type="string", length=5, nullable=true)
      */
     private $codeNaf;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="libelle_naf", type="string", length=130, nullable=false)
+     * @ORM\Column(name="libelle_naf", type="string", length=130, nullable=true)
      */
     private $libelleNaf;
 
@@ -302,7 +296,7 @@ class Companies
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -678,30 +672,6 @@ class Companies
     }
 
     /**
-     * Set tva
-     *
-     * @param float $tva
-     *
-     * @return Companies
-     */
-    public function setTva($tva)
-    {
-        $this->tva = $tva;
-
-        return $this;
-    }
-
-    /**
-     * Get tva
-     *
-     * @return float
-     */
-    public function getTva()
-    {
-        return $this->tva;
-    }
-
-    /**
      * Set capital
      *
      * @param float $capital
@@ -710,7 +680,7 @@ class Companies
      */
     public function setCapital($capital)
     {
-        $this->capital = $capital;
+        $this->capital = $this->cleanCapital($capital);
 
         return $this;
     }
@@ -926,7 +896,7 @@ class Companies
      */
     public function setPhone($phone)
     {
-        $this->phone = $phone;
+        $this->phone = $this->cleanPhoneNumber($phone);
 
         return $this;
     }
@@ -1070,7 +1040,7 @@ class Companies
      */
     public function setNomDirigeant($nomDirigeant)
     {
-        $this->nomDirigeant = $nomDirigeant;
+        $this->nomDirigeant = $this->normalizeName($nomDirigeant);
 
         return $this;
     }
@@ -1094,7 +1064,7 @@ class Companies
      */
     public function setPrenomDirigeant($prenomDirigeant)
     {
-        $this->prenomDirigeant = $prenomDirigeant;
+        $this->prenomDirigeant = $this->normalizeName($prenomDirigeant);
 
         return $this;
     }
@@ -1334,4 +1304,62 @@ class Companies
     {
         return $this->idCompany;
     }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
+    }
+
+    /**
+     * @param $name
+     *
+     * @return string
+     */
+    private function normalizeName($name)
+    {
+        $name = strtolower($name);
+
+        $pos = strrpos($name, '-');
+        if ($pos === false) {
+            return ucwords($name);
+        } else {
+            $tabName = explode('-', $name);
+            $newName = '';
+            $i      = 0;
+            foreach ($tabName as $name) {
+                $newName .= ($i == 0 ? '' : '-') . ucwords($name);
+                $i++;
+            }
+            return $newName;
+        }
+    }
+
+    /**
+     * @param string $number
+     *
+     * @return string
+     */
+    private function cleanPhoneNumber($number)
+    {
+        return str_replace([' ', '.'], '', $number);
+    }
+
+    private function cleanCapital($capital)
+    {
+        return str_replace([' ', '.'], '', $capital);
+    }
+
 }

@@ -1,9 +1,14 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsage;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
@@ -143,6 +148,10 @@ class LenderManager
     }
 
 
+    /**
+     * @param \lenders_accounts $lender
+     * @return bool
+     */
     public function hasTransferredLoans(\lenders_accounts $lender)
     {
         /** @var \transfer $transfer */
@@ -177,28 +186,6 @@ class LenderManager
 
     /**
      * @param \clients $client
-     */
-    public function saveLenderTermsOfUse(Clients $client)
-    {
-        if (in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
-            $type = 'Lien conditions generales inscription preteur particulier';
-        } else {
-            $type = 'Lien conditions generales inscription preteur societe';
-        }
-
-        /** @var Settings $settingsEntity */
-        $settingsEntity =  $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $type]);
-
-        $termsOfUse = new AcceptationsLegalDocs();
-        $termsOfUse->setIdLegalDoc($settingsEntity->getValue());
-        $termsOfUse->setIdClient($client->getIdClient());
-
-        $this->em->persist($client);
-        $this->em->flush();
-    }
-
-    /**
-     * @param \clients $client
      * @return bool
      */
     public function isValidated(\clients $client)
@@ -207,5 +194,47 @@ class LenderManager
         $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
         $lastClientStatus->getLastStatut($client->id_client);
         return $lastClientStatus->status == \clients_status::VALIDATED;
+    }
+
+    public function updateLenderAccount(\lenders_accounts $lenderAccount)
+    {
+        /** @var ClientsRepository $clientsRepository */
+        $clientsRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Clients');
+        /** @var WalletRepository $walletRepository */
+        $walletRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet');
+        /** @var Clients $clientEntity */
+        $clientEntity = $clientsRepository->find($lenderAccount->id_client_owner);
+        /** @var Wallet $wallet */
+        $wallet =  $clientsRepository->getClientWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
+        /** @var BankAccount $bankAccount */
+        $bankAccountUsage = $walletRepository->getWalletBankAccountUsage($wallet->getId(), BankAccountUsageType::ALL_LENDER_ACTIVITY);
+
+        if (false === is_object($bankAccountUsage)) {
+            $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy(['idClient' => $clientEntity]);
+            if (false === is_object($bankAccount)) {
+                $bankAccount = new BankAccount();
+                $bankAccount->setIdClient($clientEntity);
+                $bankAccount->setIban($lenderAccount->iban);
+                $bankAccount->setBic($lenderAccount->bic);
+                $this->em->persist($bankAccount);
+            }
+
+            $bankAccountUsageType = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccountUsageType')->findOneByLabel(BankAccountUsageType::ALL_LENDER_ACTIVITY);
+            $bankAccountUsage     = new BankAccountUsage();
+            $bankAccountUsage->setIdUsageType($bankAccountUsageType);
+            $bankAccountUsage->setIdWallet($wallet);
+            $bankAccountUsage->setIdBankAccount($bankAccount);
+            $this->em->persist($bankAccountUsage);
+        } elseif ($bankAccountUsage instanceof BankAccountUsage){
+
+            $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($bankAccountUsage->getId());
+            if ($bankAccount->getBic() != $lenderAccount->bic || $bankAccount->getIban() != $lenderAccount->iban){
+                $bankAccount->setBic($lenderAccount->bic);
+                $bankAccount->setIban($lenderAccount->iban);
+            }
+        }
+
+        $this->em->flush();
+        $lenderAccount->update();
     }
 }

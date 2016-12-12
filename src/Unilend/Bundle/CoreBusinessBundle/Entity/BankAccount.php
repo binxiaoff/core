@@ -5,28 +5,27 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Wallet
+ * BankAccount
  *
- * @ORM\Table(name="wallet", indexes={@ORM\Index(name="fk_id_type_idx", columns={"id_type"}), @ORM\Index(name="idx_id_client", columns={"id_client"})})
+ * @ORM\Table(name="bank_account", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_iban_UNIQUE", columns={"id_client", "iban"})}, indexes={@ORM\Index(name="fk_bank_account_id_client_idx", columns={"id_client"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository")
  */
-class Wallet
+class BankAccount
 {
     /**
      * @var string
      *
-     * @ORM\Column(name="available_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="bic", type="string", length=100, nullable=false)
      */
-    private $availableBalance;
+    private $bic;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="committed_balance", type="decimal", precision=12, scale=2, nullable=true)
+     * @ORM\Column(name="iban", type="string", length=100, nullable=false)
      */
-    private $committedBalance;
+    private $iban;
 
     /**
      * @var \DateTime
@@ -52,16 +51,6 @@ class Wallet
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\WalletType")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
-     * })
-     */
-    private $idType;
-
-    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
@@ -74,51 +63,51 @@ class Wallet
 
 
     /**
-     * Set availableBalance
+     * Set bic
      *
-     * @param string $availableBalance
+     * @param string $bic
      *
-     * @return Wallet
+     * @return BankAccount
      */
-    public function setAvailableBalance($availableBalance)
+    public function setBic($bic)
     {
-        $this->availableBalance = $availableBalance;
+        $this->bic = $bic;
 
         return $this;
     }
 
     /**
-     * Get availableBalance
+     * Get bic
      *
      * @return string
      */
-    public function getAvailableBalance()
+    public function getBic()
     {
-        return $this->availableBalance;
+        return $this->bic;
     }
 
     /**
-     * Set committedBalance
+     * Set iban
      *
-     * @param string $committedBalance
+     * @param string $iban
      *
-     * @return Wallet
+     * @return BankAccount
      */
-    public function setCommittedBalance($committedBalance)
+    public function setIban($iban)
     {
-        $this->committedBalance = $committedBalance;
+        $this->iban = $iban;
 
         return $this;
     }
 
     /**
-     * Get committedBalance
+     * Get iban
      *
      * @return string
      */
-    public function getCommittedBalance()
+    public function getIban()
     {
-        return $this->committedBalance;
+        return $this->iban;
     }
 
     /**
@@ -126,7 +115,7 @@ class Wallet
      *
      * @param \DateTime $added
      *
-     * @return Wallet
+     * @return BankAccount
      */
     public function setAdded($added)
     {
@@ -150,7 +139,7 @@ class Wallet
      *
      * @param \DateTime $updated
      *
-     * @return Wallet
+     * @return BankAccount
      */
     public function setUpdated($updated)
     {
@@ -180,35 +169,11 @@ class Wallet
     }
 
     /**
-     * Set idType
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType $idType
-     *
-     * @return Wallet
-     */
-    public function setIdType(\Unilend\Bundle\CoreBusinessBundle\Entity\WalletType $idType = null)
-    {
-        $this->idType = $idType;
-
-        return $this;
-    }
-
-    /**
-     * Get idType
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType
-     */
-    public function getIdType()
-    {
-        return $this->idType;
-    }
-
-    /**
      * Set idClient
      *
      * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $idClient
      *
-     * @return Wallet
+     * @return BankAccount
      */
     public function setIdClient(\Unilend\Bundle\CoreBusinessBundle\Entity\Clients $idClient = null)
     {

@@ -83,13 +83,6 @@ class LendersAccounts
     private $fonds;
 
     /**
-     * @var boolean
-     *
-     * @ORM\Column(name="cni_passeport", type="boolean", nullable=false)
-     */
-    private $cniPasseport;
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -352,30 +345,6 @@ class LendersAccounts
     public function getFonds()
     {
         return $this->fonds;
-    }
-
-    /**
-     * Set cniPasseport
-     *
-     * @param boolean $cniPasseport
-     *
-     * @return LendersAccounts
-     */
-    public function setCniPasseport($cniPasseport)
-    {
-        $this->cniPasseport = $cniPasseport;
-
-        return $this;
-    }
-
-    /**
-     * Get cniPasseport
-     *
-     * @return boolean
-     */
-    public function getCniPasseport()
-    {
-        return $this->cniPasseport;
     }
 
     /**

@@ -191,9 +191,9 @@ class Clients
     private $secreteReponse;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=true)
+     * @ORM\Column(name="type", type="integer", nullable=true)
      */
     private $type;
 
