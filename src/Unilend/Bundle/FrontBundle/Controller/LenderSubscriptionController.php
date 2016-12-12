@@ -1037,15 +1037,24 @@ class LenderSubscriptionController extends Controller
      */
     public function capitalLandingPageAction()
     {
-        /** @var ContentManager $contentManager */
-        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+        try {
+            $xmlContent = @file_get_contents('http://www.capital.fr/wrapper-unend.xml');
 
-        $xml     = new \SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
-        $content = explode('<!--CONTENT_ZONE-->', (string) $xml->content);
+            if (false === $xmlContent) {
+                throw new \Exception('Could not load remote XML');
+            }
 
-        $header = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
-        $footer = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-        return $this->render('pages/lender_subscription/partners/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $contentManager->getFooterPartners()]);
+            /** @var ContentManager $contentManager */
+            $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+            $xml            = new \SimpleXMLElement($xmlContent);
+            $content        = explode('<!--CONTENT_ZONE-->', (string) $xml->content);
+            $header         = str_replace(['<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'], ['Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'], $content[0]);
+            $footer         = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
+
+            return $this->render('pages/lender_subscription/partners/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $contentManager->getFooterPartners()]);
+        } catch (\Exception $exception) {
+            return $this->redirectToRoute('lender_landing_page');
+        }
     }
 
     /**
