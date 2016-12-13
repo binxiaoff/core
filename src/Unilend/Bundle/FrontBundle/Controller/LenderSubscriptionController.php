@@ -18,6 +18,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
@@ -805,12 +806,14 @@ class LenderSubscriptionController extends Controller
      */
     public function moneyDepositAction($clientHash, Request $request)
     {
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($request, $clientHash);
-        if (false === $response instanceof RedirectResponse){
+        if ($response instanceof RedirectResponse){
             return $response;
         }
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client->get($clientHash, 'hash');
+
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         $lenderAccount->get($client->id_client, 'id_client_owner');
@@ -836,8 +839,6 @@ class LenderSubscriptionController extends Controller
      */
     public function moneyDepositFormAction($clientHash, Request $request)
     {
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($request, $clientHash);
         if ($response instanceof RedirectResponse){
             return $response;
@@ -852,11 +853,12 @@ class LenderSubscriptionController extends Controller
 
             if (is_numeric($amount) && $amount >= LenderWalletController::MIN_DEPOSIT_AMOUNT && $amount <= LenderWalletController::MAX_DEPOSIT_AMOUNT) {
                 $em = $this->get('doctrine.orm.entity_manager');
-                $walletType = $em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::LENDER]);
-                $wallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->id_client, 'idType' => $walletType]);
-
-                $successUrl = $this->generateUrl('lender_subscription_money_transfer', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
-                $cancelUrl = $this->generateUrl('lender_subscription_money_deposit', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
+                /** @var ClientsRepository $clientRepo */
+                $clientRepo = $em->getRepository('UnilendCoreBusinessBundle:Clients');
+                $client = $clientRepo->findOneBy(['hash' => $clientHash]);
+                $wallet = $clientRepo->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                $successUrl = $this->generateUrl('lender_subscription_money_transfer', ['clientHash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
+                $cancelUrl = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
 
                 $redirectUrl = $this->get('unilend.frontbundle.service.payline_manager')->pay($amount, $wallet, $successUrl, $cancelUrl);
 
@@ -866,14 +868,14 @@ class LenderSubscriptionController extends Controller
             }
         }
 
-        return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
+        return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
     }
 
     /**
-     * @Route("inscription_preteur/payment", name="lender_subscription_money_transfer")
+     * @Route("inscription_preteur/payment/{clientHash}", name="lender_subscription_money_transfer")
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function paymentAction(Request $request)
+    public function paymentAction(Request $request, $clientHash)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -884,9 +886,9 @@ class LenderSubscriptionController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        if ($client->get($request->query->get('hash'), 'hash')) {
-            $token = $request->query->get('token');
-            $version = $request->query->get('version', Backpayline::WS_DEFAULT_VERSION);
+        if ($client->get($clientHash, 'hash')) {
+            $token = $request->get('token');
+            $version = $request->get('version', Backpayline::WS_DEFAULT_VERSION);
 
             if (true === empty($token)) {
                 $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
@@ -909,13 +911,14 @@ class LenderSubscriptionController extends Controller
                     'moneyTransferSuccess',
                     $translator->trans('lender-subscription_money-transfer-success-message', ['%depositAmount%' => $ficelle->formatNumber($paidAmount, 2)])
                 );
-                $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
             } else {
                 $this->addFlash('moneyTransferError', $translator->trans('lender-subscription_money-transfer-error-message'));
-                return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
             }
+
+            return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
         }
-        return $this->redirectToRoute('lender_subscription_money_deposit');
+
+        return $this->redirectToRoute('home_lender');
     }
 
 

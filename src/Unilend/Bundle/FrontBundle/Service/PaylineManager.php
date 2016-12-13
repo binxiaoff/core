@@ -242,11 +242,13 @@ class PaylineManager
         $transaction = $this->entityManager->getRepository('transactions');
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
+        /** @var \clients $client */
+        $client = $this->entityManager->getRepository('clients');
 
         $amount = round(bcdiv($backPayline->getAmount(), 100, 4), 2);
 
-        $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($backPayline->getWallet()->getIdClient()->getIdClient());
-        $lenderAccount->get($client->getIdClient(), 'id_client_owner');
+        $client->get($backPayline->getWallet()->getIdClient()->getIdClient());
+        $lenderAccount->get($client->id_client, 'id_client_owner');
         $transaction->get($backPayline->getIdBackpayline(), 'type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND id_backpayline');
 
         $notification->type      = \notifications::TYPE_CREDIT_CARD_CREDIT;
@@ -261,7 +263,7 @@ class PaylineManager
         $clientMailNotification->id_transaction  = $transaction->id_transaction;
         $clientMailNotification->create();
 
-        if ($clientNotification->getNotif($client->getIdClient(), 7, 'immediatement') == true) {
+        if ($clientNotification->getNotif($client->id_client, 7, 'immediatement') == true) {
             $clientMailNotification->get($clientMailNotification->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
             $clientMailNotification->immediatement = 1;
             $clientMailNotification->update();
@@ -277,11 +279,11 @@ class PaylineManager
             $varMail = [
                 'surl'            => $this->sUrl,
                 'url'             => $this->router->getContext()->getBaseUrl(),
-                'prenom_p'        => $client->getPrenom(),
+                'prenom_p'        => $client->prenom,
                 'fonds_depot'     => $amount,
                 'solde_p'         => $this->clientManager->getClientBalance($client),
                 'link_mandat'     => $this->sUrl . '/images/default/mandat.jpg',
-                'motif_virement'  => $client->getLenderPattern($client->getIdClient()),
+                'motif_virement'  => $client->getLenderPattern($client->id_client),
                 'projets'         => $this->router->generate('home', ['type' => 'projets-a-financer']),
                 'gestion_alertes' => $this->router->generate('lender_profile'),
                 'lien_fb'         => $lien_fb,
@@ -290,7 +292,7 @@ class PaylineManager
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->messageProvider->newMessage('preteur-alimentation-cb', $varMail);
-            $message->setTo($client->getEmail());
+            $message->setTo($client->email);
             $this->mailer->send($message);
         }
     }
