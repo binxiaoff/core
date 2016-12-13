@@ -114,7 +114,7 @@ class WelcomeOfferManager
                 $return = ['code' => 0, 'message' => 'Offre de bienvenue créée.' . $emailStatus];
             }
         } else {
-            $return = ['code' => 3, 'message' => "Loffre de bienvenue n'existe pas"];
+            $return = ['code' => 3, 'message' => "L'offre de bienvenue n'existe pas"];
         }
         return $return;
     }
