@@ -1278,7 +1278,6 @@ class dossiersController extends bootstrap
         $this->aRejectionReasons = $oProjectRejectionReason->select();
         $this->iStep             = $this->params[0];
         $this->iProjectId        = $this->params[1];
-
     }
 
     public function _changeClient()

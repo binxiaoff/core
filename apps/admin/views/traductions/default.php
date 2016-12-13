@@ -77,7 +77,7 @@
                                 <img src="<?= $this->surl ?>/images/admin/langues/fr.png" alt="fr"/>
                             </td>
                             <td>
-                                <textarea class="textarea_lng" style="background-image: url('<?= $this->surl ?>/images/admin/langues/flag_fr.png'); background-position:center; background-repeat:no-repeat;" name="texte" id="texte"><?= $this->lTranslations ?></textarea>
+                                <textarea class="textarea_lng" style="background-image: url('<?= $this->surl ?>/images/admin/langues/flag_fr.png'); background-position:center; background-repeat:no-repeat;" name="translation" id="translation"><?= $this->lTranslations ?></textarea>
                             </td>
                         <tr>
                         <tr>

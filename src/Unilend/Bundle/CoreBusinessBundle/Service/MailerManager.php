@@ -1891,4 +1891,50 @@ class MailerManager
         $message->setTo($client->email);
         $this->mailer->send($message);
     }
+
+    /**
+     * @param \clients $client
+     * @param $mailType
+     */
+    public function sendClientValidationEmail(\clients $client, $mailType)
+    {
+        $varMail = [
+            'surl'    => $this->sSUrl,
+            'url'     => $this->sFUrl,
+            'prenom'  => $client->prenom,
+            'projets' => $this->sFUrl . '/projets-a-financer',
+            'lien_fb' => $this->getFacebookLink(),
+            'lien_tw' => $this->getTwitterLink(),
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage($mailType, $varMail);
+        $message->setTo($client->email);
+        $this->mailer->send($message);
+    }
+
+    /**
+     * @param \clients $client
+     * @param \offres_bienvenues $welcomeOffer
+     */
+    public function sendWelcomeOfferEmail(\clients $client, \offres_bienvenues $welcomeOffer)
+    {
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        $varMail = [
+            'surl'            => $this->sSUrl,
+            'url'             => $this->sFUrl,
+            'prenom_p'        => $client->prenom,
+            'projets'         => $this->sFUrl . '/projets-a-financer',
+            'offre_bienvenue' => $ficelle->formatNumber($welcomeOffer->montant / 100),
+            'lien_fb'         => $this->getFacebookLink(),
+            'lien_tw'         => $this->getTwitterLink(),
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('offre-de-bienvenue', $varMail);
+        $message->setTo($client->email);
+        $this->mailer->send($message);
+    }
 }

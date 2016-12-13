@@ -21,3 +21,7 @@ ekino_new_relic:
     ignored_routes: []
     ignored_paths: []
     ignored_commands: []
+
+cl_slack:
+    api_token: xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
+    test:      false

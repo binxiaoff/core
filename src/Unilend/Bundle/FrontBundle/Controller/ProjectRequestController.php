@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use CL\Slack\Payload\ChatPostMessagePayload;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -287,7 +288,14 @@ class ProjectRequestController extends Controller
                     ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
                 );
 
-                mail($alertEmail, '[ALERTE] Altares is down', 'Date ' . date('Y-m-d H:i:s') . '. ' . $exception->getMessage());
+                $payload = new ChatPostMessagePayload();
+                $payload->setChannel('#it-monitoring');
+                $payload->setText("Altares is down  :skull_and_crossbones:\n> " . $exception->getMessage());
+                $payload->setUsername('Altares');
+                $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
+                $payload->setAsUser(false);
+
+                $this->get('cl_slack.api_client')->send($payload);
             }
         }
 
@@ -295,7 +303,14 @@ class ProjectRequestController extends Controller
             $settingsAltaresStatus->value = '1';
             $settingsAltaresStatus->update();
 
-            mail($alertEmail, '[INFO] Altares is up', 'Date ' . date('Y-m-d H:i:s') . '. Altares is up now.');
+            $payload = new ChatPostMessagePayload();
+            $payload->setChannel('#it-monitoring');
+            $payload->setText('Altares is up  :white_check_mark:');
+            $payload->setUsername('Altares');
+            $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
+            $payload->setAsUser(false);
+
+            $this->get('cl_slack.api_client')->send($payload);
         }
 
         return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);
