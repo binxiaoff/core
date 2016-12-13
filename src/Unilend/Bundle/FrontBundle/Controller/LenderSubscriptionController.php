@@ -34,7 +34,7 @@ class LenderSubscriptionController extends Controller
      */
     public function personalInformationAction(Request $request)
     {
-        $response = $this->checkProgressAndRedirect($request->getUri());
+        $response = $this->checkProgressAndRedirect($request);
         if ($response instanceof RedirectResponse){
             return $response;
         }
@@ -114,7 +114,7 @@ class LenderSubscriptionController extends Controller
      */
     public function personalInformationPersonFormAction(Request $request)
     {
-        $response = $this->checkProgressAndRedirect($request->getPathInfo());
+        $response = $this->checkProgressAndRedirect($request);
         if ($response instanceof RedirectResponse){
             return $response;
         }
@@ -291,7 +291,7 @@ class LenderSubscriptionController extends Controller
      */
     public function personalInformationLegalEntityFormAction(Request $request)
     {
-        $response = $this->checkProgressAndRedirect($request->getPathInfo());
+        $response = $this->checkProgressAndRedirect($request);
         if ($response instanceof RedirectResponse){
             return $response;
         }
@@ -578,7 +578,7 @@ class LenderSubscriptionController extends Controller
      */
     public function documentsAction($clientHash, Request $request)
     {
-        $response = $this->checkProgressAndRedirect($request->getPathInfo(), $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash);
         if ($response instanceof RedirectResponse){
             return $response;
         }
@@ -618,7 +618,7 @@ class LenderSubscriptionController extends Controller
      */
     public function documentsFormAction($clientHash, Request $request)
     {
-        $response = $this->checkProgressAndRedirect($request->getPathInfo(), $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash);
         if ($response instanceof RedirectResponse){
             return $response;
         }
@@ -805,7 +805,7 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($request->getPathInfo(), $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash);
         if (false === $response instanceof RedirectResponse){
             return $response;
         }
@@ -836,7 +836,7 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($request->getPathInfo(), $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash);
         if ($response instanceof RedirectResponse){
             return $response;
         }
@@ -1065,7 +1065,7 @@ class LenderSubscriptionController extends Controller
         }
 
         if (false === empty($post['prospect_email']) && $clients->existEmail($post['prospect_email']) && $clients->get($post['prospect_email'], 'email')){
-            $response = $this->checkProgressAndRedirect($request->getPathInfo());
+            $response = $this->checkProgressAndRedirect($request, $clients->hash);
             if ($response instanceof RedirectResponse){
                 return $response;
             }
@@ -1093,16 +1093,19 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param $requestPathInfo
-     * @param null $clientHash
+     * @param Request $request
+     * @param null    $clientHash
      *
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return RedirectResponse
      */
-    private function checkProgressAndRedirect($requestPathInfo, $clientHash = null)
+    private function checkProgressAndRedirect(Request $request, $clientHash = null)
     {
         $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
 
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+        $redirectPath = null;
+        $currentPath = $request->getPathInfo();
+
+        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') || false === is_null($clientHash)) {
             if ($this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')) {
                 return $this->redirectToRoute('projects_list');
             }
@@ -1118,18 +1121,23 @@ class LenderSubscriptionController extends Controller
                 if (false === empty($lastStatus) && $lastStatus >= \clients_status::MODIFICATION){
                     return $this->redirectToRoute('lender_dashboard');
                 }
-            }
-        } elseif (false === is_null($clientHash)) {
-            $clientEntity = $clientRepository->findOneBy(['hash' => $clientHash]);
+            } else {
+                $clientEntity = $clientRepository->findOneBy(['hash' => $clientHash]);
 
-            if (\clients::STATUS_ONLINE !== $clientEntity->getStatus() || $clientEntity->getEtapeInscriptionPreteur() > 3) {
-                return $this->redirectToRoute('login');
+                if (\clients::STATUS_ONLINE !== $clientEntity->getStatus() || $clientEntity->getEtapeInscriptionPreteur() > 3) {
+                    return $this->redirectToRoute('login');
+                }
+            }
+            $redirectPath = $this->getSubscriptionStepRedirectRoute($clientEntity->getEtapeInscriptionPreteur());
+        } else {
+            $personalFormRoute =['lender_subscription_personal_information_person_form', 'lender_subscription_personal_information_legal_entity_form'];
+            if (! in_array($request->get('_route'), $personalFormRoute)) {
+                $redirectPath = $this->generateUrl('lender_subscription_personal_information');
             }
         }
 
-        $redirectRoute = $this->getSubscriptionStepRedirectRoute($clientEntity->getEtapeInscriptionPreteur(), $clientEntity->getHash());
-        if ($requestPathInfo !== $redirectRoute) {
-            return $this->redirect($redirectRoute);
+        if (null !== $redirectPath && $currentPath !== $redirectPath) {
+            return $this->redirect($redirectPath);
         }
     }
 
