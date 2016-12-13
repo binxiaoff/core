@@ -121,7 +121,7 @@ class PaylineManager
 
         $this->logger->debug('Payline doWebPayment response : ' . json_encode($result));
 
-        $backPayline->setSerializeDoPayment(json_encode($result));
+        $backPayline->setSerializeDoPayment(serialize($result));
 
         $this->em->flush();
 
