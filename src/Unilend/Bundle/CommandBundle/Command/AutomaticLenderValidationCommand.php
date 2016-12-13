@@ -116,8 +116,8 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
         /** @var TaxManager $taxManager */
         $taxManager = $this->getContainer()->get('unilend.service.tax_manager');
-        /** @var ClientStatusManager $clientManager */
-        $clientManager = $this->getContainer()->get('unilend.service.client_manager');
+        /** @var ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->getContainer()->get('unilend.service.client_status_manager');
 
         $existingClient = $client->getDuplicates($client->nom, $client->prenom, $client->naissance);
         $existingClient = array_shift($existingClient);
@@ -131,7 +131,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         }
         $lenderAccount->get($client->id_client, 'id_client_owner');
         $clientAddress->get($client->id_client, 'id_client');
-        $clientManager->addClientStatus($client, \users::USER_ID_CRON, \clients_status::VALIDATED, 'Validation automatique basée sur Green Point');
+        $clientStatusManager->addClientStatus($client, \users::USER_ID_CRON, \clients_status::VALIDATED, 'Validation automatique basée sur Green Point');
 
         $serialize = serialize(array('id_client' => $client->id_client, 'attachment_data' => $attachment));
         $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
