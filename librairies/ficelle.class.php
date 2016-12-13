@@ -86,7 +86,7 @@ class ficelle
     }
 
     // met des majuscules sur les noms composés
-    public function majNom($nom)
+    public function majNom($nom)//TODO delete once all create Client are migrated on new entity
     {
         $nom = strtolower($nom);
 
