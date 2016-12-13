@@ -132,8 +132,8 @@ class apiController extends Controller
                 $oGreenPointAttachment->$sKey = $mValue;
             }
         }
-        $oGreenPointAttachment->final_status = 1;
-        $oGreenPointAttachment->revalidate   = 0;
+        $oGreenPointAttachment->final_status = \greenpoint_attachment::FINAL_STATUS_YES;
+        $oGreenPointAttachment->revalidate   = \greenpoint_attachment::REVALIDATE_NO;
         $oGreenPointAttachment->update();
 
         foreach ($aGreenPointData['greenpoint_attachment_detail'] as $sKey => $mValue) {

@@ -81,9 +81,9 @@ EOF
 
                 if (false === empty($aAttachments)) {
                     foreach ($aAttachments as $iAttachmentTypeId => $aAttachment) {
-                        if ($oGreenPointAttachment->get($aAttachment['id'], 'id_attachment') && 0 == $oGreenPointAttachment->revalidate) {
+                        if ($oGreenPointAttachment->get($aAttachment['id'], 'id_attachment') && \greenpoint_attachment::REVALIDATE_NO == $oGreenPointAttachment->revalidate) {
                             continue;
-                        } elseif (1 == $oGreenPointAttachment->revalidate) {
+                        } elseif (\greenpoint_attachment::REVALIDATE_YES == $oGreenPointAttachment->revalidate) {
                             $aAttachmentsToRevalidate[$iAttachmentTypeId] = $oGreenPointAttachment->id_greenpoint_attachment;
                         }
                         $sAttachmentPath = $oAttachmentHelper->getFullPath($aAttachment['type_owner'], $aAttachment['id_type']) . $aAttachment['path'];
@@ -240,8 +240,8 @@ EOF
                 $bUpdate = false;
             }
             $oGreenPointAttachment->control_level = 1;
-            $oGreenPointAttachment->revalidate    = 0;
-            $oGreenPointAttachment->final_status  = 0;
+            $oGreenPointAttachment->revalidate    = \greenpoint_attachment::REVALIDATE_NO;
+            $oGreenPointAttachment->final_status  = \greenpoint_attachment::FINAL_STATUS_NO;
             $iAttachmentId                        = $aResponseDetail[$iQRID]['REQUEST_PARAMS']['document'];
             $aResponse                            = json_decode($aResponseDetail[$iQRID]['RESPONSE'], true);
 

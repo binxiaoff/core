@@ -959,10 +959,10 @@ class clients extends clients_crud
                     companies.name,
                     DATE(c.added) AS date_creation,
                     (
-                        SELECT MAX(DATE(csh.added))
+                        SELECT MAX(csh.added)
                         FROM
                             clients_status_history csh
-                            LEFT JOIN clients ON clients.id_client = csh.id_client
+                            INNER JOIN clients ON clients.id_client = csh.id_client
                             INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
                         WHERE
                             cs.status = '. \clients_status::VALIDATED . '
@@ -976,9 +976,10 @@ class clients extends clients_crud
                     clients c
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
                 WHERE
-                    NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
-                    AND DATE(c.added) BETWEEN DATE("' . $sStartDate . '") AND DATE(' . $sEndDate . ') ' . $sWhereID;
+                    DATE(c.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
+                    AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
+                    AND NOT EXISTS (SELECT t.id_transaction FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
+                    ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);
 
@@ -1233,5 +1234,39 @@ class clients extends clients_crud
         }
 
         return $aCountByCategories;
+    }
+
+    /**
+     * @param array $clientStatus
+     * @param array $attachmentTypes
+     * @return array
+     */
+    public function getClientsToAutoValidate(array $clientStatus, array $attachmentTypes)
+    {
+        $bind = ['client_status_id' => $clientStatus, 'attachment_type_id' => $attachmentTypes];
+        $type = ['client_status_id' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'attachment_type_id' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY];
+
+        $sql = "
+        SELECT
+          c.id_client,
+          gpa.final_status,
+          gpa.revalidate,
+          gpa.id_attachment,
+          a.id_type        
+        FROM clients_status_history csh
+          INNER JOIN greenpoint_kyc kyc ON kyc.id_client = csh.id_client
+          INNER JOIN greenpoint_attachment gpa ON gpa.id_client = csh.id_client
+          INNER JOIN attachment a ON a.id = gpa.id_attachment AND a.id_type IN (:attachment_type_id)
+          INNER JOIN clients c ON c.id_client = csh.id_client
+          INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
+          INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
+        WHERE csh.id_client_status_history = (SELECT MAX(csh1.id_client_status_history)
+                                              FROM clients_status_history csh1
+                                              WHERE csh1.id_client = csh.id_client
+                                              LIMIT 1)
+              AND cs.status IN (:client_status_id) AND kyc.status = 999";
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($sql, $bind, $type);
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
