@@ -955,7 +955,6 @@ class transfertsController extends bootstrap
                 $payload->setText('Fonds débloqués pour *<' . $this->furl . '/projects/detail/' . $project->slug . '|' . $project->title . '>*');
                 $payload->setUsername('Unilend');
                 $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/unilend.png');
-                $payload->setIconUrl('https://www.unilend.fr/assets/images/slack/unilend.png');
                 $payload->setAsUser(false);
 
                 $this->get('cl_slack.api_client')->send($payload);
