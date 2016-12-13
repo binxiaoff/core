@@ -1,6 +1,7 @@
 <?php
 
 use Psr\Log\LoggerInterface;
+use CL\Slack\Payload\ChatPostMessagePayload;
 
 class transfertsController extends bootstrap
 {
@@ -948,6 +949,15 @@ class transfertsController extends bootstrap
                 $paymentInspectionStopped->update();
 
                 $logger->info('Check refund status done (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+
+                $payload = new ChatPostMessagePayload();
+                $payload->setChannel('#general');
+                $payload->setText('Fonds débloqués pour *<' . $this->furl . '/projects/detail/' . $project->slug . '|' . $project->title . '>*');
+                $payload->setUsername('Unilend');
+                $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/unilend.png');
+                $payload->setAsUser(false);
+
+                $this->get('cl_slack.api_client')->send($payload);
             } else {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Un remboursement est déjà en cours';
