@@ -30,9 +30,9 @@ class ClientsAdresses
     /**
      * @var boolean
      *
-     * @ORM\Column(name="type", type="boolean", nullable=true)
+     * @ORM\Column(name="type", type="boolean", nullable=false)
      */
-    private $type;
+    private $type = '0';
 
     /**
      * @var string

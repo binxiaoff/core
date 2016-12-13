@@ -34,6 +34,7 @@
             <argument type="service" id="request_stack"/>
             <argument type="service" id="unilend.service.wallet_creation_manager" />
             <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="logger" />
         </service>
 
         <service id="unilend.service.lender_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderManager">
@@ -238,6 +239,13 @@
         <service id="unilend.service.wallet_creation_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WalletCreationManager">
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
+
+        <service id="unilend.service.bank_account_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service.lender_manager" />
+            <argument type="service" id="logger" />
         </service>
     </services>
 </container>

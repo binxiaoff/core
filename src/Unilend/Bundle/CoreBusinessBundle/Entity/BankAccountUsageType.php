@@ -12,8 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class BankAccountUsageType
 {
-    const ALL_LENDER_ACTIVITY   = 'all_lender_activity';
-    const ALL_BORROWER_ACTIVITY = 'all_borrower_activity';
+    const LENDER_DEFAULT   = 'lender_default';
+    const BORROWER_DEFAULT = 'borrower_default';
 
     /**
      * @var string

@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
 use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AccountMatching;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -16,12 +17,12 @@ class WalletCreationManager
 {
     /** @var EntityManager  */
     private $em;
-    /** @var  \Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager */
+    /** @var  EntityManagerSimulator */
     private $entityManager;
 
     public function __construct(
         EntityManager $em,
-        \Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager $entityManager
+        EntityManagerSimulator $entityManager
     ) {
         $this->em = $em;
         $this->entityManager = $entityManager;
@@ -29,7 +30,7 @@ class WalletCreationManager
 
     /**
      * @param Clients $client
-     * @param $walletType
+     * @param string $walletType
      */
     public function createWallet(Clients $client, $walletType)
     {
@@ -68,7 +69,7 @@ class WalletCreationManager
         /** @var \lenders_accounts $lendersAccount */
         $lendersAccount = $this->entityManager->getRepository('lenders_accounts');
         /** @var Companies $companyEntity */
-        $companyEntity = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getClientCompany($client->getIdClient());
+        $companyEntity = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getCompany($client->getIdClient());
         if (is_object($companyEntity)) {
             $lendersAccount->id_company_owner = $companyEntity->getIdCompany();
         }

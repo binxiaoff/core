@@ -1380,10 +1380,10 @@ class Clients
     public function setHashValue()
     {
         if (is_null($this->hash)) {
-            try{
+            try {
                 $this->hash = $this->generateHash();
             } catch (UnsatisfiedDependencyException $exception){
-
+                $this->hash = md5(uniqid());
             }
         }
     }
@@ -1470,13 +1470,9 @@ class Clients
         return $this;
     }
 
-    public function generateHash()
+    private function generateHash()
     {
-        try {
-            $uuid4 = Uuid::uuid4();
-            return $uuid4->toString();
-        } catch (UnsatisfiedDependencyException $e) {
-            echo 'Caught exception: ' . $e->getMessage() . "\n";
-        }
+        $uuid4 = Uuid::uuid4();
+        return $uuid4->toString();
     }
 }

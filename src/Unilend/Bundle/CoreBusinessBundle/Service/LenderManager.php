@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsage;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
@@ -9,7 +10,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
  * Class LenderManager
@@ -17,15 +18,15 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
  */
 class LenderManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerSimulator */
     private $oEntityManager;
-    /** @var  \Doctrine\ORM\EntityManager */
+    /** @var EntityManager */
     private $em;
 
     public function __construct
     (
-        EntityManager $oEntityManager,
-        \Doctrine\ORM\EntityManager $em
+        EntityManagerSimulator $oEntityManager,
+        EntityManager $em
     )
     {
         $this->oEntityManager = $oEntityManager;
@@ -196,45 +197,5 @@ class LenderManager
         return $lastClientStatus->status == \clients_status::VALIDATED;
     }
 
-    public function updateLenderAccount(\lenders_accounts $lenderAccount)
-    {
-        /** @var ClientsRepository $clientsRepository */
-        $clientsRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Clients');
-        /** @var WalletRepository $walletRepository */
-        $walletRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet');
-        /** @var Clients $clientEntity */
-        $clientEntity = $clientsRepository->find($lenderAccount->id_client_owner);
-        /** @var Wallet $wallet */
-        $wallet =  $clientsRepository->getClientWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
-        /** @var BankAccount $bankAccount */
-        $bankAccountUsage = $walletRepository->getWalletBankAccountUsage($wallet->getId(), BankAccountUsageType::ALL_LENDER_ACTIVITY);
 
-        if (false === is_object($bankAccountUsage)) {
-            $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy(['idClient' => $clientEntity]);
-            if (false === is_object($bankAccount)) {
-                $bankAccount = new BankAccount();
-                $bankAccount->setIdClient($clientEntity);
-                $bankAccount->setIban($lenderAccount->iban);
-                $bankAccount->setBic($lenderAccount->bic);
-                $this->em->persist($bankAccount);
-            }
-
-            $bankAccountUsageType = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccountUsageType')->findOneByLabel(BankAccountUsageType::ALL_LENDER_ACTIVITY);
-            $bankAccountUsage     = new BankAccountUsage();
-            $bankAccountUsage->setIdUsageType($bankAccountUsageType);
-            $bankAccountUsage->setIdWallet($wallet);
-            $bankAccountUsage->setIdBankAccount($bankAccount);
-            $this->em->persist($bankAccountUsage);
-        } elseif ($bankAccountUsage instanceof BankAccountUsage){
-
-            $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($bankAccountUsage->getId());
-            if ($bankAccount->getBic() != $lenderAccount->bic || $bankAccount->getIban() != $lenderAccount->iban){
-                $bankAccount->setBic($lenderAccount->bic);
-                $bankAccount->setIban($lenderAccount->iban);
-            }
-        }
-
-        $this->em->flush();
-        $lenderAccount->update();
-    }
 }

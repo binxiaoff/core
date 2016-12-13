@@ -1,6 +1,8 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -9,7 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 /**
@@ -20,7 +22,7 @@ class ClientManager
 {
     const SESSION_KEY_TOS_ACCEPTED = 'user_legal_doc_accepted';
 
-    /** @var EntityManager */
+    /** @var EntityManagerSimulator */
     private $oEntityManager;
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
@@ -30,16 +32,19 @@ class ClientManager
     private $requestStack;
     /** @var WalletCreationManager */
     private $walletCreationManager;
-    /** @var \Doctrine\ORM\EntityManager */
+    /** @var EntityManager*/
     private $em;
+    /** @var  LoggerInterface */
+    private $logger;
 
     public function __construct(
-        EntityManager $oEntityManager,
+        EntityManagerSimulator $oEntityManager,
         ClientSettingsManager $oClientSettingsManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
         WalletCreationManager $walletCreationManager,
-        \Doctrine\ORM\EntityManager $em
+        EntityManager $em,
+        LoggerInterface $logger
     ) {
         $this->oEntityManager         = $oEntityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
@@ -47,6 +52,7 @@ class ClientManager
         $this->requestStack           = $requestStack;
         $this->walletCreationManager  = $walletCreationManager;
         $this->em                     = $em;
+        $this->logger                 = $logger;
     }
 
 
@@ -264,8 +270,7 @@ class ClientManager
             $this->em->commit();
         } catch (Exception $exception) {
             $this->em->getConnection()->rollBack();
-            throw $exception;
-            //TODO log exception
+            $this->logger->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
         return $clientEntity;

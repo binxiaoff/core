@@ -1,5 +1,8 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+
 class preteursController extends bootstrap
 {
     /**
@@ -1612,6 +1615,12 @@ class preteursController extends bootstrap
             echo json_encode(array('text' => 'Une erreur est survenue', 'severity' => 'error'));
             return;
         }
+
+        /** @var Clients $clientEntity */
+        $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($iClientId);
+        $walletEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
+
+
         /** @var \lenders_accounts $oLendersAccounts */
         $oLendersAccounts = $this->loadData('lenders_accounts');
         $oLendersAccounts->get($iClientId, 'id_client_owner');

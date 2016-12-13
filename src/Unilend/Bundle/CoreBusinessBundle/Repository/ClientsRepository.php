@@ -34,7 +34,7 @@ class ClientsRepository extends EntityRepository
      * @param string $walletType
      * @return mixed
      */
-    public function getClientWalletByType($idClient, $walletType)
+    public function getWalletByType($idClient, $walletType)
     {
         $cb = $this->createQueryBuilder('c');
         $cb->select('w')
@@ -45,7 +45,7 @@ class ClientsRepository extends EntityRepository
             ->setMaxResults(1)
             ->setParameters(['idClient' => $idClient, 'walletType' => $walletType]);
         $query = $cb->getQuery();
-        $result = $query->getSingleResult();
+        $result = $query->getOneOrNullResult();
 
         return $result;
     }
@@ -54,11 +54,28 @@ class ClientsRepository extends EntityRepository
      * @param integer $idClient
      * @return mixed
      */
-    public function getClientCompany($idClient)
+    public function getCompany($idClient)
     {
         $cb = $this->createQueryBuilder('c');
         $cb->select('co')
             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner')
+            ->where('c.idClient = :idClient')
+            ->setParameter('idClient', $idClient);
+        $query = $cb->getQuery();
+        $result = $query->getOneOrNullResult();
+
+        return $result;
+    }
+
+    /**
+     * @param integer $idClient
+     * @return mixed
+     */
+    public function getBankAccount($idClient)
+    {
+        $cb = $this->createQueryBuilder('c');
+        $cb->select('ba')
+            ->innerJoin('UnilendCoreBusinessBundle:BankAccount', 'ba', Join::WITH, 'c.idClient = ba.idClient')
             ->where('c.idClient = :idClient')
             ->setParameter('idClient', $idClient);
         $query = $cb->getQuery();

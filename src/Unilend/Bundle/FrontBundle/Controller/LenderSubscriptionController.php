@@ -11,16 +11,17 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
-use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\PaylineManager;
@@ -592,7 +593,7 @@ class LenderSubscriptionController extends Controller
         $request->getSession()->remove('subscriptionStep2FormData');
 
         $template = [
-            'client'         => $client,//TODO check template
+            'client'         => $client,
             'isLivingAbroad' => $clientAddressEntity->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE,
             'fundsOrigin'    => $this->getFundsOrigin($client->getType())
         ];
@@ -678,18 +679,18 @@ class LenderSubscriptionController extends Controller
             $request->getSession()->set('subscriptionStep2FormData', $post);
             return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
         } else {
-            /** @var LenderManager $lenderManager */
-            $lenderManager = $this->get('unilend.service.lender_manager');
-            $lenderAccount->bic               = trim(strtoupper($post['bic']));
-            $lenderAccount->iban              = trim(strtoupper(str_replace(' ', '', $post['iban'])));
-            $lenderAccount->motif             = $client->getLenderPattern($client->id_client);
-            $lenderManager->updateLenderAccount($lenderAccount);
-
             /** @var Clients $clientEntity */
             $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
             $clientEntity->setEtapeInscriptionPreteur(2);
             $clientEntity->setFundsOrigin($post['funds_origin']);
             $this->get('doctrine.orm.entity_manager')->flush();
+
+            /** @var BankAccountManager $bankAccountManager */
+            $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+            $bic                = trim(strtoupper($post['bic']));
+            $iban               = trim(strtoupper(str_replace(' ', '', $post['iban'])));
+            $bankAccount        = $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban);
+            $bankAccountManager->createBankAccountUsage($bankAccount, BankAccountUsageType::LENDER_DEFAULT);
 
             $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($clientEntity, $post);
@@ -1111,10 +1112,8 @@ class LenderSubscriptionController extends Controller
             }
 
             if ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER')) {
-
                 /** @var Clients $clientEntity */
                 $clientEntity = $clientRepository->find($this->getUser()->getClientId());
-
                 /** @var ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $lastStatus = $clientStatusManager->getLastClientStatus($clientEntity);
@@ -1128,7 +1127,7 @@ class LenderSubscriptionController extends Controller
                     return $this->redirectToRoute('login');
                 }
             }
-            $redirectPath = $this->getSubscriptionStepRedirectRoute($clientEntity->getEtapeInscriptionPreteur());
+            $redirectPath = $this->getSubscriptionStepRedirectRoute($clientEntity->getEtapeInscriptionPreteur(), $clientHash);
         } else {
             $personalFormRoute =['lender_subscription_personal_information_person_form', 'lender_subscription_personal_information_legal_entity_form'];
             if (! in_array($request->get('_route'), $personalFormRoute)) {
@@ -1424,7 +1423,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @param Clients $client
      */
-    private function addClientSources(Clients &$client)
+    private function addClientSources(Clients $client)
     {
         /** @var SourceManager $sourceManager */
         $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
