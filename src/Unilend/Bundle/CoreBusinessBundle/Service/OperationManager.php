@@ -94,20 +94,22 @@ class OperationManager
         }
     }
 
-    public function provisionLenderWallet($amount, Wallet $wallet, $origin)
+    public function provisionLenderWallet(Wallet $wallet, $origin)
     {
-
         if ($origin instanceof Backpayline) {
-            $type        = OperationType::LENDER_PROVISION_BY_CREDIT_CARD;
-            $originField = 'idBackpayline';
+            $type         = OperationType::LENDER_PROVISION_BY_CREDIT_CARD;
+            $originField  = 'idBackpayline';
+            $amountInCent = $origin->getAmount();
+        } elseif ($origin instanceof Receptions) {
+            $type         = OperationType::LENDER_PROVISION_BY_WIRE_TRANSFER;
+            $originField  = 'idWireTransferIn';
+            $amountInCent = $origin->getMontant();
         } else {
-            if ($origin instanceof Receptions) {
-                $type        = OperationType::LENDER_PROVISION_BY_WIRE_TRANSFER;
-                $originField = 'idWireTransferIn';
-            } else {
-                throw new \InvalidArgumentException('The origin ' . get_class($origin) . ' is not valid');
-            }
+            throw new \InvalidArgumentException('The origin ' . get_class($origin) . ' is not valid');
         }
+
+        $amount = round(bcdiv($amountInCent, 100, 4), 2);
+
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => $type]);
         $operation     = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([$originField => $origin, 'idType' => $operationType]);
 
@@ -118,7 +120,7 @@ class OperationManager
 
         $this->newOperation($amount, $operationType, null, $wallet, [$origin]);
 
-        $this->legacyProvisionLenderWallet($amount, $wallet, $origin);
+        $this->legacyProvisionLenderWallet($wallet, $origin);
 
         return true;
     }
@@ -144,10 +146,10 @@ class OperationManager
             $transactionType             = \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT;
             $transaction->id_backpayline = $origin->getIdBackpayline();
         } else {
-            /** @var \receptions $origin */
-            $amountInCent             = $origin->montant;
+            /** @var Receptions $origin */
+            $amountInCent             = $origin->getMontant();
             $transactionType          = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
-            $transaction->id_virement = $origin->id_reception;
+            $transaction->id_virement = $origin->getIdReception();
         }
         $transaction->type_transaction = $transactionType;
         $transaction->montant          = $amountInCent;

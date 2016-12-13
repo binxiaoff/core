@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -530,29 +531,10 @@ EOF
                 $lenders->update();
             }
 
-            $transactions->id_virement      = $receptions->id_reception;
-            $transactions->id_client        = $lenders->id_client_owner;
-            $transactions->montant          = $receptions->montant;
-            $transactions->id_langue        = 'fr';
-            $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = \transactions::STATUS_VALID;
-            $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
-            $transactions->ip_client        = '';
-            $transactions->create();
+            $reception = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptions->id_reception);
+            $wallet = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clients->id_client, WalletType::LENDER);
 
-            $wallets->id_lender                = $lenders->id_lender_account;
-            $wallets->id_transaction           = $transactions->id_transaction;
-            $wallets->amount                   = $receptions->montant;
-            $wallets->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-            $wallets->type                     = \wallets_lines::PHYSICAL;
-            $wallets->status                   = \wallets_lines::STATUS_VALID;
-            $wallets->create();
-
-            $bank->id_wallet_line    = $wallets->id_wallet_line;
-            $bank->id_lender_account = $lenders->id_lender_account;
-            $bank->status            = 1;
-            $bank->amount            = $receptions->montant;
-            $bank->create();
+            $this->getContainer()->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
 
             if ($clients->etape_inscription_preteur < 3) {
                 $clients->etape_inscription_preteur = 3;

@@ -176,8 +176,7 @@ class PaylineManager
             }
 
             if ($response['result']['code'] == Backpayline::CODE_TRANSACTION_APPROVED) {
-                $amount = round(bcdiv($backPayline->getAmount(), 100, 4), 2);
-                $this->operationManager->provisionLenderWallet($amount, $backPayline->getWallet(), $backPayline);
+                $this->operationManager->provisionLenderWallet($backPayline->getWallet(), $backPayline);
                 $this->notifyClientAboutMoneyTransfer($backPayline);
                 $this->notifyAboutPaylineApprovement($backPayline);
             } elseif ($response['result']['code'] !== Backpayline::CODE_TRANSACTION_CANCELLED) { // Payment error
@@ -248,7 +247,7 @@ class PaylineManager
 
         $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($backPayline->getWallet()->getIdClient()->getIdClient());
         $lenderAccount->get($client->getIdClient(), 'id_client_owner');
-        $transaction->get($backPayline->getIdBackpayline(), 'type_transaction = ' . \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT . ' AND id_backpayline');
+        $transaction->get($backPayline->getIdBackpayline(), 'type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND id_backpayline');
 
         $notification->type      = \notifications::TYPE_CREDIT_CARD_CREDIT;
         $notification->id_lender = $lenderAccount->id_lender_account;
