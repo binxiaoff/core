@@ -69,15 +69,17 @@ class ClientsRepository extends EntityRepository
 
     /**
      * @param integer $idClient
+     * @param string $iban
      * @return mixed
      */
-    public function getBankAccount($idClient)
+    public function getBankAccount($idClient, $iban)
     {
         $cb = $this->createQueryBuilder('c');
         $cb->select('ba')
             ->innerJoin('UnilendCoreBusinessBundle:BankAccount', 'ba', Join::WITH, 'c.idClient = ba.idClient')
             ->where('c.idClient = :idClient')
-            ->setParameter('idClient', $idClient);
+            ->andWhere('ba.iban = :iban')
+            ->setParameters(['idClient' => $idClient, 'iban' => $iban]);
         $query = $cb->getQuery();
         $result = $query->getOneOrNullResult();
 

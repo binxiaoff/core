@@ -32,10 +32,10 @@ class BankAccountManager
         LenderManager $lenderManager,
         LoggerInterface $logger
     ) {
-        $this->em = $em;
+        $this->em            = $em;
         $this->entityManager = $entityManager;
         $this->lenderManager = $lenderManager;
-        $this->logger = $logger;
+        $this->logger        = $logger;
     }
 
 
@@ -50,7 +50,7 @@ class BankAccountManager
     {
         /** @var ClientsRepository $clientsRepository */
         $clientsRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Clients');
-        $bankAccount = $clientsRepository->getBankAccount($clientEntity->getIdClient());
+        $bankAccount = $clientsRepository->getBankAccount($clientEntity->getIdClient(), $iban);
 
         if (null === $bankAccount) {
             $bankAccount = new BankAccount();
@@ -58,12 +58,9 @@ class BankAccountManager
             $bankAccount->setIban($iban);
             $bankAccount->setBic($bic);
             $this->em->persist($bankAccount);
-        } else {
-            $bankAccount->setBic($bic);
-            $bankAccount->setIban($iban);
+            $this->em->flush();
         }
 
-        $this->em->flush();
         $this->updateLegacyBankAccount($clientEntity, $bankAccount);
 
         return $bankAccount;
@@ -94,8 +91,7 @@ class BankAccountManager
         $wallet =  $clientsRepository->getWalletByType($bankAccount->getIdClient()->getIdClient(), $walletType);
 
         $bankAccountUsageTypeEntity = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccountUsageType')->findOneByLabel($bankAccountUsageType);
-        var_dump($bankAccountUsageType, $bankAccountUsageTypeEntity);
-        $bankAccountUsage     = new BankAccountUsage();
+        $bankAccountUsage           = new BankAccountUsage();
         $bankAccountUsage->setIdUsageType($bankAccountUsageTypeEntity);
         $bankAccountUsage->setIdWallet($wallet);
         $bankAccountUsage->setIdBankAccount($bankAccount);
