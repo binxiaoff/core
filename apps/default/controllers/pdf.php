@@ -764,6 +764,10 @@ class pdfController extends bootstrap
                 $sNamePdfClient = 'FACTURE-UNILEND-' . $this->projects->slug;
                 $sFileName      = $this->path . 'protected/pdf/facture/facture_EF-' . $sHash . '-' . $iProjectId . '.pdf';
 
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                $projectManager = $this->get('unilend.service.project_manager');
+                $this->commissionPercentage = $projectManager->getUnilendCommissionPercentage($this->projects);
+
                 if (false === file_exists($sFileName)) {
                     $this->GenerateInvoiceEFHtml();
                     $this->WritePdf($sFileName, 'invoice');
