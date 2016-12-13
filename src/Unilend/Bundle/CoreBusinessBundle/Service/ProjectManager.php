@@ -6,6 +6,9 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use PhpXmlRpc\Client as soapClient;
+use PhpXmlRpc\Request as soapRequest;
+use PhpXmlRpc\Value as documentId;
 
 class ProjectManager
 {
@@ -45,6 +48,9 @@ class ProjectManager
     /** @var  ProjectRateSettingsManager */
     private $projectRateSettingsManager;
 
+    /** @var string */
+    private $universignUrl;
+
     /** @var ProductManager */
     private $productManager;
 
@@ -61,7 +67,8 @@ class ProjectManager
         LenderManager $oLenderManager,
         ProjectRateSettingsManager $projectRateSettingsManager,
         ProductManager $productManager,
-        ContractAttributeManager $contractAttributeManager
+        ContractAttributeManager $contractAttributeManager,
+        $universignUrl
     ) {
         $this->oEntityManager             = $oEntityManager;
         $this->oBidManager                = $oBidManager;
@@ -73,6 +80,7 @@ class ProjectManager
         $this->projectRateSettingsManager = $projectRateSettingsManager;
         $this->productManager             = $productManager;
         $this->contractAttributeManager   = $contractAttributeManager;
+        $this->universignUrl              = $universignUrl;
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
@@ -757,6 +765,9 @@ class ProjectManager
             case \projects_status::A_FUNDER:
                 $this->oMailerManager->sendProjectOnlineToBorrower($oProject);
                 break;
+            case \projects_status::PRET_REFUSE:
+                $this->cancelProxyAndMandate($oProject);
+                break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
             case \projects_status::PROBLEME_J_X:
@@ -931,5 +942,50 @@ class ProjectManager
         $totalBidRateMin = $bid->getSoldeBid($project->id_project, $rateRange['rate_min'], array(\bids::STATUS_BID_PENDING, \bids::STATUS_BID_ACCEPTED));
 
         return $totalBidRateMin >= $project->amount;
+    }
+
+    /**
+     * @param \projects $project
+     */
+    public function cancelProxyAndMandate(\projects $project)
+    {
+        /** @var \projects_pouvoir $mandate */
+        $mandate = $this->oEntityManager->getRepository('clients_mandats');
+        /** @var \projects_pouvoir $proxy */
+        $proxy = $this->oEntityManager->getRepository('projects_pouvoir');
+
+        $client = new soapClient($this->universignUrl);
+
+        if ($mandate->get($project->id_project, 'id_project')) {
+            $mandate->status = \clients_mandats::STATUS_CANCELED;
+            $mandate->update();
+
+            $request          = new soapRequest('requester.cancelTransaction', array(new documentId($mandate->id_universign, "string")));
+            $universignReturn = $client->send($request);
+
+            if ($universignReturn->faultCode()) {
+                $this->oLogger->error('Mandate cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $mandate->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project));
+            } else {
+                $this->oLogger->info('Mandate canceled (project ' . $mandate->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project));
+            }
+        } else {
+            $this->oLogger->info('Cannot get Mandate', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+        }
+
+        if ($proxy->get($project->id_project, 'id_project')) {
+            $proxy->status = \projects_pouvoir::STATUS_CANCELLED;
+            $proxy->update();
+
+            $request          = new soapRequest('requester.cancelTransaction', array(new documentId($proxy->id_universign, "string")));
+            $universignReturn = $client->send($request);
+
+            if ($universignReturn->faultCode()) {
+                $this->oLogger->error('Proxy cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $proxy->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project));
+            } else {
+                $this->oLogger->info('Proxy canceled (project ' . $proxy->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project));
+            }
+        } else {
+            $this->oLogger->info('Cannot get Proxy', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+        }
     }
 }

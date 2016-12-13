@@ -78,6 +78,7 @@
             <argument type="service" id="unilend.service.project_rate_settings_manager"/>
             <argument type="service" id="unilend.service_product.product_manager"/>
             <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
+            <argument>%url.universign%</argument>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
