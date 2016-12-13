@@ -4,7 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Doctrine\ORM\EntityManager;
 
 /**
  * Class BidManager
@@ -15,48 +16,77 @@ class BidManager
     const MODE_REBID_AUTO_BID_CREATE = 1;
     const MODE_REBID_AUTO_BID_UPDATE = 2;
 
-    /** @var \dates */
+    /**
+     * @var \dates
+     */
     private $oDate;
 
-    /** @var \ficelle */
+    /**
+     * @var \ficelle
+     */
     private $oFicelle;
 
-    /** @var LoggerInterface */
+    /**
+     * @var LoggerInterface
+     */
     private $oLogger;
 
-    /** @var NotificationManager */
+    /**
+     * @var NotificationManager
+     */
     private $oNotificationManager;
 
-    /** @var AutoBidSettingsManager */
+    /**
+     * @var AutoBidSettingsManager
+     */
     private $oAutoBidSettingsManager;
 
-    /** @var LenderManager */
+    /**
+     * @var LenderManager
+     */
     private $oLenderManager;
 
-    /** @var EntityManager */
+    /**
+     * @var EntityManagerSimulator
+     */
     private $oEntityManager;
 
-    /** @var ProductManager */
+    /**
+     * @var ProductManager
+     */
     private $productManager;
 
     /** @var CIPManager */
+
     private $cipManager;
+    /**
+     * @var EntityManager
+     */
+    private $em;
+
+    /**
+     * @var WalletManager
+     */
+    private $walletManager;
 
     public function __construct(
-        EntityManager $oEntityManager,
+        EntityManagerSimulator $oEntityManager,
         NotificationManager $oNotificationManager,
         AutoBidSettingsManager $oAutoBidSettingsManager,
         LenderManager $oLenderManager,
         ProductManager $productManager,
-        CIPManager $cipManager
-    )
-    {
+        CIPManager $cipManager,
+        EntityManager $em,
+        WalletManager $walletManager
+    ) {
         $this->oEntityManager          = $oEntityManager;
         $this->oNotificationManager    = $oNotificationManager;
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
         $this->oLenderManager          = $oLenderManager;
         $this->productManager          = $productManager;
         $this->cipManager              = $cipManager;
+        $this->em                      = $em;
+        $this->walletManager           = $walletManager;
 
         $this->oDate    = Loader::loadLib('dates');
         $this->oFicelle = Loader::loadLib('ficelle');
@@ -85,8 +115,6 @@ class BidManager
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \transactions $oTransaction */
         $oTransaction = $this->oEntityManager->getRepository('transactions');
-        /** @var \wallets_lines $oWalletsLine */
-        $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
         /** @var \projects $project */
@@ -97,7 +125,6 @@ class BidManager
 
         $iLenderId   = $oBid->id_lender_account;
         $iProjectId  = $oBid->id_project;
-        $fAmountX100 = $oBid->amount;
         $fAmount     = $oBid->amount / 100;
         $fRate       = round(floatval($oBid->rate), 1);
 
@@ -187,29 +214,13 @@ class BidManager
             throw new \Exception('bids-cip-validation-needed');
         }
 
-        $oTransaction->id_client        = $iClientId;
-        $oTransaction->montant          = -$fAmountX100;
-        $oTransaction->id_langue        = 'fr';
-        $oTransaction->date_transaction = date('Y-m-d H:i:s');
-        $oTransaction->status           = \transactions::STATUS_VALID;
-        $oTransaction->id_project       = $iProjectId;
-        $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
-        $oTransaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
-        $oTransaction->create();
-
-        $oWalletsLine->id_lender                = $oBid->id_lender_account;
-        $oWalletsLine->type_financial_operation = \wallets_lines::TYPE_BID;
-        $oWalletsLine->id_transaction           = $oTransaction->id_transaction;
-        $oWalletsLine->status                   = \wallets_lines::STATUS_VALID;
-        $oWalletsLine->type                     = \wallets_lines::VIRTUAL;
-        $oWalletsLine->amount                   = -$fAmountX100;
-        $oWalletsLine->id_project               = $oBid->id_project;
-        $oWalletsLine->create();
+        $bid = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->find($oBid->id_bid);
+        $this->walletManager->commitBalance($bid);
 
         $iBidNb = $oBid->counter('id_project = ' . $oBid->id_project);
         $iBidNb++;
 
-        $oBid->id_lender_wallet_line = $oWalletsLine->id_wallet_line;
+        $oBid->id_lender_wallet_line = $bid->getIdLenderWalletLine();
         $oBid->ordre                 = $iBidNb;
         $oBid->create();
 
@@ -380,36 +391,16 @@ class BidManager
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \transactions $oTransaction */
         $oTransaction = $this->oEntityManager->getRepository('transactions');
-        /** @var \wallets_lines $oWalletsLine */
-        $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
         // Loaded for class constants
         $this->oEntityManager->getRepository('transactions_types');
 
+        $bid = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->find($oBid->id_bid);
+        $this->walletManager->releaseBalance($bid, $fAmount);
+
         $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
         $fAmountX100 = $fAmount * 100;
-
-        $oTransaction->id_client        = $oLenderAccount->id_client_owner;
-        $oTransaction->montant          = $fAmountX100;
-        $oTransaction->id_langue        = 'fr';
-        $oTransaction->date_transaction = date('Y-m-d H:i:s');
-        $oTransaction->status           = \transactions::STATUS_VALID;
-        $oTransaction->id_project       = $oBid->id_project;
-        $oTransaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
-        $oTransaction->id_bid_remb      = $oBid->id_bid;
-        $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
-        $oTransaction->create();
-
-        $oWalletsLine->id_lender                = $oBid->id_lender_account;
-        $oWalletsLine->type_financial_operation = \wallets_lines::TYPE_BID;
-        $oWalletsLine->id_transaction           = $oTransaction->id_transaction;
-        $oWalletsLine->status                   = \wallets_lines::STATUS_VALID;
-        $oWalletsLine->type                     = \wallets_lines::VIRTUAL;
-        $oWalletsLine->id_bid_remb              = $oBid->id_bid;
-        $oWalletsLine->amount                   = $fAmountX100;
-        $oWalletsLine->id_project               = $oBid->id_project;
-        $oWalletsLine->create();
 
         $iWelcomeOfferTotal = $oWelcomeOfferDetails->sum('id_client = ' . $oLenderAccount->id_client_owner . ' AND id_bid = ' . $oBid->id_bid, 'montant');
         if ($iWelcomeOfferTotal > 0) {
