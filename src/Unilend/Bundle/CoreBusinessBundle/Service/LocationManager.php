@@ -93,7 +93,7 @@ class LocationManager
         if (false === empty($results)) {
             foreach ($results as $item) {
                 if ($lookUpBirthplace) {
-                    $cityList[] = [
+                    $cityList[$item['insee']] = [
                         'label' => $item['ville'] . ' (' . $item['num_departement'] . ')',
                         'value' => $item['insee']
                     ];
@@ -105,7 +105,8 @@ class LocationManager
                 }
             }
         }
-        return $cityList;
+
+        return array_values($cityList);
     }
 
     public function getCountries()
