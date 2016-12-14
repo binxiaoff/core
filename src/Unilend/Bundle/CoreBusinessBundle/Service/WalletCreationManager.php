@@ -39,8 +39,14 @@ class WalletCreationManager
         $walletTypeEntity = $walletTypeRepository->findOneByLabel($walletType);
 
         switch($walletTypeEntity->getLabel()){
-             case WalletType::LENDER :
-                 $this->createLenderWallet($client, $walletTypeEntity);
+            case WalletType::LENDER :
+                $this->createLenderWallet($client, $walletTypeEntity);
+                break;
+            case WalletType::BORROWER:
+                $this->createBorrowerWallet($client, $walletTypeEntity);
+                break;
+            default:
+                //TODO log unknown wallet type
                 break;
         }
     }
@@ -83,6 +89,20 @@ class WalletCreationManager
         $accountMatching->setIdLenderAccount($lendersAccountEntity);
         $accountMatching->setIdWallet($wallet);
         $this->em->persist($accountMatching);
+        $this->em->flush();
+    }
+
+    /**
+     * @param Clients $client
+     * @param WalletType $walletType
+     */
+    private function createBorrowerWallet(Clients $client, WalletType $walletType)
+    {
+        $wallet = new Wallet();
+        $wallet->setIdClient($client);
+        $wallet->setIdType($walletType);
+        $wallet->setAvailableBalance(0);
+        $this->em->persist($wallet);
         $this->em->flush();
     }
 }

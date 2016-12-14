@@ -10,6 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
@@ -31,10 +35,10 @@ class ProjectRequestController extends Controller
     const PAGE_ROUTE_RECOVERY           = 'project_request_recovery';
     const PAGE_ROUTE_STAND_BY           = 'project_request_stand_by';
 
-    /** @var \clients */
+    /** @var Clients */
     private $client;
 
-    /** @var \companies */
+    /** @var Companies */
     private $company;
 
     /** @var \projects */
@@ -162,46 +166,45 @@ class ProjectRequestController extends Controller
             );
         }
 
-        $this->client = $entityManager->getRepository('clients');
+        /** @var \clients $clientRepository */
+        $clientRepository = $entityManager->getRepository('clients');
 
-        if ($this->client->existEmail($email)) {
+        if ($clientRepository->existEmail($email)) {
             $email .= '-' . time();
         }
 
-        $this->client->email     = $email;
-        $this->client->id_langue = 'fr';
-        $this->client->status    = \clients::STATUS_ONLINE;
-
         $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
-        $this->client->source       = $sourceManager->getSource(SourceManager::SOURCE1);
-        $this->client->source2      = $sourceManager->getSource(SourceManager::SOURCE2);
-        $this->client->source3      = $sourceManager->getSource(SourceManager::SOURCE3);
-        $this->client->slug_origine = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
+        $this->client = new Clients();
+        $this->client
+            ->setEmail($email)
+            ->setIdLangue('fr')
+            ->setStatus(\clients::STATUS_ONLINE)
+            ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
+            ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
+            ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
+            ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-        if (empty($this->client->create())) {
+
+        $siret = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
+        $this->company = new Companies();
+        $this->company->setSiren($siren)
+            ->setSiret($siret)
+            ->setStatusAdresseCorrespondance(1)
+            ->setEmailDirigeant($email)
+            ->setEmailFacture($email);
+
+        $this->get('unilend.service.client_manager')->createClient($this->client, new ClientsAdresses(), WalletType::BORROWER, $this->company);
+
+        if (empty($this->client->getIdClient())) {
             return $this->redirect($request->headers->get('referer'));
         } else{
-            $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $this->client->email);
-            $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $this->client->id_client);
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $this->client->getEmail());
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $this->client->getIdClient());
         }
 
-        /** @var \clients_adresses $address */
-        $address = $entityManager->getRepository('clients_adresses');
-        $address->id_client = $this->client->id_client;
-        $address->create();
-
-        $this->company = $entityManager->getRepository('companies');
-        $this->company->id_client_owner               = $this->client->id_client;
-        $this->company->siren                         = $siren;
-        $this->company->siret                         = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
-        $this->company->status_adresse_correspondance = 1;
-        $this->company->email_dirigeant               = $email;
-        $this->company->email_facture                 = $email;
-        $this->company->create();
-
         $this->project = $entityManager->getRepository('projects');
-        $this->project->id_company                           = $this->company->id_company;
+        $this->project->id_company                           = $this->company->getIdCompany();
         $this->project->amount                               = $amount;
         $this->project->ca_declara_client                    = 0;
         $this->project->resultat_exploitation_declara_client = 0;
@@ -272,7 +275,7 @@ class ProjectRequestController extends Controller
 
             /** @var \companies_bilans $companyAccount */
             $companyAccount = $entityManager->getRepository('companies_bilans');
-            $balanceSheets  = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+            $balanceSheets  = $companyAccount->select('id_company = ' . $this->company->getIdCompany(), 'cloture_exercice_fiscal DESC', 0, 1);
 
             if (isset($balanceSheets[0]['id_bilan'])) {
                 $this->project->id_dernier_bilan = $balanceSheets[0]['id_bilan'];
@@ -285,7 +288,7 @@ class ProjectRequestController extends Controller
 
                 $logger->error(
                     $exception->getMessage(),
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->getSiren()]
                 );
 
                 mail($alertEmail, '[ALERTE] Altares is down', 'Date ' . date('Y-m-d H:i:s') . '. ' . $exception->getMessage());
@@ -355,12 +358,12 @@ class ProjectRequestController extends Controller
             'errors' => isset($session['errors']) ? $session['errors'] : [],
             'values' => [
                 'contact' => [
-                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $this->client->civilite,
-                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $this->client->nom,
-                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $this->client->prenom,
-                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($this->client->email),
-                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $this->client->telephone,
-                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->fonction
+                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $this->client->getCivilite(),
+                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $this->client->getNom(),
+                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $this->client->getPrenom(),
+                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($this->client->getEmail()),
+                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $this->client->getTelephone(),
+                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->getFonction()
                 ],
                 'manager' => isset($values['manager']) ? $values['manager'] : (isset($advisorClient) ? 'no' : 'yes'),
                 'advisor' => [
@@ -380,8 +383,8 @@ class ProjectRequestController extends Controller
         ];
 
         $template['project'] = [
-            'company_name'           => $this->company->name,
-            'siren'                  => $this->company->siren,
+            'company_name'           => $this->company->getName(),
+            'siren'                  => $this->company->getSiren(),
             'amount'                 => $this->project->amount,
             'averageFundingDuration' => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
             'hash'                   => $this->project->hash
@@ -480,27 +483,16 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $this->project->hash]);
         }
 
+        $this->saveContactDetails($request->request->get('contact')['email'],
+            $request->request->get('contact')['civility'],
+            $request->request->get('contact')['firstname'],
+            $request->request->get('contact')['lastname'],
+            $request->request->get('contact')['function'],
+            $request->request->get('contact')['mobile']
+        );
+
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-        $email   = $request->request->get('contact')['email'];
-
-        if ($this->client->existEmail($email) && $this->removeEmailSuffix($this->client->email) !== $email) {
-            $email = $email . '-' . time();
-        }
-
-        $this->client->email     = $email;
-        $this->client->civilite  = $request->request->get('contact')['civility'];
-        $this->client->prenom    = $request->request->get('contact')['firstname'];
-        $this->client->nom       = $request->request->get('contact')['lastname'];
-        $this->client->fonction  = $request->request->get('contact')['function'];
-        $this->client->telephone = $request->request->get('contact')['mobile'];
-        $this->client->id_langue = 'fr';
-        $this->client->slug      = $ficelle->generateSlug($this->client->prenom . '-' . $this->client->nom);
-        $this->client->update();
-
-        $this->company->email_dirigeant = $email;
-        $this->company->email_facture   = $email;
-        $this->company->update();
 
         if ('no' === $request->request->get('manager')) {
             /** @var \prescripteurs $advisor */
@@ -564,11 +556,11 @@ class ProjectRequestController extends Controller
             $tosAcceptation = $entityManager->getRepository('acceptations_legal_docs');
             $settings->get('Lien conditions generales depot dossier', 'type');
 
-            if ($tosAcceptation->get($settings->value, 'id_client = ' . $this->client->id_client . ' AND id_legal_doc')) {
+            if ($tosAcceptation->get($settings->value, 'id_client = ' . $this->client->getIdClient() . ' AND id_legal_doc')) {
                 $tosAcceptation->update();
             } else {
                 $tosAcceptation->id_legal_doc = $settings->value;
-                $tosAcceptation->id_client    = $this->client->id_client;
+                $tosAcceptation->id_client    = $this->client->getIdClient();
                 $tosAcceptation->create();
             }
         }
@@ -653,7 +645,7 @@ class ProjectRequestController extends Controller
         $altaresCapitalStock     = 0;
         $altaresOperationIncomes = 0;
         $altaresRevenue          = 0;
-        $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+        $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->getIdCompany(), 'cloture_exercice_fiscal DESC', 0, 1);
 
         if (false === empty($annualAccounts)) {
             $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
@@ -668,7 +660,7 @@ class ProjectRequestController extends Controller
 
         $template['form']['errors'] = isset($session['errors']) ? $session['errors'] : [];
 
-        if (empty($this->company->rcs)) {
+        if (empty($this->company->getRcs())) {
             $template['form']['values'] = [
                 'ag_2035' => isset($values['ag_2035']) ? $values['ag_2035'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
                 ];
@@ -719,7 +711,7 @@ class ProjectRequestController extends Controller
         $values = is_array($values) ? $values : [];
         $files  = $request->files->all();
 
-        if (empty($this->company->rcs)) {
+        if (empty($this->company->getRcs())) {
             if (false === isset($values['ag_2035']) || $values['ag_2035'] === '') {
                 $errors['ag_2035'] = true;
             }
@@ -763,7 +755,7 @@ class ProjectRequestController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        if (empty($this->company->rcs)) {
+        if (empty($this->company->getRcs())) {
             $this->project->ca_declara_client = $values['ag_2035'];
             $updateDeclaration = true;
         } else {
@@ -780,7 +772,7 @@ class ProjectRequestController extends Controller
             $altaresCapitalStock     = 0;
             $altaresRevenue          = 0;
             $altaresOperationIncomes = 0;
-            $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+            $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->getIdCompany(), 'cloture_exercice_fiscal DESC', 0, 1);
 
             if (false === empty($annualAccounts)) {
                 $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
@@ -919,12 +911,12 @@ class ProjectRequestController extends Controller
             'errors' => isset($session['errors']) ? $session['errors'] : [],
             'values' => [
                 'contact' => [
-                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $this->client->civilite,
-                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $this->client->nom,
-                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $this->client->prenom,
-                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($this->client->email),
-                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $this->client->telephone,
-                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->fonction
+                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $this->client->getCivilite(),
+                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $this->client->getNom(),
+                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $this->client->getPrenom(),
+                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($this->client->getEmail()),
+                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $this->client->getTelephone(),
+                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->getFonction()
                 ],
                 'project' => [
                     'duration' => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period
@@ -933,8 +925,8 @@ class ProjectRequestController extends Controller
         ];
 
         $template['project'] = [
-            'company_name' => $this->company->name,
-            'siren'        => $this->company->siren,
+            'company_name' => $this->company->getName(),
+            'siren'        => $this->company->getSiren(),
             'amount'       => $this->project->amount,
             'hash'         => $this->project->hash
         ];
@@ -1004,37 +996,23 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $this->project->hash]);
         }
 
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-        $email   = $request->request->get('contact')['email'];
-
-        if ($this->client->existEmail($email) && $this->removeEmailSuffix($this->client->email) !== $email) {
-            $email = $email . '-' . time();
-        }
-
-        $this->client->email     = $email;
-        $this->client->civilite  = $request->request->get('contact')['civility'];
-        $this->client->prenom    = $request->request->get('contact')['firstname'];
-        $this->client->nom       = $request->request->get('contact')['lastname'];
-        $this->client->fonction  = $request->request->get('contact')['function'];
-        $this->client->telephone = $request->request->get('contact')['mobile'];
-        $this->client->id_langue = 'fr';
-        $this->client->slug      = $ficelle->generateSlug($this->client->prenom . '-' . $this->client->nom);
-        $this->client->update();
-
-        $this->company->email_dirigeant = $email;
-        $this->company->email_facture   = $email;
-        $this->company->update();
+        $this->saveContactDetails($request->request->get('contact')['email'],
+            $request->request->get('contact')['civility'],
+            $request->request->get('contact')['firstname'],
+            $request->request->get('contact')['lastname'],
+            $request->request->get('contact')['function'],
+            $request->request->get('contact')['mobile']
+        );
 
         /** @var \acceptations_legal_docs $tosAcceptation */
         $tosAcceptation = $entityManager->getRepository('acceptations_legal_docs');
         $settings->get('Lien conditions generales depot dossier', 'type');
 
-        if ($tosAcceptation->get($settings->value, 'id_client = ' . $this->client->id_client . ' AND id_legal_doc')) {
+        if ($tosAcceptation->get($settings->value, 'id_client = ' . $this->client->getIdClient() . ' AND id_legal_doc')) {
             $tosAcceptation->update();
         } else {
             $tosAcceptation->id_legal_doc = $settings->value;
-            $tosAcceptation->id_client    = $this->client->id_client;
+            $tosAcceptation->id_client    = $this->client->getIdClient();
             $tosAcceptation->create();
         }
 
@@ -1077,12 +1055,12 @@ class ProjectRequestController extends Controller
             'form'    => [
                 'errors' => isset($session['errors']) ? $session['errors'] : [],
                 'values' => [
-                    'civility'  => isset($values['civility']) ? $values['civility'] : $this->client->civilite,
-                    'lastname'  => isset($values['lastname']) ? $values['lastname'] : $this->client->nom,
-                    'firstname' => isset($values['firstname']) ? $values['firstname'] : $this->client->prenom,
-                    'email'     => isset($values['email']) ? $values['email'] : $this->removeEmailSuffix($this->client->email),
-                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $this->client->telephone,
-                    'function'  => isset($values['function']) ? $values['function'] : $this->client->fonction
+                    'civility'  => isset($values['civility']) ? $values['civility'] : $this->client->getCivilite(),
+                    'lastname'  => isset($values['lastname']) ? $values['lastname'] : $this->client->getNom(),
+                    'firstname' => isset($values['firstname']) ? $values['firstname'] : $this->client->getPrenom(),
+                    'email'     => isset($values['email']) ? $values['email'] : $this->removeEmailSuffix($this->client->getEmail()),
+                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $this->client->getTelephone(),
+                    'function'  => isset($values['function']) ? $values['function'] : $this->client->getFonction()
                 ]
             ],
             'project' => [
@@ -1141,27 +1119,13 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
         }
 
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-        $email   = $request->request->get('email');
-
-        if ($this->client->existEmail($email) && $this->removeEmailSuffix($this->client->email) !== $email) {
-            $email = $email . '-' . time();
-        }
-
-        $this->client->email     = $email;
-        $this->client->civilite  = $request->request->get('civility');
-        $this->client->prenom    = $request->request->get('firstname');
-        $this->client->nom       = $request->request->get('lastname');
-        $this->client->fonction  = $request->request->get('function');
-        $this->client->telephone = $request->request->get('mobile');
-        $this->client->id_langue = 'fr';
-        $this->client->slug      = $ficelle->generateSlug($this->client->prenom . '-' . $this->client->nom);
-        $this->client->update();
-
-        $this->company->email_dirigeant = $email;
-        $this->company->email_facture   = $email;
-        $this->company->update();
+        $this->saveContactDetails($request->request->get('email'),
+            $request->request->get('civility'),
+            $request->request->get('firstname'),
+            $request->request->get('lastname'),
+            $request->request->get('function'),
+            $request->request->get('mobile')
+        );
 
         return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $this->project->hash]);
     }
@@ -1444,8 +1408,6 @@ class ProjectRequestController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
 
@@ -1458,7 +1420,7 @@ class ProjectRequestController extends Controller
             $advisor = $entityManager->getRepository('prescripteurs');
 
             $advisor->get($this->project->id_prescripteur);
-            $client->get($advisor->id_client);
+            $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($advisor->id_client);
         } else {
             $client = $this->client;
         }
@@ -1470,8 +1432,8 @@ class ProjectRequestController extends Controller
         $twitterLink = $settings->value;
 
         $keywords = [
-            'prenom'               => $client->prenom,
-            'raison_sociale'       => $this->company->name,
+            'prenom'               => $client->getPrenom(),
+            'raison_sociale'       => $this->company->getName(),
             'lien_reprise_dossier' => $this->generateUrl('project_request_recovery', ['hash' => $this->project->hash], UrlGeneratorInterface::ABSOLUTE_URL),
             'lien_fb'              => $facebookLink,
             'lien_tw'              => $twitterLink,
@@ -1480,7 +1442,7 @@ class ProjectRequestController extends Controller
             'url'                  => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default')
         ];
 
-        $sRecipient = $client->email;
+        $sRecipient = $client->getEmail();
         $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -1510,7 +1472,7 @@ class ProjectRequestController extends Controller
             $aReplacements = [
                 '[ID_PROJET]'      => $this->project->id_project,
                 '[LIEN_BO_PROJET]' => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin') . '/dossiers/edit/' . $this->project->id_project,
-                '[RAISON_SOCIALE]' => $this->company->name,
+                '[RAISON_SOCIALE]' => $this->company->getName(),
                 '[SURL]'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default')
             ];
 
@@ -1573,11 +1535,8 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute('home_borrower');
         }
 
-        $this->client  = $entityManager->getRepository('clients');
-        $this->company = $entityManager->getRepository('companies');
-
-        $this->company->get($this->project->id_company);
-        $this->client->get($this->company->id_client_owner);
+        $this->company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->project->id_company);
+        $this->client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
 
         if (self::PAGE_ROUTE_EMAILS === $route) {
             return null;
@@ -1652,5 +1611,39 @@ class ProjectRequestController extends Controller
     private function removeEmailSuffix($email)
     {
         return preg_replace('/^(.*)-[0-9]+$/', '$1', $email);
+    }
+
+    /**
+     * @param string $email
+     * @param string $formOfAddress
+     * @param string $firstName
+     * @param string $lastName
+     * @param string $position
+     * @param string $mobilePhone
+     */
+    private function saveContactDetails($email, $formOfAddress, $firstName, $lastName, $position, $mobilePhone)
+    {
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        /** @var \clients $clientRepository */
+        $clientRepository = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        if ($clientRepository->existEmail($email) && $this->removeEmailSuffix($this->client->getEmail()) !== $email) {
+            $email = $email . '-' . time();
+        }
+
+        $this->client->setEmail($email)
+            ->setCivilite($formOfAddress)
+            ->setPrenom($firstName)
+            ->setNom($lastName)
+            ->setFonction($position)
+            ->setTelephone($mobilePhone)
+            ->setIdLangue('fr')
+            ->setSlug($ficelle->generateSlug($firstName . '-' . $lastName));
+
+        $this->company->setEmailDirigeant($email)
+            ->setEmailFacture($email);
+
+        $this->get('doctrine.orm.entity_manager')->flush();
     }
 }
