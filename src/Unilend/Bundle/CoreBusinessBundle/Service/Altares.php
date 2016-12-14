@@ -2,7 +2,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Doctrine\ORM\EntityManager;
 use Unilend\librairies\CacheKeys;
 
 class Altares
@@ -20,9 +22,7 @@ class Altares
 
     const THRESHOLD_SCORE = '3';
 
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManagerSimulator */
     private $entityManager;
     /** @var CompanyBalanceSheetManager */
     private $companyBalanceSheetManager;
@@ -30,14 +30,22 @@ class Altares
     private $projectManager;
     /** @var CacheItemPoolInterface */
     private $cacheItemPool;
+    /** @var EntityManager */
+    private $em;
 
-    public function __construct(EntityManager $entityManager, CompanyBalanceSheetManager $companyBalanceSheetManager, ProjectManager $projectManager, CacheItemPoolInterface $cacheItemPool)
-    {
+    public function __construct(
+        EntityManagerSimulator $entityManager,
+        CompanyBalanceSheetManager $companyBalanceSheetManager,
+        ProjectManager $projectManager,
+        CacheItemPoolInterface $cacheItemPool,
+        EntityManager $em
+    ) {
         ini_set('default_socket_timeout', 60);
         $this->entityManager              = $entityManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
         $this->projectManager             = $projectManager;
-        $this->cacheItemPool             = $cacheItemPool;
+        $this->cacheItemPool              = $cacheItemPool;
+        $this->em                         = $em;
     }
 
     /**
@@ -92,30 +100,51 @@ class Altares
 
     /**
      * Set main data of the given company according to Altares response
-     * @param \companies $oCompany
+     * @param \companies| Companies $oCompany
      */
-    public function setCompanyData(\companies &$oCompany)
+    public function setCompanyData(&$oCompany)
     {
-        $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
 
-        $oCompany->phone = isset($oEligibilityInfo->siege->telephone) ? str_replace(' ', '', $oEligibilityInfo->siege->telephone) : '';
-
-        if (isset($oEligibilityInfo->identite) && is_object($oEligibilityInfo->identite)) {
-            $oCompany->name          = $oEligibilityInfo->identite->raisonSociale;
-            $oCompany->forme         = $oEligibilityInfo->identite->formeJuridique;
-            $oCompany->capital       = $oEligibilityInfo->identite->capital;
-            $oCompany->code_naf      = $oEligibilityInfo->identite->naf5EntreCode;
-            $oCompany->libelle_naf   = $oEligibilityInfo->identite->naf5EntreLibelle;
-            $oCompany->adresse1      = $oEligibilityInfo->identite->rue;
-            $oCompany->city          = $oEligibilityInfo->identite->ville;
-            $oCompany->zip           = $oEligibilityInfo->identite->codePostal;
-            $oCompany->siret         = $oEligibilityInfo->identite->siret;
-            $oCompany->date_creation = substr($oEligibilityInfo->identite->dateCreation, 0, 10);
-            $oCompany->rcs           = $oEligibilityInfo->identite->rcs;
+        if ($oCompany instanceof \companies) {
+            $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
+            $phone = isset($oEligibilityInfo->siege->telephone) ? str_replace(' ', '', $oEligibilityInfo->siege->telephone) : '';
+            if (isset($oEligibilityInfo->identite) && is_object($oEligibilityInfo->identite)) {
+                $oCompany->phone         = $phone;
+                $oCompany->name          = $oEligibilityInfo->identite->raisonSociale;
+                $oCompany->forme         = $oEligibilityInfo->identite->formeJuridique;
+                $oCompany->capital       = $oEligibilityInfo->identite->capital;
+                $oCompany->code_naf      = $oEligibilityInfo->identite->naf5EntreCode;
+                $oCompany->libelle_naf   = $oEligibilityInfo->identite->naf5EntreLibelle;
+                $oCompany->adresse1      = $oEligibilityInfo->identite->rue;
+                $oCompany->city          = $oEligibilityInfo->identite->ville;
+                $oCompany->zip           = $oEligibilityInfo->identite->codePostal;
+                $oCompany->siret         = $oEligibilityInfo->identite->siret;
+                $oCompany->date_creation = substr($oEligibilityInfo->identite->dateCreation, 0, 10);
+                $oCompany->rcs           = $oEligibilityInfo->identite->rcs;
+                $oCompany->update();
+            }
         }
 
-        $oCompany->update();
+        if ($oCompany instanceof Companies){
+            $oEligibilityInfo = $this->getEligibility($oCompany->getSiren())->myInfo;
+            $phone = isset($oEligibilityInfo->siege->telephone) ? str_replace(' ', '', $oEligibilityInfo->siege->telephone) : '';
+            $creationDate = new \DateTime(substr($oEligibilityInfo->identite->dateCreation, 0, 10));
+            $oCompany->setPhone($phone)
+                ->setName($oEligibilityInfo->identite->raisonSociale)
+                ->setForme($oEligibilityInfo->identite->formeJuridique)
+                ->setCapital($oEligibilityInfo->identite->capital)
+                ->setCodeNaf($oEligibilityInfo->identite->naf5EntreCode)
+                ->setLibelleNaf($oEligibilityInfo->identite->naf5EntreLibelle)
+                ->setAdresse1($oEligibilityInfo->identite->rue)
+                ->setCity($oEligibilityInfo->identite->ville)
+                ->setZip($oEligibilityInfo->identite->codePostal)
+                ->setSiret($oEligibilityInfo->identite->siret)
+                ->setDateCreation($creationDate)
+                ->setRcs($oEligibilityInfo->identite->rcs);
+            $this->em->flush();
+        }
     }
+
 
     /**
      * Set Altares notation of project
@@ -194,14 +223,27 @@ class Altares
 
     /**
      * Set company balance sheets
-     * @param \companies $oCompany
+     * @param \companies | Companies $oCompany
      * @param bool $bRecalculate
      */
-    public function setCompanyBalance(\companies &$oCompany, $bRecalculate = true)
+    public function setCompanyBalance(&$oCompany, $bRecalculate = true)
     {
         $taxFormType = $this->companyBalanceSheetManager->detectTaxFormType($oCompany);
+        $siren       = '';
+        $companyId   = '';
+
+        if ($oCompany instanceof \companies) {
+            $siren  = $oCompany->siren;
+            $companyId = $oCompany->id_company;
+        }
+
+        if ($oCompany instanceof Companies) {
+            $siren = $oCompany->getSiren();
+            $companyId = $oCompany->getIdCompany();
+        }
+
         if ($taxFormType) {
-            $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
+            $oBalanceSheets = $this->getBalanceSheets($siren);
             if (isset($oBalanceSheets->myInfo->bilans) && (is_array($oBalanceSheets->myInfo->bilans) || is_object($oBalanceSheets->myInfo->bilans)) ) {
                 /** @var \companies_actif_passif $oCompanyAssetsDebts */
                 $oCompanyAssetsDebts = $this->entityManager->getRepository('companies_actif_passif');
@@ -222,10 +264,10 @@ class Altares
 
                 foreach ($balances as $oBalanceSheet) {
                     $aCompanyBalances = array();
-                    $aAnnualAccounts  = $oCompanyAnnualAccounts->select('id_company = ' . $oCompany->id_company . ' AND cloture_exercice_fiscal = "' . $oBalanceSheet->dateClotureN . '"');
+                    $aAnnualAccounts  = $oCompanyAnnualAccounts->select('id_company = ' . $companyId . ' AND cloture_exercice_fiscal = "' . $oBalanceSheet->dateClotureN . '"');
 
                     if (empty($aAnnualAccounts)) {
-                        $oCompanyAnnualAccounts->id_company               = $oCompany->id_company;
+                        $oCompanyAnnualAccounts->id_company               = $companyId;
                         $oCompanyAnnualAccounts->id_company_tax_form_type = $taxFormType->id_type;
                         $oCompanyAnnualAccounts->cloture_exercice_fiscal  = $oBalanceSheet->dateClotureN;
                         $oCompanyAnnualAccounts->duree_exercice_fiscal    = $oBalanceSheet->dureeN;
