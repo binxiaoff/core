@@ -1,0 +1,45 @@
+<tr id="loan-{{ loan.id }}-details" class="table-myloans-view-details ui-details-open" data-parent="#loan-{{ loan.id }}" data-loan-id="{{ loan.id }}">
+    <td colspan="8" class="table-myloans-item-details-tabs tabs">
+        <ul class="nav nav-tab-anchors">
+            <li role="presentation">
+                <a href="#loan-{{ loan.id }}-details-docs" role="tab" data-toggle="tab" aria-expanded="false">
+                    {% trans %} lender-operations_info-tab-documents {% endtrans %}
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#loan-{{ loan.id }}-details-activity" role="tab" data-toggle="tab" aria-expanded="false">
+                    {% trans %} lender-operations_info-tab-activity {% endtrans %}
+                    {% if loan.unread_messages_count > 0 %}
+                        <span class="pip {% if loan.unread_messages_count > 9 %} pip-has-many {% endif %}">
+                            <span class="pip-number">{{ loan.unread_messages_count }}</span>
+                        </span>
+                    {% endif %}
+                </a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <article id="loan-{{ loan.id }}-details-docs" role="tabpanel" class="table-myloans-item-details-docs tab-pane">
+                <ul class="list-loans">
+                    {% for i, loanItem in loan.loans %}
+                        <li class="list-loan-item">
+                            <div class="list-loan-item-inner">
+                                <div class="list-loan-item-info">
+                                    <div class="list-loan-item-amount">{{ loanItem.amount|localizedcurrency('EUR') }}</div>
+                                    <div class="list-loan-item-rate">{{ loanItem.rate|localizednumber }}&nbsp;<sup>%</sup></div>
+                                </div>
+                                <div class="list-loan-item-docs">
+                                    {% for j, doc in loanItem.documents %}
+                                        <a href="{{ doc.url }}" title="{{ doc.label|e('html_attr') }}" class="loan-doc loan-doc-{{ doc.type }}" data-toggle="tooltip"><span class="sr-only">{{ doc.label }}</span></a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </article><!-- /.table-myloans-item-details-docs -->
+            <article id="loan-{{ loan.id }}-details-activity" role="tabpanel" class="table-myloans-item-details-activity tab-pane">
+                {% include '/pages/lender_operations/my_loans_details_activity.html.twig' %}
+            </article><!-- /.table-myloans-item-details-activity -->
+        </div>
+    </td>
+</tr><!-- .table-myloans-item-details -->

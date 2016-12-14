@@ -321,6 +321,59 @@
   }
 }
 
+// Tab Anchors (myloans details docs/activity)
+.nav-tab-anchors {
+  @include clearfix;
+  font-size: 14px;
+  line-height: 1.3em;
+
+  > li {
+    float: left;
+    margin-right: 15px;
+
+    > a {
+      padding-left: 0;
+      padding-right: 0;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      border: solid 3px transparent;
+      border-top-width: 0;
+      border-right-width: 0;
+      border-left-width: 0;
+      border-radius: 0;
+
+      @include link-states(
+          $link: (
+              color: $c-t1,
+              text-decoration: none
+          ),
+          $hover: (
+              color: $c-p1,
+              text-decoration: none
+          ),
+          $active: (
+              color: $c-p2,
+              text-decoration: none
+          )
+      );
+    }
+
+    &.active {
+      > a {
+        border-bottom-color: $c-p1;
+      }
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    font-size: 16px;
+  }
+}
+
 
 // Steps (emprunter sim)
 // ----------------------------
