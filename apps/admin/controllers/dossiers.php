@@ -1832,7 +1832,7 @@ class dossiersController extends bootstrap
                                     $message->setTo($this->clients->email);
                                     $mailer = $this->get('mailer');
                                     $mailer->send($message);
-                                } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, \clientgest, 'immediatement') == true) {
+                                } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement') == true) {
                                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                                     $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                     $this->clients_gestion_mails_notif->update();
