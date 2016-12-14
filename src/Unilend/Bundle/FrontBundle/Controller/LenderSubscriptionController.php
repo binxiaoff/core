@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
@@ -653,6 +654,8 @@ class LenderSubscriptionController extends Controller
         if (false === $response instanceof \clients){
             return $response;
         }
+        /** @var ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
@@ -706,7 +709,6 @@ class LenderSubscriptionController extends Controller
         } else {
             $lenderAccount->bic               = trim(strtoupper($post['bic']));
             $lenderAccount->iban              = trim(strtoupper(str_replace(' ', '', $post['iban'])));
-            $lenderAccount->cni_passeport     = 1;
             $lenderAccount->motif             = $client->getLenderPattern($client->id_client);
             $lenderAccount->origine_des_fonds = $post['funds_origin'];
             $lenderAccount->update();
@@ -714,9 +716,7 @@ class LenderSubscriptionController extends Controller
             $client->etape_inscription_preteur = 2;
             $client->update();
 
-            /** @var \clients_status_history $clientStatusHistory */
-            $clientStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('clients_status_history');
-            $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client);
+            $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($client, $post);
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
@@ -934,12 +934,8 @@ class LenderSubscriptionController extends Controller
                 $transaction->serialize_payline = serialize($result);
                 $transaction->update();
 
-                if (isset($result)) {
-                    if ($result['result']['code'] == '00000') {
-                        return $this->redirect($result['redirectURL']);
-                    } elseif (isset($result)) {
-                        mail('alertesit@unilend.fr', 'unilend erreur payline', 'alimentation preteur (client : ' . $client->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
-                    }
+                if (isset($result) && $result['result']['code'] == '00000') {
+                    return $this->redirect($result['redirectURL']);
                 }
             }
         }
@@ -1037,15 +1033,24 @@ class LenderSubscriptionController extends Controller
      */
     public function capitalLandingPageAction()
     {
-        /** @var ContentManager $contentManager */
-        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+        try {
+            $xmlContent = @file_get_contents('http://www.capital.fr/wrapper-unend.xml');
 
-        $xml     = new \SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
-        $content = explode('<!--CONTENT_ZONE-->', (string) $xml->content);
+            if (false === $xmlContent) {
+                throw new \Exception('Could not load remote XML');
+            }
 
-        $header = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
-        $footer = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-        return $this->render('pages/lender_subscription/partners/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $contentManager->getFooterPartners()]);
+            /** @var ContentManager $contentManager */
+            $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+            $xml            = new \SimpleXMLElement($xmlContent);
+            $content        = explode('<!--CONTENT_ZONE-->', (string) $xml->content);
+            $header         = str_replace(['<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'], ['Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'], $content[0]);
+            $footer         = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
+
+            return $this->render('pages/lender_subscription/partners/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $contentManager->getFooterPartners()]);
+        } catch (\Exception $exception) {
+            return $this->redirectToRoute('lender_landing_page');
+        }
     }
 
     /**
@@ -1148,11 +1153,10 @@ class LenderSubscriptionController extends Controller
                 }
 
                 $client->get($this->getUser()->getClientId());
-                /** @var \clients_status $clientStatus */
-                $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
-                $clientStatus->getLastStatut($client->id_client);
+                /** @var ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
-                if ($clientStatus->status >= \clients_status::MODIFICATION){
+                if ($clientStatusManager->getLastClientStatus($client) >= \clients_status::MODIFICATION){
                     return $this->redirectToRoute('lender_dashboard');
                 }
 
@@ -1236,8 +1240,8 @@ class LenderSubscriptionController extends Controller
         $result = $attachmentHelper->attachmentExists($attachments, $lenderAccountId, \attachment::LENDER, $attachmentType);
         if (is_numeric($result)) {
             $greenPointAttachment->get($result, 'id_attachment');
-            $greenPointAttachment->revalidate   = 1;
-            $greenPointAttachment->final_status = 0;
+            $greenPointAttachment->revalidate   = \greenpoint_attachment::REVALIDATE_YES;
+            $greenPointAttachment->final_status = \greenpoint_attachment::FINAL_STATUS_NO;
             $greenPointAttachment->update();
         }
 

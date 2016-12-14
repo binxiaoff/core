@@ -7,10 +7,11 @@ classNames: 'user-preter-balance'
 
 {% block dashboardContent %}
     <div class="dashboard-tabs tabs">
-        {{ include('pages/lender_wallet/partials/tabnavigation.html.twig') }}
+        {% if showNavigation %}
+            {{ include('pages/lender_wallet/partials/tabnavigation.html.twig') }}
+        {% endif %}
 
         <div class="dashboard-tabs-content tab-content">
-
             <article id="balance-deposit" class="tab-pane dashboard-tab-pane active ui-toggle-group" aria-multiselectable="true">
                 {% if false == depositResult %}
                     <section id="balance-deposit-1" class="panel collapse in" aria-expanded="true">

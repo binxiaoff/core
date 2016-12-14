@@ -67,4 +67,34 @@ class greenpoint_attachment_detail extends greenpoint_attachment_detail_crud
         $result = $this->bdd->query('SELECT * FROM `greenpoint_attachment_detail` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_assoc($result) > 0);
     }
+
+    /**
+     * @param int $clientId
+     * @param int $documentType
+     * @return array
+     */
+    public function getIdentityData($clientId, $documentType)
+    {
+        if (false === in_array($documentType, [\attachment_type::CNI_PASSPORTE, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT])) {
+            return [];
+        }
+        $sql = '
+            SELECT 
+              gad.identity_birthdate,
+              gad.identity_civility,
+              gad.identity_document_number,
+              gad.identity_document_type_id,
+              gad.identity_expiration_date,
+              gad.identity_issuing_authority,
+              gad.identity_issuing_country,
+              gad.identity_nationality
+            FROM greenpoint_attachment_detail gad
+            INNER JOIN greenpoint_attachment ga ON ga.id_greenpoint_attachment = gad.id_greenpoint_attachment
+            INNER JOIN attachment a ON a.id = ga.id_attachment AND a.id_type =  ' . $documentType . '
+            WHERE ga.id_client = :id_client
+        ';
+        /** @var \Doctrine\DBAL\Driver\Statement $statement */
+        $statement = $this->bdd->executeQuery($sql, ['id_client' => $clientId], ['id_client' => \PDO::PARAM_INT]);
+        return $statement->fetch(\PDO::FETCH_ASSOC);
+    }
 }

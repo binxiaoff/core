@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use CL\Slack\Payload\ChatPostMessagePayload;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -92,7 +93,14 @@ EOF
                             ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $company->siren]
                         );
 
-                        mail($alertEmail, '[ALERTE] Altares is down', 'Date ' . date('Y-m-d H:i:s') . '. ' . $exception->getMessage());
+                        $payload = new ChatPostMessagePayload();
+                        $payload->setChannel('#it-monitoring');
+                        $payload->setText("Altares is down  :skull_and_crossbones:\n> " . $exception->getMessage());
+                        $payload->setUsername('Altares');
+                        $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
+                        $payload->setAsUser(false);
+
+                        $this->get('cl_slack.api_client')->send($payload);
                     }
                 }
 
@@ -100,7 +108,14 @@ EOF
                     $settingsAltaresStatus->value = 1;
                     $settingsAltaresStatus->update();
 
-                    mail($alertEmail, '[INFO] ALTARES is up', 'Date ' . date('Y-m-d H:i:s') . '. Altares is up now.');
+                    $payload = new ChatPostMessagePayload();
+                    $payload->setChannel('#it-monitoring');
+                    $payload->setText('Altares is up  :white_check_mark:');
+                    $payload->setUsername('Altares');
+                    $payload->setIconUrl($this->getContainer()->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
+                    $payload->setAsUser(false);
+
+                    $this->getContainer()->get('cl_slack.api_client')->send($payload);
                 }
 
                 $output->writeln('Project id :' . $project->id_project . '. status : ' . $project->status);

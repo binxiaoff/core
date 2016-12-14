@@ -133,10 +133,10 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
     {
         $query = '
               SELECT
-                ROUND(SUM(t_interets.montant + (SELECT SUM(amount) FROM tax WHERE tax.id_transaction = t_interets.id_transaction)) /100, 2) AS sum53,
+                ROUND(SUM(IFNULL(t_interets.montant + (SELECT SUM(amount) FROM tax WHERE tax.id_transaction = t_interets.id_transaction), t_interets.montant)) /100, 2) AS sum53,
                 ROUND(SUM(retenues_source.amount)/ 100, 2) AS sum2,
                 ROUND(SUM(prelevements_obligatoires.amount)/ 100, 2) AS sum54,
-                ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays = 1, t_interets.montant + (SELECT SUM(tax.amount) FROM tax WHERE id_transaction = t_interets.id_transaction), 0))/100, 2) AS sum66,
+                ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND (tlih.id_pays = 1 OR tlih.id_pays = NULL OR tlih.id_pays IS NULL OR tlih.id_pays = \'\' ), t_interets.montant + (SELECT SUM(tax.amount) FROM tax WHERE id_transaction = t_interets.id_transaction), 0))/100, 2) AS sum66,
                 ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays IN (6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_interets.montant, 0))/100, 2) AS sum81,
                 ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays IN (6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_capital.montant, 0))/100, 2) AS sum82,
                 ROUND(SUM(IF(t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ', t_capital.montant/0.844, t_capital.montant))/100, 2) AS sum118
@@ -253,7 +253,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                                             SELECT
                                               t.id_client,
                                               t.id_transaction,
-                                              (SELECT id_pays FROM lenders_imposition_history WHERE id_lender = la.id_lender_account AND added <= t.date_transaction ORDER BY added DESC LIMIT 1) AS id_pays
+                                              (SELECT lih.id_pays FROM lenders_imposition_history lih INNER JOIN pays_v2 ON lih.id_pays = pays_v2.id_pays WHERE id_lender = la.id_lender_account AND added <= t.date_transaction ORDER BY added DESC LIMIT 1) AS id_pays
                                             FROM temporary_lender_repayment_transactions t
                                               INNER JOIN lenders_accounts la ON t.id_client = la.id_client_owner
                                             WHERE type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ' AND t.id_client = ' . $clients->id_client);

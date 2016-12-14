@@ -615,8 +615,6 @@ class ajaxController extends bootstrap
 
     public function _loadMouvTransac()
     {
-        $this->autoFireView = true;
-
         $this->transactions = $this->loadData('transactions');
         $this->clients      = $this->loadData('clients');
         $this->echeanciers  = $this->loadData('echeanciers');
@@ -628,20 +626,28 @@ class ajaxController extends bootstrap
             $translator = $this->get('translator');
 
             $this->lesStatuts = array(
-                \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $translator->trans('preteur-profile_versement-initial'),
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT   => $translator->trans('preteur-profile_alimentation-cb'),
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT => $translator->trans('preteur-profile_alimentation-virement'),
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL    => 'Remboursement de capital',
-                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS  => 'Remboursement d\'intérêts',
-                \transactions_types::TYPE_DIRECT_DEBIT                => $translator->trans('preteur-profile_alimentation-prelevement'),
-                \transactions_types::TYPE_LENDER_WITHDRAWAL           => $translator->trans('preteur-profile_retrait'),
-                \transactions_types::TYPE_LENDER_REGULATION           => 'Régularisation prêteur',
-                \transactions_types::TYPE_WELCOME_OFFER               => 'Offre de bienvenue',
-                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION  => 'Retrait offre de bienvenue'
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('preteur-profile_versement-initial'),
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('preteur-profile_alimentation-cb'),
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('preteur-profile_alimentation-virement'),
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement de capital',
+                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS     => 'Remboursement d\'intérêts',
+                \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('preteur-profile_alimentation-prelevement'),
+                \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('preteur-profile_retrait'),
+                \transactions_types::TYPE_LENDER_REGULATION              => 'Régularisation prêteur',
+                \transactions_types::TYPE_WELCOME_OFFER                  => 'Offre de bienvenue',
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => 'Retrait offre de bienvenue',
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
+                \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe'),
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe-preteur'),
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur'),
+                \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
             );
 
             $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
         }
+
+        $this->setView('../preteurs/transactions');
     }
 
     public function _check_status_dossier()

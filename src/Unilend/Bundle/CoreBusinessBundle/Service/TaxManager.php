@@ -165,4 +165,27 @@ class TaxManager
     {
         return $this->applyTaxes($transaction, [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
     }
+
+    /**
+     * @param \clients $client
+     * @param \lenders_accounts $lenderAccount
+     * @param \clients_adresses $clientAddress
+     * @param int $userId
+     */
+    public function addTaxToApply(\clients $client, \lenders_accounts $lenderAccount, \clients_adresses $clientAddress, $userId)
+    {
+        $foreigner = 0;
+        if ($client->id_nationalite <= 1 && $clientAddress->id_pays_fiscal > 1) {
+            $foreigner = 1;
+        } elseif ($client->id_nationalite > 1 && $clientAddress->id_pays_fiscal > 1) {
+            $foreigner = 2;
+        }
+        /** @var \lenders_imposition_history $lenderImpositionHistory */
+        $lenderImpositionHistory                    = $this->entityManager->getRepository('lenders_imposition_history');
+        $lenderImpositionHistory->id_lender         = $lenderAccount->id_lender_account;
+        $lenderImpositionHistory->resident_etranger = $foreigner;
+        $lenderImpositionHistory->id_pays           = $clientAddress->id_pays_fiscal;
+        $lenderImpositionHistory->id_user           = $userId;
+        $lenderImpositionHistory->create();
+    }
 }

@@ -93,7 +93,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 
     public function onMetAjourLesDatesEcheancesE($id_project, $ordre, $date_echeance_emprunteur)
     {
-        $sql = 'UPDATE echeanciers_emprunteur SET date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" ';
+        $sql = 'UPDATE echeanciers_emprunteur SET date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $id_project . ' AND status_emprunteur = 0 AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
     }
 
@@ -124,12 +124,14 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     }
 
     // retourne la somme total a rembourser pour un porjet
-    public function reste_a_payer_ra($id_project = '', $ordre = '')
+    public function reste_a_payer_ra($id_project, $ordre)
     {
-        $sql = 'SELECT SUM(capital) FROM `echeanciers_emprunteur`
-                        WHERE status_emprunteur = 0
-                        AND ordre >= "' . $ordre . '"
-                        AND id_project = ' . $id_project;
+        $sql = '
+            SELECT SUM(capital) 
+            FROM echeanciers_emprunteur
+            WHERE id_project = ' . $id_project . '
+                AND status_emprunteur = 0
+                AND ordre >= ' . $ordre;
 
         $result = $this->bdd->query($sql);
         $sum    = (int) ($this->bdd->result($result, 0, 0));
@@ -198,7 +200,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                     INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                     WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                       AND echeanciers_emprunteur.id_project = projects_status_history.id_project
-                    ORDER BY id_project_status_history ASC LIMIT 1
+                    ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                   ) AS cohort
                 FROM echeanciers_emprunteur
                 WHERE (
@@ -247,7 +249,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
                       INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
@@ -269,7 +271,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                             INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                                                           WHERE ps2.status = '. \projects_status::PROBLEME . '
                                                             AND psh2.id_project = echeanciers_emprunteur.id_project
-                                                          ORDER BY psh2.id_project_status_history DESC
+                                                          ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                           LIMIT 1
                                                           )) > 180)), TRUE, FALSE) = FALSE
                         GROUP BY cohort';
@@ -294,7 +296,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
                       INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
@@ -323,7 +325,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                         INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                                                       WHERE ps2.status = '. \projects_status::PROBLEME . '
                                                         AND psh2.id_project = echeanciers_emprunteur.id_project
-                                                      ORDER BY psh2.id_project_status_history DESC
+                                                      ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                       LIMIT 1
                                                       )) > 180)), TRUE, FALSE) = FALSE
                         GROUP BY cohort';
@@ -348,7 +350,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                             INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE projects_status.status = ' . \projects_status::REMBOURSEMENT . '
                             AND echeanciers_emprunteur.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
                       INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= 80
@@ -374,7 +376,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                           INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                                         WHERE ps2.status = ' . \projects_status::PROBLEME . '
                                           AND psh2.id_project = echeanciers_emprunteur.id_project
-                                        ORDER BY psh2.id_project_status_history DESC
+                                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                         LIMIT 1)) > 180), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 
@@ -397,7 +399,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
                       INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
@@ -425,7 +427,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                           INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                                                         WHERE ps2.status = ' . \projects_status::PROBLEME . '
                                                           AND psh2.id_project = echeanciers_emprunteur.id_project
-                                                        ORDER BY psh2.id_project_status_history DESC
+                                                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                         LIMIT 1)) > 180)), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 
@@ -448,7 +450,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
                       INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
@@ -475,7 +477,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                       INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                                                     WHERE ps2.status = ' . \projects_status::PROBLEME . '
                                                       AND psh2.id_project = echeanciers_emprunteur.id_project
-                                                    ORDER BY psh2.id_project_status_history DESC
+                                                    ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                     LIMIT 1)) > 180), TRUE, FALSE) = FALSE
                     GROUP BY cohort';
 

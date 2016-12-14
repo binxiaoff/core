@@ -32,19 +32,6 @@ class translations extends translations_crud
         parent::translations($bdd, $params);
     }
 
-    public function create($cs='')
-    {
-        $this->bdd->insert('translations', array('locale' => $this->locale, 'section' => $this->section, 'name' => $this->name, 'translation' => $this->translation));
-        $this->get($this->id_translation,'id_translation');
-        return $this->id_translation;
-    }
-
-    public function update($cs='')
-    {
-        $this->bdd->update('translations', array('translation' => $this->translation), array('locale' => $this->locale, 'section' => $this->section, 'name' => $this->name, ));
-        $this->get($this->id_translation,'id_translation');
-    }
-
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {

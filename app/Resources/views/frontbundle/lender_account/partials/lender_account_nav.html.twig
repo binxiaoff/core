@@ -10,12 +10,20 @@
             <li role="presentation" class="dashboard-nav-balance {% if route in ['lender_wallet_deposit', 'lender_wallet_withdrawal'] %}active{% else %}complete{% endif %}">
                 <a href="{{ path('lender_wallet_deposit') }}">
                     <span class="icon fa-money-u32"></span>
-                    <span class="label">{% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}</span></a>
+                    <span class="label">
+                        {% if isValidatedClient %}
+                            {% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}
+                        {% else %}
+                            {% trans %} lender-dashboard-navigation_wallet-link-completeness {% endtrans %}
+                        {% endif %}
+                    </span>
+                </a>
             </li>
             <li role="presentation" class="dashboard-nav-projects {% if route == 'lender_projects' %}active{% else %}complete{% endif %}">
                 <a href="{{ path('lender_projects') }}">
                     <span class="icon fa-project-u"></span>
-                    <span class="label">{% trans %} lender-dashboard-navigation_projects-link {% endtrans %}</span></a>
+                    <span class="label">{% trans %} lender-dashboard-navigation_projects-link {% endtrans %}</span>
+                </a>
             </li>
             <li role="presentation" class="dashboard-nav-operations {% if route == 'lender_operations' %}active{% else %}complete{% endif %}">
                 <a href="{{ path('lender_operations') }}">

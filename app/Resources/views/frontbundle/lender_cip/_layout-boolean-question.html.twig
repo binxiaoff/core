@@ -2,7 +2,7 @@
 
 {% set page = {
     id: 'user-preter-profile',
-    title: 'Conseils en investissement',
+    title: 'lender-evaluation_questionnaire-page-title'|trans,
     classNames: 'user-preter-profile'
 } %}
 
@@ -14,7 +14,7 @@
             <div id="cip-step-{{ current_step }}">
                 <div class="panel cip-header">
                     <header class="panel-header">
-                        <h3>{% trans %}  lender-evaluation_questionnaire-page-title  {% endtrans %}</h3>
+                        <h3>{% trans %} lender-evaluation_questionnaire-page-title {% endtrans %}</h3>
                     </header>
                     <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
                         <div data-progressbar-bar></div>

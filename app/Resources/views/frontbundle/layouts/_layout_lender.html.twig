@@ -10,6 +10,7 @@
             <div class="site-wrap">
                 <div class="col-menu">
                     {{ render(controller('UnilendFrontBundle:LenderAccount:lenderMenu', {'route': app.request.attributes.get('_route')})) }}
+
                     {% block dashboardNotifications %}
                         {% include 'partials/components/dashboard-panel-notifications.twig' %}
                     {% endblock %}

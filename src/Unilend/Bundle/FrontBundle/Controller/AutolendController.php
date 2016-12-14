@@ -2,8 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use \Symfony\Component\HttpFoundation\Response;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,8 +21,6 @@ class AutolendController extends Controller
     {
         /** @var AutoBidSettingsManager $autoBidSettingsManager */
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-        /** @var \clients $client */
-        $client = $this->getClient();
         /** @var \lenders_accounts $lendersAccounts */
         $lendersAccounts = $this->getLenderAccount();
 
@@ -34,8 +30,6 @@ class AutolendController extends Controller
 
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        /** @var \clients_status $clientStatus */
-        $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
         /** @var \autobid $autobid */
@@ -84,7 +78,6 @@ class AutolendController extends Controller
         foreach ($projectPeriods as $period) {
             $template['projectPeriods'][$period['id_period']] = $period;
         }
-        $clientStatus->getLastStatut($client->id_client);
 
         $settings->get('date-premier-projet-tunnel-de-taux', 'type');
         $startingDate = $settings->value;
@@ -97,7 +90,7 @@ class AutolendController extends Controller
         }
 
         $template['projectRatesGlobal'] = $autoBidSettingsManager->getRateRange();
-        $autoBidSettings = $autobid->getSettings($lendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+        $autoBidSettings = $autobid->getSettings($lendersAccounts->id_lender_account, null, null, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
 
         if (empty($autoBidSettings)) {
             $autoBidSettings = $this->generateFakeAutolendSettings($projectPeriods, $project, $projectRateSettings);
@@ -113,7 +106,7 @@ class AutolendController extends Controller
             }
 
             $averageRateUnilend   = $project->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
-            $medianRateForSetting = bcdiv(bcadd($aSetting['project_rate_min'], $aSetting['project_rate_max']), 2, 1);;
+            $medianRateForSetting = bcdiv(bcadd($aSetting['project_rate_min'], $aSetting['project_rate_max']), 2, 1);
             $aSetting['cellAverageRateUnilend'] = ($averageRateUnilend > 0) ? $averageRateUnilend : $medianRateForSetting;
             $template['autoBidSettings'][$aSetting['id_period']][] = $aSetting;
         }
@@ -283,18 +276,6 @@ class AutolendController extends Controller
         }
     }
 
-    private function getClient()
-    {
-        /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($clientId);
-
-        return $client;
-    }
-
     private function getLenderAccount()
     {
         /** @var UserLender $user */
@@ -312,17 +293,20 @@ class AutolendController extends Controller
         $settings = [];
 
         foreach ($projectPeriods as $period ) {
-            foreach($project->getAvailableRisks() as $risk) {
+            $availableRisks = $project->getAvailableRisks();
+            rsort($availableRisks);
+
+            foreach ($availableRisks as $risk) {
                 $rateSetting = $projectRateSettings->select('id_period = ' . $period['id_period'] . ' AND evaluation = "' . $risk . '" AND status = ' . \project_rate_settings::STATUS_ACTIVE);
                 $rate = array_shift($rateSetting);
                 $averageRate = bcdiv(bcadd($rate['rate_min'], $rate['rate_max']), 2, 1);
                 $settings[] = [
                     'id_autobid' => '',
-                    'status' => 1,
+                    'status'     => 1,
                     'evaluation' => $risk,
-                    'id_period' => $period['id_period'],
-                    'rate_min' => $averageRate,
-                    'amount' => '',
+                    'id_period'  => $period['id_period'],
+                    'rate_min'   => $averageRate,
+                    'amount'     => '',
                     'period_min' => $period['min'],
                     'period_max' => $period['max']
                 ];
