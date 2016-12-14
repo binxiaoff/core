@@ -5,14 +5,14 @@
         <span class="sr-only">{% trans %} header_mobile-menu-close {% endtrans %}</span>
     </a>
 
-    <form action="{{ path('search') }}" method="get" class="site-mobile-search" role="search">
+    <form action="{{ path('search') }}" method="post" class="site-mobile-search" role="search">
         <label for="site-mobile-search-input" class="site-mobile-search-toggle" role="button"><span class="sr-only">{% trans %} site-general_search-label {% endtrans %}</span></label>
         <div class="site-mobile-search-inner">
             <div class="form-field-inline">
                 <div class="btn-group">
                     <button class="btn-search" tabindex="-1"><span class="sr-only">{% trans %}site-general_search-submit {% endtrans %}</span></button>
                 </div>
-                <input id="site-mobile-search-input" type="text" name="s" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" tabindex="1" class="input-field site-mobile-search-input">
+                <input id="site-mobile-search-input" type="text" name="search" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" tabindex="1" class="input-field site-mobile-search-input">
             </div>
         </div><!-- /.site-mobile-search-inner -->
     </form><!-- /.site-mobile-search -->

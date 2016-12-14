@@ -212,20 +212,19 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-
         if ($exception instanceof LockedException || $exception instanceof DisabledException || $exception instanceof AccountExpiredException) {
             $customException = new CustomUserMessageAuthenticationException('closed-account');
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $customException);
         }
 
-        if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown'])) {
-            $oNowMinusTenMinutes = new \datetime('NOW - 10 minutes');
+        /** @var \login_log $loginLog */
+        $loginLog = $this->entityManager->getRepository('login_log');
 
-            /** @var \login_log $loginLog */
-            $loginLog        = $this->entityManager->getRepository('login_log');
-            $iPreviousTries  = $loginLog->counter('IP = "' . $request->server->get('REMOTE_ADDR') . '" AND date_action >= "' . $oNowMinusTenMinutes->format('Y-m-d H:i:s') . '" AND statut = 0');
-            $iWaitingPeriod  = 0;
-            $iPreviousResult = 1;
+        if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown'])) {
+            $oNowMinusTenMinutes = new \DateTime('NOW - 10 minutes');
+            $iPreviousTries      = $loginLog->counter('IP = "' . $request->server->get('REMOTE_ADDR') . '" AND date_action >= "' . $oNowMinusTenMinutes->format('Y-m-d H:i:s') . '"');
+            $iWaitingPeriod      = 0;
+            $iPreviousResult     = 1;
 
             if ($iPreviousTries > 0 && $iPreviousTries < 1000) { // 1000 pour ne pas bloquer le site
                 for ($i = 1; $i <= $iPreviousTries; $i++) {
@@ -236,22 +235,17 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
             $aCaptchaInformation = [
                 'waitingPeriod'        => $iWaitingPeriod,
-                'displayWaitingPeriod' => ($iPreviousTries > 1) ? true : false,
-                'displayCaptcha'       => ($iPreviousTries > 5) ? true : false
+                'displayWaitingPeriod' => $iPreviousTries > 1,
+                'displayCaptcha'       => $iPreviousTries > 5
             ];
 
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
             $request->getSession()->set('captchaInformation', $aCaptchaInformation);
         }
 
-        $credentials = $this->getCredentials($request);
-        /** @var \login_log $loginLog */
-        $loginLog = $this->entityManager->getRepository('login_log');
-
-        $loginLog->pseudo      = $credentials['username'];
+        $loginLog->pseudo      = $this->getCredentials($request)['username'];
         $loginLog->IP          = $request->getClientIp();
         $loginLog->date_action = date('Y-m-d H:i:s');
-        $loginLog->statut      = 0;
         $loginLog->retour      = $exception->getMessage();
         $loginLog->create();
 

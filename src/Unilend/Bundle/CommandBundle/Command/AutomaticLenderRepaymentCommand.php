@@ -63,7 +63,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
             $repaymentLog->nb_pret_remb     = 0;
             $repaymentLog->create();
 
-            $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
+            $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'added DESC, id_project_status_history DESC', 0, 1);
             $dateDernierStatut = $dernierStatut[0]['added'];
             $timeAdd           = strtotime($dateDernierStatut);
             $day               = date('d', $timeAdd);
@@ -107,8 +107,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $transactions->id_echeancier    = $e['id_echeancier'];
                             $transactions->id_langue        = 'fr';
                             $transactions->date_transaction = $repaymentDate;
-                            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                            $transactions->etat             = \transactions::STATUS_VALID;
+                            $transactions->status           = \transactions::STATUS_VALID;
                             $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
                             $transactions->create();
 
@@ -129,8 +128,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $transactions->id_echeancier    = $e['id_echeancier'];
                             $transactions->id_langue        = 'fr';
                             $transactions->date_transaction = $repaymentDate;
-                            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                            $transactions->etat             = \transactions::STATUS_VALID;
+                            $transactions->status           = \transactions::STATUS_VALID;
                             $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
                             $transactions->create();
 
@@ -188,8 +186,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $transactions->id_echeancier_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
                 $transactions->id_langue                = 'fr';
                 $transactions->date_transaction         = date('Y-m-d H:i:s');
-                $transactions->status                   = \transactions::PAYMENT_STATUS_OK;
-                $transactions->etat                     = \transactions::STATUS_VALID;
+                $transactions->status                   = \transactions::STATUS_VALID;
                 $transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                 $transactions->create();
 

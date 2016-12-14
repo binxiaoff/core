@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -21,19 +20,17 @@ class PaylineController extends Controller
      */
     public function callbackAction()
     {
-        $entityManager  = $this->get('unilend.service.entity_manager');
+        $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \transactions $transaction */
-        $transaction    = $entityManager->getRepository('transactions');
+        $transaction = $entityManager->getRepository('transactions');
         /** @var \backpayline $backPayline */
-        $backPayline    = $entityManager->getRepository('backpayline');
+        $backPayline = $entityManager->getRepository('backpayline');
         /** @var \lenders_accounts $lendersAccount */
         $lendersAccount = $entityManager->getRepository('lenders_accounts');
         /** @var \wallets_lines $walletLine */
-        $walletLine     = $entityManager->getRepository('wallets_lines');
+        $walletLine = $entityManager->getRepository('wallets_lines');
         /** @var \bank_lines $bankLine */
-        $bankLine       = $entityManager->getRepository('bank_lines');
-        /** @var \settings $settings */
-        $settings       = $entityManager->getRepository('settings');
+        $bankLine = $entityManager->getRepository('bank_lines');
 
         $params['version'] = '3';
         // GET TOKEN
@@ -62,17 +59,12 @@ class PaylineController extends Controller
             }
 
             if ($response['result']['code'] == '00000') {
-                $settings->get('DebugAlertesBusiness', 'type');
-                $to = $settings->value;
-
-                if ($transaction->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
-
+                if ($transaction->get($response['order']['ref'], 'status = ' . \transactions::STATUS_PENDING . ' AND id_transaction')) {
                     $transaction->id_backpayline   = $backPayline->id_backpayline;
                     $transaction->montant          = $response['payment']['amount'];
                     $transaction->id_langue        = 'fr';
                     $transaction->date_transaction = date('Y-m-d H:i:s');
-                    $transaction->status           = '1';
-                    $transaction->etat             = '1';
+                    $transaction->status           = \transactions::STATUS_VALID;
                     $transaction->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
                     $transaction->update();
 
@@ -96,87 +88,6 @@ class PaylineController extends Controller
                     $bankLine->status            = 1;
                     $bankLine->amount            = $response['payment']['amount'];
                     $bankLine->create();
-
-                    ////////////////////////////
-                    // Mail alert transaction //
-                    ////////////////////////////
-                    // subject
-                    $subject = '[Alerte] BACK PAYLINE Transaction approved';
-
-                    // message
-                    $message = '
-                    <html>
-                    <head>
-                      <title>[Alerte] BACK PAYLINE Transaction approved</title>
-                    </head>
-                    <body>
-                      <h3>[Alerte] BACK PAYLINE Transaction approved</h3>
-                      <p>Un payement payline accepet&eacute; n\'a pas &eacute;t&eacute; mis &agrave; jour dans la BDD Unilend.</p>
-                      <table>
-                        <tr>
-                          <th>Id client : </th><td>' . $transaction->id_client . '</td>
-                        </tr>
-                        <tr>
-                          <th>montant : </th><td>' . ($transaction->montant / 100) . '</td>
-                        </tr>
-                        <tr>
-                          <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
-                        </tr>
-                      </table>
-                    </body>
-                    </html>
-                    ';
-
-                    // To send HTML mail, the Content-type header must be set
-                    $headers = 'MIME-Version: 1.0' . "\r\n";
-                    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                    // Additional headers
-
-                    //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                    $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
-
-                    // Mail it
-                    mail($to, $subject, $message, $headers);
-
-                } else {
-                    ////////////////////////////
-                    // Mail alert transaction //
-                    ////////////////////////////
-                    // subject
-                    $subject = '[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE';
-
-                    // message
-                    $message = '
-                    <html>
-                    <head>
-                      <title>[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE</title>
-                    </head>
-                    <body>
-                      <h3>[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE</h3>
-                      <p>Un payement payline accepet&eacute; deacute;j&agrave; &agrave; jour dans la BDD Unilend.</p>
-                      <table>
-                        <tr>
-                          <th>Id client : </th><td>' . $transaction->id_client . '</td>
-                        </tr>
-                        <tr>
-                          <th>montant : </th><td>' . ($transaction->montant / 100) . '</td>
-                        </tr>
-                        <tr>
-                          <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
-                        </tr>
-                      </table>
-                    </body>
-                    </html>
-                    ';
-
-                    // To send HTML mail, the Content-type header must be set
-                    $headers = 'MIME-Version: 1.0' . "\r\n";
-                    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                    $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
-
-                    // Mail it
-                    mail($to, $subject, $message, $headers);
                 }
             }
         }

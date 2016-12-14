@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -423,21 +423,28 @@ class LenderProfileController extends Controller
             /** @var \tax_type $taxType */
             $taxType = $this->get('unilend.service.entity_manager')->getRepository('tax_type');
             $taxType->get(\tax_type::TYPE_INCOME_TAX);
-            $templateData['clientAddress'] = $clientAddress->select('id_client = ' . $client->id_client)[0];
-            $templateData['currentYear'] = date('Y', time());
-            $templateData['lastYear']    = $templateData['currentYear'] - 1;
-            $templateData['nextYear']    = $templateData['currentYear'] + 1;
-            $templateData['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $lenderTaxExemption->getTaxExemptionDateRange()['taxExemptionRequestLimitDate']->getTimestamp());
-            $templateData['rateOfTaxDeductionAtSource'] = $taxType->rate;
-            $templateData['exemptions'] = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
-            $this->addExonerationByDateToTemplate($lenderTaxExemption, $lenderAccount, $templateData);
-            $templateData['isEligible'] = $this->checkIfTaxExemptionIsPossible($lenderAccount);
+            $templateData['clientAddress']                = $clientAddress->select('id_client = ' . $client->id_client)[0];
+            $templateData['currentYear']                  = date('Y');
+            $templateData['lastYear']                     = $templateData['currentYear'] - 1;
+            $templateData['nextYear']                     = $templateData['currentYear'] + 1;
+            $taxExemptionDateRange                        = $this->getTaxExemptionDateRange();
+            $templateData['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
+            $templateData['rateOfTaxDeductionAtSource']   = $taxType->rate;
+            $taxExemptionHistory                          = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
+            $templateData['exemptions']                   = $taxExemptionHistory;
+            $isEligible                                   = $this->getTaxExemptionEligibility($lenderAccount);
+            $templateData['taxExemptionEligibility']      = $isEligible;
+            $templateData['declarationIsPossible']        = $this->checkIfTaxExemptionIsPossible($taxExemptionHistory, $taxExemptionDateRange, $isEligible);
         }
     }
 
     /**
      * @Route("/profile/person/identity-update", name="profile_person_identity_update")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function personFormAction(Request $request)
     {
@@ -522,6 +529,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/legal-entity/identity-update", name="profile_legal_entity_identity_update")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function legalEntityFormAction(Request $request)
     {
@@ -714,6 +722,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/person/fiscal-address-update", name="profile_person_fiscal_address_update")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function personFiscalAddressFormAction(Request $request)
     {
@@ -844,6 +853,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/legal-entity/fiscal-address-update", name="profile_legal_entity_fiscal_address_update")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function legalEntityFiscalAddressFormAction(Request $request)
     {
@@ -916,9 +926,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
      * @Route("/profile/postal-address-update", name="profile_postal_address_update")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
      * @return RedirectResponse
      */
     public function postalAddressFormAction(Request $request)
@@ -996,6 +1008,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/documents/submit", name="lender_completeness_submit")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function lenderCompletenessFormAction(Request $request)
     {
@@ -1034,10 +1047,9 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param integer $lenderAccountId
-     * @param integer $attachmentType
-     * @param string  $fieldName
-     *
+     * @param int    $lenderAccountId
+     * @param int    $attachmentType
+     * @param string $fieldName
      * @return bool
      */
     private function uploadAttachment($lenderAccountId, $attachmentType, $fieldName)
@@ -1058,8 +1070,8 @@ class LenderProfileController extends Controller
 
         if (is_numeric($result)) {
             $greenPointAttachment->get($result, 'id_attachment');
-            $greenPointAttachment->revalidate   = 1;
-            $greenPointAttachment->final_status = 0;
+            $greenPointAttachment->revalidate   = \greenpoint_attachment::REVALIDATE_YES;
+            $greenPointAttachment->final_status = \greenpoint_attachment::FINAL_STATUS_NO;
             $greenPointAttachment->update();
         }
 
@@ -1083,9 +1095,9 @@ class LenderProfileController extends Controller
      */
     private function updateClientStatusAndNotifyClient(\clients $client, $historyContent)
     {
-        /** @var ClientManager $clientManager */
-        $clientManager = $this->get('unilend.service.client_manager');
-        $clientManager->changeClientStatusTriggeredByClientAction($client->id_client, $historyContent);
+        /** @var ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
+        $clientStatusManager->changeClientStatusTriggeredByClientAction($client, $historyContent);
         $this->sendAccountModificationEmail($client);
     }
 
@@ -1114,6 +1126,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/ajax/zip", name="lender_profile_ajax_zip")
      * @Method("GET")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function getZipAction(Request $request)
     {
@@ -1127,11 +1140,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
-     *
-     * @return Response
      * @Route("/profile/ifu", name="get_ifu")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     * @return Response
      */
     public function downloadIFUAction(Request $request)
     {
@@ -1169,6 +1182,7 @@ class LenderProfileController extends Controller
 
     /**
      * @Route("/profile/update_bank_details", name="update_bank_details")
+     * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
@@ -1262,7 +1276,6 @@ class LenderProfileController extends Controller
 
     /**
      * @param int $clientType
-     *
      * @return array
      */
     private function getFundsOrigin($clientType)
@@ -1285,9 +1298,10 @@ class LenderProfileController extends Controller
 
 
     /**
-     * @param Request $request
      * @Route("profile/security/submit-identification", name="profile_security_submit_identification")
+     * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
      * @return Response
      */
     public function securityIdentificationFormAction(Request $request)
@@ -1352,11 +1366,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
      * @Route("/profile/security/submit-password", name="profile_security_submit_password")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
      * @return Response
      */
     public function securityPasswordFormAction(Request $request)
@@ -1409,11 +1423,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
      * @Route("/profile/security/submit-secret-question", name="profile_security_submit_secret_question")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
      * @return Response
      */
     public function securitySecretQuestionFormAction(Request $request)
@@ -1567,11 +1581,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
      * @Route("/profile/request-tax-exemption", name="profile_fiscal_information_tax_exemption")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
      * @return Response
      */
     public function requestTaxExemptionAction(Request $request)
@@ -1589,10 +1603,11 @@ class LenderProfileController extends Controller
         $post = $request->request->all();
 
         try {
-            $taxExemptionDateRange = $lenderTaxExemption->getTaxExemptionDateRange();
+            $taxExemptionDateRange = $this->getTaxExemptionDateRange();
+            /** @var \DateTime $now */
+            $now = new \DateTime();
 
-            if (date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
-                && date('Y-m-d H:i:s') <= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59')
+            if ($now >= $taxExemptionDateRange['taxExemptionRequestStartDate'] && $now <= $taxExemptionDateRange['taxExemptionRequestLimitDate']
                 && true === empty($lenderTaxExemption->getLenderExemptionHistory($lender->id_lender_account, $year))
             ) {
 
@@ -1630,8 +1645,33 @@ class LenderProfileController extends Controller
         return $this->redirectToRoute('lender_profile_fiscal_information');
     }
 
+    /**
+     * Returns true if the declaration is possible, false otherwise
+     * @param array $taxExemptionHistory
+     * @param array $taxExemptionDateRange
+     * @param bool $isEligible
+     * @return bool
+     */
+    private function checkIfTaxExemptionIsPossible(array $taxExemptionHistory, array $taxExemptionDateRange, $isEligible)
+    {
+        /** @var \DateTime $now */
+        $now       = new \DateTime();
+        $outOfDate = $now < $taxExemptionDateRange['taxExemptionRequestStartDate'] || $now > $taxExemptionDateRange['taxExemptionRequestLimitDate'];
 
-    private function checkIfTaxExemptionIsPossible(\lenders_accounts $lenderAccount)
+        if (false === empty($taxExemptionHistory)) {
+            $taxExemptionRequestDone = in_array(date('Y') + 1, array_column($taxExemptionHistory, 'year'));
+        } else {
+            $taxExemptionRequestDone = false;
+        }
+
+        return (true === $isEligible && false === $outOfDate && false === $taxExemptionRequestDone);
+    }
+
+    /**
+     * @param \lenders_accounts $lenderAccount
+     * @return bool
+     */
+    private function getTaxExemptionEligibility(\lenders_accounts $lenderAccount)
     {
         try {
             $lenderInfo = $lenderAccount->getLenderTypeAndFiscalResidence($lenderAccount->id_lender_account);
@@ -1670,32 +1710,6 @@ class LenderProfileController extends Controller
         return $result;
     }
 
-    private function addExonerationByDateToTemplate(\lender_tax_exemption $lenderTaxExemption, \lenders_accounts $lenderAccount, &$template)
-    {
-        $currentYear             = date('Y', time());
-        $lastYear                = $currentYear - 1;
-        $nextYear                = $currentYear + 1;
-        $taxExemptionDateRange   = $lenderTaxExemption->getTaxExemptionDateRange();
-
-        $template['afterDeadline'] = (
-            date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
-            || date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59'));
-
-        $taxExemptionHistory = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
-
-        if (false === empty($this->taxExemptionHistory)) {
-            $yearList = array_column($taxExemptionHistory, 'year');
-
-            $template['nextTaxExemptionRequestDone']  = in_array($nextYear, $yearList);
-            $template['exemptedLastYear'] = in_array($lastYear, $yearList);
-            $template['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
-        } else {
-            $template['exemptedLastYear'] = false;
-            $template['nextTaxExemptionRequestDone']  = false;
-            $template['taxExemptionRequestLimitDate'] = false;
-        }
-    }
-
     /**
      * @param \clients_adresses $clientAddress
      */
@@ -1707,5 +1721,19 @@ class LenderProfileController extends Controller
         $clientAddress->ville               = $clientAddress->ville_fiscal;
         $clientAddress->id_pays             = $clientAddress->id_pays_fiscal;
         $clientAddress->update();
+    }
+
+    /**
+     * @return array
+     */
+    private function getTaxExemptionDateRange()
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('taxExemptionRequestLimitDate', 'type');
+        $dateRange['taxExemptionRequestLimitDate'] = \DateTime::createFromFormat('Y-m-d H:i:s', date('Y') . '-' . $settings->value . ' 23:59:59');
+        $settings->get('taxExemptionRequestStartDate', 'type');
+        $dateRange['taxExemptionRequestStartDate'] = \DateTime::createFromFormat('Y-m-d H:i:s', date('Y') . '-' . $settings->value . ' 00:00:00');
+        return $dateRange;
     }
 }

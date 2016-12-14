@@ -317,6 +317,8 @@ $doc.on('ready', function () {
       return
     }
 
+    $message.html('').removeClass('c-error')
+
     // @trigger elem `Spinner:showLoading`
     $('#bid-amount').trigger('Spinner:showLoading')
 

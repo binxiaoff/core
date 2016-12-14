@@ -131,16 +131,15 @@ class preteursController extends bootstrap
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
         }
 
-        // le nombre de prets effectué
         $this->loans    = $this->loadData('loans');
-        $this->nb_pret  = $this->loans->counter('id_lender = "' . $this->lenders_accounts->id_lender_account . '" AND status = 0');
+        $this->nb_pret  = $this->loans->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = ' . \loans::STATUS_ACCEPTED);
         $this->txMoyen  = $this->loans->getAvgPrets($this->lenders_accounts->id_lender_account);
         $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
 
         if (isset($this->params[1])) {
-            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = 0');
+            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . \loans::STATUS_ACCEPTED);
         } else {
-            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = YEAR(CURDATE()) AND status = 0');
+            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . \loans::STATUS_ACCEPTED);
         }
 
         $this->SumDepot       = $this->transactions->getLenderDepositedAmount($this->lenders_accounts);
@@ -203,13 +202,27 @@ class preteursController extends bootstrap
             \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
             \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe'),
             \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe-preteur'),
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur')
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur'),
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
         );
 
         $this->solde        = $this->transactions->getSolde($this->clients->id_client);
-        $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
+        $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
-        $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
+        $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
+
+        /** @var \transfer $transfer */
+        $transfer = $this->loadData('transfer');
+        $transfersForClient = $transfer->select('id_client_origin = ' . $this->clients->id_client . ' OR id_client_receiver = ' . $this->clients->id_client);
+
+        $this->transferDocuments = [];
+        foreach ($transfersForClient as $transfer) {
+            $transferDocument = $this->attachment->select('id_owner = ' . $transfer['id_transfer'] . ' AND id_type = ' . \attachment_type::TRANSFER_CERTIFICATE);
+            if (false === empty($transferDocument)) {
+                $transferDocument = $transferDocument[0];
+                $this->transferDocuments[$transferDocument['path']] = $transferDocument;
+            }
+        }
 
         $this->getMessageAboutClientStatus();
     }
@@ -281,6 +294,9 @@ class preteursController extends bootstrap
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
+
         $this->companies = $this->loadData('companies');
 
         if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
@@ -312,12 +328,11 @@ class preteursController extends bootstrap
             $this->origine_fonds = explode(';', $this->origine_fonds);
             $this->taxExemptionUserHistoryAction = $this->getTaxExemptionHistoryActionDetails($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
         }
-
-        $naiss           = explode('-', $this->clients->naissance);
-        $j               = $naiss['2'];
-        $m               = $naiss['1'];
-        $y               = $naiss['0'];
-        $this->naissance = $j . '/' . $m . '/' . $y;
+        if ($birthDate = \DateTime::createFromFormat('Y-m-d', $this->clients->naissance)) {
+            $this->naissance = $birthDate->format('d/m/Y');
+        } else {
+            $this->naissance = '';
+        }
 
         if ($this->lenders_accounts->iban != '') {
             $this->iban1 = substr($this->lenders_accounts->iban, 0, 4);
@@ -344,17 +359,8 @@ class preteursController extends bootstrap
 
         $this->clients_status_history   = $this->loadData('clients_status_history');
         $this->oClientsStatusForHistory = $this->loadData('clients_status');
-        $aLenderStatusForQuery          = array(
-            \clients_status::TO_BE_CHECKED,
-            \clients_status::COMPLETENESS,
-            \clients_status::COMPLETENESS_REPLY,
-            \clients_status::MODIFICATION,
-            \clients_status::VALIDATED,
-            \clients_status::CLOSED_LENDER_REQUEST,
-            \clients_status::CLOSED_BY_UNILEND
-        );
-        $this->lActions                = $this->clients_status_history->select('id_client = ' . $this->clients->id_client . ' AND id_client_status IN ( SELECT cs.id_client_status FROM  clients_status cs WHERE cs.status IN (' . implode(',', $aLenderStatusForQuery) . '))', 'added DESC');
-        $this->aTaxationCountryHistory = $this->getTaxationHistory($this->lenders_accounts->id_lender_account);
+        $this->lActions                 = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
+        $this->aTaxationCountryHistory  = $this->getTaxationHistory($this->lenders_accounts->id_lender_account);
 
         $this->getMessageAboutClientStatus();
 
@@ -370,9 +376,14 @@ class preteursController extends bootstrap
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
 
+        /** @var \greenpoint_attachment_detail $greenPointDetail */
+        $greenPointDetail      = $this->loadData('greenpoint_attachment_detail');
+        $this->lenderIdentityMRZData = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORTE);
+        $this->hostIdentityMRZData = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+
         if (isset($_POST['send_completude'])) {
             $this->sendCompletenessRequest();
-            $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $this->clients->id_client, utf8_encode($_SESSION['content_email_completude'][ $this->clients->id_client ]));
+            $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][ $this->clients->id_client ]);
 
             unset($_SESSION['content_email_completude'][$this->clients->id_client]);
 
@@ -381,6 +392,13 @@ class preteursController extends bootstrap
             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
             die;
         } elseif (isset($_POST['send_edit_preteur'])) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
+            $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+            $mailerManager = $this->get('unilend.service.email_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager $taxManager */
+            $taxManager = $this->get('unilend.service.tax_manager');
+
             if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
 
                 if (false === empty($_POST['meme-adresse'])) {
@@ -506,93 +524,50 @@ class preteursController extends bootstrap
                 $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
+                    /** @var \Psr\Log\LoggerInterface $logger */
+                    $logger = $this->get('logger');
+
                     $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
                     $aExistingClient       = array_shift($aExistingClient);
                     $iOriginForUserHistory = 3;
 
                     if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
                         $this->changeClientStatus($this->clients, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
-                        $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $this->clients->id_client, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
+                        $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                         die;
-                    } elseif (0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) { // On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
-                        $this->createWelcomeOffer($this->clients->id_client);
+                    } elseif (1 == $this->clients->origine && 0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) {
+                        $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
+                        $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
+                    } else {
+                        $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or the origine != 1.', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
                     }
 
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
+                    $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
 
+                    /** @var \clients_gestion_notifications clients_gestion_notifications */
                     $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-                    $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
 
-                    $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-                    $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+                    $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
                     if (false == $this->lNotifs) {
-                        foreach ($this->lTypeNotifs as $n) {
-                            $this->clients_gestion_notifications->id_client = $this->clients->id_client;
-                            $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
-                            $id_notif                                       = $n['id_client_gestion_type_notif'];
-
-                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_BID_REJECTED, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT, \clients_gestion_type_notif::TYPE_DEBIT))) {
-                                $this->clients_gestion_notifications->immediatement = 1;
-                            } else {
-                                $this->clients_gestion_notifications->immediatement = 0;
-                            }
-
-                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, \clients_gestion_type_notif::TYPE_REPAYMENT))) {
-                                $this->clients_gestion_notifications->quotidienne = 1;
-                            } else {
-                                $this->clients_gestion_notifications->quotidienne = 0;
-                            }
-
-                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED))) {
-                                $this->clients_gestion_notifications->hebdomadaire = 1;
-                            } else {
-                                $this->clients_gestion_notifications->hebdomadaire = 0;
-                            }
-
-                            $this->clients_gestion_notifications->mensuelle = 0;
-                            $this->clients_gestion_notifications->create();
-                        }
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
+                        $notificationManager = $this->get('unilend.service.notification_manager');
+                        $notificationManager->generateDefaultNotificationSettings($this->clients);
                     }
 
-                    // Mail au client particulier //
-                    // Recuperation du modele de mail
-                    // modif ou inscription
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
-                        $sTypeMail = 'preteur-validation-modification-compte';
+                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
                     } else {
-                        $sTypeMail = 'preteur-confirmation-activation';
+                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
                     }
-
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    $varMail = array(
-                        'surl'    => $this->surl,
-                        'url'     => $this->furl,
-                        'prenom'  => $this->clients->prenom,
-                        'projets' => $this->furl . '/projets-a-financer',
-                        'lien_fb' => $lien_fb,
-                        'lien_tw' => $lien_tw
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $varMail);
-                    $message->setTo($this->clients->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                    $this->foreignerTax($this->clients, $this->lenders_accounts, $this->clients_adresses);
+                    $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
 
                     $_SESSION['compte_valide'] = true;
                 }
 
                 if (true === $bTaxCountryChanged) {
-                    $this->foreignerTax($this->clients, $this->lenders_accounts, $this->clients_adresses);
+                    $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
                 }
 
                 $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
@@ -742,7 +717,7 @@ class preteursController extends bootstrap
                 $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
+                    $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
 
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
                         $sTypeMail = 'preteur-validation-modification-compte';
@@ -817,7 +792,7 @@ class preteursController extends bootstrap
                 'id'    => $this->attachments[$iType]['id']
             );
 
-            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'])) {
+            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label']) && \greenpoint_attachment::REVALIDATE_NO == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['revalidate']) {
                 $aDataToDisplay[$iType]['greenpoint_label'] = $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'];
 
                 if (1 == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['final_status']) {
@@ -1048,94 +1023,10 @@ class preteursController extends bootstrap
 
         $this->sumOffres                  = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'montant');
         $this->lOffres                    = $offres_bienvenues_details->select('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'added DESC');
-        $sumVirementUnilendOffres         = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
-        $sumOffresTransac                 = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
+        $sumVirementUnilendOffres         = $transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
+        $sumOffresTransac                 = $transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
         $this->sumDispoPourOffres         = $sumVirementUnilendOffres - $sumOffresTransac;
         $this->sumDispoPourOffresSelonMax = $this->montant_limit * 100 - $sumOffresTransac;
-    }
-
-    private function createWelcomeOffer($id_client)
-    {
-        $this->clients = $this->loadData('clients');
-
-        // si le client existe et qu'il vient de la page offre bienvenue
-        if ($this->clients->get($id_client, 'id_client') && $this->clients->origine == 1) {
-            $offres_bienvenues         = $this->loadData('offres_bienvenues');
-            $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
-            $transactions              = $this->loadData('transactions');
-            $wallets_lines             = $this->loadData('wallets_lines');
-            $lenders_accounts          = $this->loadData('lenders_accounts');
-            $bank_unilend              = $this->loadData('bank_unilend');
-
-            if ($offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue')) {
-                $sumOffres                = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status <> 2', 'montant');
-                $sumOffresPlusOffre       = ($sumOffres + $offres_bienvenues->montant);
-                $sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
-                $sumOffresTransac         = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
-                $sumDispoPourOffres       = $sumVirementUnilendOffres - $sumOffresTransac;
-
-                // On regarde que l'offre soit pas terminé
-                if (strtotime($offres_bienvenues->debut) <= time() && strtotime($offres_bienvenues->fin . ' 23:59:59') >= time() && $sumOffresPlusOffre <= $offres_bienvenues->montant_limit && $sumDispoPourOffres >= $offres_bienvenues->montant) {
-                    $this->settings->get("Offre de bienvenue motif", 'type');
-                    $this->motifOffreBienvenue = $this->settings->value;
-
-                    $lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-                    $offres_bienvenues_details->id_offre_bienvenue        = $offres_bienvenues->id_offre_bienvenue;
-                    $offres_bienvenues_details->motif                     = $this->motifOffreBienvenue;
-                    $offres_bienvenues_details->id_client                 = $this->clients->id_client;
-                    $offres_bienvenues_details->montant                   = $offres_bienvenues->montant;
-                    $offres_bienvenues_details->status                    = 0;
-                    $offres_bienvenues_details->create();
-
-                    $transactions->id_client                 = $this->clients->id_client;
-                    $transactions->montant                   = $offres_bienvenues->montant;
-                    $transactions->id_offre_bienvenue_detail = $offres_bienvenues_details->id_offre_bienvenue_detail;
-                    $transactions->id_langue                 = 'fr';
-                    $transactions->date_transaction          = date('Y-m-d H:i:s');
-                    $transactions->status                    = 1;
-                    $transactions->etat                      = 1;
-                    $transactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
-                    $transactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER;
-                    $transactions->create();
-
-                    $wallets_lines->id_lender                = $lenders_accounts->id_lender_account;
-                    $wallets_lines->type_financial_operation = 30; // alimentation
-                    $wallets_lines->id_transaction           = $transactions->id_transaction;
-                    $wallets_lines->status                   = 1;
-                    $wallets_lines->type                     = 1;
-                    $wallets_lines->amount                   = $offres_bienvenues->montant;
-                    $wallets_lines->create();
-
-                    $bank_unilend->id_transaction = $transactions->id_transaction;
-                    $bank_unilend->montant        = '-' . $offres_bienvenues->montant;  // on retire cette somme du total dispo
-                    $bank_unilend->type           = 4; // Unilend offre de bienvenue
-                    $bank_unilend->create();
-
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    $varMail = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $this->clients->prenom,
-                        'projets'         => $this->furl . '/projets-a-financer',
-                        'offre_bienvenue' => $this->ficelle->formatNumber($offres_bienvenues->montant / 100),
-                        'lien_fb'         => $lien_fb,
-                        'lien_tw'         => $lien_tw
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('offre-de-bienvenue', $varMail);
-                    $message->setTo($this->clients->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-                }
-            }
-        }
     }
 
     /**
@@ -1176,8 +1067,8 @@ class preteursController extends bootstrap
 
         if (is_numeric($mResult)) {
             $this->oGreenPointAttachment->get($mResult, 'id_attachment');
-            $this->oGreenPointAttachment->revalidate   = 1;
-            $this->oGreenPointAttachment->final_status = 0;
+            $this->oGreenPointAttachment->revalidate   = \greenpoint_attachment::REVALIDATE_YES;
+            $this->oGreenPointAttachment->final_status = \greenpoint_attachment::FINAL_STATUS_NO;
             $this->oGreenPointAttachment->update();
         }
         $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::LENDER, $iAttachmentType, $field, $this->upload, $sNewName);
@@ -1327,6 +1218,12 @@ class preteursController extends bootstrap
         $this->contract                = $this->loadData('underlying_contract');
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator              = $this->get('translator');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        $this->loanManager = $this->get('unilend.service.loan_manager');
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
+        $lenderManager = $this->get('unilend.service.lender_manager');
 
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -1382,6 +1279,8 @@ class preteursController extends bootstrap
             $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
         }
 
+        $this->hasTransferredLoans = $lenderManager->hasTransferredLoans($this->lenders_accounts);
+
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CIPManager $cipManager */
         $cipManager    = $this->get('unilend.service.cip_manager');
         $this->cipEnabled = $cipManager->hasValidEvaluation($this->lenders_accounts);
@@ -1426,23 +1325,6 @@ class preteursController extends bootstrap
             'subject' => $email->getSubject(),
             'body'    => $email->getBody()
         );
-    }
-
-    private function foreignerTax(\clients $oClients, \lenders_accounts $oLendersAccounts, \clients_adresses $oClientsAdresses)
-    {
-        $iForeigner = 0;
-        if ($oClients->id_nationalite <= 1 && $oClientsAdresses->id_pays_fiscal > 1) { // frrançais / résident étranger
-            $iForeigner = 1;
-        } elseif ($oClients->id_nationalite > 1 && $oClientsAdresses->id_pays_fiscal > 1) {  // non français / résident étranger
-            $iForeigner = 2;
-        }
-
-        $oLendersImpositionHistory                    = $this->loadData('lenders_imposition_history');
-        $oLendersImpositionHistory->id_lender         = $oLendersAccounts->id_lender_account;
-        $oLendersImpositionHistory->resident_etranger = $iForeigner;
-        $oLendersImpositionHistory->id_pays           = $oClientsAdresses->id_pays_fiscal;
-        $oLendersImpositionHistory->id_user           = $_SESSION['user']['id_user'];
-        $oLendersImpositionHistory->create();
     }
 
     private function changeClientStatus(\clients $oClient, $iStatus, $iOrigin)
@@ -1539,13 +1421,13 @@ class preteursController extends bootstrap
 
     private function getMessageAboutClientStatus()
     {
-        /** @var clients_status $oClientsStatus */
-        $oClientsStatus = $this->loadData('clients_status');
-        $oClientsStatus->getLastStatut($this->clients->id_client);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        $clientStatusManager= $this->get('unilend.service.client_status_manager');
         $sTimeCreate                = strtotime($this->clients->added);
         $this->sClientStatusMessage = '';
+        $currentStatus = $clientStatusManager->getLastClientStatus($this->clients);
 
-        switch ($oClientsStatus->status) {
+        switch ($currentStatus) {
             case \clients_status::TO_BE_CHECKED :
                 $this->sClientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $sTimeCreate) . '</div>';
                 break;
@@ -1566,8 +1448,11 @@ class preteursController extends bootstrap
             case \clients_status::VALIDATED:
                 $this->sClientStatusMessage = '';
                 break;
+            case \clients_status::CLOSED_DEFINITELY:
+                $this->sClientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
+                break;
             default;
-                trigger_error('Unknown Client Status : ' . $oClientsStatus->status, E_USER_NOTICE);
+                trigger_error('Unknown Client Status : ' . $currentStatus, E_USER_NOTICE);
                 break;
         }
     }
@@ -1697,6 +1582,8 @@ class preteursController extends bootstrap
         $oLendersAccount = $this->loadData('lenders_accounts');
         /** @var \clients $oClient */
         $oClient = $this->loadData('clients');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
         $oLendersAccount->get($this->params[1],'id_lender_account');
         $oClient->get($oLendersAccount->id_client_owner, 'id_client');
@@ -1704,13 +1591,14 @@ class preteursController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] == 'status') {
             $this->changeClientStatus($oClient, $this->params[2], 1);
             if ($this->params[2] == \clients::STATUS_OFFLINE) {
-                $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $oClient->id_client);
+                $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND);
             } else {
                 $aLastTwoStatus = $oClientsStatusHistory->select('id_client =  ' . $oClient->id_client, 'id_client_status_history DESC', null, 2);
+                /** @var \clients_status $oClientStatus */
                 $oClientStatus  = $this->loadData('clients_status');
                 $oClientStatus->get($aLastTwoStatus[1]['id_client_status']);
                 $sContent = 'Compte remis en ligne par Unilend';
-                $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], $oClientStatus->status, $oClient->id_client, $sContent);
+                $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], $oClientStatus->status, $sContent);
             }
             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oLendersAccount->id_lender_account);
             die;
@@ -1719,7 +1607,7 @@ class preteursController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] == 'deactivate') {
             $this->changeClientStatus($oClient, $this->params[2], 1);
             $this->sendEmailClosedAccount($oClient);
-            $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST, $oClient->id_client);
+            $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST);
             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oLendersAccount->id_lender_account);
             die;
         }

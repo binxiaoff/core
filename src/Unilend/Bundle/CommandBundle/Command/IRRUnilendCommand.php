@@ -19,17 +19,18 @@ class IRRUnilendCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var IRRManager $oIRRManager */
-        $oIRRManager = $this->getContainer()->get('unilend.service.irr_manager');
+        /** @var IRRManager $iRRManager */
+        $iRRManager = $this->getContainer()->get('unilend.service.irr_manager');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
-        $oIRRManager->setLogger($logger);
+        $iRRManager->setLogger($logger);
 
-        $sYesterday = date('Y-m-d', strtotime('-1 day'));
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
 
-        if ($oIRRManager->IRRUnilendNeedsToBeRecalculated($sYesterday)) {
+        if ($iRRManager->IRRUnilendNeedsToBeRecalculated($yesterday)) {
             try {
-                $oIRRManager->updateIRRUnilend();
+                $iRRManager->addIRRUnilend();
+                $iRRManager->addIRRForAllRiskPeriodCohort();
             } catch (\Exception $e) {
                 $logger->error('Could not update Unilend IRR. Message: ' . $e->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
             }

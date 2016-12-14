@@ -27,6 +27,12 @@
 // **************************************************************************************************** //
 class greenpoint_attachment extends greenpoint_attachment_crud
 {
+    const REVALIDATE_YES = 1;
+    const REVALIDATE_NO  = 0;
+
+    const FINAL_STATUS_YES = 1;
+    const FINAL_STATUS_NO  = 0;
+
     public function __construct($bdd, $params = '')
     {
         parent::greenpoint_attachment($bdd, $params);

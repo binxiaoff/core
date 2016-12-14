@@ -1,13 +1,12 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Psr\Log\LoggerInterface;
+use CL\Slack\Payload\ChatPostMessagePayload;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\librairies\Altares;
+use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 
 class RetakeAltaresCallCommand extends ContainerAwareCommand
 {
@@ -32,21 +31,22 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager  = $this->getContainer()->get('unilend.service.entity_manager');
+        $logger         = $this->getContainer()->get('logger');
+        $altares        = $this->getContainer()->get('unilend.service.altares');
+        $projectManager = $this->getContainer()->get('unilend.service.project_manager');
+
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
-
         $settings->get('Altares email alertes', 'type');
         $alertEmail = $settings->value;
 
+        /** @var \settings $settingsAltaresStatus */
         $settingsAltaresStatus = $entityManager->getRepository('settings');
         $settingsAltaresStatus->get('Altares status', 'type');
 
-        /** @var LoggerInterface $logger */
-        $logger = $this->getContainer()->get('logger');
-
-        $altares = new Altares();
+        /** @var \companies_bilans $companyAccount */
+        $companyAccount = $entityManager->getRepository('companies_bilans');
 
         $projects = explode(',', $input->getArgument('projects'));
 
@@ -55,84 +55,67 @@ EOF
         /** @var \companies $company */
         $company = $entityManager->getRepository('companies');
 
-        $projectManager = $this->getContainer()->get('unilend.service.project_manager');
-
         foreach ($projects as $projectId) {
             if ($project->get($projectId) && $company->get($project->id_company)) {
                 if (empty($company->siren)) {
                     continue;
                 }
                 try {
-                    $result  = $altares->getEligibility($company->siren);
+                    $result  = $altares->isEligible($project);
+                    $altares->setCompanyData($company);
+                    $altares->setProjectData($project);
+                    if (false === $result['eligible']) {
+                        if ($project->status != \projects_status::NOTE_EXTERNE_FAIBLE) {
+                            $motif = implode(',', $result['reason']);
+                            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $motif);
+                        }
+                        continue;
+                    }
+                    $altares->setCompanyBalance($company);
+
+                    $lastBilan = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
+                    if (true === isset($lastBilan[0]['id_bilan'])) {
+                        $project->id_dernier_bilan = $lastBilan[0]['id_bilan'];
+                        $project->update();
+                    }
+
+                    if ($project->status < \projects_status::A_TRAITER){
+                        $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $project);
+                    }
                 } catch (\Exception $exception) {
                     if ($settingsAltaresStatus->value) {
-                        $settingsAltaresStatus->value = 0;
+                        $settingsAltaresStatus->value = '0';
                         $settingsAltaresStatus->update();
 
                         $logger->error(
-                            'Calling Altares::getEligibility() using SIREN ' . $company->siren . ' - Exception message: ' . $exception->getMessage(),
+                            $exception->getMessage(),
                             ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $company->siren]
                         );
 
-                        mail($alertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $exception->getMessage());
+                        $payload = new ChatPostMessagePayload();
+                        $payload->setChannel('#it-monitoring');
+                        $payload->setText("Altares is down  :skull_and_crossbones:\n> " . $exception->getMessage());
+                        $payload->setUsername('Altares');
+                        $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
+                        $payload->setAsUser(false);
+
+                        $this->get('cl_slack.api_client')->send($payload);
                     }
-                    continue;
-                }
-
-                if (false === empty($result->exception)) {
-                    if ($settingsAltaresStatus->value) {
-                        $settingsAltaresStatus->value = 0;
-                        $settingsAltaresStatus->update();
-
-                        $logger->error(
-                            'Altares error code: ' . $result->exception->code . ' - Altares error description: ' . $result->exception->description . ' - Altares error: ' . $result->exception->erreur,
-                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
-                        );
-
-                        mail($alertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $this->company->siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur);
-                    }
-
-                    $project->retour_altares = Altares::RESPONSE_CODE_WS_ERROR;
-                    $project->update();
-
-                    continue;
                 }
 
                 if (! $settingsAltaresStatus->value) {
                     $settingsAltaresStatus->value = 1;
                     $settingsAltaresStatus->update();
 
-                    mail($alertEmail, '[INFO] ALTARES is up', 'Date ' . date('Y-m-d H:i:s') . '. Altares is up now.');
-                }
+                    $payload = new ChatPostMessagePayload();
+                    $payload->setChannel('#it-monitoring');
+                    $payload->setText('Altares is up  :white_check_mark:');
+                    $payload->setUsername('Altares');
+                    $payload->setIconUrl($this->getContainer()->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
+                    $payload->setAsUser(false);
 
-                $project->retour_altares = $result->myInfo->codeRetour;
-                $altares->setCompanyData($company, $result->myInfo);
-
-                switch ($result->myInfo->eligibility) {
-                    case 'Oui':
-                        $altares->setProjectData($project, $result->myInfo);
-                        $altares->setCompanyBalance($company);
-
-                        /** @var \companies_bilans $companyAccount */
-                        $companyAccount = $entityManager->getRepository('companies_bilans');
-                        $lastBilan = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
-
-                        if (true === isset($lastBilan[0]['id_bilan'])) {
-                            $project->id_dernier_bilan = $lastBilan[0]['id_bilan'];
-                            $project->update();
-                        }
-
-                        $companyCreationDate = new \DateTime($company->date_creation);
-                        if ($companyCreationDate->diff(new \DateTime())->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {
-                            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::PAS_3_BILANS, $project);
-                        } else if ($project->status <  \projects_status::A_TRAITER){
-                            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $project);
-                        }
-                        break;
-                    case 'Non':
-                    default:
-                        $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $result->myInfo->motif);
-                        break;
+                    $this->getContainer()->get('cl_slack.api_client')->send($payload);
                 }
 
                 $output->writeln('Project id :' . $project->id_project . '. status : ' . $project->status);
