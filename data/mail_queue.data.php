@@ -71,10 +71,9 @@ class mail_queue extends mail_queue_crud
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `mail_queue` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function searchSentEmails($iClientId = null, $sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null, $iLimit = null)
+    public function searchSentEmails($iClientId = null, $sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null)
     {
         $sWhere = '';
-        $sLimit = '';
 
         if (false === is_null($sTo)) {
             $sWhere .= ' AND mq.recipient LIKE "%' . $sTo . '%"';
@@ -100,10 +99,6 @@ class mail_queue extends mail_queue_crud
             $sWhere .= ' AND mq.sent_at <= "' . $oDateEnd->format('Y-m-d') . ' 23:59:59"';
         }
 
-        if (false === is_null($iLimit)) {
-            $sLimit = ' LIMIT ' . $iLimit;
-        }
-
         $sQuery = 'SELECT
                       mq.*,
                       mt.sender_name,
@@ -113,8 +108,8 @@ class mail_queue extends mail_queue_crud
                     FROM
                       mail_queue mq
                     INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
-                    WHERE mq.status =' . self::STATUS_SENT . $sWhere . '
-                    ORDER BY mq.sent_at DESC ' . $sLimit;
+                    WHERE mq.status = ' . self::STATUS_SENT . $sWhere . '
+                    ORDER BY mq.sent_at DESC ';
 
         $oStatement = $this->bdd->executeQuery($sQuery);
         $aEmails    = array();
@@ -125,5 +120,4 @@ class mail_queue extends mail_queue_crud
 
         return $aEmails;
     }
-
 }
