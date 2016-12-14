@@ -13,6 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class BankAccountManager
@@ -58,9 +59,13 @@ class BankAccountManager
             $bankAccount->setIban($iban);
             $bankAccount->setBic($bic);
             $this->em->persist($bankAccount);
-            $this->em->flush();
+        } else {
+            if ($bankAccount->getBic() !== $bic) {
+                $bankAccount->setBic($bic);
+            }
         }
 
+        $this->em->flush();
         $this->updateLegacyBankAccount($clientEntity, $bankAccount);
 
         return $bankAccount;

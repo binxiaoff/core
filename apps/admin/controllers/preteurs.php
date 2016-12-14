@@ -2,6 +2,13 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsage;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 
 class preteursController extends bootstrap
 {
@@ -130,7 +137,7 @@ class preteursController extends bootstrap
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
         $this->companies = $this->loadData('companies');
-        if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
         }
 
@@ -303,7 +310,7 @@ class preteursController extends bootstrap
 
         $this->companies = $this->loadData('companies');
 
-        if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
 
             $this->meme_adresse_fiscal = $this->companies->status_adresse_correspondance;
@@ -339,14 +346,23 @@ class preteursController extends bootstrap
         $y               = $naiss['0'];
         $this->naissance = $j . '/' . $m . '/' . $y;
 
-        if ($this->lenders_accounts->iban != '') {
-            $this->iban1 = substr($this->lenders_accounts->iban, 0, 4);
-            $this->iban2 = substr($this->lenders_accounts->iban, 4, 4);
-            $this->iban3 = substr($this->lenders_accounts->iban, 8, 4);
-            $this->iban4 = substr($this->lenders_accounts->iban, 12, 4);
-            $this->iban5 = substr($this->lenders_accounts->iban, 16, 4);
-            $this->iban6 = substr($this->lenders_accounts->iban, 20, 4);
-            $this->iban7 = substr($this->lenders_accounts->iban, 24, 3);
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        /** @var Clients $clientEntity */
+        $clientEntity = $clientRepository->find($this->clients->id_client);
+        /** @var Wallet $walletEntity */
+        $walletEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
+        /** @var BankAccount $currentBankAccount */
+        $currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getBankAccountByUsage($walletEntity->getId(), BankAccountUsageType::LENDER_DEFAULT);
+
+        if ($currentBankAccount->getIban() != '') {
+            $this->iban1 = substr($currentBankAccount->getIban(), 0, 4);
+            $this->iban2 = substr($currentBankAccount->getIban(), 4, 4);
+            $this->iban3 = substr($currentBankAccount->getIban(), 8, 4);
+            $this->iban4 = substr($currentBankAccount->getIban(), 12, 4);
+            $this->iban5 = substr($currentBankAccount->getIban(), 16, 4);
+            $this->iban6 = substr($currentBankAccount->getIban(), 20, 4);
+            $this->iban7 = substr($currentBankAccount->getIban(), 24, 3);
         }
 
         if ($this->clients->telephone != '') {
@@ -1609,100 +1625,85 @@ class preteursController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-        $iClientId          = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
+        $clientId          = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
 
-        if (false === $iClientId) {
+        if (false === $clientId) {
             echo json_encode(array('text' => 'Une erreur est survenue', 'severity' => 'error'));
             return;
         }
 
+        /** @var BankAccountManager $bankAccountManager */
+        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
         /** @var Clients $clientEntity */
-        $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($iClientId);
-        $walletEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
+        $clientEntity = $clientRepository->find($clientId);
+        /** @var Wallet $wallet */
+        $wallet = $clientRepository->getWalletByType($clientId, WalletType::LENDER);
+        /** @var WalletRepository $walletRepository */
+        $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        /** @var BankAccount $currentBankAccount */
+        $currentBankAccount = $walletRepository->getBankAccountByUsage($wallet->getId(), BankAccountUsageType::LENDER_DEFAULT);
+        /** @var BankAccountUsage $bankAccountUsage */
+        $bankAccountUsage = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccountUsage')->findOneBy(['idWallet' => $wallet->getId()]);
 
-
-        /** @var \lenders_accounts $oLendersAccounts */
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oLendersAccounts->get($iClientId, 'id_client_owner');
-
-        $sCurrrentBic = $oLendersAccounts->bic;
-        $sNewBic      = str_replace(' ', '', strtoupper($_POST['bic']));
-        $sIban        = '';
+        if (null !== $currentBankAccount) {
+            $currentBic = $currentBankAccount->getBic();
+            $currentIban = $currentBankAccount->getIban();
+        } else {
+            $currentBic = '';
+            $currentIban = '';
+        }
+        $newBic      = str_replace(' ', '', strtoupper($_POST['bic']));
+        $iban        = '';
 
         for ($i = 1; $i <= 7; $i++) {
             if (empty($_POST['iban' . $i])) {
                 echo json_encode(array('text' => 'IBAN incorrect', 'severity' => 'error'));
                 return;
             }
-            $sIban .= strtoupper($_POST['iban' . $i]);
+            $iban .= strtoupper($_POST['iban' . $i]);
         }
-        $sCurrentIban = $oLendersAccounts->iban;
-        $sNewIban     = str_replace(' ', '', $sIban);
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
-        $oMailerManager = $this->get('unilend.service.email_manager');
+        $newIban     = str_replace(' ', '', $iban);
 
-        if ($sCurrrentBic !== $sNewBic && $sCurrentIban !== $sNewIban) {
-            if ($this->validateBic($sNewBic, $oLendersAccounts) && $this->validateIban($sNewIban, $oLendersAccounts)) {
-                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
-                $sMessage = 'Bic et IBAN modifiés';
-                $sSeverity   = 'valid';
-                $oLendersAccounts->update();
+        $message  = [];
+        $severity = [];
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager*/
+        $mailerManager= $this->get('unilend.service.email_manager');
+
+        if ($currentIban !== $newIban) {
+            if ($this->ficelle->isIBAN($newIban)) {
+                $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban);
+                $bankAccountUsage->setIdBankAccount($bankAccount);
+                $this->get('doctrine.orm.entity_manager')->flush();
+                $mailerManager->sendIbanUpdateToStaff($clientId, $currentIban, $newIban);
+                $message['iban']  = 'IBAN modifié ';
+                $severity['iban'] = 'valid';
             } else {
-                $sMessage = 'BIC / IBAN incorrect';
-                $sSeverity   = 'error';
+                $message['iban']  = 'IBAN incorrect';
+                $severity['iban'] = 'error ';
             }
-        } elseif ($sCurrrentBic !== $sNewBic) {
-            if ($this->validateBic($sNewBic, $oLendersAccounts)) {
-                $sMessage = 'BIC modifié';
-                $sSeverity   = 'valid';
-                $oLendersAccounts->update();
+        }
+
+        if ($currentBic !== $newBic) {
+            if ($this->ficelle->swift_validate($newBic)) {
+                $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban);
+                $message['bic']  = 'BIC modifié';
+                $severity['bic'] = 'valid';
             } else {
-                $sMessage = 'BIC incorrect';
-                $sSeverity   = 'error';
+                $message['bic']  = 'BIC incorrect' ;
+                $severity['bic'] = 'error';
             }
-        } elseif ($sCurrentIban !== $sNewIban) {
-            if ($this->validateIban($sNewIban, $oLendersAccounts)) {
-                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
-                $sMessage = 'IBAN modifié';
-                $sSeverity   = 'valid';
-                $oLendersAccounts->update();
-            } else {
-                $sMessage = 'IBAN incorrect';
-                $sSeverity   = 'error';
-            }
-        } else {
-            echo json_encode(array('text' => 'Aucune modification', 'severity' => 'warning'));
+        }
+
+        if ($currentIban == $newIban && $currentBic == $newBic) {
+            $message = ['text' => 'Aucune modification', 'severity' => 'warning'];
+            echo json_encode(['bic' => $message, 'iban' => $message]);
             return;
         }
-        echo json_encode(array('text' => $sMessage, 'severity' => $sSeverity));
-    }
 
-    /**
-     * @param string $sNewBic
-     * @param \lenders_accounts $oLendersAccounts
-     * @return bool
-     */
-    private function validateBic($sNewBic, \lenders_accounts &$oLendersAccounts)
-    {
-        if ($this->ficelle->swift_validate($sNewBic)) {
-            $oLendersAccounts->bic = $sNewBic;
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param string $sNewIban
-     * @param \lenders_accounts $oLendersAccounts
-     * @return bool
-     */
-    private function validateIban($sNewIban, \lenders_accounts &$oLendersAccounts)
-    {
-        if ($this->ficelle->isIBAN($sNewIban)) {
-            $oLendersAccounts->iban = $sNewIban;
-            return true;
-        }
-        return false;
+        echo json_encode(array('text' => $message, 'severity' => $severity));
     }
 
     public function _lenderOnlineOffline()

@@ -12,6 +12,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsage;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -57,9 +62,15 @@ class LenderProfileController extends Controller
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->getLenderAccount();
 
+        $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        /** @var Wallet $walletEntity */
+        $walletEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
+        /** @var BankAccount $currentBankAccount */
+        $currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getBankAccountByUsage($walletEntity->getId(), BankAccountUsageType::LENDER_DEFAULT);
+
         $templateData = [
             'client'        => $client->select('id_client = ' . $client->id_client)[0],
-            'lenderAccount' => $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0],
+            'bankAccount'   => $currentBankAccount,
             'isCIPActive'   => $this->isCIPActive()
         ];
 
@@ -1090,7 +1101,7 @@ class LenderProfileController extends Controller
     {
         /** @var ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        $clientStatusManager->changeClientStatusTriggeredByClientAction($client, $historyContent);
+        $clientStatusManager->changeClientStatusTriggeredByClientAction($client->id_client, $historyContent);
         $this->sendAccountModificationEmail($client);
     }
 
@@ -1189,22 +1200,28 @@ class LenderProfileController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
+        $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        /** @var Wallet $walletEntity */
+        $walletEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
+        /** @var BankAccount $currentBankAccount */
+        $currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getBankAccountByUsage($walletEntity->getId(), BankAccountUsageType::LENDER_DEFAULT);
+        /** @var BankAccountUsage $bankAccountUsage */
+        $bankAccountUsage = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccountUsage')->findOneBy(['idWallet' => $walletEntity->getId()]);
+
         /** @var string $historyContent */
         $historyContent = '<ul>';
 
-        $newIban = str_replace(' ', '', $request->request->get('iban', $lenderAccount->iban));
+        $newIban = str_replace(' ', '', $request->request->get('iban', $currentBankAccount->getIban()));
 
         if (false == empty($newIban) && true === $ficelle->isIBAN($newIban && false === strlen($newIban) < 27)) {
-            $lenderAccount->iban = $newIban;
             $historyContent .= '<li>' . $translator->trans('lender-profile_fiscal-tab-bank-info-section-iban') . '</li>';
         } else {
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-iban'));
         }
 
-        $newSwift = str_replace(' ', '', $request->request->get('bic', $lenderAccount->bic));
+        $newSwift = str_replace(' ', '', $request->request->get('bic', $currentBankAccount->getBic()));
 
         if (false == empty($newSwift) && true === $ficelle->swift_validate($newSwift)) {
-            $lenderAccount->bic = $newSwift;
             $historyContent .= '<li>' . $translator->trans('lender-profile_fiscal-tab-bank-info-section-bic') . '</li>';
         } else {
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-swift'));
@@ -1220,7 +1237,6 @@ class LenderProfileController extends Controller
         }
 
         if (false === empty($_FILES['iban-certificate']['name'])) {
-
             if (false === $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::RIB, 'iban-certificate')) {
                 $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-rib-file-error'));
             } else {
@@ -1231,7 +1247,10 @@ class LenderProfileController extends Controller
         $historyContent .= '</ul>';
 
         if (false === $this->get('session')->getFlashBag()->has('bankInfoUpdateError')) {
-            $lenderAccount->update();
+            $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+            $bankAccount        = $bankAccountManager->saveBankInformation($clientEntity, $newSwift, $newIban);
+            $bankAccountUsage->setIdBankAccount($bankAccount);
+            $this->get('doctrine.orm.entity_manager')->flush();
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
 
             if (false !== strpos($historyContent, '<li>')) {

@@ -395,7 +395,7 @@
                                 <span class="btn" id="change_bank_account_btn">Valider les modifications sur le RIB</span>
                             </td>
                             <td colspan="2" valign="middle">
-                                <p id="iban_ok" style="margin:0px;"></p>
+                                <p><span id="iban_ok" style="margin:0px;"></span>  <span id="bic_ok" style="margin:0px;"></span></p>
                             </td>
                         </tr>
                     </table>
@@ -1068,23 +1068,41 @@
         $.post(add_url + "/preteurs/change_bank_account", rib).done(function (data) {
             oJson = JSON.parse(data);
             var color = 'red';
-            if (typeof oJson.text !== 'undefined' && typeof oJson.severity !== 'undefined') {
-                switch (oJson.severity) {
-                    case 'valid':
-                        color = 'green';
-                        break;
-                    case 'warning':
-                        color = 'orange';
-                        break;
-                    case 'error':
-                        color = 'red';
-                        break;
-                }
-                $('#iban_ok').text(oJson.text);
-                $('#iban_ok').css("color", color);
-            } else {
+
+            if (typeof oJson.text == 'undefined' && typeof oJson.severity == 'undefined') {
                 $('#iban_ok').text('Une erreur est survenue');
                 $('#iban_ok').css("color", color);
+            } else {
+                if (typeof oJson.text.bic !== 'undefined' && typeof oJson.severity.bic !== 'undefined') {
+                    switch (oJson.severity.bic) {
+                        case 'valid':
+                            color = 'green';
+                            break;
+                        case 'warning':
+                            color = 'orange';
+                            break;
+                        case 'error':
+                            color = 'red';
+                            break;
+                    }
+                    $('#bic_ok').text(oJson.text.bic);
+                    $('#bic_ok').css("color", color);
+                }
+                if (typeof oJson.text.iban !== 'undefined' && typeof oJson.severity.iban !== 'undefined') {
+                    switch (oJson.severity.iban) {
+                        case 'valid':
+                            color = 'green';
+                            break;
+                        case 'warning':
+                            color = 'orange';
+                            break;
+                        case 'error':
+                            color = 'red';
+                            break;
+                    }
+                    $('#iban_ok').text(oJson.text.iban);
+                    $('#iban_ok').css("color", color);
+                }
             }
         });
     });
