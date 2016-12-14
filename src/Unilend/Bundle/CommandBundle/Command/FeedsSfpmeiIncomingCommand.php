@@ -508,10 +508,6 @@ EOF
         $clients_gestion_notifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
         $clients_gestion_mails_notif = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
-        /** @var \wallets_lines $wallets */
-        $wallets = $this->oEntityManager->getRepository('wallets_lines');
-        /** @var \bank_lines $bank */
-        $bank = $this->oEntityManager->getRepository('bank_lines');
 
         if (
             preg_match('/([0-9]{6}) ?[A-Z]+/', $motif, $matches)
