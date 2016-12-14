@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
@@ -17,6 +16,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Transfer;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 
@@ -55,12 +55,15 @@ class OperationManager
                 }
                 if ($item instanceof Loans) {
                     $operation->setLoan($item);
+                    $operation->setProject($item->getIdProject());
                 }
                 if ($item instanceof EcheanciersEmprunteur) {
                     $operation->setPaymentSchedule($item);
+                    $operation->setProject($item->getIdProject());
                 }
                 if ($item instanceof Echeanciers) {
                     $operation->setRepaymentSchedule($item);
+                    $operation->setLoan($item->getIdLoan());
                 }
                 if ($item instanceof Backpayline) {
                     $operation->setBackpayline($item);
@@ -170,5 +173,15 @@ class OperationManager
         $bankLine->status            = 1;
         $bankLine->amount            = $amountInCent;
         $bankLine->create();
+    }
+
+    public function loan(Loans $loan)
+    {
+        $operationType  = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_LOAN]);
+        $lenderWallet   = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $loan->getIdLender()])->getIdWallet();
+        $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($loan->getIdProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $amount         = round(bcdiv($loan->getAmount(), 100, 4), 2);
+
+        $this->newOperation($amount, $operationType, $lenderWallet, $borrowerWallet, [$loan]);
     }
 }

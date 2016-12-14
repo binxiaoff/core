@@ -125,7 +125,7 @@ class BidManager
 
         $iLenderId   = $oBid->id_lender_account;
         $iProjectId  = $oBid->id_project;
-        $fAmount     = $oBid->amount / 100;
+        $fAmount     = round(bcdiv($oBid->amount, 100, 4), 2);
         $fRate       = round(floatval($oBid->rate), 1);
 
         if (false === $project->get($iProjectId)) {
@@ -214,15 +214,18 @@ class BidManager
             throw new \Exception('bids-cip-validation-needed');
         }
 
-        $bid = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->find($oBid->id_bid);
-        $this->walletManager->commitBalance($bid);
-
         $iBidNb = $oBid->counter('id_project = ' . $oBid->id_project);
         $iBidNb++;
-
-        $oBid->id_lender_wallet_line = $bid->getIdLenderWalletLine();
         $oBid->ordre                 = $iBidNb;
         $oBid->create();
+
+        $bid = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->find($oBid->id_bid);
+        $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $bid->getIdLenderAccount()]);
+        $wallet = $walletMatching->getIdWallet();
+        $this->walletManager->engageBalance($wallet, $fAmount, $bid);
+
+        $oBid->id_lender_wallet_line = $bid->getIdLenderWalletLine();
+        $oBid->update();
 
         // Liste des offres non utilisées
         $aAllOffers = $oWelcomeOfferDetails->select('id_client = ' . $iClientId . ' AND status = 0');
@@ -397,7 +400,9 @@ class BidManager
         $this->oEntityManager->getRepository('transactions_types');
 
         $bid = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->find($oBid->id_bid);
-        $this->walletManager->releaseBalance($bid, $fAmount);
+        $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $bid->getIdLenderAccount()]);
+        $wallet = $walletMatching->getIdWallet();
+        $this->walletManager->releaseBalance($wallet, $fAmount, $bid);
 
         $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
         $fAmountX100 = $fAmount * 100;

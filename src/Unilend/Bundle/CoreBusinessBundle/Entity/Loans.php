@@ -27,9 +27,12 @@ class Loans
     private $idTransfer;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -182,11 +185,11 @@ class Loans
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return Loans
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -196,7 +199,7 @@ class Loans
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -480,11 +483,11 @@ class Loans
     /**
      * Set idTypeContract
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract $idTypeContract
+     * @param UnderlyingContract $idTypeContract
      *
      * @return Loans
      */
-    public function setIdTypeContract(\Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract $idTypeContract = null)
+    public function setIdTypeContract(UnderlyingContract $idTypeContract = null)
     {
         $this->idTypeContract = $idTypeContract;
 

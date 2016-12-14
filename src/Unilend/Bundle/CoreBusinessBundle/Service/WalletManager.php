@@ -44,31 +44,25 @@ class WalletManager
         }
     }
 
-    public function commitBalance(Bids $bid)
+    public function engageBalance(Wallet $wallet, $amount, $origin)
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $amountInCent   = $bid->getAmount();
-            $amountToCommit = round(bcdiv($amountInCent, 100, 4), 2);
-
-            $walletMatching = $this->entityManager->getRepository('AccountMatching')->findOneBy(['idLenderAccount' => $bid->getIdLenderAccount()]);
-            $wallet = $walletMatching->getIdWallet();
-
-            if (-1 === bccomp($wallet->getAvailableBalance(), $amountToCommit)) {
+            if (-1 === bccomp($wallet->getAvailableBalance(), $amount)) {
                 new \DomainException('The available balance must not be lower than zero');
             }
 
-            $availableBalance = bcsub($wallet->getAvailableBalance(), $amountToCommit, 2);
-            $committedBalance = bcadd($wallet->getCommittedBalance(), $amountToCommit, 2);
+            $availableBalance = bcsub($wallet->getAvailableBalance(), $amount, 2);
+            $committedBalance = bcadd($wallet->getCommittedBalance(), $amount, 2);
             $wallet->setAvailableBalance($availableBalance);
             $wallet->setCommittedBalance($committedBalance);
 
-            $this->snap($wallet, [$bid]);
+            $this->snap($wallet, [$origin]);
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
 
-            $this->legacyCommitBalance($wallet, $bid);
+            $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
 
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
@@ -76,13 +70,10 @@ class WalletManager
         }
     }
 
-    public function releaseBalance(Bids $bid, $amount)
+    public function releaseBalance(Wallet $wallet, $amount, $origin)
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $walletMatching = $this->entityManager->getRepository('AccountMatching')->findOneBy(['idLenderAccount' => $bid->getIdLenderAccount()]);
-            $wallet = $walletMatching->getIdWallet();
-
             if (-1 === bccomp($wallet->getCommittedBalance(), $amount)) {
                 new \DomainException('The committed balance must not be lower than zero');
             }
@@ -92,12 +83,12 @@ class WalletManager
             $wallet->setAvailableBalance($availableBalance);
             $wallet->setCommittedBalance($committedBalance);
 
-            $this->snap($wallet, [$bid]);
+            $this->snap($wallet, [$origin]);
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
 
-            $this->legacyReleaseBalance($wallet, $bid, $amount);
+            $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
 
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
@@ -105,15 +96,17 @@ class WalletManager
         }
     }
 
-    private function legacyCommitBalance(Wallet $wallet, Bids $bid)
+    private function legacyCommitBalance($clientId, $amount, Bids $bid)
     {
         /** @var \transactions $transaction */
         $transaction = $this->legacyEntityManager->getRepository('transactions');
         /** @var \wallets_lines $walletLine */
         $walletLine = $this->legacyEntityManager->getRepository('wallets_lines');
 
-        $transaction->id_client        = $wallet->getIdClient()->getIdClient();
-        $transaction->montant          = -$bid->getAmount();
+        $amountInCent = bcmul($amount, 100);
+
+        $transaction->id_client        = $clientId;
+        $transaction->montant          = -$amountInCent;
         $transaction->id_langue        = 'fr';
         $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;
@@ -127,14 +120,14 @@ class WalletManager
         $walletLine->id_transaction           = $transaction->id_transaction;
         $walletLine->status                   = \wallets_lines::STATUS_VALID;
         $walletLine->type                     = \wallets_lines::VIRTUAL;
-        $walletLine->amount                   = -$bid->getAmount();
+        $walletLine->amount                   = -$amountInCent;
         $walletLine->id_project               = $bid->getIdProject();
         $walletLine->create();
 
         $bid->setIdLenderWalletLine($walletLine->id_wallet_line);
     }
 
-    private function legacyReleaseBalance(Wallet $wallet, Bids $bid, $amount)
+    private function legacyReleaseBalance($clientId, $amount, Bids $bid)
     {
         /** @var \transactions $transaction */
         $transaction = $this->legacyEntityManager->getRepository('transactions');
@@ -143,7 +136,7 @@ class WalletManager
 
         $amountInCent = bcmul($amount, 100);
 
-        $transaction->id_client        = $wallet->getIdClient()->getIdClient();
+        $transaction->id_client        = $clientId;
         $transaction->montant          = $amountInCent;
         $transaction->id_langue        = 'fr';
         $transaction->date_transaction = date('Y-m-d H:i:s');
