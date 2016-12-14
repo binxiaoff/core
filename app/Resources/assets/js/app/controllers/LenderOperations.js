@@ -137,7 +137,7 @@ $doc.on(Utility.clickEvent, '.table-myloans-item', function (event) {
   }
 
   // By default clicking on a loan will open it, however if it is already open and details loaded with tab active, clicking it will close the details
-  if (activeTab && $details.length > 0 && $item.is('.ui-details-open') && $('a[href="' + loanIdElem + '-details-' + activeTab + '"][data-toggle="tab"]').first().is('.active')) {
+  if (activeTab && $details.length > 0 && $item.is('.ui-details-open') && $('a[href="' + loanIdElem + '-details-' + activeTab + '"][data-toggle="tab"]').first().parent().is('li.active')) {
     activeTab = false
   }
 
