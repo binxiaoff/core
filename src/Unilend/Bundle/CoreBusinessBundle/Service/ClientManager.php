@@ -11,7 +11,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 /**
@@ -242,9 +243,9 @@ class ClientManager
             $clientsAddress->setIdClient($client->getIdClient());
             $this->em->persist($clientsAddress);
 
-            if (
-                in_array($client->getType(), [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])
-                && false === empty($company)
+            if (null !== $company
+                && ($typeId == WalletType::LENDER && in_array($client->getType(), [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])
+                    || $typeId == WalletType::BORROWER)
             ){
                 $company->setIdClientOwner($client->getIdClient());
                 $this->em->persist($company);
