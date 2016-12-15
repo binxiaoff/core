@@ -292,7 +292,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        return $this->multiBytePad(strtoupper(trim($ficelle->stripAccents($name))), 60, self::PADDING_CHAR, STR_PAD_RIGHT);
+        return $this->multiBytePad(strtoupper(trim(preg_replace('/[^A-Za-z0-9\.\-]/', ' ', $ficelle->stripAccents($name)))), 60, self::PADDING_CHAR, STR_PAD_RIGHT);
     }
 
     /**
