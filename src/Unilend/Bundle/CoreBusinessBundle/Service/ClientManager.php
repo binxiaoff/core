@@ -83,24 +83,25 @@ class ClientManager
      * If the lender has accepted the last TOS, the session will not be set, and we check if there is a new TOS all the time
      * Otherwise, the session will be set with accepted = false. We check no longer the now TOS, but we read the value from the session.
      */
-    public function ifLastTOSAccepted()
+    public function checkLastTOSAccepted()
     {
         $session = $this->requestStack->getCurrentRequest()->getSession();
-        if ($session->has(self::SESSION_KEY_TOS_ACCEPTED))
-        {
+
+        if ($session->has(self::SESSION_KEY_TOS_ACCEPTED)) {
             return; // already checked and not accepted
         }
 
         $token = $this->tokenStorage->getToken();
+
         if ($token) {
             $user = $token->getUser();
+
             if ($user instanceof UserLender) {
                 /** @var \clients $client */
                 $client = $this->oEntityManager->getRepository('clients');
-                if ($client->get($user->getClientId())) {
-                    if (false === $this->isAcceptedCGV($client, $this->getLastTosId($client))) {
-                        $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
-                    }
+
+                if ($client->get($user->getClientId()) && false === $user->hasAcceptedCurrentTerms()) {
+                    $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
                 }
             }
         }
@@ -173,9 +174,8 @@ class ClientManager
     {
         if (empty($oClient->id_client)) {
             return false;
-        } else {
-            return $oClient->isBorrower();
         }
+        return $oClient->isBorrower();
     }
 
     public function getClientBalance(\clients $oClient)
@@ -201,22 +201,7 @@ class ClientManager
 
     public function hasAcceptedCurrentTerms(\clients $oClient)
     {
-        /** @var \acceptations_legal_docs $acceptedTerms */
-        $acceptedTerms = $this->oEntityManager->getRepository('acceptations_legal_docs');
-        /** @var \settings $settings */
-        $settings = $this->oEntityManager->getRepository('settings');
-
-        if (in_array($oClient->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
-            $settings->get('Lien conditions generales inscription preteur societe', 'type');
-            $sTermsAndConditionsLink = $settings->value;
-        } else {
-            $settings->get('Lien conditions generales inscription preteur particulier', 'type');
-            $sTermsAndConditionsLink = $settings->value;
-        }
-
-        $aAcceptedTermsByClient = $acceptedTerms->selectAccepts('id_client = ' . $oClient->id_client);
-
-        return in_array($sTermsAndConditionsLink, $aAcceptedTermsByClient);
+        return $this->isAcceptedCGV($oClient, $this->getLastTosId($oClient));
     }
 
     public function getClientSubscriptionStep(\clients $oClient)
@@ -356,5 +341,4 @@ class ClientManager
 
         return $clientAddressEntity;
     }
-
 }

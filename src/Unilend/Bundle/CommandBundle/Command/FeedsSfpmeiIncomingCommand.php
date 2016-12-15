@@ -284,7 +284,7 @@ EOF
         /** @var \projects_remb $projects_remb */
         $projects_remb = $this->oEntityManager->getRepository('projects_remb');
 
-        $aRepaymentSchedules = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $iProjectId, 'ordre ASC');
+        $aRepaymentSchedules = $echeanciers_emprunteur->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC');
 
         foreach ($aRepaymentSchedules as $aRepayment) {
             $fMonthlyAmount = round(bcdiv($aRepayment['montant'], 100, 2) + bcdiv($aRepayment['commission'], 100, 2) + bcdiv($aRepayment['tva'], 100, 2), 2);
@@ -634,7 +634,7 @@ EOF
 
             $fNewAmount = bcdiv($receptions->montant, 100, 2);
 
-            foreach ($oEcheanciersEmprunteur->select('status_emprunteur = 1 AND id_project = ' . $projects->id_project, 'ordre DESC') as $e) {
+            foreach ($oEcheanciersEmprunteur->select('id_project = ' . $projects->id_project . ' AND status_emprunteur = 1', 'ordre DESC') as $e) {
                 $fMonthlyAmount = round(bcdiv($e['montant'], 100, 2) + bcdiv($e['commission'], 100, 2) + bcdiv($e['tva'], 100, 2), 2);
 
                 if ($fMonthlyAmount <= $fNewAmount) {

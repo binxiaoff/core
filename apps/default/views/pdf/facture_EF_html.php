@@ -35,7 +35,7 @@
 
 				<ul>
 					<li>
-						<span><?=$this->lng['pdf-facture']['commission-de-3-h.t.']?> :</span>
+						<span><?=str_replace('%commissionPercentage%', $this->commissionPercentage, $this->lng['pdf-facture']['commission-h.t.'])?> :</span>
 						<span><?=$this->ficelle->formatNumber($this->ht)?> €</span>
 					</li>
 					<li>

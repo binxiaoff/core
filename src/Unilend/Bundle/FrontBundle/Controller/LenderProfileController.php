@@ -452,8 +452,10 @@ class LenderProfileController extends Controller
 
     /**
      * @Route("/profile/person/identity-update", name="profile_person_identity_update")
-     * @param Request $request
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
      * @return RedirectResponse
      */
     public function personFormAction(Request $request)
@@ -539,6 +541,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/legal-entity/identity-update", name="profile_legal_entity_identity_update")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function legalEntityFormAction(Request $request)
     {
@@ -731,6 +734,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/person/fiscal-address-update", name="profile_person_fiscal_address_update")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function personFiscalAddressFormAction(Request $request)
     {
@@ -861,6 +865,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/legal-entity/fiscal-address-update", name="profile_legal_entity_fiscal_address_update")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function legalEntityFiscalAddressFormAction(Request $request)
     {
@@ -933,9 +938,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
      * @Route("/profile/postal-address-update", name="profile_postal_address_update")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
      * @return RedirectResponse
      */
     public function postalAddressFormAction(Request $request)
@@ -1013,6 +1020,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/documents/submit", name="lender_completeness_submit")
      * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function lenderCompletenessFormAction(Request $request)
     {
@@ -1051,10 +1059,9 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param integer $lenderAccountId
-     * @param integer $attachmentType
-     * @param string  $fieldName
-     *
+     * @param int    $lenderAccountId
+     * @param int    $attachmentType
+     * @param string $fieldName
      * @return bool
      */
     private function uploadAttachment($lenderAccountId, $attachmentType, $fieldName)
@@ -1075,8 +1082,8 @@ class LenderProfileController extends Controller
 
         if (is_numeric($result)) {
             $greenPointAttachment->get($result, 'id_attachment');
-            $greenPointAttachment->revalidate   = 1;
-            $greenPointAttachment->final_status = 0;
+            $greenPointAttachment->revalidate   = \greenpoint_attachment::REVALIDATE_YES;
+            $greenPointAttachment->final_status = \greenpoint_attachment::FINAL_STATUS_NO;
             $greenPointAttachment->update();
         }
 
@@ -1131,6 +1138,7 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/ajax/zip", name="lender_profile_ajax_zip")
      * @Method("GET")
+     * @Security("has_role('ROLE_LENDER')")
      */
     public function getZipAction(Request $request)
     {
@@ -1144,11 +1152,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
-     *
-     * @return Response
      * @Route("/profile/ifu", name="get_ifu")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     * @return Response
      */
     public function downloadIFUAction(Request $request)
     {
@@ -1186,6 +1194,7 @@ class LenderProfileController extends Controller
 
     /**
      * @Route("/profile/update_bank_details", name="update_bank_details")
+     * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
@@ -1284,7 +1293,6 @@ class LenderProfileController extends Controller
 
     /**
      * @param int $clientType
-     *
      * @return array
      */
     private function getFundsOrigin($clientType)
@@ -1307,9 +1315,10 @@ class LenderProfileController extends Controller
 
 
     /**
-     * @param Request $request
      * @Route("profile/security/submit-identification", name="profile_security_submit_identification")
+     * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
      * @return Response
      */
     public function securityIdentificationFormAction(Request $request)
@@ -1374,11 +1383,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
      * @Route("/profile/security/submit-password", name="profile_security_submit_password")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
      * @return Response
      */
     public function securityPasswordFormAction(Request $request)
@@ -1431,11 +1440,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
      * @Route("/profile/security/submit-secret-question", name="profile_security_submit_secret_question")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
      * @return Response
      */
     public function securitySecretQuestionFormAction(Request $request)
@@ -1589,11 +1598,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Request $request
      * @Route("/profile/request-tax-exemption", name="profile_fiscal_information_tax_exemption")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
      * @return Response
      */
     public function requestTaxExemptionAction(Request $request)
@@ -1734,7 +1743,7 @@ class LenderProfileController extends Controller
     /**
      * @return array
      */
-    public function getTaxExemptionDateRange()
+    private function getTaxExemptionDateRange()
     {
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');

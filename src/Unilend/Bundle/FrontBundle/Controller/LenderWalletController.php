@@ -261,12 +261,7 @@ class LenderWalletController extends Controller
                 return $this->json(['url' => $redirectUrl], Response::HTTP_OK);
             }
         }
-        return $this->json(
-            [
-                'message' => $this->render('pages/lender_wallet/deposit_money_result.html.twig', ['code' => 0])->getContent()
-            ],
-            Response::HTTP_INTERNAL_SERVER_ERROR
-        );
+        return $this->json(['message' => $this->render('pages/lender_wallet/deposit_money_result.html.twig', ['code' => 0])->getContent()], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -285,10 +280,12 @@ class LenderWalletController extends Controller
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
-
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
 
+        $paylineParameter = [
+            'token' => $request->request->get('token', $request->query->get('token'))
+        ];
 
         if ($client->get($hash, 'hash')) {
             $token = $request->query->get('token');

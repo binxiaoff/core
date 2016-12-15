@@ -79,7 +79,8 @@
                     <td>
                         <span><?= $this->clients->id_client ?></span>
                     </td>
-                    <td colspan="2"><h3>Exonération fiscale</h3></td>
+                    <td><h3>Exonération fiscale</h3></td>
+                    <td><h3>Informations MRZ</h3></td>
                 </tr>
                 <tr class="particulier">
                     <th>Civilite :</th>
@@ -87,7 +88,7 @@
                         <input type="radio" name="civilite" id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> value="Mme"><label for="civilite1">Madame</label>
                         <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."><label for="civilite2">Monsieur</label>
                     </td>
-                    <td colspan="2" rowspan="6" style="vertical-align: top">
+                    <td rowspan="6" style="vertical-align: top">
                         <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
                             <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $this->iNextYear ?>/check" class="thickbox cboxElement">
                                 <input type="checkbox" id="tax_exemption_<?= $this->iNextYear ?>" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
@@ -106,6 +107,50 @@
                             <label for="tax_exemption_<?= $iExemptionYear ?>"><?= $iExemptionYear ?></label>
                             <br>
                         <?php endforeach; ?>
+                    </td>
+                    <td rowspan="6" style="vertical-align: top">
+                        <table style="border-left: 1px solid;">
+                            <tr>
+                                <th colspan="2" style="text-align: center;">Prêteur</th>
+                            </tr>
+                            <tr class="particulier">
+                                <th>Nationalité :</th>
+                                <td><?= isset($this->lenderIdentityMRZData['identity_nationality']) ? $this->lenderIdentityMRZData['identity_nationality'] : '' ?></td>
+                            </tr>
+                            <tr class="particulier">
+                                <th>Pays émetteur :</th>
+                                <td><?= isset($this->lenderIdentityMRZData['identity_issuing_country']) ? $this->lenderIdentityMRZData['identity_issuing_country'] : '' ?></td>
+                            </tr>
+                            <tr class="particulier">
+                                <th>Autorité émettrice :</th>
+                                <td><?= isset($this->lenderIdentityMRZData['identity_issuing_authority']) ? $this->lenderIdentityMRZData['identity_issuing_authority'] : '' ?></td>
+                            </tr>
+                            <tr class="particulier">
+                                <th>N°. de la pièce :</th>
+                                <td><?= isset($this->lenderIdentityMRZData['identity_document_number']) ? $this->lenderIdentityMRZData['identity_document_number'] : '' ?></td>
+                            </tr>
+                            <?php if (false === empty($this->hostIdentityMRZData)) : ?>
+                                <tr>
+                                    <th colspan="2" style="text-align: center;">Hébergeur</th>
+                                </tr>
+                                <tr class="particulier">
+                                    <th>Nationalité :</th>
+                                    <td><?= isset($this->hostIdentityMRZData['identity_nationality']) ? $this->hostIdentityMRZData['identity_nationality'] : '' ?></td>
+                                </tr>
+                                <tr class="particulier">
+                                    <th>Pays émetteur :</th>
+                                    <td><?= isset($this->hostIdentityMRZData['identity_issuing_country']) ? $this->hostIdentityMRZData['identity_issuing_country'] : '' ?></td>
+                                </tr>
+                                <tr class="particulier">
+                                    <th>Autorité émettrice :</th>
+                                    <td><?= isset($this->hostIdentityMRZData['identity_issuing_authority']) ? $this->hostIdentityMRZData['identity_issuing_authority'] : '' ?></td>
+                                </tr>
+                                <tr class="particulier">
+                                    <th>N°. de la pièce :</th>
+                                    <td><?= isset($this->hostIdentityMRZData['identity_document_number']) ? $this->hostIdentityMRZData['identity_document_number'] : '' ?></td>
+                                </tr>
+                            <?php endif; ?>
+                        </table>
                     </td>
                 </tr>
                 <tr class="particulier">
@@ -756,7 +801,7 @@
                                             Compte validé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />par <?= $this->users->name ?></td>
                                         <?php else : ?>
                                             <?= $historyEntry['content'] . ' le ' . date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
-                                            <br>par <?= $this->users->name ?>
+                                            <br>par <?= (-1 != $a['id_user']) ? $this->users->name : ' le CRON de validation automatique Greenpoint'?></td>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

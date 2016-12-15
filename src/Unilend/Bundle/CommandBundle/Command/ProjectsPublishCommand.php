@@ -38,7 +38,7 @@ EOF
         /** @var bool $bHasProjectPublished */
         $bHasProjectPublished = false;
 
-        $aProjectToFund = $oProject->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication_full <= NOW()", [], '', '', false);
+        $aProjectToFund = $oProject->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication <= NOW()", [], '', '', false);
         $oLogger->info('Number of projects to publish: ' . count($aProjectToFund), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         foreach ($aProjectToFund as $aProject) {
@@ -256,7 +256,7 @@ EOF
                     $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
                     $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
                     $clients_gestion_mails_notif->id_project      = $project->id_project;
-                    $clients_gestion_mails_notif->date_notif      = $project->date_publication_full;
+                    $clients_gestion_mails_notif->date_notif      = $project->date_publication;
 
                     if ($clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
                         $clients_gestion_mails_notif->immediatement = 1;

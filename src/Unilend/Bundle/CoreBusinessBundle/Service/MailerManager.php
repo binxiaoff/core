@@ -213,14 +213,7 @@ class MailerManager
         $oBorrower->get($oCompany->id_client_owner, 'id_client');
 
         if ($oBorrower->status == 1) {
-            $endHour = substr($oProject->date_retrait_full, 11, 5);
-
-            if ($endHour == '00:00') {
-                $this->oSettings->get('Heure fin periode funding', 'type');
-                $endHour = $this->oSettings->value;
-            }
-
-            $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $oProject->date_retrait . ' ' . $endHour . ':00');
+            $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $oProject->date_retrait);
 
             if ($inter['mois'] > 0) {
                 $remainingDuration = $inter['mois'] . ' mois';
@@ -305,14 +298,7 @@ class MailerManager
         /** @var \loans $loan */
         $loan = $this->oEntityManager->getRepository('loans');
 
-        $endHour = substr($project->date_retrait_full, 11, 5);
-
-        if ($endHour == '00:00') {
-            $this->oSettings->get('Heure fin periode funding', 'type');
-            $endHour = $this->oSettings->value;
-        }
-
-        $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->date_retrait . ' ' . $endHour . ':00');
+        $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->date_retrait);
 
         if ($inter['mois'] > 0) {
             $remainingDuration = $inter['mois'] . ' mois';
@@ -498,18 +484,7 @@ class MailerManager
             $oProject->get($oBid->id_project);
             $oCompany->get($oProject->id_company);
 
-            /** @var \settings $oSettings */
-            $oSettings = $this->oEntityManager->getRepository('settings');
-            $oEndDate  = new \DateTime($oProject->date_retrait_full);
-            if ($oProject->date_fin != '0000-00-00 00:00:00') {
-                $oEndDate = new \DateTime($oProject->date_fin);
-            }
-            if ($oEndDate->format('H') === '00') {
-                $oSettings->get('Heure fin periode funding', 'type');
-                $iEndHour = (int)$oSettings->value;
-                $oEndDate->add(new \DateInterval('PT' . $iEndHour . 'H'));
-            }
-
+            $oEndDate   = $oProject->date_fin != '0000-00-00 00:00:00' ? new \DateTime($oProject->date_fin) : new \DateTime($oProject->date_retrait);
             $oNow       = new \DateTime();
             $sInterval  = $this->formatDateDiff($oNow, $oEndDate);
             $bIsAutoBid = false === empty($oBid->id_autobid);
@@ -785,8 +760,8 @@ class MailerManager
             $sMailClient = $oClients->email;
         }
 
-        $oPublicationDate = $oProject->date_publication_full != '0000-00-00 00:00:00' ? new \DateTime($oProject->date_publication_full) : new \DateTime($oProject->date_publication);
-        $oEndDate         = $oProject->date_retrait_full != '0000-00-00 00:00:00' ? new \DateTime($oProject->date_retrait_full) : $oEndDate = new \DateTime($oProject->date_retrait);
+        $oPublicationDate = new \DateTime($oProject->date_publication);
+        $oEndDate         = new \DateTime($oProject->date_retrait);
 
         $oFundingTime = $oPublicationDate->diff($oEndDate);
         $iFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
@@ -1905,7 +1880,7 @@ class MailerManager
             'raison_sociale'     => $company->name,
             'montant'            => $ficelle->formatNumber($projects->amount, 0),
             'duree'              => $projects->period,
-            'duree_financement'  => (new \DateTime($projects->date_publication_full))->diff(new \DateTime($projects->date_retrait_full))->d,
+            'duree_financement'  => (new \DateTime($projects->date_publication))->diff(new \DateTime($projects->date_retrait))->d,
             'nb_preteurs'        => $loans->getNbPreteurs($projects->id_project),
             'lien_fb'            => $this->getFacebookLink(),
             'lien_tw'            => $this->getTwitterLink(),
@@ -1913,6 +1888,52 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('emprunteur-dernier-remboursement', $varMail);
+        $message->setTo($client->email);
+        $this->mailer->send($message);
+    }
+
+    /**
+     * @param \clients $client
+     * @param $mailType
+     */
+    public function sendClientValidationEmail(\clients $client, $mailType)
+    {
+        $varMail = [
+            'surl'    => $this->sSUrl,
+            'url'     => $this->sFUrl,
+            'prenom'  => $client->prenom,
+            'projets' => $this->sFUrl . '/projets-a-financer',
+            'lien_fb' => $this->getFacebookLink(),
+            'lien_tw' => $this->getTwitterLink(),
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage($mailType, $varMail);
+        $message->setTo($client->email);
+        $this->mailer->send($message);
+    }
+
+    /**
+     * @param \clients $client
+     * @param \offres_bienvenues $welcomeOffer
+     */
+    public function sendWelcomeOfferEmail(\clients $client, \offres_bienvenues $welcomeOffer)
+    {
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        $varMail = [
+            'surl'            => $this->sSUrl,
+            'url'             => $this->sFUrl,
+            'prenom_p'        => $client->prenom,
+            'projets'         => $this->sFUrl . '/projets-a-financer',
+            'offre_bienvenue' => $ficelle->formatNumber($welcomeOffer->montant / 100),
+            'lien_fb'         => $this->getFacebookLink(),
+            'lien_tw'         => $this->getTwitterLink(),
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('offre-de-bienvenue', $varMail);
         $message->setTo($client->email);
         $this->mailer->send($message);
     }

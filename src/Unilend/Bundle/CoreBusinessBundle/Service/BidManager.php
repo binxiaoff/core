@@ -165,7 +165,7 @@ class BidManager
         }
 
         $oCurrentDate = new \DateTime();
-        $oEndDate  = new \DateTime($project->date_retrait_full);
+        $oEndDate     = new \DateTime($project->date_retrait);
         if ($project->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($project->date_fin);
         }

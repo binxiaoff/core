@@ -87,6 +87,7 @@ class UserProvider implements UserProviderInterface
                     $balance,
                     $initials,
                     $client->prenom,
+                    $client->nom,
                     $clientStatus,
                     $hasAcceptedCurrentTerms,
                     $notifications,

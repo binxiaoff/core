@@ -28,20 +28,17 @@
 
 class echeanciers extends echeanciers_crud
 {
-    const STATUS_PENDING          = 0;
-    const STATUS_REPAID           = 1;
-    const STATUS_PARTIALLY_REPAID = 2;
-    const IS_NOT_EARLY_REFUND     = 0;
-    const IS_EARLY_REFUND         = 1;
+    const STATUS_PENDING                  = 0;
+    const STATUS_REPAID                   = 1;
+    const STATUS_PARTIALLY_REPAID         = 2;
+    const IS_NOT_EARLY_REFUND             = 0;
+    const IS_EARLY_REFUND                 = 1;
+    const STATUS_REPAYMENT_EMAIL_NOT_SENT = 0;
+    const STATUS_REPAYMENT_EMAIL_SENT     = 1;
 
     public function __construct($bdd, $params = '')
     {
         parent::echeanciers($bdd, $params);
-        \Unilend\core\Loader::loadData('clients');
-        \Unilend\core\Loader::loadData('loans');
-        \Unilend\core\Loader::loadData('projects_status');
-        \Unilend\core\Loader::loadData('tax_type');
-        \Unilend\core\Loader::loadData('transactions_types');
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -504,7 +501,8 @@ class echeanciers extends echeanciers_crud
                 SUM(interets) AS interets,
                 status_emprunteur
             FROM echeanciers
-            WHERE id_project = :id_project GROUP BY ordre';
+            WHERE id_project = :id_project 
+            GROUP BY ordre';
 
         $res       = [];
         $statement = $this->bdd->executeQuery($sql,
@@ -541,7 +539,7 @@ class echeanciers extends echeanciers_crud
             WHERE e.status IN(' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND l.status = 0
                 AND (
-                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
+                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
                     OR unpaid.date_echeance IS NOT NULL
                 )';
 
@@ -600,7 +598,7 @@ class echeanciers extends echeanciers_crud
 
     public function onMetAjourLesDatesEcheances($projectId, $ordre, $date_echeance, $date_echeance_emprunteur)
     {
-        $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $projectId . '" AND ordre = "' . $ordre . '" ';
+        $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $projectId . ' AND status_emprunteur = 0 AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
     }
 
@@ -1035,7 +1033,7 @@ class echeanciers extends echeanciers_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND echeanciers.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers
                         WHERE echeanciers.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
@@ -1220,7 +1218,7 @@ class echeanciers extends echeanciers_crud
                               INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                               WHERE ps2.status = ' . \projects_status::PROBLEME . '
                               AND psh2.id_project = e.id_project
-                              ORDER BY psh2.id_project_status_history DESC
+                              ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                               LIMIT 1
                               )) > 180)), TRUE, FALSE) = FALSE
                   GROUP BY year, quarter, month) as t
@@ -1243,6 +1241,33 @@ class echeanciers extends echeanciers_crud
         }
         $statement->closeCursor();
         return $data;
+    }
+
+    public function getRepaidRepaymentToNotify($offset = 0, $limit = 100)
+    {
+        $query = 'SELECT e.*
+                  FROM echeanciers e
+                  INNER join transactions t ON t.id_echeancier = e.id_echeancier
+                  WHERE e.status = :repaid
+                  AND e.status_email_remb = :not_sent
+                  GROUP BY e.id_echeancier
+                  LIMIT :limit OFFSET :offset';
+
+        $bind = [
+            'repaid'   => self::STATUS_REPAID,
+            'not_sent' => self::STATUS_REPAYMENT_EMAIL_NOT_SENT,
+            'limit'    => $limit,
+            'offset'   => $offset,
+        ];
+
+        $type = [
+            'limit' => \PDO::PARAM_INT,
+            'offset' => \PDO::PARAM_INT,
+        ];
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
 }
