@@ -365,7 +365,7 @@ class bids extends bids_crud
         $aBind = array('projectId' => $projectId);
         $aType = array('section' => \PDO::PARAM_INT);
 
-        $sQuery     = 'SELECT count(DISTINCT id_lender_account) FROM `bids` WHERE id_project = :projectId';
+        $sQuery     = 'SELECT COUNT(DISTINCT id_lender_account) FROM `bids` WHERE id_project = :projectId';
         $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
 
         return $oStatement->fetchColumn(0);

@@ -47,6 +47,7 @@
             <argument type="service" id="unilend.service.project_manager" />
             <argument type="service" id="unilend.frontbundle.service.lender_account_display_manager" />
             <argument type="service" id="unilend.service.company_balance_sheet_manager" />
+            <argument type="service" id="cache" />
         </service>
 
         <service id="unilend.frontbundle.provider.route_provider" class="Unilend\Bundle\FrontBundle\Service\RouteProvider">

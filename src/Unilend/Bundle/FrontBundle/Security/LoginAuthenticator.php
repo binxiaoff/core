@@ -180,10 +180,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             if (in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
                 return new RedirectResponse($this->router->generate('lender_completeness'));
             }
-
-            if (false === $user->hasAcceptedCurrentTerms()) {
-                //TODO add  message about Terms
-            }
         }
 
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
