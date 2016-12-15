@@ -351,7 +351,7 @@ class preteursController extends bootstrap
         /** @var Clients $clientEntity */
         $clientEntity = $clientRepository->find($this->clients->id_client);
         /** @var Wallet $walletEntity */
-        $walletEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
+        $walletEntity = $clientRepository->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
         /** @var BankAccount $currentBankAccount */
         $currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getBankAccountByUsage($walletEntity->getId(), BankAccountUsageType::LENDER_DEFAULT);
 
@@ -1645,8 +1645,6 @@ class preteursController extends bootstrap
         $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
         /** @var BankAccount $currentBankAccount */
         $currentBankAccount = $walletRepository->getBankAccountByUsage($wallet->getId(), BankAccountUsageType::LENDER_DEFAULT);
-        /** @var BankAccountUsage $bankAccountUsage */
-        $bankAccountUsage = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccountUsage')->findOneBy(['idWallet' => $wallet->getId()]);
 
         if (null !== $currentBankAccount) {
             $currentBic = $currentBankAccount->getBic();
@@ -1674,9 +1672,7 @@ class preteursController extends bootstrap
 
         if ($currentIban !== $newIban) {
             if ($this->ficelle->isIBAN($newIban)) {
-                $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban);
-                $bankAccountUsage->setIdBankAccount($bankAccount);
-                $this->get('doctrine.orm.entity_manager')->flush();
+                $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban, BankAccountUsageType::LENDER_DEFAULT);
                 $mailerManager->sendIbanUpdateToStaff($clientId, $currentIban, $newIban);
                 $message['iban']  = 'IBAN modifié ';
                 $severity['iban'] = 'valid';
@@ -1688,7 +1684,7 @@ class preteursController extends bootstrap
 
         if ($currentBic !== $newBic) {
             if ($this->ficelle->swift_validate($newBic)) {
-                $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban);
+                $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban, BankAccountUsageType::LENDER_DEFAULT);
                 $message['bic']  = 'BIC modifié';
                 $severity['bic'] = 'valid';
             } else {

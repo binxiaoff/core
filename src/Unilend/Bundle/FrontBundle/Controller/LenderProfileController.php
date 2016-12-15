@@ -1205,8 +1205,6 @@ class LenderProfileController extends Controller
         $walletEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
         /** @var BankAccount $currentBankAccount */
         $currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getBankAccountByUsage($walletEntity->getId(), BankAccountUsageType::LENDER_DEFAULT);
-        /** @var BankAccountUsage $bankAccountUsage */
-        $bankAccountUsage = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccountUsage')->findOneBy(['idWallet' => $walletEntity->getId()]);
 
         /** @var string $historyContent */
         $historyContent = '<ul>';
@@ -1248,9 +1246,7 @@ class LenderProfileController extends Controller
 
         if (false === $this->get('session')->getFlashBag()->has('bankInfoUpdateError')) {
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-            $bankAccount        = $bankAccountManager->saveBankInformation($clientEntity, $newSwift, $newIban);
-            $bankAccountUsage->setIdBankAccount($bankAccount);
-            $this->get('doctrine.orm.entity_manager')->flush();
+            $bankAccountManager->saveBankInformation($clientEntity, $newSwift, $newIban, BankAccountUsageType::LENDER_DEFAULT);
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
 
             if (false !== strpos($historyContent, '<li>')) {

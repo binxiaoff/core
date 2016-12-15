@@ -689,8 +689,7 @@ class LenderSubscriptionController extends Controller
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
             $bic                = trim(strtoupper($post['bic']));
             $iban               = trim(strtoupper(str_replace(' ', '', $post['iban'])));
-            $bankAccount        = $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban);
-            $bankAccountManager->createBankAccountUsage($bankAccount, BankAccountUsageType::LENDER_DEFAULT);
+            $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban, BankAccountUsageType::LENDER_DEFAULT);
 
             $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($clientEntity, $post);
