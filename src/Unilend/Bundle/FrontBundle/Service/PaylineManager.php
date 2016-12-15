@@ -126,8 +126,7 @@ class PaylineManager
         $this->em->flush();
 
         if (false === isset($result['result']['code']) || $result['result']['code'] !== Backpayline::CODE_TRANSACTION_APPROVED) {
-            $this->handleError('alimentation preteur (wallet : ' . $wallet->getId() . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
-
+            $this->logger->error('alimentation preteur (wallet : ' . $wallet->getId() . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
             return false;
         }
 
@@ -170,7 +169,7 @@ class PaylineManager
                 $errorMsg = 'Payline amount for wallet id : '
                     . $backPayline->getWallet()->getId()
                     . 'is not the same between the response (' . $response['payment']['amount'] . ') and database (' . $backPayline->getAmount() . ') ';
-                $this->handleError($errorMsg);
+                $this->logger->error($errorMsg);
 
                 return false;
             }
@@ -178,56 +177,19 @@ class PaylineManager
             if ($response['result']['code'] == Backpayline::CODE_TRANSACTION_APPROVED) {
                 $this->operationManager->provisionLenderWallet($backPayline->getWallet(), $backPayline);
                 $this->notifyClientAboutMoneyTransfer($backPayline);
-                $this->notifyAboutPaylineApprovement($backPayline);
             } elseif ($response['result']['code'] !== Backpayline::CODE_TRANSACTION_CANCELLED) { // Payment error
-                $this->handleError('erreur sur page payment alimentation preteur (wallet id : ' . $backPayline->getWallet()->getId() . ') : ' . serialize($response));
+                $this->logger->error('erreur sur page payment alimentation preteur (wallet id : ' . $backPayline->getWallet()->getId() . ') : ' . serialize($response));
 
                 return false;
             }
         } else {
             $errorMsg = 'Payline order : ' . $response['order']['ref'] . ' cannot be found';
-            $this->handleError($errorMsg);
+            $this->logger->error($errorMsg);
 
             return false;
         }
 
         return $response['payment']['amount'];
-    }
-
-    private function notifyAboutPaylineApprovement(Backpayline $backPayline)
-    {
-        $settings = $this->entityManager->getRepository('settings');
-        $settings->get('DebugMailFrom', 'type');
-        $debugEmail = $settings->value;
-        $settings->get('DebugMailIt', 'type');
-        $sDestinatairesDebug = $settings->value;
-        $sHeadersDebug  = 'MIME-Version: 1.0' . "\r\n";
-        $sHeadersDebug .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $sHeadersDebug .= 'From: ' . $debugEmail . "\r\n";
-        $subject = '[Alerte] BACK PAYLINE Transaction approved';
-
-        $message = '<html>
-                        <head>
-                          <title>[Alerte] BACK PAYLINE Transaction approved</title>
-                        </head>
-                        <body>
-                          <h3>[Alerte] BACK PAYLINE Transaction approved</h3>
-                          <p>Un payement payline accepet&eacute; n\'a pas &eacute;t&eacute; mis &agrave; jour dans la BDD Unilend.</p>
-                          <table>
-                            <tr>
-                              <th>Id wallet : </th><td>' . $backPayline->getWallet()->getId() . '</td>
-                            </tr>
-                            <tr>
-                              <th>montant : </th><td>' . $backPayline->getAmount() / 100 . '</td>
-                            </tr>
-                            <tr>
-                              <th>serialize donnees payline : </th><td>' . $backPayline->getSerialize() . '</td>
-                            </tr>
-                          </table>
-                        </body>
-                    </html>';
-
-        mail($sDestinatairesDebug, $subject, $message, $sHeadersDebug);
     }
 
     private function notifyClientAboutMoneyTransfer(Backpayline $backPayline)
@@ -295,12 +257,5 @@ class PaylineManager
             $message->setTo($client->email);
             $this->mailer->send($message);
         }
-    }
-
-    private function handleError($errorMsg)
-    {
-        $this->logger->error($errorMsg);
-        mail('alertesit@unilend.fr', 'unilend erreur payline', 'alimentation preteur | ERROR : ' . $errorMsg);
-        return false;
     }
 }
