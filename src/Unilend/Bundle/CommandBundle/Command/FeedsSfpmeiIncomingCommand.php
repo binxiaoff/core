@@ -532,6 +532,8 @@ EOF
             }
 
             if ($clients->status == 1) {
+                $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND id_virement');
+
                 $notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
                 $notifications->id_lender = $lenders->id_lender_account;
                 $notifications->amount    = $receptions->montant;
