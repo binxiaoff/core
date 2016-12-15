@@ -516,12 +516,6 @@ EOF
             && $lenders->get($clients->id_client, 'id_client_owner')
             && false === $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
         ) {
-            $receptions->get($receptions->id_reception, 'id_reception');
-            $receptions->id_client = $clients->id_client;
-            $receptions->status_bo = 2;
-            $receptions->remb      = 1;
-            $receptions->update();
-
             if (1 != $lenders->status) {
                 $lenders->status = 1;
                 $lenders->update();

@@ -123,12 +123,6 @@ class LenderWalletController extends Controller
         $client = $entityManager->getRepository('clients');
         /** @var \transactions $transaction */
         $transaction = $entityManager->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $entityManager->getRepository('wallets_lines');
-        /** @var \bank_lines $bankLine */
-        $bankLine = $entityManager->getRepository('bank_lines');
-        /** @var \virements $bankTransfer */
-        $bankTransfer = $entityManager->getRepository('virements');
         /** @var \lenders_accounts $lender */
         $lender = $entityManager->getRepository('lenders_accounts');
         /** @var \offres_bienvenues_details $welcomeOfferDetails */
@@ -190,36 +184,9 @@ class LenderWalletController extends Controller
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
                 $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             } else {
-                $transaction->id_client        = $client->id_client;
-                $transaction->montant          = '-' . ($amount * 100);
-                $transaction->id_langue        = 'fr';
-                $transaction->date_transaction = date('Y-m-d H:i:s');
-                $transaction->status           = \transactions::STATUS_VALID; // on met en mode reglé pour ne plus avoir la somme sur le compte
-                $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
-                $transaction->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL; // on signal que c'est un retrait
-                $transaction->create();
-
-                $walletLine->id_lender                = $lender->id_lender_account;
-                $walletLine->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-                $walletLine->id_transaction           = $transaction->id_transaction;
-                $walletLine->status                   = \wallets_lines::STATUS_VALID;
-                $walletLine->type                     = 1;
-                $walletLine->amount                   = '-' . ($amount * 100);
-                $walletLine->create();
-
-                $bankLine->id_wallet_line    = $walletLine->id_wallet_line;
-                $bankLine->id_lender_account = $lender->id_lender_account;
-                $bankLine->status            = 1;
-                $bankLine->amount            = '-' . ($amount * 100);
-                $bankLine->create();
-
-                $bankTransfer->id_client      = $client->id_client;
-                $bankTransfer->id_transaction = $transaction->id_transaction;
-                $bankTransfer->montant        = $amount * 100;
-                $bankTransfer->motif          = $client->getLenderPattern($client->id_client);
-                $bankTransfer->type           = 1;
-                $bankTransfer->status         = 0;
-                $bankTransfer->create();
+                $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->id_client, WalletType::LENDER);
+                $wireTransferOut = $this->get('unilend.service.operation_manager')->withdraw($wallet, $amount);
+                $transaction->get($wireTransferOut->getIdVirement(), 'status = ' . \transactions::STATUS_VALID . ' AND id_virement');
 
                 $notification->type      = \notifications::TYPE_DEBIT;
                 $notification->id_lender = $lender->id_lender_account;

@@ -104,6 +104,10 @@ class OperationManager
             $originField  = 'idBackpayline';
             $amountInCent = $origin->getAmount();
         } elseif ($origin instanceof Receptions) {
+            $origin->setIdClient($wallet->getIdClient()->getIdClient());
+            $origin->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED);
+            $origin->setRemb(1); // todo: delete the field
+
             $type         = OperationType::LENDER_PROVISION_BY_WIRE_TRANSFER;
             $originField  = 'idWireTransferIn';
             $amountInCent = $origin->getMontant();
@@ -116,14 +120,13 @@ class OperationManager
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => $type]);
         $operation     = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([$originField => $origin, 'idType' => $operationType]);
 
-        if ($operation instanceof Operation) {
-            // Already treated.
-            return true;
+        if (null === $operation) {
+            $this->newOperation($amount, $operationType, null, $wallet, [$origin]);
+
+            $this->legacyProvisionLenderWallet($wallet, $origin);
         }
 
-        $this->newOperation($amount, $operationType, null, $wallet, [$origin]);
-
-        $this->legacyProvisionLenderWallet($wallet, $origin);
+        $this->em->flush();
 
         return true;
     }
@@ -183,5 +186,92 @@ class OperationManager
         $amount         = round(bcdiv($loan->getAmount(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, $lenderWallet, $borrowerWallet, [$loan]);
+    }
+
+    public function withdraw(Wallet $wallet, $amount)
+    {
+        $this->em->getConnection()->beginTransaction();
+        try {
+            switch ($wallet->getIdType()->getLabel()) {
+                case WalletType::LENDER :
+                    $operationTypeLabel = OperationType::LENDER_WITHDRAW_BY_WIRE_TRANSFER;
+                    break;
+                case WalletType::BORROWER :
+                    $operationTypeLabel = OperationType::BORROWER_WITHDRAW_BY_WIRE_TRANSFER;
+                    break;
+                case WalletType::UNILEND :
+                    $operationTypeLabel = OperationType::UNILEND_WITHDRAW_BY_WIRE_TRANSFER;
+                    break;
+                default:
+                    throw new \InvalidArgumentException('Unsupported wallet type : ' . $wallet->getIdType()->getLabel() . 'by withdraw');
+                    break;
+            }
+
+            /** @var Virements $wireTransferOut */
+            $wireTransferOut = $this->em->getRepository('UnilendCoreBusinessBundle:Virements');
+            $wireTransferOut->setIdClient($wallet->getIdClient()->getIdClient());
+            $wireTransferOut->setMontant(bcmul($amount, 100));
+            $wireTransferOut->setMotif($wallet->getWireTransferPattern());
+            $wireTransferOut->setType(1); //todo: delete the field
+            $wireTransferOut->setStatus(0);
+            $this->em->persist($wireTransferOut);
+
+            $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => $operationTypeLabel]);
+
+            $this->newOperation($amount, $operationType, $wallet, null, [$wireTransferOut]);
+
+            $this->em->flush();
+
+            $this->em->getConnection()->commit();
+
+            $this->legacyWithdraw($wallet, $amount);
+
+            return $wireTransferOut;
+
+        } catch (\Exception $e) {
+            $this->em->getConnection()->rollBack();
+            throw $e;
+        }
+    }
+
+    public function legacyWithdraw(Wallet $wallet, $amount)
+    {
+        /** @var \transactions $transaction */
+        $transaction = $this->entityManager->getRepository('transactions');
+        /** @var \wallets_lines $walletLine */
+        $walletLine = $this->entityManager->getRepository('wallets_lines');
+        /** @var \bank_lines $bankLine */
+        $bankLine = $this->entityManager->getRepository('bank_lines');
+        /** @var \virements $bankTransfer */
+        $bankTransfer = $this->entityManager->getRepository('virements');
+
+        $transaction->id_client        = $wallet->getIdClient()->getIdClient();
+        $transaction->montant          = '-' . (bcmul($amount, 100));
+        $transaction->id_langue        = 'fr';
+        $transaction->date_transaction = date('Y-m-d H:i:s');
+        $transaction->status           = \transactions::STATUS_VALID;
+        $transaction->ip_client        = '';
+        $transaction->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL;
+        $transaction->create();
+
+        $accountMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet->getId()]);
+        $lenderAccount   = $accountMatching->getIdLenderAccount();
+
+        $walletLine->id_lender                = $lenderAccount->getIdLenderAccount();
+        $walletLine->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
+        $walletLine->id_transaction           = $transaction->id_transaction;
+        $walletLine->status                   = \wallets_lines::STATUS_VALID;
+        $walletLine->type                     = 1;
+        $walletLine->amount                   = $transaction->montant;
+        $walletLine->create();
+
+        $bankLine->id_wallet_line    = $walletLine->id_wallet_line;
+        $bankLine->id_lender_account = $walletLine->id_lender;
+        $bankLine->status            = 1;
+        $bankLine->amount            = '-' . ($amount * 100);
+        $bankLine->create();
+
+        $bankTransfer->id_transaction = $transaction->id_transaction;
+        $bankTransfer->update();
     }
 }
