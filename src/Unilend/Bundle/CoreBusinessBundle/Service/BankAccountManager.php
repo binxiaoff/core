@@ -42,12 +42,11 @@ class BankAccountManager
 
     /**
      * @param Clients $clientEntity
-     * @param string $bic
-     * @param string $iban
-     * @param string $bankAccountUsageType
-     * @return BankAccount
+     * @param string  $bic
+     * @param string  $iban
+     * @param string  $bankAccountUsageType
      */
-    public function saveBankInformation(Clients $clientEntity, $bic, $iban, $bankAccountUsageType)
+    public function saveBankInformation(Clients $clientEntity, $bic, $iban, $bankAccountUsageTypeLabel)
     {
         /** @var ClientsRepository $clientsRepository */
         $clientsRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Clients');
@@ -60,52 +59,36 @@ class BankAccountManager
             $bankAccount->setIban($iban);
             $bankAccount->setBic($bic);
             $this->em->persist($bankAccount);
-        } else {
-            if ($bankAccount->getBic() !== $bic) {
-                $bankAccount->setBic($bic);
-            }
+        } elseif ($bankAccount->getBic() !== $bic) {
+            $bankAccount->setBic($bic);
         }
 
-        $this->em->flush();
-        $this->updateLegacyBankAccount($clientEntity, $bankAccount);
-
-        $walletType = $this->getWalletTypeFromBankAccountUsage($bankAccountUsageType);
+        $walletType = $this->getWalletTypeFromBankAccountUsage($bankAccountUsageTypeLabel);
         /** @var Wallet $wallet */
-        $wallet =  $clientsRepository->getWalletByType($bankAccount->getIdClient()->getIdClient(), $walletType);
-        /** @var BankAccountUsageType $bankAccountUsageTypeEntity */
-        $bankAccountUsageTypeEntity = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccountUsageType')->findOneByLabel($bankAccountUsageType);
-        /** @var BankAccountUsage $bankAccountUsage */
-        $bankAccountUsage = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccountUsage')->findOneBy(['idWallet' => $wallet->getId(), 'idUsageType' => $bankAccountUsageTypeEntity->getId()]);
+        $wallet = $clientsRepository->getWalletByType($bankAccount->getIdClient()->getIdClient(), $walletType);
+        if ($wallet) {
+            /** @var BankAccountUsageType $bankAccountUsageType */
+            $bankAccountUsageType = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccountUsageType')->findOneByLabel($bankAccountUsageTypeLabel);
+            /** @var BankAccountUsage $bankAccountUsage */
+            $bankAccountUsage = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccountUsage')->findOneBy(['idWallet' => $wallet, 'idUsageType' => $bankAccountUsageType]);
 
-        if ($bankAccountUsage === null) {
-            $this->createBankAccountUsage($bankAccount, $wallet, $bankAccountUsageTypeEntity);
-        } else {
-            if ($bankAccountUsage->getIdBankAccount()->getId() !== $bankAccount->getId()) {
-                $bankAccountUsage->setIdBankAccount($bankAccount);
-                $this->em->flush();
+            if ($bankAccountUsage === null) {
+                $bankAccountUsage = new BankAccountUsage();
+                $bankAccountUsage->setIdUsageType($bankAccountUsageType);
+                $bankAccountUsage->setIdWallet($wallet);
+                $this->em->persist($bankAccountUsage);
             }
+
+            $bankAccountUsage->setIdBankAccount($bankAccount);
         }
 
-        return $bankAccount;
-    }
-
-    /**
-     * @param BankAccount $bankAccount
-     * @param Wallet $wallet
-     * @param BankAccountUsageType $bankAccountUsageType
-     */
-    private function createBankAccountUsage(BankAccount $bankAccount, Wallet $wallet, BankAccountUsageType $bankAccountUsageType)
-    {
-        $bankAccountUsage = new BankAccountUsage();
-        $bankAccountUsage->setIdUsageType($bankAccountUsageType);
-        $bankAccountUsage->setIdWallet($wallet);
-        $bankAccountUsage->setIdBankAccount($bankAccount);
-        $this->em->persist($bankAccountUsage);
         $this->em->flush();
+
+        $this->updateLegacyBankAccount($clientEntity, $bankAccount);
     }
 
     /**
-     * @param Clients $client
+     * @param Clients     $client
      * @param BankAccount $bankAccount
      */
     private function updateLegacyBankAccount(Clients $client, BankAccount $bankAccount)
@@ -121,11 +104,12 @@ class BankAccountManager
 
     /**
      * @param string $bankAccountUsageType
+     *
      * @return null|string
      */
     private function getWalletTypeFromBankAccountUsage($bankAccountUsageType)
     {
-        switch ($bankAccountUsageType){
+        switch ($bankAccountUsageType) {
             case BankAccountUsageType::LENDER_DEFAULT:
                 $walletType = WalletType::LENDER;
                 break;

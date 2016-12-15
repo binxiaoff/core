@@ -12,8 +12,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\Validator\Constraints\Bic;
+use Symfony\Component\Validator\Constraints\Iban;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsage;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -1210,16 +1211,17 @@ class LenderProfileController extends Controller
         $historyContent = '<ul>';
 
         $newIban = str_replace(' ', '', $request->request->get('iban', $currentBankAccount->getIban()));
-
-        if (false == empty($newIban) && true === $ficelle->isIBAN($newIban && false === strlen($newIban) < 27)) {
+        $validator = $this->get('validator');
+        $ibanViolations = $validator->validate($newIban, new Iban());
+        if (0 === $ibanViolations->count() ) {
             $historyContent .= '<li>' . $translator->trans('lender-profile_fiscal-tab-bank-info-section-iban') . '</li>';
         } else {
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-iban'));
         }
 
         $newSwift = str_replace(' ', '', $request->request->get('bic', $currentBankAccount->getBic()));
-
-        if (false == empty($newSwift) && true === $ficelle->swift_validate($newSwift)) {
+        $bicViolations = $validator->validate($newSwift, new Bic());
+        if (0 === $bicViolations->count() ) {
             $historyContent .= '<li>' . $translator->trans('lender-profile_fiscal-tab-bank-info-section-bic') . '</li>';
         } else {
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-swift'));

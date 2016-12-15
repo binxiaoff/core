@@ -1670,10 +1670,13 @@ class preteursController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager*/
         $mailerManager= $this->get('unilend.service.email_manager');
 
+        $validator      = $this->get('validator');
+        $ibanViolations = null;
+        $bicVoilations  = null;
         if ($currentIban !== $newIban) {
-            if ($this->ficelle->isIBAN($newIban)) {
-                $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban, BankAccountUsageType::LENDER_DEFAULT);
-                $mailerManager->sendIbanUpdateToStaff($clientId, $currentIban, $newIban);
+            $ibanViolations = $validator->validate($newIban, new \Symfony\Component\Validator\Constraints\Iban());
+
+            if (0 === $ibanViolations->count()) {
                 $message['iban']  = 'IBAN modifié ';
                 $severity['iban'] = 'valid';
             } else {
@@ -1683,14 +1686,21 @@ class preteursController extends bootstrap
         }
 
         if ($currentBic !== $newBic) {
-            if ($this->ficelle->swift_validate($newBic)) {
-                $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban, BankAccountUsageType::LENDER_DEFAULT);
+            $bicVoilations = $validator->validate($newBic, new \Symfony\Component\Validator\Constraints\Bic());
+
+            if (0 === $bicVoilations->count()) {
                 $message['bic']  = 'BIC modifié';
                 $severity['bic'] = 'valid';
             } else {
-                $message['bic']  = 'BIC incorrect' ;
+                $message['bic']  = 'BIC incorrect';
                 $severity['bic'] = 'error';
             }
+        }
+        if (0 === count($ibanViolations) && 0 === count($bicVoilations)) {
+            if ($currentIban !== $newIban) {
+                $mailerManager->sendIbanUpdateToStaff($clientId, $currentIban, $newIban);
+            }
+            $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban, BankAccountUsageType::LENDER_DEFAULT);
         }
 
         if ($currentIban == $newIban && $currentBic == $newBic) {

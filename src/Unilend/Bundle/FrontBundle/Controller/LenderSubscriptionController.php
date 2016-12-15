@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\Validator\Constraints\Bic;
+use Symfony\Component\Validator\Constraints\Iban;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
@@ -642,11 +644,15 @@ class LenderSubscriptionController extends Controller
 
         $post = $request->request->all();
 
-        if (empty($post['bic']) || (isset($post['bic']) && false === $ficelle->swift_validate(trim($post['bic'])))) {
+        $validator = $this->get('validator');
+        $bic = $request->request->get('bic');
+        $bicViolations = $validator->validate($bic, new Bic());
+        if (0 !== $bicViolations->count()) {
             $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-bic-error-message'));
         }
-
-        if (empty($post['iban']) || false == $ficelle->isIBAN($post['iban'])) {
+        $iban = $request->request->get('iban');
+        $ibanViolations = $validator->validate($iban, new Iban());
+        if (0 !== $ibanViolations->count()) {
             $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-iban-error-message'));
         } elseif (strtoupper(substr($post['iban'], 0, 2)) !== 'FR') {
             $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-iban-not-french-error-message'));
