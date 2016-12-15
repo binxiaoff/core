@@ -7,11 +7,18 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Virements
  *
- * @ORM\Table(name="virements")
+ * @ORM\Table(name="virements", indexes={@ORM\Index(name="id_project", columns={"id_project"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class Virements
 {
+    const STATUS_PENDING = 0;
+    const STATUS_TREATED = 1;
+
+    const TYPE_LENDER   = 1;
+    const TYPE_BORROWER = 2;
+    const TYPE_UNILEND  = 3;
     /**
      * @var integer
      *
@@ -20,9 +27,12 @@ class Virements
     private $idClient;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -31,7 +41,7 @@ class Virements
      *
      * @ORM\Column(name="id_transaction", type="integer", nullable=false)
      */
-    private $idTransaction;
+    private $idTransaction = 0;
 
     /**
      * @var integer
@@ -64,7 +74,7 @@ class Virements
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added_xml", type="datetime", nullable=false)
+     * @ORM\Column(name="added_xml", type="datetime", nullable=true)
      */
     private $addedXml;
 
@@ -120,11 +130,11 @@ class Virements
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return Virements
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject = null)
     {
         $this->idProject = $idProject;
 
@@ -134,7 +144,7 @@ class Virements
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -341,5 +351,23 @@ class Virements
     public function getIdVirement()
     {
         return $this->idVirement;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

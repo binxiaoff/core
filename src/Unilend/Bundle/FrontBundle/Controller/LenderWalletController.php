@@ -186,7 +186,7 @@ class LenderWalletController extends Controller
             } else {
                 $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->id_client, WalletType::LENDER);
                 $wireTransferOut = $this->get('unilend.service.operation_manager')->withdraw($wallet, $amount);
-                $transaction->get($wireTransferOut->getIdVirement(), 'status = ' . \transactions::STATUS_VALID . ' AND id_virement');
+                $transaction->get($wireTransferOut->getIdTransaction());
 
                 $notification->type      = \notifications::TYPE_DEBIT;
                 $notification->id_lender = $lender->id_lender_account;
