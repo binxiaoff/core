@@ -46,6 +46,8 @@ class AppKernel extends Kernel
             new Ekino\Bundle\NewRelicBundle\EkinoNewRelicBundle(),
             new Sonata\CacheBundle\SonataCacheBundle(),
             new CL\Bundle\SlackBundle\CLSlackBundle(),
+            new Unilend\Bundle\ApiClientBundle\UnilendApiClientBundle(),
+            new JMS\SerializerBundle\JMSSerializerBundle()
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

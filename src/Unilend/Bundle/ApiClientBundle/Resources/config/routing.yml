@@ -1,0 +1,3 @@
+unilend_api_client_homepage:
+    path:     /
+    defaults: { _controller: UnilendApiClientBundle:Default:index }
