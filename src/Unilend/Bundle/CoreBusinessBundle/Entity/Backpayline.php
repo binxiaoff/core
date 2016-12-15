@@ -7,22 +7,39 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Backpayline
  *
- * @ORM\Table(name="backpayline", indexes={@ORM\Index(name="idx_backpayline_token", columns={"token"})})
+ * @ORM\Table(name="backpayline", indexes={@ORM\Index(name="idx_backpayline_token", columns={"token"}), @ORM\Index(name="idx_id_wallet", columns={"id_wallet"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class Backpayline
 {
+
+    const WS_DEFAULT_VERSION = 3;
+
+    const CODE_TRANSACTION_APPROVED = '00000';
+    const CODE_TRANSACTION_CANCELLED = '02319';
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id")
+     * })
+     */
+    private $idWallet;
+
     /**
      * @var string
      *
-     * @ORM\Column(name="id", type="string", length=191, nullable=false)
+     * @ORM\Column(name="id", type="string", length=191, nullable=true)
      */
     private $id;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="date", type="string", length=191, nullable=false)
+     * @ORM\Column(name="date", type="string", length=191, nullable=true)
      */
     private $date;
 
@@ -36,21 +53,28 @@ class Backpayline
     /**
      * @var string
      *
-     * @ORM\Column(name="token", type="string", length=191, nullable=false)
+     * @ORM\Column(name="token", type="string", length=191, nullable=true)
      */
     private $token;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="serialize", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="serialize", type="text", length=16777215, nullable=true)
      */
     private $serialize;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="code", type="string", length=50, nullable=false)
+     * @ORM\Column(name="serialize_do_payment", type="text", length=16777215, nullable=true)
+     */
+    private $serializeDoPayment;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="code", type="string", length=50, nullable=true)
      */
     private $code;
 
@@ -64,7 +88,7 @@ class Backpayline
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -78,6 +102,55 @@ class Backpayline
     private $idBackpayline;
 
 
+
+    /**
+     * Set idWallet
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWallet
+     *
+     * @return Backpayline
+     */
+    public function setWallet(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWallet = null)
+    {
+        $this->idWallet = $idWallet;
+
+        return $this;
+    }
+
+    /**
+     * Get idWallet
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getWallet()
+    {
+        return $this->idWallet;
+    }
+
+
+    /**
+     * Set idWallet
+     *
+     * @param string $serializeDoPayment
+     *
+     * @return Backpayline
+     */
+    public function setSerializeDoPayment($serializeDoPayment = null)
+    {
+        $this->serializeDoPayment = $serializeDoPayment;
+
+        return $this;
+    }
+
+    /**
+     * Get idWalletserializeDoPaymen
+     *
+     * @return string
+     */
+    public function getSerializeDoPayment()
+    {
+        return $this->serializeDoPayment;
+    }
 
     /**
      * Set id
@@ -279,5 +352,23 @@ class Backpayline
     public function getIdBackpayline()
     {
         return $this->idBackpayline;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

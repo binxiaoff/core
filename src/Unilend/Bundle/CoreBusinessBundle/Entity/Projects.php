@@ -27,9 +27,12 @@ class Projects
     private $slug;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
      *
-     * @ORM\Column(name="id_company", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
+     * })
      */
     private $idCompany;
 
@@ -330,12 +333,9 @@ class Projects
     private $idProject;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus
+     * @var integer
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="status", referencedColumnName="status")
-     * })
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -392,11 +392,11 @@ class Projects
     /**
      * Set idCompany
      *
-     * @param integer $idCompany
+     * @param Companies $idCompany
      *
      * @return Projects
      */
-    public function setIdCompany($idCompany)
+    public function setIdCompany(Companies $idCompany)
     {
         $this->idCompany = $idCompany;
 
@@ -406,7 +406,7 @@ class Projects
     /**
      * Get idCompany
      *
-     * @return integer
+     * @return Companies
      */
     public function getIdCompany()
     {
@@ -1410,11 +1410,11 @@ class Projects
     /**
      * Set status
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus $status
+     * @param integer $status
      *
      * @return Projects
      */
-    public function setStatus(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus $status = null)
+    public function setStatus($status)
     {
         $this->status = $status;
 
@@ -1424,7 +1424,7 @@ class Projects
     /**
      * Get status
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus
+     * @return int
      */
     public function getStatus()
     {

@@ -12,6 +12,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Receptions
 {
+    const STATUS_PENDING = 0;
+    const STATUS_MANUALLY_ASSIGNED = 1;
+    const STATUS_AUTO_ASSIGNED = 2;
+    const STATUS_REJECTED = 3;
+
     /**
      * @var string
      *

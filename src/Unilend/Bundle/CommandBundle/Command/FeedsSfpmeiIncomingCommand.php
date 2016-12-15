@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -507,10 +508,6 @@ EOF
         $clients_gestion_notifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
         $clients_gestion_mails_notif = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
-        /** @var \wallets_lines $wallets */
-        $wallets = $this->oEntityManager->getRepository('wallets_lines');
-        /** @var \bank_lines $bank */
-        $bank = $this->oEntityManager->getRepository('bank_lines');
 
         if (
             preg_match('/([0-9]{6}) ?[A-Z]+/', $motif, $matches)
@@ -519,40 +516,15 @@ EOF
             && $lenders->get($clients->id_client, 'id_client_owner')
             && false === $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
         ) {
-            $receptions->get($receptions->id_reception, 'id_reception');
-            $receptions->id_client = $clients->id_client;
-            $receptions->status_bo = 2;
-            $receptions->remb      = 1;
-            $receptions->update();
-
             if (1 != $lenders->status) {
                 $lenders->status = 1;
                 $lenders->update();
             }
 
-            $transactions->id_virement      = $receptions->id_reception;
-            $transactions->id_client        = $lenders->id_client_owner;
-            $transactions->montant          = $receptions->montant;
-            $transactions->id_langue        = 'fr';
-            $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = \transactions::STATUS_VALID;
-            $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
-            $transactions->ip_client        = '';
-            $transactions->create();
+            $reception = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptions->id_reception);
+            $wallet = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clients->id_client, WalletType::LENDER);
 
-            $wallets->id_lender                = $lenders->id_lender_account;
-            $wallets->id_transaction           = $transactions->id_transaction;
-            $wallets->amount                   = $receptions->montant;
-            $wallets->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-            $wallets->type                     = \wallets_lines::PHYSICAL;
-            $wallets->status                   = \wallets_lines::STATUS_VALID;
-            $wallets->create();
-
-            $bank->id_wallet_line    = $wallets->id_wallet_line;
-            $bank->id_lender_account = $lenders->id_lender_account;
-            $bank->status            = 1;
-            $bank->amount            = $receptions->montant;
-            $bank->create();
+            $this->getContainer()->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
 
             if ($clients->etape_inscription_preteur < 3) {
                 $clients->etape_inscription_preteur = 3;
@@ -560,6 +532,8 @@ EOF
             }
 
             if ($clients->status == 1) {
+                $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND id_virement');
+
                 $notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
                 $notifications->id_lender = $lenders->id_lender_account;
                 $notifications->amount    = $receptions->montant;

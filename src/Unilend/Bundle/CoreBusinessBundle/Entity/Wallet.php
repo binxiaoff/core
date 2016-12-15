@@ -71,6 +71,13 @@ class Wallet
      */
     private $idClient;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="wire_transfer_pattern", type="string", length=32, nullable=true)
+     */
+    private $wireTransferPattern;
+
 
 
     /**
@@ -243,5 +250,33 @@ class Wallet
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * Get wireTransferPattern
+     *
+     * @return null|string
+     */
+    public function getWireTransferPattern()
+    {
+        return $this->wireTransferPattern;
+    }
+
+    /**
+     * Set wireTransferPattern
+     *
+     * @return $this
+     */
+    public function setWireTransferPattern()
+    {
+        if ($this->getIdClient() instanceof Clients && $this->getIdClient()->getNom() && $this->getIdClient()->getPrenom()) {
+            $this->wireTransferPattern = mb_strtoupper(
+                str_pad($this->idClient, 6, 0, STR_PAD_LEFT) .
+                substr(\URLify::downcode($this->getIdClient()->getPrenom()), 0, 1) .
+                \URLify::downcode($this->getIdClient()->getNom())
+            );
+        }
+
+        return $this;
     }
 }

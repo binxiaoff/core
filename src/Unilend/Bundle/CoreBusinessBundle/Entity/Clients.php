@@ -1470,6 +1470,9 @@ class Clients
         return $this;
     }
 
+    /**
+     * @return string
+     */
     private function generateHash()
     {
         $uuid4 = Uuid::uuid4();

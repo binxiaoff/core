@@ -24,7 +24,7 @@ class OperationType
     const LENDER_PROVISION_BY_CREDIT_CARD           = 'lender_provision_by_credit_card';
     const LENDER_PROVISION_BY_WIRE_TRANSFER         = 'lender_provision_by_wire_transfer';
     const LENDER_REJECTED_BID                       = 'lender_rejected_bid';
-    const LENDER_WITHDRAW                           = 'lender_withdraw';
+    const LENDER_WITHDRAW_BY_WIRE_TRANSFER          = 'lender_withdraw_by_wire_transfer';
     const REJECTED_LOAN                             = 'rejected_loan';
     const TAX_CONTRIBUTIONS_ADDITIONNELLES          = 'tax_contributions_additionnelles';
     const TAX_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW = 'tax_contributions_additionnelles_withdraw';
@@ -42,8 +42,8 @@ class OperationType
     const TAX_RETENUES_A_LA_SOURCE_WITHDRAW         = 'tax_retenues_a_la_source_withdraw';
     const UNILEND_PROMOTIONAL_OPERATION             = 'unilend_promotional_operation';
     const UNILEND_PROMOTIONAL_OPERATION_WITHDRAW    = 'unilend_promotional_operation_withdraw';
-    const UNILEND_PROVISION                         = 'unilend_provision';
-    const UNILEND_WITHDRAW                          = 'unilend_withdraw';
+    const UNILEND_PROVISION_BY_WIRE_TRANSFER        = 'unilend_provision_by_wire_transfer';
+    const UNILEND_WITHDRAW_BY_WIRE_TRANSFER         = 'unilend_withdraw_by_wire_transfer';
 
     /**
      * @var integer
