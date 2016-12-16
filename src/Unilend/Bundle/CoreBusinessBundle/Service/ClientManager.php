@@ -153,30 +153,47 @@ class ClientManager
     }
 
     /**
-     * @param \clients $oClient
+     * @param \clients | Clients $oClient
      *
      * @return bool
      */
-    public function isLender(\clients $oClient)
+    public function isLender($oClient)
     {
-        if (empty($oClient->id_client)) {
-            return false;
-        } else {
+        if ($oClient instanceof Clients) {
+            $lenderWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($oClient->getIdClient(), WalletType::LENDER);
+            return null !== $lenderWallet;
+        }
+
+        if ($oClient instanceof \clients) {
+            if (empty($oClient->id_client)) {
+                return false;
+            }
             return $oClient->isLender();
         }
+
+        return false;
     }
 
     /**
-     * @param \clients $oClient
+     * @param \clients | Clients $oClient
      *
      * @return bool
      */
-    public function isBorrower(\clients $oClient)
+    public function isBorrower($oClient)
     {
-        if (empty($oClient->id_client)) {
-            return false;
+        if ($oClient instanceof Clients) {
+            $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($oClient->getIdClient(), WalletType::BORROWER);
+            return null !== $borrowerWallet;
         }
-        return $oClient->isBorrower();
+
+        if ($oClient instanceof \clients) {
+            if (empty($oClient->id_client)) {
+                return false;
+            }
+            return $oClient->isBorrower();
+        }
+
+        return false;
     }
 
     public function getClientBalance(\clients $oClient)
