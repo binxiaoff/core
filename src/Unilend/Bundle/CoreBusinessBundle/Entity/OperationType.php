@@ -15,14 +15,17 @@ class OperationType
     const BORROWER_PROJECT_COMMISSION               = 'borrower_project_commission';
     const BORROWER_PROVISION_BY_DIRECT_DEBIT        = 'borrower_provision_by_direct_debit';
     const BORROWER_PROVISION_BY_WIRE_TRANSFER       = 'borrower_provision_by_wire_transfer';
+    const BORROWER_PROVISION_BY_DIRECT_DEBIT_CANCEL = 'borrower_provision_by_direct_debit_cancel';
     const BORROWER_REPAYMENT_COMMISSION             = 'borrower_repayment_commission';
     const BORROWER_WITHDRAW_BY_WIRE_TRANSFER        = 'borrower_withdraw_by_wire_transfer';
     const CAPITAL_REPAYMENT                         = 'capital_repayment';
     const GROSS_INTEREST_REPAYMENT                  = 'gross_interest_repayment';
     const LENDER_BID                                = 'lender_bid';
     const LENDER_LOAN                               = 'lender_loan';
+    const LENDER_LOAN_REFUSED                       = 'lender_loan_refused';
     const LENDER_PROVISION_BY_CREDIT_CARD           = 'lender_provision_by_credit_card';
     const LENDER_PROVISION_BY_WIRE_TRANSFER         = 'lender_provision_by_wire_transfer';
+    const LENDER_PROVISION_BY_WIRE_TRANSFER_CANCEL  = 'lender_provision_by_wire_transfer_cancel';
     const LENDER_REJECTED_BID                       = 'lender_rejected_bid';
     const LENDER_WITHDRAW_BY_WIRE_TRANSFER          = 'lender_withdraw_by_wire_transfer';
     const REJECTED_LOAN                             = 'rejected_loan';

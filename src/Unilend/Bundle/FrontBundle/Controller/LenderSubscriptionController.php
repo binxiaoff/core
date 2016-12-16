@@ -911,7 +911,7 @@ class LenderSubscriptionController extends Controller
                 $clientHistory->create();
 
                 $paidAmount = bcdiv($paidAmountInCent, 100, 2);
-                $this->sendInternalMoneyTransferNotification($client, $paidAmount);
+                $this->sendInternalMoneyTransferNotification($client, $paidAmount); //todo: can be deleted after being confirmed by internal control team.
                 $this->addFlash(
                     'moneyTransferSuccess',
                     $translator->trans('lender-subscription_money-transfer-success-message', ['%depositAmount%' => $ficelle->formatNumber($paidAmount, 2)])
