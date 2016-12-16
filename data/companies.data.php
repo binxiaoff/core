@@ -116,7 +116,7 @@ class companies extends companies_crud
             FROM projects
             WHERE id_company = ' . $iCompanyId . '
             ' . $sStatus . '
-            ORDER BY status DESC';
+            ORDER BY status DESC, date_retrait DESC, added DESC';
 
         $resultat  = $this->bdd->query($sql);
         $aProjects = array();

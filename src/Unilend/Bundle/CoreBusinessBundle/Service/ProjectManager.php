@@ -988,4 +988,29 @@ class ProjectManager
             $this->oLogger->info('Cannot get Proxy', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
         }
     }
+
+    /**
+     * @param \projects $project
+     * @return null|float
+     */
+    public function getUnilendCommissionPercentage(\projects $project)
+    {
+        /** @var \tax_type $taxType */
+        $taxType = $this->oEntityManager->getRepository('tax_type');
+        /** @var \transactions $transaction */
+        $transaction = $this->oEntityManager->getRepository('transactions');
+
+        $taxType->get(\tax_type::TYPE_VAT);
+        $vatRate = $taxType->rate / 100;
+
+        if ($transaction->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
+            $unilendTaxCommissionFree         = bcdiv($transaction->montant_unilend, (1 + $vatRate), 4);
+            $projectAmountIncludingCommission = bcadd(abs($transaction->montant), $transaction->montant_unilend, 4);
+            $unilendCommissionRatio           = bcdiv($unilendTaxCommissionFree, $projectAmountIncludingCommission, 4);
+
+            return round(bcmul($unilendCommissionRatio, 100, 4), 2);
+        }
+
+        return null;
+    }
 }
