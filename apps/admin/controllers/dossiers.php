@@ -208,8 +208,8 @@ class dossiersController extends bootstrap
                 $this->phone   = $this->clients_adresses->telephone;
             }
 
-            $this->latitude  = $this->companies->latitude;
-            $this->longitude = $this->companies->longitude;
+            $this->latitude  = (float) $this->companies->latitude;
+            $this->longitude = (float) $this->companies->longitude;
 
             $this->aAnnualAccountsDates = array();
             $this->aAnalysts            = $this->users->select('(status = 1 AND id_user_type = 2) OR id_user = ' . $this->projects->id_analyste);
@@ -744,8 +744,8 @@ class dossiersController extends bootstrap
                     $this->companies->tribunal_com    = $_POST['tribunal_com'];
                     $this->companies->activite        = $_POST['activite'];
                     $this->companies->lieu_exploi     = $_POST['lieu_exploi'];
-                    $this->companies->latitude        = str_replace(',', '.', $_POST['latitude']);
-                    $this->companies->longitude       = str_replace(',', '.', $_POST['longitude']);
+                    $this->companies->latitude        = (float) str_replace(',', '.', $_POST['latitude']);
+                    $this->companies->longitude       = (float) str_replace(',', '.', $_POST['longitude']);
 
                     if ($this->companies->status_adresse_correspondance == 1) {
                         $this->companies->adresse1 = $_POST['adresse'];
