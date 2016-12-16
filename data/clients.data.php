@@ -588,6 +588,10 @@ class clients extends clients_crud
 
     public function getDataForBorrowerOperations(array $aProjects, DateTime $oStartDate, DateTime $oEndDate, $iOperation = null, $iClientId = null)
     {
+        if (empty($aProjects)) {
+            return [];
+        }
+
         if (null === $iClientId) {
             $iClientId = $this->id_client;
         }
