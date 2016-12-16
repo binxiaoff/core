@@ -413,18 +413,18 @@ class bids extends bids_crud
                 checked,
                 added,
                 updated,
-                ROUND(amount / 100) as amount_euro
+                ROUND(amount / 100) AS amount_euro
             FROM bids
             WHERE status = :status';
 
         if (false === empty($projectId)) {
-            $sql .= ' AND id_project = :id_project ';
+            $sql .= ' AND id_project = :id_project';
             $bind['id_project'] = $projectId;
             $type['id_project'] = \PDO::PARAM_INT;
         }
 
         if (false === empty($lenderId)) {
-            $sql .= ' AND id_lender_account = :id_lender ';
+            $sql .= ' AND id_lender_account = :id_lender';
             $bind['id_lender'] = $lenderId;
             $type['id_lender'] = \PDO::PARAM_INT;
         }

@@ -64,7 +64,7 @@ class LenderDashboardController extends Controller
 
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
-            if ($aLastIRR && $aLastIRR['status'] == \lenders_account_stats::STAT_VALID_OK) {
+            if ($aLastIRR && $aLastIRR['status'] == 0) {
                 $irr                = $aLastIRR['value'];
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
                 $hasIRR             = true;
@@ -95,9 +95,9 @@ class LenderDashboardController extends Controller
                     'days_left'        => $aProject['daysLeft'],
                     'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
                     'end_date'         => $aProject['date_retrait'],
-                    'funding_duration' => $projectStats->days
+                    'funding_duration' => $projectStats->days,
+                    'pending_bids'     => $bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'], $lender->id_lender_account)
                 ];
-                $ongoingBidsByProject[$iKey]['aPendingBids'] = $bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'], $lender->id_lender_account);
             }
 
             $company->get($aProject['id_company']);
