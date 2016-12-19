@@ -256,8 +256,14 @@ class ProjectsController extends Controller
                 $template['amountMax']                = $productManager->getMaxEligibleAmount($product);
             }
 
-            $cipManager           = $this->get('unilend.service.cip_manager');
-            $displayCipDisclaimer = $cipManager->hasValidEvaluation($lenderAccount);
+            $cipManager       = $this->get('unilend.service.cip_manager');
+            $productManager = $this->get('unilend.service_product.product_manager');
+            /** @var \product $product */
+            $product = $this->get('unilend.service.entity_manager')->getRepository('product');
+            $product->get($project->id_product);
+            $productContracts = $productManager->getAvailableContracts($product);
+
+            $displayCipDisclaimer = $cipManager->hasValidEvaluation($lenderAccount) && in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label'));
         }
 
         $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower);
