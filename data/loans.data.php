@@ -91,12 +91,22 @@ class loans extends loans_crud
         return array('solde' => $solde, 'nbValid' => $nbValid);
     }
 
-    public function getNbPreteurs($id_project)
+    public function getNbPreteurs($projectId)
     {
-        $sql = 'SELECT COUNT(DISTINCT id_lender) FROM `loans` WHERE id_project = ' . $id_project . ' AND status = ' . self::STATUS_ACCEPTED;
+        $query = '
+            SELECT COUNT(DISTINCT id_lender) 
+            FROM loans
+            WHERE id_project = :projectId AND status = :status';
+        $statement = $this->bdd->executeCacheQuery(
+            $query,
+            ['projectId' => $projectId, 'status' => self::STATUS_ACCEPTED],
+            ['projectId' => \PDO::PARAM_INT, 'status' => \PDO::PARAM_INT],
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__))
+        );
+        $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+        $statement->closeCursor();
 
-        $result = $this->bdd->query($sql);
-        return (int) $this->bdd->result($result);
+        return (int) $result[0];
     }
 
     public function getProjectLoansByLender($id_project)

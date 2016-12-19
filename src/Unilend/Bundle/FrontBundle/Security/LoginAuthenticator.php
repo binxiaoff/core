@@ -99,7 +99,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $password           = $request->request->get('_password');
         $captcha            = $request->request->get('captcha');
         $captchaInformation = $request->getSession()->get('captchaInformation');
-        $scrfToken          = $request->get('_csrf_token');
+        $csrfToken          = $request->get('_csrf_token');
 
         $request->getSession()->set(Security::LAST_USERNAME, $username);
 
@@ -108,7 +108,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             'password'           => $password,
             'captcha'            => $captcha,
             'captchaInformation' => $captchaInformation,
-            'csrfToken'          => $scrfToken
+            'csrfToken'          => $csrfToken
         ];
     }
 
@@ -140,8 +140,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             throw new CustomUserMessageAuthenticationException('wrong-captcha');
         }
 
-        if ($this->csrfTokenManager->isTokenValid(new CsrfToken('authenticate', $credentials['csrfToken'])) === false) {
-            throw new CustomUserMessageAuthenticationException(''); // Silence is golden
+        if (false === $this->csrfTokenManager->isTokenValid(new CsrfToken('authenticate', $credentials['csrfToken']))) {
+            throw new CustomUserMessageAuthenticationException('wrong-security-token');
         }
         return true;
     }
@@ -180,10 +180,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             if (in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
                 return new RedirectResponse($this->router->generate('lender_completeness'));
             }
-
-            if (false === $user->hasAcceptedCurrentTerms()) {
-                //TODO add  message about Terms
-            }
         }
 
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
@@ -220,7 +216,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         /** @var \login_log $loginLog */
         $loginLog = $this->entityManager->getRepository('login_log');
 
-        if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown'])) {
+        if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown', 'wrong captcha', 'wrong-security-token'])) {
             $oNowMinusTenMinutes = new \DateTime('NOW - 10 minutes');
             $iPreviousTries      = $loginLog->counter('IP = "' . $request->server->get('REMOTE_ADDR') . '" AND date_action >= "' . $oNowMinusTenMinutes->format('Y-m-d H:i:s') . '"');
             $iWaitingPeriod      = 0;

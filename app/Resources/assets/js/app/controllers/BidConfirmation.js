@@ -127,7 +127,8 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
             messages += '<p>' + element + '</p>'
           });
 
-          $('#modal-bid-error-prompt .modal-body .error-messages').html(messages)
+          $('#modal-bid-error-prompt .error-title').html(data.title)
+          $('#modal-bid-error-prompt .error-messages').html(messages)
           $('#modal-bid-error-prompt').uiModal('open')
           return
         }

@@ -90,18 +90,10 @@ class CompanyBalanceSheetManager
     {
         /** @var \settings $setting */
         $setting = $this->entityManager->getRepository('settings');
-        /** @var \company_tax_form_type $companyTaxFormType */
-        $companyTaxFormType = $this->entityManager->getRepository('company_tax_form_type');
-
-        $balanceSheetId = $companyBalanceSheet->id_bilan;
-        $companyTaxFormType->get($companyBalanceSheet->id_company_tax_form_type);
-
         $setting->get('Entreprises fundés au passage du risque lot 1', 'type');
         $beforeRiskCompanies = explode(',', $setting->value);
 
-        if ($companyTaxFormType->label != \company_tax_form_type::FORM_2033) {
-            return [];
-        }
+        $balanceSheetId = $companyBalanceSheet->id_bilan;
 
         $incomeStatement['form_type'] = \company_tax_form_type::FORM_2033;
 
@@ -113,7 +105,7 @@ class CompanyBalanceSheetManager
                 'project-detail_finance-column-investissements'            => $companyBalanceSheet->investissements,
             ];
         } else {
-            $aBalances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
+            $aBalances = $this->getBalanceSheetsByAnnualAccount([$balanceSheetId]);
 
             $turnover             = $aBalances[$balanceSheetId]['details']['FL'];
             $grossOperationIncome = $aBalances[$balanceSheetId]['details']['GG'] + $aBalances[$balanceSheetId]['details']['GA'] + $aBalances[$balanceSheetId]['details']['GB']

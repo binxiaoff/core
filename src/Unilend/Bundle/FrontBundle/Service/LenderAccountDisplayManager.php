@@ -18,8 +18,10 @@ class LenderAccountDisplayManager
     private $translator;
     /** @var CacheItemPoolInterface */
     private $cachePool;
-    /** CIPManager */
+    /** @var CIPManager */
     private $cipManager;
+    /** @var array|null */
+    private $cipIndicators = false;
 
     public function __construct(
         EntityManager $entityManager,
@@ -33,22 +35,6 @@ class LenderAccountDisplayManager
         $this->translator      = $translator;
         $this->cachePool       = $cachePool;
         $this->cipManager      = $cipManager;
-    }
-
-    public function getActivityForProject(\lenders_accounts $lenderAccount, $projectId, $projectStatus)
-    {
-        /** @var \projects $project */
-        $project = $this->entityManager->getRepository('projects');
-        $project->get($projectId);
-
-        $lenderActivity['isAdvised'] = $this->isProjectAdvisedForLender($project, $lenderAccount);
-        $lenderActivity['bids']      = $this->getBidsForProject($project->id_project, $lenderAccount);
-
-        if ($projectStatus >= \projects_status::FUNDE) {
-            $lenderActivity['loans'] = $this->getLoansForProject($project->id_project, $lenderAccount);
-        }
-
-        return $lenderActivity;
     }
 
     public function getBidsForProject($projectId, \lenders_accounts $lenderAccount)
@@ -213,10 +199,19 @@ class LenderAccountDisplayManager
      */
     public function isProjectAdvisedForLender(\projects $project, \lenders_accounts $lender)
     {
-        if (false === $this->cipManager->hasValidEvaluation($lender)) {
-           return false;
+        if (false === $this->cipIndicators) {
+            $this->cipIndicators = $this->cipManager->getIndicators($lender);
         }
-        $periodLimitation = $this->cipManager->getIndicators($lender)[CIPManager::INDICATOR_PROJECT_DURATION];
-        return is_null($periodLimitation) || $project->period <= $periodLimitation;
+
+        if (null === $this->cipIndicators) {
+            return false;
+        }
+
+        $durationLimit = $this->cipIndicators[CIPManager::INDICATOR_PROJECT_DURATION];
+
+        return (
+            null === $durationLimit
+            || $project->period <= $durationLimit
+        );
     }
 }

@@ -167,14 +167,14 @@ table.table-myoperations-borrower {
   }
 }
 
-.table-myoperations-borrower-prefunding,
-.table-myoperations-borrower-funding,
-.table-myoperations-borrower-postfunding {
+.table-borrower-prefunding,
+.table-borrower-funding,
+.table-borrower-postfunding {
   table-layout: fixed;
 
   th {
     text-align: left;
-    font-size: 11px;
+    font-size: 10px;
   }
 
   td {
@@ -186,7 +186,7 @@ table.table-myoperations-borrower {
   }
 }
 
-.table-myoperations-borrower-prefunding {
+.table-borrower-prefunding {
   // Columns
   .table-borrower-file {
     width: 9%;
@@ -218,7 +218,7 @@ table.table-myoperations-borrower {
   }
 }
 
-.table-myoperations-borrower-funding {
+.table-borrower-funding {
   // Columns
   .table-borrower-file {
     width: 9%;
@@ -249,7 +249,7 @@ table.table-myoperations-borrower {
   }
 }
 
-.table-myoperations-borrower-postfunding {
+.table-borrower-postfunding {
   // Columns
   .table-borrower-file {
     width: 9%;

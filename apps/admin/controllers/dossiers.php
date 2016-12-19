@@ -208,13 +208,13 @@ class dossiersController extends bootstrap
                 $this->phone   = $this->clients_adresses->telephone;
             }
 
-            $this->latitude  = $this->companies->latitude;
-            $this->longitude = $this->companies->longitude;
+            $this->latitude  = (float) $this->companies->latitude;
+            $this->longitude = (float) $this->companies->longitude;
 
             $this->aAnnualAccountsDates = array();
             $this->aAnalysts            = $this->users->select('(status = 1 AND id_user_type = 2) OR id_user = ' . $this->projects->id_analyste);
             $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = ' . $this->projects->id_commercial);
-            $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC');
+            $this->aEmails              = $this->projects_status_history->select('content != "" AND id_user > 0 AND id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC');
             $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added DESC');
             $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
@@ -744,8 +744,8 @@ class dossiersController extends bootstrap
                     $this->companies->tribunal_com    = $_POST['tribunal_com'];
                     $this->companies->activite        = $_POST['activite'];
                     $this->companies->lieu_exploi     = $_POST['lieu_exploi'];
-                    $this->companies->latitude        = str_replace(',', '.', $_POST['latitude']);
-                    $this->companies->longitude       = str_replace(',', '.', $_POST['longitude']);
+                    $this->companies->latitude        = (float) str_replace(',', '.', $_POST['latitude']);
+                    $this->companies->longitude       = (float) str_replace(',', '.', $_POST['longitude']);
 
                     if ($this->companies->status_adresse_correspondance == 1) {
                         $this->companies->adresse1 = $_POST['adresse'];
@@ -1833,7 +1833,7 @@ class dossiersController extends bootstrap
                                     $mailer->send($message);
                                 } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement') == true) {
                                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                                    $this->clients_gestion_mails_notif->immediatement = 1;
+                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                     $this->clients_gestion_mails_notif->update();
 
                                     $this->loans->get($e['id_loan']);
@@ -2437,8 +2437,8 @@ class dossiersController extends bootstrap
                 }
 
                 $oProjects->id_tree = $iTreeId;
-
             }
+
             $sCgvLink = $this->surl . $oProjectCgv->getUrlPath();
 
             if (empty($oProjectCgv->name)) {

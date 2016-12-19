@@ -61,8 +61,8 @@ class WelcomeOfferManager
             $sumTransactionOffers              = $transaction->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction IN(' . implode(', ', $virtualWelcomeOfferTransactions) . ')', 'montant');
             $sumAvailableOffers                = $sumUnilendOffers - $sumTransactionOffers;
 
-            $startWelcomeOfferDate = \DateTime::createFromFormat('Y-m-d H:i:s', $welcomeOffer->debut . '00:00:00');
-            $endWelcomeOfferDate   = \DateTime::createFromFormat('Y-m-d H:i:s', $welcomeOffer->fin . '23:59:59');
+            $startWelcomeOfferDate = \DateTime::createFromFormat('Y-m-d H:i:s', $welcomeOffer->debut . ' 00:00:00');
+            $endWelcomeOfferDate   = \DateTime::createFromFormat('Y-m-d H:i:s', $welcomeOffer->fin . ' 23:59:59');
             $today                 = new \DateTime();
 
             if ($startWelcomeOfferDate <= $today && $endWelcomeOfferDate >= $today) {

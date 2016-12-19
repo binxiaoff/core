@@ -601,7 +601,7 @@ class ProjectRequestController extends Controller
             }
 
             if (empty($products)){
-                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NON_FOUND);
+                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
             }
         } catch (\Exception $exception) {
             $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
@@ -1371,7 +1371,7 @@ class ProjectRequestController extends Controller
                     || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
                 ) {
                     $message = $translator->trans('project-request_end-page-negative-operating-result-message');
-                } else if (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NON_FOUND, $rejectReasons)) {
+                } else if (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
                     $message = $translator->trans('project-request_end-page-product-not-found-message');
                 } else {
                     $message = $translator->trans('project-request_end-page-external-rating-rejection-default-message');
