@@ -810,8 +810,6 @@
 
                         if (status == <?= \projects_status::A_FUNDER ?>) {
                             $(".change_statut").hide();
-                        } else if (status == <?= \projects_status::REMBOURSEMENT ?>) {
-
                         } else if (
                             status == <?= \projects_status::PROBLEME ?>
                             || status == <?= \projects_status::PROBLEME_J_X ?>
@@ -822,7 +820,10 @@
                             || status == <?= \projects_status::DEFAUT ?>
                         ) {
                             $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_update/<?= $this->projects->id_project ?>/" + status});
-                        } else {
+                        } else if (
+                          status != <?= \projects_status::REMBOURSEMENT ?>
+                          && status != <?= \projects_status::ABANDON ?>
+                        ) {
                             $(".change_statut").show();
                         }
                     });
