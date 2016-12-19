@@ -39,9 +39,6 @@ var cached = {
 function checkClientType() {
   var $clientTypePerson = $('input[name="client_type"][value="person"]:visible')
 
-  // @debug
-  // console.log('checkClientType', $clientTypePerson.prop('checked'))
-
   // Show person form
   if ($clientTypePerson.prop('checked')) {
     // Clear form validation messages on hiding form
@@ -72,8 +69,6 @@ function checkClientType() {
 
 // Show/hide postal address section
 function checkAddressIsNotSame() {
-  // @debug
-  // console.log('checkAddressIsNotSame', $('.form-preter-create:visible .toggle-correspondence-address').prop('checked'))
 
   $('.form-preter-create').each(function () {
     var form = $(this)
@@ -271,7 +266,6 @@ $doc.on('ready', function () {
     $('#form-lender-person-birth-city-insee').val(codeValue);
   })
 
-
   // If a user changes to a US nationality, show the error message
   $doc.on('change', '#form-lender-person-nationality', function () {
       if ($('#form-lender-person-nationality').val() == 35) {
@@ -284,19 +278,20 @@ $doc.on('ready', function () {
   // Validate fiscal address city/code on blur
   $doc.on('change', '#devenir-preteur input[name="fiscal_address_zip"]:visible, #devenir-preteur input[name="fiscal_address_city"]:visible', function (event) {
     debounceAjax(fiscalAddrTimer, function () {
-      if (1 == $('#form-lender-person-fiscal-address-country').val()) {
-          checkPostCodeCity($('input[name="fiscal_address_zip"]:visible'), $('input[name="fiscal_address_city"]:visible'), $('input[name="fiscal_address_country"]:visible'))
-      }
+      checkPostCodeCity($('input[name="fiscal_address_zip"]:visible'), $('input[name="fiscal_address_city"]:visible'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
     })
   })
 
   // Validate postal address city/code on blur
   $doc.on('change', '#devenir-preteur input[name="postal_address_zip"]:visible, #devenir-preteur input[name="postal_address_city"]:visible', function (event) {
     debounceAjax(postalAddrTimer, function () {
-      if (1 == $('#form-lender-person-fiscal-address-country').val()) {
-        checkPostCodeCity($('input[name="postal_address_zip"]:visible'), $('input[name="postal_address_city"]:visible'), $('input[name="postal_address_country"]:visible'))
-      }
+      checkPostCodeCity($('input[name="postal_address_zip"]:visible'), $('input[name="postal_address_city"]:visible'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
     })
+  })
+
+  // If the user changes the country, check the zip and the city again
+  $doc.on('change', $('#form-lender-' + getClientType() + '-fiscal-address-country'), function (event) {
+    checkPostCodeCity($('#form-lender-' + getClientType() + '-fiscal-address-zip'), $('#form-lender-' + getClientType() + '-fiscal-address-city'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
   })
 
   // Validate birthplace city/code on blur
@@ -327,6 +322,10 @@ $doc.on('ready', function () {
   $doc.on('keydown', '#form-lender-person-birth-city', function() {
     $('#form-lender-person-birth-city-insee').val('')
   })
+
+  function getClientType() {
+    return $('input[name="client_type"]:checked').val().replace('_', '-')
+  }
 
 })
 
