@@ -1049,9 +1049,9 @@ class MailerManager
                             $sProjectsListHTML .= '
                                 <tr style="color:#b20066;">
                                     <td  style="font-family:Arial;font-size:14px;height: 25px;">
-                                       <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
+                                       <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
                                     </td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->oFicelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
                                     <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
                                 </tr>';
                             $iProjectsCount += 1;
