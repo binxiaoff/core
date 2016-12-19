@@ -158,15 +158,14 @@ class MailQueueManager
      * @param string|null    $sSubject
      * @param \DateTime|null $oDateStart
      * @param \DateTime|null $oDateEnd
-     * @param int|null       $iLimit
      *
      * @return array
      */
-    public function searchSentEmails($iClientId = null, $sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null, $iLimit = null)
+    public function searchSentEmails($iClientId = null, $sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null)
     {
         /** @var \mail_queue $oMailQueue */
         $oMailQueue = $this->oEntityManager->getRepository('mail_queue');
-        return $oMailQueue->searchSentEmails($iClientId, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd, $iLimit);
+        return $oMailQueue->searchSentEmails($iClientId, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd);
     }
 
     /**

@@ -671,16 +671,18 @@ class pdfController extends bootstrap
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
 
-        $taxRate  = $taxType->getTaxRateByCountry('fr');
-        $fVat =$taxRate[\tax_type::TYPE_VAT] / 100;
-
-        $this->settings->get('Part unilend', 'type');
-        $fProjectCommisionRate = $this->settings->value;
+        $taxRate = $taxType->getTaxRateByCountry('fr');
+        $fVat    = $taxRate[\tax_type::TYPE_VAT] / 100;
 
         $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, $fCommissionRate, $fVat);
         $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
-        $this->fCommissionProject   = $fProjectCommisionRate * $oLoans->amount / 100 / (1 + $fVat);
-        $this->fInterestTotal       = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
+
+        /** @var \transactions $transaction */
+        $transaction = $this->loadData('transactions');
+        $transaction->get($oProjects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project');
+
+        $this->fCommissionProject = $transaction->montant_unilend;
+        $this->fInterestTotal     = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
         $contract->get($oLoans->id_type_contract);
 
@@ -763,6 +765,10 @@ class pdfController extends bootstrap
             if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
                 $sNamePdfClient = 'FACTURE-UNILEND-' . $this->projects->slug;
                 $sFileName      = $this->path . 'protected/pdf/facture/facture_EF-' . $sHash . '-' . $iProjectId . '.pdf';
+
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                $projectManager = $this->get('unilend.service.project_manager');
+                $this->commissionPercentage = $projectManager->getUnilendCommissionPercentage($this->projects);
 
                 if (false === file_exists($sFileName)) {
                     $this->GenerateInvoiceEFHtml();
