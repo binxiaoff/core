@@ -1,9 +1,13 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 /**
@@ -20,13 +24,16 @@ class ClientManager
     private $tokenStorage;
     /** @var RequestStack */
     private $requestStack;
+    /** @var  RouterInterface */
+    private $router;
 
-    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager, TokenStorageInterface $tokenStorage, RequestStack $requestStack)
+    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager, TokenStorageInterface $tokenStorage, RequestStack $requestStack, RouterInterface $router)
     {
         $this->oEntityManager         = $oEntityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
         $this->tokenStorage           = $tokenStorage;
         $this->requestStack           = $requestStack;
+        $this->router                 = $router;
     }
 
 
@@ -37,7 +44,7 @@ class ClientManager
      */
     public function isBetaTester(\clients $oClient)
     {
-        return (bool)$this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_BETA_TESTER);
+        return (bool) $this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_BETA_TESTER);
     }
 
     /**
@@ -154,7 +161,7 @@ class ClientManager
 
     public function isActive(\clients $oClient)
     {
-        return (bool)$oClient->status;
+        return (bool) $oClient->status;
     }
 
     public function hasAcceptedCurrentTerms(\clients $oClient)
@@ -177,5 +184,56 @@ class ClientManager
         $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
         $lastClientStatus->getLastStatut($client->id_client);
         return $lastClientStatus->status == \clients_status::VALIDATED;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return RedirectResponse|null
+     */
+    public function checkProgressAndRedirect(Request $request)
+    {
+        /** @var \clients $client */
+        $client       = $this->oEntityManager->getRepository('clients');
+        $currentPath  = $request->getPathInfo();
+
+        $token = $this->tokenStorage->getToken();
+
+        if ($token) {
+            /** @var BaseUser $user */
+            $user = $token->getUser();
+
+            if ($user instanceof UserLender && in_array('ROLE_LENDER', $user->getRoles()) && $client->get($user->getClientId())) {
+                $redirectPath = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
+
+                if ($client->etape_inscription_preteur < 3 && $redirectPath != $currentPath) {
+                    return new RedirectResponse($redirectPath);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param int $alreadyCompletedStep
+     * @param string|null $clientHash
+     * @return string
+     */
+    private function getSubscriptionStepRedirectRoute($alreadyCompletedStep, $clientHash = null)
+    {
+        switch ($alreadyCompletedStep) {
+            case 1 :
+                $redirectRoute = $this->router->generate('lender_subscription_documents', ['clientHash' => $clientHash]);
+                break;
+            case 2 :
+            case 3 :
+                $redirectRoute = $this->router->generate('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
+                break;
+            default :
+                $redirectRoute = $this->router->generate('projects_list');
+        }
+
+        return $redirectRoute;
     }
 }
