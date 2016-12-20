@@ -185,21 +185,21 @@ class SecurityController extends Controller
         $post = $request->request->all();
 
         if (empty($post['client_new_password'])) {
-            $this->addFlash('passwordErrors', $translator->trans('common-validators_missing-new-password'));
+            $this->addFlash('passwordErrors', $translator->trans('common-validator_missing-new-password'));
         }
         if (empty($post['client_new_password_confirmation'])) {
-            $this->addFlash('passwordErrors', $translator->trans('common-validators_missing-new-password-confirmation'));
+            $this->addFlash('passwordErrors', $translator->trans('common-validator_missing-new-password-confirmation'));
         }
         if (empty($post['client_secret_answer']) || md5($post['client_secret_answer']) !== $client->secrete_reponse) {
-            $this->addFlash('passwordErrors', $translator->trans('common-validators_secret-answer-invalid'));
+            $this->addFlash('passwordErrors', $translator->trans('common-validator_secret-answer-invalid'));
         }
 
         if (false === empty($post['client_new_password']) && false === empty($post['client_new_password_confirmation']) && false === empty($post['client_secret_answer'])) {
             if ($post['client_new_password'] !== $post['client_new_password_confirmation']){
-                $this->addFlash('passwordErrors', $translator->trans('common-validators_password-not-equal'));
+                $this->addFlash('passwordErrors', $translator->trans('common-validator_password-not-equal'));
             }
             if (false === $ficelle->password_fo($post['client_new_password'], 6)) {
-                $this->addFlash('passwordErrors', $translator->trans('common-validators_password-invalid'));
+                $this->addFlash('passwordErrors', $translator->trans('common-validator_password-invalid'));
             }
         }
 
@@ -250,7 +250,7 @@ class SecurityController extends Controller
      */
     public function checkPassWordComplexityAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var TranslatorInterface $translator */
             $translator = $this->get('translator');
 
