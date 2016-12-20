@@ -23,7 +23,7 @@
                                 {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
                             {% endif %}
                         </div>
-                        {% for bid in project.aPendingBids %}
+                        {% for bid in project.pending_bids %}
                             <div class="myoffer-amount">
                                 {% set transParams = {
                                     '%amount%' : '<span class="amount">' ~ bid.amount_euro|localizednumber ~ '&nbsp;€</span>',
