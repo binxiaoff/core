@@ -290,7 +290,7 @@ $doc.on('ready', function () {
   })
 
   // If the user changes the country, check the zip and the city again
-  $doc.on('change', $('#form-lender-' + getClientType() + '-fiscal-address-country'), function (event) {
+  $doc.on('change', '#form-lender-person-fiscal-address-country, #form-lender-legal-entity-fiscal-address-country', function (event) {
     checkPostCodeCity($('#form-lender-' + getClientType() + '-fiscal-address-zip'), $('#form-lender-' + getClientType() + '-fiscal-address-city'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
   })
 
@@ -324,7 +324,11 @@ $doc.on('ready', function () {
   })
 
   function getClientType() {
-    return $('input[name="client_type"]:checked').val().replace('_', '-')
+    var clientType = $('input[name="client_type"]:checked').val()
+      if ('legal_entity' === clientType) {
+        return 'legal-entity'
+      }
+      return clientType;
   }
 
 })

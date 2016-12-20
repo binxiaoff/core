@@ -105,7 +105,7 @@
     <fieldset class="panel">
         <h3 class="h3">{% trans %} lender-subscription_address-form-title {% endtrans %}</h3>
         <div id="form-preter-person-fiscal-address-autocomplete-error" class="ui-formvalidation-notifications autocomplete-error" style="display: none;">
-                <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
+            <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
         </div>
 
         <div class="row">
@@ -122,25 +122,6 @@
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-lender-person-fiscal-address-country">
-                    {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                </label>
-                <select id="form-lender-person-fiscal-address-country" name="fiscal_address_country" class="input-field"
-                        data-formvalidation-input
-                        data-formvalidation-required="true">
-                    {% for i, country in countries %}
-                        <option value="{{ i }}">
-                            {{ country }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div><!-- /.form-field -->
-
-        </div>
-
-        <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
                 <label for="form-lender-person-fiscal-address-zip">{% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -148,7 +129,7 @@
                     <input id="form-lender-person-fiscal-address-zip" type="text" name="fiscal_address_zip" value="{{ formData.fiscal_address_zip }}" autocomplete="off" class="input-field"
                            data-formvalidation-input
                            data-formvalidation-required="true"
-                           {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                            {# AutoComplete behaviours for addresses needs to be further marked and configured #}
                            data-autocomplete-address
                            data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_zip') }}"
                            data-autocomplete-address-countryelem="#form-lender-person-fiscal-address-country"
@@ -168,7 +149,7 @@
                     <input id="form-lender-person-fiscal-address-city" type="text" name="fiscal_address_city" value="{{ formData.fiscal_address_city }}" autocomplete="off" class="input-field"
                            data-formvalidation-input
                            data-formvalidation-required="true"
-                           {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                            {# AutoComplete behaviours for addresses needs to be further marked and configured #}
                            data-autocomplete-address
                            data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_city') }}"
                            data-autocomplete-ajaxprop="city"
@@ -183,17 +164,23 @@
             </div><!-- /.form-field -->
         </div>
 
-        <div class="row">
-            <div class="form-field form-field-single-checkbox">
-                <label>
-                    <input type="checkbox" name="same_postal_address" value="true"
-                           class="toggle-correspondence-address"{% if formData.same_postal_address == true or formData.same_postal_address is not empty %} checked{% endif %}>
-                    <span class="label">{% trans %} lender-subscription_address-form-same-postal-address-checkbox {% endtrans %}</span>
-                </label>
-            </div><!-- /.form-field -->
-        </div>
-
         <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-lender-person-fiscal-address-country">
+                    {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                <select id="form-lender-person-fiscal-address-country" name="fiscal_address_country" class="input-field"
+                        data-formvalidation-input
+                        data-formvalidation-required="true">
+                    {% for i, country in countries %}
+                        <option value="{{ i }}"{% if formData.fiscal_address_country == i %} selected{% endif %}>
+                            {{ country }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div><!-- /.form-field -->
+
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-lender-person-client-mobile">
                     {% trans %} common_mobile-phone {% endtrans %}
@@ -205,6 +192,15 @@
             </div><!-- /.form-field -->
         </div>
 
+        <div class="row">
+            <div class="form-field form-field-single-checkbox">
+                <label>
+                    <input type="checkbox" name="same_postal_address" value="true"
+                           class="toggle-correspondence-address"{% if formData.same_postal_address == true or formData.same_postal_address is not empty %} checked{% endif %}>
+                    <span class="label">{% trans %} lender-subscription_address-form-same-postal-address-checkbox {% endtrans %}</span>
+                </label>
+            </div><!-- /.form-field -->
+        </div>
     </fieldset>
 
     {% include 'pages/lender_subscription/partials/personal_information_postal_address.html.twig' %}
