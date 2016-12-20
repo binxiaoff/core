@@ -256,13 +256,8 @@ class ProjectsController extends Controller
                 $template['amountMax']                = $productManager->getMaxEligibleAmount($product);
             }
 
-            $cipManager       = $this->get('unilend.service.cip_manager');
-            $productManager = $this->get('unilend.service_product.product_manager');
-            /** @var \product $product */
-            $product = $this->get('unilend.service.entity_manager')->getRepository('product');
-            $product->get($project->id_product);
-            $productContracts = $productManager->getAvailableContracts($product);
-
+            $cipManager           = $this->get('unilend.service.cip_manager');
+            $productContracts     = $productManager->getAvailableContracts($product);
             $displayCipDisclaimer = $cipManager->hasValidEvaluation($lenderAccount) && in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label'));
         }
 
