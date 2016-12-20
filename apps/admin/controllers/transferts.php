@@ -727,7 +727,7 @@ class transfertsController extends bootstrap
                 $this->settings->get('Part unilend', 'type');
                 $PourcentageUnilend = $this->settings->value;
                 $montant            = $loans->sumPretsProjet($project->id_project);
-                $partUnilend        = $montant * $PourcentageUnilend;
+                $partUnilend        = round($montant * $PourcentageUnilend, 2);
 
                 $montant -= $partUnilend;
 
@@ -744,7 +744,7 @@ class transfertsController extends bootstrap
                     $transactions->status           = \transactions::STATUS_VALID;
                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                     $transactions->type_transaction = \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
-                    $transactions->id_transaction   = $transactions->create();
+                    $transactions->create();
 
                     $bank_unilend->id_transaction = $transactions->id_transaction;
                     $bank_unilend->id_project     = $project->id_project;
@@ -817,36 +817,29 @@ class transfertsController extends bootstrap
                 $aRepaymentHistory = $projectsStatusHistory->select('id_project = ' . $project->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC, id_project_status_history DESC', 0, 1);
 
                 if (false === empty($aRepaymentHistory)) {
-                    $oInvoiceCounter = $this->loadData('compteur_factures');
-                    $oInvoice        = $this->loadData('factures');
-
-                    $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND status = ' . \transactions::STATUS_VALID . ' AND id_project');
-
+                    /** @var \compteur_factures $invoiceCounter */
+                    $invoiceCounter = $this->loadData('compteur_factures');
+                    /** @var \factures $invoice */
+                    $invoice = $this->loadData('factures');
                     /** @var \tax_type $taxType */
                     $taxType = $this->loadData('tax_type');
 
                     $taxRate            = $taxType->getTaxRateByCountry('fr');
                     $sDateFirstPayment  = $aRepaymentHistory[0]['added'];
-                    $fCommission        = $transactions->montant_unilend;
-                    $fVATFreeCommission =
-                        bcdiv(
-                            $fCommission,
-                            bcadd(
-                                $taxRate[\tax_type::TYPE_VAT] / 100,
-                                1,
-                                2),
-                            2);
-                    $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($oInvoiceCounter->compteurJournalier($project->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
-                    $oInvoice->date            = $sDateFirstPayment;
-                    $oInvoice->id_company      = $companies->id_company;
-                    $oInvoice->id_project      = $project->id_project;
-                    $oInvoice->ordre           = 0;
-                    $oInvoice->type_commission = \factures::TYPE_COMMISSION_FINANCEMENT;
-                    $oInvoice->commission      = round($fVATFreeCommission / (abs($transactions->montant) + $fCommission) * 100, 0);
-                    $oInvoice->montant_ttc     = $fCommission;
-                    $oInvoice->montant_ht      = $fVATFreeCommission;
-                    $oInvoice->tva             = ($fCommission - $fVATFreeCommission);
-                    $oInvoice->create();
+                    $fCommission        = bcmul($partUnilend, 100);
+                    $fVATFreeCommission = round($fCommission / (1 + $taxRate[\tax_type::TYPE_VAT] / 100));
+
+                    $invoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($invoiceCounter->compteurJournalier($project->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
+                    $invoice->date            = $sDateFirstPayment;
+                    $invoice->id_company      = $companies->id_company;
+                    $invoice->id_project      = $project->id_project;
+                    $invoice->ordre           = 0;
+                    $invoice->type_commission = \factures::TYPE_COMMISSION_FINANCEMENT;
+                    $invoice->commission      = round($fVATFreeCommission / $project->amount, 2);
+                    $invoice->montant_ttc     = $fCommission;
+                    $invoice->montant_ht      = $fVATFreeCommission;
+                    $invoice->tva             = $fCommission - $fVATFreeCommission;
+                    $invoice->create();
                 }
 
                 $paymentInspectionStopped->value = 1;
