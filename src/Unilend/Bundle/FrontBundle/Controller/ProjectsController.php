@@ -257,7 +257,8 @@ class ProjectsController extends Controller
             }
 
             $cipManager           = $this->get('unilend.service.cip_manager');
-            $displayCipDisclaimer = $cipManager->hasValidEvaluation($lenderAccount);
+            $productContracts     = $productManager->getAvailableContracts($product);
+            $displayCipDisclaimer = in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($lenderAccount);
         }
 
         $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower);
