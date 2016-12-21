@@ -598,7 +598,7 @@ class BorrowerAccountController extends Controller
         $isLinkExpired = false;
 
         if (false === $temporaryLinks->get($token, 'token')) {
-            return RedirectResponse::create($this->generateUrl('home'));
+            return $this->redirectToRoute('home');
         }
 
         $now         = new \datetime();
@@ -644,12 +644,13 @@ class BorrowerAccountController extends Controller
                     $client->secrete_reponse  = md5($formData['answer']);
                     $client->status           = 1;
                     $client->update();
-                    return $this->redirect($this->generateUrl('login'));
+
+                    return $this->redirectToRoute('login');
                 }
             }
         }
 
-        return ['expired' => $isLinkExpired];
+        return $this->render('borrower_account/security.html.twig', ['expired' => $isLinkExpired]);
     }
 
     /**
@@ -756,10 +757,6 @@ class BorrowerAccountController extends Controller
                 'ended'               => $projectManager->getProjectEndDate($projects)
             ];
         }
-
-        usort($projectsPostFunding, function ($firstArray, $secondArray) {
-            return $firstArray['date_retrait'] < $secondArray['date_retrait'];
-        });
 
         return $projectsPostFunding;
     }

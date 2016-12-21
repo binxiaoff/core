@@ -40,6 +40,7 @@
             <argument type="service" id="unilend.service.notification_manager" />
             <argument type="service" id="security.authentication.session_strategy" />
             <argument type="service" id="security.csrf.token_manager" />
+            <argument type="service" id="logger" />
         </service>
 
         <service id="unilend.frontbundle.service.project_display_manager" class="Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager">

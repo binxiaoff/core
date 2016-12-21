@@ -1310,7 +1310,10 @@ class ajaxController extends bootstrap
 
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
 
-                    if (empty($this->companies->latitude) && empty($this->companies->longitude)) {
+                    $latitude  = (float) $this->companies->latitude;
+                    $longitude = (float) $this->companies->longitude;
+
+                    if (empty($latitude) && empty($longitude)) {
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $location */
                         $location    = $this->get('unilend.service.location_manager');
                         $coordinates = $location->getCompanyCoordinates($this->companies);

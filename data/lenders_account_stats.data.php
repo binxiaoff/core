@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\librairies\CacheKeys;
+
 class lenders_account_stats extends lenders_account_stats_crud
 {
     const STAT_VALID_NOK = 0;
@@ -11,16 +13,25 @@ class lenders_account_stats extends lenders_account_stats_crud
         parent::lenders_account_stats($bdd, $params);
     }
 
-    public function getLastIRRForLender($iLenderId)
+    public function getLastIRRForLender($lenderId)
     {
-        $sql = '
+        $query = '
             SELECT *
             FROM lenders_account_stats
-              WHERE id_lender_account = ' . $iLenderId . ' AND type_stat = "' . self::TYPE_STAT_IRR . '"
+            WHERE id_lender_account = :lenderId AND type_stat = :statType
             ORDER BY date DESC
             LIMIT 1';
 
-        return $this->bdd->fetch_assoc($this->bdd->query($sql));
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['lenderId' => $lenderId, 'statType' => self::TYPE_STAT_IRR],
+            ['lenderId' => \PDO::PARAM_INT, 'statType' => \PDO::PARAM_STR],
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(CacheKeys::SHORT_TIME, __FUNCTION__)
+        );
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return isset($result[0]) ? $result[0] : [];
     }
 
     /**
@@ -169,7 +180,7 @@ class lenders_account_stats extends lenders_account_stats_crud
         if ($iSumOfLoans > 0) {
             $fLossRate = round($fRemainingDueCapital / $iSumOfLoans, 2) * 100;
         } else {
-            $fLossRate = null ;
+            $fLossRate = null;
         }
 
         return $fLossRate;

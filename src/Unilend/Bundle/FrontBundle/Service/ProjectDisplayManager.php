@@ -131,8 +131,8 @@ class ProjectDisplayManager
                 'city'      => $company->city,
                 'zip'       => $company->zip,
                 'sectorId'  => $company->sector,
-                'latitude'  => $company->latitude,
-                'longitude' => $company->longitude
+                'latitude'  => (float) $company->latitude,
+                'longitude' => (float) $company->longitude
             ],
             'status'               => $project->status,
             'finished'             => ($project->status > \projects_status::EN_FUNDING || $end < $now),
