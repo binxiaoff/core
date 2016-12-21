@@ -2,10 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -277,11 +279,23 @@ class LenderSubscriptionController extends Controller
                 ->setCp($postalZip)
                 ->setIdPays($postalCountry);
 
-            /** @var ClientManager $clientManager */
-            $clientManager = $this->get('unilend.service.client_manager');
-            $clientManager->createClient($clientEntity, $clientAddressEntity, WalletType::LENDER);
+            /** @var EntityManager $em */
+            $em = $this->get('doctrine.orm.entity_manager');
+            $em->beginTransaction();
+            try {
+                $em->persist($clientEntity);
+                $em->flush();
+                $clientAddressEntity->setIdClient($clientEntity->getIdClient());
+                $em->persist($clientAddressEntity);
+                $em->flush();
+                $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::LENDER);
+                $em->commit();
+            } catch (Exception $exception) {
+                $em->getConnection()->rollBack();
+                $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            }
 
-            $clientManager->acceptLastTos($clientEntity);
+            $this->get('unilend.service.client_manager')->acceptLastTos($clientEntity);
             $this->addClientToDataLayer($request, $clientEntity);
             $this->saveClientHistoryAction($clientEntity, $post);
             $this->sendSubscriptionStartConfirmationEmail($clientEntity);
@@ -465,10 +479,25 @@ class LenderSubscriptionController extends Controller
                 ->setCp($clientAddressZip)
                 ->setIdPays($clientAddressIdCountry);
 
-            /** @var Clients $clientEntity */
-            $clientManager->createClient($client, $clientAddress, WalletType::LENDER, $company);
+            /** @var EntityManager $em */
+            $em = $this->get('doctrine.orm.entity_manager');
+            $em->beginTransaction();
+            try {
+                $em->persist($client);
+                $em->flush();
+                $clientAddress->setIdClient($client->getIdClient());
+                $em->persist($clientAddress);
+                $company->setIdClientOwner($client->getIdClient());
+                $em->persist($company);
+                $em->flush();
+                $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::LENDER);
+                $em->commit();
+            } catch (Exception $exception) {
+                $em->getConnection()->rollBack();
+                $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            }
 
-            $clientManager->acceptLastTos($client);
+            $this->get('unilend.service.client_manager')->acceptLastTos($client);
             $this->addClientToDataLayer($request, $client);
             $this->saveClientHistoryAction($client, $post);
             $this->sendSubscriptionStartConfirmationEmail($client);

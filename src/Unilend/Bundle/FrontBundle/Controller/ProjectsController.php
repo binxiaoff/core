@@ -257,7 +257,8 @@ class ProjectsController extends Controller
             }
 
             $cipManager           = $this->get('unilend.service.cip_manager');
-            $displayCipDisclaimer = $cipManager->hasValidEvaluation($lenderAccount);
+            $productContracts     = $productManager->getAvailableContracts($product);
+            $displayCipDisclaimer = in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($lenderAccount);
         }
 
         $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower);
@@ -883,13 +884,23 @@ class ProjectsController extends Controller
         }
 
         /** @var UserLender $user */
-        $user          = $this->getUser();
+        $user = $this->getUser();
+
+        if (false === ($user instanceof UserLender)) {
+            return new JsonResponse([
+                'error'    => true,
+                'title'    => $translator->trans('project-detail_modal-bid-error-disconnected-lender-title'),
+                'messages' => [$translator->trans('project-detail_modal-bid-error-disconnected-lender-message')]
+            ]);
+        }
+
         $clientId      = $user->getClientId();
         $lenderBalance = $entityManager->getRepository('transactions')->getSolde($clientId);
 
         if ($lenderBalance < $amount) {
             return new JsonResponse([
                 'error'    => true,
+                'title'    => $translator->trans('project-detail_modal-bid-error-amount-title'),
                 'messages' => [$translator->trans('project-detail_side-bar-bids-low-balance')]
             ]);
         }
@@ -930,6 +941,7 @@ class ProjectsController extends Controller
 
             return new JsonResponse([
                 'error'    => true,
+                'title'    => $translator->trans('project-detail_modal-bid-error-amount-title'),
                 'messages' => $translatedReasons
             ]);
         }

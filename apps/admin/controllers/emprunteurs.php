@@ -61,57 +61,6 @@ class emprunteursController extends bootstrap
             $_SESSION['freeow']['title']   = 'Recherche d\'un client';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         }
-
-        if (isset($_POST['form_add_emprunteur'])) {
-            $this->clients->nom             = $this->ficelle->majNom($_POST['nom']);
-            $this->clients->prenom          = $this->ficelle->majNom($_POST['prenom']);
-            $this->clients->email           = trim($_POST['email']);
-            $this->companies->email_facture = trim($_POST['email']);
-            $this->clients->telephone       = str_replace(' ', '', $_POST['telephone']);
-            $this->clients->id_langue       = 'fr';
-
-            if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/clients/cni_passeport/');
-                if ($this->upload->doUpload('cni_passeport')) {
-                    if ($this->clients->cni_passeport != '') {
-                        @unlink($this->path . 'protected/clients/cni_passeport/' . $this->clients->cni_passeport);
-                    }
-                    $this->clients->cni_passeport = $this->upload->getName();
-                }
-            }
-
-            if (isset($_FILES['signature']) && $_FILES['signature']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/clients/signature/');
-                if ($this->upload->doUpload('signature')) {
-                    if ($this->clients->signature != '') {
-                        @unlink($this->path . 'protected/clients/signature/' . $this->clients->signature);
-                    }
-                    $this->clients->signature = $this->upload->getName();
-                }
-            }
-
-            $this->clients->id_client = $this->clients->create();
-
-            $this->clients_adresses->adresse1 = $_POST['adresse'];
-            $this->clients_adresses->ville    = $_POST['ville'];
-            $this->clients_adresses->cp       = $_POST['cp'];
-            $this->clients_adresses->id_client = $this->clients->id_client;
-            $this->clients_adresses->create();
-
-            $this->companies->name   = $_POST['societe'];
-            $this->companies->sector = $_POST['secteur'];
-            $this->companies->id_client_owner = $this->clients->id_client;
-            $this->companies->id_company = $this->companies->create();
-
-            $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-            $this->users_history->histo(5, 'add emprunteur', $_SESSION['user']['id_user'], $serialize);
-
-            $_SESSION['freeow']['title']   = 'emprunteur crt&eacute;t&eacute;';
-            $_SESSION['freeow']['message'] = 'l\'emprunteur a &eacute;t&eacute; crt&eacute;t&eacute; !';
-
-            header('Location: ' . $this->lurl . '/emprunteurs/gestion/' . $this->clients->id_client);
-            die;
-        }
     }
 
     public function _edit_client()
@@ -131,42 +80,6 @@ class emprunteursController extends bootstrap
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            // meme adresse que le siege
-            if ($this->companies->status_adresse_correspondance == 1) {
-                $this->adresse = $this->companies->adresse1;
-                $this->ville   = $this->companies->city;
-                $this->cp      = $this->companies->zip;
-            } else {
-                $this->adresse = $this->clients_adresses->adresse1;
-                $this->ville   = $this->clients_adresses->ville;
-                $this->cp      = $this->clients_adresses->cp;
-            }
-        }
-    }
-
-    public function _add_client()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-
-        $_SESSION['request_url'] = $this->url;
-
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->companies        = $this->loadData('companies');
-        $companySection         = $this->loadData('company_sector');
-
-        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
-        $this->translator = $this->get('translator');
-        $this->lSecteurs  = $companySection->select();
-
-        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client')) {
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            $this->companies->get($this->clients->id_client, 'id_client_owner');
 
             // meme adresse que le siege
             if ($this->companies->status_adresse_correspondance == 1) {

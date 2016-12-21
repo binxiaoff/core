@@ -97,15 +97,13 @@ class mailsController extends bootstrap
         $oMailQueueManager = $this->get('unilend.service.mail_queue');
 
         if (isset($_POST['form_send_search'])) {
-            $sFrom      = (isset($_POST['from']) && false === empty($_POST['from'])) ? $_POST['from'] : null;
-            $sTo        = (isset($_POST['to']) && false === empty($_POST['to'])) ? $_POST['to'] : null;
-            $sSubject   = (isset($_POST['subject']) && false === empty($_POST['subject'])) ? $_POST['subject'] : null;
-            $oDateStart = (isset($_POST['date_from']) && false === empty($_POST['date_from'])) ? \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from']) : new \DateTime('2013-01-01');
-            $oDateEnd   = (isset($_POST['date_to']) && false === empty($_POST['date_to'])) ? \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to']) : new \DateTime('NOW');
+            $sFrom      = isset($_POST['from']) && false === empty($_POST['from']) ? $_POST['from'] : null;
+            $sTo        = isset($_POST['to']) && false === empty($_POST['to']) ? $_POST['to'] : null;
+            $sSubject   = isset($_POST['subject']) && false === empty($_POST['subject']) ? $_POST['subject'] : null;
+            $oDateStart = isset($_POST['date_from']) && false === empty($_POST['date_from']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_from']) : new \DateTime('2013-01-01');
+            $oDateEnd   = isset($_POST['date_to']) && false === empty($_POST['date_to']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_to']) : new \DateTime('NOW');
 
             $this->aEmails = $oMailQueueManager->searchSentEmails(null, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd);
-        } else {
-            $this->aEmails = $oMailQueueManager->searchSentEmails(null, null, null, null, null, null, 100);
         }
     }
 

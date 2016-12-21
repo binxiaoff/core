@@ -14,7 +14,8 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
 {
-    const FILE_ROOT_NAME = 'UNILEND-00040631007-';
+    const FILE_ROOT_NAME                 = 'UNILEND-00040631007-';
+    const FRENCH_BANK_TRANSFER_BNPP_CODE = '0568';
 
     /** @var LoggerInterface $oLogger */
     private $oLogger;
@@ -150,7 +151,7 @@ EOF
                                     && $projects->get($matches[1])
                                 ) {
                                     $this->processRegulation($motif, $receptions, $projects, $companies, $transactions, $bank_unilend);
-                                } else {
+                                } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
                                     $this->processLenderBankTransfer($motif, $receptions, $clients, $transactions, $sFacebookLink, $sTwitterLink);
                                 }
                             } elseif ($type === 1 && $iBankDebitStatus === 3) {
@@ -166,7 +167,7 @@ EOF
 
     /**
      * @param string $file
-     * @param array $aEmittedLeviesStatus
+     * @param array  $aEmittedLeviesStatus
      * @return array
      */
     private function parseReceptionFile($file, array $aEmittedLeviesStatus)

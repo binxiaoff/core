@@ -766,10 +766,6 @@ class pdfController extends bootstrap
                 $sNamePdfClient = 'FACTURE-UNILEND-' . $this->projects->slug;
                 $sFileName      = $this->path . 'protected/pdf/facture/facture_EF-' . $sHash . '-' . $iProjectId . '.pdf';
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-                $projectManager = $this->get('unilend.service.project_manager');
-                $this->commissionPercentage = $projectManager->getUnilendCommissionPercentage($this->projects);
-
                 if (false === file_exists($sFileName)) {
                     $this->GenerateInvoiceEFHtml();
                     $this->WritePdf($sFileName, 'invoice');
@@ -836,13 +832,14 @@ class pdfController extends bootstrap
         $taxRate   = $taxType->getTaxRateByCountry('fr');
         $this->tva = $taxRate[\tax_type::TYPE_VAT] / 100;
 
-        $aRepaymentDate           = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC, id_project_status_history DESC', 0, 1);
-        $this->dateRemb           = $aRepaymentDate[0]['added'];
-        $this->num_facture        = $aInvoices[0]['num_facture'];
-        $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
-        $this->taxes              = $aInvoices[0]['tva'] / 100;
-        $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
-        $this->date_echeance_reel = $aInvoices[0]['date'];
+        $aRepaymentDate             = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC, id_project_status_history DESC', 0, 1);
+        $this->dateRemb             = $aRepaymentDate[0]['added'];
+        $this->num_facture          = $aInvoices[0]['num_facture'];
+        $this->ht                   = $aInvoices[0]['montant_ht'] / 100;
+        $this->taxes                = $aInvoices[0]['tva'] / 100;
+        $this->ttc                  = $aInvoices[0]['montant_ttc'] / 100;
+        $this->date_echeance_reel   = $aInvoices[0]['date'];
+        $this->commissionPercentage = round($aInvoices[0]['montant_ht'] / $this->projects->amount, 2);
 
         $this->setDisplay('facture_EF_html');
         $sDisplayInvoice = $this->sDisplay;

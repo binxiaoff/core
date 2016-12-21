@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\CacheKeys;
+
 class lenders_accounts extends lenders_accounts_crud
 {
     const LENDER_STATUS_ONLINE  = 1;
@@ -227,35 +229,46 @@ class lenders_accounts extends lenders_accounts_crud
         return $bResult;
     }
 
-    public function countCompaniesLenderInvestedIn($iLendersAccountId)
+    public function countCompaniesLenderInvestedIn($lenderId)
     {
-        $sql = 'SELECT
-                    COUNT(DISTINCT p.id_company)
-                FROM
-                    projects p
-                    INNER JOIN loans l ON p.id_project = l.id_project
-                    INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE ps.status >= ' . \projects_status::REMBOURSEMENT . '
-                AND
-                    l.id_lender = ' . $iLendersAccountId;
+        $query = '
+            SELECT COUNT(DISTINCT p.id_company)
+            FROM projects p
+            INNER JOIN loans l ON p.id_project = l.id_project
+            WHERE p.status >= :status AND l.id_lender = :lenderId';
 
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['lenderId' => $lenderId, 'status' => \projects_status::REMBOURSEMENT],
+            ['lenderId' => \PDO::PARAM_INT, 'status' => \PDO::PARAM_INT],
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(CacheKeys::SHORT_TIME, md5(__METHOD__))
+        );
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return (int) current($result[0]);
     }
 
-    public function sumLoansOfProjectsInRepayment($iLendersAccountId)
+    public function sumLoansOfProjectsInRepayment($lenderId)
     {
-        $sql = '
-            SELECT SUM(l.amount)
+        $query = '
+            SELECT IFNULL(SUM(l.amount), 0)
             FROM loans l
             INNER JOIN projects p ON l.id_project = p.id_project
-            WHERE l.status = "0"
-                AND p.status >= ' . \projects_status::REMBOURSEMENT . '
-                AND l.id_lender = ' . $iLendersAccountId;
+            WHERE l.status = :loanStatus
+                AND p.status >= :projectStatus
+                AND l.id_lender = :lenderId';
 
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0) / 100);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['lenderId' => $lenderId, 'loanStatus' => \loans::STATUS_ACCEPTED, 'projectStatus' => \projects_status::REMBOURSEMENT],
+            ['lenderId' => \PDO::PARAM_INT, 'loanStatus' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT],
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(CacheKeys::SHORT_TIME, __FUNCTION__)
+        );
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return (int) current($result[0]);
     }
 
     public function getLendersSalesForce()

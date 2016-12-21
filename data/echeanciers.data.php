@@ -237,7 +237,7 @@ class echeanciers extends echeanciers_crud
     private function getPartialSum($amountType, array $selector, array $status = array(), $earlyRepaymentStatus = null)
     {
         $query = '
-            SELECT SUM(e.' . $amountType . ')
+            SELECT SUM(' . $amountType . ')
             FROM echeanciers e
             INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE l.status = ' . \loans::STATUS_ACCEPTED;
@@ -526,7 +526,7 @@ class echeanciers extends echeanciers_crud
      * @param int $lenderId
      * @return array
      */
-    public function getProblematicProjects($lenderId = null)
+    public function getProblematicProjects($lenderId)
     {
         $sql = '
             SELECT
@@ -541,13 +541,10 @@ class echeanciers extends echeanciers_crud
                 AND (
                     (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
                     OR unpaid.date_echeance IS NOT NULL
-                )';
+                )
+                AND e.id_lender = :id_lender';
 
-        if (false === is_null($lenderId)) {
-            $sql .= ' AND e.id_lender = :id_lender';
-        }
-
-        return $this->bdd->executeQuery($sql, array('id_lender' => $lenderId))->fetch(\PDO::FETCH_ASSOC);
+        return $this->bdd->executeQuery($sql, ['id_lender' => $lenderId])->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
