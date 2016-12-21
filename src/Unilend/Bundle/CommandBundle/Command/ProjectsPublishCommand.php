@@ -248,9 +248,8 @@ EOF
             foreach ($aLenders as $aLender) {
                 $oLenderAccount->get($aLender['id_lender']);
                 $productManager = $this->getContainer()->get('unilend.service_product.product_manager');
-                $reasons        = $productManager->getLenderEligibilityWithReasons($oLenderAccount, $project);
 
-                if (empty($reasons)) {
+                if ($productManager->getLenderEligibility($oLenderAccount, $project)) {
                     $notifications->type       = \notifications::TYPE_NEW_PROJECT;
                     $notifications->id_lender  = $aLender['id_lender'];
                     $notifications->id_project = $project->id_project;
