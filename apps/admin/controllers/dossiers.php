@@ -149,7 +149,7 @@ class dossiersController extends bootstrap
             /** @var product $product */
             $product = $this->loadData('product');
 
-            if ($product->get($this->projects->id_product)) {
+            if (false === empty($this->projects->id_product) && $product->get($this->projects->id_product)) {
                 $durationMax = $productManager->getMaxEligibleDuration($product);
                 $durationMin = $productManager->getMinEligibleDuration($product);
 
@@ -160,6 +160,8 @@ class dossiersController extends bootstrap
                         unset($this->dureePossible[$index]);
                     }
                 }
+
+                $this->availableContracts = array_column($productManager->getAvailableContracts($product), 'label');
             }
 
             if (false === in_array($this->projects->period, array(0, 1000000)) && false === in_array($this->projects->period, $this->dureePossible)) {
@@ -273,9 +275,22 @@ class dossiersController extends bootstrap
                 }
             }
 
-            $this->attachment_type  = $this->loadData('attachment_type');
-            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language);
-            $this->aAttachments     = $this->projects->getAttachments();
+            $this->attachment_type          = $this->loadData('attachment_type');
+            $this->aAttachments             = $this->projects->getAttachments();
+            $this->aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language);
+            $this->aMandatoyAttachmentTypes = [
+                \attachment_type::DERNIERE_LIASSE_FISCAL,
+                \attachment_type::LIASSE_FISCAL_N_1,
+                \attachment_type::LIASSE_FISCAL_N_2,
+                \attachment_type::RELEVE_BANCAIRE_MOIS_N,
+                \attachment_type::RELEVE_BANCAIRE_MOIS_N_1,
+                \attachment_type::RELEVE_BANCAIRE_MOIS_N_2,
+                \attachment_type::KBIS,
+                \attachment_type::RIB,
+                \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+                \attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS,
+                \attachment_type::CGV
+            ];
 
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
