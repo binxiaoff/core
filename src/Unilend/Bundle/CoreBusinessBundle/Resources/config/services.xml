@@ -134,6 +134,9 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="unilend.service.project_manager" />
             <argument type="service" id="unilend.frontbundle.service.source_manager" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="unilend.service.wallet_creation_manager" />
+            <argument type="service" id="logger" />
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
@@ -227,6 +230,7 @@
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>
             <argument type="service" id="cache"/>
+            <argument type="service" id="doctrine.orm.entity_manager" />
         </service>
 
         <service id="unilend.service.company_balance_sheet_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager">

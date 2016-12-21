@@ -3,14 +3,12 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
@@ -37,6 +35,16 @@ class ClientManager
     /** @var  LoggerInterface */
     private $logger;
 
+    /**
+     * ClientManager constructor.
+     * @param EntityManagerSimulator $oEntityManager
+     * @param ClientSettingsManager $oClientSettingsManager
+     * @param TokenStorageInterface $tokenStorage
+     * @param RequestStack $requestStack
+     * @param WalletCreationManager $walletCreationManager
+     * @param EntityManager $em
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         EntityManagerSimulator $oEntityManager,
         ClientSettingsManager $oClientSettingsManager,
@@ -152,30 +160,47 @@ class ClientManager
     }
 
     /**
-     * @param \clients $oClient
+     * @param \clients | Clients $oClient
      *
      * @return bool
      */
-    public function isLender(\clients $oClient)
+    public function isLender($oClient)
     {
-        if (empty($oClient->id_client)) {
-            return false;
-        } else {
+        if ($oClient instanceof Clients) {
+            $lenderWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($oClient->getIdClient(), WalletType::LENDER);
+            return null !== $lenderWallet;
+        }
+
+        if ($oClient instanceof \clients) {
+            if (empty($oClient->id_client)) {
+                return false;
+            }
             return $oClient->isLender();
         }
+
+        return false;
     }
 
     /**
-     * @param \clients $oClient
+     * @param \clients | Clients $oClient
      *
      * @return bool
      */
-    public function isBorrower(\clients $oClient)
+    public function isBorrower($oClient)
     {
-        if (empty($oClient->id_client)) {
-            return false;
+        if ($oClient instanceof Clients) {
+            $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($oClient->getIdClient(), WalletType::BORROWER);
+            return null !== $borrowerWallet;
         }
-        return $oClient->isBorrower();
+
+        if ($oClient instanceof \clients) {
+            if (empty($oClient->id_client)) {
+                return false;
+            }
+            return $oClient->isBorrower();
+        }
+
+        return false;
     }
 
     public function getClientBalance(\clients $oClient)
@@ -207,138 +232,5 @@ class ClientManager
     public function getClientSubscriptionStep(\clients $oClient)
     {
         return $oClient->etape_inscription_preteur;
-    }
-
-
-    /**
-     * @param \clients | Clients $client
-     * @param \clients_adresses | ClientsAdresses $clientsAddress
-     * @param integer $typeId
-     * @param Companies|null $company
-     * @return string
-     */
-    public function createClient($client, $clientsAddress, $typeId, Companies $company = null)
-    {
-        $this->em->beginTransaction();
-        $clientEntity = '';
-        try {
-            if ($client instanceof \clients) {
-                $client = $this->matchClientDataOnEntity($client);
-            }
-
-            if ($client instanceof Clients){
-                if (false === is_null($client->getIdClient())) {
-                    return false;
-                }
-            }
-
-            $this->em->persist($client);
-            $this->em->flush();
-
-            if ($clientsAddress instanceof \clients_adresses) {
-                $clientsAddress = $this->matchClientAddressDataOnEntity($clientsAddress);
-            }
-
-            $clientsAddress->setIdClient($client->getIdClient());
-            $this->em->persist($clientsAddress);
-
-            if (
-                in_array($client->getType(), [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])
-                && false === empty($company)
-            ){
-                $company->setIdClientOwner($client->getIdClient());
-                $this->em->persist($company);
-            }
-
-            $this->em->flush();
-            $this->walletCreationManager->createWallet($client, $typeId);
-            $this->em->commit();
-        } catch (Exception $exception) {
-            $this->em->getConnection()->rollBack();
-            $this->logger->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
-        }
-
-        return $clientEntity;
-    }
-
-    /**
-     * @param \clients $client
-     * @return null|object|Clients
-     */
-    private function matchClientDataOnEntity(\clients $client)
-    {
-        if (false === empty($client->id_client)) {
-            $clientEntity = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        } else {
-            $clientEntity = new Clients();
-        }
-
-        $clientEntity->setCivilite($client->civilite);
-        $clientEntity->setNom($client->nom);
-        $clientEntity->setNomUsage($client->nom_usage);
-        $clientEntity->setPrenom($client->prenom);
-        $clientEntity->setFonction($client->fonction);
-        $clientEntity->setNaissance($client->naissance);
-        $clientEntity->setIdPaysNaissance($client->id_pays_naissance);
-        $clientEntity->setVilleNaissance($client->ville_naissance);
-        $clientEntity->setInseeBirth($client->insee_birth);
-        $clientEntity->setIdNationalite($client->id_nationalite);
-        $clientEntity->setTelephone($client->telephone);
-        $clientEntity->setMobile($client->mobile);
-        $clientEntity->setEmail($client->email);
-        $clientEntity->setPassword($client->password);
-        $clientEntity->setSecreteQuestion($client->secrete_question);
-        $clientEntity->setSecreteReponse($client->secrete_reponse);
-        $clientEntity->setType($client->type);
-        $clientEntity->setFundsOrigin($client->funds_origin);
-        $clientEntity->setFundsOriginDetail($client->funds_origin_detail);
-        $clientEntity->setEtapeInscriptionPreteur($client->etape_inscription_preteur);
-        $clientEntity->setStatusInscriptionPreteur($client->status_inscription_preteur);
-        $clientEntity->setSource($client->source);
-        $clientEntity->setSource2($client->source2);
-        $clientEntity->setSource3($client->source3);
-        $clientEntity->setSlugOrigine($client->slug_origine);
-        $clientEntity->setOrigine($client->origine);
-        $clientEntity->setLastlogin($client->lastlogin);
-
-        return $clientEntity;
-    }
-
-    /**
-     * @param \clients_adresses $clientAddress
-     * @return null|object|ClientsAdresses
-     */
-    private function matchClientAddressDataOnEntity(\clients_adresses $clientAddress)
-    {
-        if (false === empty($clientAddress->id_adresse)) {
-            $clientAddressEntity = $this->em->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->find($clientAddress->id_adresse);
-        } else {
-            $clientAddressEntity = new ClientsAdresses();
-        }
-
-        $clientAddressEntity->setDefaut($clientAddress->defaut);
-        $clientAddressEntity->setType($clientAddress->type);
-        $clientAddressEntity->setNomAdresse($clientAddress->nom_adresse);
-        $clientAddressEntity->setCivilite($clientAddress->civilite);
-        $clientAddressEntity->setNom($clientAddress->nom);
-        $clientAddressEntity->setPrenom($clientAddress->prenom);
-        $clientAddressEntity->setSociete($clientAddress->societe);
-        $clientAddressEntity->setAdresse1($clientAddress->adresse1);
-        $clientAddressEntity->setAdresse2($clientAddress->adresse2);
-        $clientAddressEntity->setAdresse3($clientAddress->adresse3);
-        $clientAddressEntity->setCp($clientAddress->cp);
-        $clientAddressEntity->setVille($clientAddress->ville);
-        $clientAddressEntity->setIdPays($clientAddress->id_pays);
-        $clientAddressEntity->setTelephone($clientAddress->telephone);
-        $clientAddressEntity->setMobile($clientAddress->mobile);
-        $clientAddressEntity->setCommentaire($clientAddress->commentaire);
-        $clientAddressEntity->setMemeAdresseFiscal($clientAddress->meme_adresse_fiscal);
-        $clientAddressEntity->setAdresseFiscal($clientAddress->adresse_fiscal);
-        $clientAddressEntity->setVilleFiscal($clientAddress->ville_fiscal);
-        $clientAddressEntity->setCpFiscal($clientAddress->cp_fiscal);
-        $clientAddressEntity->setIdPaysFiscal($clientAddress->id_pays_fiscal);
-        $clientAddressEntity->setStatus($clientAddress->status);
-
-        return $clientAddressEntity;
     }
 }
