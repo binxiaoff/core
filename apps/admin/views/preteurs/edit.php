@@ -226,73 +226,7 @@
         </select>
     </div>
     <div class="MouvTransac">
-        <?php if (count($this->lTrans) > 0) : ?>
-            <table class="tablesorter transac">
-                <thead>
-                <tr>
-                    <th>Type d'approvisionnement</th>
-                    <th>Date de l'opération</th>
-                    <th>Montant de l'opération</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php
-                $i = 1;
-                foreach ($this->lTrans as $t) :
-                    $additionalInformation = '';
-                    if (in_array($t['type_transaction'], [
-                        \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
-                        \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS
-                    ])) :
-                        $this->projects->get($t['id_project'], 'id_project');
-                        $this->companies->get($this->projects->id_company, 'id_company');
-                        $additionalInformation = $this->companies->name;
-                    elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) :
-                        $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-                        $this->projects->get($this->echeanciers->id_project, 'id_project');
-                        $this->companies->get($this->projects->id_company, 'id_company');
-                        $additionalInformation = ' - ' . $this->companies->name;
-                    elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant'] > 0) :
-                        $additionalInformation = ' - Annulation retrait des fonds - compte bancaire clos';
-                    elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_BALANCE_TRANSFER ) :
-                        /** @var \transfer $transfer */
-                        $transfer = $this->loadData('transfer');
-                        $transfer->get($t['id_transfer']);
-                        $lenderCounterpart = $this->loadData('lenders_accounts');
-                        if ($this->lenders_accounts->id_client_owner == $transfer->id_client_origin) {
-                            $lenderCounterpart->get($transfer->id_client_receiver, 'id_client_owner');
-                        } else {
-                            $lenderCounterpart->get($transfer->id_client_origin, 'id_client_owner');
-                        }
-                        $additionalInformation = ' - Compte client <a href="' . $this->lurl . '/preteurs/edit/' . $lenderCounterpart->id_lender_account .  '"> ' . $lenderCounterpart->id_client_owner . '</a>';
-                    endif; ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td><?= $this->lesStatuts[$t['type_transaction']] . $additionalInformation ?></td>
-                        <td><?= $this->dates->formatDate($t['date_transaction'], 'd-m-Y') ?></td>
-                        <td><?= $this->ficelle->formatNumber($t['montant'] / 100) ?> €</td>
-                    </tr>
-                    <?php
-                    $i++;
-                endforeach; ?>
-                </tbody>
-            </table>
-            <?php if ($this->nb_lignes != '') : ?>
-                <table>
-                    <tr>
-                        <td id="pager">
-                            <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                            <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                            <input type="text" class="pagedisplay"/>
-                            <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                            <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                            <select class="pagesize">
-                                <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-                <?php endif; ?>
-            <?php endif; ?>
+        <?php $this->fireView('transactions'); ?>
     </div>
     <div class="lesbidsEncours">
         <h2>Suivi des enchères en cours</h2>

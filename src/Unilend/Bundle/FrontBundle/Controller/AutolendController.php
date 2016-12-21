@@ -90,7 +90,7 @@ class AutolendController extends Controller
         }
 
         $template['projectRatesGlobal'] = $autoBidSettingsManager->getRateRange();
-        $autoBidSettings = $autobid->getSettings($lendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+        $autoBidSettings = $autobid->getSettings($lendersAccounts->id_lender_account, null, null, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
 
         if (empty($autoBidSettings)) {
             $autoBidSettings = $this->generateFakeAutolendSettings($projectPeriods, $project, $projectRateSettings);
@@ -106,7 +106,7 @@ class AutolendController extends Controller
             }
 
             $averageRateUnilend   = $project->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
-            $medianRateForSetting = bcdiv(bcadd($aSetting['project_rate_min'], $aSetting['project_rate_max']), 2, 1);;
+            $medianRateForSetting = bcdiv(bcadd($aSetting['project_rate_min'], $aSetting['project_rate_max']), 2, 1);
             $aSetting['cellAverageRateUnilend'] = ($averageRateUnilend > 0) ? $averageRateUnilend : $medianRateForSetting;
             $template['autoBidSettings'][$aSetting['id_period']][] = $aSetting;
         }
@@ -293,17 +293,20 @@ class AutolendController extends Controller
         $settings = [];
 
         foreach ($projectPeriods as $period ) {
-            foreach($project->getAvailableRisks() as $risk) {
+            $availableRisks = $project->getAvailableRisks();
+            rsort($availableRisks);
+
+            foreach ($availableRisks as $risk) {
                 $rateSetting = $projectRateSettings->select('id_period = ' . $period['id_period'] . ' AND evaluation = "' . $risk . '" AND status = ' . \project_rate_settings::STATUS_ACTIVE);
                 $rate = array_shift($rateSetting);
                 $averageRate = bcdiv(bcadd($rate['rate_min'], $rate['rate_max']), 2, 1);
                 $settings[] = [
                     'id_autobid' => '',
-                    'status' => 1,
+                    'status'     => 1,
                     'evaluation' => $risk,
-                    'id_period' => $period['id_period'],
-                    'rate_min' => $averageRate,
-                    'amount' => '',
+                    'id_period'  => $period['id_period'],
+                    'rate_min'   => $averageRate,
+                    'amount'     => '',
                     'period_min' => $period['min'],
                     'period_max' => $period['max']
                 ];

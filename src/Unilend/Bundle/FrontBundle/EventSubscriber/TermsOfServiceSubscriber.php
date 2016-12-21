@@ -24,6 +24,6 @@ class TermsOfServiceSubscriber implements EventSubscriberInterface
 
     public function checkLegalDoc()
     {
-        $this->clientManager->ifLastTOSAccepted();
+        $this->clientManager->checkLastTOSAccepted();
     }
 }

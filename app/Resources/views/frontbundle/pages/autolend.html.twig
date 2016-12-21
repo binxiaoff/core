@@ -2,8 +2,8 @@
 {% extends 'layouts/_layout_lender.html.twig' %}
 
 {% set page = {
-id: 'user-preter-autolend',
-classNames: 'user-preter-autolend'
+    id: 'user-preter-autolend',
+    classNames: 'user-preter-autolend'
 } %}
 
 {% block dashboardContent %}
@@ -39,7 +39,8 @@ classNames: 'user-preter-autolend'
                 <label for="form-autolend-enable" class="field-label-inline">{% trans %} autolend_on-off-switch-label {% endtrans %}</label>
                 <label id="form-autolend-enable-switch" class="custom-input-switch" data-custom-input="">
                     <input type="checkbox" id="form-autolend-enable" value="1" {% if autobid_on %}checked{% endif %} name=""/>
-                    <span class="label"><span class="sr-only">Switch off/on</span></span></label>
+                    <span class="label"><span class="sr-only">Switch off/on</span></span>
+                </label>
             </div>
         </section><!-- /.panel -->
 

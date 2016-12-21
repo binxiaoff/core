@@ -121,7 +121,7 @@
                     <?php if ($this->nbLoansIFP > 0) : ?>
                     <li>
                         <div class="col-long">
-                            Nombre de contrat de prêt
+                            Nombre de contrats de prêt
                         </div>
                         <div class="col-small">
                             <?= $this->nbLoansIFP ?>
@@ -166,6 +166,7 @@
                     </li>
                 </ul>
             </div>
+            <br/>
             <div class="list">
                 <ul>
                     <li>La signature des contrats de prêt par Unilend engage l'Emetteur, en contrepartie des sommes remises ce jour </li>
@@ -285,7 +286,7 @@
                 </div>
             </div>
         <?php else: ?>
-            <div class="page-break">
+            <div class="pageBreakBefore">
                 <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-2">

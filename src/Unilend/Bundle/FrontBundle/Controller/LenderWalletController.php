@@ -326,24 +326,14 @@ class LenderWalletController extends Controller
             $transaction->serialize_payline = serialize($result);
             $transaction->update();
 
-            if (isset($result)) {
-
-                if ($result['result']['code'] == '00000') {
-                    return $this->json(
-                        ['url' =>$result['redirectURL']],
-                        Response::HTTP_OK
-                    );
-                } elseif (isset($result)) {
-                    mail('alertesit@unilend.fr', 'unilend erreur payline', 'alimentation preteur (client : ' . $client->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
-                }
+            if (isset($result) && $result['result']['code'] == '00000') {
+                return $this->json(
+                    ['url' =>$result['redirectURL']],
+                    Response::HTTP_OK
+                );
             }
         }
-        return $this->json(
-            [
-                'message' => $this->render('pages/lender_wallet/deposit_money_result.html.twig', ['code' => 0])->getContent()
-            ],
-            Response::HTTP_INTERNAL_SERVER_ERROR
-        );
+        return $this->json(['message' => $this->render('pages/lender_wallet/deposit_money_result.html.twig', ['code' => 0])->getContent()], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -362,25 +352,20 @@ class LenderWalletController extends Controller
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
-
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
 
+        $paylineParameter = [
+            'token' => $request->request->get('token', $request->query->get('token'))
+        ];
 
-        if ($client->get($hash, 'hash')) {
-            $paylineParameter = [];
+        if (true === $client->get($hash, 'hash') && false === empty($paylineParameter['token'])) {
             /** @var \paylineSDK $payline */
             $payline = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
 
-            $paylineParameter['token'] = $request->request->get('token', $request->query->get('token'));
-
-            if (true === empty($paylineParameter['token'])) {
-                $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-                return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
-            }
             $paylineParameter['version'] = $request->request->get('version', '3');
-            $response = $payline->getWebPaymentDetails($paylineParameter);
-            $partnerId = $request->getSession()->get('id_partenaire' ,'');
+            $response                    = $payline->getWebPaymentDetails($paylineParameter);
+            $partnerId                   = $request->getSession()->get('id_partenaire', '');
 
             if (false === empty($response)) {
                 /** @var PaylineManager $paylineManager */
@@ -390,13 +375,20 @@ class LenderWalletController extends Controller
                 if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_WALLET)) {
                     return $this->redirectToRoute('lender_wallet_deposit', [
                         'depositResult' => true,
-                        'depositCode' => Response::HTTP_OK,
+                        'depositCode'   => Response::HTTP_OK,
                         'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)
                     ]);
+                } else {
+                    $logger->warning('The payment was canceled or an error code was returned by payline. Client ID: ' . $client->id_client . ' - Payline response: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
                 }
-                return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
+            } else {
+                $logger->error('Empty response from Payline, Client ID: ' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             }
+        } else {
+            $clientId = $this->getUser()->getClientId();
+            $logger->error('Payline has returned wrong parameters: token or hash not found, hash: ' . $hash . ' - ' . json_encode($paylineParameter) . ' - Client ID: ' . $clientId, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientId]);
         }
+        return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
     }
 
     /**

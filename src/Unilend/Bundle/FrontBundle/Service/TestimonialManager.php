@@ -131,7 +131,7 @@ class TestimonialManager
                 /** @var \companies $companies */
                 $companies = $this->entityManager->getRepository('companies');
                 $companies->get($entry['id_client'], 'id_client_owner');
-                $allTestimonials[$key]['project'] = $projects->select('id_company = ' . $companies->id_company, 'date_publication_full DESC', null, 1)[0];
+                $allTestimonials[$key]['project'] = $projects->select('id_company = ' . $companies->id_company, 'date_publication DESC', null, 1)[0];
             }
         }
     }

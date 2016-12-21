@@ -79,6 +79,7 @@ class ProjectsController extends Controller
         $start         = $pagination['start'];
         $sort          = [];
         $sortDirection = strtoupper($sortDirection);
+        $lenderAccount = null;
 
         if (
             in_array($sortType, [\projects::SORT_FIELD_SECTOR, \projects::SORT_FIELD_AMOUNT, \projects::SORT_FIELD_RATE, \projects::SORT_FIELD_RISK, \projects::SORT_FIELD_END])
@@ -95,18 +96,9 @@ class ProjectsController extends Controller
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
-
-            /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
-            $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
-
-            $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $lenderAccount);
-
-            array_walk($template['projects'], function(&$project) use ($lenderAccountDisplayManager, $lenderAccount) {
-                $project['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project['projectId'], $project['status']);
-            });
-        } else {
-            $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit);
         }
+
+        $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $lenderAccount);
 
         $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
 
@@ -199,7 +191,6 @@ class ProjectsController extends Controller
 
         $template = [
             'project'  => $projectDisplayManager->getProjectData($project),
-            'finance'  => $projectDisplayManager->getProjectFinancialData($project),
             'bidToken' => sha1('tokenBid-' . time() . '-' . uniqid())
         ];
 
@@ -216,20 +207,6 @@ class ProjectsController extends Controller
                 }
                 ++$index;
             }
-        }
-        $template['financeColumns'] = [
-            'income_statement' => [],
-            'assets'           => [],
-            'debts'            => [],
-        ];
-
-        if (false === empty($template['finance'])) {
-            $firstBalanceSheet          = current($template['finance']);
-            $template['financeColumns'] = [
-                'income_statement' => array_keys($firstBalanceSheet['income_statement']['details']),
-                'assets'           => array_keys($firstBalanceSheet['assets']),
-                'debts'            => array_keys($firstBalanceSheet['debts']),
-            ];
         }
 
         $displayCipDisclaimer = false;
@@ -256,7 +233,13 @@ class ProjectsController extends Controller
 
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
-            $template['project']['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project->id_project, $project->status);
+            $template['project']['lender'] = [
+                'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $lenderAccount)
+            ];
+
+            if ($project->status >= \projects_status::FUNDE) {
+                $template['project']['lender']['loans'] = $lenderAccountDisplayManager->getLoansForProject($project->id_project, $lenderAccount);
+            }
 
             if (false === empty($request->getSession()->get('bidResult'))) {
                 $template['lender']['bidResult'] = $request->getSession()->get('bidResult');
@@ -280,7 +263,23 @@ class ProjectsController extends Controller
         $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower);
         $isConnectedButNotValidated = ($user instanceof UserLender && false === in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]));
 
-        if (false === $isFullyConnectedUser) {
+        if ($isFullyConnectedUser) {
+            $template['finance']        = $projectDisplayManager->getProjectFinancialData($project);
+            $template['financeColumns'] = [
+                'income_statement' => [],
+                'assets'           => [],
+                'debts'            => [],
+            ];
+
+            if (false === empty($template['finance'])) {
+                $firstBalanceSheet          = current($template['finance']);
+                $template['financeColumns'] = [
+                    'income_statement' => array_keys($firstBalanceSheet['income_statement']['details']),
+                    'assets'           => array_keys($firstBalanceSheet['assets']),
+                    'debts'            => array_keys($firstBalanceSheet['debts']),
+                ];
+            }
+        } else {
             /** @var TranslatorInterface $translator */
             $translator = $this->get('translator');
             /** @var EntityManager $entityManager */
@@ -841,7 +840,6 @@ class ProjectsController extends Controller
         if ($pageDescription !== 'seo_project-detail-description') {
             $seoPage->addMeta('name', 'description', $pageDescription);
         }
-
     }
 
     /**
@@ -884,10 +882,27 @@ class ProjectsController extends Controller
             ]);
         }
 
-        $response = [];
         /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
+        $user = $this->getUser();
+
+        if (false === ($user instanceof UserLender)) {
+            return new JsonResponse([
+                'error'    => true,
+                'title'    => $translator->trans('project-detail_modal-bid-error-disconnected-lender-title'),
+                'messages' => [$translator->trans('project-detail_modal-bid-error-disconnected-lender-message')]
+            ]);
+        }
+
+        $clientId      = $user->getClientId();
+        $lenderBalance = $entityManager->getRepository('transactions')->getSolde($clientId);
+
+        if ($lenderBalance < $amount) {
+            return new JsonResponse([
+                'error'    => true,
+                'title'    => $translator->trans('project-detail_modal-bid-error-amount-title'),
+                'messages' => [$translator->trans('project-detail_side-bar-bids-low-balance')]
+            ]);
+        }
 
         /** @var \lenders_accounts $lenderAccount */
         $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
@@ -909,8 +924,9 @@ class ProjectsController extends Controller
             $product->get($project->id_product);
 
             $translatedReasons = [];
-            $amountRest = 0;
-            $amountMax = $productManager->getMaxEligibleAmount($product);
+            $amountRest        = 0;
+            $amountMax         = $productManager->getMaxEligibleAmount($product);
+
             foreach ($reasons as $reason) {
                 if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
                     $amountRest = $productManager->getAmountLenderCanStillBid($lender, $project);
@@ -921,16 +937,18 @@ class ProjectsController extends Controller
 
                 $translatedReasons[] = $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, $pendingBidAmount,['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]);
             }
+
             return new JsonResponse([
-                'error'   => true,
+                'error'    => true,
+                'title'    => $translator->trans('project-detail_modal-bid-error-amount-title'),
                 'messages' => $translatedReasons
             ]);
         }
 
         $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
 
-        $validationNeeded       = $cipManager->isCIPValidationNeeded($bid);
-        $response['validation'] = $validationNeeded;
+        $validationNeeded = $cipManager->isCIPValidationNeeded($bid);
+        $response         = ['validation' => $validationNeeded];
 
         if ($validationNeeded) {
             $evaluation = $cipManager->getCurrentEvaluation($lender);

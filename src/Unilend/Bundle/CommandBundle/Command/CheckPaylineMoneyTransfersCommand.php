@@ -28,28 +28,17 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \transactions $transactions */
-        $transactions     = $entityManager->getRepository('transactions');
+        $transactions = $entityManager->getRepository('transactions');
         /** @var \backpayline $backpayline */
-        $backpayline      = $entityManager->getRepository('backpayline');
+        $backpayline = $entityManager->getRepository('backpayline');
         /** @var \lenders_accounts $lenders_accounts */
         $lenders_accounts = $entityManager->getRepository('lenders_accounts');
         /** @var \wallets_lines $wallets_lines */
-        $wallets_lines    = $entityManager->getRepository('wallets_lines');
+        $wallets_lines = $entityManager->getRepository('wallets_lines');
         /** @var \bank_lines $bank_lines */
-        $bank_lines       = $entityManager->getRepository('bank_lines');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        $settings->get('DebugMailFrom', 'type');
-        $debugEmail = $settings->value;
-        $settings->get('DebugMailIt', 'type');
-        $sDestinatairesDebug = $settings->value;
-        $sHeadersDebug  = 'MIME-Version: 1.0' . "\r\n";
-        $sHeadersDebug .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $sHeadersDebug .= 'From: ' . $debugEmail . "\r\n";
+        $bank_lines = $entityManager->getRepository('bank_lines');
 
-        $sPaylinePath = $this->getContainer()->getParameter('path.payline');
-
-        require_once($sPaylinePath . 'include.php');
+        require_once $this->getContainer()->getParameter('path.payline') . 'include.php';
 
         $date = mktime(0, 0, 0, date('m'), date('d') - 1, date('Y'));
         $date = date('Y-m-d', $date);
@@ -78,6 +67,7 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
                     $backpayline->serialize = serialize($response);
                     $backpayline->create();
                 }
+
                 if ($response['result']['code'] == '00000') {
                     if ($transactions->get($response['order']['ref'], 'status = ' . \transactions::STATUS_PENDING . ' AND id_transaction')) {
                         $transactions->id_backpayline   = $backpayline->id_backpayline;
@@ -105,31 +95,6 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
                         $bank_lines->status            = 1;
                         $bank_lines->amount            = $response['payment']['amount'];
                         $bank_lines->create();
-
-                        $subject = '[Alerte] BACK PAYLINE Transaction approved';
-                        $message = '
-                                <html>
-                                <head>
-                                  <title>[Alerte] BACK PAYLINE Transaction approved</title>
-                                </head>
-                                <body>
-                                  <h3>[Alerte] BACK PAYLINE Transaction approved</h3>
-                                  <p>Un payement payline accepet&eacute; n\'a pas &eacute;t&eacute; mis &agrave; jour dans la BDD Unilend.</p>
-                                  <table>
-                                    <tr>
-                                      <th>Id client : </th><td>' . $transactions->id_client . '</td>
-                                    </tr>
-                                    <tr>
-                                      <th>montant : </th><td>' . ($transactions->montant / 100) . '</td>
-                                    </tr>
-                                    <tr>
-                                      <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
-                                    </tr>
-                                  </table>
-                                </body>
-                                </html>';
-
-                        mail($sDestinatairesDebug, $subject, $message, $sHeadersDebug);
                     }
                 }
             }

@@ -73,8 +73,7 @@ class BorrowerAccountController extends Controller
                 $closingDate = new \DateTime();
                 $closingDate->modify('+5 minutes');
 
-                $project->date_retrait_full = $closingDate->format('Y-m-d H:i:s');
-                $project->date_retrait      = $closingDate->format('Y-m-d');
+                $project->date_retrait = $closingDate->format('Y-m-d H:i:s');
                 $project->update();
             }
         }
@@ -599,7 +598,7 @@ class BorrowerAccountController extends Controller
         $isLinkExpired = false;
 
         if (false === $temporaryLinks->get($token, 'token')) {
-            return RedirectResponse::create($this->generateUrl('home'));
+            return $this->redirectToRoute('home');
         }
 
         $now         = new \datetime();
@@ -645,12 +644,13 @@ class BorrowerAccountController extends Controller
                     $client->secrete_reponse  = md5($formData['answer']);
                     $client->status           = 1;
                     $client->update();
-                    return $this->redirect($this->generateUrl('login'));
+
+                    return $this->redirectToRoute('login');
                 }
             }
         }
 
-        return ['expired' => $isLinkExpired];
+        return $this->render('borrower_account/security.html.twig', ['expired' => $isLinkExpired]);
     }
 
     /**
@@ -714,7 +714,7 @@ class BorrowerAccountController extends Controller
             $projectsFunding[$key] = $projectsFunding[$key] + [
                 'average_ir'       => round($projects->getAverageInterestRate(), 2),
                 'funding_progress' => min(100, round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1)),
-                'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait_full'])
+                'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait'])
             ];
         }
         return $projectsFunding;
@@ -757,10 +757,6 @@ class BorrowerAccountController extends Controller
                 'ended'               => $projectManager->getProjectEndDate($projects)
             ];
         }
-
-        usort($projectsPostFunding, function ($firstArray, $secondArray) {
-            return $firstArray['date_retrait'] < $secondArray['date_retrait'];
-        });
 
         return $projectsPostFunding;
     }

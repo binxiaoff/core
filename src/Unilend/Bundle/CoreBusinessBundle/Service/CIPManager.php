@@ -116,7 +116,10 @@ class CIPManager
      */
     public function isValidEvaluation(\lender_evaluation $evaluation)
     {
-        return ($evaluation->expiry_date !== '0000-00-00 00:00:00');
+        return (
+            $evaluation->expiry_date !== '0000-00-00 00:00:00'
+            && new \DateTime('NOW') < \DateTime::createFromFormat('Y-m-d H:i:s', $evaluation->expiry_date)
+        );
     }
 
     /**
@@ -522,7 +525,12 @@ class CIPManager
     public function getIndicators(\lenders_accounts $lender)
     {
         $evaluation = $this->getCurrentEvaluation($lender);
-        $answers    = $this->getAnswersByType($evaluation);
+
+        if (null === $evaluation || false === $this->isValidEvaluation($evaluation)) {
+            return null;
+        }
+
+        $answers = $this->getAnswersByType($evaluation);
 
         if (false === isset($answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD])) {
             return null;
