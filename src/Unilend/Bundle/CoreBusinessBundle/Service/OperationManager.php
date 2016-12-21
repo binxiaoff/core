@@ -19,19 +19,32 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
-
+/**
+ * Class OperationManager
+ * @package Unilend\Bundle\CoreBusinessBundle\Service
+ */
 class OperationManager
 {
     /**
      * @var EntityManager
      */
     private $entityManager;
+    /**
+     * @var EntityManager
+     */
     private $em;
     /**
      * @var WalletManager
      */
     private $walletManager;
 
+    /**
+     * OperationManager constructor.
+     *
+     * @param EntityManager          $em
+     * @param EntityManagerSimulator $entityManager
+     * @param WalletManager          $walletManager
+     */
     public function __construct(EntityManager $em, EntityManagerSimulator $entityManager, WalletManager $walletManager)
     {
         $this->entityManager = $entityManager;
@@ -39,6 +52,15 @@ class OperationManager
         $this->walletManager = $walletManager;
     }
 
+    /**
+     * @param               $amount
+     * @param OperationType $type
+     * @param Wallet|null   $debtor
+     * @param Wallet|null   $creditor
+     * @param               $parameters
+     *
+     * @throws \Exception
+     */
     private function newOperation($amount, OperationType $type, Wallet $debtor = null, Wallet $creditor = null, $parameters)
     {
         $this->em->getConnection()->beginTransaction();
@@ -104,6 +126,12 @@ class OperationManager
         }
     }
 
+    /**
+     * @param Wallet $wallet
+     * @param        $origin
+     *
+     * @return bool
+     */
     public function provisionLenderWallet(Wallet $wallet, $origin)
     {
         if ($origin instanceof Backpayline) {
@@ -134,6 +162,10 @@ class OperationManager
         return true;
     }
 
+    /**
+     * @param Wallet $wallet
+     * @param        $origin
+     */
     private function legacyProvisionLenderWallet(Wallet $wallet, $origin)
     {
         /** @var \transactions $transaction */
@@ -181,6 +213,9 @@ class OperationManager
         $bankLine->create();
     }
 
+    /**
+     * @param Loans $loan
+     */
     public function loan(Loans $loan)
     {
         $operationType  = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_LOAN]);
@@ -191,6 +226,9 @@ class OperationManager
         $this->newOperation($amount, $operationType, $lenderWallet, $borrowerWallet, $loan);
     }
 
+    /**
+     * @param Loans $loan
+     */
     public function refuseLoan(Loans $loan)
     {
         $operationType  = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_LOAN_REFUSED]);
@@ -203,6 +241,10 @@ class OperationManager
         $this->legacyRefuseLoan($loan, $lenderWallet);
     }
 
+    /**
+     * @param Loans  $loan
+     * @param Wallet $lenderWallet
+     */
     public function legacyRefuseLoan(Loans $loan, Wallet $lenderWallet)
     {
         /** @var \transactions $transaction */
@@ -232,6 +274,14 @@ class OperationManager
         $walletLine->create();
     }
 
+    /**
+     * @param Wallet $wallet
+     * @param        $amount
+     * @param null   $origin
+     *
+     * @return Virements
+     * @throws \Exception
+     */
     public function withdraw(Wallet $wallet, $amount, $origin = null)
     {
         $this->em->getConnection()->beginTransaction();
@@ -271,7 +321,7 @@ class OperationManager
             $this->em->getConnection()->commit();
             $this->em->flush();
 
-            $this->legacyWithdraw($wallet, $wireTransferOut, $amount);
+            $this->legacyWithdraw($wallet, $wireTransferOut);
 
             return $wireTransferOut;
 
@@ -281,6 +331,10 @@ class OperationManager
         }
     }
 
+    /**
+     * @param Wallet    $wallet
+     * @param Virements $wireTransferOut
+     */
     private function legacyWithdraw(Wallet $wallet, Virements $wireTransferOut)
     {
         /** @var \transactions $transaction */
@@ -322,6 +376,10 @@ class OperationManager
         $this->em->flush();
     }
 
+    /**
+     * @param Wallet                  $wallet
+     * @param OffresBienvenuesDetails $welcomeOffer
+     */
     public function newWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
     {
         $amount        = round(bcdiv($welcomeOffer->getMontant(), 100, 4), 2);
@@ -332,6 +390,10 @@ class OperationManager
         $this->legacyNewWelcomeOffer($wallet, $welcomeOffer);
     }
 
+    /**
+     * @param Wallet                  $wallet
+     * @param OffresBienvenuesDetails $welcomeOffer
+     */
     private function legacyNewWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
     {
         /** @var \transactions $transaction */
@@ -367,6 +429,10 @@ class OperationManager
         $unilendBank->create();
     }
 
+    /**
+     * @param Wallet                  $wallet
+     * @param OffresBienvenuesDetails $welcomeOffer
+     */
     public function withdrawWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
     {
         $amount        = round(bcdiv($welcomeOffer->getMontant(), 100, 4), 2);
@@ -377,6 +443,10 @@ class OperationManager
         $this->legacyWithdrawWelcomeOffer($wallet, $welcomeOffer);
     }
 
+    /**
+     * @param Wallet                  $wallet
+     * @param OffresBienvenuesDetails $welcomeOffer
+     */
     private function legacyWithdrawWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
     {
         /** @var \transactions $transaction */
@@ -412,6 +482,11 @@ class OperationManager
         $unilendBank->create();
     }
 
+    /**
+     * @param Receptions $reception
+     *
+     * @return bool
+     */
     public function cancelProvisionLenderWallet(Receptions $reception)
     {
         $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::LENDER);
@@ -437,6 +512,9 @@ class OperationManager
         return true;
     }
 
+    /**
+     * @param Receptions $reception
+     */
     public function legacyCancelProvisionLenderWallet(Receptions $reception)
     {
         /** @var \transactions $transaction */
@@ -455,6 +533,11 @@ class OperationManager
         $transaction->update();
     }
 
+    /**
+     * @param Receptions $reception
+     *
+     * @return bool
+     */
     public function cancelProvisionBorrowerWallet(Receptions $reception)
     {
         $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::BORROWER);
@@ -481,6 +564,9 @@ class OperationManager
         return true;
     }
 
+    /**
+     * @param Receptions $reception
+     */
     public function legacyCancelProvisionBorrowWallet(Receptions $reception)
     {
         /** @var \transactions $transaction */
