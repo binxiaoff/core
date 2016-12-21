@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,10 +17,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
+use Doctrine\ORM\EntityManager;
 
 class ProjectRequestController extends Controller
 {
@@ -88,7 +90,7 @@ class ProjectRequestController extends Controller
         if ($request->isMethod('GET')) {
             return $this->redirect($this->generateUrl('home_borrower') . '#homeemp-section-esim');
         }
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -195,7 +197,24 @@ class ProjectRequestController extends Controller
             ->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        $this->get('unilend.service.client_manager')->createClient($this->client, new ClientsAdresses(), WalletType::BORROWER, $this->company);
+        /** @var EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
+        $em->beginTransaction();
+        try {
+            $em->persist($this->client);
+            $em->flush();
+            $clientAddress = new ClientsAdresses();
+            $clientAddress->setIdClient($this->client->getIdClient());
+            $em->persist($clientAddress);
+            $this->company->setIdClientOwner($this->client->getIdClient());
+            $em->persist($this->company);
+            $em->flush();
+            $this->get('unilend.service.wallet_creation_manager')->createWallet($this->client, WalletType::BORROWER);
+            $em->commit();
+        } catch (Exception $exception) {
+            $em->getConnection()->rollBack();
+            $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+        }
 
         if (empty($this->client->getIdClient())) {
             return $this->redirect($request->headers->get('referer'));
@@ -243,7 +262,7 @@ class ProjectRequestController extends Controller
      */
     private function start()
     {
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -337,7 +356,7 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -426,7 +445,7 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -620,7 +639,7 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \companies_actif_passif $companyAssetsDebts */
         $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
@@ -717,7 +736,7 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
 
         $errors = [];
@@ -870,7 +889,7 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -966,7 +985,7 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -1169,7 +1188,7 @@ class ProjectRequestController extends Controller
             ]
         ];
 
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
 
         /** @var \attachment $attachment */
@@ -1388,7 +1407,7 @@ class ProjectRequestController extends Controller
     {
         $financialCalculation = new \PHPExcel_Calculation_Financial();
 
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -1420,7 +1439,7 @@ class ProjectRequestController extends Controller
 
     private function sendSubscriptionConfirmationEmail()
     {
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -1472,7 +1491,7 @@ class ProjectRequestController extends Controller
     private function sendCommercialEmail($emailType)
     {
         if ($this->project->id_commercial > 0) {
-            /** @var EntityManager $entityManager */
+            /** @var EntityManagerSimulator $entityManager */
             $entityManager = $this->get('unilend.service.entity_manager');
 
             /** @var \users $user */
@@ -1540,7 +1559,7 @@ class ProjectRequestController extends Controller
      */
     private function checkProjectHash($route, $hash, Request $request)
     {
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
 
         $this->project = $entityManager->getRepository('projects');

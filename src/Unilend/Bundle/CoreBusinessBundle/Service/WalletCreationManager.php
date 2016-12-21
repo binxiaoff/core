@@ -40,10 +40,11 @@ class WalletCreationManager
 
         switch($walletTypeEntity->getLabel()){
             case WalletType::LENDER :
-                $this->createLenderWallet($client, $walletTypeEntity);
+                $wallet = $this->createBaseWallet($client, $walletTypeEntity);
+                $this->createLegacyLenderAccount($client, $wallet);
                 break;
             case WalletType::BORROWER:
-                $this->createBorrowerWallet($client, $walletTypeEntity);
+                $this->createBaseWallet($client, $walletTypeEntity);
                 break;
             default:
                 //TODO log unknown wallet type
@@ -55,7 +56,7 @@ class WalletCreationManager
      * @param Clients $client
      * @param WalletType $walletType
      */
-    private function createLenderWallet(Clients $client, WalletType $walletType)
+    private function createBaseWallet(Clients $client, WalletType $walletType)
     {
         $wallet = new Wallet();
         $wallet->setIdClient($client);
@@ -63,7 +64,7 @@ class WalletCreationManager
         $wallet->setAvailableBalance(0);
         $this->em->persist($wallet);
 
-        $this->createLegacyLenderAccount($client, $wallet);
+        return $wallet;
     }
 
     /**
@@ -89,20 +90,6 @@ class WalletCreationManager
         $accountMatching->setIdLenderAccount($lendersAccountEntity);
         $accountMatching->setIdWallet($wallet);
         $this->em->persist($accountMatching);
-        $this->em->flush();
-    }
-
-    /**
-     * @param Clients $client
-     * @param WalletType $walletType
-     */
-    private function createBorrowerWallet(Clients $client, WalletType $walletType)
-    {
-        $wallet = new Wallet();
-        $wallet->setIdClient($client);
-        $wallet->setIdType($walletType);
-        $wallet->setAvailableBalance(0);
-        $this->em->persist($wallet);
         $this->em->flush();
     }
 }

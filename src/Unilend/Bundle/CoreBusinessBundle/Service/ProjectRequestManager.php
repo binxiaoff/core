@@ -4,6 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -21,21 +23,34 @@ class ProjectRequestManager
     private $sourceManager;
     /** @var  EntityManager */
     private $em;
-    /** @var  ClientManager */
-    private $clientManager;
+    /** @var  WalletCreationManager */
+    private $walletCreationManager;
+    /** @var  LoggerInterface */
+    private $logger;
 
+    /**
+     * ProjectRequestManager constructor.
+     * @param EntityManagerSimulator $entityManager
+     * @param ProjectManager $projectManager
+     * @param SourceManager $sourceManager
+     * @param EntityManager $em
+     * @param WalletCreationManager $walletCreationManager
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         EntityManagerSimulator $entityManager,
         ProjectManager $projectManager,
         SourceManager $sourceManager,
         EntityManager $em,
-        ClientManager $clientManager
+        WalletCreationManager $walletCreationManager,
+        LoggerInterface $logger
     ) {
-        $this->entityManager  = $entityManager;
-        $this->projectManager = $projectManager;
-        $this->sourceManager  = $sourceManager;
-        $this->em             = $em;
-        $this->clientManager  = $clientManager;
+        $this->entityManager         = $entityManager;
+        $this->projectManager        = $projectManager;
+        $this->sourceManager         = $sourceManager;
+        $this->em                    = $em;
+        $this->walletCreationManager = $walletCreationManager;
+        $this->logger                = $logger;
     }
 
     public function getMonthlyRateEstimate()
@@ -100,7 +115,22 @@ class ProjectRequestManager
             ->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        $this->clientManager->createClient($client, new ClientsAdresses(), WalletType::BORROWER, $company);
+        $this->em->beginTransaction();
+        try {
+            $this->em->persist($client);
+            $this->em->flush();
+            $clientAddress = new ClientsAdresses();
+            $clientAddress->setIdClient($client->getIdClient());
+            $this->em->persist($clientAddress);
+            $company->setIdClientOwner($client->getIdClient());
+            $this->em->persist($company);
+            $this->em->flush();
+            $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
+            $this->em->commit();
+        } catch (Exception $exception) {
+            $this->em->getConnection()->rollBack();
+            $this->logger->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+        }
 
         $project->id_company                           = $company->getIdCompany();
         $project->amount                               = $aFormData['amount'];
