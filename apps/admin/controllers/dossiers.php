@@ -444,24 +444,8 @@ class dossiersController extends bootstrap
                             $loans->status = \loans::STATUS_REJECTED;
                             $loans->update();
 
-                            // On redonne l'argent aux preteurs
-                            $transactions->id_client        = $clients->id_client;
-                            $transactions->montant          = $l['amount'];
-                            $transactions->id_langue        = 'fr';
-                            $transactions->id_loan_remb     = $l['id_loan'];
-                            $transactions->date_transaction = date('Y-m-d H:i:s');
-                            $transactions->status           = \transactions::STATUS_VALID;
-                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                            $transactions->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
-                            $transactions->create();
-
-                            $wallets_lines->id_lender                = $l['id_lender'];
-                            $wallets_lines->type_financial_operation = 20;
-                            $wallets_lines->id_transaction           = $transactions->id_transaction;
-                            $wallets_lines->status                   = 1;
-                            $wallets_lines->type                     = 2;
-                            $wallets_lines->amount                   = $l['amount'];
-                            $wallets_lines->create();
+                            $loan = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans')->find($loans->id_loan);
+                            $this->get('unilend.service.operation_manager')->refuseLoan($loan);
 
                             $varMail = [
                                 'surl'              => $this->surl,

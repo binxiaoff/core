@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -522,8 +523,14 @@ EOF
                 $lenders->update();
             }
 
-            $reception = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptions->id_reception);
-            $wallet = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clients->id_client, WalletType::LENDER);
+            $em        = $this->getContainer()->get('doctrine.orm.entity_manager');
+            $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptions->id_reception);
+            $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clients->id_client, WalletType::LENDER);
+
+            $reception->setIdClient($wallet->getIdClient()->getIdClient());
+            $reception->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED);
+            $reception->setRemb(1); // todo: delete the field
+            $em->flush();
 
             $this->getContainer()->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
 

@@ -5,6 +5,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
@@ -24,14 +25,6 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
         $oSettings = $entityManager->getRepository('settings');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $entityManager->getRepository('offres_bienvenues_details');
-        /** @var \transactions $oTransactions */
-        $oTransactions = $entityManager->getRepository('transactions');
-        /** @var \wallets_lines $oWalletsLines */
-        $oWalletsLines = $entityManager->getRepository('wallets_lines');
-        /** @var \bank_unilend $oBankUnilend */
-        $oBankUnilend = $entityManager->getRepository('bank_unilend');
-        /** @var \lenders_accounts $oLendersAccounts */
-        $oLendersAccounts = $entityManager->getRepository('lenders_accounts');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
 
@@ -40,6 +33,9 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
 
         $aUnusedWelcomeOffers = $oWelcomeOfferDetails->select('status = 0');
         $oDateTime            = new \DateTime();
+
+        $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
 
         $iNumberOfUnusedWelcomeOffers = 0;
 
@@ -52,29 +48,9 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
                 $oWelcomeOfferDetails->status = 2;
                 $oWelcomeOfferDetails->update();
 
-                $oTransactions->id_client                 = $aWelcomeOffer['id_client'];
-                $oTransactions->montant                   = -$aWelcomeOffer['montant'];
-                $oTransactions->id_offre_bienvenue_detail = $aWelcomeOffer['id_offre_bienvenue_detail'];
-                $oTransactions->id_langue                 = 'fr';
-                $oTransactions->date_transaction          = date('Y-m-d H:i:s');
-                $oTransactions->status                    = \transactions::STATUS_VALID;
-                $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION;
-                $oTransactions->create();
-
-                $oLendersAccounts->get($aWelcomeOffer['id_client'], 'id_client_owner');
-
-                $oWalletsLines->id_lender                = $oLendersAccounts->id_lender_account;
-                $oWalletsLines->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-                $oWalletsLines->id_transaction           = $oTransactions->id_transaction;
-                $oWalletsLines->status                   = 1;
-                $oWalletsLines->type                     = 1;
-                $oWalletsLines->amount                   = -$aWelcomeOffer['montant'];
-                $oWalletsLines->create();
-
-                $oBankUnilend->id_transaction = $oTransactions->id_transaction;
-                $oBankUnilend->montant        = abs($oWelcomeOfferDetails->montant);
-                $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
-                $oBankUnilend->create();
+                $wallet       = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($oWelcomeOfferDetails->id_client, WalletType::LENDER);
+                $welcomeOffer = $em->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->find($oWelcomeOfferDetails->id_offre_bienvenue_detail);
+                $operationManager->withdrawWelcomeOffer($wallet, $welcomeOffer);
 
                 $iNumberOfUnusedWelcomeOffers +=1;
             }

@@ -244,36 +244,16 @@ class transfertsController extends bootstrap
             $lenders->status = 1;
             $lenders->update();
 
-            $transactions->id_virement      = $receptions->id_reception;
-            $transactions->id_client        = $lenders->id_client_owner;
-            $transactions->montant          = $receptions->montant;
-            $transactions->id_langue        = 'fr';
-            $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = \transactions::STATUS_VALID;
-            $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
-            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-            $transactions->create();
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
+            $reception = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            $reception->setIdClient($lenders->id_client_owner);
+            $reception->setStatusBo(\Unilend\Bundle\CoreBusinessBundle\Entity\Receptions::STATUS_AUTO_ASSIGNED);
+            $reception->setRemb(1);
+            $reception->setIdUser($_SESSION['user']['id_user']);
+            $reception->setAssignmentDate(new \DateTime());
+            $this->get('doctrine.orm.entity_manager')->flush();
 
-            $wallets->id_lender                = $lenders->id_lender_account;
-            $wallets->type_financial_operation = 30; // alimenation
-            $wallets->id_transaction           = $transactions->id_transaction;
-            $wallets->type                     = 1; // physique
-            $wallets->amount                   = $receptions->montant;
-            $wallets->status                   = 1;
-            $wallets->create();
-
-            $bank->id_wallet_line    = $wallets->id_wallet_line;
-            $bank->id_lender_account = $lenders->id_lender_account;
-            $bank->status            = 1;
-            $bank->amount            = $receptions->montant;
-            $bank->create();
-
-            $receptions->id_client       = $lenders->id_client_owner;
-            $receptions->status_bo       = 1;
-            $receptions->remb            = 1;
-            $receptions->id_user         = $_SESSION['user']['id_user'];
-            $receptions->assignment_date = date('Y-m-d H:i:s');
-            $receptions->update();
+            $this->get('unilend.service.operation_manager')->provisionLenderWallet($reception);
 
             $this->notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
             $this->notifications->id_lender = $lenders->id_lender_account;
@@ -331,35 +311,12 @@ class transfertsController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-        /**@var \clients $preteurs */
-        $preteurs = $this->loadData('clients');
-        /** @var \receptions $receptions */
-        $receptions = $this->loadData('receptions');
-        /** @var \transactions $transactions */
-        $transactions = $this->loadData('transactions');
-        /** @var \wallets_lines $wallets */
-        $wallets = $this->loadData('wallets_lines');
-        /** @var \bank_lines $bank */
-        $bank = $this->loadData('bank_lines');
 
-        if (
-            isset($_POST['id_client'], $_POST['id_reception'])
-            && $preteurs->get($_POST['id_client'], 'id_client')
-            && $receptions->get($_POST['id_reception'], 'id_reception')
-            && $transactions->get($_POST['id_reception'], 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
-        ) {
-            $wallets->get($transactions->id_transaction, 'id_transaction');
-
-            $bank->delete($wallets->id_wallet_line, 'id_wallet_line');
-            $wallets->delete($transactions->id_transaction, 'id_transaction');
-
-            $transactions->status = \transactions::STATUS_CANCELED;
-            $transactions->update();
-
-            $receptions->id_client = 0;
-            $receptions->status_bo = 0;
-            $receptions->remb      = 0;
-            $receptions->update();
+        if (isset($_POST['id_reception'])) {
+            $reception = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            if ($reception){
+                $this->get('unilend.service.operation_manager')->cancelProvisionLenderWallet($reception);
+            }
         }
     }
 
@@ -372,10 +329,6 @@ class transfertsController extends bootstrap
         $projects = $this->loadData('projects');
         /** @var \receptions $receptions */
         $receptions = $this->loadData('receptions');
-        /** @var \transactions $transactions */
-        $transactions = $this->loadData('transactions');
-        /** @var \bank_unilend $bank_unilend */
-        $bank_unilend = $this->loadData('bank_unilend');
         /** @var \echeanciers $echeanciers */
         $echeanciers = $this->loadData('echeanciers');
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
@@ -383,49 +336,41 @@ class transfertsController extends bootstrap
         /** @var \projects_remb $projects_remb */
         $projects_remb = $this->loadData('projects_remb');
 
-        if (
-            isset($_POST['id_project'], $_POST['id_reception'])
-            && $projects->get($_POST['id_project'], 'id_project')
-            && $receptions->get($_POST['id_reception'], 'id_reception')
-            && $transactions->get($_POST['id_reception'], 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
-        ) {
-            $bank_unilend->delete($transactions->id_transaction, 'id_transaction');
+        if ($_POST['id_reception']) {
+            $reception = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            if ($reception) {
+                $this->get('unilend.service.operation_manager')->cancelProvisionBorrowerWallet($reception);
+                $projects->get($reception->getIdProject());
 
-            $transactions->status  = \transactions::STATUS_CANCELED;
-            $transactions->id_user = $_SESSION['user']['id_user'];
-            $transactions->update();
+                $eche   = $echeanciers_emprunteur->select('id_project = ' . $projects->id_project . ' AND status_emprunteur = 1', 'ordre DESC');
+                $newsum = $receptions->montant / 100;
 
-            $receptions->id_client  = 0;
-            $receptions->id_project = 0;
-            $receptions->status_bo  = 0;
-            $receptions->remb       = 0;
-            $receptions->update();
+                foreach ($eche as $e) {
+                    $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
 
-            $eche   = $echeanciers_emprunteur->select('id_project = ' . $_POST['id_project'] . ' AND status_emprunteur = 1', 'ordre DESC');
-            $newsum = $receptions->montant / 100;
+                    if ($montantDuMois <= $newsum) {
+                        $echeanciers->updateStatusEmprunteur($projects->id_project, $e['ordre'], 'annuler');
+                        $echeanciers_emprunteur->get($projects->id_project, 'ordre = ' . $e['ordre'] . ' AND id_project');
+                        $echeanciers_emprunteur->status_emprunteur             = 0;
+                        $echeanciers_emprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
+                        $echeanciers_emprunteur->update();
 
-            foreach ($eche as $e) {
-                $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
+                        // et on retire du wallet unilend
+                        $newsum = $newsum - $montantDuMois;
 
-                if ($montantDuMois <= $newsum) {
-                    $echeanciers->updateStatusEmprunteur($_POST['id_project'], $e['ordre'], 'annuler');
-                    $echeanciers_emprunteur->get($_POST['id_project'], 'ordre = ' . $e['ordre'] . ' AND id_project');
-                    $echeanciers_emprunteur->status_emprunteur             = 0;
-                    $echeanciers_emprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
-                    $echeanciers_emprunteur->update();
-
-                    // et on retire du wallet unilend
-                    $newsum = $newsum - $montantDuMois;
-
-                    if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
-                        $projects_remb->delete($e['ordre'], 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
+                        if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
+                            $projects_remb->delete($e['ordre'], 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
+                        }
+                    } else {
+                        break;
                     }
-                } else {
-                    break;
                 }
+
+                echo 'supp';
+            } else {
+                echo 'nok';
             }
 
-            echo 'supp';
         } else {
             echo 'nok';
         }
