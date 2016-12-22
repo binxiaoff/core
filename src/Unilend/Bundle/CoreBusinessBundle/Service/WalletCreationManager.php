@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AccountMatching;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -19,13 +20,23 @@ class WalletCreationManager
     private $em;
     /** @var  EntityManagerSimulator */
     private $entityManager;
+    /** @var  LoggerInterface */
+    private $logger;
 
+    /**
+     * WalletCreationManager constructor.
+     * @param EntityManager $em
+     * @param EntityManagerSimulator $entityManager
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         EntityManager $em,
-        EntityManagerSimulator $entityManager
+        EntityManagerSimulator $entityManager,
+        LoggerInterface $logger
     ) {
-        $this->em = $em;
+        $this->em            = $em;
         $this->entityManager = $entityManager;
+        $this->logger        = $logger;
     }
 
     /**
@@ -47,7 +58,7 @@ class WalletCreationManager
                 $this->createBaseWallet($client, $walletTypeEntity);
                 break;
             default:
-                //TODO log unknown wallet type
+                $this->logger->info('Unknown wallet type ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
                 break;
         }
     }
@@ -63,6 +74,7 @@ class WalletCreationManager
         $wallet->setIdType($walletType);
         $wallet->setAvailableBalance(0);
         $this->em->persist($wallet);
+        $this->em->flush();
 
         return $wallet;
     }
