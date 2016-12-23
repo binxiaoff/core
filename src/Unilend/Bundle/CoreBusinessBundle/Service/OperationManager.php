@@ -128,7 +128,7 @@ class OperationManager
 
     /**
      * @param Wallet $wallet
-     * @param        $origin
+     * @param Receptions|Backpayline $origin
      *
      * @return bool
      */
@@ -149,17 +149,22 @@ class OperationManager
         $amount = round(bcdiv($amountInCent, 100, 4), 2);
 
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => $type]);
-        $operation     = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([$originField => $origin, 'idType' => $operationType]);
+
+        $operation = null;
+        if ($origin instanceof Backpayline) { // Do it only for payline, because the reception can have an operation and then it can be cancelled.
+            $operation = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([$originField => $origin, 'idType' => $operationType]);
+        }
 
         if (null === $operation) {
             $this->newOperation($amount, $operationType, null, $wallet, $origin);
 
             $this->legacyProvisionLenderWallet($wallet, $origin);
+            $this->em->flush();
+
+            return true;
+        } else {
+            return false;
         }
-
-        $this->em->flush();
-
-        return true;
     }
 
     /**
@@ -498,11 +503,6 @@ class OperationManager
             return false;
         }
 
-        $reception->setIdClient(0); // todo: make it nullable
-        $reception->setStatusBo(Receptions::STATUS_PENDING);
-        $reception->setRemb(0); // todo: delete the field
-        $this->em->flush();
-
         $amount        = round(bcdiv($reception->getMontant(), 100, 4), 2);
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION_BY_WIRE_TRANSFER_CANCEL]);
         $this->newOperation($amount, $operationType, $wallet, null, $reception);
@@ -549,14 +549,8 @@ class OperationManager
             return false;
         }
 
-        $reception->setIdClient(0); // todo: make it nullable and FK
-        $reception->setIdProject(0); // todo: make it nullable and FK
-        $reception->setStatusBo(Receptions::STATUS_PENDING);
-        $reception->setRemb(0); // todo: delete the field
-        $this->em->flush();
-
         $amount        = round(bcdiv($reception->getMontant(), 100, 4), 2);
-        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION_BY_DIRECT_DEBIT_CANCEL]);
+        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION_CANCEL]);
         $this->newOperation($amount, $operationType, $wallet, null, $reception);
 
         $this->legacyCancelProvisionLenderWallet($reception);
@@ -579,5 +573,19 @@ class OperationManager
         $transaction->status  = \transactions::STATUS_CANCELED;
         $transaction->id_user = $_SESSION['user']['id_user'];
         $transaction->update();
+    }
+
+    public function provisionBorrowerWallet(Receptions $reception)
+    {
+        $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::BORROWER);
+        if (null === $wallet) {
+            return false;
+        }
+
+        $amount        = round(bcdiv($reception->getMontant(), 100, 4), 2);
+        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
+        $this->newOperation($amount, $operationType, null, $wallet, $reception);
+
+        return true;
     }
 }
