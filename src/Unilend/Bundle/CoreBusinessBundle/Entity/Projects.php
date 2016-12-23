@@ -172,16 +172,9 @@ class Projects
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_publication", type="date", nullable=false)
+     * @ORM\Column(name="date_publication", type="datetime", nullable=false)
      */
     private $datePublication;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="date_publication_full", type="datetime", nullable=false)
-     */
-    private $datePublicationFull;
 
     /**
      * @var \DateTime
@@ -193,16 +186,9 @@ class Projects
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_retrait", type="date", nullable=false)
+     * @ORM\Column(name="date_retrait", type="datetime", nullable=false)
      */
     private $dateRetrait;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="date_retrait_full", type="datetime", nullable=false)
-     */
-    private $dateRetraitFull;
 
     /**
      * @var \DateTime
@@ -894,30 +880,6 @@ class Projects
     }
 
     /**
-     * Set datePublicationFull
-     *
-     * @param \DateTime $datePublicationFull
-     *
-     * @return Projects
-     */
-    public function setDatePublicationFull($datePublicationFull)
-    {
-        $this->datePublicationFull = $datePublicationFull;
-
-        return $this;
-    }
-
-    /**
-     * Get datePublicationFull
-     *
-     * @return \DateTime
-     */
-    public function getDatePublicationFull()
-    {
-        return $this->datePublicationFull;
-    }
-
-    /**
      * Set dateFunded
      *
      * @param \DateTime $dateFunded
@@ -963,30 +925,6 @@ class Projects
     public function getDateRetrait()
     {
         return $this->dateRetrait;
-    }
-
-    /**
-     * Set dateRetraitFull
-     *
-     * @param \DateTime $dateRetraitFull
-     *
-     * @return Projects
-     */
-    public function setDateRetraitFull($dateRetraitFull)
-    {
-        $this->dateRetraitFull = $dateRetraitFull;
-
-        return $this;
-    }
-
-    /**
-     * Get dateRetraitFull
-     *
-     * @return \DateTime
-     */
-    public function getDateRetraitFull()
-    {
-        return $this->dateRetraitFull;
     }
 
     /**
