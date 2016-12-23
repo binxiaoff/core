@@ -10,6 +10,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
+/**
+ * Class WalletManager
+ * @package Unilend\Bundle\CoreBusinessBundle\Service
+ */
 class WalletManager
 {
     /**
@@ -21,12 +25,21 @@ class WalletManager
      */
     private $legacyEntityManager;
 
+    /**
+     * WalletManager constructor.
+     *
+     * @param EntityManager          $entityManager
+     * @param EntityManagerSimulator $legacyEntityManager
+     */
     public function __construct(EntityManager $entityManager, EntityManagerSimulator $legacyEntityManager)
     {
         $this->entityManager = $entityManager;
         $this->legacyEntityManager = $legacyEntityManager;
     }
 
+    /**
+     * @param Operation $operation
+     */
     public function handle(Operation $operation)
     {
         $creditor = $operation->getWalletCreditor();
@@ -44,6 +57,13 @@ class WalletManager
         }
     }
 
+    /**
+     * @param Wallet $wallet
+     * @param        $amount
+     * @param        $origin
+     *
+     * @throws \Exception
+     */
     public function engageBalance(Wallet $wallet, $amount, $origin)
     {
         $this->entityManager->getConnection()->beginTransaction();
@@ -70,6 +90,13 @@ class WalletManager
         }
     }
 
+    /**
+     * @param Wallet $wallet
+     * @param        $amount
+     * @param        $origin
+     *
+     * @throws \Exception
+     */
     public function releaseBalance(Wallet $wallet, $amount, $origin)
     {
         $this->entityManager->getConnection()->beginTransaction();
@@ -96,6 +123,11 @@ class WalletManager
         }
     }
 
+    /**
+     * @param      $clientId
+     * @param      $amount
+     * @param Bids $bid
+     */
     private function legacyCommitBalance($clientId, $amount, Bids $bid)
     {
         /** @var \transactions $transaction */
@@ -127,6 +159,11 @@ class WalletManager
         $bid->setIdLenderWalletLine($walletLine->id_wallet_line);
     }
 
+    /**
+     * @param      $clientId
+     * @param      $amount
+     * @param Bids $bid
+     */
     private function legacyReleaseBalance($clientId, $amount, Bids $bid)
     {
         /** @var \transactions $transaction */
@@ -158,6 +195,10 @@ class WalletManager
         $walletLine->create();
     }
 
+    /**
+     * @param Operation   $operation
+     * @param Wallet|null $creditor
+     */
     private function credit(Operation $operation, Wallet $creditor = null)
     {
         if ($creditor instanceof Wallet) {
@@ -179,6 +220,10 @@ class WalletManager
         }
     }
 
+    /**
+     * @param Operation   $operation
+     * @param Wallet|null $debtor
+     */
     private function debit(Operation $operation, Wallet $debtor = null)
     {
         if ($debtor instanceof Wallet) {
@@ -200,6 +245,10 @@ class WalletManager
         }
     }
 
+    /**
+     * @param Wallet $wallet
+     * @param array  $parameters
+     */
     private function snap(Wallet $wallet, array $parameters)
     {
         $walletSnap = new WalletBalanceHistory();
