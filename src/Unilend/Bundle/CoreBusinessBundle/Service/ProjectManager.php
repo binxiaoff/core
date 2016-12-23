@@ -562,7 +562,8 @@ class ProjectManager
 
         switch ($repaymentType->label) {
             case \repayment_type::REPAYMENT_TYPE_AMORTIZATION :
-                return $this->createAmortizationRepaymentSchedule($project);
+                $this->createAmortizationRepaymentSchedule($project);
+                return;
             default :
                 throw new \Exception('Unknown repayment schedule type ' . $repaymentType->label);
         }

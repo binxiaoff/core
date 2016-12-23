@@ -146,6 +146,27 @@ class companies extends companies_crud
     }
 
     /**
+     * @param int $siren
+     * @return float
+     */
+    public function getLastYearReleasedFundsBySIREN($siren)
+    {
+        $query = '
+            SELECT IFNULL(ROUND(SUM(t.montant_unilend - t.montant) / 100, 2), 0)
+            FROM transactions t
+            INNER JOIN projects p ON t.id_project = p.id_project
+            INNER JOIN companies c ON p.id_company = c.id_company
+            WHERE t.date_transaction > DATE_SUB(NOW(), INTERVAL 1 YEAR) 
+                AND c.siren = :siren 
+                AND t.type_transaction = :transactionType';
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['siren' => $siren, 'transactionType' => \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT]
+        );
+        return (float) $statement->fetchColumn();
+    }
+
+    /**
      * @return array
      */
     public function getProjectsBySIREN()

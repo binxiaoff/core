@@ -1,0 +1,205 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block cssFiles %}
+    {{ parent() }}
+    <style>
+        body {
+            font-size: 14px;
+            line-height: 22px;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+        }
+        h3 {
+            font-size: 16px;
+        }
+        header {
+            text-align: center;
+        }
+        header > h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        header > .subtite {
+            color: #b20066;
+            font-weight: 400;
+            line-height: 14px;
+        }
+        table, tr, td, th, tbody, thead, tfoot {
+            font-size: 12px !important;
+            page-break-inside: avoid !important;
+        }
+        .description {
+            margin: 55px 0 35px;
+            text-align: center;
+        }
+        .description > h2 {
+            text-transform: uppercase;
+        }
+        .debts-statement {
+            text-align: center;
+        }
+        .date-column {
+            width: 28%;
+        }
+        .period-column,
+        .amount-column {
+            width: 18%;
+        }
+        .bond-specifications,
+        .bond-specifications > li{
+            list-style-type: lower-alpha;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <header>
+        <h1>Document d’information réglementaire synthétique</h1>
+        <p class="subtite">En application de l’instruction AMF DOC-2014-12</p>
+    </header>
+    <div class="description">
+        <h2>Présentation de l‘émetteur et du projet</h2>
+        <p>
+            {{ company.name }}<br>
+            {{ company.legal_status }} au capital de {{ company.capital|localizednumber }}&nbsp;€<br>
+            Siège social&nbsp;: {{ company.address }}, {{ company.post_code }} {{ company.city }}<br>
+            SIREN&nbsp;: {{ company.siren }}<br>
+            RCS {{ company.commercial_court }}
+        </p>
+    </div>
+    <div class="row" style="page-break-after: always;">
+        <p>Les investisseurs sont informés que la présente offre de minibons ne donne pas lieu à un document soumis au visa de l‘Autorité des marchés financiers. L’émetteur est responsable du caractère complet, exact et équilibré des informations fournies. Le conseiller en investissements participatifs contrôle la cohérence, la clarté, et le caractère équilibré de ces informations.</p>
+        <h2>I - Activité de l’émetteur et description du projet financé</h2>
+        <p>La société émettrice a été créée le {{ company.creation_date|localizeddate('short', 'none') }}. Il s’agit d’une {{ company.legal_status }}, qui, à la connaissance d’Unilend, a établi {{ company.accounts_count }} bilans.</p>
+        <p>La nature des opérations effectuées actuellement par l’émetteur et ses principales activités, les principales catégories de produits vendus et/ou de services fournis, les principaux marchés sur lesquels il opère et l’utilisation des fonds levés ({{ project.amount|localizednumber }}&nbsp;euros brut, soit {{ project.net_amount }}&nbsp;euros net), portés à la connaissance du Conseiller en Investissements participatifs est disponible ici&nbsp;: <a href="{{ absolute_url(path('project_detail', {'projectSlug': project.slug})) }}">lien</a></p>
+        <p>Le produit de l’émission sera utilisé de la manière décrite ici&nbsp;: <a href="{{ absolute_url(path('project_detail', {'projectSlug': project.slug})) }}">lien</a></p>
+        <p>L’émetteur indique qu’il n’a pas d’autres offres de financements participatifs. Au cours des douze derniers mois le montant total brut de sommes perçues à la suite de l’émission de minibons ou de titres financiers par projet est {% if project.released_funds == 0 %}nul{% else %} de {{ project.released_funds|localizednumber }}&nbsp;euros{% endif %}.</p>
+        <p>Vous êtes invités à cliquer sur le lien hypertexte suivant pour accéder&nbsp;: <a href="{{ absolute_url(path('project_detail', {'projectSlug': project.slug})) }}">lien</a></p>
+        <ul>
+            <li>aux comptes synthétiques existants&nbsp;;</li>
+            <li>les éléments prévisionnels sur l’activité&nbsp;;</li>
+            <li>le cas échéant à l’organigramme du groupe auquel appartient l’émetteur et la place qu’il y occupe&nbsp;;</li>
+            <li>au curriculum vitae des représentants légaux de l’émetteur.</li>
+        </ul>
+        <p>Une copie des rapports des organes sociaux à l’attention des assemblées générales du dernier exercice et de l’exercice en cours peut être obtenue sur demande à l’adresse suivante&nbsp;: <a href="https://www.infogreffe.fr/entreprise-societe/{{ company.siren }}">lien</a></p>
+        <h2>II - Risques liés à l’activité de l’émetteur et à son projet</h2>
+        <ul>
+            <li>
+                Risque relatif à la situation financière de l’émetteur&nbsp;: quelle que soit la situation financière de l’émetteur le jour de l’émission, cette dernière est susceptible d’évoluer à tout moment et placer l’émetteur dans une position où le remboursement des échéances lui serait impossible.<br>
+                Actuellement, avant la réalisation de la levée de fonds de la présente offre, l’émetteur {% if company.working_capital >= 0 %}dispose d‘un fonds de roulement net suffisant{% else %}ne dispose pas d’un fonds de roulement suffisant{% endif %}pour faire face à ses obligations et à ses besoins de trésorerie pour les 12 prochains mois. Il est néanmoins rappelé à l’investisseur que ce critère ne saurait, seul, être utilisé pour analyser le risque relatif à la situation financière de l’émetteur.
+            </li>
+            <li>La description d’autres risques plus spécifiques portés à la connaissance du Conseiller en Investissements participatifs est disponible via ce <a href="{{ absolute_url(path('project_detail', {'projectSlug': project.slug})) }}">lien</a>.</li>
+        </ul>
+        <p>Tableau d’échéancier de l’endettement sur 5 ans, fourni par l’émetteur, présentant une ventilation des passifs financiers par échéance contractuelle, avant financement&nbsp;:</p>
+        <p class="debts-statement"><img src="data:image;base64,{{ project.debts_statement_img }}"></p>
+        <p>L’émetteur est, par nature, exposé à certains facteurs de risques pouvant entraîner un non remboursement futur, partiel ou total, des sommes empruntées.</p>
+        <p>Parmi ces risques figurent notamment&nbsp;:</p>
+        <ol>
+            <li>le risque lié à la situation financière de l’émetteur&nbsp;:</li>
+            <li>le risque lié à l’activité de l’émetteur&nbsp;:</li>
+            <li>le risque lié à la dépendance vis à vis de tiers (clients, fournisseurs en particulier) ;</li>
+            <li>le risque lié à la dépendance « homme(s) clé(s) » (de qui dépend le développement et la gestion de la société&nbsp;:</li>
+            <li>le risque conjoncturel ou structurel du marché/secteur d’activité sur lequel l’émetteur opère&nbsp;:</li>
+            <li>les risques juridiques ou règlementaires (selon l’activité de l’émetteur).</li>
+        </ol>
+        <p>Avec le temps, de nouveaux risques pourront apparaître et ceux présentés pourront évoluer.</p>
+        <h2>III - Capital social</h2>
+        <p>Le capital social est intégralement libéré et la présente offre n’est pas de nature à donner accès au capital de l’émetteur. Les statuts de l’émetteur sont disponibles ce <a href="https://www.infogreffe.fr/entreprise-societe/{{ company.siren }}">lien</a>.</p>
+        <h2>IV - Minibons offerts à la souscription</h2>
+        <h3>IV.1- Caractéristiques des minibons</h3>
+        <ol class="bond-specifications">
+            <li>Durée&nbsp;: les minibons offerts à la souscription ont une durée de {{ project.duration }} mois</li>
+            <li>Taux&nbsp;: le taux d’intérêt est défini par un processus d’enchères décrit sur cette <a href="{{ absolute_url(path('mon-premier-pret')) }}">page</a>.</li>
+            <li>
+                Conditions d‘amortissement de la valeur nominale et des intérêts&nbsp;: le nominal et les intérêts de chaque minibon font l’objet d’un remboursement par l’émetteur à échéances constantes mensuelles, pendant toute la durée du minibon.<br>
+                À titre d’exemple, pour 1&nbsp;000&nbsp;euros investis en minibons à un taux de {{ project.minimum_rate|localizednumber }}&nbsp;%, le tableau d’amortissement sera le suivant&nbsp;:<br>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="date-column">Date</th>
+                            <th class="period-column">Période</th>
+                            <th class="amount-column">Mensualité</th>
+                            <th class="amount-column">Intérêts</th>
+                            <th class="amount-column">Capital</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for order, repayment in repayment_schedule %}
+                        <tr>
+                            <td>{{ repayment.date }}</td>
+                            <td>{{ order }}</td>
+                            <td>{{ repayment.repayment|localizednumberwithprecision(2) }}&nbsp;€</td>
+                            <td>{{ repayment.capital|localizednumberwithprecision(2) }}&nbsp;€</td>
+                            <td>{{ repayment.interest|localizednumberwithprecision(2) }}&nbsp;€</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </li>
+            <li>
+                Droits attachés aux minibons
+                <ul>
+                    <li>La souscription de minibons permet à l’investisseur de bénéficier vis-à-vis de l’émetteur, des droits d’un créancier vis-à-vis de l’emprunteur.</li>
+                    <li>Les minibons offerts vous confèrent un droit de créance chirographaire: le remboursement de votre créance sera réalisé après celui des prêts assortis de garantie(s).</li>
+                    <li>
+                        Ces minibons vous seront remboursés dans les conditions suivantes&nbsp;:<br>
+                        <ul>
+                            <li>Mensualités constantes sur 60 mois</li>
+                            <li>À tout moment, l’emprunteur peut décider de solder les minibons par anticipation. Les intérêts non échus ne sont pas dûs.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ol>
+        <p>Vous êtes invités à cliquer sur le lien hypertexte suivant pour accéder à l’information exhaustive sur les droits et conditions attachés aux minibons qui vous sont offerts&nbsp;: articles L. 223-6 à L. 223-13 du code monétaire et financier&nbsp;: <a href="https://www.legifrance.gouv.fr/affichCode.do?idSectionTA=LEGISCTA000032468119&cidTexte=LEGITEXT000006072026&dateTexte=20161122">lien</a></p>
+        <p>Les dirigeants peuvent formuler eux-mêmes, s’ils le souhaitent, des offres de prêt dans le cadre de l’offre proposée.</p>
+        <h3>IV. 2 Risques attachés aux minibons offerts à la souscription</h3>
+        <p>La souscription de minibons comporte des risques spécifiques&nbsp;:</p>
+        <ul>
+            <li>risque de perte totale ou partielle des sommes prêtées&nbsp;:</li>
+            <li>risque de défaut ou de différé de paiement des intérêts dus&nbsp;:</li>
+            <li>le remboursement des sommes prêtées est susceptible d’intervenir après le remboursement d’autres titres ou dettes de la société&nbsp;:</li>
+            <li>les sommes prêtées seront immobilisées jusqu’au remboursement selon l’échéancier et vous ne pourrez en réclamer le remboursement anticipé&nbsp;:</li>
+            <li>toute hausse des taux d’intérêts pendant la durée d’immobilisation de votre argent peut entrainer une perte d’opportunité&nbsp;:</li>
+            <li>dans l’hypothèse où l’emprunteur procède à un remboursement anticipé des sommes prêtées, toute baisse des taux d’intérêts dans l’intervalle peut entrainer une perte d’opportunité et les intérêts non versés constitueraient un manque à gagner&nbsp;:</li>
+            <li>risque d’illiquidité&nbsp;: la revente de minibons est très incertaine&nbsp;;</li>
+        </ul>
+        <p>Il vous est recommandé de ne prêter que les montants correspondant à une fraction de votre épargne disponible et de diversifier vos prêts au maximum dans des proportions comparables.</p>
+        <h2>V - Relations avec le teneur de registre des minibons émis par la société</h2>
+        <p>Les minibons sont inscrits au nom de leur propriétaire dans un registre tenu par l‘émetteur. Les informations collectées par le conseiller en investissement participatif ou le prestataire de services d’investissements sont remises à l’émetteur. Le certificat d‘inscription dans le registre est remis à l’investisseur par le Conseiller en Investissements Participatifs au titre de la prestation administrative d’aide à la tenue de registre fournie à l’émetteur.</p>
+    </div>
+    <div class="description">
+        <h2>Informations présentées par le conseiller en investissements participatifs</h2>
+        <p><img src="{{ siteurlmedia('logo/logo-and-type-unilend-209x44-purple.png') }}"></p>
+        <p>
+            {{ unilend.name }}<br>
+            {{ unilend.capital }}<br>
+            {{ unilend.address }}<br>
+            {{ unilend.rcs }}
+        </p>
+        <p>Conseiller en investissements participatifs immatriculé auprès de l’Organisme pour le registre unique des intermédiaires en assurance, banque et finance (ORIAS) sous le n° 15006955. Informations statistiques disponibles <a href="{{ absolute_url(path('statistics')) }}">ici</a>.</p>
+    </div>
+    <div>
+        <h2>I – Modalités de souscription</h2>
+        <p>Les modalités de recueil et de transmission à l’émetteur des bulletins de souscription et du versement correspondant des sommes prêtées, que les règles appliquées en cas de sursouscription, sont présentées <a href="{{ absolute_url(path('les-regles-dunilend')) }}">ici</a>.</p>
+        <p>Calendrier indicatif de l’offre&nbsp;:</p>
+        <ul>
+            <li>date d’ouverture de l’offre&nbsp;: {{ project.start_date|localizeddate('short', 'none') }}</li>
+            <li>date de clôture de l’offre&nbsp;: {{ project.end_date|localizeddate('short', 'none') }}</li>
+            <li>date maximale d’émission des minibons offerts et date à laquelle les investisseurs sont débités de la somme correspondant au montant de leur souscription&nbsp;: {{ project.signature_date|localizeddate('short', 'none') }}</li>
+        </ul>
+        <p>En cas de non réalisation de l’offre, les sommes offertes redeviennent disponibles sur le compte du prêteur.</p>
+        <h2>II – Frais</h2>
+        <h3>II.1 Frais facturés à l’investisseur</h3>
+        <p>Aucuns frais ne sont facturés à l’investisseur.</p>
+        <h3>II.2 Frais se rapportant aux prestations fournies à l’émetteur</h3>
+        <p>Vous avez la possibilité d’obtenir la description détaillée des prestations fournies à l’émetteur des minibons dont la souscription est envisagée et les frais s’y rapportant sur demande à l’adresse suivante&nbsp;: contact@unilend.fr.</p>
+        <h2>III- Revente ultérieure des minibons offerts à la souscription</h2>
+        <p>En cas de cession d’un minibon, qui ne pourra avoir lieu que selon les modalités définies par le Unilend et portées à la connaissance des parties dans les conditions générales de vente, un écrit est nécessaire entre le vendeur et l’acquéreur (qui devra au préalable avoir ouvert un compte prêteur auprès d’Unilend) d’un minibon pour constater la cession de créance. La cession doit ensuite être notifiée à l’émetteur et à la plateforme de financement participatif. Le transfert de propriété résultera de l’inscription correspondante au nom de l’acquéreur dans le registre tenu par l’émetteur ou par le CIP pour le compte de l’émetteur.</p>
+        <p>En cas de divergences entre les modalités ci-dessus et les Conditions Générales de Vente en vigueur à la date de la cession, les Conditions Générales de Vente s’appliqueront.</p>
+    </div>
+{% endblock %}

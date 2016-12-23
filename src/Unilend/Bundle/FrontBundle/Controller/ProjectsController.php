@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
+use Knp\Snappy\GeneratorInterface;
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -844,7 +845,7 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()", requirements={"amount" = "^\d+$", "rate" ="^\d{1,2}(\.\d$|$)" })
+     * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()", requirements={"amount" = "^\d+$", "rate" ="^\d{1,2}(\.\d$|$)"})
      *
      * @param $projectSlug
      * @param $amount
@@ -1036,5 +1037,156 @@ class ProjectsController extends Controller
         }
 
         return new JsonResponse($response);
+    }
+
+    /**
+     * @Route("/var/dirs/{projectSlug}.pdf", requirements={"projectSlug"="^[a-z0-9-]+$"})
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function dirsAction($projectSlug)
+    {
+        $project = $this->checkProjectAndRedirect($projectSlug);
+
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
+        $entityManager = $this->get('unilend.service.entity_manager');
+
+        /** @var \product $product */
+        $product = $entityManager->getRepository('product');
+        $product->get($project->id_product);
+
+        $productManager     = $this->get('unilend.service_product.product_manager');
+        $availableContracts = $productManager->getAvailableContracts($product);
+
+        if (false === in_array(\underlying_contract::CONTRACT_MINIBON, array_column($availableContracts, 'label'))) {
+            throw $this->createNotFoundException();
+        }
+
+        $template = [];
+
+        // Company
+        /** @var \companies $company */
+        $company = $entityManager->getRepository('companies');
+        $company->get($project->id_company);
+
+        $companyCreationDate = \DateTime::createFromFormat('Y-m-d', $company->date_creation);
+
+        $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+        $balanceDetails = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount([$project->id_dernier_bilan]);
+        $balanceDetails = $balanceDetails[$project->id_dernier_bilan]['details'];
+        $workingCapital = $balanceDetails['CJ'] - ($balanceDetails['DS'] + $balanceDetails['DT'] + $balanceDetails['DU'] + $balanceDetails['DV'] + $balanceDetails['DW'] + $balanceDetails['DX'] + $balanceDetails['DY'] + $balanceDetails['DZ'] + $balanceDetails['EA']);
+
+        $template['company'] = [
+            'name'             => $company->name,
+            'siren'            => $company->siren,
+            'legal_status'     => $company->forme,
+            'capital'          => str_replace(' ', '', $company->capital),
+            'address'          => trim($company->adresse1 . ' ' . $company->adresse2),
+            'post_code'        => $company->zip,
+            'city'             => $company->city,
+            'commercial_court' => $company->tribunal_com,
+            'creation_date'    => $companyCreationDate,
+            'accounts_count'   => $companyCreationDate->diff(new \DateTime())->y,
+            'working_capital'  => $workingCapital
+        ];
+
+        // Project
+        /** @var \tax_type $taxType */
+        $taxType = $entityManager->getRepository('tax_type');
+        $taxRate = $taxType->getTaxRateByCountry('fr');
+        $vatRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+
+        /** @var \settings $setting */
+        $setting = $entityManager->getRepository('settings');
+        $setting->get('Part Unilend', 'type');
+        $unilendCommission = $setting->value / (1 + $vatRate);
+
+        /** @var \attachment $attachment */
+        $attachment = $entityManager->getRepository('attachment');
+        /** @var \attachment_type $attachmentType */
+        $attachmentType = $entityManager->getRepository('attachment_type');
+        /** @var \attachment_helper $attachmentHelper */
+        $attachmentHelper = Loader::loadLib('attachment_helper', [$attachment, $attachmentType, $this->getParameter('kernel.root_dir') . '/../']);
+        $attachment->get($project->id_project, 'type_owner = "projects" AND id_type = ' . \attachment_type::DEBTS_STATEMENT . ' AND id_owner');
+
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $entityManager->getRepository('project_rate_settings');
+        $projectRateSettings->get($project->id_rate);
+        $minimumBidRate = (float) $projectRateSettings->rate_min;
+
+        $monthInterval = new \DateInterval('P1M');
+        $startDate     = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_publication);
+        $endDate       = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_retrait);
+        $signatureDate = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_retrait)->add(new \DateInterval('P7D'));
+
+        $template['project'] = [
+            'slug'                => $project->slug,
+            'duration'            => $project->period,
+            'amount'              => $project->amount,
+            'net_amount'          => round($project->amount * (1 - $unilendCommission)),
+            'minimum_rate'        => $minimumBidRate,
+            'start_date'          => $startDate,
+            'end_date'            => $endDate,
+            'signature_date'      => $signatureDate,
+            'released_funds'      => $company->getLastYearReleasedFundsBySIREN($company->siren),
+            'debts_statement_img' => base64_encode(file_get_contents($attachmentHelper->getFullPath($attachment->type_owner, $attachment->id_type) . $attachment->path)),
+        ];
+
+        // Repayment schedule
+        $repaymentDate     = \DateTime::createFromFormat('Y-m-d H:i:s', substr($project->date_retrait, 0, 8) . '01 00:00:00');
+        $repaymentSchedule = \repayment::getRepaymentSchedule(1000, $project->period, $minimumBidRate / 100);
+
+        foreach ($repaymentSchedule as $order => $repayment) {
+            $repaymentSchedule[$order]['date'] = ucfirst(strftime('%B %Y', $repaymentDate->add($monthInterval)->getTimestamp()));
+        }
+
+        $template['repayment_schedule'] = $repaymentSchedule;
+
+        // Unilend
+        $setting->get('Declaration contrat pret - raison sociale', 'type');
+        $unilendName = $setting->value;
+
+        $setting->get('Facture - capital', 'type');
+        $unilendCapital = $setting->value;
+
+        $setting->get('Declaration contrat pret - adresse', 'type');
+        $unilendAddress = $setting->value;
+
+        $setting->get('Facture - RCS', 'type');
+        $unilendRCS = $setting->value;
+
+        $template['unilend'] = [
+            'name'    => $unilendName,
+            'capital' => $unilendCapital,
+            'address' => $unilendAddress,
+            'rcs'     => $unilendRCS,
+        ];
+
+        $html = $this->renderView('/pdf/dirs.html.twig', $template);
+
+        $filename   = $project->slug . '.pdf';
+        $options    = [
+            'footer-html'   => '',
+            'header-html'   => '',
+            'margin-top'    => 20,
+            'margin-right'  => 15,
+            'margin-bottom' => 10,
+            'margin-left'   => 15
+        ];
+
+        /** @var GeneratorInterface $snappy */
+        $snappy = $this->get('knp_snappy.pdf');
+
+        if ($project->status >= \projects_status::EN_FUNDING) {
+            $outputFile = $this->getParameter('path.user') . 'dirs/' . $filename;
+            $snappy->generateFromHtml($html, $outputFile, $options, true);
+        }
+
+        return new Response($snappy->getOutputFromHtml($html, $options), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename)
+        ]);
     }
 }
