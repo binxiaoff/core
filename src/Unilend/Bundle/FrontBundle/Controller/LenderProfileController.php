@@ -1109,7 +1109,7 @@ class LenderProfileController extends Controller
     {
         /** @var ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        $clientStatusManager->changeClientStatusTriggeredByClientAction($client->id_client, $historyContent);
+        $clientStatusManager->changeClientStatusTriggeredByClientAction($client, $historyContent);
         $this->sendAccountModificationEmail($client);
     }
 
@@ -1207,8 +1207,6 @@ class LenderProfileController extends Controller
         $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->getLenderAccount();
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
 
         $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         /** @var Wallet $walletEntity */

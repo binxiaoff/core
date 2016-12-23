@@ -53,15 +53,16 @@ class OperationManager
     }
 
     /**
-     * @param               $amount
+     * @param $amount
      * @param OperationType $type
-     * @param Wallet|null   $debtor
-     * @param Wallet|null   $creditor
-     * @param               $parameters
+     * @param Wallet|null $debtor
+     * @param Wallet|null $creditor
+     * @param array $parameters
      *
+     * @return bool
      * @throws \Exception
      */
-    private function newOperation($amount, OperationType $type, Wallet $debtor = null, Wallet $creditor = null, $parameters)
+    private function newOperation($amount, OperationType $type, Wallet $debtor = null, Wallet $creditor = null, $parameters = [])
     {
         $this->em->getConnection()->beginTransaction();
         try {
@@ -120,6 +121,8 @@ class OperationManager
             $this->em->flush();
 
             $this->em->getConnection()->commit();
+
+            return true;
         } catch (\Exception $e) {
             $this->em->getConnection()->rollBack();
             throw $e;
@@ -575,6 +578,11 @@ class OperationManager
         $transaction->update();
     }
 
+    /**
+     * @param Receptions $reception
+     *
+     * @return bool
+     */
     public function provisionBorrowerWallet(Receptions $reception)
     {
         $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::BORROWER);
@@ -587,5 +595,47 @@ class OperationManager
         $this->newOperation($amount, $operationType, null, $wallet, $reception);
 
         return true;
+    }
+
+    /**
+     * @param Wallet $wallet
+     *
+     * @return bool|Virements
+     */
+    public function clearBalance(Wallet $wallet)
+    {
+        if (in_array($wallet->getIdType()->getLabel(), [WalletType::BORROWER, WalletType::LENDER, WalletType::UNILEND])) {
+            return $this->withdraw($wallet, $wallet->getAvailableBalance());
+        }
+
+        switch ($wallet->getIdType()->getLabel()){
+            case WalletType::TAX_CONTRIBUTIONS_ADDITIONNELLES:
+                $type = OperationType::TAX_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW;
+                break;
+            case WalletType::TAX_CRDS:
+                $type = OperationType::TAX_CRDS_WITHDRAW;
+                break;
+            case WalletType::TAX_CSG:
+                $type = OperationType::TAX_CSG_WITHDRAW;
+                break;
+            case WalletType::TAX_PRELEVEMENTS_DE_SOLIDARITE:
+                $type = OperationType::TAX_PRELEVEMENTS_DE_SOLIDARITE_WITHDRAW;
+                break;
+            case WalletType::TAX_PRELEVEMENTS_OBLIGATOIRES:
+                $type = OperationType::TAX_PRELEVEMENTS_OBLIGATOIRES_WITHDRAW;
+                break;
+            case WalletType::TAX_PRELEVEMENTS_SOCIAUX:
+                $type = OperationType::TAX_PRELEVEMENTS_SOCIAUX_WITHDRAW;
+                break;
+            case WalletType::TAX_RETENUES_A_LA_SOURCE:
+                $type = OperationType::TAX_RETENUES_A_LA_SOURCE_WITHDRAW;
+                break;
+            default:
+                throw new \InvalidArgumentException('Unsupported wallet type : ' . $wallet->getIdType()->getLabel());
+                break;
+        }
+        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel($type);
+
+        return $this->newOperation($wallet->getAvailableBalance(), $operationType, $wallet);
     }
 }

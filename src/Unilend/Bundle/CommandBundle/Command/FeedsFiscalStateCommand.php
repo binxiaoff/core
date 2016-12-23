@@ -5,6 +5,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -279,5 +281,26 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $bank_unilend->retrait_fiscale        = 1;
             $bank_unilend->create();
         }
+
+        $totalTaxAmount = bcmul($this->doTaxWalletsWithdrawals(), 100);
+        if (0 !== (bccomp($totalTaxAmount, $etatRemb, 2))) {
+            $this->getContainer()->get('logger')->error('Tax balance does not match in fiscal state. stateWallets = ' . $totalTaxAmount . ' fiscal state value : ' . $etatRemb);
+        }
+    }
+
+    private function doTaxWalletsWithdrawals()
+    {
+        /** @var OperationManager $operationsManager */
+        $operationsManager = $this->getContainer()->get('unilend.service.operation_manager');
+        $totalTaxAmount    = 0;
+
+        /** @var Wallet[] $taxWallets */
+        $taxWallets = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getTaxWallets();
+        foreach ($taxWallets as $wallet) {
+            $totalTaxAmount = bcadd($wallet->getAvailableBalance(), $totalTaxAmount);
+            $operationsManager->totalWithdraw($wallet);
+        }
+
+        return $totalTaxAmount;
     }
 }
