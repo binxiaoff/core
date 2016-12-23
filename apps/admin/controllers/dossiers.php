@@ -3053,4 +3053,31 @@ class dossiersController extends bootstrap
             return '-' . $case;
         }
     }
+
+    public function _regenerate_dirs()
+    {
+        $this->autoFireHead   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
+
+        if (isset($this->params[0]) && $project->get($this->params[0])) {
+            $path     = $this->path . 'public/default/var/dirs/';
+            $filename = $project->slug . '.pdf';
+
+            if (file_exists($path . $filename)) {
+                if (false === is_dir($path . 'archives/' . $project->slug)) {
+                    mkdir($path . 'archives/' . $project->slug, 0770, true);
+                }
+
+                rename(
+                    $path . $filename,
+                    $path . 'archives/' . $project->slug . '/' . date('Y-m-d H:i:s') . '.pdf'
+                );
+            }
+        }
+    }
 }

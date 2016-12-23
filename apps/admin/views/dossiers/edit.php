@@ -171,6 +171,14 @@
             }
         });
 
+        $('.regenerate-dirs').click(function(event) {
+            if (!confirm('Vous allez régénéré le DIRS avec les nouvelles informations')) {
+                event.preventDefault()
+                return false
+            }
+            return true
+        });
+
         <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({
                 container: $("#pager"),
@@ -436,17 +444,34 @@
 
                 <h2>Produit</h2>
                 <table class="form" style="width: 538px;">
-                    <th><label for="assigned_product">Produit associé* :</label></th>
-                    <td>
-                        <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
-                            <option value=""></option>
-                        <?php foreach ($this->eligibleProduct as $product) : ?>
-                            <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
-                                <?= $this->translator->trans('product_label_' . $product->label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                        </select>
-                    </td>
+                    <tr>
+                        <th><label for="assigned_product">Produit associé* :</label></th>
+                        <td>
+                            <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                                <option value=""></option>
+                            <?php foreach ($this->eligibleProduct as $product) : ?>
+                                <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
+                                    <?= $this->translator->trans('product_label_' . $product->label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <?php if (in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)): ?>
+                        <tr>
+                            <th>DIRS</th>
+                            <td>
+                                <a href="<?= $this->furl ?>/var/dirs/<?= $this->projects->slug ?>.pdf">
+                                    <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF"/>
+                                </a>
+                                <?php if ($this->projects->status >= \projects_status::EN_FUNDING): ?>
+                                    <a href="<?= $this->url ?>/dossiers/regenerate_dirs/<?= $this->projects->id_project ?>" class="regenerate-dirs thickbox">
+                                        <img src="<?= $this->surl ?>/images/admin/reload.png" alt="Regenerate" title="Régénérer le DIRS"/>
+                                    </a>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
                 </table>
                 <br><br>
 
