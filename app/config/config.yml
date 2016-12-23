@@ -214,3 +214,14 @@ sonata_cache:
             php_cache_enabled: true
             types: [translations]
             servers: "%sonata_cache.servers%"
+
+guzzle:
+    # (de)activate logging/profiler; default: %kernel.debug%
+        logging: true
+
+        clients:
+            euler:
+                base_url: %euler.url%
+                options:
+                    timeout: 8
+                    http_errors: false

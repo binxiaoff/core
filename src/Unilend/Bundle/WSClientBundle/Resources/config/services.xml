@@ -8,5 +8,14 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="logger"/>
         </service>
+
+        <service id="unilend.ws_client.euler_hermes_manager" class="Unilend\Bundle\WSClientBundle\Service\EulerHermesManager">
+            <argument type="service" id="guzzle.client.euler"/>
+            <argument>%euler.coverage_key%</argument>
+            <argument>%euler.grading_key%</argument>
+            <argument>%euler.account_key%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.ws_client.call_history_handler"/>
+        </service>
     </services>
 </container>
