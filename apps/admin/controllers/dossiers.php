@@ -331,6 +331,12 @@ class dossiersController extends bootstrap
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
+            } elseif (isset($_POST['balance_count'])) {
+                $this->projects->balance_count = $_POST['balance_count'];
+                $this->projects->update();
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
             } elseif (isset($_POST['change_annual_accounts_info']) && $this->companies_bilans->get($_POST['id_annual_accounts'])) {
                 $this->companies_bilans->cloture_exercice_fiscal = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['cloture_exercice_fiscal'])));
                 $this->companies_bilans->duree_exercice_fiscal   = (int) $_POST['duree_exercice_fiscal'];
@@ -627,7 +633,6 @@ class dossiersController extends bootstrap
                     $this->projects->update();
 
                     if (isset($_POST['current_status']) && $_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
-
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
                             $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
                             $aExistingStatus = array();

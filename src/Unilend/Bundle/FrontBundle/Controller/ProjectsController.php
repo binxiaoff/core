@@ -1071,8 +1071,6 @@ class ProjectsController extends Controller
         $company = $entityManager->getRepository('companies');
         $company->get($project->id_company);
 
-        $companyCreationDate = \DateTime::createFromFormat('Y-m-d', $company->date_creation);
-
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         $balanceDetails = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount([$project->id_dernier_bilan]);
         $balanceDetails = $balanceDetails[$project->id_dernier_bilan]['details'];
@@ -1087,8 +1085,8 @@ class ProjectsController extends Controller
             'post_code'        => $company->zip,
             'city'             => $company->city,
             'commercial_court' => $company->tribunal_com,
-            'creation_date'    => $companyCreationDate,
-            'accounts_count'   => $companyCreationDate->diff(new \DateTime())->y,
+            'creation_date'    => \DateTime::createFromFormat('Y-m-d', $company->date_creation),
+            'accounts_count'   => $project->balance_count,
             'working_capital'  => $workingCapital
         ];
 
@@ -1131,7 +1129,7 @@ class ProjectsController extends Controller
             'end_date'            => $endDate,
             'signature_date'      => $signatureDate,
             'released_funds'      => $company->getLastYearReleasedFundsBySIREN($company->siren),
-            'debts_statement_img' => base64_encode(file_get_contents($attachmentHelper->getFullPath($attachment->type_owner, $attachment->id_type) . $attachment->path)),
+            'debts_statement_img' => base64_encode(file_get_contents($attachmentHelper->getFullPath($attachment->type_owner, $attachment->id_type) . $attachment->path))
         ];
 
         // Repayment schedule
