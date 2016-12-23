@@ -76,9 +76,9 @@ class ClientStatusManager
         $clientStatusEntity = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getLastClientStatus($client->getIdClient());
         if (null !== $clientStatusEntity) {
             return $clientStatusEntity->getLabel();
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
