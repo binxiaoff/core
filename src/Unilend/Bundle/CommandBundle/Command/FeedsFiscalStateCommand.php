@@ -298,7 +298,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $taxWallets = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getTaxWallets();
         foreach ($taxWallets as $wallet) {
             $totalTaxAmount = bcadd($wallet->getAvailableBalance(), $totalTaxAmount);
-            $operationsManager->clearBalance($wallet);
+            $operationsManager->totalWithdraw($wallet);
         }
 
         return $totalTaxAmount;

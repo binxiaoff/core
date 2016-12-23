@@ -53,6 +53,7 @@ class WalletRepository extends EntityRepository
                     WalletType::TAX_PRELEVEMENTS_OBLIGATOIRES,
                     WalletType::TAX_PRELEVEMENTS_SOCIAUX], Connection::PARAM_INT_ARRAY);
         $query = $cb->getQuery();
-        return$query->getResult();
+
+        return $query->getResult();
     }
 }

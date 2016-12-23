@@ -583,7 +583,7 @@ class OperationManager
      *
      * @return bool|Virements
      */
-    public function clearBalance(Wallet $wallet)
+    public function totalWithdraw(Wallet $wallet)
     {
         if (in_array($wallet->getIdType()->getLabel(), [WalletType::BORROWER, WalletType::LENDER, WalletType::UNILEND])) {
             return $this->withdraw($wallet, $wallet->getAvailableBalance());
