@@ -203,10 +203,10 @@ class ClientManager
             /** @var BaseUser $user */
             $user = $token->getUser();
 
-            if ($user instanceof UserLender && in_array('ROLE_LENDER', $user->getRoles()) && $client->get($user->getClientId())) {
-                $redirectPath = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
+            if ($user instanceof UserLender && in_array('ROLE_LENDER', $user->getRoles()) && $client->get($user->getClientId()) && $client->etape_inscription_preteur < \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
+                $redirectPath = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client);
 
-                if ($client->etape_inscription_preteur < 3 && $redirectPath != $currentPath) {
+                if ($redirectPath != $currentPath) {
                     return new RedirectResponse($redirectPath);
                 }
             }
@@ -217,23 +217,22 @@ class ClientManager
 
     /**
      * @param int $alreadyCompletedStep
-     * @param string|null $clientHash
+     * @param \clients $client
      * @return string
      */
-    private function getSubscriptionStepRedirectRoute($alreadyCompletedStep, $clientHash = null)
+    private function getSubscriptionStepRedirectRoute($alreadyCompletedStep, \clients $client)
     {
         switch ($alreadyCompletedStep) {
-            case 1 :
-                $redirectRoute = $this->router->generate('lender_subscription_documents', ['clientHash' => $clientHash]);
+            case \clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
+                return $this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]);
                 break;
-            case 2 :
-            case 3 :
-                $redirectRoute = $this->router->generate('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
+            case \clients::SUBSCRIPTION_STEP_DOCUMENTS:
+            case \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT:
+                return $this->router->generate('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
                 break;
-            default :
-                $redirectRoute = $this->router->generate('projects_list');
+            default:
+                return $this->router->generate('projects_list');
+                break;
         }
-
-        return $redirectRoute;
     }
 }

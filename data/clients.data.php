@@ -45,6 +45,10 @@ class clients extends clients_crud
     const STATUS_OFFLINE = 0;
     const STATUS_ONLINE  = 1;
 
+    const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
+    const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
+    const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
+
     public function __construct($bdd, $params = '')
     {
         parent::clients($bdd, $params);

@@ -13,11 +13,18 @@ class ClientAuthorizationAccessSubscriber implements EventSubscriberInterface
     /** @var ClientManager $clientManager */
     private $clientManager;
 
+    /**
+     * ClientAuthorizationAccessSubscriber constructor.
+     * @param ClientManager $clientManager
+     */
     public function __construct(ClientManager $clientManager)
     {
         $this->clientManager = $clientManager;
     }
 
+    /**
+     * @return array
+     */
     public static function getSubscribedEvents()
     {
         return [
@@ -25,7 +32,9 @@ class ClientAuthorizationAccessSubscriber implements EventSubscriberInterface
         ];
     }
 
-
+    /**
+     * @param GetResponseEvent $event
+     */
     public function checkClientSubscriptionStep(GetResponseEvent $event)
     {
         $response = $this->clientManager->checkProgressAndRedirect($event->getRequest());
@@ -34,5 +43,4 @@ class ClientAuthorizationAccessSubscriber implements EventSubscriberInterface
             $event->setResponse($response->setStatusCode(RedirectResponse::HTTP_OK));
         }
     }
-
 }
