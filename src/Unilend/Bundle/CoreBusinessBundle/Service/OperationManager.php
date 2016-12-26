@@ -27,7 +27,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 class OperationManager
 {
     /**
-     * @var EntityManager
+     * @var EntityManagerSimulator
      */
     private $entityManager;
     /**
@@ -762,5 +762,52 @@ class OperationManager
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_REPAYMENT_COMMISSION]);
 
         $this->newOperation($amount, $operationType, $borrowerWallet, $unilendWallet, $paymentSchedule);
+    }
+
+    public function earlyRepayment(Loans $loan)
+    {
+        /** @var \echeanciers $repaymentSchedule */
+        $repaymentSchedule = $this->entityManager->getRepository('echeanciers');
+
+        $outstandingCapital = $repaymentSchedule->getOwedCapital(['id_loan' => $loan->getIdLoan()]);
+        $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($loan->getIdProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $accountMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $loan->getIdLender()]);
+        $lenderWallet = $accountMatching->getIdWallet();
+        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
+
+        $this->newOperation($outstandingCapital, $operationType, $borrowerWallet, $lenderWallet, $loan);
+
+        $this->legacyEarlyRepayment($loan, $lenderWallet, $outstandingCapital);
+
+        return $outstandingCapital;
+    }
+
+    private function legacyEarlyRepayment(Loans $loan, Wallet $lenderWallet, $amount)
+    {
+        /** @var \transactions $transaction */
+        $transaction = $this->entityManager->getRepository('transactions');
+        /** @var \wallets_lines $walletLine */
+        $walletLine = $this->entityManager->getRepository('wallets_lines');
+
+        $transaction->id_client        = $lenderWallet->getIdClient()->getIdClient();
+        $transaction->montant          = bcmul($amount, 100);
+        $transaction->id_echeancier    = 0; // pas d'id_echeance car multiple
+        $transaction->id_loan_remb     = $loan->getIdLoan();
+        $transaction->id_project       = $loan->getIdProject()->getIdProject();
+        $transaction->id_langue        = 'fr';
+        $transaction->date_transaction = date('Y-m-d H:i:s');
+        $transaction->status           = \transactions::STATUS_VALID;
+        $transaction->ip_client        = $_SERVER['REMOTE_ADDR'];
+        $transaction->type_transaction = \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT;
+        $transaction->create();
+
+        $walletLine->id_lender                = $loan->getIdLender();
+        $walletLine->type_financial_operation = 40;
+        $walletLine->id_loan                  = $loan->getIdLoan();
+        $walletLine->id_transaction           = $transaction->id_transaction;
+        $walletLine->status                   = 1; // non utilisé
+        $walletLine->type                     = 2; // transaction virtuelle
+        $walletLine->amount                   = bcmul($amount, 100);
+        $walletLine->create();
     }
 }

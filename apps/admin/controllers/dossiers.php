@@ -2056,7 +2056,8 @@ class dossiersController extends bootstrap
                 $this->mail_template                 = $this->loadData('mail_templates');
                 $this->companies                     = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-                $oProjectManager= $this->get('unilend.service.project_manager');
+                $oProjectManager = $this->get('unilend.service.project_manager');
+                $loanRepo        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
@@ -2095,34 +2096,10 @@ class dossiersController extends bootstrap
 
                     $montant_total = 0;
 
-                    foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $preteur) {
-                        $reste_a_payer_pour_preteur = $this->echeanciers->getOwedCapital(array('id_loan' => $preteur['id_loan']));
-
-                        $this->lenders_accounts->get($preteur['id_lender'], 'id_lender_account');
-                        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-
-                        $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                        $this->transactions->montant          = bcmul($reste_a_payer_pour_preteur, 100);
-                        $this->transactions->id_echeancier    = 0; // pas d'id_echeance car multiple
-                        $this->transactions->id_loan_remb     = $preteur['id_loan'];
-                        $this->transactions->id_project       = $this->projects->id_project;
-                        $this->transactions->id_langue        = 'fr';
-                        $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                        $this->transactions->status           = \transactions::STATUS_VALID;
-                        $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                        $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT;
-                        $this->transactions->create();
-
-                        $this->wallets_lines->id_lender                = $preteur['id_lender'];
-                        $this->wallets_lines->type_financial_operation = 40;
-                        $this->wallets_lines->id_loan                  = $preteur['id_loan'];
-                        $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                        $this->wallets_lines->status                   = 1; // non utilisé
-                        $this->wallets_lines->type                     = 2; // transaction virtuelle
-                        $this->wallets_lines->amount                   = bcmul($reste_a_payer_pour_preteur, 100);
-                        $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
-
-                        $montant_total += $reste_a_payer_pour_preteur;
+                    foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $item) {
+                        $loan = $loanRepo->find($item['id_loan']);
+                        $outstandingCapital = $operationManager->earlyRepayment($loan);
+                        $montant_total += $outstandingCapital;
                     }
 
                     $this->bdd->query('
