@@ -28,6 +28,12 @@ parameters:
     euler.coverage_key:             RwYS8unBOk1jXkGHVuppAj50mX3RCrG84UXuT3uVDEhbi7KBSqdvefM6PFXc82
     euler.grading_key:              kXZVEwuNtZhczOicgd2X74Gj8tSI5NqKKyPXr1ll30zyWUftRSN7aQ0M3mxvOBtX
     euler.url:                      'https://api-demo.single-invoice.co/v2.0/'
+    euler.email:                    equipeit@unilend.fr
+    euler.password:                 )XZpX~x4]"Lr6)BR
+
+    codinf.user:                    ~
+    codinf.password:                ~
+    codinf.url:                     'https://www.codinf.fr/incidents/'
 
     # End of parameters managed also by Ansible
 

@@ -17,5 +17,14 @@
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
         </service>
+
+        <service id="unilend.ws_client.codinf_manager" class="Unilend\Bundle\WSClientBundle\Service\CodinfManager">
+            <argument type="service" id="guzzle.client.codinf"/>
+            <argument>%codinf.user%</argument>
+            <argument>%codinf.password%</argument>
+            <argument>%codinf.url%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.ws_client.call_history_handler"/>
+        </service>
     </services>
 </container>

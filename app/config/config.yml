@@ -225,3 +225,8 @@ guzzle:
                 options:
                     timeout: 8
                     http_errors: false
+
+            codinf:
+                base_url: %codinf.url%
+                options:
+                    http_errors: false
