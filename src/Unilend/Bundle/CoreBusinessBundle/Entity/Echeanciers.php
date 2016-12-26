@@ -27,9 +27,12 @@ class Echeanciers
     private $idProject;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
      *
-     * @ORM\Column(name="id_loan", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
+     * })
      */
     private $idLoan;
 
@@ -207,7 +210,7 @@ class Echeanciers
     /**
      * Set idLoan
      *
-     * @param integer $idLoan
+     * @param Loans $idLoan
      *
      * @return Echeanciers
      */
@@ -221,7 +224,7 @@ class Echeanciers
     /**
      * Get idLoan
      *
-     * @return integer
+     * @return Loans
      */
     public function getIdLoan()
     {

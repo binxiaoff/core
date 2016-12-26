@@ -51,7 +51,10 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
         /** @var LoggerInterface $logger */
-        $logger = $this->getContainer()->get('monolog.logger.console');
+        $logger                = $this->getContainer()->get('monolog.logger.console');
+        $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
+        $repaymentScheduleRepo = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $paymentScheduleRepo   = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
         foreach ($projectRepayment->getProjectsToRepay(new \DateTime(), 1) as $r) {
             $repaymentLog->id_project       = $r['id_project'];
@@ -84,6 +87,9 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     $repaymentDate = date('Y-m-d H:i:s');
                     try {
                         if (false === $transactions->exist($e['id_echeancier'], 'id_echeancier')) {
+                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
+                            $operationManager->repayment($repaymentSchedule);
+
                             $montant += $e['montant'];
                             $nb_pret_remb++;
 
@@ -200,6 +206,9 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $bank_unilend->create();
 
                 $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
+
+                $paymentSchedule = $paymentScheduleRepo->find($echeanciers_emprunteur->id_echeancier_emprunteur);
+                $operationManager->repaymentCommission($paymentSchedule);
 
                 /** @var \settings $settings */
                 $settings = $entityManager->getRepository('settings');

@@ -1547,6 +1547,9 @@ class dossiersController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->settings                      = $this->loadData('settings');
+        $operationManager                    = $this->get('unilend.service.operation_manager');
+        $repaymentScheduleRepo               = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $paymentScheduleRepo                 = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
@@ -1676,6 +1679,8 @@ class dossiersController extends bootstrap
                         $repaymentDate = date('Y-m-d H:i:s');
                         try {
                             if (false === $this->transactions->exist($e['id_echeancier'], 'id_echeancier')) {
+                                $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
+                                $operationManager->repayment($repaymentSchedule);
                                 $montant += $e['montant'];
 
                                 $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
@@ -1927,6 +1932,9 @@ class dossiersController extends bootstrap
                         /** @var \platform_account_unilend $oAccountUnilend */
                         $oAccountUnilend = $this->loadData('platform_account_unilend');
                         $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
+
+                        $paymentSchedule = $paymentScheduleRepo->find($RembEmpr['id_echeancier_emprunteur']);
+                        $operationManager->repaymentCommission($paymentSchedule);
 
                         // MAIL FACTURE REMBOURSEMENT EMPRUNTEUR //
                         $projects                = $this->loadData('projects');

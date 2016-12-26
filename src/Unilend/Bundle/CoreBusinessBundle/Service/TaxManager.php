@@ -2,21 +2,31 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class TaxManager
 {
-    /** @var EntityManager */
+    /**
+     * @var EntityManagerSimulator
+     */
     private $entityManager;
+    /**
+     * @var EntityManager
+     */
+    private $em;
 
     /**
      * TaxManager constructor.
      *
-     * @param EntityManager $entityManager
+     * @param EntityManagerSimulator $entityManager
+     * @param EntityManager $em
      */
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManagerSimulator $entityManager, EntityManager $em)
     {
         $this->entityManager = $entityManager;
+        $this->em = $em;
     }
 
     /**
@@ -187,5 +197,74 @@ class TaxManager
         $lenderImpositionHistory->id_pays           = $clientAddress->id_pays_fiscal;
         $lenderImpositionHistory->id_user           = $userId;
         $lenderImpositionHistory->create();
+    }
+
+    public function getLenderRepaymentInterestTax(Clients $client, $interestsGross, \DateTime $taxDate = null)
+    {
+        if (null === $taxDate) {
+            $taxDate = new \DateTime();
+        }
+
+        switch ($client->getType()) {
+            case \clients::TYPE_LEGAL_ENTITY:
+            case \clients::TYPE_LEGAL_ENTITY_FOREIGNER:
+                return $this->getLegalEntityLenderRepaymentInterestsTax($interestsGross);
+            case \clients::TYPE_PERSON:
+            case \clients::TYPE_PERSON_FOREIGNER:
+            default:
+                return $this->getNaturalPersonLenderRepaymentInterestsTax($client, $interestsGross, $taxDate);
+        }
+    }
+
+    private function getLegalEntityLenderRepaymentInterestsTax($interestsGross)
+    {
+        return $this->calculateTaxes($interestsGross, [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
+    }
+
+    private function getNaturalPersonLenderRepaymentInterestsTax(Clients $client, $interestsGross, \DateTime $taxDate)
+    {
+        /** @var \lenders_accounts $lender */
+        $lender = $this->entityManager->getRepository('lenders_accounts');
+
+        if (false === $lender->get($client->getIdClient(), 'id_client_owner')) {
+            throw new \Exception('Unable to load lender with client ID ' . $client->getIdClient());
+        }
+
+        /** @var \lenders_imposition_history $lenderTaxationHistory */
+        $lenderTaxationHistory = $this->entityManager->getRepository('lenders_imposition_history');
+
+        if (false === $lenderTaxationHistory->loadLastTaxationHistory($lender->id_lender_account)) {
+            /**
+             * throw new \Exception('Unable to load lender taxation history with lender ID ' . $lender->id_lender_account);
+             */
+            /** @todo this is a temporary fix, uncomment the line above and remove this line once the TMA-761 was done */
+            $lenderTaxationHistory->resident_etranger = 0;
+        }
+
+        if (0 == $lenderTaxationHistory->resident_etranger) {
+            /** @var \lender_tax_exemption $taxExemption */
+            $taxExemption = $this->entityManager->getRepository('lender_tax_exemption');
+
+            if ($taxExemption->get($lender->id_lender_account . '" AND year = "' . $taxDate->format('Y') . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
+                return $this->calculateTaxes($interestsGross, [\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS]);
+            } else {
+                return $this->calculateTaxes($interestsGross, [\tax_type::TYPE_INCOME_TAX, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS]);
+            }
+        } else {
+            return $this->calculateTaxes($interestsGross, [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
+        }
+    }
+
+    public function calculateTaxes($amount, array $taxTypes)
+    {
+        $taxTypeRepo = $this->em->getRepository('UnilendCoreBusinessBundle:TaxType');
+        $taxes          = [];
+
+        foreach ($taxTypes as $taxTypeId) {
+            $taxType = $taxTypeRepo->find($taxTypeId);
+            $taxes[$taxTypeId] = round(bcmul($amount, bcdiv($taxType->getRate(), 100, 4), 4), 2);
+        }
+
+        return $taxes;
     }
 }

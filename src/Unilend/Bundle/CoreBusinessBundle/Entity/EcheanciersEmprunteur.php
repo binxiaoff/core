@@ -13,9 +13,12 @@ use Doctrine\ORM\Mapping as ORM;
 class EcheanciersEmprunteur
 {
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -117,7 +120,7 @@ class EcheanciersEmprunteur
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return EcheanciersEmprunteur
      */
@@ -131,7 +134,7 @@ class EcheanciersEmprunteur
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
