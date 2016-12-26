@@ -102,9 +102,9 @@ class WelcomeOfferManager
                 $welcomeOfferDetail->create();
 
                 $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->id_client, WalletType::LENDER);
-                $welcomeOffer = $this->em->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->find($welcomeOfferDetail->id_offre_bienvenue_detail);
+                $welcomeOfferDetailEntity = $this->em->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->find($welcomeOfferDetail->id_offre_bienvenue_detail);
 
-                $this->operationManager->newWelcomeOffer($wallet, $welcomeOffer);
+                $this->operationManager->newWelcomeOffer($wallet, $welcomeOfferDetailEntity);
 
                 (0 == $this->mailerManager->sendWelcomeOfferEmail($client, $welcomeOffer)) ? $emailStatus = ' Email non envoyé.' : $emailStatus = ' Email envoyé.';
                 $return = ['code' => 0, 'message' => 'Offre de bienvenue créée.' . $emailStatus];

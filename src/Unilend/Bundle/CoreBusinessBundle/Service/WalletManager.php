@@ -33,7 +33,7 @@ class WalletManager
      */
     public function __construct(EntityManager $entityManager, EntityManagerSimulator $legacyEntityManager)
     {
-        $this->entityManager = $entityManager;
+        $this->entityManager       = $entityManager;
         $this->legacyEntityManager = $legacyEntityManager;
     }
 
@@ -202,20 +202,22 @@ class WalletManager
     private function credit(Operation $operation, Wallet $creditor = null)
     {
         if ($creditor instanceof Wallet) {
-            if ($operation->getType()->getLabel() === OperationType::LENDER_LOAN) {
-                $balance = bcadd($creditor->getCommittedBalance(), $operation->getAmount(), 2);
-                if ($balance < 0) {
-                    new \DomainException('The committed balance must not be lower than zero');
-                }
-                $creditor->setCommittedBalance($balance);
-            } else {
-                $balance = bcadd($creditor->getAvailableBalance(), $operation->getAmount(), 2);
-                if ($balance < 0) {
-                    new \DomainException('The available balance must not be lower than zero');
-                }
-                $creditor->setAvailableBalance($balance);
+            switch ($operation->getType()->getLabel()) {
+                case OperationType::LENDER_LOAN :
+                    $balance = bcadd($creditor->getCommittedBalance(), $operation->getAmount(), 2);
+                    if ($balance < 0) {
+                        throw new \DomainException('The committed balance must not be lower than zero');
+                    }
+                    $creditor->setCommittedBalance($balance);
+                    break;
+                default :
+                    $balance = bcadd($creditor->getAvailableBalance(), $operation->getAmount(), 2);
+                    if ($balance < 0) {
+                        throw new \DomainException('The available balance must not be lower than zero');
+                    }
+                    $creditor->setAvailableBalance($balance);
+                    break;
             }
-
             $this->entityManager->flush($creditor);
         }
     }
@@ -227,20 +229,37 @@ class WalletManager
     private function debit(Operation $operation, Wallet $debtor = null)
     {
         if ($debtor instanceof Wallet) {
-            if ($operation->getType()->getLabel() === OperationType::LENDER_LOAN) {
-                $balance = bcsub($debtor->getCommittedBalance(), $operation->getAmount(), 2);
-                if ($balance < 0) {
-                    throw new \DomainException('The committed balance must not be lower than zero');
-                }
-                $debtor->setCommittedBalance($balance);
-            } else {
-                $balance = bcsub($debtor->getAvailableBalance(), $operation->getAmount(), 2);
-                if ($balance < 0) {
-                    throw new \DomainException('The available balance must not be lower than zero');
-                }
-                $debtor->setAvailableBalance($balance);
-            }
+            switch ($operation->getType()->getLabel()) {
+                case OperationType::LENDER_LOAN :
+                case OperationType::LENDER_LOAN_REFUSED :
+                    $balance = bcsub($debtor->getCommittedBalance(), $operation->getAmount(), 2);
+                    if ($balance < 0) {
+                        throw new \DomainException('The committed balance must not be lower than zero');
+                    }
+                    $debtor->setCommittedBalance($balance);
+                    break;
+                default :
+                    $balance = bcsub($debtor->getAvailableBalance(), $operation->getAmount(), 2);
+                    if ($balance < 0) {
+                        throw new \DomainException('The available balance must not be lower than zero');
+                    }
 
+                    if (OperationType::LENDER_WITHDRAW === $operation->getType()->getLabel()) {
+                        $welcomeOffers          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy(['idClient' => $debtor->getIdClient()]);
+                        $promotionalAmountTotal = 0;
+                        foreach ($welcomeOffers as $offer) {
+                            $offerAmount            = round(bcdiv($offer->getMontant(), 100, 4), 2);
+                            $promotionalAmountTotal = bcadd($promotionalAmountTotal, $offerAmount, 2);
+                        }
+
+                        if (bcadd($operation->getAmount(), $promotionalAmountTotal, 2) > $debtor->getAvailableBalance()) {
+                            throw new \DomainException('The promotional offer cannot be withdraw');
+                        }
+                    }
+
+                    $debtor->setAvailableBalance($balance);
+                    break;
+            }
             $this->entityManager->flush($debtor);
         }
     }

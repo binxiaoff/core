@@ -185,7 +185,7 @@ class LenderWalletController extends Controller
                 $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             } else {
                 $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->id_client, WalletType::LENDER);
-                $wireTransferOut = $this->get('unilend.service.operation_manager')->withdraw($wallet, $amount);
+                $wireTransferOut = $this->get('unilend.service.operation_manager')->withdrawLenderWallet($wallet, $amount);
                 $transaction->get($wireTransferOut->getIdTransaction());
 
                 $notification->type      = \notifications::TYPE_DEBIT;

@@ -138,20 +138,16 @@ class OperationManager
     public function provisionLenderWallet(Wallet $wallet, $origin)
     {
         if ($origin instanceof Backpayline) {
-            $type         = OperationType::LENDER_PROVISION_BY_CREDIT_CARD;
             $originField  = 'idBackpayline';
             $amountInCent = $origin->getAmount();
         } elseif ($origin instanceof Receptions) {
-            $type         = OperationType::LENDER_PROVISION_BY_WIRE_TRANSFER;
             $originField  = 'idWireTransferIn';
             $amountInCent = $origin->getMontant();
         } else {
             throw new \InvalidArgumentException('The origin ' . get_class($origin) . ' is not valid');
         }
-
         $amount = round(bcdiv($amountInCent, 100, 4), 2);
-
-        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => $type]);
+        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION]);
 
         $operation = null;
         if ($origin instanceof Backpayline) { // Do it only for payline, because the reception can have an operation and then it can be cancelled.
@@ -290,49 +286,93 @@ class OperationManager
      * @return Virements
      * @throws \Exception
      */
-    public function withdraw(Wallet $wallet, $amount, $origin = null)
+    public function withdrawLenderWallet(Wallet $wallet, $amount, $origin = null)
     {
         $this->em->getConnection()->beginTransaction();
         try {
             $wireTransferOut = new Virements();
+            $wireTransferOut->setIdClient($wallet->getIdClient()->getIdClient());
+            $wireTransferOut->setMontant(bcmul($amount, 100));
+            $wireTransferOut->setMotif($wallet->getWireTransferPattern());
+            $wireTransferOut->setType(Virements::TYPE_LENDER);
+            $wireTransferOut->setStatus(Virements::STATUS_PENDING);
+            $this->em->persist($wireTransferOut);
 
-            switch ($wallet->getIdType()->getLabel()) {
-                case WalletType::LENDER :
-                    $operationTypeLabel = OperationType::LENDER_WITHDRAW_BY_WIRE_TRANSFER;
-                    $type               = Virements::TYPE_LENDER;
-                    break;
-                case WalletType::BORROWER :
-                    $operationTypeLabel = OperationType::BORROWER_WITHDRAW_BY_WIRE_TRANSFER;
-                    $type               = Virements::TYPE_BORROWER;
-                    if ($origin instanceof Projects) {
-                        $wireTransferOut->setIdProject($origin);
-                    }
-                    break;
-                case WalletType::UNILEND :
-                    $operationTypeLabel = OperationType::UNILEND_WITHDRAW_BY_WIRE_TRANSFER;
-                    $type               = Virements::TYPE_UNILEND;
-                    break;
-                default:
-                    throw new \InvalidArgumentException('Unsupported wallet type : ' . $wallet->getIdType()->getLabel() . 'by withdraw');
-                    break;
+            $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW]);
+            $this->newOperation($amount, $operationType, $wallet, null, $wireTransferOut);
+
+            $this->em->getConnection()->commit();
+            $this->em->flush();
+
+            $this->legacyWithdrawLenderWallet($wallet, $wireTransferOut);
+            return $wireTransferOut;
+        } catch (\Exception $e) {
+            $this->em->getConnection()->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param        $amount
+     * @param null   $origin
+     *
+     * @return Virements
+     * @throws \Exception
+     */
+    public function withdrawUnilendWallet(Wallet $wallet, $amount, $origin = null)
+    {
+        $this->em->getConnection()->beginTransaction();
+        try {
+            $wireTransferOut = new Virements();
+            $wireTransferOut->setIdClient($wallet->getIdClient()->getIdClient());
+            $wireTransferOut->setMontant(bcmul($amount, 100));
+            $wireTransferOut->setMotif($wallet->getWireTransferPattern());
+            $wireTransferOut->setType(Virements::TYPE_UNILEND);
+            $wireTransferOut->setStatus(Virements::STATUS_PENDING);
+            $this->em->persist($wireTransferOut);
+
+            $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_WITHDRAW]);
+            $this->newOperation($amount, $operationType, $wallet, null, $wireTransferOut);
+
+            $this->em->getConnection()->commit();
+            $this->em->flush();
+            return $wireTransferOut;
+        } catch (\Exception $e) {
+            $this->em->getConnection()->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param        $amount
+     * @param null   $origin
+     *
+     * @return Virements
+     * @throws \Exception
+     */
+    public function withdrawBorrowerWallet(Wallet $wallet, $amount, $origin = null)
+    {
+        $this->em->getConnection()->beginTransaction();
+        try {
+            $wireTransferOut = new Virements();
+            if ($origin instanceof Projects) {
+                $wireTransferOut->setIdProject($origin);
             }
             $wireTransferOut->setIdClient($wallet->getIdClient()->getIdClient());
             $wireTransferOut->setMontant(bcmul($amount, 100));
             $wireTransferOut->setMotif($wallet->getWireTransferPattern());
-            $wireTransferOut->setType($type);
+            $wireTransferOut->setType(Virements::TYPE_BORROWER);
             $wireTransferOut->setStatus(Virements::STATUS_PENDING);
             $this->em->persist($wireTransferOut);
 
-            $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => $operationTypeLabel]);
-
+            $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
             $this->newOperation($amount, $operationType, $wallet, null, $wireTransferOut);
+
             $this->em->getConnection()->commit();
             $this->em->flush();
-
-            $this->legacyWithdraw($wallet, $wireTransferOut);
-
             return $wireTransferOut;
-
         } catch (\Exception $e) {
             $this->em->getConnection()->rollBack();
             throw $e;
@@ -343,7 +383,7 @@ class OperationManager
      * @param Wallet    $wallet
      * @param Virements $wireTransferOut
      */
-    private function legacyWithdraw(Wallet $wallet, Virements $wireTransferOut)
+    private function legacyWithdrawLenderWallet(Wallet $wallet, Virements $wireTransferOut)
     {
         /** @var \transactions $transaction */
         $transaction = $this->entityManager->getRepository('transactions');
@@ -501,13 +541,14 @@ class OperationManager
         if (null === $wallet) {
             return false;
         }
+
         $operation = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferIn' => $reception->getIdReception()]);
         if (null === $operation) {
             return false;
         }
 
         $amount        = round(bcdiv($reception->getMontant(), 100, 4), 2);
-        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION_BY_WIRE_TRANSFER_CANCEL]);
+        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION_CANCEL]);
         $this->newOperation($amount, $operationType, $wallet, null, $reception);
 
         $this->legacyCancelProvisionLenderWallet($reception);
@@ -602,12 +643,8 @@ class OperationManager
      *
      * @return bool|Virements
      */
-    public function clearBalance(Wallet $wallet)
+    public function totalWithDraw(Wallet $wallet)
     {
-        if (in_array($wallet->getIdType()->getLabel(), [WalletType::BORROWER, WalletType::LENDER, WalletType::UNILEND])) {
-            return $this->withdraw($wallet, $wallet->getAvailableBalance());
-        }
-
         switch ($wallet->getIdType()->getLabel()){
             case WalletType::TAX_CONTRIBUTIONS_ADDITIONNELLES:
                 $type = OperationType::TAX_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW;
