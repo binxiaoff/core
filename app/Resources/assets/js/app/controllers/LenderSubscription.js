@@ -39,6 +39,9 @@ var cached = {
 function checkClientType() {
   var $clientTypePerson = $('input[name="client_type"][value="person"]:visible')
 
+    // @debug
+    // console.log('checkClientType', $clientTypePerson.prop('checked'))
+
   // Show person form
   if ($clientTypePerson.prop('checked')) {
     // Clear form validation messages on hiding form
@@ -69,6 +72,8 @@ function checkClientType() {
 
 // Show/hide postal address section
 function checkAddressIsNotSame() {
+  //@debug
+  // console.log('checkAddressIsNotSame', $('.form-preter-create:visible .toggle-correspondence-address').prop('checked'))
 
   $('.form-preter-create').each(function () {
     var form = $(this)
@@ -325,10 +330,14 @@ $doc.on('ready', function () {
 
   function getClientType() {
     var clientType = $('input[name="client_type"]:checked').val()
-      if ('legal_entity' === clientType) {
-        return 'legal-entity'
+      switch (clientType) {
+          case 'legal_entity':
+            return 'legal-entity'
+            break
+          default:
+            return clientType
+            break
       }
-      return clientType;
   }
 
 })
