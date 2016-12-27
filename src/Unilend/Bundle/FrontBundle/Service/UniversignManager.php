@@ -72,7 +72,6 @@ class UniversignManager
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
-
             $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
 
             return false;
