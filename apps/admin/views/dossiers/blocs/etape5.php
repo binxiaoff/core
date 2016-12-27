@@ -38,21 +38,21 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($this->aAttachmentTypes as $sAttachmentType): ?>
-                    <tr>
+                <?php foreach ($this->aAttachmentTypes as $attachmentType): ?>
+                    <tr<?php if (in_array($attachmentType['id'], $this->aMandatoyAttachmentTypes)): ?> class="highlighted"<?php endif; ?>>
                         <td class="remove_col">
-                            <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
-                                <a href="#" data-id="<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>" data-label="<?= $sAttachmentType['label'] ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
+                            <?php if (isset($this->aAttachments[$attachmentType['id']]['path'])): ?>
+                                <a href="#" data-id="<?= $this->aAttachments[$attachmentType['id']]['id'] ?>" data-label="<?= $attachmentType['label'] ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
                             <?php endif; ?>
                         </td>
-                        <td class="type_col"><?= $sAttachmentType['label'] ?></td>
+                        <td class="type_col"><?= $attachmentType['label'] ?></td>
                         <td class="label_col">
-                            <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
-                                <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$sAttachmentType['id']]['path']) ?>"><?= $this->aAttachments[$sAttachmentType['id']]['path'] ?></a>
+                            <?php if (isset($this->aAttachments[$attachmentType['id']]['path'])): ?>
+                                <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$attachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$attachmentType['id']]['path']) ?>"><?= $this->aAttachments[$attachmentType['id']]['path'] ?></a>
                             <?php endif; ?>
                         </td>
-                        <td class="statut_fichier_<?= $sAttachmentType['id'] ?>" id="statut_fichier_id_<?= $sAttachmentType['id'] ?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
-                        <td><input type="file" name="<?= $sAttachmentType['id'] ?>" id="fichier_project_<?= $sAttachmentType['id'] ?>"/></td>
+                        <td class="statut_fichier_<?= $attachmentType['id'] ?>" id="statut_fichier_id_<?= $attachmentType['id'] ?>"><?= isset($this->aAttachments[$attachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
+                        <td><input type="file" name="<?= $attachmentType['id'] ?>" id="fichier_project_<?= $attachmentType['id'] ?>"/></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
