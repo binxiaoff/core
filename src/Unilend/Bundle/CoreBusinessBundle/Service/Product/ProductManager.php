@@ -141,6 +141,17 @@ class ProductManager
     }
 
     /**
+     * @param \lenders_accounts $lenderAccount
+     * @param \projects         $project
+     *
+     * @return array
+     */
+    public function getLenderEligibility(\lenders_accounts $lenderAccount, \projects $project)
+    {
+        return $this->lenderValidator->isEligible($lenderAccount, $project)['eligible'];
+    }
+
+    /**
      * @param \bids    $bid
      *
      * @return array

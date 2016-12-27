@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Security;
 
+use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
@@ -42,6 +43,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $sessionStrategy;
     /** @var CsrfTokenManagerInterface */
     private $csrfTokenManager;
+    /** @var Logger */
+    private $logger;
 
     public function __construct(
         UserPasswordEncoder $securityPasswordEncoder,
@@ -49,14 +52,16 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         EntityManager $entityManager,
         NotificationManager $notificationManager,
         SessionAuthenticationStrategyInterface $sessionStrategy,
-        CsrfTokenManagerInterface $csrfTokenManager
+        CsrfTokenManagerInterface $csrfTokenManager,
+        Logger $logger
     ) {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
         $this->notificationManager     = $notificationManager;
         $this->sessionStrategy         = $sessionStrategy;
-        $this->csrfTokenManager         = $csrfTokenManager;
+        $this->csrfTokenManager        = $csrfTokenManager;
+        $this->logger                  = $logger;
     }
 
     protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
@@ -99,7 +104,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $password           = $request->request->get('_password');
         $captcha            = $request->request->get('captcha');
         $captchaInformation = $request->getSession()->get('captchaInformation');
-        $scrfToken          = $request->get('_csrf_token');
+        $csrfToken          = $request->get('_csrf_token');
 
         $request->getSession()->set(Security::LAST_USERNAME, $username);
 
@@ -108,7 +113,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             'password'           => $password,
             'captcha'            => $captcha,
             'captchaInformation' => $captchaInformation,
-            'csrfToken'          => $scrfToken
+            'csrfToken'          => $csrfToken
         ];
     }
 
@@ -140,8 +145,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             throw new CustomUserMessageAuthenticationException('wrong-captcha');
         }
 
-        if ($this->csrfTokenManager->isTokenValid(new CsrfToken('authenticate', $credentials['csrfToken'])) === false) {
-            throw new CustomUserMessageAuthenticationException(''); // Silence is golden
+        if (false === $this->csrfTokenManager->isTokenValid(new CsrfToken('authenticate', $credentials['csrfToken']))) {
+            throw new CustomUserMessageAuthenticationException('wrong-security-token');
         }
         return true;
     }
@@ -180,10 +185,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             if (in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
                 return new RedirectResponse($this->router->generate('lender_completeness'));
             }
-
-            if (false === $user->hasAcceptedCurrentTerms()) {
-                //TODO add  message about Terms
-            }
         }
 
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
@@ -220,7 +221,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         /** @var \login_log $loginLog */
         $loginLog = $this->entityManager->getRepository('login_log');
 
-        if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown'])) {
+        if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown', 'wrong captcha', 'wrong-security-token'])) {
             $oNowMinusTenMinutes = new \DateTime('NOW - 10 minutes');
             $iPreviousTries      = $loginLog->counter('IP = "' . $request->server->get('REMOTE_ADDR') . '" AND date_action >= "' . $oNowMinusTenMinutes->format('Y-m-d H:i:s') . '"');
             $iWaitingPeriod      = 0;
@@ -248,6 +249,16 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $loginLog->date_action = date('Y-m-d H:i:s');
         $loginLog->retour      = $exception->getMessage();
         $loginLog->create();
+
+        if ('wrong-security-token' === $exception->getMessage()) {
+            $this->logger->error('Invalid CSRF token', [
+                'login_log ID' => $loginLog->id_log_login,
+                'server'       => exec('hostname'),
+                'token'        => $this->getCredentials($request)['csrfToken'],
+                'tries'        => $iPreviousTries,
+                'REMOTE_ADDR'  => $request->server->get('REMOTE_ADDR')
+            ]);
+        }
 
         return new RedirectResponse($this->getLoginUrl());
     }

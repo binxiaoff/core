@@ -40,6 +40,7 @@
             <argument type="service" id="unilend.service.notification_manager" />
             <argument type="service" id="security.authentication.session_strategy" />
             <argument type="service" id="security.csrf.token_manager" />
+            <argument type="service" id="logger" />
         </service>
 
         <service id="unilend.frontbundle.service.project_display_manager" class="Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager">
@@ -47,6 +48,7 @@
             <argument type="service" id="unilend.service.project_manager" />
             <argument type="service" id="unilend.frontbundle.service.lender_account_display_manager" />
             <argument type="service" id="unilend.service.company_balance_sheet_manager" />
+            <argument type="service" id="cache" />
         </service>
 
         <service id="unilend.frontbundle.provider.route_provider" class="Unilend\Bundle\FrontBundle\Service\RouteProvider">
@@ -113,6 +115,10 @@
             <argument type="service" id="swiftmailer.mailer.default" />
             <argument>%url.universign%</argument>
             <argument>%kernel.root_dir%</argument>
+        </service>
+
+        <service id="unilend.frontbundle.security.client_role" class="Unilend\Bundle\FrontBundle\Security\ClientRole">
+            <argument type="service" id="security.role_hierarchy"/>
         </service>
     </services>
 </container>

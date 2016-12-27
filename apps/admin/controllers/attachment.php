@@ -5,11 +5,6 @@
  */
 class attachmentController extends bootstrap
 {
-    /**
-     * @param $command
-     * @param $config
-     * @param $app
-     */
     public function initialize()
     {
         parent::initialize();

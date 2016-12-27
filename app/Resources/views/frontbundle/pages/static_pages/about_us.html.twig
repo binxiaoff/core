@@ -222,8 +222,8 @@
             </article><!-- /.mosaic-item -->
             {#Damien#}
             <article class="mosaic-item">
-                <div class="mosaic-item-image">
-                    <img src="" alt=""/>
+                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/damien-duchene-800x800.jpg') }}');">
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/damien-duchene-800x800.jpg') }}" alt=""/>
                 </div><!-- /.mosaic-image -->
                 <div class="mosaic-item-info">
                     <div class="mosaic-item-info-inner">
@@ -366,7 +366,7 @@
                         <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
                             <div class="person-image">
                                 {#<img src="" alt=""/>#}
-                                <div style="width: 187px;height: 187px; background-color: #f8f6f8;"></div>
+                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/lior-derhy-300x300.jpg') }}" alt=""/>
                                 <div class="person-links">
                                     <ul class="list-sociallinks">
                                         {% if 'about-us-people_new-alpha-linkedin-link'|trans|trim is not empty %}

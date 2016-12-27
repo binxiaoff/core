@@ -75,6 +75,7 @@ class attachment_type extends attachment_type_crud
     const KBIS_HOLDING                         = 54;
     const PHOTOS_ACTIVITE                      = 55;
     const TRANSFER_CERTIFICATE                 = 56;
+    const DEBTS_STATEMENT                      = 57;
 
     public function __construct($bdd, $params = '')
     {
@@ -129,37 +130,38 @@ class attachment_type extends attachment_type_crud
     {
         if (null === $aTypes) {
             $aTypes = array(
-                self::RELEVE_BANCAIRE_MOIS_N,
-                self::RELEVE_BANCAIRE_MOIS_N_1,
-                self::RELEVE_BANCAIRE_MOIS_N_2,
                 self::KBIS,
-                self::PRESENTATION_ENTRERPISE,
-                self::ETAT_ENDETTEMENT,
                 self::RIB,
                 self::CNI_PASSPORTE_DIRIGEANT,
                 self::CNI_PASSPORTE_VERSO,
                 self::DERNIERE_LIASSE_FISCAL,
                 self::LIASSE_FISCAL_N_1,
                 self::LIASSE_FISCAL_N_2,
-                self::RAPPORT_CAC,
-                self::PREVISIONNEL,
-                self::BALANCE_CLIENT,
-                self::BALANCE_FOURNISSEUR,
+                self::RELEVE_BANCAIRE_MOIS_N,
+                self::RELEVE_BANCAIRE_MOIS_N_1,
+                self::RELEVE_BANCAIRE_MOIS_N_2,
                 self::ETAT_PRIVILEGES_NANTISSEMENTS,
                 self::CGV,
+                self::RAPPORT_CAC,
+                self::STATUTS,
+                self::DEBTS_STATEMENT,
                 self::CNI_BENEFICIAIRE_EFFECTIF_1,
                 self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
                 self::CNI_BENEFICIAIRE_EFFECTIF_2,
                 self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
                 self::CNI_BENEFICIAIRE_EFFECTIF_3,
                 self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
-                self::SITUATION_COMPTABLE_INTERMEDIAIRE,
-                self::DERNIERS_COMPTES_CONSOLIDES,
-                self::STATUTS,
-                self::PRESENTATION_PROJET,
                 self::DERNIERE_LIASSE_FISCAL_HOLDING,
                 self::KBIS_HOLDING,
+                self::ETAT_ENDETTEMENT,
+                self::PREVISIONNEL,
+                self::SITUATION_COMPTABLE_INTERMEDIAIRE,
+                self::DERNIERS_COMPTES_CONSOLIDES,
+                self::BALANCE_CLIENT,
+                self::BALANCE_FOURNISSEUR,
                 self::PHOTOS_ACTIVITE,
+                self::PRESENTATION_PROJET,
+                self::PRESENTATION_ENTRERPISE,
                 self::AUTRE1,
                 self::AUTRE2,
                 self::AUTRE3,
@@ -188,7 +190,7 @@ class attachment_type extends attachment_type_crud
 
     public function getAllTypesForLender($sLanguage, $bIncludeOthers = true, array $aTypes = null)
     {
-        if (null === $aTypes){
+        if (null === $aTypes) {
             $aTypes = array(
                 self::CNI_PASSPORTE,
                 self::CNI_PASSPORTE_VERSO,
@@ -269,26 +271,5 @@ class attachment_type extends attachment_type_crud
         }
 
         return $aTypes;
-    }
-
-    public function getAllTypesForTransfer($language, array $types = null)
-    {
-        if (null === $types){
-        $types = [self::LOAN_TRANSFER_CERTIFICATE];
-    }
-
-        //TODO move to translation service or any other way of using translation once front is migrated
-        $oTranslations = new \translations($this->bdd);
-        $aTranslations = $oTranslations->selectFront('projet', $language);
-
-        $types = array_map(
-            function($type) use ($aTranslations) {
-                $type['label'] = $aTranslations['document-type-' . $type['id']];
-                return $type;
-            },
-            $this->getAllTypes($types)
-        );
-
-        return $types;
     }
 }

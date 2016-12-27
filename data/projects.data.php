@@ -598,7 +598,7 @@ class projects extends projects_crud
                     ->from('bids')
                     ->where('id_project = :id_project')
                     ->andWhere('status in (:status)')
-                    ->setParameter('status', [0, 1], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+                    ->setParameter('status', [\bids::STATUS_BID_PENDING, \bids::STATUS_BID_ACCEPTED], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
                 break;
             case \projects_status::FUNDING_KO:
                 $queryBuilder
@@ -842,19 +842,19 @@ class projects extends projects_crud
                 p.amount AS 'Amount',
                 p.period AS 'NbMois',
                 CASE p.date_publication
-                  WHEN '0000-00-00' then ''
-                  ELSE p.date_publication
+                  WHEN '0000-00-00 00:00:00' THEN ''
+                  ELSE DATE(p.date_publication)
                 END AS 'Date_Publication',
                 CASE p.date_retrait
-                  WHEN '0000-00-00' then ''
-                  ELSE p.date_retrait
+                  WHEN '0000-00-00 00:00:00' THEN ''
+                  ELSE DATE(p.date_retrait)
                 END AS 'Date_Retrait',
                 CASE p.added
-                  WHEN '0000-00-00 00:00:00' then ''
+                  WHEN '0000-00-00 00:00:00' THEN ''
                   ELSE p.added
                 END AS 'Date_Ajout',
                 CASE p.updated
-                  WHEN '0000-00-00 00:00:00' then ''
+                  WHEN '0000-00-00 00:00:00' THEN ''
                   ELSE p.updated
                 END AS 'Date_Mise_Jour',
                 REPLACE(ps.label,',','') AS 'Status',
@@ -873,11 +873,11 @@ class projects extends projects_crud
                 REPLACE(co.phone,'\t','') AS 'Telephone',
                 co.status_client AS 'Status_Client',
                 CASE co.added
-                  WHEN '0000-00-00 00:00:00' then ''
+                  WHEN '0000-00-00 00:00:00' THEN ''
                   ELSE co.added
                 END AS 'Date_ajout',
                 CASE co.updated
-                  WHEN '0000-00-00 00:00:00' then ''
+                  WHEN '0000-00-00 00:00:00' THEN ''
                   ELSE co.updated
                 END AS 'Date_Mise_A_Jour',
                 co.id_client_owner AS 'IDClient'
@@ -1165,6 +1165,10 @@ class projects extends projects_crud
                 \projects_status::REDRESSEMENT_JUDICIAIRE,
                 \projects_status::LIQUIDATION_JUDICIAIRE,
             ],
+            'status_to_exclude'        => [
+                \projects_status::REMBOURSE,
+                \projects_status::REMBOURSEMENT_ANTICIPE
+            ],
             'client_type_person'       => [
                 \clients::TYPE_PERSON,
                 \clients::TYPE_PERSON_FOREIGNER
@@ -1178,6 +1182,7 @@ class projects extends projects_crud
             'declaration_first_day'    => \PDO::PARAM_STR,
             'declaration_last_day'     => \PDO::PARAM_STR,
             'problematic_status'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'status_to_exclude'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'client_type_person'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'client_type_legal_entity' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
         ];
@@ -1203,14 +1208,13 @@ class projects extends projects_crud
           p.period AS loan_duration,
           ROUND(SUM(l.amount * l.rate) / SUM(l.amount), 2) AS average_loan_rate,
           'M' AS repayment_frequency,
-          (SELECT ROUND(SUM(e.capital_rembourse) / 100, 2) FROM echeanciers e WHERE e.id_project = p.id_project AND DATE(e.date_echeance_reel) <= :declaration_last_day) AS repaid_capital,
           (SELECT pshd.date FROM projects_status_history_details pshd WHERE pshd.id_project_status_history = (
             SELECT MIN(psh.id_project_status_history) FROM projects_status_history psh
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE ps.status IN (:problematic_status) AND psh.id_project = p.id_project)
           ) AS judgement_date,
           (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . \projects_status::RECOUVREMENT . ") AS recovery_date,
-          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . " AND DATE(t.added) < " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . ") AS recovery_tax_excluded,
-          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . " AND DATE(t.added) >= " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . ") AS recovery_tax_included,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE DATE(t.date_transaction) < " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . " AND t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ") AS recovery_tax_excluded,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE DATE(t.date_transaction) >= " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . " AND t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ") AS recovery_tax_included,
           (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
             INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_person)) AS contributor_person_number,
           (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
@@ -1224,8 +1228,9 @@ class projects extends projects_crud
         FROM projects p
         INNER JOIN companies com ON  com.id_company = p.id_company
         INNER JOIN loans l ON l.id_project = p.id_project AND l.status = " . \loans::STATUS_ACCEPTED . "
-        WHERE p.status >= " . \projects_status::REMBOURSEMENT . " AND p.status <> " . \projects_status::REMBOURSE . "
+        WHERE p.status >= " . \projects_status::REMBOURSEMENT . " AND p.status NOT IN (:status_to_exclude)
         GROUP BY p.id_project";
+
         /** @var Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);
 

@@ -1,45 +1,51 @@
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(function() {
         $(".tablesorter").tablesorter({headers: {4: {sorter: false}}});
-        <?php if($this->nb_lignes != '') : ?>
-        $(".tablesorter").tablesorterPager({
-            container: $("#pager"),
-            positionFixed: false,
-            size: <?= $this->nb_lignes ?>});
+
+        <?php if ($this->nb_lignes != '') : ?>
+            $(".tablesorter").tablesorterPager({
+                container: $("#pager"),
+                positionFixed: false,
+                size: <?= $this->nb_lignes ?>}
+            );
         <?php endif; ?>
-    });
-    <?php if(isset($_SESSION['freeow'])) : ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?=$_SESSION['freeow']['title']?>";
-        message = "<?=$_SESSION['freeow']['message']?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
-    <?php endif; ?>
-    $(document).ready(function () {
+
+        <?php if(isset($_SESSION['freeow'])) : ?>
+            var title, message, opts, container;
+            title = "<?= $_SESSION['freeow']['title'] ?>";
+            message = "<?= $_SESSION['freeow']['message'] ?>";
+            opts = {};
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
+
         $(".lightbox").colorbox({
             onComplete: function () {
                 $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
                 $("#datepik_from").datepicker({
                     showOn: 'both',
-                    buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+                    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
                     buttonImageOnly: true,
                     changeMonth: true,
                     changeYear: true,
-                    yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
+                    yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
                 });
                 $("#datepik_to").datepicker({
                     showOn: 'both',
-                    buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+                    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
                     buttonImageOnly: true,
                     changeMonth: true,
                     changeYear: true,
-                    yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
+                    yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
                 });
             }
         });
+
+        <?php if (false === isset($this->aEmails)) : ?>
+            $('.btnDroite .btn_link.lightbox').click();
+        <?php endif; ?>
     });
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
@@ -47,13 +53,13 @@
     <ul class="breadcrumbs">
         <li><a href="<?= $this->lurl ?>/settings" title="Configuration">Configuration</a> -</li>
         <li><a href="<?= $this->lurl ?>/mails" title="Mails">Mails</a> -</li>
-        <li>Historique des Mails</li>
+        <li>Historique des emails</li>
     </ul>
     <h1>Historique des emails</h1>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/mails/recherche" class="btn_link lightbox">Rechercher</a>
     </div>
-    <?php if (count($this->aEmails) > 0) : ?>
+    <?php if (isset($this->aEmails) && count($this->aEmails) > 0) : ?>
         <table class="tablesorter">
             <thead>
             <tr>
@@ -100,8 +106,7 @@
                 </tr>
             </table>
         <?php endif; ?>
-    <?php else : ?>
-        <p>Il n'y a aucun email pour le moment.</p>
+    <?php elseif (isset($this->aEmails)) : ?>
+        <p>Aucun email ne correspond à cette recherche</p>
     <?php endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>

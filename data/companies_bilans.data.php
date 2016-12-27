@@ -26,8 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\core\Loader;
-
 class companies_bilans extends companies_bilans_crud
 {
     public function __construct($bdd, $params = '')
@@ -67,5 +65,37 @@ class companies_bilans extends companies_bilans_crud
     {
         $result = $this->bdd->query('SELECT * FROM companies_bilans WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result) > 0);
+    }
+
+    /**
+     * @param \projects $project
+     * @param int|null  $limit
+     */
+    public function getLastTypeSheets(\projects $project, $limit = null)
+    {
+        $query = '
+            SELECT cb.*
+            FROM projects p
+            INNER JOIN companies_bilans last_cb ON p.id_dernier_bilan = last_cb.id_bilan
+            INNER JOIN companies_bilans cb ON
+              p.id_company = cb.id_company
+              AND cb.id_company_tax_form_type = last_cb.id_company_tax_form_type
+              AND cb.cloture_exercice_fiscal <= last_cb.cloture_exercice_fiscal
+            WHERE p.id_project = :projectId
+            ORDER BY cloture_exercice_fiscal DESC';
+
+        if (null !== $limit) {
+            $query .= ' LIMIT :limit';
+        }
+
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['projectId' => $project->id_project, 'limit' => $limit],
+            ['projectId' => \PDO::PARAM_INT, 'limit' => \PDO::PARAM_INT]
+        );
+        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $result;
     }
 }

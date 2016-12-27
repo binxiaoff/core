@@ -1440,10 +1440,10 @@ class LenderProfileController extends Controller
         $post = $request->request->all();
 
         if (empty(trim($post['client_secret_question']))) {
-            $this->addFlash('securitySecretQuestionErrors', $translator->trans('common-validators_secret-question-invalid'));
+            $this->addFlash('securitySecretQuestionErrors', $translator->trans('common-validator_secret-question-invalid'));
         }
         if (empty(trim($post['client_secret_question']))) {
-            $this->addFlash('securitySecretQuestionErrors', $translator->trans('common-validators_secret-answer-invalid'));
+            $this->addFlash('securitySecretQuestionErrors', $translator->trans('common-validator_secret-answer-invalid'));
         }
 
         if ($this->get('session')->getFlashBag()->has('securitySecretQuestionErrors')) {

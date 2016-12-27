@@ -116,7 +116,7 @@ class companies extends companies_crud
             FROM projects
             WHERE id_company = ' . $iCompanyId . '
             ' . $sStatus . '
-            ORDER BY status DESC';
+            ORDER BY status DESC, date_retrait DESC, added DESC';
 
         $resultat  = $this->bdd->query($sql);
         $aProjects = array();
@@ -143,6 +143,24 @@ class companies extends companies_crud
             INNER JOIN companies c ON p.id_company = c.id_company
             WHERE ee.status_emprunteur = 0 AND c.siren = "' . $this->siren . '"'
         ));
+    }
+
+    /**
+     * @param int $siren
+     * @return float
+     */
+    public function getLastYearReleasedFundsBySIREN($siren)
+    {
+        $query = '
+            SELECT IFNULL(ROUND(SUM(t.montant_unilend - t.montant) / 100, 2), 0)
+            FROM transactions t
+            INNER JOIN projects p ON t.id_project = p.id_project
+            INNER JOIN companies c ON p.id_company = c.id_company
+            WHERE t.date_transaction > DATE_SUB(NOW(), INTERVAL 1 YEAR) 
+                AND c.siren = :siren 
+                AND t.type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
+        $statement = $this->bdd->executeQuery($query, ['siren' => $siren]);
+        return (float) $statement->fetchColumn();
     }
 
     /**
