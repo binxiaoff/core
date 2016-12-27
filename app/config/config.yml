@@ -217,5 +217,5 @@ sonata_cache:
 
 knp_mailjet:
     api_key:    "%mailjet.api_key%"
-    secret_key: "%mailjet.api_secret"
+    secret_key: "%mailjet.api_secret%"
     event_endpoint_token: yclrcchxk0p3lujy82
