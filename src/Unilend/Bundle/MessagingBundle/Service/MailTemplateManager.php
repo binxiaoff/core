@@ -36,15 +36,18 @@ class MailTemplateManager
     public function addTemplate($type, $sender, $senderEmail, $subject, $content)
     {
         /** @var \mail_templates $mailTemplate */
-        $oMailTemplate               = $this->entityManager->getRepository('mail_templates');
-        $oMailTemplate->type         = $type;
-        $oMailTemplate->sender_name  = $sender;
-        $oMailTemplate->sender_email = $senderEmail;
-        $oMailTemplate->subject      = $subject;
-        $oMailTemplate->content      = $content;
-        $oMailTemplate->locale       = $this->defaultLanguage;
-        $oMailTemplate->status       = \mail_templates::STATUS_ACTIVE;
-        $oMailTemplate->create();
+        $oMailTemplate = $this->entityManager->getRepository('mail_templates');
+
+        if (false === $oMailTemplate->exist(\mail_templates::STATUS_ACTIVE, 'type = "' . $type . '" AND status')) {
+            $oMailTemplate->type         = $type;
+            $oMailTemplate->sender_name  = $sender;
+            $oMailTemplate->sender_email = $senderEmail;
+            $oMailTemplate->subject      = $subject;
+            $oMailTemplate->content      = $content;
+            $oMailTemplate->locale       = $this->defaultLanguage;
+            $oMailTemplate->status       = \mail_templates::STATUS_ACTIVE;
+            $oMailTemplate->create();
+        }
     }
 
     /**
