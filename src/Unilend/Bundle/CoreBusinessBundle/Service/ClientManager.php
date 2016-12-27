@@ -1,9 +1,14 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Security\ClientRole;
+use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 /**
@@ -20,13 +25,19 @@ class ClientManager
     private $tokenStorage;
     /** @var RequestStack */
     private $requestStack;
+    /** @var  RouterInterface */
+    private $router;
+    /** @var  ClientRole */
+    private $clientRole;
 
-    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager, TokenStorageInterface $tokenStorage, RequestStack $requestStack)
+    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager, TokenStorageInterface $tokenStorage, RequestStack $requestStack, RouterInterface $router, ClientRole $clientRole)
     {
         $this->oEntityManager         = $oEntityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
         $this->tokenStorage           = $tokenStorage;
         $this->requestStack           = $requestStack;
+        $this->router                 = $router;
+        $this->clientRole             = $clientRole;
     }
 
 
@@ -37,7 +48,7 @@ class ClientManager
      */
     public function isBetaTester(\clients $oClient)
     {
-        return (bool)$this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_BETA_TESTER);
+        return (bool) $this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_BETA_TESTER);
     }
 
     /**
@@ -154,7 +165,7 @@ class ClientManager
 
     public function isActive(\clients $oClient)
     {
-        return (bool)$oClient->status;
+        return (bool) $oClient->status;
     }
 
     public function hasAcceptedCurrentTerms(\clients $oClient)
@@ -177,5 +188,51 @@ class ClientManager
         $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
         $lastClientStatus->getLastStatut($client->id_client);
         return $lastClientStatus->status == \clients_status::VALIDATED;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return RedirectResponse|null
+     */
+    public function checkProgressAndRedirect(Request $request)
+    {
+        /** @var \clients $client */
+        $client       = $this->oEntityManager->getRepository('clients');
+        $currentPath  = $request->getPathInfo();
+
+        $token = $this->tokenStorage->getToken();
+
+        if ($token) {
+            /** @var BaseUser $user */
+            $user = $token->getUser();
+
+            if ($user instanceof UserLender && $this->clientRole->isGranted('ROLE_LENDER', $user) && $client->get($user->getClientId()) && $client->etape_inscription_preteur < \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
+                $redirectPath = $this->getSubscriptionStepRedirectRoute($client);
+
+                if ($redirectPath != $currentPath) {
+                    return new RedirectResponse($redirectPath);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param \clients $client
+     * @return string
+     */
+    private function getSubscriptionStepRedirectRoute(\clients $client)
+    {
+        switch ($client->etape_inscription_preteur) {
+            case \clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
+                return $this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]);
+            case \clients::SUBSCRIPTION_STEP_DOCUMENTS:
+            case \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT:
+                return $this->router->generate('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
+            default:
+                return $this->router->generate('projects_list');
+        }
     }
 }

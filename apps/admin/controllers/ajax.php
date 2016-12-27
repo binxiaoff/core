@@ -271,13 +271,14 @@ class ajaxController extends bootstrap
             } elseif ($_POST['etape'] == 2) {
                 $this->projects->get($_POST['id_project'], 'id_project');
                 $this->projects->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
+                $this->projects->balance_count   = empty($this->projects->balance_count) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $this->projects->balance_count;
                 $this->projects->update();
 
                 $this->companies->get($this->projects->id_company, 'id_company');
                 $this->companies->name                          = $_POST['raison_sociale_etape2'];
                 $this->companies->forme                         = $_POST['forme_juridique_etape2'];
                 $this->companies->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
-                $this->companies->date_creation                 = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['creation_date_etape2'])));
+                $this->companies->date_creation                 = \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->format('Y-m-d');
                 $this->companies->adresse1                      = $_POST['address_etape2'];
                 $this->companies->city                          = $_POST['ville_etape2'];
                 $this->companies->zip                           = $_POST['postal_etape2'];

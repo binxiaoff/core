@@ -215,6 +215,11 @@ sonata_cache:
             types: [translations]
             servers: "%sonata_cache.servers%"
 
+knp_mailjet:
+    api_key:    "%mailjet.api_key%"
+    secret_key: "%mailjet.api_secret%"
+    event_endpoint_token: yclrcchxk0p3lujy82
+
 guzzle:
     # (de)activate logging/profiler; default: %kernel.debug%
         logging: true

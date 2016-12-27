@@ -45,6 +45,7 @@ class AppKernel extends Kernel
             new Knp\Bundle\SnappyBundle\KnpSnappyBundle(),
             new Ekino\Bundle\NewRelicBundle\EkinoNewRelicBundle(),
             new Sonata\CacheBundle\SonataCacheBundle(),
+            new Knp\Bundle\MailjetBundle\KnpMailjetBundle(),
             new CL\Bundle\SlackBundle\CLSlackBundle(),
             new JMS\SerializerBundle\JMSSerializerBundle(),
             new EightPoints\Bundle\GuzzleBundle\GuzzleBundle(),

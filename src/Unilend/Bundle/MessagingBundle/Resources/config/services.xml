@@ -3,7 +3,6 @@
 <container xmlns="http://symfony.com/schema/dic/services"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
-
     <services>
         <!-- Swift Mailer and its bridges -->
         <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool" />
@@ -47,5 +46,4 @@
             <argument>%mailjet.api_secret%</argument>
         </service>
     </services>
-
 </container>
