@@ -61,8 +61,6 @@ class UniversignManager
      */
     public function createProxy(\projects_pouvoir $proxy)
     {
-        $this->logger->notice('Proxy status: ' . $proxy->status . ' - Creation of PDF to send to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-
         try {
             $pdfParameters = $this->getPdfParameters('proxy', $proxy->id_pouvoir);
         } catch (\Exception $universignException) {
@@ -73,17 +71,15 @@ class UniversignManager
         $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
         $soapResult  = $soapClient->send($soapRequest);
 
-        $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-
         if ($soapResult->faultCode()) {
 
             $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
 
             return false;
         }
-
-        $proxy->id_universign  = $soapResult->value()->structMem('id')->scalarVal();
-        $proxy->url_universign = $soapResult->value()->structMem('url')->scalarVal();
+        $resultValue           = $soapResult->value();
+        $proxy->id_universign  = $resultValue['id']->scalarVal();
+        $proxy->url_universign = $resultValue['url']->scalarVal();
         $proxy->status         = \projects_pouvoir::STATUS_PENDING;
         $proxy->update();
 
@@ -99,29 +95,21 @@ class UniversignManager
         $soapRequest = new Request('requester.getDocumentsByTransactionId', [new Value($proxy->id_universign, "string")]);
         $soapResult  = $soapClient->send($soapRequest);
 
-        $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-
         if ($soapResult->faultCode()) {
             $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
         } else {
-            $documentName    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
-            $documentContent = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
+            $resultValue     = $soapResult->value()[0];
+            $documentName    = $resultValue['name']->scalarVal();
+            $documentContent = $resultValue['content']->scalarVal();
 
             file_put_contents($this->rootDir . '/../protected/pdf/pouvoir/' . $documentName, $documentContent);
             $proxy->status = \projects_pouvoir::STATUS_SIGNED;
             $proxy->update();
 
-            $this->logger->notice('Proxy OK (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-
             /** @var \clients_mandats $mandate */
             $mandate = $this->entityManager->getRepository('clients_mandats');
-
-            if ($mandate->get($proxy->id_project, 'id_project') && $mandate->status == \clients_mandats::STATUS_SIGNED) {
+            if ($mandate->get($proxy->id_project, ' status = '. \clients_mandats::STATUS_SIGNED . ' AND id_project')) {
                 $this->mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
-
-                $this->logger->notice('Proxy and mandate OK (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-            } else {
-                $this->logger->notice('Proxy OK and mandate not signed (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
             }
         }
     }
@@ -132,8 +120,6 @@ class UniversignManager
      */
     public function createMandate(\clients_mandats $mandate)
     {
-        $this->logger->notice('Mandate status: ' . $mandate->status . ' - Creation of PDF to send to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
-
         try {
             $pdfParameters = $this->getPdfParameters('mandate', $mandate->id_mandat);
         } catch (\Exception $universignException) {
@@ -144,16 +130,15 @@ class UniversignManager
         $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
         $soapResult  = $soapClient->send($soapRequest);
 
-        $this->logger->notice('Mandate sent to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
-
         if ($soapResult->faultCode()) {
             $this->notifyError($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
 
             return false;
         }
 
-        $url = $soapResult->value()->structMem('url')->scalarVal();
-        $id  = $soapResult->value()->structMem('id')->scalarVal();
+        $resultValue = $soapResult->value();
+        $url         = $resultValue['url']->scalarVal();
+        $id          = $resultValue['id']->scalarVal();
 
         /** @var \companies $company */
         $company = $this->entityManager->getRepository('companies');
@@ -178,29 +163,22 @@ class UniversignManager
         $soapRequest = new Request('requester.getDocumentsByTransactionId', [new Value($mandate->id_universign, "string")]);
         $soapResult  = $soapClient->send($soapRequest);
 
-        $this->logger->notice('Mandate sent to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
-
         if ($soapResult->faultCode()) {
             $this->notifyError($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
         } else {
-            $documentName    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
-            $documentContent = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
+            $resultValue     = $soapResult->value()[0];
+            $documentName    = $resultValue['name']->scalarVal();
+            $documentContent = $resultValue['content']->scalarVal();
 
             file_put_contents($this->rootDir . '/../protected/pdf/mandat/' . $documentName, $documentContent);
             $mandate->status = \clients_mandats::STATUS_SIGNED;
             $mandate->update();
-
-            $this->logger->notice('Mandate OK (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
 
             /** @var \projects_pouvoir $proxy */
             $proxy = $this->entityManager->getRepository('projects_pouvoir');
 
             if ($proxy->get($mandate->id_project, 'id_project') && $proxy->status == \projects_pouvoir::STATUS_SIGNED) {
                 $this->mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
-
-                $this->logger->notice('Mandate and proxy OK (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
-            } else {
-                $this->logger->notice('Mandate OK - proxy not signed (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
             }
         }
     }
@@ -211,8 +189,6 @@ class UniversignManager
      */
     public function createTOS(\project_cgv $tos)
     {
-        $this->logger->notice('TOS status: ' . $tos->status . ' - Creation of PDF to send to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
-
         try {
             $pdfParameters = $this->getPdfParameters('tos', $tos->id);
         } catch (\Exception $universignException) {
@@ -223,16 +199,15 @@ class UniversignManager
         $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
         $soapResult  = $soapClient->send($soapRequest);
 
-        $this->logger->notice('Tos sent to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
-
         if ($soapResult->faultCode()) {
             $this->notifyError($tos->id_mandat, 'tos', $tos->id_project, $soapResult);
 
             return false;
         }
 
-        $tos->id_universign  = $soapResult->value()->structMem('id')->scalarVal();
-        $tos->url_universign = $soapResult->value()->structMem('url')->scalarVal();
+        $resultValue         = $soapResult->value();
+        $tos->id_universign  = $resultValue['id']->scalarVal();
+        $tos->url_universign = $resultValue['url']->scalarVal();
         $tos->update();
 
         return true;
@@ -247,19 +222,16 @@ class UniversignManager
         $soapRequest = new Request('requester.getDocumentsByTransactionId', [new Value($tos->id_universign, "string")]);
         $soapResult  = $soapClient->send($soapRequest);
 
-        $this->logger->notice('Tos sent to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
-
         if ($soapResult->faultCode()) {
             $this->notifyError($tos->id, 'tos', $tos->id_project, $soapResult);
         } else {
-            $documentName    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
-            $documentContent = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
+            $resultValue     = $soapResult->value()[0];
+            $documentName    = $resultValue['name']->scalarVal();
+            $documentContent = $resultValue['content']->scalarVal();
 
             file_put_contents($this->rootDir . '/../protected/pdf/cgv_emprunteurs/' . $documentName, $documentContent);
             $tos->status = \project_cgv::STATUS_SIGN_UNIVERSIGN;
             $tos->update();
-
-            $this->logger->notice('Tos OK (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
         }
     }
 
@@ -321,7 +293,6 @@ class UniversignManager
             'cancel'  => $this->router->generate($routeName, ['status' => 'cancel', 'documentId' => $documentId, 'clientHash' => $client->hash], 0)
         ];
 
-        // signature position
         $docSignatureField = [
             'page'        => new Value(1, 'int'),
             'x'           => new Value($documentType == 'tos' ? 430 : 255, 'int'),
