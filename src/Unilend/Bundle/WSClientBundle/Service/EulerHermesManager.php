@@ -103,9 +103,9 @@ class EulerHermesManager
             $data = json_decode($companyResponse->getBody()->getContents(), true);
             unset($companyResponse);
             $grade = $this->client->get(
-                'grade/' . $data['Id'],
+                'transactor/grade/' . $data['Id'],
                 [
-                    'header'   => $this->gradingApiKey,
+                    'headers'   => ['apikey' => $this->gradingApiKey],
                     'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('euler', __FUNCTION__, 'GET')
                 ]
             );

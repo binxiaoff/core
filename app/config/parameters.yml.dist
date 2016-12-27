@@ -35,7 +35,7 @@ parameters:
     codinf.password:                ~
     codinf.url:                     'https://www.codinf.fr/incidents/'
 
-    infolegale.token:               ~
+    infolegale.token:               VCDju3hCKiMV8x0TllLV1gplHGkDC6bo
     infolegale.url:                 'https://wspreprod.infolegale.fr/'
 
     # End of parameters managed also by Ansible
