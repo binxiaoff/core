@@ -39,8 +39,8 @@ var cached = {
 function checkClientType() {
   var $clientTypePerson = $('input[name="client_type"][value="person"]:visible')
 
-    // @debug
-    // console.log('checkClientType', $clientTypePerson.prop('checked'))
+  // @debug
+  // console.log('checkClientType', $clientTypePerson.prop('checked'))
 
   // Show person form
   if ($clientTypePerson.prop('checked')) {
@@ -72,7 +72,7 @@ function checkClientType() {
 
 // Show/hide postal address section
 function checkAddressIsNotSame() {
-  //@debug
+  // @debug
   // console.log('checkAddressIsNotSame', $('.form-preter-create:visible .toggle-correspondence-address').prop('checked'))
 
   $('.form-preter-create').each(function () {
@@ -296,7 +296,9 @@ $doc.on('ready', function () {
 
   // If the user changes the country, check the zip and the city again
   $doc.on('change', '#form-lender-person-fiscal-address-country, #form-lender-legal-entity-fiscal-address-country', function (event) {
-    checkPostCodeCity($('#form-lender-' + getClientType() + '-fiscal-address-zip'), $('#form-lender-' + getClientType() + '-fiscal-address-city'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
+    debounceAjax(fiscalAddrTimer, function () {
+      checkPostCodeCity($('#form-lender-' + getClientType() + '-fiscal-address-zip'), $('#form-lender-' + getClientType() + '-fiscal-address-city'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
+    })
   })
 
   // Validate birthplace city/code on blur
@@ -333,13 +335,10 @@ $doc.on('ready', function () {
       switch (clientType) {
           case 'legal_entity':
             return 'legal-entity'
-            break
           default:
             return clientType
-            break
       }
   }
-
 })
 
 
