@@ -128,7 +128,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                    {% for order, repayment in repayment_schedule %}
+                    {% for order, repayment in project.repayment_schedule %}
                         <tr>
                             <td>{{ repayment.date }}</td>
                             <td>{{ order }}</td>

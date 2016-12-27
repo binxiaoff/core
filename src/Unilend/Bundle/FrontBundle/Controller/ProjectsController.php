@@ -1064,11 +1064,46 @@ class ProjectsController extends Controller
             throw $this->createNotFoundException();
         }
 
-        $template = [];
+        $template = [
+            'company' => $this->getDIRSCompany($project),
+            'project' => $this->getDIRSProject($project),
+            'unilend' => $this->getDIRSUnilend()
+        ];
 
-        // Company
+        $html = $this->renderView('/pdf/dirs.html.twig', $template);
+
+        $filename   = $project->slug . '.pdf';
+        $options    = [
+            'footer-html'   => '',
+            'header-html'   => '',
+            'margin-top'    => 20,
+            'margin-right'  => 15,
+            'margin-bottom' => 10,
+            'margin-left'   => 15
+        ];
+
+        /** @var GeneratorInterface $snappy */
+        $snappy = $this->get('knp_snappy.pdf');
+
+        if ($project->status >= \projects_status::EN_FUNDING) {
+            $outputFile = $this->getParameter('path.user') . 'dirs/' . $filename;
+            $snappy->generateFromHtml($html, $outputFile, $options, true);
+        }
+
+        return new Response($snappy->getOutputFromHtml($html, $options), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename)
+        ]);
+    }
+
+    /**
+     * @param \projects $project
+     * @return array
+     */
+    private function getDIRSCompany(\projects $project)
+    {
         /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
+        $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
         $company->get($project->id_company);
 
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
@@ -1076,7 +1111,7 @@ class ProjectsController extends Controller
         $balanceDetails = $balanceDetails[$project->id_dernier_bilan]['details'];
         $workingCapital = $balanceDetails['CJ'] - ($balanceDetails['DS'] + $balanceDetails['DT'] + $balanceDetails['DU'] + $balanceDetails['DV'] + $balanceDetails['DW'] + $balanceDetails['DX'] + $balanceDetails['DY'] + $balanceDetails['DZ'] + $balanceDetails['EA']);
 
-        $template['company'] = [
+        return [
             'name'             => $company->name,
             'siren'            => $company->siren,
             'legal_status'     => $company->forme,
@@ -1089,8 +1124,19 @@ class ProjectsController extends Controller
             'accounts_count'   => $project->balance_count,
             'working_capital'  => $workingCapital
         ];
+    }
 
-        // Project
+    /**
+     * @param \projects $project
+     * @return array
+     */
+    private function getDIRSProject(\projects $project)
+    {
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \companies $company */
+        $company = $entityManager->getRepository('companies');
+        $company->get($project->id_company);
+
         /** @var \tax_type $taxType */
         $taxType = $entityManager->getRepository('tax_type');
         $taxRate = $taxType->getTaxRateByCountry('fr');
@@ -1119,7 +1165,14 @@ class ProjectsController extends Controller
         $endDate       = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_retrait);
         $signatureDate = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_retrait)->add(new \DateInterval('P7D'));
 
-        $template['project'] = [
+        $repaymentDate     = \DateTime::createFromFormat('Y-m-d H:i:s', substr($project->date_retrait, 0, 8) . '01 00:00:00');
+        $repaymentSchedule = \repayment::getRepaymentSchedule(1000, $project->period, $minimumBidRate / 100);
+
+        foreach ($repaymentSchedule as $order => $repayment) {
+            $repaymentSchedule[$order]['date'] = ucfirst(strftime('%B %Y', $repaymentDate->add($monthInterval)->getTimestamp()));
+        }
+
+        return [
             'slug'                => $project->slug,
             'duration'            => $project->period,
             'amount'              => $project->amount,
@@ -1129,20 +1182,19 @@ class ProjectsController extends Controller
             'end_date'            => $endDate,
             'signature_date'      => $signatureDate,
             'released_funds'      => $company->getLastYearReleasedFundsBySIREN($company->siren),
-            'debts_statement_img' => base64_encode(file_get_contents($attachmentHelper->getFullPath($attachment->type_owner, $attachment->id_type) . $attachment->path))
+            'debts_statement_img' => base64_encode(file_get_contents($attachmentHelper->getFullPath($attachment->type_owner, $attachment->id_type) . $attachment->path)),
+            'repayment_schedule'  => $repaymentSchedule
         ];
+    }
 
-        // Repayment schedule
-        $repaymentDate     = \DateTime::createFromFormat('Y-m-d H:i:s', substr($project->date_retrait, 0, 8) . '01 00:00:00');
-        $repaymentSchedule = \repayment::getRepaymentSchedule(1000, $project->period, $minimumBidRate / 100);
+    /**
+     * @return array
+     */
+    private function getDIRSUnilend()
+    {
 
-        foreach ($repaymentSchedule as $order => $repayment) {
-            $repaymentSchedule[$order]['date'] = ucfirst(strftime('%B %Y', $repaymentDate->add($monthInterval)->getTimestamp()));
-        }
-
-        $template['repayment_schedule'] = $repaymentSchedule;
-
-        // Unilend
+        /** @var \settings $setting */
+        $setting = $this->get('unilend.service.entity_manager')->getRepository('settings');
         $setting->get('Declaration contrat pret - raison sociale', 'type');
         $unilendName = $setting->value;
 
@@ -1155,36 +1207,11 @@ class ProjectsController extends Controller
         $setting->get('Facture - RCS', 'type');
         $unilendRCS = $setting->value;
 
-        $template['unilend'] = [
+        return [
             'name'    => $unilendName,
             'capital' => $unilendCapital,
             'address' => $unilendAddress,
             'rcs'     => $unilendRCS,
         ];
-
-        $html = $this->renderView('/pdf/dirs.html.twig', $template);
-
-        $filename   = $project->slug . '.pdf';
-        $options    = [
-            'footer-html'   => '',
-            'header-html'   => '',
-            'margin-top'    => 20,
-            'margin-right'  => 15,
-            'margin-bottom' => 10,
-            'margin-left'   => 15
-        ];
-
-        /** @var GeneratorInterface $snappy */
-        $snappy = $this->get('knp_snappy.pdf');
-
-        if ($project->status >= \projects_status::EN_FUNDING) {
-            $outputFile = $this->getParameter('path.user') . 'dirs/' . $filename;
-            $snappy->generateFromHtml($html, $outputFile, $options, true);
-        }
-
-        return new Response($snappy->getOutputFromHtml($html, $options), 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename)
-        ]);
     }
 }

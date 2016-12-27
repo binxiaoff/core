@@ -158,11 +158,8 @@ class companies extends companies_crud
             INNER JOIN companies c ON p.id_company = c.id_company
             WHERE t.date_transaction > DATE_SUB(NOW(), INTERVAL 1 YEAR) 
                 AND c.siren = :siren 
-                AND t.type_transaction = :transactionType';
-        $statement = $this->bdd->executeQuery(
-            $query,
-            ['siren' => $siren, 'transactionType' => \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT]
-        );
+                AND t.type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
+        $statement = $this->bdd->executeQuery($query, ['siren' => $siren]);
         return (float) $statement->fetchColumn();
     }
 

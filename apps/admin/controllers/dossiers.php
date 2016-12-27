@@ -3061,10 +3061,7 @@ class dossiersController extends bootstrap
 
     public function _regenerate_dirs()
     {
-        $this->autoFireHead   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         /** @var \projects $project */
         $project = $this->loadData('projects');
