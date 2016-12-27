@@ -62,7 +62,7 @@ class UniversignController extends Controller
                     $proxy->update();
                     break;
                 default:
-                    $logger->notice('Unknown proxy status (' . $status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
+                    $logger->warning('Unknown proxy status (' . $status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
                     return $this->redirectToRoute('home');
             }
 
@@ -75,8 +75,6 @@ class UniversignController extends Controller
                     'document'    => 'proxy',
                     'status'      => $proxyStatusLabel
                 ];
-
-                $logger->notice('Proxy status : ' . $proxyStatusLabel, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
                 return $this->render('pages/universign.html.twig', $template);
             }
@@ -132,7 +130,7 @@ class UniversignController extends Controller
                     $mandate->update();
                     break;
                 default:
-                    $logger->notice('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
+                    $logger->warning('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
                     return $this->redirectToRoute('home');
             }
 
@@ -145,8 +143,6 @@ class UniversignController extends Controller
                     'document'    => 'mandate',
                     'status'      => $mandateStatusLabel
                 ];
-
-                $logger->notice('Mandate status : ' . $mandateStatusLabel, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
 
                 return $this->render('pages/universign.html.twig', $template);
             }
@@ -209,7 +205,7 @@ class UniversignController extends Controller
                     $tos->update();
                     break;
                 default:
-                    $logger->notice('Tos unknown status', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
+                    $logger->warning('Tos unknown status', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
                     return $this->redirectToRoute('home');
             }
 
@@ -222,8 +218,6 @@ class UniversignController extends Controller
                     'document'    => 'tos',
                     'status'      => $tosStatusLabel
                 ];
-
-                $logger->notice('Tos status : ' . $tosStatusLabel, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
 
                 return $this->render('pages/universign.html.twig', $template);
             }
@@ -330,7 +324,7 @@ class UniversignController extends Controller
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->notice('Unknown proxy status (' . $proxy->status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
+                $logger->warning('Unknown proxy status (' . $proxy->status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
                 return null;
         }
     }
@@ -353,7 +347,7 @@ class UniversignController extends Controller
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->notice('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
+                $logger->warning('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
                 return null;
         }
     }
@@ -377,7 +371,7 @@ class UniversignController extends Controller
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->notice('Unknown tos status (' . $tos->status . ') - Cannot create PDF for Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
+                $logger->warning('Unknown tos status (' . $tos->status . ') - Cannot create PDF for Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
                 return null;
         }
     }
