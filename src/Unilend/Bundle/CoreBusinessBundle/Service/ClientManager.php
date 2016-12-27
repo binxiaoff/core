@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Security\ClientRole;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
@@ -26,14 +27,17 @@ class ClientManager
     private $requestStack;
     /** @var  RouterInterface */
     private $router;
+    /** @var  ClientRole */
+    private $clientRole;
 
-    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager, TokenStorageInterface $tokenStorage, RequestStack $requestStack, RouterInterface $router)
+    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager, TokenStorageInterface $tokenStorage, RequestStack $requestStack, RouterInterface $router, ClientRole $clientRole)
     {
         $this->oEntityManager         = $oEntityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
         $this->tokenStorage           = $tokenStorage;
         $this->requestStack           = $requestStack;
         $this->router                 = $router;
+        $this->clientRole             = $clientRole;
     }
 
 
@@ -203,8 +207,8 @@ class ClientManager
             /** @var BaseUser $user */
             $user = $token->getUser();
 
-            if ($user instanceof UserLender && in_array('ROLE_LENDER', $user->getRoles()) && $client->get($user->getClientId()) && $client->etape_inscription_preteur < \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
-                $redirectPath = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client);
+            if ($user instanceof UserLender && $this->clientRole->isGranted('ROLE_LENDER', $user) && $client->get($user->getClientId()) && $client->etape_inscription_preteur < \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
+                $redirectPath = $this->getSubscriptionStepRedirectRoute($client);
 
                 if ($redirectPath != $currentPath) {
                     return new RedirectResponse($redirectPath);
@@ -216,23 +220,19 @@ class ClientManager
     }
 
     /**
-     * @param int $alreadyCompletedStep
      * @param \clients $client
      * @return string
      */
-    private function getSubscriptionStepRedirectRoute($alreadyCompletedStep, \clients $client)
+    private function getSubscriptionStepRedirectRoute(\clients $client)
     {
-        switch ($alreadyCompletedStep) {
+        switch ($client->etape_inscription_preteur) {
             case \clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
                 return $this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]);
-                break;
             case \clients::SUBSCRIPTION_STEP_DOCUMENTS:
             case \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT:
                 return $this->router->generate('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
-                break;
             default:
                 return $this->router->generate('projects_list');
-                break;
         }
     }
 }

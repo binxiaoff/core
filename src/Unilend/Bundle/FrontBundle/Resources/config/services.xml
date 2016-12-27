@@ -103,5 +103,9 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="memcache.default" />
         </service>
+
+        <service id="unilend.frontbundle.security.client_role" class="Unilend\Bundle\FrontBundle\Security\ClientRole">
+            <argument type="service" id="security.role_hierarchy"/>
+        </service>
     </services>
 </container>
