@@ -78,7 +78,7 @@ class EulerHermesManager
             $trafficLightResponse = $this->client->get(
                 'trafficLight/' . $data['Id'],
                 [
-                    'headers' => ['apikey' => $this->coverageApiKey],
+                    'headers' => ['apikey' => $this->gradingApiKey],
                     'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('euler', __FUNCTION__, 'GET')
                 ]
             );

@@ -235,3 +235,8 @@ guzzle:
                 base_url: %codinf.url%
                 options:
                     http_errors: false
+
+            infolegal:
+                base_url: %infolegale.url%
+                options:
+                    http_errors: false

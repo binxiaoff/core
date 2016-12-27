@@ -35,6 +35,9 @@ parameters:
     codinf.password:                ~
     codinf.url:                     'https://www.codinf.fr/incidents/'
 
+    infolegale.token:               ~
+    infolegale.url:                 'https://wspreprod.infolegale.fr/'
+
     # End of parameters managed also by Ansible
 
     dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
