@@ -34,9 +34,9 @@ class GreenpointAttachment
     private $validationCode;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="control_level", type="boolean", nullable=false)
+     * @ORM\Column(name="control_level", type="integer", nullable=false)
      */
     private $controlLevel;
 
@@ -178,7 +178,7 @@ class GreenpointAttachment
     /**
      * Set controlLevel
      *
-     * @param boolean $controlLevel
+     * @param integer $controlLevel
      *
      * @return GreenpointAttachment
      */
@@ -192,7 +192,7 @@ class GreenpointAttachment
     /**
      * Get controlLevel
      *
-     * @return boolean
+     * @return integer
      */
     public function getControlLevel()
     {

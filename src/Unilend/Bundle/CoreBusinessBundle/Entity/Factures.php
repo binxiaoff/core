@@ -48,9 +48,9 @@ class Factures
     private $ordre;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type_commission", type="boolean", nullable=false)
+     * @ORM\Column(name="type_commission", type="integer", nullable=false)
      */
     private $typeCommission;
 
@@ -230,7 +230,7 @@ class Factures
     /**
      * Set typeCommission
      *
-     * @param boolean $typeCommission
+     * @param integer $typeCommission
      *
      * @return Factures
      */
@@ -244,7 +244,7 @@ class Factures
     /**
      * Get typeCommission
      *
-     * @return boolean
+     * @return integer
      */
     public function getTypeCommission()
     {

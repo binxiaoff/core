@@ -31,9 +31,9 @@ class SeMatches
     private $idObject;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="object_type", type="boolean")
+     * @ORM\Column(name="object_type", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="NONE")
      */
@@ -92,7 +92,7 @@ class SeMatches
     /**
      * Set objectType
      *
-     * @param boolean $objectType
+     * @param integer $objectType
      *
      * @return SeMatches
      */
@@ -106,7 +106,7 @@ class SeMatches
     /**
      * Get objectType
      *
-     * @return boolean
+     * @return integer
      */
     public function getObjectType()
     {

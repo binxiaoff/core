@@ -55,9 +55,9 @@ class Elements
     private $typeElement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -233,7 +233,7 @@ class Elements
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Elements
      */
@@ -247,7 +247,7 @@ class Elements
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

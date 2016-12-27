@@ -27,9 +27,9 @@ class Blocs
     private $slug;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -109,7 +109,7 @@ class Blocs
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Blocs
      */
@@ -123,7 +123,7 @@ class Blocs
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

@@ -20,9 +20,9 @@ class Product
     private $label;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -124,7 +124,7 @@ class Product
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Product
      */
@@ -138,7 +138,7 @@ class Product
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

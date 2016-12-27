@@ -48,16 +48,16 @@ class ProjectsPouvoir
     private $urlPdf;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_remb", type="boolean", nullable=false)
+     * @ORM\Column(name="status_remb", type="integer", nullable=false)
      */
     private $statusRemb;
 
@@ -209,7 +209,7 @@ class ProjectsPouvoir
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return ProjectsPouvoir
      */
@@ -223,7 +223,7 @@ class ProjectsPouvoir
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
@@ -233,7 +233,7 @@ class ProjectsPouvoir
     /**
      * Set statusRemb
      *
-     * @param boolean $statusRemb
+     * @param integer $statusRemb
      *
      * @return ProjectsPouvoir
      */
@@ -247,7 +247,7 @@ class ProjectsPouvoir
     /**
      * Get statusRemb
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusRemb()
     {

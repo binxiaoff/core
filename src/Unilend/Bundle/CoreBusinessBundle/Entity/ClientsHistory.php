@@ -20,16 +20,16 @@ class ClientsHistory
     private $idClient;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -85,7 +85,7 @@ class ClientsHistory
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return ClientsHistory
      */
@@ -99,7 +99,7 @@ class ClientsHistory
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -109,7 +109,7 @@ class ClientsHistory
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return ClientsHistory
      */
@@ -123,7 +123,7 @@ class ClientsHistory
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

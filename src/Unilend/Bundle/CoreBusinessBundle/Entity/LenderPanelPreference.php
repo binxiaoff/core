@@ -34,16 +34,16 @@ class LenderPanelPreference
     private $panelName;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="panel_order", type="boolean", nullable=false)
+     * @ORM\Column(name="panel_order", type="integer", nullable=false)
      */
     private $panelOrder;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="hidden", type="boolean", nullable=false)
+     * @ORM\Column(name="hidden", type="integer", nullable=false)
      */
     private $hidden;
 
@@ -147,7 +147,7 @@ class LenderPanelPreference
     /**
      * Set panelOrder
      *
-     * @param boolean $panelOrder
+     * @param integer $panelOrder
      *
      * @return LenderPanelPreference
      */
@@ -161,7 +161,7 @@ class LenderPanelPreference
     /**
      * Get panelOrder
      *
-     * @return boolean
+     * @return integer
      */
     public function getPanelOrder()
     {
@@ -171,7 +171,7 @@ class LenderPanelPreference
     /**
      * Set hidden
      *
-     * @param boolean $hidden
+     * @param integer $hidden
      *
      * @return LenderPanelPreference
      */
@@ -185,7 +185,7 @@ class LenderPanelPreference
     /**
      * Get hidden
      *
-     * @return boolean
+     * @return integer
      */
     public function getHidden()
     {

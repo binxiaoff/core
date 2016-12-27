@@ -69,16 +69,16 @@ class Documents
     private $path;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -316,7 +316,7 @@ class Documents
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return Documents
      */
@@ -330,7 +330,7 @@ class Documents
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -340,7 +340,7 @@ class Documents
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Documents
      */
@@ -354,7 +354,7 @@ class Documents
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

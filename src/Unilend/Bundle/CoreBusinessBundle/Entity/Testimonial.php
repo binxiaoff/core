@@ -111,9 +111,9 @@ class Testimonial
     private $battenbergImage;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -481,7 +481,7 @@ class Testimonial
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Testimonial
      */
@@ -495,7 +495,7 @@ class Testimonial
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

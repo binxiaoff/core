@@ -20,9 +20,9 @@ class PartenairesTypes
     private $nom;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -78,7 +78,7 @@ class PartenairesTypes
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return PartenairesTypes
      */
@@ -92,7 +92,7 @@ class PartenairesTypes
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

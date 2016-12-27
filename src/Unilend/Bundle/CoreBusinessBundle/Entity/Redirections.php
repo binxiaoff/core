@@ -27,9 +27,9 @@ class Redirections
     private $type;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -118,7 +118,7 @@ class Redirections
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Redirections
      */
@@ -132,7 +132,7 @@ class Redirections
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

@@ -79,9 +79,9 @@ class EcheanciersEmprunteur
     private $dateEcheanceEmprunteurReel;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_emprunteur", type="boolean", nullable=false)
+     * @ORM\Column(name="status_emprunteur", type="integer", nullable=false)
      */
     private $statusEmprunteur;
 
@@ -336,7 +336,7 @@ class EcheanciersEmprunteur
     /**
      * Set statusEmprunteur
      *
-     * @param boolean $statusEmprunteur
+     * @param integer $statusEmprunteur
      *
      * @return EcheanciersEmprunteur
      */
@@ -350,7 +350,7 @@ class EcheanciersEmprunteur
     /**
      * Get statusEmprunteur
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusEmprunteur()
     {

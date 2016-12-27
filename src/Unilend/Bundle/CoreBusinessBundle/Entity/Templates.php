@@ -27,23 +27,23 @@ class Templates
     private $slug;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="affichage", type="boolean", nullable=false)
+     * @ORM\Column(name="affichage", type="integer", nullable=false)
      */
     private $affichage;
 
@@ -123,7 +123,7 @@ class Templates
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return Templates
      */
@@ -137,7 +137,7 @@ class Templates
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -147,7 +147,7 @@ class Templates
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Templates
      */
@@ -161,7 +161,7 @@ class Templates
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
@@ -171,7 +171,7 @@ class Templates
     /**
      * Set affichage
      *
-     * @param boolean $affichage
+     * @param integer $affichage
      *
      * @return Templates
      */
@@ -185,7 +185,7 @@ class Templates
     /**
      * Get affichage
      *
-     * @return boolean
+     * @return integer
      */
     public function getAffichage()
     {

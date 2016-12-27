@@ -48,9 +48,9 @@ class TermsOfLoans
     private $date;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -216,7 +216,7 @@ class TermsOfLoans
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return TermsOfLoans
      */
@@ -230,7 +230,7 @@ class TermsOfLoans
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

@@ -20,9 +20,9 @@ class Autobid
     private $idLender;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -106,7 +106,7 @@ class Autobid
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Autobid
      */
@@ -120,7 +120,7 @@ class Autobid
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

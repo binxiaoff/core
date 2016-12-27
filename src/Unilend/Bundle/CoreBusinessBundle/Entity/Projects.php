@@ -65,9 +65,9 @@ class Projects
     private $amount;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_solde", type="boolean", nullable=false)
+     * @ORM\Column(name="status_solde", type="integer", nullable=false)
      */
     private $statusSolde;
 
@@ -86,9 +86,9 @@ class Projects
     private $title;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="id_borrowing_motive", type="boolean", nullable=true)
+     * @ORM\Column(name="id_borrowing_motive", type="integer", nullable=true)
      */
     private $idBorrowingMotive;
 
@@ -142,16 +142,16 @@ class Projects
     private $meansRepayment;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="stand_by", type="boolean", nullable=false)
+     * @ORM\Column(name="stand_by", type="integer", nullable=false)
      */
     private $standBy;
 
@@ -219,9 +219,9 @@ class Projects
     private $idProjectNeed;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="create_bo", type="boolean", nullable=false)
+     * @ORM\Column(name="create_bo", type="integer", nullable=false)
      */
     private $createBo;
 
@@ -254,30 +254,30 @@ class Projects
     private $caDeclaraClient;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="process_fast", type="boolean", nullable=false)
+     * @ORM\Column(name="process_fast", type="integer", nullable=false)
      */
     private $processFast = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="remb_auto", type="boolean", nullable=false)
+     * @ORM\Column(name="remb_auto", type="integer", nullable=false)
      */
     private $rembAuto;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="stop_relances", type="boolean", nullable=false)
+     * @ORM\Column(name="stop_relances", type="integer", nullable=false)
      */
     private $stopRelances = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="display", type="boolean", nullable=false)
+     * @ORM\Column(name="display", type="integer", nullable=false)
      */
     private $display;
 
@@ -498,7 +498,7 @@ class Projects
     /**
      * Set statusSolde
      *
-     * @param boolean $statusSolde
+     * @param integer $statusSolde
      *
      * @return Projects
      */
@@ -512,7 +512,7 @@ class Projects
     /**
      * Get statusSolde
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusSolde()
     {
@@ -570,7 +570,7 @@ class Projects
     /**
      * Set idBorrowingMotive
      *
-     * @param boolean $idBorrowingMotive
+     * @param integer $idBorrowingMotive
      *
      * @return Projects
      */
@@ -584,7 +584,7 @@ class Projects
     /**
      * Get idBorrowingMotive
      *
-     * @return boolean
+     * @return integer
      */
     public function getIdBorrowingMotive()
     {
@@ -762,7 +762,7 @@ class Projects
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return Projects
      */
@@ -776,7 +776,7 @@ class Projects
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -786,7 +786,7 @@ class Projects
     /**
      * Set standBy
      *
-     * @param boolean $standBy
+     * @param integer $standBy
      *
      * @return Projects
      */
@@ -800,7 +800,7 @@ class Projects
     /**
      * Get standBy
      *
-     * @return boolean
+     * @return integer
      */
     public function getStandBy()
     {
@@ -1026,7 +1026,7 @@ class Projects
     /**
      * Set createBo
      *
-     * @param boolean $createBo
+     * @param integer $createBo
      *
      * @return Projects
      */
@@ -1040,7 +1040,7 @@ class Projects
     /**
      * Get createBo
      *
-     * @return boolean
+     * @return integer
      */
     public function getCreateBo()
     {
@@ -1146,7 +1146,7 @@ class Projects
     /**
      * Set processFast
      *
-     * @param boolean $processFast
+     * @param integer $processFast
      *
      * @return Projects
      */
@@ -1160,7 +1160,7 @@ class Projects
     /**
      * Get processFast
      *
-     * @return boolean
+     * @return integer
      */
     public function getProcessFast()
     {
@@ -1170,7 +1170,7 @@ class Projects
     /**
      * Set rembAuto
      *
-     * @param boolean $rembAuto
+     * @param integer $rembAuto
      *
      * @return Projects
      */
@@ -1184,7 +1184,7 @@ class Projects
     /**
      * Get rembAuto
      *
-     * @return boolean
+     * @return integer
      */
     public function getRembAuto()
     {
@@ -1194,7 +1194,7 @@ class Projects
     /**
      * Set stopRelances
      *
-     * @param boolean $stopRelances
+     * @param integer $stopRelances
      *
      * @return Projects
      */
@@ -1208,7 +1208,7 @@ class Projects
     /**
      * Get stopRelances
      *
-     * @return boolean
+     * @return integer
      */
     public function getStopRelances()
     {
@@ -1218,7 +1218,7 @@ class Projects
     /**
      * Set display
      *
-     * @param boolean $display
+     * @param integer $display
      *
      * @return Projects
      */
@@ -1232,7 +1232,7 @@ class Projects
     /**
      * Get display
      *
-     * @return boolean
+     * @return integer
      */
     public function getDisplay()
     {

@@ -55,9 +55,9 @@ class Partenaires
     private $idMedia;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -254,7 +254,7 @@ class Partenaires
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Partenaires
      */
@@ -268,7 +268,7 @@ class Partenaires
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

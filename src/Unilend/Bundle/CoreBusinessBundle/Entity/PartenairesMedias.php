@@ -20,9 +20,9 @@ class PartenairesMedias
     private $nom;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -78,7 +78,7 @@ class PartenairesMedias
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return PartenairesMedias
      */
@@ -92,7 +92,7 @@ class PartenairesMedias
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

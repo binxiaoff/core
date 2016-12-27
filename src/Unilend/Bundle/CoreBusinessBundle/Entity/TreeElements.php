@@ -48,9 +48,9 @@ class TreeElements
     private $complement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status = '0';
 
@@ -202,7 +202,7 @@ class TreeElements
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return TreeElements
      */
@@ -216,7 +216,7 @@ class TreeElements
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

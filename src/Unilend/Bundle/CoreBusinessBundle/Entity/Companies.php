@@ -84,9 +84,9 @@ class Companies
     private $bic;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="execices_comptables", type="boolean", nullable=true)
+     * @ORM\Column(name="execices_comptables", type="integer", nullable=true)
      */
     private $execicesComptables;
 
@@ -189,16 +189,16 @@ class Companies
     private $phone;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_adresse_correspondance", type="boolean", nullable=true)
+     * @ORM\Column(name="status_adresse_correspondance", type="integer", nullable=true)
      */
     private $statusAdresseCorrespondance;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_client", type="boolean", nullable=true)
+     * @ORM\Column(name="status_client", type="integer", nullable=true)
      */
     private $statusClient;
 
@@ -554,7 +554,7 @@ class Companies
     /**
      * Set execicesComptables
      *
-     * @param boolean $execicesComptables
+     * @param integer $execicesComptables
      *
      * @return Companies
      */
@@ -568,7 +568,7 @@ class Companies
     /**
      * Get execicesComptables
      *
-     * @return boolean
+     * @return integer
      */
     public function getExecicesComptables()
     {
@@ -914,7 +914,7 @@ class Companies
     /**
      * Set statusAdresseCorrespondance
      *
-     * @param boolean $statusAdresseCorrespondance
+     * @param integer $statusAdresseCorrespondance
      *
      * @return Companies
      */
@@ -928,7 +928,7 @@ class Companies
     /**
      * Get statusAdresseCorrespondance
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusAdresseCorrespondance()
     {
@@ -938,7 +938,7 @@ class Companies
     /**
      * Set statusClient
      *
-     * @param boolean $statusClient
+     * @param integer $statusClient
      *
      * @return Companies
      */
@@ -952,7 +952,7 @@ class Companies
     /**
      * Get statusClient
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusClient()
     {

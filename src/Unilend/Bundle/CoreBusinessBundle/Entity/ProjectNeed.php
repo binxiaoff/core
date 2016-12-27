@@ -27,9 +27,9 @@ class ProjectNeed
     private $label;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="rank", type="boolean", nullable=false)
+     * @ORM\Column(name="rank", type="integer", nullable=false)
      */
     private $rank;
 
@@ -109,7 +109,7 @@ class ProjectNeed
     /**
      * Set rank
      *
-     * @param boolean $rank
+     * @param integer $rank
      *
      * @return ProjectNeed
      */
@@ -123,7 +123,7 @@ class ProjectNeed
     /**
      * Get rank
      *
-     * @return boolean
+     * @return integer
      */
     public function getRank()
     {

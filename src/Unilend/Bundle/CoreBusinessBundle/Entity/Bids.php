@@ -62,16 +62,16 @@ class Bids
     private $ordre;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="checked", type="boolean", nullable=false)
+     * @ORM\Column(name="checked", type="integer", nullable=false)
      */
     private $checked;
 
@@ -271,7 +271,7 @@ class Bids
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Bids
      */
@@ -285,7 +285,7 @@ class Bids
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
@@ -295,7 +295,7 @@ class Bids
     /**
      * Set checked
      *
-     * @param boolean $checked
+     * @param integer $checked
      *
      * @return Bids
      */
@@ -309,7 +309,7 @@ class Bids
     /**
      * Get checked
      *
-     * @return boolean
+     * @return integer
      */
     public function getChecked()
     {

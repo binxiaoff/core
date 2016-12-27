@@ -41,9 +41,9 @@ class Villes
     private $numDepartement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="active", type="boolean", nullable=false)
+     * @ORM\Column(name="active", type="integer", nullable=false)
      */
     private $active = '1';
 
@@ -171,7 +171,7 @@ class Villes
     /**
      * Set active
      *
-     * @param boolean $active
+     * @param integer $active
      *
      * @return Villes
      */
@@ -185,7 +185,7 @@ class Villes
     /**
      * Get active
      *
-     * @return boolean
+     * @return integer
      */
     public function getActive()
     {

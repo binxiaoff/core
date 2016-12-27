@@ -41,9 +41,9 @@ class PlatformAccountUnilend
     private $amount;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
@@ -171,7 +171,7 @@ class PlatformAccountUnilend
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return PlatformAccountUnilend
      */
@@ -185,7 +185,7 @@ class PlatformAccountUnilend
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {

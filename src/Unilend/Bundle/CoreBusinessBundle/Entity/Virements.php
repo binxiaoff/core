@@ -13,12 +13,14 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Virements
 {
-    const STATUS_PENDING = 0;
-    const STATUS_TREATED = 1;
+    const STATUS_PENDING   = 0;
+    const STATUS_SENT      = 1;
+    const STATUS_VALIDATED = 2;
 
     const TYPE_LENDER   = 1;
     const TYPE_BORROWER = 2;
-    const TYPE_UNILEND  = 3;
+    const TYPE_UNILEND  = 4;
+
     /**
      * @var integer
      *
@@ -58,16 +60,16 @@ class Virements
     private $motif;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -226,7 +228,7 @@ class Virements
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return Virements
      */
@@ -240,7 +242,7 @@ class Virements
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -250,7 +252,7 @@ class Virements
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Virements
      */
@@ -264,7 +266,7 @@ class Virements
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

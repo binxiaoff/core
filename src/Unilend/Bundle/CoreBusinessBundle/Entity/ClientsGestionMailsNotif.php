@@ -62,51 +62,51 @@ class ClientsGestionMailsNotif
     private $idLoan;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="immediatement", type="boolean", nullable=false)
+     * @ORM\Column(name="immediatement", type="integer", nullable=false)
      */
     private $immediatement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="quotidienne", type="boolean", nullable=false)
+     * @ORM\Column(name="quotidienne", type="integer", nullable=false)
      */
     private $quotidienne;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_check_quotidienne", type="boolean", nullable=false)
+     * @ORM\Column(name="status_check_quotidienne", type="integer", nullable=false)
      */
     private $statusCheckQuotidienne;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="hebdomadaire", type="boolean", nullable=false)
+     * @ORM\Column(name="hebdomadaire", type="integer", nullable=false)
      */
     private $hebdomadaire;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_check_hebdomadaire", type="boolean", nullable=false)
+     * @ORM\Column(name="status_check_hebdomadaire", type="integer", nullable=false)
      */
     private $statusCheckHebdomadaire;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="mensuelle", type="boolean", nullable=false)
+     * @ORM\Column(name="mensuelle", type="integer", nullable=false)
      */
     private $mensuelle;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_check_mensuelle", type="boolean", nullable=false)
+     * @ORM\Column(name="status_check_mensuelle", type="integer", nullable=false)
      */
     private $statusCheckMensuelle;
 
@@ -306,7 +306,7 @@ class ClientsGestionMailsNotif
     /**
      * Set immediatement
      *
-     * @param boolean $immediatement
+     * @param integer $immediatement
      *
      * @return ClientsGestionMailsNotif
      */
@@ -320,7 +320,7 @@ class ClientsGestionMailsNotif
     /**
      * Get immediatement
      *
-     * @return boolean
+     * @return integer
      */
     public function getImmediatement()
     {
@@ -330,7 +330,7 @@ class ClientsGestionMailsNotif
     /**
      * Set quotidienne
      *
-     * @param boolean $quotidienne
+     * @param integer $quotidienne
      *
      * @return ClientsGestionMailsNotif
      */
@@ -344,7 +344,7 @@ class ClientsGestionMailsNotif
     /**
      * Get quotidienne
      *
-     * @return boolean
+     * @return integer
      */
     public function getQuotidienne()
     {
@@ -354,7 +354,7 @@ class ClientsGestionMailsNotif
     /**
      * Set statusCheckQuotidienne
      *
-     * @param boolean $statusCheckQuotidienne
+     * @param integer $statusCheckQuotidienne
      *
      * @return ClientsGestionMailsNotif
      */
@@ -368,7 +368,7 @@ class ClientsGestionMailsNotif
     /**
      * Get statusCheckQuotidienne
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusCheckQuotidienne()
     {
@@ -378,7 +378,7 @@ class ClientsGestionMailsNotif
     /**
      * Set hebdomadaire
      *
-     * @param boolean $hebdomadaire
+     * @param integer $hebdomadaire
      *
      * @return ClientsGestionMailsNotif
      */
@@ -392,7 +392,7 @@ class ClientsGestionMailsNotif
     /**
      * Get hebdomadaire
      *
-     * @return boolean
+     * @return integer
      */
     public function getHebdomadaire()
     {
@@ -402,7 +402,7 @@ class ClientsGestionMailsNotif
     /**
      * Set statusCheckHebdomadaire
      *
-     * @param boolean $statusCheckHebdomadaire
+     * @param integer $statusCheckHebdomadaire
      *
      * @return ClientsGestionMailsNotif
      */
@@ -416,7 +416,7 @@ class ClientsGestionMailsNotif
     /**
      * Get statusCheckHebdomadaire
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusCheckHebdomadaire()
     {
@@ -426,7 +426,7 @@ class ClientsGestionMailsNotif
     /**
      * Set mensuelle
      *
-     * @param boolean $mensuelle
+     * @param integer $mensuelle
      *
      * @return ClientsGestionMailsNotif
      */
@@ -440,7 +440,7 @@ class ClientsGestionMailsNotif
     /**
      * Get mensuelle
      *
-     * @return boolean
+     * @return integer
      */
     public function getMensuelle()
     {
@@ -450,7 +450,7 @@ class ClientsGestionMailsNotif
     /**
      * Set statusCheckMensuelle
      *
-     * @param boolean $statusCheckMensuelle
+     * @param integer $statusCheckMensuelle
      *
      * @return ClientsGestionMailsNotif
      */
@@ -464,7 +464,7 @@ class ClientsGestionMailsNotif
     /**
      * Get statusCheckMensuelle
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusCheckMensuelle()
     {

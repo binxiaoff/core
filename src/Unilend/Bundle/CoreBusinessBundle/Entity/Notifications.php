@@ -48,9 +48,9 @@ class Notifications
     private $amount;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -202,7 +202,7 @@ class Notifications
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Notifications
      */
@@ -216,7 +216,7 @@ class Notifications
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

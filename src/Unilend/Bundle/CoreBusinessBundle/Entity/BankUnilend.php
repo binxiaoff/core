@@ -48,23 +48,23 @@ class BankUnilend
     private $etat;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="retrait_fiscale", type="boolean", nullable=false)
+     * @ORM\Column(name="retrait_fiscale", type="integer", nullable=false)
      */
     private $retraitFiscale;
 
@@ -216,7 +216,7 @@ class BankUnilend
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return BankUnilend
      */
@@ -230,7 +230,7 @@ class BankUnilend
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -240,7 +240,7 @@ class BankUnilend
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return BankUnilend
      */
@@ -254,7 +254,7 @@ class BankUnilend
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
@@ -264,7 +264,7 @@ class BankUnilend
     /**
      * Set retraitFiscale
      *
-     * @param boolean $retraitFiscale
+     * @param integer $retraitFiscale
      *
      * @return BankUnilend
      */
@@ -278,7 +278,7 @@ class BankUnilend
     /**
      * Get retraitFiscale
      *
-     * @return boolean
+     * @return integer
      */
     public function getRetraitFiscale()
     {

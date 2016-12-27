@@ -41,9 +41,9 @@ class Newsletters
     private $prenom;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -171,7 +171,7 @@ class Newsletters
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Newsletters
      */
@@ -185,7 +185,7 @@ class Newsletters
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

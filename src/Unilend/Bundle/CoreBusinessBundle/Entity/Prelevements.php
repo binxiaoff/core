@@ -62,9 +62,9 @@ class Prelevements
     private $iban;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type_prelevement", type="boolean", nullable=false)
+     * @ORM\Column(name="type_prelevement", type="integer", nullable=false)
      */
     private $typePrelevement;
 
@@ -76,9 +76,9 @@ class Prelevements
     private $jourPrelevement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
@@ -90,9 +90,9 @@ class Prelevements
     private $numPrelevement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -313,7 +313,7 @@ class Prelevements
     /**
      * Set typePrelevement
      *
-     * @param boolean $typePrelevement
+     * @param integer $typePrelevement
      *
      * @return Prelevements
      */
@@ -327,7 +327,7 @@ class Prelevements
     /**
      * Get typePrelevement
      *
-     * @return boolean
+     * @return integer
      */
     public function getTypePrelevement()
     {
@@ -361,7 +361,7 @@ class Prelevements
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return Prelevements
      */
@@ -375,7 +375,7 @@ class Prelevements
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -409,7 +409,7 @@ class Prelevements
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Prelevements
      */
@@ -423,7 +423,7 @@ class Prelevements
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

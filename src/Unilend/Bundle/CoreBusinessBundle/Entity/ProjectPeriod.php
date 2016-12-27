@@ -27,9 +27,9 @@ class ProjectPeriod
     private $max;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -109,7 +109,7 @@ class ProjectPeriod
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return ProjectPeriod
      */
@@ -123,7 +123,7 @@ class ProjectPeriod
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

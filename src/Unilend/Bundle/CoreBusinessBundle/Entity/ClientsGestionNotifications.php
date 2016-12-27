@@ -13,37 +13,37 @@ use Doctrine\ORM\Mapping as ORM;
 class ClientsGestionNotifications
 {
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="immediatement", type="boolean", nullable=false)
+     * @ORM\Column(name="immediatement", type="integer", nullable=false)
      */
     private $immediatement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="quotidienne", type="boolean", nullable=false)
+     * @ORM\Column(name="quotidienne", type="integer", nullable=false)
      */
     private $quotidienne;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="hebdomadaire", type="boolean", nullable=false)
+     * @ORM\Column(name="hebdomadaire", type="integer", nullable=false)
      */
     private $hebdomadaire;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="mensuelle", type="boolean", nullable=false)
+     * @ORM\Column(name="mensuelle", type="integer", nullable=false)
      */
     private $mensuelle;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="uniquement_notif", type="boolean", nullable=false)
+     * @ORM\Column(name="uniquement_notif", type="integer", nullable=false)
      */
     private $uniquementNotif;
 
@@ -84,7 +84,7 @@ class ClientsGestionNotifications
     /**
      * Set immediatement
      *
-     * @param boolean $immediatement
+     * @param integer $immediatement
      *
      * @return ClientsGestionNotifications
      */
@@ -98,7 +98,7 @@ class ClientsGestionNotifications
     /**
      * Get immediatement
      *
-     * @return boolean
+     * @return integer
      */
     public function getImmediatement()
     {
@@ -108,7 +108,7 @@ class ClientsGestionNotifications
     /**
      * Set quotidienne
      *
-     * @param boolean $quotidienne
+     * @param integer $quotidienne
      *
      * @return ClientsGestionNotifications
      */
@@ -122,7 +122,7 @@ class ClientsGestionNotifications
     /**
      * Get quotidienne
      *
-     * @return boolean
+     * @return integer
      */
     public function getQuotidienne()
     {
@@ -132,7 +132,7 @@ class ClientsGestionNotifications
     /**
      * Set hebdomadaire
      *
-     * @param boolean $hebdomadaire
+     * @param integer $hebdomadaire
      *
      * @return ClientsGestionNotifications
      */
@@ -146,7 +146,7 @@ class ClientsGestionNotifications
     /**
      * Get hebdomadaire
      *
-     * @return boolean
+     * @return integer
      */
     public function getHebdomadaire()
     {
@@ -156,7 +156,7 @@ class ClientsGestionNotifications
     /**
      * Set mensuelle
      *
-     * @param boolean $mensuelle
+     * @param integer $mensuelle
      *
      * @return ClientsGestionNotifications
      */
@@ -170,7 +170,7 @@ class ClientsGestionNotifications
     /**
      * Get mensuelle
      *
-     * @return boolean
+     * @return integer
      */
     public function getMensuelle()
     {
@@ -180,7 +180,7 @@ class ClientsGestionNotifications
     /**
      * Set uniquementNotif
      *
-     * @param boolean $uniquementNotif
+     * @param integer $uniquementNotif
      *
      * @return ClientsGestionNotifications
      */
@@ -194,7 +194,7 @@ class ClientsGestionNotifications
     /**
      * Get uniquementNotif
      *
-     * @return boolean
+     * @return integer
      */
     public function getUniquementNotif()
     {

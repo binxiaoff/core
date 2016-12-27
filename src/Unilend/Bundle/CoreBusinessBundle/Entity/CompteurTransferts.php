@@ -13,9 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
 class CompteurTransferts
 {
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
@@ -54,7 +54,7 @@ class CompteurTransferts
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return CompteurTransferts
      */
@@ -68,7 +68,7 @@ class CompteurTransferts
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {

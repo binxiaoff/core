@@ -76,9 +76,9 @@ class WalletsLines
     private $idTermForCompany;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
@@ -90,16 +90,16 @@ class WalletsLines
     private $amount;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="display", type="boolean", nullable=false)
+     * @ORM\Column(name="display", type="integer", nullable=false)
      */
     private $display;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -347,7 +347,7 @@ class WalletsLines
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return WalletsLines
      */
@@ -361,7 +361,7 @@ class WalletsLines
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -395,7 +395,7 @@ class WalletsLines
     /**
      * Set display
      *
-     * @param boolean $display
+     * @param integer $display
      *
      * @return WalletsLines
      */
@@ -409,7 +409,7 @@ class WalletsLines
     /**
      * Get display
      *
-     * @return boolean
+     * @return integer
      */
     public function getDisplay()
     {
@@ -419,7 +419,7 @@ class WalletsLines
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return WalletsLines
      */
@@ -433,7 +433,7 @@ class WalletsLines
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

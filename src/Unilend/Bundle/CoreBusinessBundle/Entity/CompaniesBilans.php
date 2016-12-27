@@ -27,9 +27,9 @@ class CompaniesBilans
     private $clotureExerciceFiscal;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="duree_exercice_fiscal", type="boolean", nullable=false)
+     * @ORM\Column(name="duree_exercice_fiscal", type="integer", nullable=false)
      */
     private $dureeExerciceFiscal;
 
@@ -182,7 +182,7 @@ class CompaniesBilans
     /**
      * Set dureeExerciceFiscal
      *
-     * @param boolean $dureeExerciceFiscal
+     * @param integer $dureeExerciceFiscal
      *
      * @return CompaniesBilans
      */
@@ -196,7 +196,7 @@ class CompaniesBilans
     /**
      * Get dureeExerciceFiscal
      *
-     * @return boolean
+     * @return integer
      */
     public function getDureeExerciceFiscal()
     {

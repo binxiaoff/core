@@ -34,9 +34,9 @@ class Settings
     private $value;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status = '0';
 
@@ -147,7 +147,7 @@ class Settings
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Settings
      */
@@ -161,7 +161,7 @@ class Settings
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

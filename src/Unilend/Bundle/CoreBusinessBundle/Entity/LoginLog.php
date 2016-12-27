@@ -34,9 +34,9 @@ class LoginLog
     private $dateAction;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="statut", type="boolean", nullable=false)
+     * @ORM\Column(name="statut", type="integer", nullable=false)
      */
     private $statut;
 
@@ -147,7 +147,7 @@ class LoginLog
     /**
      * Set statut
      *
-     * @param boolean $statut
+     * @param integer $statut
      *
      * @return LoginLog
      */
@@ -161,7 +161,7 @@ class LoginLog
     /**
      * Get statut
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatut()
     {

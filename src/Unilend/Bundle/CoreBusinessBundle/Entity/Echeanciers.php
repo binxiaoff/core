@@ -100,9 +100,9 @@ class Echeanciers
     private $status;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_email_remb", type="boolean", nullable=false)
+     * @ORM\Column(name="status_email_remb", type="integer", nullable=false)
      */
     private $statusEmailRemb;
 
@@ -121,9 +121,9 @@ class Echeanciers
     private $dateEcheanceEmprunteurReel;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_emprunteur", type="boolean", nullable=false)
+     * @ORM\Column(name="status_emprunteur", type="integer", nullable=false)
      */
     private $statusEmprunteur;
 
@@ -450,7 +450,7 @@ class Echeanciers
     /**
      * Set statusEmailRemb
      *
-     * @param boolean $statusEmailRemb
+     * @param integer $statusEmailRemb
      *
      * @return Echeanciers
      */
@@ -464,7 +464,7 @@ class Echeanciers
     /**
      * Get statusEmailRemb
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusEmailRemb()
     {
@@ -522,7 +522,7 @@ class Echeanciers
     /**
      * Set statusEmprunteur
      *
-     * @param boolean $statusEmprunteur
+     * @param integer $statusEmprunteur
      *
      * @return Echeanciers
      */
@@ -536,7 +536,7 @@ class Echeanciers
     /**
      * Get statusEmprunteur
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusEmprunteur()
     {

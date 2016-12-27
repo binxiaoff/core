@@ -69,16 +69,16 @@ class Users
     private $passwordEdited;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="default_analyst", type="boolean", nullable=false)
+     * @ORM\Column(name="default_analyst", type="integer", nullable=false)
      */
     private $defaultAnalyst;
 
@@ -309,7 +309,7 @@ class Users
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Users
      */
@@ -323,7 +323,7 @@ class Users
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
@@ -333,7 +333,7 @@ class Users
     /**
      * Set defaultAnalyst
      *
-     * @param boolean $defaultAnalyst
+     * @param integer $defaultAnalyst
      *
      * @return Users
      */
@@ -347,7 +347,7 @@ class Users
     /**
      * Get defaultAnalyst
      *
-     * @return boolean
+     * @return integer
      */
     public function getDefaultAnalyst()
     {

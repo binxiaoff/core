@@ -21,16 +21,16 @@ class ClientsAdresses
     private $idClient;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="defaut", type="boolean", nullable=false)
+     * @ORM\Column(name="defaut", type="integer", nullable=false)
      */
     private $defaut = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type = '0';
 
@@ -133,9 +133,9 @@ class ClientsAdresses
     private $commentaire;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="meme_adresse_fiscal", type="boolean", nullable=true)
+     * @ORM\Column(name="meme_adresse_fiscal", type="integer", nullable=true)
      */
     private $memeAdresseFiscal;
 
@@ -168,9 +168,9 @@ class ClientsAdresses
     private $idPaysFiscal;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=true)
+     * @ORM\Column(name="status", type="integer", nullable=true)
      */
     private $status;
 
@@ -226,7 +226,7 @@ class ClientsAdresses
     /**
      * Set defaut
      *
-     * @param boolean $defaut
+     * @param integer $defaut
      *
      * @return ClientsAdresses
      */
@@ -240,7 +240,7 @@ class ClientsAdresses
     /**
      * Get defaut
      *
-     * @return boolean
+     * @return integer
      */
     public function getDefaut()
     {
@@ -250,7 +250,7 @@ class ClientsAdresses
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return ClientsAdresses
      */
@@ -264,7 +264,7 @@ class ClientsAdresses
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -610,7 +610,7 @@ class ClientsAdresses
     /**
      * Set memeAdresseFiscal
      *
-     * @param boolean $memeAdresseFiscal
+     * @param integer $memeAdresseFiscal
      *
      * @return ClientsAdresses
      */
@@ -624,7 +624,7 @@ class ClientsAdresses
     /**
      * Get memeAdresseFiscal
      *
-     * @return boolean
+     * @return integer
      */
     public function getMemeAdresseFiscal()
     {
@@ -730,7 +730,7 @@ class ClientsAdresses
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return ClientsAdresses
      */
@@ -744,7 +744,7 @@ class ClientsAdresses
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

@@ -55,9 +55,9 @@ class MailTemplates
     private $content;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -233,7 +233,7 @@ class MailTemplates
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return MailTemplates
      */
@@ -247,7 +247,7 @@ class MailTemplates
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

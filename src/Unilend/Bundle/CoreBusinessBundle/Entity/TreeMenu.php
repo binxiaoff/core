@@ -55,9 +55,9 @@ class TreeMenu
     private $ordre = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -242,7 +242,7 @@ class TreeMenu
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return TreeMenu
      */
@@ -256,7 +256,7 @@ class TreeMenu
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

@@ -219,16 +219,16 @@ class Clients
     private $etapeInscriptionPreteur;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_inscription_preteur", type="boolean", nullable=true)
+     * @ORM\Column(name="status_inscription_preteur", type="integer", nullable=true)
      */
     private $statusInscriptionPreteur;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_pre_emp", type="boolean", nullable=true)
+     * @ORM\Column(name="status_pre_emp", type="integer", nullable=true)
      */
     private $statusPreEmp;
 
@@ -275,23 +275,23 @@ class Clients
     private $slugOrigine;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="origine", type="boolean", nullable=true)
+     * @ORM\Column(name="origine", type="integer", nullable=true)
      */
     private $origine;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="optin1", type="boolean", nullable=true)
+     * @ORM\Column(name="optin1", type="integer", nullable=true)
      */
     private $optin1;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="optin2", type="boolean", nullable=true)
+     * @ORM\Column(name="optin2", type="integer", nullable=true)
      */
     private $optin2;
 
@@ -941,7 +941,7 @@ class Clients
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return Clients
      */
@@ -955,7 +955,7 @@ class Clients
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -989,7 +989,7 @@ class Clients
     /**
      * Set statusInscriptionPreteur
      *
-     * @param boolean $statusInscriptionPreteur
+     * @param integer $statusInscriptionPreteur
      *
      * @return Clients
      */
@@ -1003,7 +1003,7 @@ class Clients
     /**
      * Get statusInscriptionPreteur
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusInscriptionPreteur()
     {
@@ -1013,7 +1013,7 @@ class Clients
     /**
      * Set statusPreEmp
      *
-     * @param boolean $statusPreEmp
+     * @param integer $statusPreEmp
      *
      * @return Clients
      */
@@ -1027,7 +1027,7 @@ class Clients
     /**
      * Get statusPreEmp
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusPreEmp()
     {
@@ -1181,7 +1181,7 @@ class Clients
     /**
      * Set origine
      *
-     * @param boolean $origine
+     * @param integer $origine
      *
      * @return Clients
      */
@@ -1195,7 +1195,7 @@ class Clients
     /**
      * Get origine
      *
-     * @return boolean
+     * @return integer
      */
     public function getOrigine()
     {
@@ -1205,7 +1205,7 @@ class Clients
     /**
      * Set optin1
      *
-     * @param boolean $optin1
+     * @param integer $optin1
      *
      * @return Clients
      */
@@ -1219,7 +1219,7 @@ class Clients
     /**
      * Get optin1
      *
-     * @return boolean
+     * @return integer
      */
     public function getOptin1()
     {
@@ -1229,7 +1229,7 @@ class Clients
     /**
      * Set optin2
      *
-     * @param boolean $optin2
+     * @param integer $optin2
      *
      * @return Clients
      */
@@ -1243,7 +1243,7 @@ class Clients
     /**
      * Get optin2
      *
-     * @return boolean
+     * @return integer
      */
     public function getOptin2()
     {
@@ -1253,7 +1253,7 @@ class Clients
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Clients
      */
@@ -1267,7 +1267,7 @@ class Clients
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

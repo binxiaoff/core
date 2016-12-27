@@ -27,9 +27,9 @@ class ProjectsDetails
     private $idLang;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
@@ -116,7 +116,7 @@ class ProjectsDetails
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return ProjectsDetails
      */
@@ -130,7 +130,7 @@ class ProjectsDetails
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {

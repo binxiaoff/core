@@ -48,9 +48,9 @@ class BlocsElements
     private $complement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -202,7 +202,7 @@ class BlocsElements
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return BlocsElements
      */
@@ -216,7 +216,7 @@ class BlocsElements
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

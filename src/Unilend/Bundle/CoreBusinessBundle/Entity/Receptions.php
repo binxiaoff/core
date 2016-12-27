@@ -189,7 +189,7 @@ class Receptions
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return Receptions
      */
@@ -203,7 +203,7 @@ class Receptions
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -213,7 +213,7 @@ class Receptions
     /**
      * Set typeRemb
      *
-     * @param boolean $typeRemb
+     * @param integer $typeRemb
      *
      * @return Receptions
      */
@@ -227,7 +227,7 @@ class Receptions
     /**
      * Get typeRemb
      *
-     * @return boolean
+     * @return integer
      */
     public function getTypeRemb()
     {
@@ -261,7 +261,7 @@ class Receptions
     /**
      * Set statusPrelevement
      *
-     * @param boolean $statusPrelevement
+     * @param integer $statusPrelevement
      *
      * @return Receptions
      */
@@ -275,7 +275,7 @@ class Receptions
     /**
      * Get statusPrelevement
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusPrelevement()
     {
@@ -285,7 +285,7 @@ class Receptions
     /**
      * Set statusBo
      *
-     * @param boolean $statusBo
+     * @param integer $statusBo
      *
      * @return Receptions
      */
@@ -299,7 +299,7 @@ class Receptions
     /**
      * Get statusBo
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusBo()
     {
@@ -309,7 +309,7 @@ class Receptions
     /**
      * Set remb
      *
-     * @param boolean $remb
+     * @param integer $remb
      *
      * @return Receptions
      */
@@ -323,7 +323,7 @@ class Receptions
     /**
      * Get remb
      *
-     * @return boolean
+     * @return integer
      */
     public function getRemb()
     {

@@ -55,9 +55,9 @@ class Promotions
     private $seuil;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="fdp", type="boolean", nullable=false)
+     * @ORM\Column(name="fdp", type="integer", nullable=false)
      */
     private $fdp = '0';
 
@@ -132,16 +132,16 @@ class Promotions
     private $nbMinimum;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="plus_cher", type="boolean", nullable=false)
+     * @ORM\Column(name="plus_cher", type="integer", nullable=false)
      */
     private $plusCher;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="moins_cher", type="boolean", nullable=false)
+     * @ORM\Column(name="moins_cher", type="integer", nullable=false)
      */
     private $moinsCher;
 
@@ -160,16 +160,16 @@ class Promotions
     private $idPromo;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="premiere_cmde", type="boolean", nullable=false)
+     * @ORM\Column(name="premiere_cmde", type="integer", nullable=false)
      */
     private $premiereCmde;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -345,7 +345,7 @@ class Promotions
     /**
      * Set fdp
      *
-     * @param boolean $fdp
+     * @param integer $fdp
      *
      * @return Promotions
      */
@@ -359,7 +359,7 @@ class Promotions
     /**
      * Get fdp
      *
-     * @return boolean
+     * @return integer
      */
     public function getFdp()
     {
@@ -609,7 +609,7 @@ class Promotions
     /**
      * Set plusCher
      *
-     * @param boolean $plusCher
+     * @param integer $plusCher
      *
      * @return Promotions
      */
@@ -623,7 +623,7 @@ class Promotions
     /**
      * Get plusCher
      *
-     * @return boolean
+     * @return integer
      */
     public function getPlusCher()
     {
@@ -633,7 +633,7 @@ class Promotions
     /**
      * Set moinsCher
      *
-     * @param boolean $moinsCher
+     * @param integer $moinsCher
      *
      * @return Promotions
      */
@@ -647,7 +647,7 @@ class Promotions
     /**
      * Get moinsCher
      *
-     * @return boolean
+     * @return integer
      */
     public function getMoinsCher()
     {
@@ -705,7 +705,7 @@ class Promotions
     /**
      * Set premiereCmde
      *
-     * @param boolean $premiereCmde
+     * @param integer $premiereCmde
      *
      * @return Promotions
      */
@@ -719,7 +719,7 @@ class Promotions
     /**
      * Get premiereCmde
      *
-     * @return boolean
+     * @return integer
      */
     public function getPremiereCmde()
     {
@@ -729,7 +729,7 @@ class Promotions
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Promotions
      */
@@ -743,7 +743,7 @@ class Promotions
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

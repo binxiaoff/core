@@ -55,16 +55,16 @@ class LendersAccounts
     private $idPartenaireSubcode;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type_transfert", type="boolean", nullable=false)
+     * @ORM\Column(name="type_transfert", type="integer", nullable=false)
      */
     private $typeTransfert;
 
@@ -254,7 +254,7 @@ class LendersAccounts
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return LendersAccounts
      */
@@ -268,7 +268,7 @@ class LendersAccounts
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
@@ -278,7 +278,7 @@ class LendersAccounts
     /**
      * Set typeTransfert
      *
-     * @param boolean $typeTransfert
+     * @param integer $typeTransfert
      *
      * @return LendersAccounts
      */
@@ -292,7 +292,7 @@ class LendersAccounts
     /**
      * Get typeTransfert
      *
-     * @return boolean
+     * @return integer
      */
     public function getTypeTransfert()
     {

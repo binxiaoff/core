@@ -13,9 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
 class LenderQuestionnaire
 {
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -47,7 +47,7 @@ class LenderQuestionnaire
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return LenderQuestionnaire
      */
@@ -61,7 +61,7 @@ class LenderQuestionnaire
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

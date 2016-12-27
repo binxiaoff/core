@@ -34,9 +34,9 @@ class TransferType
     private $updated;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="id_type", type="boolean")
+     * @ORM\Column(name="id_type", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -119,7 +119,7 @@ class TransferType
     /**
      * Get idType
      *
-     * @return boolean
+     * @return integer
      */
     public function getIdType()
     {

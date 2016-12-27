@@ -139,16 +139,16 @@ class Transactions
     private $typePaiement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type_transaction", type="boolean", nullable=false)
+     * @ORM\Column(name="type_transaction", type="integer", nullable=false)
      */
     private $typeTransaction;
 
@@ -633,7 +633,7 @@ class Transactions
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Transactions
      */
@@ -647,7 +647,7 @@ class Transactions
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
@@ -657,7 +657,7 @@ class Transactions
     /**
      * Set typeTransaction
      *
-     * @param boolean $typeTransaction
+     * @param integer $typeTransaction
      *
      * @return Transactions
      */
@@ -671,7 +671,7 @@ class Transactions
     /**
      * Get typeTransaction
      *
-     * @return boolean
+     * @return integer
      */
     public function getTypeTransaction()
     {

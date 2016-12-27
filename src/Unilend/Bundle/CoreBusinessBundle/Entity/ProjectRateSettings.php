@@ -20,9 +20,9 @@ class ProjectRateSettings
     private $evaluation;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -102,7 +102,7 @@ class ProjectRateSettings
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return ProjectRateSettings
      */
@@ -116,7 +116,7 @@ class ProjectRateSettings
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

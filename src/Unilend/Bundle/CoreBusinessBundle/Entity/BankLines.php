@@ -48,16 +48,16 @@ class BankLines
     private $idProject;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -216,7 +216,7 @@ class BankLines
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param integer $type
      *
      * @return BankLines
      */
@@ -230,7 +230,7 @@ class BankLines
     /**
      * Get type
      *
-     * @return boolean
+     * @return integer
      */
     public function getType()
     {
@@ -240,7 +240,7 @@ class BankLines
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return BankLines
      */
@@ -254,7 +254,7 @@ class BankLines
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

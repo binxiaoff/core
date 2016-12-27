@@ -34,9 +34,9 @@ class Tree
     private $idUser;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="arbo", type="boolean", nullable=false)
+     * @ORM\Column(name="arbo", type="integer", nullable=false)
      */
     private $arbo;
 
@@ -97,30 +97,30 @@ class Tree
     private $ordre = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_menu", type="boolean", nullable=false)
+     * @ORM\Column(name="status_menu", type="integer", nullable=false)
      */
     private $statusMenu = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="prive", type="boolean", nullable=false)
+     * @ORM\Column(name="prive", type="integer", nullable=false)
      */
     private $prive = '0';
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="indexation", type="boolean", nullable=false)
+     * @ORM\Column(name="indexation", type="integer", nullable=false)
      */
     private $indexation = '1';
 
@@ -240,7 +240,7 @@ class Tree
     /**
      * Set arbo
      *
-     * @param boolean $arbo
+     * @param integer $arbo
      *
      * @return Tree
      */
@@ -254,7 +254,7 @@ class Tree
     /**
      * Get arbo
      *
-     * @return boolean
+     * @return integer
      */
     public function getArbo()
     {
@@ -456,7 +456,7 @@ class Tree
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Tree
      */
@@ -470,7 +470,7 @@ class Tree
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
@@ -480,7 +480,7 @@ class Tree
     /**
      * Set statusMenu
      *
-     * @param boolean $statusMenu
+     * @param integer $statusMenu
      *
      * @return Tree
      */
@@ -494,7 +494,7 @@ class Tree
     /**
      * Get statusMenu
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatusMenu()
     {
@@ -504,7 +504,7 @@ class Tree
     /**
      * Set prive
      *
-     * @param boolean $prive
+     * @param integer $prive
      *
      * @return Tree
      */
@@ -518,7 +518,7 @@ class Tree
     /**
      * Get prive
      *
-     * @return boolean
+     * @return integer
      */
     public function getPrive()
     {
@@ -528,7 +528,7 @@ class Tree
     /**
      * Set indexation
      *
-     * @param boolean $indexation
+     * @param integer $indexation
      *
      * @return Tree
      */
@@ -542,7 +542,7 @@ class Tree
     /**
      * Get indexation
      *
-     * @return boolean
+     * @return integer
      */
     public function getIndexation()
     {

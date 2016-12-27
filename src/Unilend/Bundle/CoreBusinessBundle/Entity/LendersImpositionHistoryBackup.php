@@ -20,9 +20,9 @@ class LendersImpositionHistoryBackup
     private $idLender;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="resident_etranger", type="boolean", nullable=false)
+     * @ORM\Column(name="resident_etranger", type="integer", nullable=false)
      */
     private $residentEtranger;
 
@@ -92,7 +92,7 @@ class LendersImpositionHistoryBackup
     /**
      * Set residentEtranger
      *
-     * @param boolean $residentEtranger
+     * @param integer $residentEtranger
      *
      * @return LendersImpositionHistoryBackup
      */
@@ -106,7 +106,7 @@ class LendersImpositionHistoryBackup
     /**
      * Get residentEtranger
      *
-     * @return boolean
+     * @return integer
      */
     public function getResidentEtranger()
     {
