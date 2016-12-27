@@ -113,7 +113,6 @@ class SecurityController extends Controller
     public function passwordForgottenAction(Request $request)
     {
         if ($request->isXMLHttpRequest()) {
-
             /** @var \clients $clients */
             $clients = $this->get('unilend.service.entity_manager')->getRepository('clients');
             /** @var \ficelle $ficelle */
@@ -229,12 +228,13 @@ class SecurityController extends Controller
         $lien_tw = $settings->value;
 
         $varMail = [
-            'surl'    => $this->get('assets.packages')->getUrl(''),
-            'url'     => $this->get('assets.packages')->getUrl(''),
-            'lien_fb' => $lien_fb,
-            'lien_tw' => $lien_tw,
+            'surl'     => $this->get('assets.packages')->getUrl(''),
+            'url'      => $this->get('assets.packages')->getUrl(''),
+            'lien_fb'  => $lien_fb,
+            'lien_tw'  => $lien_tw,
             'login'    => $client->email,
-            'prenom_p' => $client->prenom
+            'prenom_p' => $client->prenom,
+            'mdp'      => ''
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
