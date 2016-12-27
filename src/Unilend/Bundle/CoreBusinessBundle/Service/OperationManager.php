@@ -629,6 +629,54 @@ class OperationManager
         $transaction->update();
     }
 
+    public function rejectProvisionBorrowerWallet(Receptions $reception)
+    {
+        $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::BORROWER);
+        if (null === $wallet) {
+            return false;
+        }
+        $operation = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferIn' => $reception->getIdReception()]);
+        if (null === $operation) {
+            return false;
+        }
+
+        $amount        = round(bcdiv($reception->getMontant(), 100, 4), 2);
+        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION_CANCEL]);
+        $this->newOperation($amount, $operationType, $wallet, null, $reception);
+
+        $this->legacyRejectProvisionBorrowerWallet($reception);
+
+        return true;
+    }
+
+    /**
+     * @param Receptions $reception
+     */
+    private function legacyRejectProvisionBorrowerWallet(Receptions $reception)
+    {
+        /** @var \transactions $transaction */
+        $transaction = $this->entityManager->getRepository('transactions');
+        /** @var \bank_unilend $unilendBank */
+        $bankUnilend = $this->entityManager->getRepository('bank_unilend');
+
+        $transaction->id_prelevement   = $reception->getIdReception();
+        $transaction->id_client        = $reception->getIdClient();
+        $transaction->montant          = - $reception->getMontant();
+        $transaction->id_langue        = 'fr';
+        $transaction->date_transaction = date('Y-m-d H:i:s');
+        $transaction->status           = \transactions::STATUS_VALID;
+        $transaction->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
+        $transaction->ip_client        = $_SERVER['REMOTE_ADDR'];
+        $transaction->id_user          = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : '';
+        $transaction->create();
+
+        $bankUnilend->id_transaction = $transaction->id_transaction;
+        $bankUnilend->id_project     = $reception->getIdProject();
+        $bankUnilend->montant        = - $reception->getMontant();
+        $bankUnilend->type           = 1;
+        $bankUnilend->create();
+    }
+
     /**
      * @param Receptions $reception
      *

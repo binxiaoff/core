@@ -385,85 +385,56 @@ class transfertsController extends bootstrap
 
         /** @var \projects $projects */
         $projects = $this->loadData('projects');
-        /** @var \companies $companies */
-        $companies = $this->loadData('companies');
-        /** @var \clients $clients */
-        $clients = $this->loadData('clients');
         /** @var \receptions $receptions */
         $receptions = $this->loadData('receptions');
-        /** @var \transactions $transactions */
-        $transactions = $this->loadData('transactions');
-        /** @var \transactions $new_transactions */
-        $new_transactions = $this->loadData('transactions');
-        /** @var \bank_lines $bank_unilend */
-        $bank_unilend = $this->loadData('bank_unilend');
         /** @var \echeanciers $echeanciers */
         $echeanciers = $this->loadData('echeanciers');
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         /** @var \projects_remb $projects_remb */
         $projects_remb = $this->loadData('projects_remb');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if (
-            isset($_POST['id_project'], $_POST['id_reception'])
-            && $projects->get($_POST['id_project'], 'id_project')
-            && $receptions->get($_POST['id_reception'], 'id_reception')
-            && $transactions->get($_POST['id_reception'], 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
-            && false === $new_transactions->get($_POST['id_reception'], 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION . ' AND id_prelevement')
-        ) {
-            $companies->get($projects->id_company, 'id_company');
-            $clients->get($companies->id_client_owner, 'id_client');
+        if (isset($_POST['id_reception'])) {
+            /** @var Receptions $reception */
+            $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            if (null !== $reception && in_array($reception->getStatusBo(), [Receptions::STATUS_MANUALLY_ASSIGNED, Receptions::STATUS_AUTO_ASSIGNED])) {
+                $this->get('unilend.service.operation_manager')->rejectProvisionBorrowerWallet($reception); //todo: replace it by cancelProvisionBorrowerWallet
 
-            $new_transactions->id_prelevement   = $receptions->id_reception;
-            $new_transactions->id_client        = $clients->id_client;
-            $new_transactions->montant          = - $receptions->montant;
-            $new_transactions->id_langue        = 'fr';
-            $new_transactions->date_transaction = date('Y-m-d H:i:s');
-            $new_transactions->status           = \transactions::STATUS_VALID;
-            $new_transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
-            $new_transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-            $new_transactions->id_user          = $_SESSION['user']['id_user'];
-            $new_transactions->create();
+                $reception->setStatusBo(Receptions::STATUS_REJECTED);
+                $reception->setRemb(0);
+                $entityManager->flush();
 
-            $bank_unilend->id_transaction = $new_transactions->id_transaction;
-            $bank_unilend->id_project     = $projects->id_project;
-            $bank_unilend->montant        = - $receptions->montant;
-            $bank_unilend->type           = 1;
-            $bank_unilend->create();
+                $eche   = $echeanciers_emprunteur->select('id_project = ' . $projects->id_project . ' AND status_emprunteur = 1', 'ordre DESC');
+                $newsum = $receptions->montant / 100;
 
-            $receptions->status_bo = 3; // rejeté
-            $receptions->remb      = 0;
-            $receptions->update();
+                foreach ($eche as $e) {
+                    $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
 
-            $eche   = $echeanciers_emprunteur->select('id_project = ' . $projects->id_project . ' AND status_emprunteur = 1', 'ordre DESC');
-            $newsum = $receptions->montant / 100;
+                    if ($montantDuMois <= $newsum) {
+                        $echeanciers->updateStatusEmprunteur($projects->id_project, $e['ordre'], 'annuler');
 
-            foreach ($eche as $e) {
-                $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
+                        $echeanciers_emprunteur->get($projects->id_project, 'ordre = ' . $e['ordre'] . ' AND id_project');
+                        $echeanciers_emprunteur->status_emprunteur             = 0;
+                        $echeanciers_emprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
+                        $echeanciers_emprunteur->update();
 
-                if ($montantDuMois <= $newsum) {
-                    $echeanciers->updateStatusEmprunteur($projects->id_project, $e['ordre'], 'annuler');
+                        // et on retire du wallet unilend
+                        $newsum = $newsum - $montantDuMois;
 
-                    $echeanciers_emprunteur->get($projects->id_project, 'ordre = ' . $e['ordre'] . ' AND id_project');
-                    $echeanciers_emprunteur->status_emprunteur             = 0;
-                    $echeanciers_emprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
-                    $echeanciers_emprunteur->update();
-
-                    // et on retire du wallet unilend
-                    $newsum = $newsum - $montantDuMois;
-
-                    // On met a jour le remb emprunteur rejete
-                    if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
-                        $projects_remb->get($e['ordre'], 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
-                        $projects_remb->status = \projects_remb::STATUS_REJECTED;
-                        $projects_remb->update();
+                        // On met a jour le remb emprunteur rejete
+                        if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
+                            $projects_remb->get($e['ordre'], 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
+                            $projects_remb->status = \projects_remb::STATUS_REJECTED;
+                            $projects_remb->update();
+                        }
+                    } else {
+                        break;
                     }
-                } else {
-                    break;
                 }
+                echo 'ok';
             }
-
-            echo 'ok';
         }
     }
 

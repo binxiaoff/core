@@ -37,16 +37,16 @@ class Receptions
     private $montant;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type", type="boolean", nullable=false)
+     * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="type_remb", type="boolean", nullable=false)
+     * @ORM\Column(name="type_remb", type="integer", nullable=false)
      */
     private $typeRemb;
 
@@ -58,23 +58,23 @@ class Receptions
     private $statusVirement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_prelevement", type="boolean", nullable=false)
+     * @ORM\Column(name="status_prelevement", type="integer", nullable=false)
      */
     private $statusPrelevement;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status_bo", type="boolean", nullable=false)
+     * @ORM\Column(name="status_bo", type="integer", nullable=false)
      */
     private $statusBo;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="remb", type="boolean", nullable=false)
+     * @ORM\Column(name="remb", type="integer", nullable=false)
      */
     private $remb;
 
