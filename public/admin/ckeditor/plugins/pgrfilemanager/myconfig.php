@@ -33,18 +33,16 @@ require_once __DIR__ . '/../../../../../app/AppKernel.php';
 $kernel = new AppKernel('prod', false);
 $kernel->boot();
 
-$userPath  = '/data/medias/nfs/var/';
 $staticUrl = $kernel->getContainer()->get('assets.packages')->getUrl('');
 //real absolute path to root directory (directory you want to use with PGRFileManager) on your server
 //i.e  PGRFileManagerConfig::$rootPath = '/home/user/htdocs/userfiles'
 //you can check your absoulte path using
-PGRFileManagerConfig::$rootPath = $userPath.'uploads';
+PGRFileManagerConfig::$rootPath = '../../../../../default/var/uploads';
 //url path to root directory
 //this path is using to display images and will be returned to ckeditor with relative path to selected file
 //i.e http://my-super-web-page/gallery
 //i.e /gallery
 PGRFileManagerConfig::$urlPath = $staticUrl.'/var/uploads';
-
 
 //    !!!How to determine rootPath and urlPath!!!
 //    1. Copy mypath.php file to directory which you want to use with PGRFileManager
