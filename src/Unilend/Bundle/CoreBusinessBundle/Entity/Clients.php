@@ -15,6 +15,11 @@ use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
  */
 class Clients
 {
+    const TYPE_PERSON                 = 1;
+    const TYPE_LEGAL_ENTITY           = 2;
+    const TYPE_PERSON_FOREIGNER       = 3;
+    const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
+
     /**
      * @var string
      *

@@ -12,6 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UnderlyingContract
 {
+    const CONTRACT_IFP     = 'ifp';
+    const CONTRACT_BDC     = 'bon_de_caisse';
+    const CONTRACT_MINIBON = 'minibon';
+
     /**
      * @var string
      *

@@ -87,9 +87,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     $repaymentDate = date('Y-m-d H:i:s');
                     try {
                         if (false === $transactions->exist($e['id_echeancier'], 'id_echeancier')) {
-                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
-                            $operationManager->repayment($repaymentSchedule);
-
                             $montant += $e['montant'];
                             $nb_pret_remb++;
 
@@ -107,6 +104,9 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $echeanciers->status              = \echeanciers::STATUS_REPAID;
                             $echeanciers->date_echeance_reel  = $repaymentDate;
                             $echeanciers->update();
+
+                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
+                            $operationManager->repayment($repaymentSchedule);
 
                             $transactions->id_client        = $lenders->id_client_owner;
                             $transactions->montant          = $e['capital'];

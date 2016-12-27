@@ -792,7 +792,7 @@ class OperationManager
         $operationTypeCapital = $operationTypeRepo->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
         $this->newOperation($amountCapital, $operationTypeCapital, $borrowerWallet, $lenderWallet, $repaymentSchedule);
 
-        $taxes = $this->taxManager->getLenderRepaymentInterestTax($lenderWallet->getIdClient(), $amountInterestGross);
+        $taxes = $this->taxManager->getLenderRepaymentInterestTax($repaymentSchedule);
 
         foreach ($taxes as $type => $tax) {
             $operationType = '';
