@@ -378,6 +378,12 @@ class LenderCIPController extends Controller
     {
         /** @var CIPManager $cipManager */
         $cipManager = $this->get('unilend.service.cip_manager');
-        return implode("\n", $cipManager->getAdvices($lender));
+        $advices    = $cipManager->getAdvices($lender);
+
+        if (null === $advices) {
+            $advices = [];
+        }
+
+        return implode("\n", $advices);
     }
 }
