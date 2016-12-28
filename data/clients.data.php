@@ -106,7 +106,6 @@ class clients extends clients_crud
 
     /**
      * @param DateTime $dateLogin
-     * @param string   $email
      */
     public function saveLogin(\DateTime $dateLogin)
     {
@@ -133,27 +132,6 @@ class clients extends clients_crud
         if ($bRedirect) {
             header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . (isset($this->params['lng']) ? $this->params['lng'] : '') . $this->loginPage);
         }
-    }
-
-    /**
-     * @param string $email
-     * @param string $pass
-     * @return bool|array
-     */
-    public function login($email, $pass)
-    {
-        $email = $this->bdd->escape_string($email);
-        $sql   = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '" AND status = 1';
-        $res   = $this->bdd->query($sql);
-
-        if ($res->rowCount() === 1) {
-            $client = $res->fetch(\PDO::FETCH_ASSOC);
-
-            if (md5($pass) === $client['password'] || password_verify($pass, $client['password'])) {
-                return $client;
-            }
-        }
-        return false;
     }
 
     public function changePassword($email, $pass)

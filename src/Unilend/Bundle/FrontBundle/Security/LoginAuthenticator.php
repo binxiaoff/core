@@ -106,6 +106,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $captchaInformation = $request->getSession()->get('captchaInformation');
         $csrfToken          = $request->get('_csrf_token');
 
+        if (false === filter_var($username, FILTER_VALIDATE_EMAIL)) {
+            throw new CustomUserMessageAuthenticationException('invalid-username-format');
+        }
+
         $request->getSession()->set(Security::LAST_USERNAME, $username);
 
         return [
@@ -148,6 +152,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         if (false === $this->csrfTokenManager->isTokenValid(new CsrfToken('authenticate', $credentials['csrfToken']))) {
             throw new CustomUserMessageAuthenticationException('wrong-security-token');
         }
+
         return true;
     }
 
