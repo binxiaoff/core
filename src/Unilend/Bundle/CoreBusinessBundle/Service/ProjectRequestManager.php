@@ -67,13 +67,13 @@ class ProjectRequestManager
         if (empty($aFormData['siren']) || false === preg_match('/^([0-9]{9}|[0-9]{14})$/', $aFormData['siren'])) {
             throw new \InvalidArgumentException('Invalid SIREN');
         }
-        if (empty($aFormData['amount']) || (int) $aFormData['amount'] != $aFormData['amount']) {
+        if (empty($aFormData['amount']) || false === filter_var($aFormData['amount'], FILTER_VALIDATE_INT)) {
             throw new \InvalidArgumentException('Invalid amount');
         }
-        if (empty($aFormData['duration']) || (int) $aFormData['duration'] != $aFormData['duration']) {
+        if (empty($aFormData['duration']) || false === filter_var($aFormData['duration'], FILTER_VALIDATE_INT)) {
             throw new \InvalidArgumentException('Invalid duration');
         }
-        if (empty($aFormData['reason']) || (int) $aFormData['reason'] != $aFormData['reason']) {
+        if (empty($aFormData['reason']) || false === filter_var($aFormData['reason'], FILTER_VALIDATE_INT)) {
             throw new \InvalidArgumentException('Invalid reason');
         }
 
