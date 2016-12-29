@@ -457,7 +457,6 @@ EOF
      * @param string $sMotif
      * @param \receptions $receptions
      * @param \projects $projects
-     * @param \companies $companies
      * @param \transactions $transactions
      * @param \bank_unilend $bankUnilend
      */
@@ -597,8 +596,6 @@ EOF
      * @param \projects $projects
      * @param \companies $companies
      * @param \transactions $transactions
-     * @param \receptions $receptions
-     * @param \bank_unilend $bank_unilend
      */
     private function processBorrowerRepaymentRejection(array $aRow, \projects $projects, \companies $companies, \transactions $transactions)
     {
