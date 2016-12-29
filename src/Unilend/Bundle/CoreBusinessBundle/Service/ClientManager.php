@@ -46,13 +46,16 @@ class ClientManager
 
     /**
      * ClientManager constructor.
+     *
      * @param EntityManagerSimulator $oEntityManager
-     * @param ClientSettingsManager $oClientSettingsManager
-     * @param TokenStorageInterface $tokenStorage
-     * @param RequestStack $requestStack
-     * @param WalletCreationManager $walletCreationManager
-     * @param EntityManager $em
-     * @param LoggerInterface $logger
+     * @param ClientSettingsManager  $oClientSettingsManager
+     * @param TokenStorageInterface  $tokenStorage
+     * @param RequestStack           $requestStack
+     * @param WalletCreationManager  $walletCreationManager
+     * @param EntityManager          $em
+     * @param LoggerInterface        $logger
+     * @param RouterInterface        $router
+     * @param ClientRole             $clientRole
      */
     public function __construct(
         EntityManagerSimulator $oEntityManager,
