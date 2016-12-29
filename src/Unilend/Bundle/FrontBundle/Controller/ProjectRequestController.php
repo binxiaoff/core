@@ -672,7 +672,7 @@ class ProjectRequestController extends Controller
         if (false === empty($annualAccounts)) {
             $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
             $annualAccountsEntity->get($annualAccounts[0]['id_bilan']);
-            $incomeStatement = $this->get('unilend.service.company_balance_sheet_manager')->getIncomeStatement($annualAccountsEntity);
+            $incomeStatement         = $this->get('unilend.service.company_balance_sheet_manager')->getIncomeStatement($annualAccountsEntity);
             $altaresCapitalStock     = $companyAssetsDebts->capitaux_propres;
             $altaresOperationIncomes = $incomeStatement['details']['project-detail_finance-column-resultat-exploitation'];
             $altaresRevenue          = $incomeStatement['details']['project-detail_finance-column-ca'];
