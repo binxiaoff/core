@@ -221,3 +221,8 @@ sonata_cache:
             php_cache_enabled: true
             types: [translations]
             servers: "%sonata_cache.servers%"
+
+knp_mailjet:
+    api_key:    "%mailjet.api_key%"
+    secret_key: "%mailjet.api_secret%"
+    event_endpoint_token: yclrcchxk0p3lujy82

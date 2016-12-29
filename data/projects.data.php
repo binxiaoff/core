@@ -842,19 +842,19 @@ class projects extends projects_crud
                 p.amount AS 'Amount',
                 p.period AS 'NbMois',
                 CASE p.date_publication
-                  WHEN '0000-00-00' then ''
-                  ELSE p.date_publication
+                  WHEN '0000-00-00 00:00:00' THEN ''
+                  ELSE DATE(p.date_publication)
                 END AS 'Date_Publication',
                 CASE p.date_retrait
-                  WHEN '0000-00-00' then ''
-                  ELSE p.date_retrait
+                  WHEN '0000-00-00 00:00:00' THEN ''
+                  ELSE DATE(p.date_retrait)
                 END AS 'Date_Retrait',
                 CASE p.added
-                  WHEN '0000-00-00 00:00:00' then ''
+                  WHEN '0000-00-00 00:00:00' THEN ''
                   ELSE p.added
                 END AS 'Date_Ajout',
                 CASE p.updated
-                  WHEN '0000-00-00 00:00:00' then ''
+                  WHEN '0000-00-00 00:00:00' THEN ''
                   ELSE p.updated
                 END AS 'Date_Mise_Jour',
                 REPLACE(ps.label,',','') AS 'Status',
@@ -873,11 +873,11 @@ class projects extends projects_crud
                 REPLACE(co.phone,'\t','') AS 'Telephone',
                 co.status_client AS 'Status_Client',
                 CASE co.added
-                  WHEN '0000-00-00 00:00:00' then ''
+                  WHEN '0000-00-00 00:00:00' THEN ''
                   ELSE co.added
                 END AS 'Date_ajout',
                 CASE co.updated
-                  WHEN '0000-00-00 00:00:00' then ''
+                  WHEN '0000-00-00 00:00:00' THEN ''
                   ELSE co.updated
                 END AS 'Date_Mise_A_Jour',
                 co.id_client_owner AS 'IDClient'

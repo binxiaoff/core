@@ -152,7 +152,7 @@ class dossiersController extends bootstrap
             /** @var \product $product */
             $product = $this->loadData('product');
 
-            if ($product->get($this->projects->id_product)) {
+            if (false === empty($this->projects->id_product) && $product->get($this->projects->id_product)) {
                 $durationMax = $productManager->getMaxEligibleDuration($product);
                 $durationMin = $productManager->getMinEligibleDuration($product);
 
@@ -163,6 +163,8 @@ class dossiersController extends bootstrap
                         unset($this->dureePossible[$index]);
                     }
                 }
+
+                $this->availableContracts = array_column($productManager->getAvailableContracts($product), 'label');
             }
 
             if (false === in_array($this->projects->period, array(0, 1000000)) && false === in_array($this->projects->period, $this->dureePossible)) {
@@ -276,9 +278,22 @@ class dossiersController extends bootstrap
                 }
             }
 
-            $this->attachment_type  = $this->loadData('attachment_type');
-            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language);
-            $this->aAttachments     = $this->projects->getAttachments();
+            $this->attachment_type          = $this->loadData('attachment_type');
+            $this->aAttachments             = $this->projects->getAttachments();
+            $this->aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language);
+            $this->aMandatoyAttachmentTypes = [
+                \attachment_type::DERNIERE_LIASSE_FISCAL,
+                \attachment_type::LIASSE_FISCAL_N_1,
+                \attachment_type::LIASSE_FISCAL_N_2,
+                \attachment_type::RELEVE_BANCAIRE_MOIS_N,
+                \attachment_type::RELEVE_BANCAIRE_MOIS_N_1,
+                \attachment_type::RELEVE_BANCAIRE_MOIS_N_2,
+                \attachment_type::KBIS,
+                \attachment_type::RIB,
+                \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+                \attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS,
+                \attachment_type::CGV
+            ];
 
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
@@ -315,6 +330,12 @@ class dossiersController extends bootstrap
 
             if (isset($_POST['last_annual_accounts'])) {
                 $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];
+                $this->projects->update();
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
+            } elseif (isset($_POST['balance_count'])) {
+                $this->projects->balance_count = $_POST['balance_count'];
                 $this->projects->update();
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -599,7 +620,6 @@ class dossiersController extends bootstrap
                     $this->projects->update();
 
                     if (isset($_POST['current_status']) && $_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
-
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
                             $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
                             $aExistingStatus = array();
@@ -3016,6 +3036,30 @@ class dossiersController extends bootstrap
             return substr($case, 1);
         } else {
             return '-' . $case;
+        }
+    }
+
+    public function _regenerate_dirs()
+    {
+        $this->hideDecoration();
+
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
+
+        if (isset($this->params[0]) && $project->get($this->params[0])) {
+            $path     = $this->path . 'public/default/var/dirs/';
+            $filename = $project->slug . '.pdf';
+
+            if (file_exists($path . $filename)) {
+                if (false === is_dir($path . 'archives/' . $project->slug)) {
+                    mkdir($path . 'archives/' . $project->slug, 0770, true);
+                }
+
+                rename(
+                    $path . $filename,
+                    $path . 'archives/' . $project->slug . '/' . date('Y-m-d H:i:s') . '.pdf'
+                );
+            }
         }
     }
 }

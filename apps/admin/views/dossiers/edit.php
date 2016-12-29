@@ -171,6 +171,14 @@
             }
         });
 
+        $('.regenerate-dirs').click(function(event) {
+            if (!confirm('Vous allez régénéré le DIRS avec les nouvelles informations')) {
+                event.preventDefault()
+                return false
+            }
+            return true
+        });
+
         <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({
                 container: $("#pager"),
@@ -436,17 +444,34 @@
 
                 <h2>Produit</h2>
                 <table class="form" style="width: 538px;">
-                    <th><label for="assigned_product">Produit associé* :</label></th>
-                    <td>
-                        <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
-                            <option value=""></option>
-                        <?php foreach ($this->eligibleProduct as $product) : ?>
-                            <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
-                                <?= $this->translator->trans('product_label_' . $product->label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                        </select>
-                    </td>
+                    <tr>
+                        <th><label for="assigned_product">Produit associé* :</label></th>
+                        <td>
+                            <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                                <option value=""></option>
+                            <?php foreach ($this->eligibleProduct as $product) : ?>
+                                <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
+                                    <?= $this->translator->trans('product_label_' . $product->label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <?php if (in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)): ?>
+                        <tr>
+                            <th>DIRS</th>
+                            <td>
+                                <a href="<?= $this->furl ?>/var/dirs/<?= $this->projects->slug ?>.pdf">
+                                    <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF"/>
+                                </a>
+                                <?php if ($this->projects->status >= \projects_status::EN_FUNDING): ?>
+                                    <a href="<?= $this->url ?>/dossiers/regenerate_dirs/<?= $this->projects->id_project ?>" class="regenerate-dirs thickbox">
+                                        <img src="<?= $this->surl ?>/images/admin/reload.png" alt="Regenerate" title="Régénérer le DIRS"/>
+                                    </a>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
                 </table>
                 <br><br>
 
@@ -562,30 +587,41 @@
                         <td id="current_statut">
                             <input type="hidden" name="current_status" value="<?= $this->projects->status ?>"/>
                             <?php
-                                $sDisplayPeriodHS    = 'none';
-                                $sDisplayMsgPeriodHs = 'none';
-                                $sDisplayStatus      = 'block';
-                                $sDisplayMsgProject  = 'block';
+                                $sDisplayPeriodHS           = 'none';
+                                $sDisplayMsgPeriodHs        = 'none';
+                                $sDisplayStatus             = 'block';
+                                $sDisplayMsgProject         = 'block';
+                                $blockingPuttingOnlineError = '';
                             ?>
                             <?php if (count($this->lProjects_status) > 0) : ?>
                                 <?php
-                                    if (
-                                        (in_array($this->projects->period, array(0, 1000000)) || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
-                                        && $this->projects->status == \projects_status::PREP_FUNDING
-                                    ) {
-                                        $sDisplayPeriodHS    = 'block';
-                                        $sDisplayStatus      = 'none';
-                                        $sDisplayMsgPeriodHs = 'block';
-                                        $sDisplayMsgProject  = 'none';
+                                    if ($this->projects->status == \projects_status::PREP_FUNDING) {
+                                        if (in_array($this->projects->period, [0, 1000000])) {
+                                            $blockingPuttingOnlineError = 'Veuillez sélectionner une durée de prêt';
+                                        }
+
+                                        if (
+                                            in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)
+                                            && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
+                                        ) {
+                                            $blockingPuttingOnlineError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                        }
+
+                                        if (false === empty($blockingPuttingOnlineError)) {
+                                            $sDisplayPeriodHS    = 'block';
+                                            $sDisplayStatus      = 'none';
+                                            $sDisplayMsgPeriodHs = 'block';
+                                            $sDisplayMsgProject  = 'none';
+                                        }
                                     }
                                 ?>
                                 <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
                                     <?= $this->projects_status->label ?>
                                 </span>
                                 <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->projects->status == \projects_status::REMBOURSEMENT_ANTICIPE ? '"disabled"' : "") ?>>
-                                <?php foreach ($this->lProjects_status as $s) { ?>
+                                <?php foreach ($this->lProjects_status as $s) : ?>
                                     <option <?= ($this->projects->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
-                                <?php } ?>
+                                <?php endforeach; ?>
                                 </select>
                             <?php  else : ?>
                                 <input type="hidden" name="status" id="status" value="<?= $this->projects->status ?>" />
@@ -621,7 +657,7 @@
                         <tr class="change_statut" <?= ($this->projects->status == \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
                                 <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
-                                <span id="msgProjectPeriodHS" style="display:<?= $sDisplayMsgPeriodHs ?>;">V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut</span>
+                                <span id="msgProjectPeriodHS" style="display:<?= $sDisplayMsgPeriodHs ?>;"><?= $blockingPuttingOnlineError ?></span>
                                 <div class="block_cache change_statut"></div>
                             </td>
                         </tr>
@@ -634,8 +670,8 @@
                                 ?>
                                 <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
                                 <?php
-                                $tab_date_publication_full  = explode(" ", $this->projects->date_publication);
-                                $tab_date_publication_full2 = explode(":", $tab_date_publication_full[1]);
+                                $tab_date_publication_full  = explode(' ', $this->projects->date_publication);
+                                $tab_date_publication_full2 = explode(':', $tab_date_publication_full[1]);
                                 $heure_date_publication     = $tab_date_publication_full2[0];
                                 $minute_date_publication    = $tab_date_publication_full2[1];
                                 $seconde_date_publication   = $tab_date_publication_full2[2];
@@ -644,7 +680,7 @@
                                 <select name="date_publication_heure" class="selectMini">
                                     <?php
                                     for ($h = 0; $h < 24; $h++) {
-                                        ?><option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option><?php
+                                        ?><option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option><?php
                                     }
                                     ?>
                                 </select>h
@@ -653,7 +689,7 @@
                                     <?php
                                     for ($m = 0; $m < 60; $m+=5) {
                                         ?>
-                                        <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_publication == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
+                                        <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_publication == $m ? "selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
                                         <?php
                                     }
                                     ?>
@@ -673,8 +709,8 @@
                                 ?>
                                 <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
                                 <?php
-                                $tab_date_retrait_full  = explode(" ", $this->projects->date_retrait);
-                                $tab_date_retrait_full2 = explode(":", $tab_date_retrait_full[1]);
+                                $tab_date_retrait_full  = explode(' ', $this->projects->date_retrait);
+                                $tab_date_retrait_full2 = explode(':', $tab_date_retrait_full[1]);
                                 $heure_date_retrait     = $tab_date_retrait_full2[0];
                                 $minute_date_retrait    = $tab_date_retrait_full2[1];
                                 $seconde_date_retrait   = $tab_date_retrait_full2[2];
@@ -684,7 +720,7 @@
                                     <?php
                                     for ($h = 0; $h < 24; $h++) {
                                         ?>
-                                        <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_retrait == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
+                                        <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_retrait == $h ? "selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
                                         <?php
                                     }
                                     ?>
@@ -693,7 +729,7 @@
                                     <?php
                                     for ($m = 0; $m < 60; $m+=5) {
                                         ?>
-                                        <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_retrait == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
+                                        <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_retrait == $m ? "selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
                                         <?php
                                     }
                                     ?>

@@ -1,15 +1,20 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\FrontBundle\Security\ClientRole;
+use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 /**
@@ -28,6 +33,10 @@ class ClientManager
     private $tokenStorage;
     /** @var RequestStack */
     private $requestStack;
+    /** @var  RouterInterface */
+    private $router;
+    /** @var  ClientRole */
+    private $clientRole;
     /** @var WalletCreationManager */
     private $walletCreationManager;
     /** @var EntityManager*/
@@ -52,7 +61,9 @@ class ClientManager
         RequestStack $requestStack,
         WalletCreationManager $walletCreationManager,
         EntityManager $em,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        RouterInterface $router,
+        ClientRole $clientRole
     ) {
         $this->oEntityManager         = $oEntityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
@@ -61,6 +72,8 @@ class ClientManager
         $this->walletCreationManager  = $walletCreationManager;
         $this->em                     = $em;
         $this->logger                 = $logger;
+        $this->router                 = $router;
+        $this->clientRole             = $clientRole;
     }
 
 
@@ -71,7 +84,7 @@ class ClientManager
      */
     public function isBetaTester(\clients $oClient)
     {
-        return (bool)$this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_BETA_TESTER);
+        return (bool) $this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_BETA_TESTER);
     }
 
     /**
@@ -221,7 +234,7 @@ class ClientManager
 
     public function isActive(\clients $oClient)
     {
-        return (bool)$oClient->status;
+        return (bool) $oClient->status;
     }
 
     public function hasAcceptedCurrentTerms(\clients $oClient)
@@ -232,5 +245,63 @@ class ClientManager
     public function getClientSubscriptionStep(\clients $oClient)
     {
         return $oClient->etape_inscription_preteur;
+    }
+
+    /**
+     * @param \clients $client
+     * @return bool
+     */
+    public function isValidated(\clients $client)
+    {
+        /** @var \clients_status $lastClientStatus */
+        $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
+        $lastClientStatus->getLastStatut($client->id_client);
+        return $lastClientStatus->status == \clients_status::VALIDATED;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return RedirectResponse|null
+     */
+    public function checkProgressAndRedirect(Request $request)
+    {
+        /** @var \clients $client */
+        $client       = $this->oEntityManager->getRepository('clients');
+        $currentPath  = $request->getPathInfo();
+
+        $token = $this->tokenStorage->getToken();
+
+        if ($token) {
+            /** @var BaseUser $user */
+            $user = $token->getUser();
+
+            if ($user instanceof UserLender && $this->clientRole->isGranted('ROLE_LENDER', $user) && $client->get($user->getClientId()) && $client->etape_inscription_preteur < \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
+                $redirectPath = $this->getSubscriptionStepRedirectRoute($client);
+
+                if ($redirectPath != $currentPath) {
+                    return new RedirectResponse($redirectPath);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param \clients $client
+     * @return string
+     */
+    private function getSubscriptionStepRedirectRoute(\clients $client)
+    {
+        switch ($client->etape_inscription_preteur) {
+            case \clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
+                return $this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]);
+            case \clients::SUBSCRIPTION_STEP_DOCUMENTS:
+            case \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT:
+                return $this->router->generate('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
+            default:
+                return $this->router->generate('projects_list');
+        }
     }
 }

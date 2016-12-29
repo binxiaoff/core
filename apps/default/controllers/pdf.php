@@ -681,7 +681,9 @@ class pdfController extends bootstrap
         $transaction = $this->loadData('transactions');
         $transaction->get($oProjects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project');
 
-        $this->fCommissionProject = $transaction->montant_unilend;
+        $fundReleasingCommissionRate = $transaction->montant_unilend / $oProjects->amount / 100;
+
+        $this->fCommissionProject = $fundReleasingCommissionRate * $oLoans->amount / 100 / (1 + $fVat);;
         $this->fInterestTotal     = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
         $contract->get($oLoans->id_type_contract);

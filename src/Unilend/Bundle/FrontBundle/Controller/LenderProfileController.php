@@ -1490,6 +1490,7 @@ class LenderProfileController extends Controller
         $varMail = array_merge($this->getCommonEmailVariables(), [
             'login'    => $client->email,
             'prenom_p' => $client->prenom,
+            'mdp'      => ''
         ]);
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */

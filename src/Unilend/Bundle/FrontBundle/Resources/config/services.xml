@@ -106,5 +106,21 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="memcache.default" />
         </service>
+
+        <service id="unilend.frontbundle.service.universign_manager" class="Unilend\Bundle\FrontBundle\Service\UniversignManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service.email_manager"/>
+            <argument type="service" id="router" />
+            <argument type="service" id="logger" />
+            <argument type="service" id="assets.packages" />
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="swiftmailer.mailer.default" />
+            <argument>%url.universign%</argument>
+            <argument>%kernel.root_dir%</argument>
+        </service>
+
+        <service id="unilend.frontbundle.security.client_role" class="Unilend\Bundle\FrontBundle\Security\ClientRole">
+            <argument type="service" id="security.role_hierarchy"/>
+        </service>
     </services>
 </container>
