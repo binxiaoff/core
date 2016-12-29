@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
@@ -828,19 +829,6 @@ class ProjectManager
 
             $this->oMailerManager->sendFundedToStaff($oProject);
         }
-    }
-
-    /**
-     * @param \projects $project
-     * @return string
-     */
-    public function getBorrowerBankTransferLabel(\projects $project)
-    {
-        /** @var \companies $company */
-        $company = $this->oEntityManager->getRepository('companies');
-        $company->get($project->id_company);
-
-        return 'UNILEND' . str_pad($project->id_project, 6, 0, STR_PAD_LEFT) . 'E' . trim($company->siren);
     }
 
     /**

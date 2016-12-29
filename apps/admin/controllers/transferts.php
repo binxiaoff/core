@@ -86,11 +86,9 @@ class transfertsController extends bootstrap
                 $reception->setIdProject($project->getIdProject())
                            ->setIdClient($project->getIdCompany()->getIdClientOwner())
                            ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
-                           ->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION)
                            ->setRemb(1)
                            ->setIdUser($_SESSION['user']['id_user'])
                            ->setAssignmentDate(new \DateTime());
-                $em->flush();
 
                 $operationManager->provisionBorrowerWallet($reception);
 
@@ -102,6 +100,7 @@ class transfertsController extends bootstrap
                 $bank_unilend->create();
 
                 if ($_POST['type_remb'] === 'remboursement_anticipe') {
+                    $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
                     $transactions->id_virement      = $reception->getIdReception();
                     $transactions->id_project       = $project->getIdProject();
                     $transactions->montant          = $reception->getMontant();
@@ -112,6 +111,7 @@ class transfertsController extends bootstrap
                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                     $transactions->create();
                 } elseif ($_POST['type_remb'] === 'regularisation') {
+                    $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
                     $transactions->id_virement      = $reception->getIdReception();
                     $transactions->montant          = $reception->getMontant();
                     $transactions->id_langue        = 'fr';
@@ -122,6 +122,8 @@ class transfertsController extends bootstrap
                     $transactions->create();
                     $this->updateEcheances($project->getIdProject(), $reception->getMontant());
                 }
+
+                $em->flush();
             }
 
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');
@@ -620,8 +622,6 @@ class transfertsController extends bootstrap
                 $lender = $this->loadData('lenders_accounts');
                 /** @var \transactions $transactions */
                 $transactions = $this->loadData('transactions');
-                /** @var \virements $virements */
-                $virements = $this->loadData('virements');
                 /** @var \bank_unilend $bank_unilend */
                 $bank_unilend = $this->loadData('bank_unilend');
                 /** @var \loans $loans */
@@ -650,6 +650,17 @@ class transfertsController extends bootstrap
                 $montant -= $partUnilend;
 
                 if (false === $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
+                    $operationManager = $this->get('unilend.service.operation_manager');
+                    /** @var \Doctrine\ORM\EntityManager $em */
+                    $em            = $this->get('doctrine.orm.entity_manager');
+                    $projectEntity = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
+                    $operationManager->releaseProjectFunds($projectEntity);
+
+                    $borrowerWallet = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($companies->id_client_owner, WalletType::BORROWER);
+                    $virement = $operationManager->withdrawBorrowerWallet($borrowerWallet, $montant, $projectEntity);
+
+
                     $aMandate = $mandate->select('id_project = ' . $project->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1);
                     $aMandate = array_shift($aMandate);
 
@@ -678,13 +689,8 @@ class transfertsController extends bootstrap
                     $oAccountUnilend->type           = \platform_account_unilend::TYPE_COMMISSION_PROJECT;
                     $oAccountUnilend->create();
 
-                    $virements->id_client      = $clients->id_client;
-                    $virements->id_project     = $project->id_project;
-                    $virements->id_transaction = $transactions->id_transaction;
-                    $virements->montant        = bcmul($montant, 100);
-                    $virements->motif          = $oProjectManager->getBorrowerBankTransferLabel($project);
-                    $virements->type           = 2;
-                    $virements->create();
+                    $virement->setIdTransaction($transactions->id_transaction);
+                    $em->flush();
 
                     /** @var \prelevements $prelevements */
                     $prelevements = $this->loadData('prelevements');
@@ -697,7 +703,7 @@ class transfertsController extends bootstrap
 
                         $prelevements->id_client                          = $clients->id_client;
                         $prelevements->id_project                         = $project->id_project;
-                        $prelevements->motif                              = $virements->motif;
+                        $prelevements->motif                              = $virement->getMotif();
                         $prelevements->montant                            = bcadd(bcadd($e['montant'], $e['commission'], 2), $e['tva'], 2);
                         $prelevements->bic                                = str_replace(' ', '', $aMandate['bic']);
                         $prelevements->iban                               = str_replace(' ', '', $aMandate['iban']);
@@ -893,10 +899,13 @@ class transfertsController extends bootstrap
 
                 $this->uploadTransferDocument($transferDocument, $transfer, 'transfer_document');
 
-                /** @var \transactions $transactions */
-                $transactions          = $this->loadData('transactions');
                 $originalClientBalance = $clientManager->getClientBalance($originalClient);
-                $this->transferAccountBalance($transfer, $transactions, $originalClientBalance);
+                /** @var \Doctrine\ORM\EntityManager $em */
+                $em = $this->get('doctrine.orm.entity_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
+                $operationManager = $this->get('unilend.service.operation_manager');
+                $transferEntity   = $em->getRepository('UnilendCoreBusinessBundle:Transfer')->find($transfer->id_transfer);
+                $operationManager->lenderTransfer($transferEntity, $originalClientBalance);
 
                 /** @var \loan_transfer $loanTransfer */
                 $loanTransfer = $this->loadData('loan_transfer');
@@ -945,34 +954,6 @@ class transfertsController extends bootstrap
             header('Location: ' . $this->lurl . '/transferts/succession');
             die;
         }
-    }
-
-    /**
-     * @param \transfer $transfer
-     * @param \transactions $transactions
-     * @param $accountBalance
-     */
-    private function transferAccountBalance(\transfer $transfer, \transactions $transactions, $accountBalance)
-    {
-        $transactions->id_client        = $transfer->id_client_origin;
-        $transactions->montant          = -$accountBalance * 100;
-        $transactions->status           = \transactions::STATUS_VALID;
-        $transactions->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
-        $transactions->date_transaction = date('Y-m-d h:i:s');
-        $transactions->id_langue        = 'fr';
-        $transactions->id_transfer      = $transfer->id_transfer;
-        $transactions->create();
-
-        $transactions->unsetData();
-
-        $transactions->id_client        =$transfer->id_client_receiver;
-        $transactions->montant          = $accountBalance * 100;
-        $transactions->status           = \transactions::STATUS_VALID;
-        $transactions->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
-        $transactions->date_transaction = date('Y-m-d h:i:s');
-        $transactions->id_langue        = 'fr';
-        $transactions->id_transfer      = $transfer->id_transfer;
-        $transactions->create();
     }
 
     private function transferLoan(\transfer $transfer, \loan_transfer $loanTransfer, \loans $loans, \lenders_accounts $newLender, \clients $originalClient, \clients $newOwner)

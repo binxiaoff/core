@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * WalletBalanceHistory
  *
- * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"}), @ORM\Index(name="fk_id_bid_idx", columns={"id_bid"})})
+ * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"}), @ORM\Index(name="fk_id_bid_idx", columns={"id_bid"}), @ORM\Index(name="id_project", columns={"id_project"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -72,6 +72,16 @@ class WalletBalanceHistory
      * })
      */
     private $idBid;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
+     */
+    private $idProject;
 
 
     /**
@@ -227,6 +237,30 @@ class WalletBalanceHistory
     public function getBid()
     {
         return $this->idBid;
+    }
+
+    /**
+     * Set Project
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
+     *
+     * @return WalletBalanceHistory
+     */
+    public function setProject(Projects $idProject = null)
+    {
+        $this->idProject = $idProject;
+
+        return $this;
+    }
+
+    /**
+     * Get Project
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     */
+    public function getProject()
+    {
+        return $this->idProject;
     }
 
     /**

@@ -571,8 +571,8 @@ class universignController extends bootstrap
                     $mandate = $this->loadData('clients_mandats');
                     /** @var \prelevements $directDebit */
                     $directDebit = $this->loadData('prelevements');
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-                    $projectManager = $this->get('unilend.service.project_manager');
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
+                    $borrowerManager = $this->get('unilend.service.borrower_manager');
 
                     foreach ($aProjects as $aProject) {
                         $project->get($aProject['id_project']);
@@ -581,7 +581,7 @@ class universignController extends bootstrap
 
                         foreach ($directDebit->select('id_project = ' . $project->id_project . ' AND status = ' . \prelevements::STATUS_PENDING) as $debit) {
                             $directDebit->get($debit['id_prelevement']);
-                            $directDebit->motif = $projectManager->getBorrowerBankTransferLabel($project);
+                            $directDebit->motif = $borrowerManager->getBorrowerBankTransferLabel($project);
                             $directDebit->bic   = $aMandate['bic'];
                             $directDebit->iban  = $aMandate['iban'];
                             $directDebit->update();

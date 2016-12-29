@@ -12,10 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class OperationType
 {
-    const BORROWER_PROJECT_COMMISSION               = 'borrower_project_commission';
     const BORROWER_PROVISION                        = 'borrower_provision';
     const BORROWER_PROVISION_CANCEL                 = 'borrower_provision_cancel';
-    const BORROWER_REPAYMENT_COMMISSION             = 'borrower_repayment_commission';
+    const BORROWER_COMMISSION                       = 'borrower_commission';
     const BORROWER_WITHDRAW                         = 'borrower_withdraw';
     const CAPITAL_REPAYMENT                         = 'capital_repayment';
     const GROSS_INTEREST_REPAYMENT                  = 'gross_interest_repayment';
@@ -26,6 +25,7 @@ class OperationType
     const LENDER_PROVISION_CANCEL                   = 'lender_provision_cancel';
     const LENDER_REJECTED_BID                       = 'lender_rejected_bid';
     const LENDER_WITHDRAW                           = 'lender_withdraw';
+    const LENDER_TRANSFER                           = 'lender_transfer';
     const TAX_CONTRIBUTIONS_ADDITIONNELLES          = 'tax_contributions_additionnelles';
     const TAX_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW = 'tax_contributions_additionnelles_withdraw';
     const TAX_CRDS                                  = 'tax_crds';
@@ -44,6 +44,7 @@ class OperationType
     const UNILEND_PROMOTIONAL_OPERATION_WITHDRAW    = 'unilend_promotional_operation_withdraw';
     const UNILEND_PROVISION                         = 'unilend_provision';
     const UNILEND_WITHDRAW                          = 'unilend_withdraw';
+    const UNILEND_PROMOTIONAL_OPERATION_PROVISION   = 'unilend_promotional_operation_provision';
 
     /**
      * @var integer

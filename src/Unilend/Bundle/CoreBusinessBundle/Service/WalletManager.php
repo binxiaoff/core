@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -49,11 +50,11 @@ class WalletManager
         $this->debit($operation, $debtor);
 
         if ($creditor instanceof Wallet) {
-            $this->snap($creditor, [$operation]);
+            $this->snap($creditor, $operation);
         }
 
         if ($debtor instanceof Wallet) {
-            $this->snap($debtor, [$operation]);
+            $this->snap($debtor, $operation);
         }
     }
 
@@ -77,13 +78,11 @@ class WalletManager
             $wallet->setAvailableBalance($availableBalance);
             $wallet->setCommittedBalance($committedBalance);
 
-            $this->snap($wallet, [$origin]);
+            $this->snap($wallet, $origin);
 
             $this->entityManager->flush();
-            $this->entityManager->getConnection()->commit();
-
             $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
-
+            $this->entityManager->getConnection()->commit();
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
             throw $e;
@@ -110,13 +109,14 @@ class WalletManager
             $wallet->setAvailableBalance($availableBalance);
             $wallet->setCommittedBalance($committedBalance);
 
-            $this->snap($wallet, [$origin]);
+            $this->snap($wallet, $origin);
 
             $this->entityManager->flush();
+
+            if ($origin instanceof Bids) {
+                $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
+            }
             $this->entityManager->getConnection()->commit();
-
-            $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
-
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
             throw $e;
@@ -266,20 +266,28 @@ class WalletManager
 
     /**
      * @param Wallet $wallet
-     * @param array  $parameters
+     * @param array|object  $parameters
      */
-    private function snap(Wallet $wallet, array $parameters)
+    private function snap(Wallet $wallet, $parameters)
     {
         $walletSnap = new WalletBalanceHistory();
         $walletSnap->setIdWallet($wallet)
                    ->setAvailableBalance($wallet->getAvailableBalance())
                    ->setCommittedBalance($wallet->getCommittedBalance());
+
+        if (false === is_array($parameters)) {
+            $parameters = [$parameters];
+        }
+
         foreach ($parameters as $item) {
             if ($item instanceof Operation) {
                 $walletSnap->setIdOperation($item);
             }
             if ($item instanceof Bids) {
                 $walletSnap->setBid($item);
+            }
+            if ($item instanceof Projects) {
+                $walletSnap->setProject($item);
             }
         }
         $this->entityManager->persist($walletSnap);
