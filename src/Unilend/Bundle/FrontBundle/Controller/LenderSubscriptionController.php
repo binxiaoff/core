@@ -829,9 +829,9 @@ class LenderSubscriptionController extends Controller
     public function moneyDepositAction($clientHash, Request $request)
     {
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client   = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
-        if (false === $response instanceof \clients){
+        if (false === $response instanceof \clients) {
             return $response;
         }
         /** @var \lenders_accounts $lenderAccount */
@@ -860,7 +860,7 @@ class LenderSubscriptionController extends Controller
     public function moneyDepositFormAction($clientHash, Request $request)
     {
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client   = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
         if (false === $response instanceof \clients){
             return $response;
