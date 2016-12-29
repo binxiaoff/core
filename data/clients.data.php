@@ -145,10 +145,19 @@ class clients extends clients_crud
 
     public function existEmail($email)
     {
-        $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '"';
-        $res = $this->bdd->query($sql);
+        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
 
-        return ($this->bdd->num_rows($res) >= 1);
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('COUNT(*)')
+            ->from($this->userTable)
+            ->where('email = :email')
+            ->setParameter('email', $email);
+
+        $statement = $queryBuilder->execute();
+        return $statement->fetchColumn() > 0;
     }
 
     public function checkAccess()

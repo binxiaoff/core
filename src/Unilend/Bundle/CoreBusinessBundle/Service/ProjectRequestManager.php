@@ -61,6 +61,22 @@ class ProjectRequestManager
         /** @var \companies $company */
         $company = $this->entityManager->getRepository('companies');
 
+        if (empty($aFormData['email']) || false === filter_var($aFormData['email'], FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('Invalid email');
+        }
+        if (empty($aFormData['siren']) || false === preg_match('/^([0-9]{9}|[0-9]{14})$/', $aFormData['siren'])) {
+            throw new \InvalidArgumentException('Invalid SIREN');
+        }
+        if (empty($aFormData['amount']) || (int) $aFormData['amount'] != $aFormData['amount']) {
+            throw new \InvalidArgumentException('Invalid amount');
+        }
+        if (empty($aFormData['duration']) || (int) $aFormData['duration'] != $aFormData['duration']) {
+            throw new \InvalidArgumentException('Invalid duration');
+        }
+        if (empty($aFormData['reason']) || (int) $aFormData['reason'] != $aFormData['reason']) {
+            throw new \InvalidArgumentException('Invalid reason');
+        }
+
         $client->id_langue    = 'fr';
         $client->email        = $client->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
         $client->source       = $this->sourceManager->getSource(SourceManager::SOURCE1);
