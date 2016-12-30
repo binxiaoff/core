@@ -271,7 +271,6 @@ $doc.on('ready', function () {
     $('#form-lender-person-birth-city-insee').val(codeValue);
   })
 
-
   // If a user changes to a US nationality, show the error message
   $doc.on('change', '#form-lender-person-nationality', function () {
       if ($('#form-lender-person-nationality').val() == 35) {
@@ -284,14 +283,21 @@ $doc.on('ready', function () {
   // Validate fiscal address city/code on blur
   $doc.on('change', '#devenir-preteur input[name="fiscal_address_zip"]:visible, #devenir-preteur input[name="fiscal_address_city"]:visible', function (event) {
     debounceAjax(fiscalAddrTimer, function () {
-      checkPostCodeCity($('input[name="fiscal_address_zip"]:visible'), $('input[name="fiscal_address_city"]:visible'), $('input[name="fiscal_address_country"]:visible'))
+      checkPostCodeCity($('input[name="fiscal_address_zip"]:visible'), $('input[name="fiscal_address_city"]:visible'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
     })
   })
 
   // Validate postal address city/code on blur
   $doc.on('change', '#devenir-preteur input[name="postal_address_zip"]:visible, #devenir-preteur input[name="postal_address_city"]:visible', function (event) {
     debounceAjax(postalAddrTimer, function () {
-      checkPostCodeCity($('input[name="postal_address_zip"]:visible'), $('input[name="postal_address_city"]:visible'), $('input[name="postal_address_country"]:visible'))
+      checkPostCodeCity($('input[name="postal_address_zip"]:visible'), $('input[name="postal_address_city"]:visible'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
+    })
+  })
+
+  // If the user changes the country, check the zip and the city again
+  $doc.on('change', '#form-lender-person-fiscal-address-country, #form-lender-legal-entity-fiscal-address-country', function (event) {
+    debounceAjax(fiscalAddrTimer, function () {
+      checkPostCodeCity($('#form-lender-' + getClientType() + '-fiscal-address-zip'), $('#form-lender-' + getClientType() + '-fiscal-address-city'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
     })
   })
 
@@ -324,6 +330,15 @@ $doc.on('ready', function () {
     $('#form-lender-person-birth-city-insee').val('')
   })
 
+  function getClientType() {
+    var clientType = $('input[name="client_type"]:checked').val()
+      switch (clientType) {
+          case 'legal_entity':
+            return 'legal-entity'
+          default:
+            return clientType
+      }
+  }
 })
 
 

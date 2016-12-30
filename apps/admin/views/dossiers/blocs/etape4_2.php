@@ -1,11 +1,11 @@
 <script type="text/javascript">
     $(function() {
-        $('#last_annual_accounts').change(function() {
-            $('#last_annual_accounts_form').submit();
+        $('#last-annual-accounts').change(function() {
+            $('#last-annual-accounts-form').submit();
         });
 
         $('.annual_accounts_dates').click(function() {
-            $box = $('#annual_accounts_dates_popup').clone();
+            $box = $('#annual-accounts-dates-popup').clone();
             $box.find('[name=duree_exercice_fiscal]').val($(this).data('duration'));
             $box.find('[name=id_annual_accounts]').val($(this).data('annual-account'));
             $box.find('[name=id_annual_accounts_remove]').val($(this).data('annual-account'));
@@ -47,12 +47,19 @@
         });
     });
 </script>
+
 <style type="text/css">
-    #annual_accounts_dates_popup {
+    #annual-accounts-dates-popup {
         background-color: #FFF;
         padding: 20px;
         border: 2px solid #E3E4E5;
         border-radius: 10px;
+    }
+
+    .balance-form {
+        display: inline-block;
+        width: 378px;
+        margin-bottom: 10px;
     }
 
     .collapse_expand {
@@ -61,7 +68,7 @@
     }
 </style>
 
-<div id="annual_accounts_dates_popup" style="display: none;">
+<div id="annual-accounts-dates-popup" style="display: none;">
     <h2>Modifier l'exercice fiscal</h2>
     <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
         <input type="text" name="cloture_exercice_fiscal" class="numbers input_dp datepicker" placeholder="Date de cloture"/>
@@ -101,13 +108,18 @@
         <br><br>
         <input id="add-balance-submit" type="submit" class="btn_link" value="Ajouter un bilan" style="float:right" disabled/>
     </form>
-    <form id="last_annual_accounts_form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
+    <form id="last-annual-accounts-form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" class="balance-form">
         <h2>Dernier bilan</h2>
-        <select id="last_annual_accounts" name="last_annual_accounts" title="Dernier bilan">
+        <select id="last-annual-accounts" name="last_annual_accounts" title="Dernier bilan">
         <?php foreach ($this->aAllAnnualAccounts as $aAnnualAccounts): ?>
             <option value="<?= $aAnnualAccounts['id_bilan'] ?>"<?= $aAnnualAccounts['id_bilan'] == $this->projects->id_dernier_bilan ? ' selected' : '' ?>><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</option>
         <?php endforeach; ?>
         </select>
+    </form>
+    <form id="balance-count-form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" class="balance-form">
+        <h2><label for="balance-count">Nombre de bilans</label></h2>
+        <input type="text" name="balance_count" id="balance-count" value="<?= empty($this->projects->balance_count) ? '' : $this->projects->balance_count ?>"/>
+        <input type="submit" class="btn_link" value="Modifier"/>
     </form>
     <br/>
     <form id="dossier_etape4_2" action="/ajax/valid_etapes" method="post">

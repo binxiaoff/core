@@ -32,6 +32,8 @@
             <argument type="service" id="unilend.service.client_settings_manager"/>
             <argument type="service" id="security.token_storage"/>
             <argument type="service" id="request_stack"/>
+            <argument type="service" id="router" />
+            <argument type="service" id="unilend.frontbundle.security.client_role"/>
         </service>
 
         <service id="unilend.service.lender_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderManager">

@@ -45,6 +45,10 @@ class clients extends clients_crud
     const STATUS_OFFLINE = 0;
     const STATUS_ONLINE  = 1;
 
+    const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
+    const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
+    const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
+
     public function __construct($bdd, $params = '')
     {
         parent::clients($bdd, $params);
@@ -102,7 +106,6 @@ class clients extends clients_crud
 
     /**
      * @param DateTime $dateLogin
-     * @param string   $email
      */
     public function saveLogin(\DateTime $dateLogin)
     {
@@ -131,27 +134,6 @@ class clients extends clients_crud
         }
     }
 
-    /**
-     * @param string $email
-     * @param string $pass
-     * @return bool|array
-     */
-    public function login($email, $pass)
-    {
-        $email = $this->bdd->escape_string($email);
-        $sql   = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '" AND status = 1';
-        $res   = $this->bdd->query($sql);
-
-        if ($res->rowCount() === 1) {
-            $client = $res->fetch(\PDO::FETCH_ASSOC);
-
-            if (md5($pass) === $client['password'] || password_verify($pass, $client['password'])) {
-                return $client;
-            }
-        }
-        return false;
-    }
-
     public function changePassword($email, $pass)
     {
         $this->bdd->query('
@@ -163,10 +145,19 @@ class clients extends clients_crud
 
     public function existEmail($email)
     {
-        $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '"';
-        $res = $this->bdd->query($sql);
+        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
 
-        return ($this->bdd->num_rows($res) >= 1);
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('COUNT(*)')
+            ->from($this->userTable)
+            ->where('email = :email')
+            ->setParameter('email', $email);
+
+        $statement = $queryBuilder->execute();
+        return $statement->fetchColumn() > 0;
     }
 
     public function checkAccess()

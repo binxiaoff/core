@@ -105,16 +105,12 @@ class attachment_helper
         switch ($sOwnerType) {
             case attachment::LENDER:
                 return self::PATH_LENDER . $this->getLendersDocumentPath($iDocumentType) . '/';
-                break;
             case attachment::PROJECT:
                 return self::PATH_PROJECT . $this->getProjectsDocumentPath($iDocumentType) . '/';
-                break;
             case attachment::TRANSFER:
                 return self::PATH_TRANSFER;
-                break;
             default:
                 return null;
-                break;
         }
     }
 

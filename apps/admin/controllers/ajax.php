@@ -271,13 +271,14 @@ class ajaxController extends bootstrap
             } elseif ($_POST['etape'] == 2) {
                 $this->projects->get($_POST['id_project'], 'id_project');
                 $this->projects->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
+                $this->projects->balance_count   = empty($this->projects->balance_count) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $this->projects->balance_count;
                 $this->projects->update();
 
                 $this->companies->get($this->projects->id_company, 'id_company');
                 $this->companies->name                          = $_POST['raison_sociale_etape2'];
                 $this->companies->forme                         = $_POST['forme_juridique_etape2'];
                 $this->companies->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
-                $this->companies->date_creation                 = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['creation_date_etape2'])));
+                $this->companies->date_creation                 = \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->format('Y-m-d');
                 $this->companies->adresse1                      = $_POST['address_etape2'];
                 $this->companies->city                          = $_POST['ville_etape2'];
                 $this->companies->zip                           = $_POST['postal_etape2'];
@@ -413,12 +414,7 @@ class ajaxController extends bootstrap
                 // si client existe deja
                 if ($this->clients->get($_POST['id_client'], 'id_client')) {
                     if ($this->clients->counter('email = "' . $_POST['email'] . '" AND id_client <> ' . $this->clients->id_client) > 0) {
-
-                        // a mettre
                         $this->clients->email = $_POST['email'] . '-' . $_POST['id_project'];
-
-                        // on fait rien
-                        //$error = true;
                     } else {
                         $this->clients->email = $_POST['email'];
 
@@ -436,12 +432,7 @@ class ajaxController extends bootstrap
 
                     // Si le mail existe deja on enregistre pas le mail
                     if ($this->clients->counter('email = "' . $_POST['email'] . '"') > 0) {
-
-                        // a mettre
                         $this->clients->email = $_POST['email'] . '-' . $_POST['id_project'];
-
-                        // on fait rien
-                        //$error = true;
                     } else {
                         $this->clients->email = $_POST['email'];
                     }
@@ -457,12 +448,12 @@ class ajaxController extends bootstrap
                     $this->companies->update();
                 }
 
-                echo json_encode(array(
+                echo json_encode([
                     'id_client' => $this->clients->id_client,
-                    'error'     => ($error == true ? 'nok' : 'ok')
-                ));
+                    'error'     => 'ok'
+                ]);
             } else {
-                echo json_encode(array('id_client' => '0', 'error' => 'nok'));
+                echo json_encode(['id_client' => '0', 'error' => 'nok']);
             }
         }
     }
@@ -510,43 +501,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    // email creation nouveau mot de passe (mis a jour le 09/07/2014)
-    public function _generer_mdp_new()
-    {
-        $this->autoFireView = false;
-        $clients            = $this->loadData('clients');
-        $oSettings          = $this->loadData('settings');
-
-        if (isset($_POST['id_client']) && $clients->get($_POST['id_client'], 'id_client')) {
-            $oSettings->get('Facebook', 'type');
-            $lien_fb = $oSettings->value;
-
-            $oSettings->get('Twitter', 'type');
-            $lien_tw = $oSettings->value;
-
-            $varMail = array(
-                'surl'          => $this->surl,
-                'url'           => $this->lurl,
-                'prenom'        => $clients->prenom,
-                'login'         => $clients->email,
-                'link_password' => $this->lurl . '/' . $this->tree->getSlug(119, $this->language) . '/' . $clients->hash,
-                'lien_fb'       => $lien_fb,
-                'lien_tw'       => $lien_tw
-            );
-
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $varMail);
-            $message->setTo($clients->email);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
-
-            echo 'ok';
-        } else {
-            echo 'nok';
-        }
-    }
-
-    // old version (mis a jour le 09/07/2014) remis en place le 10/07/14
     public function _generer_mdp()
     {
         $this->autoFireView = false;
@@ -581,7 +535,6 @@ class ajaxController extends bootstrap
             $mailer->send($message);
         }
     }
-
 
     // supprime le bid dans la gestion du preteur et raffiche sa liste de bid mis a jour
     public function _deleteBidPreteur()
