@@ -227,7 +227,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $tax_type = $entityManager->getRepository('tax_type');
 
         try {
-            return $echeanciers->getFiscalState(new \DateTime('first day of last month'), new \DateTime('last day of last month'), $tax_type->getTaxDetailsByCountry($country, [\tax_type::TYPE_VAT]));
+            return $echeanciers->getFiscalState(new \DateTime('2014-01-01'), new \DateTime('2014-01-31'), $tax_type->getTaxDetailsByCountry($country, [\tax_type::TYPE_VAT]));
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getContainer()->get('monolog.logger.console');
