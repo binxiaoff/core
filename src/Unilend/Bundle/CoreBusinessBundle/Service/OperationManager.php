@@ -790,11 +790,11 @@ class OperationManager
         $walletTypeRepo      = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType');
         $walletRepo          = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet');
 
-        $operationTypeInterestGross = $operationTypeRepo->findOneBy(['label' => OperationType::GROSS_INTEREST_REPAYMENT]);
-        $this->newOperation($amountInterestGross, $operationTypeInterestGross, $borrowerWallet, $lenderWallet, $repaymentSchedule);
-
         $operationTypeCapital = $operationTypeRepo->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
         $this->newOperation($amountCapital, $operationTypeCapital, $borrowerWallet, $lenderWallet, $repaymentSchedule);
+
+        $operationTypeInterestGross = $operationTypeRepo->findOneBy(['label' => OperationType::GROSS_INTEREST_REPAYMENT]);
+        $this->newOperation($amountInterestGross, $operationTypeInterestGross, $borrowerWallet, $lenderWallet, $repaymentSchedule);
 
         $taxes = $this->taxManager->getLenderRepaymentInterestTax($repaymentSchedule);
 
