@@ -35,6 +35,9 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $transactionsToMigrate = $transactions->select('status = 1', 'date_transaction ASC', $offset, $limit);
         $transactionCount      = 0;
 
+        $output->writeln('Starting with : ' . $offset);
+        $output->writeln('Number of transactions to migrate : ' . $limit);
+
         $this->dataBaseConnection->beginTransaction();
         try {
             foreach ($transactionsToMigrate as $transaction) {
