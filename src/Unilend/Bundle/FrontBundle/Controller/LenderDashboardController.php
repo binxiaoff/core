@@ -64,7 +64,7 @@ class LenderDashboardController extends Controller
 
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
-            if ($aLastIRR && $aLastIRR['status'] == 0) {
+            if ($aLastIRR && $aLastIRR['status'] == \lenders_account_stats::STAT_VALID_OK) {
                 $irr                = $aLastIRR['value'];
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
                 $hasIRR             = true;
