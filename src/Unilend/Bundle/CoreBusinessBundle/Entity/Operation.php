@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Operation
  *
- * @ORM\Table(name="operation", indexes={@ORM\Index(name="fk_operation_id_type_idx", columns={"id_type"}), @ORM\Index(name="fk_id_project_idx", columns={"id_project"}), @ORM\Index(name="fk_id_loan_idx", columns={"id_loan"}), @ORM\Index(name="fk_id_payment_schedule_idx", columns={"id_payment_schedule"}), @ORM\Index(name="fk_id_repayment_schedule_idx", columns={"id_repayment_schedule"}), @ORM\Index(name="fk_id_backpayline_idx", columns={"id_backpayline"}), @ORM\Index(name="fk_id_welcome_offer_idx", columns={"id_welcome_offer"}), @ORM\Index(name="fk_id_wire_transfer_out_idx", columns={"id_wire_transfer_out"}), @ORM\Index(name="fk_id_wire_transfer_in_idx", columns={"id_wire_transfer_in"}), @ORM\Index(name="fk_id_direct_debit_idx", columns={"id_direct_debit"}), @ORM\Index(name="fk_id_transfer_idx", columns={"id_transfer"}), @ORM\Index(name="idx_id_wallet_debitor_type", columns={"id_wallet_debtor", "id_type"}), @ORM\Index(name="idx_id_wallet_creditor_type", columns={"id_wallet_creditor", "id_type"})})
+ * @ORM\Table(name="operation", indexes={@ORM\Index(name="fk_operation_id_type_idx", columns={"id_type"}), @ORM\Index(name="fk_id_project_idx", columns={"id_project"}), @ORM\Index(name="fk_id_loan_idx", columns={"id_loan"}), @ORM\Index(name="fk_id_payment_schedule_idx", columns={"id_payment_schedule"}), @ORM\Index(name="fk_id_repayment_schedule_idx", columns={"id_repayment_schedule"}), @ORM\Index(name="fk_id_backpayline_idx", columns={"id_backpayline"}), @ORM\Index(name="fk_id_welcome_offer_idx", columns={"id_welcome_offer"}), @ORM\Index(name="fk_id_wire_transfer_out_idx", columns={"id_wire_transfer_out"}), @ORM\Index(name="fk_id_wire_transfer_in_idx", columns={"id_wire_transfer_in"}), @ORM\Index(name="fk_id_transfer_idx", columns={"id_transfer"}), @ORM\Index(name="idx_id_wallet_debitor_type", columns={"id_wallet_debtor", "id_type"}), @ORM\Index(name="idx_id_wallet_creditor_type", columns={"id_wallet_creditor", "id_type"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -105,16 +105,6 @@ class Operation
      * })
      */
     private $idTransfer;
-
-    /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_direct_debit", referencedColumnName="id_prelevement")
-     * })
-     */
-    private $idDirectDebit;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur
@@ -248,30 +238,6 @@ class Operation
     public function getBackpayline()
     {
         return $this->idBackpayline;
-    }
-
-    /**
-     * Set idDirectDebit
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements $idDirectDebit
-     *
-     * @return Operation
-     */
-    public function setDirectDebit(\Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements $idDirectDebit = null)
-    {
-        $this->idDirectDebit = $idDirectDebit;
-
-        return $this;
-    }
-
-    /**
-     * Get idDirectDebit
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements
-     */
-    public function getDirectDebit()
-    {
-        return $this->idDirectDebit;
     }
 
     /**

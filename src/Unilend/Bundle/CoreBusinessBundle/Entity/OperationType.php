@@ -45,6 +45,8 @@ class OperationType
     const UNILEND_PROVISION                         = 'unilend_provision';
     const UNILEND_WITHDRAW                          = 'unilend_withdraw';
     const UNILEND_PROMOTIONAL_OPERATION_PROVISION   = 'unilend_promotional_operation_provision';
+    const COLLECTION_PROVISION                      = 'collection_provision';
+    const COLLECTION_REPAYMENT                      = 'collection_repayment';
 
     /**
      * @var integer

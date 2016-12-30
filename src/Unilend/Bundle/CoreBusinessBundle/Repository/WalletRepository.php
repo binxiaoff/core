@@ -2,12 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-
 
 class WalletRepository extends EntityRepository
 {
