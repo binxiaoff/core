@@ -13,27 +13,29 @@
         {% if ongoingBids|length > 0 %}
             <ul class="list-myoffers">
                 {% for project in ongoingProjects %}
-                    <li class="myoffer">
-                        <div class="myoffer-project-name">{{ project.title }}</div>
-                        <div class="myoffer-project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
-                        <div class="myoffer-project-period">
-                            {% if project.days_left <= 2 %}
-                                <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|date('Y-m-d\\TH:i:s') }}"></span>
-                            {% else %}
-                                {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
-                            {% endif %}
-                        </div>
-                        {% for bid in project.pending_bids %}
-                            <div class="myoffer-amount">
-                                {% set transParams = {
-                                    '%amount%' : '<span class="amount">' ~ bid.amount_euro|localizednumber ~ '&nbsp;€</span>',
-                                    '%rate%' : '<span class="interest">' ~ bid.rate|localizednumber ~ '&nbsp;%</span>'
-                                } %}
-                                {% if bid.id_autobid != 0 %}<span class="icon fa-autolend-u"></span> {% trans with transParams %} lender-dashboard-offers_autolend-bid-legend {% endtrans %}{% endif %}
-                                {% trans with transParams %} lender-dashboard-offers_bid-description {% endtrans %}
+                    {% if project.pending_bids|length %}
+                        <li class="myoffer">
+                            <div class="myoffer-project-name">{{ project.title }}</div>
+                            <div class="myoffer-project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
+                            <div class="myoffer-project-period">
+                                {% if project.days_left <= 2 %}
+                                    <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|date('Y-m-d\\TH:i:s') }}"></span>
+                                {% else %}
+                                    {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
+                                {% endif %}
                             </div>
-                        {% endfor %}
-                    </li>
+                            {% for bid in project.pending_bids %}
+                                <div class="myoffer-amount">
+                                    {% set transParams = {
+                                        '%amount%' : '<span class="amount">' ~ bid.amount_euro|localizednumber ~ '&nbsp;€</span>',
+                                        '%rate%' : '<span class="interest">' ~ bid.rate|localizednumber ~ '&nbsp;%</span>'
+                                    } %}
+                                    {% if bid.id_autobid != 0 %}<span class="icon fa-autolend-u"></span> {% trans with transParams %} lender-dashboard-offers_autolend-bid-legend {% endtrans %}{% endif %}
+                                    {% trans with transParams %} lender-dashboard-offers_bid-description {% endtrans %}
+                                </div>
+                            {% endfor %}
+                        </li>
+                    {% endif %}
                 {% endfor %}
             </ul><!-- /.list-myoffers -->
         {% endif %}
