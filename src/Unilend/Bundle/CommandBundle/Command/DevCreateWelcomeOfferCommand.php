@@ -34,8 +34,9 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
         foreach ($clients as $clientId){
             if ($client->get($clientId) && false === $transactions->exist('id_client = ' . $client->id_client . ' AND type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER)) {
                 $return = $welcomeOfferManager->createWelcomeOffer($client);
-                if (0 == $return){
-                    $distributedOffers = 1;
+                if (0 == $return['code']){
+                    $distributedOffers += 1;
+                    $output->writeln($return['message']);
                 } else {
                     $output->writeln('Welcome Offer not distributed for client: ' . $clientId . ' because : ' . $return['message']);
                 }
