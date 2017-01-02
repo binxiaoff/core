@@ -4,9 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -60,17 +60,19 @@ class WalletManager
 
     /**
      * @param Wallet $wallet
-     * @param        $amount
+     * @param float  $amount
      * @param        $origin
      *
      * @throws \Exception
      */
     public function engageBalance(Wallet $wallet, $amount, $origin)
     {
+        $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
+
         $this->entityManager->getConnection()->beginTransaction();
         try {
             if (-1 === bccomp($wallet->getAvailableBalance(), $amount)) {
-                new \DomainException('The available balance must not be lower than zero');
+                throw new \DomainException('The available balance must not be lower than zero');
             }
 
             $availableBalance = bcsub($wallet->getAvailableBalance(), $amount, 2);
@@ -81,7 +83,6 @@ class WalletManager
             $this->snap($wallet, $origin);
 
             $this->entityManager->flush();
-            $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
@@ -94,14 +95,20 @@ class WalletManager
      * @param        $amount
      * @param        $origin
      *
+     * @return null|\transactions
      * @throws \Exception
      */
     public function releaseBalance(Wallet $wallet, $amount, $origin)
     {
+        $transaction = null;
+        if ($origin instanceof Bids) {
+           $transaction = $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
+        }
+
         $this->entityManager->getConnection()->beginTransaction();
         try {
             if (-1 === bccomp($wallet->getCommittedBalance(), $amount)) {
-                new \DomainException('The committed balance must not be lower than zero');
+                throw new \DomainException('The committed balance must not be lower than zero');
             }
 
             $availableBalance = bcadd($wallet->getAvailableBalance(), $amount, 2);
@@ -112,11 +119,9 @@ class WalletManager
             $this->snap($wallet, $origin);
 
             $this->entityManager->flush();
-
-            if ($origin instanceof Bids) {
-                $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
-            }
             $this->entityManager->getConnection()->commit();
+
+            return $transaction; //compatibility legacy
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
             throw $e;
@@ -157,12 +162,15 @@ class WalletManager
         $walletLine->create();
 
         $bid->setIdLenderWalletLine($walletLine->id_wallet_line);
+        $this->entityManager->flush();
     }
 
     /**
      * @param      $clientId
      * @param      $amount
      * @param Bids $bid
+     *
+     * @return \transactions
      */
     private function legacyReleaseBalance($clientId, $amount, Bids $bid)
     {
@@ -193,6 +201,8 @@ class WalletManager
         $walletLine->amount                   = $amountInCent;
         $walletLine->id_project               = $bid->getIdProject();
         $walletLine->create();
+
+        return $transaction;
     }
 
     /**
@@ -202,22 +212,12 @@ class WalletManager
     private function credit(Operation $operation, Wallet $creditor = null)
     {
         if ($creditor instanceof Wallet) {
-            switch ($operation->getType()->getLabel()) {
-                case OperationType::LENDER_LOAN :
-                    $balance = bcadd($creditor->getCommittedBalance(), $operation->getAmount(), 2);
-                    if ($balance < 0) {
-                        throw new \DomainException('The committed balance must not be lower than zero');
-                    }
-                    $creditor->setCommittedBalance($balance);
-                    break;
-                default :
-                    $balance = bcadd($creditor->getAvailableBalance(), $operation->getAmount(), 2);
-                    if ($balance < 0) {
-                        throw new \DomainException('The available balance must not be lower than zero');
-                    }
-                    $creditor->setAvailableBalance($balance);
-                    break;
+            $balance = bcadd($creditor->getAvailableBalance(), $operation->getAmount(), 2);
+            if ($balance < 0) {
+                throw new \DomainException('The available balance must not be lower than zero');
             }
+            $creditor->setAvailableBalance($balance);
+
             $this->entityManager->flush($creditor);
         }
     }
@@ -231,7 +231,6 @@ class WalletManager
         if ($debtor instanceof Wallet) {
             switch ($operation->getType()->getLabel()) {
                 case OperationType::LENDER_LOAN :
-                case OperationType::LENDER_LOAN_REFUSED :
                     $balance = bcsub($debtor->getCommittedBalance(), $operation->getAmount(), 2);
                     if ($balance < 0) {
                         throw new \DomainException('The committed balance must not be lower than zero');
@@ -257,6 +256,8 @@ class WalletManager
                         }
                     }
 
+                    // todo: if unilend withdraw, check
+
                     $debtor->setAvailableBalance($balance);
                     break;
             }
@@ -265,8 +266,8 @@ class WalletManager
     }
 
     /**
-     * @param Wallet $wallet
-     * @param array|object  $parameters
+     * @param Wallet       $wallet
+     * @param array|object $parameters
      */
     private function snap(Wallet $wallet, $parameters)
     {
@@ -286,8 +287,8 @@ class WalletManager
             if ($item instanceof Bids) {
                 $walletSnap->setBid($item);
             }
-            if ($item instanceof Projects) {
-                $walletSnap->setProject($item);
+            if ($item instanceof Loans) {
+                $walletSnap->setLoan($item);
             }
         }
         $this->entityManager->persist($walletSnap);

@@ -438,8 +438,6 @@ class dossiersController extends bootstrap
                     $lenders = $this->loadData('lenders_accounts');
                     /** @var \clients $clients */
                     $clients = $this->loadData('clients');
-                    /** @var \wallets_lines $wallets_lines */
-                    $wallets_lines = $this->loadData('wallets_lines');
                     /** @var \echeanciers $echeanciers */
                     $echeanciers = $this->loadData('echeanciers');
 

@@ -1,7 +1,6 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -19,16 +18,10 @@ class LoanManager
      * @var EntityManagerSimulator
      */
     private $oEntityManager;
-    /**
-     * @var EntityManager
-     */
-    private $em;
 
-    public function __construct(EntityManagerSimulator $oEntityManager, OperationManager $operationManager, EntityManager $em)
+    public function __construct(EntityManagerSimulator $oEntityManager)
     {
         $this->oEntityManager   = $oEntityManager;
-        $this->operationManager = $operationManager;
-        $this->em               = $em;
     }
     /**
      * @param LoggerInterface $oLogger
@@ -65,8 +58,6 @@ class LoanManager
                 );
             }
         }
-        $loan = $this->em->getRepository('UnilendCoreBusinessBundle:Loans')->find($oLoan->id_loan);
-        $this->operationManager->loan($loan);
 
         return true;
     }

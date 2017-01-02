@@ -20,7 +20,6 @@ class OperationType
     const GROSS_INTEREST_REPAYMENT                  = 'gross_interest_repayment';
     const LENDER_BID                                = 'lender_bid';
     const LENDER_LOAN                               = 'lender_loan';
-    const LENDER_LOAN_REFUSED                       = 'lender_loan_refused';
     const LENDER_PROVISION                          = 'lender_provision';
     const LENDER_PROVISION_CANCEL                   = 'lender_provision_cancel';
     const LENDER_REJECTED_BID                       = 'lender_rejected_bid';

@@ -216,16 +216,13 @@ class BidManager
 
         $iBidNb = $oBid->counter('id_project = ' . $oBid->id_project);
         $iBidNb++;
-        $oBid->ordre                 = $iBidNb;
+        $oBid->ordre = $iBidNb;
         $oBid->create();
 
         $bid = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->find($oBid->id_bid);
         $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $bid->getIdLenderAccount()]);
         $wallet = $walletMatching->getIdWallet();
         $this->walletManager->engageBalance($wallet, $fAmount, $bid);
-
-        $oBid->id_lender_wallet_line = $bid->getIdLenderWalletLine();
-        $oBid->update();
 
         // Liste des offres non utilisées
         $aAllOffers = $oWelcomeOfferDetails->select('id_client = ' . $iClientId . ' AND status = 0');
@@ -392,8 +389,6 @@ class BidManager
     {
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
-        /** @var \transactions $oTransaction */
-        $oTransaction = $this->oEntityManager->getRepository('transactions');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
         // Loaded for class constants
@@ -402,7 +397,7 @@ class BidManager
         $bid = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->find($oBid->id_bid);
         $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $bid->getIdLenderAccount()]);
         $wallet = $walletMatching->getIdWallet();
-        $this->walletManager->releaseBalance($wallet, $fAmount, $bid);
+        $oTransaction = $this->walletManager->releaseBalance($wallet, $fAmount, $bid);
 
         $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
         $fAmountX100 = $fAmount * 100;

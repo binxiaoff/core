@@ -636,6 +636,10 @@ class transfertsController extends bootstrap
                 $oMailerManager = $this->get('unilend.service.email_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $oNotificationManager */
                 $oNotificationManager = $this->get('unilend.service.notification_manager');
+                /** @var \Doctrine\ORM\EntityManager $em */
+                $em = $this->get('doctrine.orm.entity_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
+                $operationManager = $this->get('unilend.service.operation_manager');
                 /** @var \lenders_accounts $lender */
                 $lender = $this->loadData('lenders_accounts');
                 /** @var \transactions $transactions */
@@ -654,6 +658,11 @@ class transfertsController extends bootstrap
                 $paymentInspectionStopped->value = 0;
                 $paymentInspectionStopped->update();
 
+                $allLoans = $em->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $_POST['id_project']]);
+                foreach ($allLoans as $loan) {
+                    $operationManager->loan($loan);
+                }
+
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $project);
 
                 /** @var \clients_adresses $clientsAddresses */
@@ -668,12 +677,8 @@ class transfertsController extends bootstrap
                 $montant -= $partUnilend;
 
                 if (false === $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
-                    $operationManager = $this->get('unilend.service.operation_manager');
-                    /** @var \Doctrine\ORM\EntityManager $em */
-                    $em            = $this->get('doctrine.orm.entity_manager');
                     $projectEntity = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
-                    $operationManager->releaseProjectFunds($projectEntity);
+                    $operationManager->projectCommission($projectEntity);
 
                     $borrowerWallet = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($companies->id_client_owner, WalletType::BORROWER);
                     $virement = $operationManager->withdrawBorrowerWallet($borrowerWallet, $montant, $projectEntity);

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * WalletBalanceHistory
  *
- * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"}), @ORM\Index(name="fk_id_bid_idx", columns={"id_bid"}), @ORM\Index(name="id_project", columns={"id_project"})})
+ * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"}), @ORM\Index(name="fk_id_bid_idx", columns={"id_bid"}), @ORM\Index(name="id_loan", columns={"id_loan"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -74,14 +74,14 @@ class WalletBalanceHistory
     private $idBid;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
      * })
      */
-    private $idProject;
+    private $idLoan;
 
 
     /**
@@ -240,27 +240,27 @@ class WalletBalanceHistory
     }
 
     /**
-     * Set Project
+     * Set Loan
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan
      *
      * @return WalletBalanceHistory
      */
-    public function setProject(Projects $idProject = null)
+    public function setLoan(Loans $idLoan = null)
     {
-        $this->idProject = $idProject;
+        $this->idLoan = $idLoan;
 
         return $this;
     }
 
     /**
-     * Get Project
+     * Get Loan
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
      */
-    public function getProject()
+    public function getLoan()
     {
-        return $this->idProject;
+        return $this->idLoan;
     }
 
     /**
