@@ -761,12 +761,18 @@ class MainController extends Controller
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
 
+        $requestedDate = str_replace('_', '-', $requestedDate);
+
         if (false === empty($requestedDate)) {
-            $date       = new \DateTime($requestedDate);
-            $years      = array_merge(['2013-2014'], range(2015, $date->format('Y')));
+            $firstHistoryDate = new \DateTime(StatisticsManager::START_FRONT_STATISTICS_HISTORY);
+            $date             = \DateTime::createFromFormat('Y-m-d', $requestedDate);
+            if ($date < $firstHistoryDate) {
+                return $this->redirectToRoute('statistics');
+            }
+            $years = array_merge(['2013-2014'], range(2015, $date->format('Y')));
         } else {
-            $date       = new \DateTime('NOW');
-            $years      = array_merge(['2013-2014'], range(2015, date('Y')));
+            $date  = new \DateTime('NOW');
+            $years = array_merge(['2013-2014'], range(2015, date('Y')));
         }
 
         $statistics = $statisticsManager->getStatisticsAtDate($date);
