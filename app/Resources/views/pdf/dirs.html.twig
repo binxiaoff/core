@@ -75,13 +75,13 @@
         <p>Les investisseurs sont informés que la présente offre de minibons ne donne pas lieu à un document soumis au visa de l‘Autorité des marchés financiers. L’émetteur est responsable du caractère complet, exact et équilibré des informations fournies. Le conseiller en investissements participatifs contrôle la cohérence, la clarté, et le caractère équilibré de ces informations.</p>
         <h2>I - Activité de l’émetteur et description du projet financé</h2>
         <p>La société émettrice a été créée le {{ company.creation_date|localizeddate('short', 'none') }}. Il s’agit d’une {{ company.legal_status }}, qui, à la connaissance d’Unilend, a établi {{ company.accounts_count }} bilans.</p>
-        <p>La nature des opérations effectuées actuellement par l’émetteur et ses principales activités, les principales catégories de produits vendus et/ou de services fournis, les principaux marchés sur lesquels il opère et l’utilisation des fonds levés ({{ project.amount|localizednumber }}&nbsp;euros brut, soit {{ project.net_amount }}&nbsp;euros net), portés à la connaissance du Conseiller en Investissements participatifs est disponible ici&nbsp;: <a href="{{ absolute_url(path('project_detail', {'projectSlug': project.slug})) }}">lien</a></p>
+        <p>La nature des opérations effectuées actuellement par l’émetteur et ses principales activités, les principales catégories de produits vendus et/ou de services fournis, les principaux marchés sur lesquels il opère et l’utilisation des fonds levés ({{ project.amount|localizednumber }}&nbsp;euros brut, soit {{ project.net_amount|localizednumber }}&nbsp;euros net), portés à la connaissance du Conseiller en Investissements participatifs est disponible ici&nbsp;: <a href="{{ absolute_url(path('project_detail', {'projectSlug': project.slug})) }}">lien</a></p>
         <p>Le produit de l’émission sera utilisé de la manière décrite ici&nbsp;: <a href="{{ absolute_url(path('project_detail', {'projectSlug': project.slug})) }}">lien</a></p>
         <p>L’émetteur indique qu’il n’a pas d’autres offres de financements participatifs. Au cours des douze derniers mois le montant total brut de sommes perçues à la suite de l’émission de minibons ou de titres financiers par projet est {% if project.released_funds == 0 %}nul{% else %} de {{ project.released_funds|localizednumber }}&nbsp;euros{% endif %}.</p>
         <p>Vous êtes invités à cliquer sur le lien hypertexte suivant pour accéder&nbsp;: <a href="{{ absolute_url(path('project_detail', {'projectSlug': project.slug})) }}">lien</a></p>
         <ul>
             <li>aux comptes synthétiques existants&nbsp;;</li>
-            <li>les éléments prévisionnels sur l’activité&nbsp;;</li>
+            <li>aux éléments prévisionnels sur l’activité&nbsp;;</li>
             <li>le cas échéant à l’organigramme du groupe auquel appartient l’émetteur et la place qu’il y occupe&nbsp;;</li>
             <li>au curriculum vitae des représentants légaux de l’émetteur.</li>
         </ul>
@@ -90,7 +90,7 @@
         <ul>
             <li>
                 Risque relatif à la situation financière de l’émetteur&nbsp;: quelle que soit la situation financière de l’émetteur le jour de l’émission, cette dernière est susceptible d’évoluer à tout moment et placer l’émetteur dans une position où le remboursement des échéances lui serait impossible.<br>
-                Actuellement, avant la réalisation de la levée de fonds de la présente offre, l’émetteur {% if company.working_capital >= 0 %}dispose d‘un fonds de roulement net suffisant{% else %}ne dispose pas d’un fonds de roulement suffisant{% endif %}pour faire face à ses obligations et à ses besoins de trésorerie pour les 12 prochains mois. Il est néanmoins rappelé à l’investisseur que ce critère ne saurait, seul, être utilisé pour analyser le risque relatif à la situation financière de l’émetteur.
+                Actuellement, avant la réalisation de la levée de fonds de la présente offre, l’émetteur {% if company.working_capital >= 0 %}dispose d‘un fonds de roulement net suffisant{% else %}ne dispose pas d’un fonds de roulement suffisant{% endif %} pour faire face à ses obligations et à ses besoins de trésorerie pour les 12 prochains mois. Il est néanmoins rappelé à l’investisseur que ce critère ne saurait, seul, être utilisé pour analyser le risque relatif à la situation financière de l’émetteur.
             </li>
             <li>La description d’autres risques plus spécifiques portés à la connaissance du Conseiller en Investissements participatifs est disponible via ce <a href="{{ absolute_url(path('project_detail', {'projectSlug': project.slug})) }}">lien</a>.</li>
         </ul>
@@ -99,11 +99,11 @@
         <p>L’émetteur est, par nature, exposé à certains facteurs de risques pouvant entraîner un non remboursement futur, partiel ou total, des sommes empruntées.</p>
         <p>Parmi ces risques figurent notamment&nbsp;:</p>
         <ol>
-            <li>le risque lié à la situation financière de l’émetteur&nbsp;:</li>
-            <li>le risque lié à l’activité de l’émetteur&nbsp;:</li>
-            <li>le risque lié à la dépendance vis à vis de tiers (clients, fournisseurs en particulier) ;</li>
-            <li>le risque lié à la dépendance « homme(s) clé(s) » (de qui dépend le développement et la gestion de la société&nbsp;:</li>
-            <li>le risque conjoncturel ou structurel du marché/secteur d’activité sur lequel l’émetteur opère&nbsp;:</li>
+            <li>le risque lié à la situation financière de l’émetteur&nbsp;;</li>
+            <li>le risque lié à l’activité de l’émetteur&nbsp;;</li>
+            <li>le risque lié à la dépendance vis-à-vis de tiers (clients, fournisseurs en particulier) ;</li>
+            <li>le risque lié à la dépendance « homme(s) clé(s) » (de qui dépend le développement et la gestion de la société)&nbsp;;</li>
+            <li>le risque conjoncturel ou structurel du marché/secteur d’activité sur lequel l’émetteur opère&nbsp;;</li>
             <li>les risques juridiques ou règlementaires (selon l’activité de l’émetteur).</li>
         </ol>
         <p>Avec le temps, de nouveaux risques pourront apparaître et ceux présentés pourront évoluer.</p>
@@ -123,8 +123,8 @@
                             <th class="date-column">Date</th>
                             <th class="period-column">Période</th>
                             <th class="amount-column">Mensualité</th>
-                            <th class="amount-column">Intérêts</th>
                             <th class="amount-column">Capital</th>
+                            <th class="amount-column">Intérêts</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -148,7 +148,7 @@
                     <li>
                         Ces minibons vous seront remboursés dans les conditions suivantes&nbsp;:<br>
                         <ul>
-                            <li>Mensualités constantes sur 60 mois</li>
+                            <li>Mensualités constantes sur {{ project.duration }} mois</li>
                             <li>À tout moment, l’emprunteur peut décider de solder les minibons par anticipation. Les intérêts non échus ne sont pas dûs.</li>
                         </ul>
                     </li>
@@ -199,7 +199,7 @@
         <h3>II.2 Frais se rapportant aux prestations fournies à l’émetteur</h3>
         <p>Vous avez la possibilité d’obtenir la description détaillée des prestations fournies à l’émetteur des minibons dont la souscription est envisagée et les frais s’y rapportant sur demande à l’adresse suivante&nbsp;: contact@unilend.fr.</p>
         <h2>III- Revente ultérieure des minibons offerts à la souscription</h2>
-        <p>En cas de cession d’un minibon, qui ne pourra avoir lieu que selon les modalités définies par le Unilend et portées à la connaissance des parties dans les conditions générales de vente, un écrit est nécessaire entre le vendeur et l’acquéreur (qui devra au préalable avoir ouvert un compte prêteur auprès d’Unilend) d’un minibon pour constater la cession de créance. La cession doit ensuite être notifiée à l’émetteur et à la plateforme de financement participatif. Le transfert de propriété résultera de l’inscription correspondante au nom de l’acquéreur dans le registre tenu par l’émetteur ou par le CIP pour le compte de l’émetteur.</p>
+        <p>En cas de cession d’un minibon, qui ne pourra avoir lieu que selon les modalités définies par Unilend et portées à la connaissance des parties dans les Conditions Générales de Vente, un écrit est nécessaire entre le vendeur et l’acquéreur (qui devra au préalable avoir ouvert un compte prêteur auprès d’Unilend) d’un minibon pour constater la cession de créance. La cession doit ensuite être notifiée à l’émetteur et à la plateforme de financement participatif. Le transfert de propriété résultera de l’inscription correspondante au nom de l’acquéreur dans le registre tenu par l’émetteur ou par le CIP pour le compte de l’émetteur.</p>
         <p>En cas de divergences entre les modalités ci-dessus et les Conditions Générales de Vente en vigueur à la date de la cession, les Conditions Générales de Vente s’appliqueront.</p>
     </div>
 {% endblock %}

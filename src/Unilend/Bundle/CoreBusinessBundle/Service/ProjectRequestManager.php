@@ -92,6 +92,23 @@ class ProjectRequestManager
         $project = $this->entityManager->getRepository('projects');
         /** @var \clients $clientRepository */
         $clientRepository = $this->entityManager->getRepository('clients');
+
+        if (empty($aFormData['email']) || false === filter_var($aFormData['email'], FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('Invalid email');
+        }
+        if (empty($aFormData['siren']) || false === preg_match('/^([0-9]{9}|[0-9]{14})$/', $aFormData['siren'])) {
+            throw new \InvalidArgumentException('Invalid SIREN');
+        }
+        if (empty($aFormData['amount']) || false === filter_var($aFormData['amount'], FILTER_VALIDATE_INT)) {
+            throw new \InvalidArgumentException('Invalid amount');
+        }
+        if (empty($aFormData['duration']) || false === filter_var($aFormData['duration'], FILTER_VALIDATE_INT)) {
+            throw new \InvalidArgumentException('Invalid duration');
+        }
+        if (empty($aFormData['reason']) || false === filter_var($aFormData['reason'], FILTER_VALIDATE_INT)) {
+            throw new \InvalidArgumentException('Invalid reason');
+        }
+
         $email = $clientRepository->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
 
         $client = new Clients();

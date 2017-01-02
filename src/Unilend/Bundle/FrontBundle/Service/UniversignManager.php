@@ -23,8 +23,6 @@ class UniversignManager
     private $logger;
     /** @var string */
     private $rootDir;
-    /** @var Packages */
-    private $assetsPackages;
     /** @var TemplateMessageProvider */
     private $messageProvider;
     /** @var string */
@@ -37,7 +35,6 @@ class UniversignManager
         MailerManager $mailerManager,
         RouterInterface $router,
         LoggerInterface $logger,
-        Packages $assetsPackages,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         $universignURL,
@@ -48,7 +45,6 @@ class UniversignManager
         $this->mailerManager   = $mailerManager;
         $this->router          = $router;
         $this->logger          = $logger;
-        $this->assetsPackages  = $assetsPackages;
         $this->messageProvider = $messageProvider;
         $this->mailer          = $mailer;
         $this->universignURL   = $universignURL;
@@ -339,8 +335,6 @@ class UniversignManager
         $settings->get('DebugMailIt', 'type');
 
         $varMail = [
-            '[SURL]'              => $this->assetsPackages->getUrl(''),
-            '[SUJET_MAIL]'        => 'Unilend - Erreur Universign',
             '[DOCUMENT_TYPE]'     => $documentType,
             '[DOCUMENT_ID]'       => $documentId,
             '[SOAP_ERROR_CODE]'   => $soapResult->faultCode(),

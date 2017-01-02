@@ -217,14 +217,18 @@ class MainController extends Controller
     {
         $aFormData = $request->request->get('esim');
 
-        /** @var ProjectRequestManager $projectRequestManager */
-        $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $project               = $projectRequestManager->saveSimulatorRequest($aFormData);
+        try {
+            /** @var ProjectRequestManager $projectRequestManager */
+            $projectRequestManager = $this->get('unilend.service.project_request_manager');
+            $project               = $projectRequestManager->saveSimulatorRequest($aFormData);
 
-        $session = $request->getSession();
-        $session->set('esim/project_id', $project->id_project);
+            $session = $request->getSession();
+            $session->set('esim/project_id', $project->id_project);
 
-        return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
+            return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
+        } catch (\Exception $exception) {
+            return $this->redirectToRoute('home_borrower');
+        }
     }
 
     /**

@@ -23,7 +23,7 @@ use Unilend\core\Loader;
 
 class LenderWalletController extends Controller
 {
-    const MAX_DEPOSIT_AMOUNT = 1000;
+    const MAX_DEPOSIT_AMOUNT = 5000;
     const MIN_DEPOSIT_AMOUNT = 20;
 
     /**
