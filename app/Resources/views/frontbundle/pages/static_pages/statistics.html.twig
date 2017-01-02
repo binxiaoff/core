@@ -511,7 +511,11 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['IRR'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
+                                    {% if value == 'NA' %}
+                                        <td class="table-stats-unilend-item-value">NA</td>
+                                    {% else %}
+                                        <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
+                                    {% endif %}
                                 {% endfor %}
                             </tr>
                             <!-- /IRR -->
