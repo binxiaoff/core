@@ -81,7 +81,7 @@ class CodinfManager
             'get_list_v2.php',
             [
                 'query'    => $query,
-                'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('codinf', __FUNCTION__, 'GET')
+                'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('codinf', __FUNCTION__, 'GET', $siren)
             ]
         );
     }

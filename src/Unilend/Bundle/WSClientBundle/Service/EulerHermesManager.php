@@ -57,7 +57,7 @@ class EulerHermesManager
             'transactor/' . $countryCode . '/siren/' . $siren,
             [
                 'headers'  => ['apikey' => $this->coverageApiKey],
-                'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('euler', __FUNCTION__, 'GET')
+                'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('euler', __FUNCTION__, 'GET', $siren)
             ]
         );
     }
@@ -79,7 +79,7 @@ class EulerHermesManager
                 'trafficLight/' . $data['Id'],
                 [
                     'headers' => ['apikey' => $this->gradingApiKey],
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('euler', __FUNCTION__, 'GET')
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('euler', __FUNCTION__, 'GET', $siren)
                 ]
             );
 
@@ -106,7 +106,7 @@ class EulerHermesManager
                 'transactor/grade/' . $data['Id'],
                 [
                     'headers'   => ['apikey' => $this->gradingApiKey],
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('euler', __FUNCTION__, 'GET')
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('euler', __FUNCTION__, 'GET', $siren)
                 ]
             );
 

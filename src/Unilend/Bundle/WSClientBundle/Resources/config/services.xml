@@ -6,7 +6,16 @@
     <services>
         <service id="unilend.ws_client.call_history_handler" class="Unilend\Bundle\WSClientBundle\Service\CallHistoryManager">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="logger"/>
+            <argument>Symfony\Component\Stopwatch\Stopwatch</argument>
+        </service>
+
+        <service id="unilend.ws_client.soap_client.infogreffe" class="SoapClient">
+            <argument>%infogreffe.wsdl_url%</argument>
+            <argument type="collection">
+                <argument key="location">%infogreffe.url%</argument>
+                <argument key="exception">1</argument>
+                <argument key="trace">1</argument>
+            </argument>
         </service>
 
         <service id="unilend.ws_client.euler_hermes_manager" class="Unilend\Bundle\WSClientBundle\Service\EulerHermesManager">
@@ -32,6 +41,14 @@
             <argument>%infolegale.token%</argument>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
+        </service>
+
+        <service id="unilend.ws_client.infogreffe_manager" class="Unilend\Bundle\WSClientBundle\Service\InfogreffeManager">
+            <argument>%infogreffe.login%</argument>
+            <argument>%infogreffe.password%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.ws_client.call_history_handler"/>
+            <argument type="service" id="unilend.ws_client.soap_client.infogreffe"/>
         </service>
     </services>
 </container>
