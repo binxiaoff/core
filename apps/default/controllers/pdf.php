@@ -458,7 +458,7 @@ class pdfController extends bootstrap
 
     private function generateProxyUniversign($bInstantCreate = false)
     {
-        if (date('Y-m-d', strtotime($this->oProjectsPouvoir->updated)) == date('Y-m-d') && false === $bInstantCreate) {
+        if (date('Y-m-d', strtotime($this->oProjectsPouvoir->updated)) == date('Y-m-d') && false === $bInstantCreate && false === empty($this->oProjectsPouvoir->url_universign)) {
             $regenerationUniversign = '/NoUpdateUniversign';
         } else {
             $regenerationUniversign = '';

@@ -360,10 +360,11 @@ EOF
             $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
             $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
             $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($iProjectId);
+            $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
             if ($project instanceof Projects) {
-                $reception->setIdProject($project->getIdProject())
-                          ->setIdClient($project->getIdCompany()->getIdClientOwner())
+                $reception->setIdProject($project)
+                          ->setIdClient($client)
                           ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
                           ->setAssignmentDate(new \DateTime())
                           ->setRemb(1);
@@ -403,9 +404,9 @@ EOF
         $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
         $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($projects->id_project);
-
-        $reception->setIdProject($project->getIdProject())
-                  ->setIdClient($project->getIdCompany()->getIdClientOwner())
+        $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $reception->setIdProject($project)
+                  ->setIdClient($client)
                   ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
                   ->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY)
                   ->setAssignmentDate(new \DateTime())
@@ -465,9 +466,9 @@ EOF
         $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
         $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($projects->id_project);
-
-        $reception->setIdProject($project->getIdProject())
-                  ->setIdClient($project->getIdCompany()->getIdClientOwner())
+        $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $reception->setIdProject($project)
+                  ->setIdClient($client)
                   ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
                   ->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION)
                   ->setRemb(1)
@@ -531,9 +532,9 @@ EOF
             $em        = $this->getContainer()->get('doctrine.orm.entity_manager');
             $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clients->id_client, WalletType::LENDER);
 
-            $reception->setIdClient($wallet->getIdClient()->getIdClient());
-            $reception->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED);
-            $reception->setRemb(1); // todo: delete the field
+            $reception->setIdClient($wallet->getIdClient())
+                      ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                      ->setRemb(1); // todo: delete the field
             $em->flush();
 
             $this->getContainer()->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
@@ -571,7 +572,7 @@ EOF
                         'url'             => $sUrl,
                         'prenom_p'        => $clients->prenom,
                         'fonds_depot'     => $oFicelle->formatNumber(bcdiv($reception->getMontant(), 100, 2)),
-                        'solde_p'         => $oFicelle->formatNumber($transactions->getSolde($reception->getIdClient())),
+                        'solde_p'         => $oFicelle->formatNumber($transactions->getSolde($reception->getIdClient()->getIdClient())),
                         'motif_virement'  => $clients->getLenderPattern($clients->id_client),
                         'projets'         => $sUrl . '/projets-a-financer',
                         'gestion_alertes' => $sUrl . '/profile',
@@ -624,7 +625,7 @@ EOF
             $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
             $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
             $reception        = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($transactions->id_prelevement);
-            $wallet           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::BORROWER);
+            $wallet           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
             if ($wallet) {
                 $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                 $operationManager->rejectProvisionBorrowerWallet($wallet, $amount, $reception); //todo: replace it by cancelProvisionBorrowerWallet

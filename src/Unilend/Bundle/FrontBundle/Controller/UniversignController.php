@@ -16,7 +16,7 @@ class UniversignController extends Controller
      *     name="proxy_signature_status",
      *     requirements={"status":"\w+"},
      *     requirements={"documentId":"\d+"},
-     *     requirements={"clientHash":"[0-9a-f]{32}"}
+     *     requirements={"clientHash":"[0-9a-f-]+"}
      *     )
      * @param string $status
      * @param int $documentId
@@ -89,7 +89,7 @@ class UniversignController extends Controller
      *     name="mandate_signature_status",
      *     requirements={"status":"\w+"},
      *     requirements={"documentId":"\d+"},
-     *     requirements={"clientHash":"[0-9a-f]{32}"}
+     *     requirements={"clientHash":"[0-9a-f-]+"}
      *     )
      * @param string $status
      * @param int $documentId
@@ -157,7 +157,7 @@ class UniversignController extends Controller
      *     name="tos_signature_status",
      *     requirements={"status":"\w+"},
      *     requirements={"documentId":"\d+"},
-     *     requirements={"clientHash":"[0-9a-f]{32}"}
+     *     requirements={"clientHash":"[0-9a-f-]+"}
      *     )
      * @param string $status
      * @param int $documentId

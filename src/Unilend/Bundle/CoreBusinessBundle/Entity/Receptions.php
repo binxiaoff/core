@@ -81,16 +81,22 @@ class Receptions
     private $remb;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -102,11 +108,14 @@ class Receptions
     private $ligne;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     * })
      */
-    private $idUser = '0';
+    private $idUser;
 
     /**
      * @var \DateTime
@@ -335,11 +344,11 @@ class Receptions
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param Clients $idClient
      *
      * @return Receptions
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient = null)
     {
         $this->idClient = $idClient;
 
@@ -349,7 +358,7 @@ class Receptions
     /**
      * Get idClient
      *
-     * @return integer
+     * @return Clients
      */
     public function getIdClient()
     {
@@ -359,11 +368,11 @@ class Receptions
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return Receptions
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject = null)
     {
         $this->idProject = $idProject;
 
@@ -373,7 +382,7 @@ class Receptions
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -407,11 +416,11 @@ class Receptions
     /**
      * Set idUser
      *
-     * @param integer $idUser
+     * @param Users $idUser
      *
      * @return Receptions
      */
-    public function setIdUser($idUser)
+    public function setIdUser(Users $idUser = null)
     {
         $this->idUser = $idUser;
 
@@ -421,7 +430,7 @@ class Receptions
     /**
      * Get idUser
      *
-     * @return integer
+     * @return Users
      */
     public function getIdUser()
     {

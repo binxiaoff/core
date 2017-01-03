@@ -123,9 +123,9 @@ class OperationManager
                 }
                 if ($item instanceof Receptions) {
                     $operation->setWireTransferIn($item);
-                }
-                if ($item instanceof Prelevements) {
-                    $operation->setDirectDebit($item);
+                    if ($item->getIdProject() instanceof Projects) {
+                        $operation->setProject($item->getIdProject());
+                    }
                 }
                 if ($item instanceof Transfer) {
                     $operation->setTransfer($item);
@@ -632,7 +632,11 @@ class OperationManager
     public function cancelProvisionBorrowerWallet(Wallet $wallet, $amount, Receptions $reception)
     {
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
-        $operation = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferIn' => $reception->getIdReception(), 'idWalletCreditor' => $wallet, 'idType' => $operationType]);
+        $operation     = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
+            'idWireTransferIn' => $reception->getIdReception(),
+            'idWalletCreditor' => $wallet,
+            'idType'           => $operationType
+        ]);
         if (null === $operation) {
             return false;
         }
@@ -672,7 +676,11 @@ class OperationManager
     public function rejectProvisionBorrowerWallet(Wallet $wallet, $amount, Receptions $reception)
     {
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
-        $operation = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferIn' => $reception->getIdReception(), 'idWalletCreditor' => $wallet, 'idType' => $operationType]);
+        $operation     = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
+            'idWireTransferIn' => $reception->getIdReception(),
+            'idWalletCreditor' => $wallet,
+            'idType'           => $operationType
+        ]);
         if (null === $operation) {
             return false;
         }
@@ -696,7 +704,7 @@ class OperationManager
         $bankUnilend = $this->entityManager->getRepository('bank_unilend');
 
         $transaction->id_prelevement   = $reception->getIdReception();
-        $transaction->id_client        = $reception->getIdClient();
+        $transaction->id_client        = $reception->getIdClient()->getIdClient();
         $transaction->montant          = -$reception->getMontant();
         $transaction->id_langue        = 'fr';
         $transaction->date_transaction = date('Y-m-d H:i:s');
@@ -707,7 +715,7 @@ class OperationManager
         $transaction->create();
 
         $bankUnilend->id_transaction = $transaction->id_transaction;
-        $bankUnilend->id_project     = $reception->getIdProject();
+        $bankUnilend->id_project     = $reception->getIdProject()->getIdProject();
         $bankUnilend->montant        = -$reception->getMontant();
         $bankUnilend->type           = 1;
         $bankUnilend->create();
@@ -720,7 +728,7 @@ class OperationManager
      */
     public function provisionBorrowerWallet(Receptions $reception)
     {
-        $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::BORROWER);
+        $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
         if (null === $wallet) {
             return false;
         }
@@ -1020,8 +1028,83 @@ class OperationManager
         $bankUnilend->create();
     }
 
-    public function provisionCollection($wa)
+    /**
+     * @param Wallet     $wallet
+     * @param Receptions $reception
+     *
+     * @return bool
+     */
+    public function provisionCollection(Wallet $wallet, Receptions $reception)
     {
+        $this->legacyProvisionCollection($wallet, $reception);
 
+        if ($wallet->getIdType()->getLabel() !== WalletType::BORROWER) {
+            return false;
+        }
+
+        $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
+
+        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
+        $this->newOperation($amount, $operationType, null, $wallet, $reception);
+
+        return true;
+    }
+
+    public function legacyProvisionCollection(Wallet $wallet, Receptions $reception)
+    {
+        /** @var \transactions $transaction */
+        $transaction = $this->entityManager->getRepository('transactions');
+
+        $transaction->id_virement      = $reception->getIdReception();
+        $transaction->id_client        = $wallet->getIdClient()->getIdClient();
+        $transaction->id_project       = $reception->getIdProject()->getIdProject();
+        $transaction->montant          = $reception->getMontant();
+        $transaction->id_langue        = 'fr';
+        $transaction->date_transaction = date('Y-m-d H:i:s');
+        $transaction->status           = \transactions::STATUS_VALID;
+        $transaction->type_transaction = \transactions_types::TYPE_RECOVERY_BANK_TRANSFER;
+        $transaction->create();
+    }
+
+    public function repaymentCollection(Wallet $wallet, $amount, Projects $project)
+    {
+        $this->legacyRepaymentCollection($wallet, $amount, $project);
+
+        if ($wallet->getIdType()->getLabel() !== WalletType::LENDER) {
+            return false;
+        }
+
+        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
+        $this->newOperation($amount, $operationType, null, $wallet, $project);
+
+        return true;
+    }
+
+    public function legacyRepaymentCollection(Wallet $wallet, $amount, Projects $project)
+    {
+        /** @var \transactions $transaction */
+        $transaction = $this->entityManager->getRepository('transactions');
+        /** @var \wallets_lines $walletLine */
+        $walletLine = $this->entityManager->getRepository('wallets_lines');
+
+        $transaction->id_project       = $project->getIdProject();
+        $transaction->id_client        = $wallet->getIdClient()->getIdClient();
+        $transaction->montant          = bcmul($amount, 100);
+        $transaction->id_langue        = 'fr';
+        $transaction->date_transaction = date('Y-m-d H:i:s');
+        $transaction->status           = \transactions::STATUS_VALID;
+        $transaction->type_transaction = \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+        $transaction->create();
+
+        $accountMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet->getId()]);
+        $lenderAccount   = $accountMatching->getIdLenderAccount();
+
+        $walletLine->id_lender                = $lenderAccount->getIdLenderAccount();
+        $walletLine->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
+        $walletLine->id_transaction           = $transaction->id_transaction;
+        $walletLine->status                   = \wallets_lines::STATUS_VALID;
+        $walletLine->type                     = \wallets_lines::VIRTUAL;
+        $walletLine->amount                   = $transaction->montant;
+        $walletLine->create();
     }
 }

@@ -74,21 +74,21 @@ class transfertsController extends bootstrap
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             $bank_unilend = $this->loadData('bank_unilend');
             $transactions = $this->loadData('transactions');
-
+            /** @var \Doctrine\ORM\EntityManager $em */
             $em               = $this->get('doctrine.orm.entity_manager');
             $operationManager = $this->get('unilend.service.operation_manager');
-            /** @var Projects $project */
-            $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
-            /** @var Receptions $reception */
-            $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
+            $reception        = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+            $user             = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
             if (null !== $project && null !== $reception) {
-                $reception->setIdProject($project->getIdProject())
-                           ->setIdClient($project->getIdCompany()->getIdClientOwner())
-                           ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
-                           ->setRemb(1)
-                           ->setIdUser($_SESSION['user']['id_user'])
-                           ->setAssignmentDate(new \DateTime());
+                $reception->setIdProject($project)
+                          ->setIdClient($client)
+                          ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
+                          ->setRemb(1)
+                          ->setIdUser($user)
+                          ->setAssignmentDate(new \DateTime());
 
                 $operationManager->provisionBorrowerWallet($reception);
 
@@ -231,14 +231,16 @@ class transfertsController extends bootstrap
             $em = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
             $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
             $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($_POST['id_client'], WalletType::LENDER);
 
             if (null !== $reception && null !== $wallet) {
-                $reception->setIdClient($_POST['id_client']);
-                $reception->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED);
-                $reception->setRemb(1);
-                $reception->setIdUser($_SESSION['user']['id_user']);
-                $reception->setAssignmentDate(new \DateTime());
+                $user = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+                $reception->setIdClient($wallet->getIdClient())
+                          ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                          ->setRemb(1)
+                          ->setIdUser($user)
+                          ->setAssignmentDate(new \DateTime());
                 $em->flush();
 
                 $result = $this->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
@@ -310,15 +312,15 @@ class transfertsController extends bootstrap
             /** @var Receptions $reception */
             $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             if ($reception) {
-                $wallet = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::LENDER);
+                $wallet = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::LENDER);
                 $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                 if ($wallet) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->cancelProvisionLenderWallet($wallet, $amount, $reception);
-                    $reception->setIdClient(null); // todo: make it nullable
-                    $reception->setStatusBo(Receptions::STATUS_PENDING);
-                    $reception->setRemb(0); // todo: delete the field
+                    $reception->setIdClient(null)
+                              ->setStatusBo(Receptions::STATUS_PENDING)
+                              ->setRemb(0); // todo: delete the field
                     $em->flush();
                 }
             }
@@ -346,18 +348,18 @@ class transfertsController extends bootstrap
             $em        = $this->get('doctrine.orm.entity_manager');
             $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             if ($reception) {
-                $projectId = $reception->getIdProject();
-                $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::BORROWER);
+                $projectId = $reception->getIdProject()->getIdProject();
+                $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
                 if ($wallet) {
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
-                    $reception->setIdClient(null);
-                    $reception->setIdProject(null);
-                    $reception->setStatusBo(Receptions::STATUS_PENDING);
-                    $reception->setRemb(0); // todo: delete the field
+                    $reception->setIdClient(null)
+                              ->setIdProject(null)
+                              ->setStatusBo(Receptions::STATUS_PENDING)
+                              ->setRemb(0); // todo: delete the field
                     $em->flush();
 
                     $eche   = $echeanciers_emprunteur->select('id_project = ' . $projectId . ' AND status_emprunteur = 1', 'ordre DESC');
@@ -414,7 +416,7 @@ class transfertsController extends bootstrap
             /** @var Receptions $reception */
             $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             if (null !== $reception && in_array($reception->getStatusBo(), [Receptions::STATUS_MANUALLY_ASSIGNED, Receptions::STATUS_AUTO_ASSIGNED])) {
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient(), WalletType::BORROWER);
+                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
                 if ($wallet) {
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
