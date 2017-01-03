@@ -47,6 +47,8 @@ class AppKernel extends Kernel
             new Sonata\CacheBundle\SonataCacheBundle(),
             new Knp\Bundle\MailjetBundle\KnpMailjetBundle(),
             new CL\Bundle\SlackBundle\CLSlackBundle(),
+            new Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle(),
+            new Unilend\Bundle\StoreBundle\UnilendStoreBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
