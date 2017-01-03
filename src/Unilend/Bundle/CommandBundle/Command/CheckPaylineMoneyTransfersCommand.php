@@ -31,7 +31,6 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
         $pendingPayline = $em->getRepository('UnilendCoreBusinessBundle:Backpayline')->findBy(['code' => null]);
         if ($pendingPayline) {
             foreach($pendingPayline as $payline) {
-                var_dump($payline->getIdBackpayline());
                 if (false === empty($payline->getSerializeDoPayment())) {
                     $paymentDetails = unserialize($payline->getSerializeDoPayment());
                     $token          = $paymentDetails['token'];
