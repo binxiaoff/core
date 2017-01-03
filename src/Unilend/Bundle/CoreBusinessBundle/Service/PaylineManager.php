@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\FrontBundle\Service;
+namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
 use Doctrine\ORM\EntityManager;
@@ -10,14 +10,12 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class PaylineManager
 {
-    const PAYMENT_LOCATION_LENDER_WALLET       = 2;
+    const PAYMENT_LOCATION_LENDER_WALLET = 2;
 
     /**
      * @var EntityManager
@@ -51,6 +49,18 @@ class PaylineManager
      * @var string
      */
     private $sUrl;
+    /**
+     * @var boolean
+     */
+    private $isProduction;
+    /**
+     * @var string
+     */
+    private $merchantId;
+    /**
+     * @var string
+     */
+    private $accessKey;
 
     public function __construct(
         EntityManagerSimulator $entityManager,
@@ -61,7 +71,10 @@ class PaylineManager
         OperationManager $operationManager,
         RouterInterface $router,
         Packages $assetsPackages,
-        $paylineFile
+        $paylineFile,
+        $environment,
+        $merchantId,
+        $accessKey
     ) {
         require_once $paylineFile;
 
@@ -73,6 +86,9 @@ class PaylineManager
         $this->operationManager = $operationManager;
         $this->router           = $router;
         $this->sUrl             = $assetsPackages->getUrl('');
+        $this->isProduction     = $environment === 'prod' ? true : false;
+        $this->merchantId       = $merchantId;
+        $this->accessKey        = $accessKey;
     }
 
     /**
@@ -93,7 +109,7 @@ class PaylineManager
         $this->em->persist($backPayline);
         $this->em->flush();
         /** @var \paylineSDK $payline */
-        $payline                  = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
+        $payline                  = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
         $payline->returnURL       = $redirectUrl;
         $payline->cancelURL       = $cancelUrl;
         $payline->notificationURL = NOTIFICATION_URL;
@@ -142,9 +158,9 @@ class PaylineManager
     public function handlePaylineReturn($token, $version)
     {
         /** @var \paylineSDK $payline */
-        $payline  = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
+        $payline = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
 
-        $this->logger->debug('Calling Payline::getWebPaymentDetails: return token=' . $token. ' version: ' . $version);
+        $this->logger->debug('Calling Payline::getWebPaymentDetails: return token=' . $token . ' version: ' . $version);
 
         $response = $payline->getWebPaymentDetails(['token' => $token, 'version' => $version]);
 

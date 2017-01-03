@@ -20,7 +20,7 @@ class PaylineController extends Controller
             return new Response();
         }
 
-        $this->get('unilend.frontbundle.service.payline_manager')->handlePaylineReturn($token, Backpayline::WS_DEFAULT_VERSION);
+        $this->get('unilend.service.payline_manager')->handlePaylineReturn($token, Backpayline::WS_DEFAULT_VERSION);
 
         return new Response();
     }

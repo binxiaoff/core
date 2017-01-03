@@ -26,11 +26,12 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $em = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $paylineManager = $this->getContainer()->get('unilend.frontbundle.service.payline_manager');
+        $paylineManager = $this->getContainer()->get('unilend.service.payline_manager');
         /** @var Backpayline[] $pendingPayline */
         $pendingPayline = $em->getRepository('UnilendCoreBusinessBundle:Backpayline')->findBy(['code' => null]);
         if ($pendingPayline) {
             foreach($pendingPayline as $payline) {
+                var_dump($payline->getIdBackpayline());
                 if (false === empty($payline->getSerializeDoPayment())) {
                     $paymentDetails = unserialize($payline->getSerializeDoPayment());
                     $token          = $paymentDetails['token'];

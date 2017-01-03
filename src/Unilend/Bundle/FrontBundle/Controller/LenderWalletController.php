@@ -255,7 +255,7 @@ class LenderWalletController extends Controller
             $successUrl = $this->generateUrl('wallet_payment', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
             $cancelUrl = $this->generateUrl('wallet_payment', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-            $redirectUrl = $this->get('unilend.frontbundle.service.payline_manager')->pay($amount, $wallet, $successUrl, $cancelUrl);
+            $redirectUrl = $this->get('unilend.service.payline_manager')->pay($amount, $wallet, $successUrl, $cancelUrl);
 
             if (false !== $redirectUrl) {
                 return $this->json(['url' => $redirectUrl], Response::HTTP_OK);
@@ -295,7 +295,7 @@ class LenderWalletController extends Controller
                 return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
             }
 
-            $paylineManager = $this->get('unilend.frontbundle.service.payline_manager');
+            $paylineManager = $this->get('unilend.service.payline_manager');
             $paidAmountInCent = $paylineManager->handlePaylineReturn($token, $version);
 
             if (false !== $paidAmountInCent) {

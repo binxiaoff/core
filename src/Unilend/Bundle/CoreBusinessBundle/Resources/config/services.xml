@@ -269,5 +269,23 @@
         <service id="unilend.service.borrower_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager">
             <argument type="service" id="unilend.service.entity_manager" />
         </service>
+
+        <service id="unilend.service.payline_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PaylineManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="swiftmailer.mailer.default" />
+            <argument type="service" id="unilend.service.client_manager" />
+            <argument type="service" id="unilend.service.operation_manager" />
+            <argument type="service" id="router" />
+            <argument type="service" id="assets.packages" />
+            <argument>%path.payline%include.php</argument>
+            <argument>%kernel.environment%</argument>
+            <argument>%payline.merchant_id%</argument>
+            <argument>%payline.access_key%</argument>
+            <call method="setLogger">
+                <argument type="service" id="logger" on-invalid="null"/>
+            </call>
+        </service>
     </services>
 </container>
