@@ -241,11 +241,6 @@ class ProjectRequestController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-
-        $settings->get('Altares email alertes', 'type');
-        $alertEmail = $settings->value;
 
         $settingsAltaresStatus = $entityManager->getRepository('settings');
         $settingsAltaresStatus->get('Altares status', 'type');
