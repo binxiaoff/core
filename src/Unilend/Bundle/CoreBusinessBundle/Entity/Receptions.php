@@ -14,15 +14,25 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Receptions
 {
-    const STATUS_PENDING = 0;
+    const STATUS_PENDING           = 0;
     const STATUS_MANUALLY_ASSIGNED = 1;
-    const STATUS_AUTO_ASSIGNED = 2;
-    const STATUS_REJECTED = 3;
+    const STATUS_AUTO_ASSIGNED     = 2;
+    const STATUS_REJECTED          = 3;
 
     const REPAYMENT_TYPE_NORMAL         = 0;
     const REPAYMENT_TYPE_EARLY          = 1;
     const REPAYMENT_TYPE_REGULARISATION = 2;
     const REPAYMENT_TYPE_RECOVERY       = 3;
+
+    const TYPE_DIRECT_DEBIT  = 1;
+    const TYPE_WIRE_TRANSFER = 2;
+
+    const WIRE_TRANSFER_STATUS_RECEIVED = 1;
+    const WIRE_TRANSFER_STATUS_SENT     = 2;
+    const WIRE_TRANSFER_STATUS_REJECTED = 3;
+
+    const DIRECT_DEBIT_STATUS_SENT     = 2;
+    const DIRECT_DEBIT_STATUS_REJECTED = 3;
 
     /**
      * @var string
@@ -146,8 +156,6 @@ class Receptions
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idReception;
-
-
 
     /**
      * Set motif
@@ -524,7 +532,7 @@ class Receptions
      */
     public function setAddedValue()
     {
-        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

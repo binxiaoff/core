@@ -35,15 +35,7 @@ class transfertsController extends bootstrap
 
     public function _preteurs()
     {
-        $oUsers            = $this->loadData('users');
-        $oReceptions       = $this->loadData('receptions');
-        $this->aOperations = $oReceptions->select('id_client != 0 AND id_project = 0 AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
-        $this->aUsers      = array();
-
-        foreach ($oUsers->select('id_user IN (' . implode(', ', array_unique(array_column($this->aOperations, 'id_user'))) . ')') as $aUser) {
-            $this->aUsers[$aUser['id_user']] = $aUser;
-        }
-
+        $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getLenderAttributions();
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
             $this->hideDecoration();
             $this->view = 'csv';
@@ -52,15 +44,7 @@ class transfertsController extends bootstrap
 
     public function _emprunteurs()
     {
-        $oUsers            = $this->loadData('users');
-        $oReceptions       = $this->loadData('receptions');
-        $this->aOperations = $oReceptions->select('id_project != 0 AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
-        $this->aUsers      = array();
-
-        foreach ($oUsers->select('id_user IN (' . implode(', ', array_unique(array_column($this->aOperations, 'id_user'))) . ')') as $aUser) {
-            $this->aUsers[$aUser['id_user']] = $aUser;
-        }
-
+        $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getBorrowerAttributions();
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
             $this->hideDecoration();
             $this->view = 'csv';
@@ -69,13 +53,14 @@ class transfertsController extends bootstrap
 
     public function _non_attribues()
     {
-        $this->aOperations = $this->loadData('receptions')->select('id_client = 0 AND id_project = 0 AND type IN (1, 2) AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
+        $this->aOperations = $this->loadData('receptions')->select('id_client IS NULL AND id_project IS NULL AND type IN (1, 2) AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
 
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             $bank_unilend = $this->loadData('bank_unilend');
             $transactions = $this->loadData('transactions');
             /** @var \Doctrine\ORM\EntityManager $em */
             $em               = $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
             $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
             $reception        = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
@@ -89,15 +74,7 @@ class transfertsController extends bootstrap
                           ->setRemb(1)
                           ->setIdUser($user)
                           ->setAssignmentDate(new \DateTime());
-
                 $operationManager->provisionBorrowerWallet($reception);
-
-                $bank_unilend->id_transaction = $transactions->id_transaction;
-                $bank_unilend->id_project     = $project->getIdProject();
-                $bank_unilend->montant        = $reception->getMontant();
-                $bank_unilend->type           = 1; // remb emprunteur
-                $bank_unilend->status         = 0; // chez unilend
-                $bank_unilend->create();
 
                 if ($_POST['type_remb'] === 'remboursement_anticipe') {
                     $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
@@ -124,6 +101,13 @@ class transfertsController extends bootstrap
                 }
 
                 $em->flush();
+
+                $bank_unilend->id_transaction = $transactions->id_transaction;
+                $bank_unilend->id_project     = $project->getIdProject();
+                $bank_unilend->montant        = $reception->getMontant();
+                $bank_unilend->type           = 1; // remb emprunteur
+                $bank_unilend->status         = 0; // chez unilend
+                $bank_unilend->create();
             }
 
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');
@@ -207,10 +191,6 @@ class transfertsController extends bootstrap
         $lenders = $this->loadData('lenders_accounts');
         /** @var \transactions $transactions */
         $transactions = $this->loadData('transactions');
-        /** @var \wallets_lines $wallets */
-        $wallets = $this->loadData('wallets_lines');
-        /** @var \bank_lines $bank */
-        $bank = $this->loadData('bank_lines');
         /** @var \notifications notifications */
         $this->notifications = $this->loadData('notifications');
         /** @var \clients_gestion_notifications clients_gestion_notifications */
@@ -237,7 +217,7 @@ class transfertsController extends bootstrap
             if (null !== $reception && null !== $wallet) {
                 $user = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
                 $reception->setIdClient($wallet->getIdClient())
-                          ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                          ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
                           ->setRemb(1)
                           ->setIdUser($user)
                           ->setAssignmentDate(new \DateTime());
