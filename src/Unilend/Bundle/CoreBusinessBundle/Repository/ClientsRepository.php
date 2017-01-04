@@ -4,16 +4,22 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class ClientsRepository extends EntityRepository
 {
 
     /**
-     * @param integer $idClient
+     * @param integer|Clients $idClient
      * @return mixed
      */
     public function getLastClientStatus($idClient)
     {
+        if ($idClient instanceof Clients) {
+            $idClient = $idClient->getIdClient();
+        }
+
         $cb = $this->createQueryBuilder('c');
         $cb->select('cs')
             ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
@@ -30,12 +36,20 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param integer $idClient
-     * @param string $walletType
+     * @param integer|Clients $idClient
+     * @param string|WalletType $walletType
      * @return mixed
      */
     public function getWalletByType($idClient, $walletType)
     {
+        if ($idClient instanceof Clients) {
+            $idClient = $idClient->getIdClient();
+        }
+
+        if ($walletType instanceof WalletType) {
+            $walletType = $walletType->getLabel();
+        }
+
         $cb = $this->createQueryBuilder('c');
         $cb->select('w')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
@@ -51,11 +65,15 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param integer $idClient
+     * @param integer|Clients $idClient
      * @return mixed
      */
     public function getCompany($idClient)
     {
+        if ($idClient instanceof Clients) {
+            $idClient = $idClient->getIdClient();
+        }
+
         $cb = $this->createQueryBuilder('c');
         $cb->select('co')
             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner')
@@ -68,12 +86,16 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param integer $idClient
+     * @param integer|Clients $idClient
      * @param string $iban
      * @return mixed
      */
     public function getBankAccount($idClient, $iban)
     {
+        if ($idClient instanceof Clients) {
+            $idClient = $idClient->getIdClient();
+        }
+
         $cb = $this->createQueryBuilder('c');
         $cb->select('ba')
             ->innerJoin('UnilendCoreBusinessBundle:BankAccount', 'ba', Join::WITH, 'c.idClient = ba.idClient')

@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"}), @ORM\Index(name="fk_id_bid_idx", columns={"id_bid"}), @ORM\Index(name="id_loan", columns={"id_loan"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WalletBalanceHistoryRepository")
  */
 class WalletBalanceHistory
 {

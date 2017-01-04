@@ -742,10 +742,11 @@ class OperationManager
 
     /**
      * @param Wallet $wallet
+     * @param float  $amount
      *
      * @return bool|Virements
      */
-    public function totalWithDraw(Wallet $wallet)
+    public function withdrawTaxWallet(Wallet $wallet, $amount)
     {
         switch ($wallet->getIdType()->getLabel()) {
             case WalletType::TAX_CONTRIBUTIONS_ADDITIONNELLES:
@@ -775,7 +776,7 @@ class OperationManager
         }
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel($type);
 
-        return $this->newOperation($wallet->getAvailableBalance(), $operationType, $wallet);
+        return $this->newOperation($amount, $operationType, $wallet);
     }
 
     /**

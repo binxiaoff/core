@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -290,15 +290,19 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
 
     private function doTaxWalletsWithdrawals()
     {
-        /** @var OperationManager $operationsManager */
         $operationsManager = $this->getContainer()->get('unilend.service.operation_manager');
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         $totalTaxAmount    = 0;
 
         /** @var Wallet[] $taxWallets */
-        $taxWallets = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getTaxWallets();
+        $taxWallets = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getTaxWallets();
+        $date = new \DateTime();
+        $date->modify('last day of last month');
         foreach ($taxWallets as $wallet) {
-            $totalTaxAmount = bcadd($wallet->getAvailableBalance(), $totalTaxAmount);
-            $operationsManager->totalWithdraw($wallet);
+            /** @var WalletBalanceHistory $lastMonthWalletHistory */
+            $lastMonthWalletHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getBalanceOfTheDay($wallet, $date);
+            $totalTaxAmount = bcadd($lastMonthWalletHistory->getAvailableBalance(), $totalTaxAmount, 2);
+            $operationsManager->withdrawTaxWallet($wallet, $lastMonthWalletHistory->getAvailableBalance());
         }
 
         return $totalTaxAmount;
