@@ -276,7 +276,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
             $bid['id_bid'] = $bidEntity->id_bid;
             $bid['added']  = $bidEntity->added;
-            $amount        = abs(round(bcdiv($bidEntity->amount, 100, 4), 2));
+            $amount        = abs(round(bcdiv($transaction['montant'], 100, 4), 2));
 
             $availableBalance = bcsub($lenderWallet['available_balance'], $amount, 2);
             $committedBalance = bcadd($lenderWallet['committed_balance'], $amount, 2);
