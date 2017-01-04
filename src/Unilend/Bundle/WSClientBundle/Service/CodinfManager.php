@@ -40,14 +40,6 @@ class CodinfManager
     }
 
     /**
-     * @param LoggerInterface $logger
-     */
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
-
-    /**
      * @param $siren
      * @param \DateTime|null $startDate
      * @param \DateTime|null $endDate
@@ -84,26 +76,5 @@ class CodinfManager
                 'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('codinf', __FUNCTION__, 'GET', $siren)
             ]
         );
-    }
-
-    /**
-     * @param ResponseInterface $response
-     * @return array
-     */
-    public function parseXmlResponseToArray(ResponseInterface $response)
-    {
-        $array = [];
-        try {
-            $xml = new \SimpleXMLElement($response->getBody()->getContents());
-
-            foreach ($xml as $key => $value) {
-                $array[$key] = $value;
-            }
-        } catch (\Exception $exception) {
-            if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-            }
-        }
-        return $array;
     }
 }

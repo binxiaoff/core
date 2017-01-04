@@ -40,4 +40,34 @@ class simulationController extends bootstrap
             }
         }
     }
+
+    public function _wsProvider()
+    {
+        $this->hideDecoration();
+        /** @var \ws_external_resource $wsResources */
+        $wsResources = $this->loadData('ws_external_resource');
+
+        $this->resources = $wsResources->select();
+        $this->result    = [];
+
+        if (isset($_POST['send'], $_POST['siren'])) {
+            if (is_numeric($_POST['resourceId']) && $wsResources->get($_POST['resourceId'])) {
+                $provider = $this->get('unilend.ws_client.' . $wsResources->provider_name . '_manager');
+                $endpoint = $wsResources->resource_name;
+                switch ($wsResources->provider_name) {
+                    case 'euler':
+                        $countryCode  = (empty($_POST['countryCode'])) ? 'fr' : $_POST['countryCode'];
+                        $this->result = $provider->$endpoint($_POST['siren'], $countryCode);
+                        break;
+                    default:
+                        $this->result = $provider->{$wsResources->resource_name}($_POST['siren']);
+                        break;
+                }
+            }
+        }
+
+        if ($this->result instanceof \Psr\Http\Message\ResponseInterface) {
+            $this->result = $this->result->getBody()->getContents();
+        }
+    }
 }

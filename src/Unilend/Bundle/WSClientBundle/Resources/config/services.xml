@@ -18,7 +18,23 @@
             </argument>
         </service>
 
-        <service id="unilend.ws_client.euler_hermes_manager" class="Unilend\Bundle\WSClientBundle\Service\EulerHermesManager">
+        <service id="unilend.ws_client.soap_client.altares_identity" class="SoapClient">
+            <argument>%altares.wsdl_url_identity%</argument>
+            <argument type="collection">
+                <argument key="exception">1</argument>
+                <argument key="trace">1</argument>
+            </argument>
+        </service>
+
+        <service id="unilend.ws_client.soap_client.altares_risque" class="SoapClient">
+            <argument>%altares.wsdl_url_risk%</argument>
+            <argument type="collection">
+                <argument key="exception">1</argument>
+                <argument key="trace">1</argument>
+            </argument>
+        </service>
+
+        <service id="unilend.ws_client.euler_manager" class="Unilend\Bundle\WSClientBundle\Service\EulerHermesManager">
             <argument type="service" id="guzzle.client.euler"/>
             <argument>%euler.coverage_key%</argument>
             <argument>%euler.grading_key%</argument>
@@ -37,7 +53,7 @@
         </service>
 
         <service id="unilend.ws_client.infolegale_manager" class="Unilend\Bundle\WSClientBundle\Service\InfolegaleManager">
-            <argument type="service" id="guzzle.client.infolegal"/>
+            <argument type="service" id="guzzle.client.infolegale"/>
             <argument>%infolegale.token%</argument>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
@@ -49,6 +65,15 @@
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
             <argument type="service" id="unilend.ws_client.soap_client.infogreffe"/>
+        </service>
+
+        <service id="unilend.ws_client.altares_manager" class="Unilend\Bundle\WSClientBundle\Service\AltaresManager">
+            <argument>%altares.login%</argument>
+            <argument>%altares.password%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.ws_client.call_history_handler"/>
+            <argument type="service" id="unilend.ws_client.soap_client.altares_identity"/>
+            <argument type="service" id="unilend.ws_client.soap_client.altares_risque"/>
         </service>
     </services>
 </container>

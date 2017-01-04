@@ -88,7 +88,7 @@ class InfolegaleManager
             $endpoint,
             [
                 'query'    => $query,
-                'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('infolegale', $endpoint, strtoupper($method))
+                'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('infolegale', $endpoint, strtoupper($method), $siren)
             ]
         );
     }

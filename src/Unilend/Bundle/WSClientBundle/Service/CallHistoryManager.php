@@ -40,7 +40,7 @@ class CallHistoryManager
             $event        = $this->stopwatch->stop($resourceId);
             $transferTime = $event->getDuration() / 1000;
 
-            if ($stats instanceof TransferStats) {
+            if ($stats instanceof TransferStats && null != $stats) {
                 $statusCode = $stats->getResponse()->getStatusCode();
             } else {
                 $statusCode = $stats;

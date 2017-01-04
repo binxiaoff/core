@@ -43,6 +43,11 @@ parameters:
     infogreffe.url:                 'https://qual.infogreffe.fr:443/WSContextInfogreffe/INFOGREFFE'
     infogreffe.wsdl_url:            'https://qual.infogreffe.fr/InfogreffeWs/wsdl.jsp'
 
+    altares.login:                  ~
+    altares.password:               ~
+    altares.wsdl_url_identity:      'https://intuiz.altares.fr/iws-v3.12/services/CallistoIdentite?wsdl'
+    altares.wsdl_url_risk:          'https://intuiz.altares.fr/iws-v3.12/services/CallistoRisque?wsdl'
+
     # End of parameters managed also by Ansible
 
     dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection

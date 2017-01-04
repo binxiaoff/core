@@ -221,22 +221,19 @@ knp_mailjet:
     event_endpoint_token: yclrcchxk0p3lujy82
 
 guzzle:
-    # (de)activate logging/profiler; default: %kernel.debug%
-        logging: true
+      clients:
+          euler:
+              base_url: %euler.url%
+              options:
+                  timeout: 8
+                  http_errors: false
 
-        clients:
-            euler:
-                base_url: %euler.url%
-                options:
-                    timeout: 8
-                    http_errors: false
+          codinf:
+              base_url: %codinf.url%
+              options:
+                  http_errors: false
 
-            codinf:
-                base_url: %codinf.url%
-                options:
-                    http_errors: false
-
-            infolegal:
-                base_url: %infolegale.url%
-                options:
-                    http_errors: false
+          infolegale:
+              base_url: %infolegale.url%
+              options:
+                  http_errors: false
