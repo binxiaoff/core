@@ -183,7 +183,7 @@ class BidManager
             throw new \Exception('bids-low-balance');
         }
 
-        if (empty($oBid->id_autobid) && $this->cipManager->isCIPValidationNeeded($oBid) && false === $this->cipManager->hasValidEvaluation($oLenderAccount)) {
+        if ($this->cipManager->isCIPValidationNeeded($oBid) && false === $this->cipManager->hasValidEvaluation($oLenderAccount)) {
             throw new \Exception('bids-cip-validation-needed');
         }
 
@@ -276,7 +276,11 @@ class BidManager
             /** @var \lenders_accounts $LenderAccount */
             $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
-            if ($oLenderAccount->get($oAutoBid->id_lender) && $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
+            if (
+                $oLenderAccount->get($oAutoBid->id_lender)
+                && $this->oAutoBidSettingsManager->isOn($oLenderAccount)
+                && $this->oAutoBidSettingsManager->isQualified($oLenderAccount)
+            ) {
                 $oBid->id_autobid        = $oAutoBid->id_autobid;
                 $oBid->id_lender_account = $oAutoBid->id_lender;
                 $oBid->id_project        = $oProject->id_project;

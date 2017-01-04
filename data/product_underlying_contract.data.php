@@ -84,6 +84,14 @@ class product_underlying_contract extends product_underlying_contract_crud
             ->where('puc.id_product = :id_product')
             ->setParameter('id_product', $productId);
 
-        return $queryBuilder->execute()->fetchAll();
+        $statement = $this->bdd->executeCacheQuery(
+            $queryBuilder->getSQL(),
+            $queryBuilder->getParameters(),
+            $queryBuilder->getParameterTypes(),
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::SHORT_TIME, md5(__METHOD__)));
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
     }
 }
