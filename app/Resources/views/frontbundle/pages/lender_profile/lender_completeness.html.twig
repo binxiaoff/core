@@ -30,6 +30,14 @@
                                                         {% endfor %}
                                                     </div>
                                                 </div>
+                                            {% elseif app.session.flashBag.has('completenessError') %}
+                                                <div id="form-lender-completeness-notifications">
+                                                    <div class="message-error">
+                                                        {% for message in app.session.flashBag.get('completenessError') %}
+                                                            <span>{{ message }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
                                             {% else %}
                                                 <div class="message-info">
                                                     <p>{% trans %} lender-profile_completeness-form-requested-documents {% endtrans %}</p>
