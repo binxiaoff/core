@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
-use Unilend\core\Loader;
 
 class LenderDashboardController extends Controller
 {
@@ -124,7 +123,6 @@ class LenderDashboardController extends Controller
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
-
 
         return $this->render(
             '/pages/lender_dashboard/lender_dashboard.html.twig',
