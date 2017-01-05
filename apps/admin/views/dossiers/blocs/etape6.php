@@ -1,5 +1,8 @@
 <div id="content_etape6">
-    <?php if ($this->projects->status >= \projects_status::REVUE_ANALYSTE) : ?>
+    <?php if (
+        $this->projects->status >= \projects_status::REVUE_ANALYSTE
+        || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::REVUE_ANALYSTE)
+    ) : ?>
         <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
         <div class="tab_title" id="title_etape6">Etape 6</div>
         <div class="tab_content" id="etape6">

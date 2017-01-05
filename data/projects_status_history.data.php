@@ -263,4 +263,21 @@ class projects_status_history extends projects_status_history_crud
 
         return false;
     }
+
+    /**
+     * @param int $projectId
+     * @param int $status
+     * @return bool
+     */
+    public function projectHasHadStatus($projectId, $status)
+    {
+        $query = 'SELECT COUNT(*)
+                    FROM projects_status_history psh
+                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                  WHERE ps.status  = :status
+                  AND psh.id_project = :project_id';
+
+        $statement = $this->bdd->executeQuery($query, ['status' => $status, 'project_id' => $projectId]);
+        return $statement->fetchColumn(0) > 0;
+    }
 }
