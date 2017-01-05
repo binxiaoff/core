@@ -40,7 +40,7 @@ class OperationType
     const TAX_RETENUES_A_LA_SOURCE                  = 'tax_retenues_a_la_source';
     const TAX_RETENUES_A_LA_SOURCE_WITHDRAW         = 'tax_retenues_a_la_source_withdraw';
     const UNILEND_PROMOTIONAL_OPERATION             = 'unilend_promotional_operation';
-    const UNILEND_PROMOTIONAL_OPERATION_CANNCEL     = 'unilend_promotional_operation_canncel';
+    const UNILEND_PROMOTIONAL_OPERATION_CANCEL     = 'unilend_promotional_operation_cancel';
     const UNILEND_PROVISION                         = 'unilend_provision';
     const UNILEND_WITHDRAW                          = 'unilend_withdraw';
     const UNILEND_PROMOTIONAL_OPERATION_PROVISION   = 'unilend_promotional_operation_provision';

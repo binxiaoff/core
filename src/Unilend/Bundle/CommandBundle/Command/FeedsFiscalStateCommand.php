@@ -14,6 +14,11 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 class FeedsFiscalStateCommand extends ContainerAwareCommand
 {
     /**
+     * @var \DateTime
+     */
+    private $dischargeMonth;
+
+    /**
      * @see Command
      */
     protected function configure()
@@ -40,6 +45,8 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $taxRate = $taxType->getTaxRateByCountry('fr', [1]);
         /** @var \underlying_contract $contract */
         $contract = $entityManager->getRepository('underlying_contract');
+
+        $this->dischargeMonth = new \DateTime('last month');
 
         $aResult = $this->getData('fr');
 
@@ -229,7 +236,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $tax_type = $entityManager->getRepository('tax_type');
 
         try {
-            return $echeanciers->getFiscalState(new \DateTime('first day of last month'), new \DateTime('last day of last month'), $tax_type->getTaxDetailsByCountry($country, [\tax_type::TYPE_VAT]));
+            return $echeanciers->getFiscalState($this->dischargeMonth->modify('first day of this month'), $this->dischargeMonth->modify('last day of this month'), $tax_type->getTaxDetailsByCountry($country, [\tax_type::TYPE_VAT]));
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getContainer()->get('monolog.logger.console');
@@ -297,11 +304,9 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
 
         /** @var Wallet[] $taxWallets */
         $taxWallets = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getTaxWallets();
-        $date       = new \DateTime();
-        $date->modify('last day of last month');
         foreach ($taxWallets as $wallet) {
             /** @var WalletBalanceHistory $lastMonthWalletHistory */
-            $lastMonthWalletHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getBalanceOfTheDay($wallet, $date);
+            $lastMonthWalletHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getBalanceOfTheDay($wallet, $this->dischargeMonth->modify('last day of this month'));
             if (null === $lastMonthWalletHistory) {
                 $logger->error('Could not get the wallet balance for ' . $wallet->getIdType()->getLabel(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 continue;
