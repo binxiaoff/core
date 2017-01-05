@@ -50,7 +50,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
 
                 $wallet       = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($oWelcomeOfferDetails->id_client, WalletType::LENDER);
                 $welcomeOffer = $em->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->find($oWelcomeOfferDetails->id_offre_bienvenue_detail);
-                $operationManager->withdrawWelcomeOffer($wallet, $welcomeOffer);
+                $operationManager->cancelWelcomeOffer($wallet, $welcomeOffer);
 
                 $iNumberOfUnusedWelcomeOffers +=1;
             }

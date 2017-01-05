@@ -478,9 +478,10 @@ class OperationManager
      */
     public function newWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
     {
-        $amount        = round(bcdiv($welcomeOffer->getMontant(), 100, 4), 2);
-        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION]);
-        $unilendWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => WalletType::UNILEND]);
+        $amount            = round(bcdiv($welcomeOffer->getMontant(), 100, 4), 2);
+        $operationType     = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
         $this->newOperation($amount, $operationType, $unilendWallet, $wallet, $welcomeOffer);
 
         $this->legacyNewWelcomeOffer($wallet, $welcomeOffer);
@@ -529,21 +530,22 @@ class OperationManager
      * @param Wallet                  $wallet
      * @param OffresBienvenuesDetails $welcomeOffer
      */
-    public function withdrawWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
+    public function cancelWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
     {
-        $amount        = round(bcdiv($welcomeOffer->getMontant(), 100, 4), 2);
-        $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION_WITHDRAW]);
-        $unilendWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => WalletType::UNILEND]);
+        $amount            = round(bcdiv($welcomeOffer->getMontant(), 100, 4), 2);
+        $operationType     = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION_CANNCEL]);
+        $unilendWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
         $this->newOperation($amount, $operationType, $wallet, $unilendWallet, $welcomeOffer);
 
-        $this->legacyWithdrawWelcomeOffer($wallet, $welcomeOffer);
+        $this->legacyCancelWelcomeOffer($wallet, $welcomeOffer);
     }
 
     /**
      * @param Wallet                  $wallet
      * @param OffresBienvenuesDetails $welcomeOffer
      */
-    private function legacyWithdrawWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
+    private function legacyCancelWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
     {
         /** @var \transactions $transaction */
         $transaction = $this->entityManager->getRepository('transactions');

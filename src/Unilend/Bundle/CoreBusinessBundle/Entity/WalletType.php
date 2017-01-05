@@ -15,6 +15,7 @@ class WalletType
     const LENDER                           = 'lender';
     const BORROWER                         = 'borrower';
     const UNILEND                          = 'unilend';
+    const UNILEND_PROMOTIONAL_OPERATION    = 'unilend_promotional_operation';
     const TAX_PRELEVEMENTS_OBLIGATOIRES    = 'tax_prelevements_obligatoires';
     const TAX_RETENUES_A_LA_SOURCE         = 'tax_retenues_a_la_source';
     const TAX_CSG                          = 'tax_csg';

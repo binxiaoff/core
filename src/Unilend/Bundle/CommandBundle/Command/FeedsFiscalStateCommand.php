@@ -291,16 +291,21 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
     private function doTaxWalletsWithdrawals()
     {
         $operationsManager = $this->getContainer()->get('unilend.service.operation_manager');
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $logger            = $this->getContainer()->get('monolog.logger.console');
         $totalTaxAmount    = 0;
 
         /** @var Wallet[] $taxWallets */
         $taxWallets = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getTaxWallets();
-        $date = new \DateTime();
+        $date       = new \DateTime();
         $date->modify('last day of last month');
         foreach ($taxWallets as $wallet) {
             /** @var WalletBalanceHistory $lastMonthWalletHistory */
             $lastMonthWalletHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getBalanceOfTheDay($wallet, $date);
+            if (null === $lastMonthWalletHistory) {
+                $logger->error('Could not get the wallet balance for ' . $wallet->getIdType()->getLabel(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                continue;
+            }
             $totalTaxAmount = bcadd($lastMonthWalletHistory->getAvailableBalance(), $totalTaxAmount, 2);
             $operationsManager->withdrawTaxWallet($wallet, $lastMonthWalletHistory->getAvailableBalance());
         }
