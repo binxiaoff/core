@@ -804,7 +804,8 @@ class OperationManager
         $operationTypeInterestGross = $operationTypeRepo->findOneBy(['label' => OperationType::GROSS_INTEREST_REPAYMENT]);
         $this->newOperation($amountInterestGross, $operationTypeInterestGross, $borrowerWallet, $lenderWallet, $repaymentSchedule);
 
-        $taxes = $this->taxManager->getLenderRepaymentInterestTax($repaymentSchedule);
+        $underlyingContract = $repaymentSchedule->getIdLoan()->getIdTypeContract();
+        $taxes              = $this->taxManager->getLenderRepaymentInterestTax($lenderWallet->getIdClient(), $amountInterestGross, new \DateTime(), $underlyingContract);
 
         foreach ($taxes as $type => $tax) {
             $operationType = '';

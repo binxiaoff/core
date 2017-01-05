@@ -201,22 +201,24 @@ class TaxManager
         $lenderImpositionHistory->create();
     }
 
-    public function getLenderRepaymentInterestTax(Echeanciers $repaymentSchedule)
+    /**
+     * @param Clients            $client
+     * @param float              $interestsGross
+     * @param UnderlyingContract $underlyingContract
+     * @param \DateTime          $taxDate
+     *
+     * @return array
+     */
+    public function getLenderRepaymentInterestTax(Clients $client, $interestsGross, \DateTime $taxDate, UnderlyingContract $underlyingContract)
     {
-        $lenderAccountId = $repaymentSchedule->getIdLoan()->getIdLender();
-        $accountMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $lenderAccountId]);
-        $wallet          = $accountMatching->getIdWallet();
-        $interestsGross  = round(bcdiv(bcsub($repaymentSchedule->getInterets(), $repaymentSchedule->getInteretsRembourses()), 100, 4), 2);
-
-        switch ($wallet->getIdClient()->getType()) {
+        switch ($client->getType()) {
             case Clients::TYPE_LEGAL_ENTITY:
             case Clients::TYPE_LEGAL_ENTITY_FOREIGNER:
                 return $this->getLegalEntityLenderRepaymentInterestsTax($interestsGross);
             case Clients::TYPE_PERSON:
             case Clients::TYPE_PERSON_FOREIGNER:
             default:
-                $underlyingContract = $repaymentSchedule->getIdLoan()->getIdTypeContract();
-                return $this->getNaturalPersonLenderRepaymentInterestsTax($wallet->getIdClient(), $interestsGross, $repaymentSchedule->getDateEcheanceReel(), $underlyingContract);
+                return $this->getNaturalPersonLenderRepaymentInterestsTax($client, $interestsGross, $taxDate, $underlyingContract);
         }
     }
 
@@ -250,9 +252,22 @@ class TaxManager
             $taxExemption = $this->entityManager->getRepository('lender_tax_exemption');
 
             if ($taxExemption->get($lender->id_lender_account . '" AND year = "' . $taxDate->format('Y') . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
-                return $this->calculateTaxes($interestsGross, [\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS]);
+                return $this->calculateTaxes($interestsGross, [
+                    \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+                    \tax_type::TYPE_CRDS,
+                    \tax_type::TYPE_CSG,
+                    \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
+                    \tax_type::TYPE_SOCIAL_DEDUCTIONS
+                ]);
             } else {
-                return $this->calculateTaxes($interestsGross, [\tax_type::TYPE_INCOME_TAX, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS]);
+                return $this->calculateTaxes($interestsGross, [
+                    \tax_type::TYPE_INCOME_TAX,
+                    \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+                    \tax_type::TYPE_CRDS,
+                    \tax_type::TYPE_CSG,
+                    \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
+                    \tax_type::TYPE_SOCIAL_DEDUCTIONS
+                ]);
             }
         } else {
             if ($underlyingContract instanceof UnderlyingContract && UnderlyingContract::CONTRACT_IFP !== $underlyingContract->getLabel()) {
@@ -266,10 +281,10 @@ class TaxManager
     public function calculateTaxes($amount, array $taxTypes)
     {
         $taxTypeRepo = $this->em->getRepository('UnilendCoreBusinessBundle:TaxType');
-        $taxes          = [];
+        $taxes       = [];
 
         foreach ($taxTypes as $taxTypeId) {
-            $taxType = $taxTypeRepo->find($taxTypeId);
+            $taxType           = $taxTypeRepo->find($taxTypeId);
             $taxes[$taxTypeId] = round(bcmul($amount, bcdiv($taxType->getRate(), 100, 4), 4), 2);
         }
 
