@@ -98,8 +98,11 @@
             {% set tos_session_key = constant('Unilend\\Bundle\\CoreBusinessBundle\\Service\\ClientManager::SESSION_KEY_TOS_ACCEPTED') %}
             {% if app.user
                 and app.session.has(tos_session_key)
-                and false == app.session.get(tos_session_key) %}
-                <div id="modal-tos" data-modal data-modal-openonload="true"><form id="form-tos" method="post" action="{{ path('tos_popup') }}"></form></div>
+                and false == app.session.get(tos_session_key)
+                and is_granted('ROLE_LENDER')
+                and app.user.getClientStatus() == constant('\\clients_status::VALIDATED')
+            %}
+                <div id="modal-tos" data-modal data-modal-openonload="true"><form id="form-tos" method="post" action="{{ path('lender_tos_popup') }}"></form></div>
             {% endif %}
         </div>
 

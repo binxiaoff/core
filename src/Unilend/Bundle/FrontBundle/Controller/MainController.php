@@ -859,7 +859,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/cgv-popup", name="tos_popup", condition="request.isXmlHttpRequest()")
+     * @Route("/cgv-popup", name="lender_tos_popup", condition="request.isXmlHttpRequest()")
      * @param Request $request
      * @Security("has_role('ROLE_LENDER')")
      * @return Mixed
@@ -929,7 +929,7 @@ class MainController extends Controller
             }
         }
 
-        return $this->render('partials/site/tos_popup.html.twig', ['tosDetails' => $tosDetails]);
+        return $this->render('partials/site/lender_tos_popup.html.twig', ['tosDetails' => $tosDetails]);
     }
 
     /**
