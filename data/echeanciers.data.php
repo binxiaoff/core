@@ -1132,93 +1132,98 @@ class echeanciers extends echeanciers_crud
         ];
         $query = '
             SELECT
-              t.month AS month,
-              t.quarter AS quarter,
-              t.year as year,
-              SUM(t.capital) AS capital,
-              SUM(t.rawInterests) AS rawInterests,
-              SUM(t.repaidTaxes) AS repaidTaxes,
-              ROUND(SUM(t.upcomingTaxes), 2) AS upcomingTaxes FROM (
+                t.month                        AS month,
+                t.quarter                      AS quarter,
+                t.year                         AS year,
+                ROUND(SUM(t.capital), 2)       AS capital,
+                ROUND(SUM(t.rawInterests), 2)  AS rawInterests,
+                ROUND(SUM(t.netInterests), 2)  AS netInterests,
+                ROUND(SUM(t.repaidTaxes), 2)   AS repaidTaxes,
+                ROUND(SUM(t.upcomingTaxes), 2) AS upcomingTaxes
+            FROM (
+                SELECT
+                    LEFT(t_capital.date_transaction, 7)                                                                                AS month,
+                    QUARTER(t_capital.date_transaction)                                                                                AS quarter,
+                    YEAR(t_capital.date_transaction)                                                                                   AS year,
+                    ROUND(SUM(t_capital.montant) / 100, 2)                                                                             AS capital,
+                    NULL                                                                                                               AS rawInterests,
+                    ROUND(SUM(t_interest.montant) / 100, 2)                                                                            AS netInterests,
+                    SUM((SELECT ROUND(IFNULL(SUM(tax.amount), 0) / 100, 2) FROM tax WHERE id_transaction = t_interest.id_transaction)) AS repaidTaxes,
+                    0                                                                                                                  AS upcomingTaxes
+                FROM lenders_accounts la
+                INNER JOIN transactions t_capital ON t_capital.id_client = la.id_client_owner AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                LEFT JOIN transactions t_interest ON t_interest.id_echeancier = t_capital.id_echeancier AND t_interest.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                WHERE la.id_lender_account = :id_lender 
+                GROUP BY year, quarter, month
 
-                  SELECT
-                      LEFT(t_interest.date_transaction, 7)        AS month,
-                      QUARTER(t_interest.date_transaction)        AS quarter,
-                      YEAR(t_interest.date_transaction)           AS year,
-                      SUM(ROUND(t_capital.montant / 100, 2))  AS capital,
-                      SUM(ROUND(t_interest.montant / 100, 2)) AS rawInterests,
-                      SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t_interest.id_transaction) , 0)) AS repaidTaxes,
-                      NULL AS upcomingTaxes
-                    FROM lenders_accounts la
-                      INNER JOIN transactions t_capital ON t_capital.id_client = la.id_client_owner AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
-                      LEFT JOIN transactions t_interest ON t_interest.id_echeancier = t_capital.id_echeancier AND t_interest.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                    WHERE la.id_lender_account = :id_lender 
-                    GROUP BY year, quarter, month
+                UNION ALL
 
-                  UNION ALL
+                SELECT
+                    LEFT(t.date_transaction, 7)            AS month,
+                    QUARTER(t.date_transaction)            AS quarter,
+                    YEAR(t.date_transaction)               AS year,
+                    ROUND(SUM(t.montant) / 100 / 0.844, 2) AS capital,
+                    0                                      AS rawInterests,
+                    NULL                                   AS netInterests,
+                    0                                      AS repaidTaxes,
+                    0                                      AS upcomingTaxes
+                FROM lenders_accounts l
+                INNER JOIN transactions t ON t.id_client = l.id_client_owner AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
+                WHERE l.id_lender_account = :id_lender
+                GROUP BY year, quarter, month
 
-                  SELECT
-                    LEFT(t.date_transaction, 7)        AS month,
-                    QUARTER(t.date_transaction)        AS quarter,
-                    YEAR(t.date_transaction)           AS year,
-                    SUM(ROUND((t.montant/100)/ 0.844, 2))  AS capital,
-                    NULL AS rawInterests,
-                    NULL AS repaidTaxes,
-                    NULL AS upcomingTaxes
-                  FROM lenders_accounts l
-                    INNER JOIN transactions t ON t.id_client = l.id_client_owner AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
-                  WHERE
-                    l.id_lender_account = :id_lender
-                  GROUP BY year, quarter, month
+                UNION ALL
 
-                  UNION ALL
-
-                  SELECT
+                SELECT
                     LEFT(e.date_echeance, 7)        AS month,
                     QUARTER(e.date_echeance)        AS quarter,
                     YEAR(e.date_echeance)           AS year,
-                    SUM(ROUND(e.capital / 100, 2))  AS capital,
-                    SUM(ROUND(e.interets / 100, 2)) AS rawInterests,
-                    NULL AS repaidTaxes,
+                    ROUND(SUM(e.capital) / 100, 2)  AS capital,
+                    ROUND(SUM(e.interets) / 100, 2) AS rawInterests,
+                    NULL                            AS netInterests,
+                    0                               AS repaidTaxes,
                     CASE c.type
-                      -- Natural person
-                      WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER . ' THEN
-                          CASE lih.resident_etranger
-                          -- FR fiscal resident
-                          WHEN 0
-                            THEN CASE lte.id_lender
-                              WHEN NOT NULL THEN SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_exempted_lender)) / 100, 2))
-                              ELSE SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_taxable_lender)) / 100, 2))
+                        -- Natural person
+                        WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER . ' THEN
+                            CASE lih.resident_etranger
+                                -- FR fiscal resident
+                                WHEN 0 THEN 
+                                    IF (
+                                        lte.id_lender IS NULL,
+                                        SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_taxable_lender)) / 100, 2)),
+                                        SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_exempted_lender)) / 100, 2))
+                                    )
+                                -- Foreigner fiscal resident
+                                WHEN 1 THEN
+                                    SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_foreigner_lender)) / 100, 2))
                             END
-                          -- Foreigner fiscal resident
-                          WHEN 1 THEN
-                            SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_foreigner_lender)) / 100, 2))
-                          END
-                      -- Legal entity
-                      WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' OR ' . \clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
-                          SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2))
-                      END                             AS upcomingTaxes
-                  FROM echeanciers e
-                    INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-                    LEFT JOIN clients c ON la.id_client_owner = c.id_client
-                    LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender = lte.id_lender AND lte.year = YEAR(e.date_echeance_reel)
-                    LEFT JOIN lenders_imposition_history lih ON lih.id_lenders_imposition_history = (SELECT MAX(id_lenders_imposition_history) FROM lenders_imposition_history WHERE id_lender = e.id_lender)
-                    LEFT JOIN projects p ON e.id_project = p.id_project
-                  WHERE e.id_lender = :id_lender
-                        AND e.status = 0
-                        AND e.date_echeance >= NOW()
-                        AND IF(
-                              (p.status IN (' . implode(',', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ')
-                              OR (p.status >= ' . \projects_status::PROBLEME . '
-                              AND DATEDIFF(NOW(), (
-                              SELECT psh2.added
-                              FROM projects_status_history psh2
-                              INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                              WHERE ps2.status = ' . \projects_status::PROBLEME . '
-                              AND psh2.id_project = e.id_project
-                              ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                              LIMIT 1
-                              )) > 180)), TRUE, FALSE) = FALSE
-                  GROUP BY year, quarter, month) as t
+                        -- Legal entity
+                        WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' OR ' . \clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
+                            SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2))
+                    END                           AS upcomingTaxes
+                FROM echeanciers e
+                INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
+                LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance)
+                LEFT JOIN lenders_imposition_history lih ON lih.id_lenders_imposition_history = (SELECT MAX(id_lenders_imposition_history) FROM lenders_imposition_history WHERE id_lender = e.id_lender)
+                LEFT JOIN projects p ON e.id_project = p.id_project
+                WHERE e.id_lender = :id_lender
+                    AND e.status = 0
+                    AND e.date_echeance >= NOW()
+                    AND IF(
+                        (p.status IN (' . implode(',', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ')
+                        OR (p.status >= ' . \projects_status::PROBLEME . '
+                        AND DATEDIFF(NOW(), (
+                        SELECT psh2.added
+                        FROM projects_status_history psh2
+                        INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                        WHERE ps2.status = ' . \projects_status::PROBLEME . '
+                        AND psh2.id_project = e.id_project
+                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                        LIMIT 1
+                    )) > 180)), TRUE, FALSE) = FALSE
+                GROUP BY year, quarter, month
+            ) AS t
             GROUP BY t.year, t.quarter, t.month';
 
         /** @var \Doctrine\DBAL\Cache\QueryCacheProfile $oQCProfile */
@@ -1231,8 +1236,8 @@ class echeanciers extends echeanciers_crud
             $taxes = (float) ($row['repaidTaxes'] + $row['upcomingTaxes']);
             unset($row['repaidTaxes'], $row['upcomingTaxes']);
             $row['capital']      = (float) $row['capital'];
-            $row['rawInterests'] = (float) $row['rawInterests'];
-            $row['netInterests'] = (float) $row['rawInterests'] - $taxes;
+            $row['rawInterests'] = null === $row['rawInterests'] ? (float) ($row['netInterests'] + $taxes) : (float) $row['rawInterests'];
+            $row['netInterests'] = null === $row['netInterests'] ? (float) ($row['rawInterests'] - $taxes) : (float) $row['netInterests'];
             $row['taxes']        = $taxes;
             $data[]              = $row;
         }
