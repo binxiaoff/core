@@ -278,6 +278,6 @@ class projects_status_history extends projects_status_history_crud
                   AND psh.id_project = :project_id';
 
         $statement = $this->bdd->executeQuery($query, ['status' => $status, 'project_id' => $projectId]);
-        return $statement->fetchColumn(0) > 0;
+        return $statement->fetchColumn() > 0;
     }
 }
