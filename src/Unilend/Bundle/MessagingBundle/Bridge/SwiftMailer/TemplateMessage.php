@@ -103,13 +103,20 @@ class TemplateMessage extends \Swift_Message
 
     public function setTo($addresses, $name = null)
     {
+        if (empty($addresses)) {
+            if ($this->logger instanceof LoggerInterface) {
+                $trace = debug_backtrace();
+                $this->logger->error('email address empty : ', ['address'  => $addresses, 'template' => $this->templateId, 'file'  => $trace[0]['file'], 'line'  => $trace[0]['line']]);
+            }
+        }
+
         $addresses = self::normalizeEmail($addresses);
         try {
             parent::setTo($addresses, $name);
         } catch (\Swift_RfcComplianceException $exception) {
             if ($this->logger instanceof LoggerInterface) {
                 $trace = debug_backtrace();
-                $this->logger->alert($exception->getMessage(), array('address' => $addresses, 'template' => $this->templateId, 'file' => $trace[0]['file'], 'line' => $trace[0]['line']));
+                $this->logger->error($exception->getMessage(), ['address' => $addresses, 'template' => $this->templateId, 'file' => $trace[0]['file'], 'line' => $trace[0]['line']]);
             }
         }
 
