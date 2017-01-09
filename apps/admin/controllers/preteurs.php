@@ -79,6 +79,13 @@ class preteursController extends bootstrap
 
         if (isset($_POST['form_search_preteur'])) {
             $nonValide       = (isset($_POST['nonValide']) && $_POST['nonValide'] != false) ? 1 : '';
+
+            if (false === filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+                $_SESSION['error_search']  = 'Format email non valide';
+                header('Location:' . $this->lurl . '/preteurs/search');
+                die;
+            }
+
             $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
