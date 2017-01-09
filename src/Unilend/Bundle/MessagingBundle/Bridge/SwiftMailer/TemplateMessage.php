@@ -103,11 +103,9 @@ class TemplateMessage extends \Swift_Message
 
     public function setTo($addresses, $name = null)
     {
-        if (empty($addresses)) {
-            if ($this->logger instanceof LoggerInterface) {
-                $trace = debug_backtrace();
-                $this->logger->error('email address empty : ', ['address'  => $addresses, 'template' => $this->templateId, 'file'  => $trace[0]['file'], 'line'  => $trace[0]['line']]);
-            }
+        if (empty($addresses && $this->logger instanceof LoggerInterface)) {
+            $trace = debug_backtrace();
+            $this->logger->error('email address empty : ', ['address'  => $addresses, 'template' => $this->templateId, 'file'  => $trace[0]['file'], 'line'  => $trace[0]['line']]);
         }
 
         $addresses = self::normalizeEmail($addresses);
