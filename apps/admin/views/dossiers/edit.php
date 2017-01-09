@@ -447,7 +447,7 @@
                     <tr>
                         <th><label for="assigned_product">Produit associé* :</label></th>
                         <td>
-                            <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                            <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
                                 <option value=""></option>
                             <?php foreach ($this->eligibleProduct as $product) : ?>
                                 <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
