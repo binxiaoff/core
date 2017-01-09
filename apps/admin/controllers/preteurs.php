@@ -118,113 +118,115 @@ class preteursController extends bootstrap
         $this->wallets_lines = $this->loadData('wallets_lines');
 
         $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->lenders_accounts->get($this->params[0], 'id_lender_account');
-
         $this->clients = $this->loadData('clients');
-        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+        if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
 
-        $this->companies = $this->loadData('companies');
-        if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
-            $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
-        }
+            $this->clients_adresses = $this->loadData('clients_adresses');
+            $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-        $this->loans    = $this->loadData('loans');
-        $this->nb_pret  = $this->loans->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = ' . \loans::STATUS_ACCEPTED);
-        $this->txMoyen  = $this->loans->getAvgPrets($this->lenders_accounts->id_lender_account);
-        $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
-
-        if (isset($this->params[1])) {
-            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . \loans::STATUS_ACCEPTED);
-        } else {
-            $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . \loans::STATUS_ACCEPTED);
-        }
-
-        $this->SumDepot       = $this->transactions->getLenderDepositedAmount($this->lenders_accounts);
-        $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
-
-        $this->echeanciers = $this->loadData('echeanciers');
-        $this->sumRembInte = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account));
-
-        try {
-            $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange(
-                $this->lenders_accounts->id_lender_account,
-                (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'),
-                (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'),
-                array(\echeanciers::STATUS_PENDING)
-            );
-        } catch (\Exception $exception) {
-            /** @var \Psr\Log\LoggerInterface $logger */
-            $logger = $this->get('logger');
-            $logger->error('Could not get next repayment amount (id_lender = ' . $this->lenders_accounts->id_lender_account . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->lenders_accounts->id_lender_account));
-            $this->nextRemb = 0;
-        }
-
-        $this->sumRembMontant = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account));
-
-        $this->bids           = $this->loadData('bids');
-        $this->avgPreteur     = $this->bids->getAvgPreteur($this->lenders_accounts->id_lender_account, 'amount', '1,2');
-        $this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
-        $this->lBids          = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0', 'added DESC');
-        $this->NbBids         = count($this->lBids);
-
-        $this->clients_mandats = $this->loadData('clients_mandats');
-        $this->clients_mandats->get($this->clients->id_client, 'id_client');
-
-        $this->attachment       = $this->loadData('attachment');
-        $this->attachment_type  = $this->loadData('attachment_type');
-        $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
-
-        $this->aAvailableAttachments = array();
-
-        $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
-        $this->aAvailableAttachments = $this->aIdentity + $this->aDomicile + $this->aRibAndFiscale + $this->aOther;
-
-        /** @var \lender_tax_exemption $oLenderTaxExemption */
-        $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
-        $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
-
-        $this->lesStatuts = array(
-            \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('preteur-profile_versement-initial'),
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('preteur-profile_alimentation-cb'),
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('preteur-profile_alimentation-virement'),
-            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement de capital',
-            \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS     => 'Remboursement d\'intérêts',
-            \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('preteur-profile_alimentation-prelevement'),
-            \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('preteur-profile_retrait'),
-            \transactions_types::TYPE_LENDER_REGULATION              => 'Régularisation prêteur',
-            \transactions_types::TYPE_WELCOME_OFFER                  => 'Offre de bienvenue',
-            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => 'Retrait offre de bienvenue',
-            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
-            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
-            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe'),
-            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe-preteur'),
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur'),
-            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
-        );
-
-        $this->solde        = $this->transactions->getSolde($this->clients->id_client);
-        $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
-        $this->soldeRetrait = abs($this->soldeRetrait / 100);
-        $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
-
-        /** @var \transfer $transfer */
-        $transfer = $this->loadData('transfer');
-        $transfersForClient = $transfer->select('id_client_origin = ' . $this->clients->id_client . ' OR id_client_receiver = ' . $this->clients->id_client);
-
-        $this->transferDocuments = [];
-        foreach ($transfersForClient as $transfer) {
-            $transferDocument = $this->attachment->select('id_owner = ' . $transfer['id_transfer'] . ' AND id_type = ' . \attachment_type::TRANSFER_CERTIFICATE);
-            if (false === empty($transferDocument)) {
-                $transferDocument = $transferDocument[0];
-                $this->transferDocuments[$transferDocument['path']] = $transferDocument;
+            $this->companies = $this->loadData('companies');
+            if (in_array($this->clients->type, array(
+                clients::TYPE_LEGAL_ENTITY,
+                clients::TYPE_LEGAL_ENTITY_FOREIGNER
+            ))) {
+                $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
             }
-        }
 
-        $this->getMessageAboutClientStatus();
+            $this->loans    = $this->loadData('loans');
+            $this->nb_pret  = $this->loans->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = ' . \loans::STATUS_ACCEPTED);
+            $this->txMoyen  = $this->loans->getAvgPrets($this->lenders_accounts->id_lender_account);
+            $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
+
+            if (isset($this->params[1])) {
+                $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . \loans::STATUS_ACCEPTED);
+            } else {
+                $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . \loans::STATUS_ACCEPTED);
+            }
+
+            $this->SumDepot       = $this->transactions->getLenderDepositedAmount($this->lenders_accounts);
+            $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
+
+            $this->echeanciers = $this->loadData('echeanciers');
+            $this->sumRembInte = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account));
+
+            try {
+                $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange($this->lenders_accounts->id_lender_account, (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'), array(\echeanciers::STATUS_PENDING));
+            } catch (\Exception $exception) {
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->error('Could not get next repayment amount (id_lender = ' . $this->lenders_accounts->id_lender_account . ')', array(
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'id_lender' => $this->lenders_accounts->id_lender_account
+                ));
+                $this->nextRemb = 0;
+            }
+
+            $this->sumRembMontant = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account));
+
+            $this->bids           = $this->loadData('bids');
+            $this->avgPreteur     = $this->bids->getAvgPreteur($this->lenders_accounts->id_lender_account, 'amount', '1,2');
+            $this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
+            $this->lBids          = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0', 'added DESC');
+            $this->NbBids         = count($this->lBids);
+
+            $this->clients_mandats = $this->loadData('clients_mandats');
+            $this->clients_mandats->get($this->clients->id_client, 'id_client');
+
+            $this->attachment       = $this->loadData('attachment');
+            $this->attachment_type  = $this->loadData('attachment_type');
+            $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
+
+            $this->aAvailableAttachments = array();
+
+            $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
+            $this->aAvailableAttachments = $this->aIdentity + $this->aDomicile + $this->aRibAndFiscale + $this->aOther;
+
+            /** @var \lender_tax_exemption $oLenderTaxExemption */
+            $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
+            $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
+
+            $this->lesStatuts = array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('preteur-profile_versement-initial'),
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('preteur-profile_alimentation-cb'),
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('preteur-profile_alimentation-virement'),
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement de capital',
+                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS     => 'Remboursement d\'intérêts',
+                \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('preteur-profile_alimentation-prelevement'),
+                \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('preteur-profile_retrait'),
+                \transactions_types::TYPE_LENDER_REGULATION              => 'Régularisation prêteur',
+                \transactions_types::TYPE_WELCOME_OFFER                  => 'Offre de bienvenue',
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => 'Retrait offre de bienvenue',
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
+                \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe'),
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe-preteur'),
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur'),
+                \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
+            );
+
+            $this->solde        = $this->transactions->getSolde($this->clients->id_client);
+            $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_WITHDRAWAL . ' AND id_client = ' . $this->clients->id_client, 'montant');
+            $this->soldeRetrait = abs($this->soldeRetrait / 100);
+            $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
+
+            /** @var \transfer $transfer */
+            $transfer           = $this->loadData('transfer');
+            $transfersForClient = $transfer->select('id_client_origin = ' . $this->clients->id_client . ' OR id_client_receiver = ' . $this->clients->id_client);
+
+            $this->transferDocuments = [];
+            foreach ($transfersForClient as $transfer) {
+                $transferDocument = $this->attachment->select('id_owner = ' . $transfer['id_transfer'] . ' AND id_type = ' . \attachment_type::TRANSFER_CERTIFICATE);
+                if (false === empty($transferDocument)) {
+                    $transferDocument                                   = $transferDocument[0];
+                    $this->transferDocuments[$transferDocument['path']] = $transferDocument;
+                }
+            }
+
+            $this->getMessageAboutClientStatus();
+        }
     }
 
     private function setAttachments($iIdClient, $oAttachmentTypes)
@@ -285,473 +287,494 @@ class preteursController extends bootstrap
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = json_decode($this->settings->value, true);
 
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->lenders_accounts->get($this->params[0], 'id_lender_account');
-
-        $this->clients = $this->loadData('clients');
-        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
-        $this->companies = $this->loadData('companies');
-
-        if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
-            $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
-
-            $this->meme_adresse_fiscal = $this->companies->status_adresse_correspondance;
-            $this->adresse_fiscal      = $this->companies->adresse1;
-            $this->city_fiscal         = $this->companies->city;
-            $this->zip_fiscal          = $this->companies->zip;
-
-            $this->settings->get("Liste deroulante origine des fonds societe", 'status = 1 AND type');
-            $this->origine_fonds = $this->settings->value;
-            $this->origine_fonds = explode(';', $this->origine_fonds);
-
-        } else {
-            $this->meme_adresse_fiscal = $this->clients_adresses->meme_adresse_fiscal;
-            $this->adresse_fiscal      = $this->clients_adresses->adresse_fiscal;
-            $this->city_fiscal         = $this->clients_adresses->ville_fiscal;
-            $this->zip_fiscal          = $this->clients_adresses->cp_fiscal;
-
-            /** @var \lender_tax_exemption $oLenderTaxExemption */
-            $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
-            $this->taxExemption    = $oLenderTaxExemption->getLenderExemptionHistory($this->lenders_accounts->id_lender_account);
-            $this->aExemptionYears = array_column($this->taxExemption, 'year');
-            $this->iNextYear       = date('Y') + 1;
-
-            $this->settings->get("Liste deroulante origine des fonds", 'status = 1 AND type');
-            $this->origine_fonds = $this->settings->value;
-            $this->origine_fonds = explode(';', $this->origine_fonds);
-            $this->taxExemptionUserHistoryAction = $this->getTaxExemptionHistoryActionDetails($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
-        }
-        if ($birthDate = \DateTime::createFromFormat('Y-m-d', $this->clients->naissance)) {
-            $this->naissance = $birthDate->format('d/m/Y');
-        } else {
-            $this->naissance = '';
-        }
-
-        if ($this->lenders_accounts->iban != '') {
-            $this->iban1 = substr($this->lenders_accounts->iban, 0, 4);
-            $this->iban2 = substr($this->lenders_accounts->iban, 4, 4);
-            $this->iban3 = substr($this->lenders_accounts->iban, 8, 4);
-            $this->iban4 = substr($this->lenders_accounts->iban, 12, 4);
-            $this->iban5 = substr($this->lenders_accounts->iban, 16, 4);
-            $this->iban6 = substr($this->lenders_accounts->iban, 20, 4);
-            $this->iban7 = substr($this->lenders_accounts->iban, 24, 3);
-        }
-
-        if ($this->clients->telephone != '') {
-            trim(chunk_split($this->clients->telephone, 2, ' '));
-        }
-        if ($this->companies->phone != '') {
-            $this->companies->phone = trim(chunk_split($this->companies->phone, 2, ' '));
-        }
-        if ($this->companies->phone_dirigeant != '') {
-            $this->companies->phone_dirigeant = trim(chunk_split($this->companies->phone_dirigeant, 2, ' '));
-        }
-
-        $this->clients_status = $this->loadData('clients_status');
-        $this->clients_status->getLastStatut($this->clients->id_client);
-
-        $this->clients_status_history   = $this->loadData('clients_status_history');
-        $this->oClientsStatusForHistory = $this->loadData('clients_status');
-        $this->lActions                 = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
-        $this->aTaxationCountryHistory  = $this->getTaxationHistory($this->lenders_accounts->id_lender_account);
-
-        $this->getMessageAboutClientStatus();
-
-        $this->attachment       = $this->loadData('attachment');
-        $this->attachment_type  = $this->loadData('attachment_type');
-        $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
-
-        $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
-
-        $this->loadJs('default/component/add-file-input');
-
-        $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-        $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
-
-        /** @var \greenpoint_attachment_detail $greenPointDetail */
-        $greenPointDetail      = $this->loadData('greenpoint_attachment_detail');
-        $this->lenderIdentityMRZData = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORTE);
-        $this->hostIdentityMRZData = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
-
-        if (isset($_POST['send_completude'])) {
-            $this->sendCompletenessRequest();
-            $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][ $this->clients->id_client ]);
-
-            unset($_SESSION['content_email_completude'][$this->clients->id_client]);
-
-            $_SESSION['email_completude_confirm'] = true;
-
-            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
-            die;
-        } elseif (isset($_POST['send_edit_preteur'])) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
-            $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
-            $mailerManager = $this->get('unilend.service.email_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager $taxManager */
-            $taxManager = $this->get('unilend.service.tax_manager');
-
-            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
-
-                if (false === empty($_POST['meme-adresse'])) {
-                    $this->clients_adresses->meme_adresse_fiscal = 1;
-                } else {
-                    $this->clients_adresses->meme_adresse_fiscal = 0;
-                }
-                $bTaxCountryChanged                     = false === empty($_POST['id_pays_fiscal']) && $this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'];
-                $this->clients_adresses->adresse_fiscal = $_POST['adresse'];
-                $this->clients_adresses->ville_fiscal   = $_POST['ville'];
-                $this->clients_adresses->cp_fiscal      = $_POST['cp'];
-                $this->clients_adresses->id_pays_fiscal = $_POST['id_pays_fiscal'];
-
-                if ($this->clients_adresses->meme_adresse_fiscal == 0) {
-                    $this->clients_adresses->adresse1 = $_POST['adresse2'];
-                    $this->clients_adresses->ville    = $_POST['ville2'];
-                    $this->clients_adresses->cp       = $_POST['cp2'];
-                    $this->clients_adresses->id_pays  = $_POST['id_pays'];
-                } else {
-                    $this->clients_adresses->adresse1 = $_POST['adresse'];
-                    $this->clients_adresses->ville    = $_POST['ville'];
-                    $this->clients_adresses->cp       = $_POST['cp'];
-                    $this->clients_adresses->id_pays  = $_POST['id_pays_fiscal'];
-                }
-
-                $this->clients->civilite  = $_POST['civilite'];
-                $this->clients->nom       = $this->ficelle->majNom($_POST['nom-famille']);
-                $this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-usage']);
-                $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
-
-                //// check doublon mail ////
-                if ($this->isEmailUnique($_POST['email'], $this->clients)) {
-                    $this->clients->email = $_POST['email'];
-                }
-
-                $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
-
-                $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
-                $this->clients->mobile            = str_replace(' ', '', $_POST['mobile']);
-                $this->clients->ville_naissance   = $_POST['com-naissance'];
-                $this->clients->insee_birth       = $_POST['insee_birth'];
-                $this->clients->naissance         = $oBirthday->format('Y-m-d');
-                $this->clients->id_pays_naissance = $_POST['id_pays_naissance'];
-                $this->clients->id_nationalite    = $_POST['nationalite'];
-                $this->clients->id_langue         = 'fr';
-                $this->clients->type              = 1;
-                $this->clients->fonction          = '';
-                $this->clients->update();
-
-                $this->lenders_accounts->id_company_owner = 0;
-
-                $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
-                if ($this->lenders_accounts->origine_des_fonds == '1000000') {
-                    $this->lenders_accounts->precision = $_POST['preciser'];
-                } else {
-                    $this->lenders_accounts->precision = '';
-                }
-
-                foreach ($_FILES as $field => $file) {
-                    // Field name = attachment type id
-                    $iAttachmentType = $field;
-                    if ('' !== $file['name']) {
-                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
-                    }
-                }
-
-                if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
-                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
-                        $create = false;
-                    } else {
-                        $create = true;
-                    }
-
-                    $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
-                    if ($this->upload->doUpload('mandat')) {
-                        if ($this->clients_mandats->name != '') {
-                            @unlink($this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name);
-                        }
-                        $this->clients_mandats->name          = $this->upload->getName();
-                        $this->clients_mandats->id_client     = $this->clients->id_client;
-                        $this->clients_mandats->id_universign = 'no_universign';
-                        $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
-                        $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
-
-                        if ($create == true) {
-                            $this->clients_mandats->create();
-                        } else {
-                            $this->clients_mandats->update();
-                        }
-                    }
-                }
-
-                if (isset($_POST['tax_exemption'])) {
-                    foreach ($_POST['tax_exemption'] as $iExemptionYear => $iExemptionValue) {
-                        if (false === in_array($iExemptionYear, $this->aExemptionYears)) {
-                            /** @var \lender_tax_exemption $oLenderTaxExemption */
-                            $oLenderTaxExemption = $this->loadData('lender_tax_exemption');
-                            $oLenderTaxExemption->id_lender   = $this->lenders_accounts->id_lender_account;
-                            $oLenderTaxExemption->iso_country = 'FR';
-                            $oLenderTaxExemption->year        = $iExemptionYear;
-                            $oLenderTaxExemption->id_user     = $_SESSION['user']['id_user'];
-                            $oLenderTaxExemption->create();
-                            $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'adding'];
-                        }
-                    }
-                }
-
-                if (in_array($this->iNextYear, $this->aExemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
-                    $oLenderTaxExemption->get($this->lenders_accounts->id_lender_account . '" AND year = ' . $this->iNextYear . ' AND iso_country = "FR', 'id_lender');
-                    $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'deletion'];
-                    $oLenderTaxExemption->delete($oLenderTaxExemption->id_lender_tax_exemption);
-                }
-
-                if (false === empty($taxExemptionHistory)) {
-                    $this->users_history->histo(\users_history::FORM_ID_LENDER, \users_history::FORM_NAME_TAX_EXEMPTION, $_SESSION['user']['id_user'], serialize(['id_client' => $this->clients->id_client, 'modifications' => $taxExemptionHistory]));
-                }
-
-                $this->clients_adresses->update();
-                $this->lenders_accounts->update();
-                $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-                $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
-
-                if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
-                    /** @var \Psr\Log\LoggerInterface $logger */
-                    $logger = $this->get('logger');
-
-                    $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
-                    $aExistingClient       = array_shift($aExistingClient);
-                    $iOriginForUserHistory = 3;
-
-                    if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
-                        $this->changeClientStatus($this->clients, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
-                        $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
-                        header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
-                        die;
-                    } elseif (1 == $this->clients->origine && 0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) {
-                        $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
-                        $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
-                    } else {
-                        $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or the origine != 1.', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
-                    }
-
-                    $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
-
-                    /** @var \clients_gestion_notifications clients_gestion_notifications */
-                    $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-
-                    $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
-
-                    if (false == $this->lNotifs) {
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
-                        $notificationManager = $this->get('unilend.service.notification_manager');
-                        $notificationManager->generateDefaultNotificationSettings($this->clients);
-                    }
-
-                    if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
-                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
-                    } else {
-                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
-                    }
-                    $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
-
-                    $_SESSION['compte_valide'] = true;
-                }
-
-                if (true === $bTaxCountryChanged) {
-                    $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
-                }
-
-                $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-                header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
-                die;
-            } elseif (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
-                $this->companies->name         = $_POST['raison-sociale'];
-                $this->companies->forme        = $_POST['form-juridique'];
-                $this->companies->capital      = str_replace(' ', '', $_POST['capital-sociale']);
-                $this->companies->siren        = $_POST['siren'];
-                $this->companies->siret        = $_POST['siret']; //(19/11/2014)
-                $this->companies->phone        = str_replace(' ', '', $_POST['phone-societe']);
-                $this->companies->tribunal_com = $_POST['tribunal_com'];
-
-                ////////////////////////////////////
-                // On verifie meme adresse ou pas //
-                ////////////////////////////////////
-                if ($_POST['meme-adresse'] != false) {
-                    $this->companies->status_adresse_correspondance = '1';
-                } else {
-                    $this->companies->status_adresse_correspondance = '0';
-                }
-                // adresse fiscal (siege de l'entreprise)
-                $this->companies->adresse1 = $_POST['adresse'];
-                $this->companies->city     = $_POST['ville'];
-                $this->companies->zip      = $_POST['cp'];
-
-                // adresse fiscal (dans client entreprise) on vide car c'est pour les particulier ca
-                $this->clients_adresses->adresse_fiscal = '';
-                $this->clients_adresses->ville_fiscal   = '';
-                $this->clients_adresses->cp_fiscal      = '';
-
-                // pas la meme
-                if ($this->companies->status_adresse_correspondance == 0) {
-                    $this->clients_adresses->adresse1 = $_POST['adresse2'];
-                    $this->clients_adresses->ville    = $_POST['ville2'];
-                    $this->clients_adresses->cp       = $_POST['cp2'];
-                } else {
-                    $this->clients_adresses->adresse1 = $_POST['adresse'];
-                    $this->clients_adresses->ville    = $_POST['ville'];
-                    $this->clients_adresses->cp       = $_POST['cp'];
-                }
-
-                $this->companies->status_client = $_POST['enterprise']; // radio 1 dirigeant 2 pas dirigeant 3 externe
-
-                $this->clients->civilite = $_POST['civilite_e'];
-                $this->clients->nom      = $this->ficelle->majNom($_POST['nom_e']);
-                $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_e']);
-                $this->clients->fonction = $_POST['fonction_e'];
-
-                //// check doublon mail ////
-                if ($this->isEmailUnique($_POST['email_e'], $this->clients)) {
-                    $this->clients->email = $_POST['email_e'];
-                }
-
-                $this->clients->telephone = str_replace(' ', '', $_POST['phone_e']);
-
-                //extern ou non dirigeant
-                if ($this->companies->status_client == 2 || $this->companies->status_client == 3) {
-                    $this->companies->civilite_dirigeant = $_POST['civilite2_e'];
-                    $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_e']);
-                    $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_e']);
-                    $this->companies->fonction_dirigeant = $_POST['fonction2_e'];
-                    $this->companies->email_dirigeant    = $_POST['email2_e'];
-                    $this->companies->phone_dirigeant    = str_replace(' ', '', $_POST['phone2_e']);
-
-                    // externe
-                    if ($this->companies->status_client == 3) {
-                        $this->companies->status_conseil_externe_entreprise   = $_POST['status_conseil_externe_entreprise'];
-                        $this->companies->preciser_conseil_externe_entreprise = $_POST['preciser_conseil_externe_entreprise'];
-                    }
-                } else {
-                    $this->companies->civilite_dirigeant = '';
-                    $this->companies->nom_dirigeant      = '';
-                    $this->companies->prenom_dirigeant   = '';
-                    $this->companies->fonction_dirigeant = '';
-                    $this->companies->email_dirigeant    = '';
-                    $this->companies->phone_dirigeant    = '';
-                }
-
-                // Si form societe ok
-                $this->clients->id_langue       = 'fr';
-                $this->clients->type            = 2;
-                $this->clients->nom_usage       = '';
-                $this->clients->naissance       = '0000-00-00';
-                $this->clients->ville_naissance = '';
-
-                if ($this->companies->exist($this->clients->id_client, 'id_client_owner')) {
-                    $this->companies->update();
-                } else {
-                    $this->companies->id_client_owner = $this->clients->id_client;
-                    $this->companies->create();
-                }
-
-                $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
-                if ($this->lenders_accounts->origine_des_fonds == '1000000') {
-                    $this->lenders_accounts->precision = $_POST['preciser'];
-                } else {
-                    $this->lenders_accounts->precision = '';
-                }
-
-                foreach ($_FILES as $field => $file) {
-                    $iAttachmentType = $field;
-                    if ('' !== $file['name']) {
-                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
-                    }
-                }
-
-                if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
-                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
-                        $create = false;
-                    } else {
-                        $create = true;
-                    }
-
-                    $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
-                    if ($this->upload->doUpload('mandat')) {
-                        if ($this->clients_mandats->name != '') @unlink($this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name);
-                        $this->clients_mandats->name          = $this->upload->getName();
-                        $this->clients_mandats->id_client     = $this->clients->id_client;
-                        $this->clients_mandats->id_universign = 'no_universign';
-                        $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
-                        $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
-
-                        if ($create == true) {
-                            $this->clients_mandats->create();
-                        } else {
-                            $this->clients_mandats->update();
-                        }
-                    }
-                }
-
-                // fin fichier //
-
-                // On met a jour le lender
-                $this->lenders_accounts->id_company_owner = $this->companies->id_company;
-                $this->lenders_accounts->update();
-                $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-
-                // On met a jour le client
-                $this->clients->update();
-                // On met a jour l'adresse client
-                $this->clients_adresses->update();
-
-                // Histo user //
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-                $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
-
-                if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
-                    $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
-
-                    if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
-                        $sTypeMail = 'preteur-validation-modification-compte';
-                    } else {
-                        $this->create_offre_bienvenue($this->clients->id_client);
-                        $sTypeMail = 'preteur-confirmation-activation';
-                    }
-
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    $varMail = array(
-                        'surl'    => $this->surl,
-                        'url'     => $this->furl,
-                        'prenom'  => $this->clients->prenom,
-                        'projets' => $this->furl . '/projets-a-financer',
-                        'lien_fb' => $lien_fb,
-                        'lien_tw' => $lien_tw
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $varMail);
-                    $message->setTo($this->clients->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                    $_SESSION['compte_valide'] = true;
-                }
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->clients = $this->loadData('clients');
+
+        if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
+            $this->clients_adresses = $this->loadData('clients_adresses');
+            $this->clients_adresses->get($this->clients->id_client, 'id_client');
+
+            $this->companies = $this->loadData('companies');
+
+            if (in_array($this->clients->type, [clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
+
+                $this->meme_adresse_fiscal = $this->companies->status_adresse_correspondance;
+                $this->adresse_fiscal      = $this->companies->adresse1;
+                $this->city_fiscal         = $this->companies->city;
+                $this->zip_fiscal          = $this->companies->zip;
+
+                $this->settings->get("Liste deroulante origine des fonds societe", 'status = 1 AND type');
+                $this->origine_fonds = $this->settings->value;
+                $this->origine_fonds = explode(';', $this->origine_fonds);
+
+            } else {
+                $this->meme_adresse_fiscal = $this->clients_adresses->meme_adresse_fiscal;
+                $this->adresse_fiscal      = $this->clients_adresses->adresse_fiscal;
+                $this->city_fiscal         = $this->clients_adresses->ville_fiscal;
+                $this->zip_fiscal          = $this->clients_adresses->cp_fiscal;
+
+                /** @var \lender_tax_exemption $oLenderTaxExemption */
+                $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
+                $this->taxExemption    = $oLenderTaxExemption->getLenderExemptionHistory($this->lenders_accounts->id_lender_account);
+                $this->aExemptionYears = array_column($this->taxExemption, 'year');
+                $this->iNextYear       = date('Y') + 1;
+
+                $this->settings->get("Liste deroulante origine des fonds", 'status = 1 AND type');
+                $this->origine_fonds                 = $this->settings->value;
+                $this->origine_fonds                 = explode(';', $this->origine_fonds);
+                $this->taxExemptionUserHistoryAction = $this->getTaxExemptionHistoryActionDetails($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
+            }
+
+            if ($birthDate = \DateTime::createFromFormat('Y-m-d', $this->clients->naissance)) {
+                $this->naissance = $birthDate->format('d/m/Y');
+            } else {
+                $this->naissance = '';
+            }
+
+            if ($this->lenders_accounts->iban != '') {
+                $this->iban1 = substr($this->lenders_accounts->iban, 0, 4);
+                $this->iban2 = substr($this->lenders_accounts->iban, 4, 4);
+                $this->iban3 = substr($this->lenders_accounts->iban, 8, 4);
+                $this->iban4 = substr($this->lenders_accounts->iban, 12, 4);
+                $this->iban5 = substr($this->lenders_accounts->iban, 16, 4);
+                $this->iban6 = substr($this->lenders_accounts->iban, 20, 4);
+                $this->iban7 = substr($this->lenders_accounts->iban, 24, 3);
+            }
+
+            if ($this->clients->telephone != '') {
+                trim(chunk_split($this->clients->telephone, 2, ' '));
+            }
+            if ($this->companies->phone != '') {
+                $this->companies->phone = trim(chunk_split($this->companies->phone, 2, ' '));
+            }
+            if ($this->companies->phone_dirigeant != '') {
+                $this->companies->phone_dirigeant = trim(chunk_split($this->companies->phone_dirigeant, 2, ' '));
+            }
+
+            $this->clients_status = $this->loadData('clients_status');
+            $this->clients_status->getLastStatut($this->clients->id_client);
+
+            $this->clients_status_history   = $this->loadData('clients_status_history');
+            $this->oClientsStatusForHistory = $this->loadData('clients_status');
+            $this->lActions                 = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
+            $this->aTaxationCountryHistory  = $this->getTaxationHistory($this->lenders_accounts->id_lender_account);
+
+            $this->getMessageAboutClientStatus();
+
+            $this->attachment       = $this->loadData('attachment');
+            $this->attachment_type  = $this->loadData('attachment_type');
+            $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
+
+            $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
+
+            $this->loadJs('default/component/add-file-input');
+
+            $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
+            $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
+
+            /** @var \greenpoint_attachment_detail $greenPointDetail */
+            $greenPointDetail            = $this->loadData('greenpoint_attachment_detail');
+            $this->lenderIdentityMRZData = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORTE);
+            $this->hostIdentityMRZData   = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+
+            if (isset($_POST['send_completude'])) {
+                $this->sendCompletenessRequest();
+                $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][$this->clients->id_client]);
+
+                unset($_SESSION['content_email_completude'][$this->clients->id_client]);
+
+                $_SESSION['email_completude_confirm'] = true;
 
                 header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                 die;
+            } elseif (isset($_POST['send_edit_preteur'])) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
+                $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+                $mailerManager = $this->get('unilend.service.email_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager $taxManager */
+                $taxManager = $this->get('unilend.service.tax_manager');
+
+                if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+
+                    if (false === empty($_POST['meme-adresse'])) {
+                        $this->clients_adresses->meme_adresse_fiscal = 1;
+                    } else {
+                        $this->clients_adresses->meme_adresse_fiscal = 0;
+                    }
+                    $bTaxCountryChanged                     = false === empty($_POST['id_pays_fiscal']) && $this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'];
+                    $this->clients_adresses->adresse_fiscal = $_POST['adresse'];
+                    $this->clients_adresses->ville_fiscal   = $_POST['ville'];
+                    $this->clients_adresses->cp_fiscal      = $_POST['cp'];
+                    $this->clients_adresses->id_pays_fiscal = $_POST['id_pays_fiscal'];
+
+                    if ($this->clients_adresses->meme_adresse_fiscal == 0) {
+                        $this->clients_adresses->adresse1 = $_POST['adresse2'];
+                        $this->clients_adresses->ville    = $_POST['ville2'];
+                        $this->clients_adresses->cp       = $_POST['cp2'];
+                        $this->clients_adresses->id_pays  = $_POST['id_pays'];
+                    } else {
+                        $this->clients_adresses->adresse1 = $_POST['adresse'];
+                        $this->clients_adresses->ville    = $_POST['ville'];
+                        $this->clients_adresses->cp       = $_POST['cp'];
+                        $this->clients_adresses->id_pays  = $_POST['id_pays_fiscal'];
+                    }
+
+                    $this->clients->civilite  = $_POST['civilite'];
+                    $this->clients->nom       = $this->ficelle->majNom($_POST['nom-famille']);
+                    $this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-usage']);
+                    $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
+
+                    //// check doublon mail ////
+                    if ($this->isEmailUnique($_POST['email'], $this->clients)) {
+                        $this->clients->email = $_POST['email'];
+                    }
+
+                    $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
+
+                    $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
+                    $this->clients->mobile            = str_replace(' ', '', $_POST['mobile']);
+                    $this->clients->ville_naissance   = $_POST['com-naissance'];
+                    $this->clients->insee_birth       = $_POST['insee_birth'];
+                    $this->clients->naissance         = $oBirthday->format('Y-m-d');
+                    $this->clients->id_pays_naissance = $_POST['id_pays_naissance'];
+                    $this->clients->id_nationalite    = $_POST['nationalite'];
+                    $this->clients->id_langue         = 'fr';
+                    $this->clients->type              = 1;
+                    $this->clients->fonction          = '';
+                    $this->clients->update();
+
+                    $this->lenders_accounts->id_company_owner = 0;
+
+                    $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
+                    if ($this->lenders_accounts->origine_des_fonds == '1000000') {
+                        $this->lenders_accounts->precision = $_POST['preciser'];
+                    } else {
+                        $this->lenders_accounts->precision = '';
+                    }
+
+                    foreach ($_FILES as $field => $file) {
+                        // Field name = attachment type id
+                        $iAttachmentType = $field;
+                        if ('' !== $file['name']) {
+                            $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
+                        }
+                    }
+
+                    if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
+                        if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
+                            $create = false;
+                        } else {
+                            $create = true;
+                        }
+
+                        $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
+                        if ($this->upload->doUpload('mandat')) {
+                            if ($this->clients_mandats->name != '') {
+                                @unlink($this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name);
+                            }
+                            $this->clients_mandats->name          = $this->upload->getName();
+                            $this->clients_mandats->id_client     = $this->clients->id_client;
+                            $this->clients_mandats->id_universign = 'no_universign';
+                            $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
+                            $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
+
+                            if ($create == true) {
+                                $this->clients_mandats->create();
+                            } else {
+                                $this->clients_mandats->update();
+                            }
+                        }
+                    }
+
+                    if (isset($_POST['tax_exemption'])) {
+                        foreach ($_POST['tax_exemption'] as $iExemptionYear => $iExemptionValue) {
+                            if (false === in_array($iExemptionYear, $this->aExemptionYears)) {
+                                /** @var \lender_tax_exemption $oLenderTaxExemption */
+                                $oLenderTaxExemption              = $this->loadData('lender_tax_exemption');
+                                $oLenderTaxExemption->id_lender   = $this->lenders_accounts->id_lender_account;
+                                $oLenderTaxExemption->iso_country = 'FR';
+                                $oLenderTaxExemption->year        = $iExemptionYear;
+                                $oLenderTaxExemption->id_user     = $_SESSION['user']['id_user'];
+                                $oLenderTaxExemption->create();
+                                $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'adding'];
+                            }
+                        }
+                    }
+
+                    if (in_array($this->iNextYear, $this->aExemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
+                        $oLenderTaxExemption->get($this->lenders_accounts->id_lender_account . '" AND year = ' . $this->iNextYear . ' AND iso_country = "FR', 'id_lender');
+                        $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'deletion'];
+                        $oLenderTaxExemption->delete($oLenderTaxExemption->id_lender_tax_exemption);
+                    }
+
+                    if (false === empty($taxExemptionHistory)) {
+                        $this->users_history->histo(\users_history::FORM_ID_LENDER, \users_history::FORM_NAME_TAX_EXEMPTION, $_SESSION['user']['id_user'], serialize([
+                            'id_client'     => $this->clients->id_client,
+                            'modifications' => $taxExemptionHistory
+                        ]));
+                    }
+
+                    $this->clients_adresses->update();
+                    $this->lenders_accounts->update();
+                    $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+
+                    $serialize = serialize(array(
+                        'id_client' => $this->clients->id_client,
+                        'post'      => $_POST,
+                        'files'     => $_FILES
+                    ));
+                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
+
+                    if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
+                        /** @var \Psr\Log\LoggerInterface $logger */
+                        $logger = $this->get('logger');
+
+                        $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
+                        $aExistingClient       = array_shift($aExistingClient);
+                        $iOriginForUserHistory = 3;
+
+                        if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
+                            $this->changeClientStatus($this->clients, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
+                            $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
+                            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
+                            die;
+                        } elseif (1 == $this->clients->origine && 0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) {
+                            $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
+                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), [
+                                'class'     => __CLASS__,
+                                'function'  => __FUNCTION__,
+                                'id_lender' => $this->clients->id_client
+                            ]);
+                        } else {
+                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or the origine != 1.', [
+                                'class'     => __CLASS__,
+                                'function'  => __FUNCTION__,
+                                'id_lender' => $this->clients->id_client
+                            ]);
+                        }
+
+                        $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
+
+                        /** @var \clients_gestion_notifications clients_gestion_notifications */
+                        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+
+                        $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+
+                        if (false == $this->lNotifs) {
+                            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
+                            $notificationManager = $this->get('unilend.service.notification_manager');
+                            $notificationManager->generateDefaultNotificationSettings($this->clients);
+                        }
+
+                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
+                        } else {
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
+                        }
+                        $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
+
+                        $_SESSION['compte_valide'] = true;
+                    }
+
+                    if (true === $bTaxCountryChanged) {
+                        $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
+                    }
+
+                    $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+                    header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
+                    die;
+                } elseif (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER ])) {
+                    $this->companies->name         = $_POST['raison-sociale'];
+                    $this->companies->forme        = $_POST['form-juridique'];
+                    $this->companies->capital      = str_replace(' ', '', $_POST['capital-sociale']);
+                    $this->companies->siren        = $_POST['siren'];
+                    $this->companies->siret        = $_POST['siret']; //(19/11/2014)
+                    $this->companies->phone        = str_replace(' ', '', $_POST['phone-societe']);
+                    $this->companies->tribunal_com = $_POST['tribunal_com'];
+
+                    ////////////////////////////////////
+                    // On verifie meme adresse ou pas //
+                    ////////////////////////////////////
+                    if ($_POST['meme-adresse'] != false) {
+                        $this->companies->status_adresse_correspondance = '1';
+                    } else {
+                        $this->companies->status_adresse_correspondance = '0';
+                    }
+                    // adresse fiscal (siege de l'entreprise)
+                    $this->companies->adresse1 = $_POST['adresse'];
+                    $this->companies->city     = $_POST['ville'];
+                    $this->companies->zip      = $_POST['cp'];
+
+                    // adresse fiscal (dans client entreprise) on vide car c'est pour les particulier ca
+                    $this->clients_adresses->adresse_fiscal = '';
+                    $this->clients_adresses->ville_fiscal   = '';
+                    $this->clients_adresses->cp_fiscal      = '';
+
+                    // pas la meme
+                    if ($this->companies->status_adresse_correspondance == 0) {
+                        $this->clients_adresses->adresse1 = $_POST['adresse2'];
+                        $this->clients_adresses->ville    = $_POST['ville2'];
+                        $this->clients_adresses->cp       = $_POST['cp2'];
+                    } else {
+                        $this->clients_adresses->adresse1 = $_POST['adresse'];
+                        $this->clients_adresses->ville    = $_POST['ville'];
+                        $this->clients_adresses->cp       = $_POST['cp'];
+                    }
+
+                    $this->companies->status_client = $_POST['enterprise']; // radio 1 dirigeant 2 pas dirigeant 3 externe
+
+                    $this->clients->civilite = $_POST['civilite_e'];
+                    $this->clients->nom      = $this->ficelle->majNom($_POST['nom_e']);
+                    $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_e']);
+                    $this->clients->fonction = $_POST['fonction_e'];
+
+                    //// check doublon mail ////
+                    if ($this->isEmailUnique($_POST['email_e'], $this->clients)) {
+                        $this->clients->email = $_POST['email_e'];
+                    }
+
+                    $this->clients->telephone = str_replace(' ', '', $_POST['phone_e']);
+
+                    //extern ou non dirigeant
+                    if ($this->companies->status_client == 2 || $this->companies->status_client == 3) {
+                        $this->companies->civilite_dirigeant = $_POST['civilite2_e'];
+                        $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_e']);
+                        $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_e']);
+                        $this->companies->fonction_dirigeant = $_POST['fonction2_e'];
+                        $this->companies->email_dirigeant    = $_POST['email2_e'];
+                        $this->companies->phone_dirigeant    = str_replace(' ', '', $_POST['phone2_e']);
+
+                        // externe
+                        if ($this->companies->status_client == 3) {
+                            $this->companies->status_conseil_externe_entreprise   = $_POST['status_conseil_externe_entreprise'];
+                            $this->companies->preciser_conseil_externe_entreprise = $_POST['preciser_conseil_externe_entreprise'];
+                        }
+                    } else {
+                        $this->companies->civilite_dirigeant = '';
+                        $this->companies->nom_dirigeant      = '';
+                        $this->companies->prenom_dirigeant   = '';
+                        $this->companies->fonction_dirigeant = '';
+                        $this->companies->email_dirigeant    = '';
+                        $this->companies->phone_dirigeant    = '';
+                    }
+
+                    // Si form societe ok
+                    $this->clients->id_langue       = 'fr';
+                    $this->clients->type            = 2;
+                    $this->clients->nom_usage       = '';
+                    $this->clients->naissance       = '0000-00-00';
+                    $this->clients->ville_naissance = '';
+
+                    if ($this->companies->exist($this->clients->id_client, 'id_client_owner')) {
+                        $this->companies->update();
+                    } else {
+                        $this->companies->id_client_owner = $this->clients->id_client;
+                        $this->companies->create();
+                    }
+
+                    $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
+                    if ($this->lenders_accounts->origine_des_fonds == '1000000') {
+                        $this->lenders_accounts->precision = $_POST['preciser'];
+                    } else {
+                        $this->lenders_accounts->precision = '';
+                    }
+
+                    foreach ($_FILES as $field => $file) {
+                        $iAttachmentType = $field;
+                        if ('' !== $file['name']) {
+                            $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
+                        }
+                    }
+
+                    if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
+                        if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
+                            $create = false;
+                        } else {
+                            $create = true;
+                        }
+
+                        $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
+                        if ($this->upload->doUpload('mandat')) {
+                            if ($this->clients_mandats->name != '') {
+                                @unlink($this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name);
+                            }
+                            $this->clients_mandats->name          = $this->upload->getName();
+                            $this->clients_mandats->id_client     = $this->clients->id_client;
+                            $this->clients_mandats->id_universign = 'no_universign';
+                            $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
+                            $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
+
+                            if ($create == true) {
+                                $this->clients_mandats->create();
+                            } else {
+                                $this->clients_mandats->update();
+                            }
+                        }
+                    }
+
+                    // fin fichier //
+
+                    // On met a jour le lender
+                    $this->lenders_accounts->id_company_owner = $this->companies->id_company;
+                    $this->lenders_accounts->update();
+                    $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+
+                    // On met a jour le client
+                    $this->clients->update();
+                    // On met a jour l'adresse client
+                    $this->clients_adresses->update();
+
+                    // Histo user //
+                    $serialize = serialize(array(
+                        'id_client' => $this->clients->id_client,
+                        'post'      => $_POST,
+                        'files'     => $_FILES
+                    ));
+                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
+
+                    if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
+                        $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
+
+                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
+                            $sTypeMail = 'preteur-validation-modification-compte';
+                        } else {
+                            $welcomeOfferManager->createWelcomeOffer($this->clients);;
+                            $sTypeMail = 'preteur-confirmation-activation';
+                        }
+
+                        $this->settings->get('Facebook', 'type');
+                        $lien_fb = $this->settings->value;
+
+                        $this->settings->get('Twitter', 'type');
+                        $lien_tw = $this->settings->value;
+
+                        $varMail = array(
+                            'surl'    => $this->surl,
+                            'url'     => $this->furl,
+                            'prenom'  => $this->clients->prenom,
+                            'projets' => $this->furl . '/projets-a-financer',
+                            'lien_fb' => $lien_fb,
+                            'lien_tw' => $lien_tw
+                        );
+
+                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $varMail);
+                        $message->setTo($this->clients->email);
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
+
+                        $_SESSION['compte_valide'] = true;
+                    }
+
+                    header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
+                    die;
+                }
             }
         }
     }
@@ -1078,132 +1101,131 @@ class preteursController extends bootstrap
 
     public function _email_history()
     {
-        if (isset($_POST['send_dates'])) {
-            $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
-            $_SESSION['FilterMails']['EndDate']   = $_POST['fin'];
-
-            header('Location: ' . $this->lurl . '/preteurs/email_history/' . $this->params[0]);
-            die;
-        }
-
         $this->clients                = $this->loadData('clients');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
 
-        $this->lenders_accounts->get($this->params[0], 'id_lender_account');
-        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+        if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
+            if (isset($_POST['send_dates'])) {
+                $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
+                $_SESSION['FilterMails']['EndDate']   = $_POST['fin'];
 
-        $oClientsNotifications       = $this->loadData('clients_gestion_notifications');
-        $this->aClientsNotifications = $oClientsNotifications->getNotifs($this->clients->id_client);
+                header('Location: ' . $this->lurl . '/preteurs/email_history/' . $this->params[0]);
+                die;
+            }
 
-        $this->aNotificationPeriode = \clients_gestion_notifications::getAllPeriod();
+            $oClientsNotifications       = $this->loadData('clients_gestion_notifications');
+            $this->aClientsNotifications = $oClientsNotifications->getNotifs($this->clients->id_client);
 
-        $this->aInfosNotifications['vos-offres-et-vos-projets']['title'] = 'Offres et Projets';
-        $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications'] = array(
-            \clients_gestion_type_notif::TYPE_NEW_PROJECT => array(
-                'title'           => 'Annonce des nouveaux projets',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_BID_PLACED => array(
-                'title'           => 'Offres réalisées',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_BID_REJECTED => array(
-                'title'           => 'Offres refusées',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => array(
-                'title'           => 'Offres acceptées',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
-                'title'           => 'Problème sur un projet',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => array(
-                'title'           => 'Autolend : offre réalisée ou rejetée',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            )
-        );
-        $this->aInfosNotifications['vos-remboursements']['title'] = 'Offres et Projets';
-        $this->aInfosNotifications['vos-remboursements']['notifications'] = array(
-            \clients_gestion_type_notif::TYPE_REPAYMENT => array(
-                'title'           => 'Remboursement(s)',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            )
-        );
-        $this->aInfosNotifications['mouvements-sur-votre-compte']['title'] = 'Mouvements sur le compte';
-        $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = array(
-            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => array(
-                'title'           => 'Alimentation de votre compte par virement',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT => array(
-                'title'           => 'Alimentation de votre compte par carte bancaire',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_DEBIT => array(
-                'title'           => 'retrait',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            )
-        );
+            $this->aNotificationPeriode = \clients_gestion_notifications::getAllPeriod();
 
-        if (isset($_SESSION['FilterMails'])) {
-            $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);
-            $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['EndDate']);
+            $this->aInfosNotifications['vos-offres-et-vos-projets']['title'] = 'Offres et Projets';
+            $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications'] = array(
+                \clients_gestion_type_notif::TYPE_NEW_PROJECT => array(
+                    'title'           => 'Annonce des nouveaux projets',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                ),
+                \clients_gestion_type_notif::TYPE_BID_PLACED => array(
+                    'title'           => 'Offres réalisées',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                ),
+                \clients_gestion_type_notif::TYPE_BID_REJECTED => array(
+                    'title'           => 'Offres refusées',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                ),
+                \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => array(
+                    'title'           => 'Offres acceptées',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                ),
+                \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
+                    'title'           => 'Problème sur un projet',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                ),
+                \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => array(
+                    'title'           => 'Autolend : offre réalisée ou rejetée',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                )
+            );
+            $this->aInfosNotifications['vos-remboursements']['title'] = 'Offres et Projets';
+            $this->aInfosNotifications['vos-remboursements']['notifications'] = array(
+                \clients_gestion_type_notif::TYPE_REPAYMENT => array(
+                    'title'           => 'Remboursement(s)',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                )
+            );
+            $this->aInfosNotifications['mouvements-sur-votre-compte']['title'] = 'Mouvements sur le compte';
+            $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = array(
+                \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => array(
+                    'title'           => 'Alimentation de votre compte par virement',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                ),
+                \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT => array(
+                    'title'           => 'Alimentation de votre compte par carte bancaire',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                ),
+                \clients_gestion_type_notif::TYPE_DEBIT => array(
+                    'title'           => 'retrait',
+                    'available_types' => array(
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                    )
+                )
+            );
 
-            unset($_SESSION['FilterMails']);
-        } else {
-            $oDateTimeStart = new \DateTime('NOW - 1 year');
-            $oDateTimeEnd   = new \DateTime('NOW');
+            if (isset($_SESSION['FilterMails'])) {
+                $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);
+                $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['EndDate']);
+
+                unset($_SESSION['FilterMails']);
+            } else {
+                $oDateTimeStart = new \DateTime('NOW - 1 year');
+                $oDateTimeEnd   = new \DateTime('NOW');
+            }
+
+            $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
+            $this->sDisplayDateTimeEnd   = $oDateTimeEnd->format('d/m/Y');
+
+            /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
+            $oMailQueueManager = $this->get('unilend.service.mail_queue');
+            $this->aEmailsSentToClient = $oMailQueueManager->searchSentEmails($this->clients->id_client, null, null, null, $oDateTimeStart, $oDateTimeEnd);
+            $this->getMessageAboutClientStatus();
         }
-
-        $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
-        $this->sDisplayDateTimeEnd   = $oDateTimeEnd->format('d/m/Y');
-
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
-        $oMailQueueManager = $this->get('unilend.service.mail_queue');
-        $this->aEmailsSentToClient = $oMailQueueManager->searchSentEmails($this->clients->id_client, null, null, null, $oDateTimeStart, $oDateTimeEnd);
-        $this->getMessageAboutClientStatus();
     }
 
     public function _portefeuille()
@@ -1225,65 +1247,65 @@ class preteursController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
         $lenderManager = $this->get('unilend.service.lender_manager');
 
-        $this->lenders_accounts->get($this->params[0], 'id_lender_account');
-        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+        if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
+            $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
-            $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
+            if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+                $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
+            }
+
+            $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account);
+            $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
+
+            $this->IRRValue = null;
+            $this->IRRDate  = null;
+
+            /** @var \lenders_account_stats $oLenderAccountStats */
+            $oLenderAccountStats = $this->loadData('lenders_account_stats');
+            $aIRR                = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
+
+            if (false === is_null($aIRR)) {
+                $this->IRR = $aIRR;
+            }
+
+            $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);
+            $statusKo                = array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE);
+            $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOk, $statusKo));
+            $this->problProjects     = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
+            $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
+
+            $this->getMessageAboutClientStatus();
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+            $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
+            $oClientManager            = $this->get('unilend.service.client_manager');
+
+            $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->lenders_accounts);
+            $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
+            if (0 < count($this->aSettingsDates)) {
+                $this->sValidationDate = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts)->format('d/m/Y');
+            }
+            $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
+            $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
+
+            $this->settings->get('date-premier-projet-tunnel-de-taux', 'type');
+            $startingDate = $this->settings->value;
+            $this->aAutoBidSettings = [];
+            /** @var autobid $autobid */
+            $autobid          = $this->loadData('autobid');
+            $aAutoBidSettings = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+            foreach ($aAutoBidSettings as $aSetting) {
+                $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
+                $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
+            }
+
+            $this->hasTransferredLoans = $lenderManager->hasTransferredLoans($this->lenders_accounts);
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CIPManager $cipManager */
+            $cipManager       = $this->get('unilend.service.cip_manager');
+            $this->cipEnabled = $cipManager->hasValidEvaluation($this->lenders_accounts);
         }
-
-        $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account);
-        $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
-
-        $this->IRRValue = null;
-        $this->IRRDate  = null;
-
-        /** @var \lenders_account_stats $oLenderAccountStats */
-        $oLenderAccountStats = $this->loadData('lenders_account_stats');
-        $aIRR                = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
-
-        if (false === is_null($aIRR)) {
-            $this->IRR = $aIRR;
-        }
-
-        $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);
-        $statusKo                = array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE);
-        $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOk, $statusKo));
-        $this->problProjects     = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
-        $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
-
-        $this->getMessageAboutClientStatus();
-
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
-        $oClientManager            = $this->get('unilend.service.client_manager');
-
-        $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->lenders_accounts);
-        $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
-        if (0 < count($this->aSettingsDates)) {
-            $this->sValidationDate = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts)->format('d/m/Y');
-        }
-        $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
-        $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
-
-        $this->settings->get('date-premier-projet-tunnel-de-taux', 'type');
-        $startingDate = $this->settings->value;
-        $this->aAutoBidSettings = [];
-        /** @var autobid $autobid */
-        $autobid          = $this->loadData('autobid');
-        $aAutoBidSettings = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
-        foreach ($aAutoBidSettings as $aSetting) {
-            $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
-            $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
-        }
-
-        $this->hasTransferredLoans = $lenderManager->hasTransferredLoans($this->lenders_accounts);
-
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CIPManager $cipManager */
-        $cipManager    = $this->get('unilend.service.cip_manager');
-        $this->cipEnabled = $cipManager->hasValidEvaluation($this->lenders_accounts);
     }
 
     public function _control_fiscal_city()
@@ -1618,35 +1640,36 @@ class preteursController extends bootstrap
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->clients          = $this->loadData('clients');
 
-        $this->lenders_accounts->get($this->params[0], 'id_lender_account');
-        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+        if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
+            $this->getMessageAboutClientStatus();
 
-        if (isset($_POST['send_dates'])) {
-            $_SESSION['FilterBids']['StartDate'] = $_POST['debut'];
-            $_SESSION['FilterBids']['EndDate']   = $_POST['fin'];
+            if (isset($_POST['send_dates'])) {
+                $_SESSION['FilterBids']['StartDate'] = $_POST['debut'];
+                $_SESSION['FilterBids']['EndDate']   = $_POST['fin'];
 
-            header('Location: ' . $this->lurl . '/preteurs/bids/' . $this->params[0]);
-            die;
-        }
+                header('Location: ' . $this->lurl . '/preteurs/bids/' . $this->params[0]);
+                die;
+            }
 
-        if (isset($_SESSION['FilterBids'])) {
-            $dateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['StartDate']);
-            $dateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['EndDate']);
+            if (isset($_SESSION['FilterBids'])) {
+                $dateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['StartDate']);
+                $dateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['EndDate']);
 
-            unset($_SESSION['FilterBids']);
-        } else {
-            $dateTimeStart = new \DateTime('NOW - 1 year');
-            $dateTimeEnd   = new \DateTime('NOW');
-        }
+                unset($_SESSION['FilterBids']);
+            } else {
+                $dateTimeStart = new \DateTime('NOW - 1 year');
+                $dateTimeEnd   = new \DateTime('NOW');
+            }
 
-        $this->sDisplayDateTimeStart = $dateTimeStart->format('d/m/Y');
-        $this->sDisplayDateTimeEnd   = $dateTimeEnd->format('d/m/Y');
-        $this->bidList               = [];
+            $this->sDisplayDateTimeStart = $dateTimeStart->format('d/m/Y');
+            $this->sDisplayDateTimeEnd   = $dateTimeEnd->format('d/m/Y');
+            $this->bidList               = [];
 
-        /** @var \bids $bids */
-        $bids = $this->loadData('bids');
-        foreach ($bids->getBidsByLenderAndDates($this->lenders_accounts, $dateTimeStart, $dateTimeEnd) as $key => $value) {
-            $this->bidList[$key] = $value;
+            /** @var \bids $bids */
+            $bids = $this->loadData('bids');
+            foreach ($bids->getBidsByLenderAndDates($this->lenders_accounts, $dateTimeStart, $dateTimeEnd) as $key => $value) {
+                $this->bidList[$key] = $value;
+            }
         }
     }
 
