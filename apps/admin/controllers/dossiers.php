@@ -192,6 +192,16 @@ class dossiersController extends bootstrap
             $this->bHasAdvisor       = false;
             $this->bReadonlyRiskNote = $this->projects->status >= \projects_status::PREP_FUNDING;
 
+            if ($this->projects->status == \projects_status::FUNDE) {
+                $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
+                $this->proxy = (false === empty($proxy)) ? $proxy[0] : [];
+
+                /** @var \clients_mandats $clientMandate */
+                $clientMandate = $this->loadData('clients_mandats');
+                $mandate = $clientMandate->select('id_project = ' . $this->projects->id_project, 'updated DESC');
+                $this->mandate = (false === empty($mandate)) ? $mandate[0]: [];
+            }
+
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
                 $this->companies_prescripteurs->get($this->prescripteurs->id_entite, 'id_company');
