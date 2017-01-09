@@ -5,6 +5,7 @@ namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 use Mailjet\Client;
 use Mailjet\Resources;
 use Mailjet\Response;
+use Psr\Log\LoggerInterface;
 use Swift_Events_EventListener;
 use Swift_Mime_Message;
 
@@ -16,11 +17,14 @@ class MailjetTransport implements \Swift_Transport
     private $oMailJetClient;
     /** @var array */
     private $spool = [];
+    /** @var  LoggerInterface */
+    private $logger;
 
-    public function __construct(\Swift_Events_EventDispatcher $oDispatcher, Client $oMailJetClient)
+    public function __construct(\Swift_Events_EventDispatcher $oDispatcher, Client $oMailJetClient, LoggerInterface $logger)
     {
         $this->oEventDispatcher = $oDispatcher;
         $this->oMailJetClient   = $oMailJetClient;
+        $this->logger           = $logger;
     }
 
     /**
@@ -57,6 +61,20 @@ class MailjetTransport implements \Swift_Transport
      */
     public function send(Swift_Mime_Message $message, &$aFailedRecipients = null)
     {
+
+        $count = (
+            count((array) $message->getTo())
+            + count((array) $message->getCc())
+            + count((array) $message->getBcc())
+        );
+
+        if (0 === $count) {
+            $trace = debug_backtrace();
+            $this->logger->error('email address empty : ', ['address'  => $message->getTo(), 'template' => $message->getSubject(), 'file'  => $trace[0]['file'], 'line'  => $trace[0]['line']]);
+
+            return 0;
+        }
+
         $senderEmail = array_keys($message->getFrom());
         $senderName  = array_values($message->getFrom());
         $recipients  = array_keys($message->getTo());

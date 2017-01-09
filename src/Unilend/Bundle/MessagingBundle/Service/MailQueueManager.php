@@ -42,14 +42,27 @@ class MailQueueManager
     /**
      * Put the TemplateMessage to the mail queue
      *
-     * @param TemplateMessage $oMessage
+     * @param TemplateMessage $message
      *
      * @return bool
      */
-    public function queue(TemplateMessage $oMessage)
+    public function queue(TemplateMessage $message)
     {
+        $count = (
+            count((array) $message->getTo())
+            + count((array) $message->getCc())
+            + count((array) $message->getBcc())
+        );
+
+        if (0 === $count) {
+            $trace = debug_backtrace();
+            $this->logger->error('email address empty : ', ['address'  => $message->getTo(), 'template' => $message->getTemplateId(), 'file'  => $trace[0]['file'], 'line'  => $trace[0]['line']]);
+            return false;
+        }
+
+
         $attachments = [];
-        foreach ($oMessage->getChildren() as $index => $child) {
+        foreach ($message->getChildren() as $index => $child) {
             $attachments[$index] = [
                 'content-disposition' => $child->getHeaders()->get('Content-Disposition')->getFieldBody(),
                 'content-type'        => $child->getHeaders()->get('Content-Type')->getFieldBody(),
@@ -63,20 +76,20 @@ class MailQueueManager
         $client = $this->oEntityManager->getRepository('clients');
         /** @var \mail_queue $oMailQueue */
         $oMailQueue                       = $this->oEntityManager->getRepository('mail_queue');
-        $oMailQueue->id_mail_template     = $oMessage->getTemplateId();
-        $oMailQueue->serialized_variables = json_encode($oMessage->getVariables());
+        $oMailQueue->id_mail_template     = $message->getTemplateId();
+        $oMailQueue->serialized_variables = json_encode($message->getVariables());
         $oMailQueue->attachments          = json_encode($attachments);
-        $recipients                       = TemplateMessage::emailAddressToString($oMessage->getTo());
-        $replyTo                          = is_array($oMessage->getReplyTo()) ? TemplateMessage::emailAddressToString($oMessage->getReplyTo()) : null;
+        $recipients                       = TemplateMessage::emailAddressToString($message->getTo());
+        $replyTo                          = is_array($message->getReplyTo()) ? TemplateMessage::emailAddressToString($message->getReplyTo()) : null;
 
-        if (1 === count($oMessage->getTo()) && $client->get($recipients, 'email')) {
+        if (1 === count($message->getTo()) && $client->get($recipients, 'email')) {
             $oMailQueue->id_client = $client->id_client;
         }
 
         $oMailQueue->recipient  = $recipients;
         $oMailQueue->reply_to   = $replyTo;
         $oMailQueue->status     = \mail_queue::STATUS_PENDING;
-        $oMailQueue->to_send_at = $oMessage->getToSendAt();
+        $oMailQueue->to_send_at = $message->getToSendAt();
         $oMailQueue->create();
 
         return true;
@@ -102,14 +115,14 @@ class MailQueueManager
             $this->logger->warning('TMA-1209 - Argument is not an array : ' . $oEmail->serialized_variables, ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return false;
         }
-        /** @var TemplateMessage $oMessage */
-        $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, $serializedVariables, false);
-        $oMessage
+        /** @var TemplateMessage $message */
+        $message = $this->oTemplateMessage->newMessage($oMailTemplate->type, $serializedVariables, false);
+        $message
             ->setTo($oEmail->recipient)
             ->setMessageId($oEmail->id_queue);
 
         if (false === empty($oEmail->reply_to)) {
-            $oMessage->setReplyTo($oEmail->reply_to);
+            $message->setReplyTo($oEmail->reply_to);
         }
 
         foreach (json_decode($oEmail->attachments, true) as $attachment) {
@@ -117,12 +130,12 @@ class MailQueueManager
             $swiftAttachment->setContentType($attachment['content-type']);
             $swiftAttachment->setDisposition($attachment['content-disposition']);
 
-            $oMessage->attach($swiftAttachment);
+            $message->attach($swiftAttachment);
 
             unlink($this->sharedTemporaryPath . $attachment['tmp_file']);
         }
 
-        return $oMessage;
+        return $message;
     }
 
     /**
