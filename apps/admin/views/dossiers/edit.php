@@ -457,7 +457,7 @@
                             </select>
                         </td>
                     </tr>
-                    <?php if (in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)): ?>
+                    <?php if (isset($this->availableContracts) && in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)): ?>
                         <tr>
                             <th>DIRS</th>
                             <td>

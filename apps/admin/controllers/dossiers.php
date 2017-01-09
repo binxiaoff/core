@@ -3005,7 +3005,7 @@ class dossiersController extends bootstrap
                     $html .= '<td>' . $movement . '</td>';
                 }
                 $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
-                $html .= '<td id="'.$domId . '">' . $formatedValue . '</td>';
+                $html .= '<td id="' . $domId . '">' . $formatedValue . '</td>';
                 $iPreviousTotal = $iTotal;
             }
             $iColumn ++;
@@ -3050,7 +3050,7 @@ class dossiersController extends bootstrap
         return $html;
     }
 
-    protected function negtive($case)
+    protected function negative($case)
     {
         if ('-' === substr($case, 0, 1)) {
             return substr($case, 1);
