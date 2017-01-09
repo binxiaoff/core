@@ -117,15 +117,11 @@ class OperationManager
                 }
                 if ($item instanceof Virements) {
                     $operation->setWireTransferOut($item);
-                    if ($item->getIdProject() instanceof Projects) {
-                        $operation->setProject($item->getIdProject());
-                    }
+                    $operation->setProject($item->getIdProject());
                 }
                 if ($item instanceof Receptions) {
                     $operation->setWireTransferIn($item);
-                    if ($item->getIdProject() instanceof Projects) {
-                        $operation->setProject($item->getIdProject());
-                    }
+                    $operation->setProject($item->getIdProject());
                 }
                 if ($item instanceof Transfer) {
                     $operation->setTransfer($item);

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * WalletBalanceHistory
  *
- * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"}), @ORM\Index(name="fk_id_bid_idx", columns={"id_bid"}), @ORM\Index(name="id_loan", columns={"id_loan"})})
+ * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"}), @ORM\Index(name="fk_id_bid_idx", columns={"id_bid"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_autobid", columns={"id_autobid"}), @ORM\Index(name="id_loan", columns={"id_loan"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WalletBalanceHistoryRepository")
@@ -83,6 +83,26 @@ class WalletBalanceHistory
      * })
      */
     private $idLoan;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
+     */
+    private $idProject;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Autobid")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_autobid", referencedColumnName="id_autobid")
+     * })
+     */
+    private $idAutobid;
 
 
     /**
@@ -262,6 +282,54 @@ class WalletBalanceHistory
     public function getLoan()
     {
         return $this->idLoan;
+    }
+
+    /**
+     * Set Project
+     *
+     * @param Projects $project
+     *
+     * @return WalletBalanceHistory
+     */
+    public function setProject(Projects $project = null)
+    {
+        $this->idProject = $project;
+
+        return $this;
+    }
+
+    /**
+     * Get Project
+     *
+     * @return Projects
+     */
+    public function getProject()
+    {
+        return $this->idProject;
+    }
+
+    /**
+     * Set Autobid
+     *
+     * @param Autobid $autobid
+     *
+     * @return WalletBalanceHistory
+     */
+    public function setAutobid(Autobid $autobid = null)
+    {
+        $this->idAutobid = $autobid;
+
+        return $this;
+    }
+
+    /**
+     * Get Autobid
+     *
+     * @return Autobid
+     */
+    public function getAutobid()
+    {
+        return $this->idAutobid;
     }
 
     /**

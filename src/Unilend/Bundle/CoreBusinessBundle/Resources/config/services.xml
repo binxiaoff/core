@@ -76,6 +76,7 @@
 
         <service id="unilend.service.project_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.bid_manager"/>
             <argument type="service" id="unilend.service.loan_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>

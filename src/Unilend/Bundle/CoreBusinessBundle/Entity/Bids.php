@@ -9,9 +9,16 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="bids", indexes={@ORM\Index(name="id_lender_account", columns={"id_lender_account"}), @ORM\Index(name="idprojectstatus", columns={"id_project", "status"}), @ORM\Index(name="idx_bids_id_lender_wallet_line", columns={"id_lender_wallet_line"}), @ORM\Index(name="idx_id_autobid", columns={"id_autobid"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BidsRepository")
  */
 class Bids
 {
+    const STATUS_BID_PENDING                  = 0;
+    const STATUS_BID_ACCEPTED                 = 1;
+    const STATUS_BID_REJECTED                 = 2;
+    const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
+
     /**
      * @var integer
      *
@@ -20,16 +27,22 @@ class Bids
     private $idLenderAccount;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid
      *
-     * @ORM\Column(name="id_autobid", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Autobid")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_autobid", referencedColumnName="id_autobid")
+     * })
      */
     private $idAutobid;
 
@@ -68,12 +81,6 @@ class Bids
      */
     private $status;
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="checked", type="integer", nullable=false)
-     */
-    private $checked;
 
     /**
      * @var \DateTime
@@ -97,7 +104,6 @@ class Bids
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idBid;
-
 
 
     /**
@@ -125,49 +131,49 @@ class Bids
     }
 
     /**
-     * Set idProject
+     * Set Project
      *
-     * @param integer $idProject
+     * @param Projects $project
      *
      * @return Bids
      */
-    public function setIdProject($idProject)
+    public function setProject(Projects $project = null)
     {
-        $this->idProject = $idProject;
+        $this->idProject = $project;
 
         return $this;
     }
 
     /**
-     * Get idProject
+     * Get Project
      *
-     * @return integer
+     * @return Projects
      */
-    public function getIdProject()
+    public function getProject()
     {
         return $this->idProject;
     }
 
     /**
-     * Set idAutobid
+     * Set Autobid
      *
-     * @param integer $idAutobid
+     * @param Autobid $autobid
      *
      * @return Bids
      */
-    public function setIdAutobid($idAutobid)
+    public function setAutobid(Autobid $autobid = null)
     {
-        $this->idAutobid = $idAutobid;
+        $this->idAutobid = $autobid;
 
         return $this;
     }
 
     /**
-     * Get idAutobid
+     * Get Autobid
      *
-     * @return integer
+     * @return Autobid
      */
-    public function getIdAutobid()
+    public function getAutobid()
     {
         return $this->idAutobid;
     }
@@ -293,30 +299,6 @@ class Bids
     }
 
     /**
-     * Set checked
-     *
-     * @param integer $checked
-     *
-     * @return Bids
-     */
-    public function setChecked($checked)
-    {
-        $this->checked = $checked;
-
-        return $this;
-    }
-
-    /**
-     * Get checked
-     *
-     * @return integer
-     */
-    public function getChecked()
-    {
-        return $this->checked;
-    }
-
-    /**
      * Set added
      *
      * @param \DateTime $added
@@ -372,5 +354,23 @@ class Bids
     public function getIdBid()
     {
         return $this->idBid;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

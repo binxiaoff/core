@@ -61,13 +61,13 @@ class WalletManager
     /**
      * @param Wallet $wallet
      * @param float  $amount
-     * @param        $origin
+     * @param Bids   $bid
      *
      * @throws \Exception
      */
-    public function engageBalance(Wallet $wallet, $amount, $origin)
+    public function engageBalance(Wallet $wallet, $amount, Bids $bid)
     {
-        $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
+        $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $bid);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
@@ -80,7 +80,7 @@ class WalletManager
             $wallet->setAvailableBalance($availableBalance);
             $wallet->setCommittedBalance($committedBalance);
 
-            $this->snap($wallet, $origin);
+            $this->snap($wallet, $bid);
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
@@ -147,7 +147,7 @@ class WalletManager
         $transaction->id_langue        = 'fr';
         $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->id_project       = $bid->getIdProject();
+        $transaction->id_project       = $bid->getProject()->getIdProject();
         $transaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $transaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
         $transaction->create();
@@ -158,7 +158,7 @@ class WalletManager
         $walletLine->status                   = \wallets_lines::STATUS_VALID;
         $walletLine->type                     = \wallets_lines::VIRTUAL;
         $walletLine->amount                   = -$amountInCent;
-        $walletLine->id_project               = $bid->getIdProject();
+        $walletLine->id_project               = $bid->getProject()->getIdProject();
         $walletLine->create();
 
         $bid->setIdLenderWalletLine($walletLine->id_wallet_line);
@@ -186,7 +186,7 @@ class WalletManager
         $transaction->id_langue        = 'fr';
         $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->id_project       = $bid->getIdProject();
+        $transaction->id_project       = $bid->getProject()->getIdProject();
         $transaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
         $transaction->id_bid_remb      = $bid->getIdBid();
         $transaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
@@ -199,7 +199,7 @@ class WalletManager
         $walletLine->type                     = \wallets_lines::VIRTUAL;
         $walletLine->id_bid_remb              = $bid->getIdBid();
         $walletLine->amount                   = $amountInCent;
-        $walletLine->id_project               = $bid->getIdProject();
+        $walletLine->id_project               = $bid->getProject()->getIdProject();
         $walletLine->create();
 
         return $transaction;
@@ -286,10 +286,12 @@ class WalletManager
             }
             if ($item instanceof Bids) {
                 $walletSnap->setBid($item);
+                $walletSnap->setAutobid($item->getAutobid());
             }
             if ($item instanceof Loans) {
                 $walletSnap->setLoan($item);
             }
+            $walletSnap->setProject($item->getProject());
         }
         $this->entityManager->persist($walletSnap);
         $this->entityManager->flush();

@@ -67,13 +67,6 @@ class Projects
     /**
      * @var integer
      *
-     * @ORM\Column(name="status_solde", type="integer", nullable=false)
-     */
-    private $statusSolde;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="period", type="integer", nullable=false)
      */
     private $period;
@@ -493,30 +486,6 @@ class Projects
     public function getAmount()
     {
         return $this->amount;
-    }
-
-    /**
-     * Set statusSolde
-     *
-     * @param integer $statusSolde
-     *
-     * @return Projects
-     */
-    public function setStatusSolde($statusSolde)
-    {
-        $this->statusSolde = $statusSolde;
-
-        return $this;
-    }
-
-    /**
-     * Get statusSolde
-     *
-     * @return integer
-     */
-    public function getStatusSolde()
-    {
-        return $this->statusSolde;
     }
 
     /**

@@ -1,6 +1,10 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
@@ -101,13 +105,18 @@ class BidManager
     }
 
     /**
-     * @param \bids $oBid
-     * @param bool  $bSendNotification
+     * @param Wallet       $wallet
+     * @param integer      $iLenderId for compatibility
+     * @param Projects     $project
+     * @param              $amount
+     * @param              $rate
+     * @param Autobid|null $autobidSetting
+     * @param bool         $bSendNotification
      *
      * @return bool
      * @throws \Exception
      */
-    public function bid(\bids $oBid, $bSendNotification = true)
+    public function bid(Wallet $wallet, $iLenderId, Projects $project, $amount, $rate, Autobid $autobidSetting = null, $bSendNotification = true)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
@@ -117,85 +126,95 @@ class BidManager
         $oTransaction = $this->oEntityManager->getRepository('transactions');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
-        /** @var \projects $project */
-        $project = $this->oEntityManager->getRepository('projects');
+        /** @var \projects $legacyProject */
+        $legacyProject = $this->oEntityManager->getRepository('projects');
+        /** @var \bids $legacyBid */
+        $legacyBid     = $this->oEntityManager->getRepository('bids');
 
         $oSettings->get('Pret min', 'type');
         $iAmountMin = (int)$oSettings->value;
 
-        $iLenderId   = $oBid->id_lender_account;
-        $iProjectId  = $oBid->id_project;
-        $fAmount     = round(bcdiv($oBid->amount, 100, 4), 2);
-        $fRate       = round(floatval($oBid->rate), 1);
+        $iProjectId      = $project->getIdProject();
+        $legacyProject->get($iProjectId);
 
-        if (false === $project->get($iProjectId)) {
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('unable to get the project: ' . $iProjectId, ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
-            }
-            throw new \Exception('bids-invalid-project');
+        $bid = new Bids();
+        $bid->setIdLenderAccount($iLenderId)
+            ->setProject($project)
+            ->setAmount(bcmul($amount, 100))
+            ->setRate($rate)
+            ->setStatus(Bids::STATUS_BID_PENDING)
+            ->setAutobid($autobidSetting);
+
+        $legacyBid->id_lender_account = $iLenderId;
+        $legacyBid->id_project        = $iProjectId;
+        $legacyBid->amount            = bcmul($amount, 100);
+        $legacyBid->rate              = $rate;
+        $legacyBid->status            = \bids::STATUS_BID_PENDING;
+        if ($autobidSetting instanceof Autobid) {
+            $legacyBid->id_autobid = $autobidSetting->getIdAutobid();
         }
 
-        if ($iAmountMin > $fAmount) {
+        if ($iAmountMin > $amount) {
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('Amount is less than the min amount for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+                $this->oLogger->warning('Amount is less than the min amount for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $amount, 'rate' => $rate]);
             }
             throw new \Exception('bids-invalid-amount');
         }
 
-        $projectRates = $this->getProjectRateRange($project);
+        $projectRates = $this->getProjectRateRange($legacyProject);
 
-        if (bccomp($fRate, $projectRates['rate_max'], 1) > 0 || bccomp($fRate, $projectRates['rate_min'], 1) < 0) {
+        if (bccomp($rate, $projectRates['rate_max'], 1) > 0 || bccomp($rate, $projectRates['rate_min'], 1) < 0) {
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning(
-                    'Amount is less than the min amount for a bid',
-                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]
+                    'The rate is less than the min rate for a bid',
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $amount, 'rate' => $rate]
                 );
             }
             throw new \Exception('bids-invalid-rate');
         }
 
-        if (false === in_array($project->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
+        if (false === in_array($project->getStatus(), array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning(
                     'Project status is not valid for bidding',
-                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_status' => $project->status]
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $amount, 'rate' => $rate, 'project_status' => $project->getStatus()]
                 );
             }
             throw new \Exception('bids-invalid-project-status');
         }
 
         $oCurrentDate = new \DateTime();
-        $oEndDate     = new \DateTime($project->date_retrait);
-        if ($project->date_fin != '0000-00-00 00:00:00') {
-            $oEndDate = new \DateTime($project->date_fin);
+        $oEndDate     = $project->getDateRetrait();
+        if ($legacyProject->date_fin != '0000-00-00 00:00:00') {
+            $oEndDate = $project->getDateFin();
         }
 
         if ($oCurrentDate > $oEndDate) {
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning(
                     'Project end date is passed for bidding',
-                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_ended' => $oEndDate->format('c'), 'now' => $oCurrentDate->format('c')]);
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $amount, 'rate' => $rate, 'project_ended' => $oEndDate->format('c'), 'now' => $oCurrentDate->format('c')]);
             }
             throw new \Exception('bids-invalid-project-status');
         }
 
         if (false === $oLenderAccount->get($iLenderId)) {
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('Cannot get lender', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+                $this->oLogger->warning('Cannot get lender', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $amount, 'rate' => $rate]);
             }
             throw new \Exception('bids-invalid-lender');
         }
 
         if (false === $this->oLenderManager->canBid($oLenderAccount)) {
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('lender cannot bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+                $this->oLogger->warning('lender cannot bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $amount, 'rate' => $rate]);
             }
             throw new \Exception('bids-lender-cannot-bid');
         }
 
-        if (false === $this->productManager->isBidEligible($oBid)) {
+        if (false === $this->productManager->isBidEligible($legacyBid)) {
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('The Bid is not eligible for the project', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+                $this->oLogger->warning('The Bid is not eligible for the project', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $amount, 'rate' => $rate]);
             }
             throw new \Exception('bids-not-eligible');
         }
@@ -203,49 +222,47 @@ class BidManager
         $iClientId = $oLenderAccount->id_client_owner;
         $iBalance  = $oTransaction->getSolde($iClientId);
 
-        if ($iBalance < $fAmount) {
+        if ($iBalance < $amount) {
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('lender\'s balance not enough for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'balance' => $iBalance]);
+                $this->oLogger->warning('lender\'s balance not enough for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $amount, 'rate' => $rate, 'balance' => $iBalance]);
             }
             throw new \Exception('bids-low-balance');
         }
 
-        if (empty($oBid->id_autobid) && $this->cipManager->isCIPValidationNeeded($oBid) && false === $this->cipManager->hasValidEvaluation($oLenderAccount)) {
+        if (empty($legacyBid->id_autobid) && $this->cipManager->isCIPValidationNeeded($legacyBid) && false === $this->cipManager->hasValidEvaluation($oLenderAccount)) {
             throw new \Exception('bids-cip-validation-needed');
         }
 
-        $iBidNb = $oBid->counter('id_project = ' . $oBid->id_project);
-        $iBidNb++;
-        $oBid->ordre = $iBidNb;
-        $oBid->create();
+        $iBidNb = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $iProjectId]);
+        $iBidNb ++;
+        $bid->setOrdre($iBidNb);
+        $this->em->persist($bid);
+        $this->em->flush();
 
-        $bid = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->find($oBid->id_bid);
-        $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $bid->getIdLenderAccount()]);
-        $wallet = $walletMatching->getIdWallet();
-        $this->walletManager->engageBalance($wallet, $fAmount, $bid);
+        $this->walletManager->engageBalance($wallet, $amount, $bid);
 
         // Liste des offres non utilisées
         $aAllOffers = $oWelcomeOfferDetails->select('id_client = ' . $iClientId . ' AND status = 0');
         if ($aAllOffers != false) {
             $iOfferTotal = 0;
             foreach ($aAllOffers as $aOffer) {
-                if ($iOfferTotal <= $fAmount) {
+                if ($iOfferTotal <= $amount) {
                     $iOfferTotal += ($aOffer['montant'] / 100); // total des offres
 
                     $oWelcomeOfferDetails->get($aOffer['id_offre_bienvenue_detail'], 'id_offre_bienvenue_detail');
                     $oWelcomeOfferDetails->status = \offres_bienvenues_details::STATUS_USED;
-                    $oWelcomeOfferDetails->id_bid = $oBid->id_bid;
+                    $oWelcomeOfferDetails->id_bid = $bid->getIdBid();
                     $oWelcomeOfferDetails->update();
 
                     // Apres addition de la derniere offre on se rend compte que le total depasse
-                    if ($iOfferTotal > $fAmount) {
+                    if ($iOfferTotal > $amount) {
                         // On fait la diff et on créer un remb du trop plein d'offres
-                        $iAmountRepayment = $iOfferTotal - $fAmount;
+                        $iAmountRepayment = $iOfferTotal - $amount;
                         $oWelcomeOfferDetails->unsetData();
                         $oWelcomeOfferDetails->id_offre_bienvenue = 0;
                         $oWelcomeOfferDetails->id_client          = $iClientId;
                         $oWelcomeOfferDetails->id_bid             = 0;
-                        $oWelcomeOfferDetails->id_bid_remb        = $oBid->id_bid;
+                        $oWelcomeOfferDetails->id_bid_remb        = $bid->getIdBid();
                         $oWelcomeOfferDetails->status             = \offres_bienvenues_details::STATUS_NEW;
                         $oWelcomeOfferDetails->type               = \offres_bienvenues_details::TYPE_CUT;
                         $oWelcomeOfferDetails->montant            = $iAmountRepayment * 100;
@@ -260,12 +277,12 @@ class BidManager
         if ($bSendNotification) {
             $this->oNotificationManager->create(
                 \notifications::TYPE_BID_PLACED,
-                $oBid->id_autobid > 0 ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_PLACED,
+                $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_PLACED,
                 $iClientId,
                 'sendBidConfirmation',
-                $oBid->id_project,
-                $fAmount,
-                $oBid->id_bid,
+                $iProjectId,
+                $amount,
+                $bid->getIdBid(),
                 $oTransaction->id_transaction
             );
         }
@@ -274,74 +291,67 @@ class BidManager
     }
 
     /**
-     * @param \autobid  $oAutoBid
-     * @param \projects $oProject
-     * @param float     $fRate
-     * @param bool      $bSendNotification
+     * @param Autobid  $autoBid
+     * @param Projects $project
+     * @param float    $rate
+     * @param bool     $sendNotification
      */
-    public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate, $bSendNotification = true)
+    public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, $rate, $sendNotification = true)
     {
-        if ($oAutoBid->rate_min <= $fRate) {
-            /** @var \bids $oBid */
-            $oBid = $this->oEntityManager->getRepository('bids');
+        if (bccomp($autoBid->getRateMin(), $rate, 1) <= 0) {
             /** @var \lenders_accounts $LenderAccount */
             $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
-
-            if ($oLenderAccount->get($oAutoBid->id_lender) && $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
-                $oBid->id_autobid        = $oAutoBid->id_autobid;
-                $oBid->id_lender_account = $oAutoBid->id_lender;
-                $oBid->id_project        = $oProject->id_project;
-                $oBid->amount            = $oAutoBid->amount * 100;
-                $oBid->rate              = $fRate;
-                $this->bid($oBid, $bSendNotification);
+            if ($oLenderAccount->get($autoBid->getIdLender()) && $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
+                $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $autoBid->getIdLender()]);
+                $wallet         = $walletMatching->getIdWallet();
+                $this->bid($wallet, $autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
             }
         }
     }
 
     /**
-     * @param \bids $oBid
-     * @param bool  $bSendNotification
+     * @param Bids $bid
+     * @param bool  $sendNotification
      */
-    public function reject(\bids $oBid, $bSendNotification = true)
+    public function reject(Bids $bid, $sendNotification = true)
     {
-        if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
-            $oTransaction = $this->creditRejectedBid($oBid, $oBid->amount / 100);
+        if ($bid->getStatus() == Bids::STATUS_BID_PENDING || $bid->getStatus() == Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
+            $oTransaction = $this->creditRejectedBid($bid, $bid->getAmount() / 100);
 
-            if ($bSendNotification) {
-                $this->notificationRejection($oBid, $oTransaction);
+            if ($sendNotification) {
+                $this->notificationRejection($bid, $oTransaction);
             }
 
-            $oBid->status = \bids::STATUS_BID_REJECTED;
-            $oBid->update();
+            $bid->setStatus(Bids::STATUS_BID_REJECTED);
+            $this->em->flush();
         }
     }
 
     /**
-     * @param \bids $oBid
+     * @param Bids  $bid
      * @param float $fRepaymentAmount
      */
-    public function rejectPartially(\bids $oBid, $fRepaymentAmount)
+    public function rejectPartially(Bids $bid, $fRepaymentAmount)
     {
-        if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
-            $oTransaction = $this->creditRejectedBid($oBid, $fRepaymentAmount);
-            $this->notificationRejection($oBid, $oTransaction);
+        if ($bid->getStatus() == \bids::STATUS_BID_PENDING || $bid->getStatus() == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
+            $oTransaction = $this->creditRejectedBid($bid, $fRepaymentAmount);
+            $this->notificationRejection($bid, $oTransaction);
             // Save new amount of the bid after repayment
-            $oBid->amount -= $fRepaymentAmount * 100;
-            $oBid->status = \bids::STATUS_BID_ACCEPTED;
-            $oBid->update();
+            $amount = bcsub($bid->getAmount(), bcmul($fRepaymentAmount, 100));
+            $bid->setAmount($amount)
+                ->setStatus(Bids::STATUS_BID_ACCEPTED);
+            $this->em->flush();
         }
     }
 
     /**
-     * @param \bids  $oBid
+     * @param Bids   $bid
      * @param string $currentRate
      * @param int    $iMode
      * @param bool   $bSendNotification
      */
-    public function reBidAutoBidOrReject(\bids $oBid, $currentRate, $iMode, $bSendNotification = true)
+    public function reBidAutoBidOrReject(Bids $bid, $currentRate, $iMode, $bSendNotification = true)
     {
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->oEntityManager->getRepository('autobid');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \clients $oClient */
@@ -349,43 +359,43 @@ class BidManager
         /** @var \projects $project */
         $project = $this->oEntityManager->getRepository('projects');
 
-        if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid) && $project->get($oBid->id_project)) {
+        $autobid = $bid->getAutobid();
+        if ($autobid instanceof Autobid && false === empty($bid->getIdBid())) {
             if (
                 bccomp($currentRate, $this->getProjectRateRange($project)['rate_min'], 1) >= 0
-                && bccomp($currentRate, $oAutoBid->rate_min, 1) >= 0
-                && $oLenderAccount->get($oBid->id_lender_account)
+                && bccomp($currentRate, $autobid->getRateMin(), 1) >= 0
+                && $oLenderAccount->get($bid->getIdLenderAccount())
                 && $oClient->get($oLenderAccount->id_client_owner)
                 && $oClient->status == \clients::STATUS_ONLINE
             ) { //check online/offline instead of LenderManager::canBid() because of the performance issue.
                 if (self::MODE_REBID_AUTO_BID_CREATE === $iMode) {
-                    $iBidOrder = $oBid->counter('id_project = ' . $oBid->id_project) + 1;
-
-                    $oNewBid         = clone $oBid;
-                    $oNewBid->ordre  = $iBidOrder;
-                    $oNewBid->rate   = $currentRate;
-                    $oNewBid->status = \bids::STATUS_BID_PENDING;
-                    $oNewBid->create();
-
-                    $oBid->status = \bids::STATUS_BID_REJECTED;
-                    $oBid->update();
+                    $iBidOrder = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
+                    $iBidOrder ++;
+                    $newBid = clone $bid;
+                    $newBid->setOrdre($iBidOrder)
+                           ->setRate($currentRate)
+                           ->setStatus(Bids::STATUS_BID_PENDING);
+                    $this->em->persist($newBid);
+                    $bid->setStatus(Bids::STATUS_BID_REJECTED);
                 } else {
-                    $oBid->rate   = $currentRate;
-                    $oBid->status = \bids::STATUS_BID_PENDING;
-                    $oBid->update();
+                    $bid->setRate($currentRate)
+                        ->setStatus(Bids::STATUS_BID_PENDING);
                 }
+
+                $this->em->flush();
             } else {
-                $this->reject($oBid, $bSendNotification);
+                $this->reject($bid, $bSendNotification);
             }
         }
     }
 
     /**
-     * @param $oBid
-     * @param $fAmount
+     * @param Bids  $bid
+     * @param float $fAmount
      *
      * @return \transactions
      */
-    private function creditRejectedBid($oBid, $fAmount)
+    private function creditRejectedBid(Bids $bid, $fAmount)
     {
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
@@ -394,21 +404,20 @@ class BidManager
         // Loaded for class constants
         $this->oEntityManager->getRepository('transactions_types');
 
-        $bid = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->find($oBid->id_bid);
         $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $bid->getIdLenderAccount()]);
         $wallet = $walletMatching->getIdWallet();
         $oTransaction = $this->walletManager->releaseBalance($wallet, $fAmount, $bid);
 
-        $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
+        $oLenderAccount->get($bid->getIdLenderAccount(), 'id_lender_account');
         $fAmountX100 = $fAmount * 100;
 
-        $iWelcomeOfferTotal = $oWelcomeOfferDetails->sum('id_client = ' . $oLenderAccount->id_client_owner . ' AND id_bid = ' . $oBid->id_bid, 'montant');
+        $iWelcomeOfferTotal = $oWelcomeOfferDetails->sum('id_client = ' . $oLenderAccount->id_client_owner . ' AND id_bid = ' . $bid->getIdBid(), 'montant');
         if ($iWelcomeOfferTotal > 0) {
-            if ($oBid->amount === $fAmountX100) { //Totally credit
+            if ($bid->getAmount() === $fAmountX100) { //Totally credit
                 $oWelcomeOfferDetails->montant = min($iWelcomeOfferTotal, $fAmountX100);
-            } elseif (($oBid->amount - $fAmountX100) <= $iWelcomeOfferTotal
+            } elseif (($bid->getAmount() - $fAmountX100) <= $iWelcomeOfferTotal
             ) { //Partially credit
-                $oWelcomeOfferDetails->montant = $iWelcomeOfferTotal - ($oBid->amount - $fAmountX100);
+                $oWelcomeOfferDetails->montant = $iWelcomeOfferTotal - ($bid->getAmount() - $fAmountX100);
             }
 
             if (false === empty($oWelcomeOfferDetails->montant)) {
@@ -416,7 +425,7 @@ class BidManager
                 $oWelcomeOfferDetails->id_offre_bienvenue = 0;
                 $oWelcomeOfferDetails->id_client          = $oLenderAccount->id_client_owner;
                 $oWelcomeOfferDetails->id_bid             = 0;
-                $oWelcomeOfferDetails->id_bid_remb        = $oBid->id_bid;
+                $oWelcomeOfferDetails->id_bid_remb        = $bid->getIdBid();
                 $oWelcomeOfferDetails->status             = \offres_bienvenues_details::STATUS_NEW;
                 $oWelcomeOfferDetails->type               = \offres_bienvenues_details::TYPE_PAYBACK;
                 $oWelcomeOfferDetails->create();
@@ -428,22 +437,22 @@ class BidManager
     }
 
     /**
-     * @param \bids         $oBid
+     * @param Bids          $bid
      * @param \transactions $oTransaction
      */
-    private function notificationRejection(\bids $oBid, \transactions $oTransaction)
+    private function notificationRejection(Bids $bid, \transactions $oTransaction)
     {
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
-        if ($oLenderAccount->get($oBid->id_lender_account)) {
+        if ($oLenderAccount->get($bid->getIdLenderAccount())) {
             $this->oNotificationManager->create(
                 \notifications::TYPE_BID_REJECTED,
-                $oBid->id_autobid > 0 ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_REJECTED,
                 $oLenderAccount->id_client_owner,
                 'sendBidRejected',
-                $oBid->id_project,
+                $bid->getProject()->getIdProject(),
                 $oTransaction->montant / 100,
-                $oBid->id_bid,
+                $bid->getIdBid(),
                 $oTransaction->id_transaction
             );
         }
