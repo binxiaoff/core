@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Symfony\Component\Validator\Constraints\Bic;
 use Symfony\Component\Validator\Constraints\Iban;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
@@ -25,7 +24,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
@@ -417,8 +415,6 @@ class LenderSubscriptionController extends Controller
         } else {
             /** @var \ficelle $ficelle */
             $ficelle       = Loader::loadLib('ficelle');
-            /** @var ClientManager $clientManager */
-            $clientManager = $this->get('unilend.service.client_manager');
 
             $type = (\pays_v2::COUNTRY_FRANCE == $post['fiscal_address_country']) ? \clients::TYPE_LEGAL_ENTITY : \clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $client = new Clients();
@@ -1062,12 +1058,14 @@ class LenderSubscriptionController extends Controller
         $redirectPath = null;
         $currentPath = $request->getPathInfo();
 
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') || false === is_null($clientHash)) {
-            if ($this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')) {
+        $authorizationChecker = $this->get('security.authorization_checker');
+
+        if ($authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') || false === is_null($clientHash)) {
+            if ($authorizationChecker->isGranted('ROLE_BORROWER')) {
                 return $this->redirectToRoute('projects_list');
             }
 
-            if ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER')) {
+            if ($authorizationChecker->isGranted('ROLE_LENDER')) {
                 /** @var Clients $clientEntity */
                 $clientEntity = $clientRepository->find($this->getUser()->getClientId());
                 /** @var ClientStatusManager $clientStatusManager */
@@ -1083,7 +1081,7 @@ class LenderSubscriptionController extends Controller
                     return $this->redirectToRoute('login');
                 }
             }
-            $redirectPath = $this->getSubscriptionStepRedirectRoute($clientEntity->getEtapeInscriptionPreteur(), $clientHash);
+            $redirectPath = $this->get('unilend.service.client_manager')->getSubscriptionStepRedirectRoute($clientEntity);
         } else {
             $personalFormRoute =['lender_subscription_personal_information_person_form', 'lender_subscription_personal_information_legal_entity_form'];
             if (! in_array($request->get('_route'), $personalFormRoute)) {
