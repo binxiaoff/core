@@ -69,16 +69,16 @@ class MailjetEventBounce
     private $payload;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="blocked", type="boolean", nullable=false)
+     * @ORM\Column(name="blocked", type="integer", nullable=false)
      */
     private $blocked;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="hard_bounce", type="boolean", nullable=false)
+     * @ORM\Column(name="hard_bounce", type="integer", nullable=false)
      */
     private $hardBounce;
 
@@ -308,7 +308,7 @@ class MailjetEventBounce
     /**
      * Set blocked
      *
-     * @param boolean $blocked
+     * @param integer $blocked
      *
      * @return MailjetEventBounce
      */
@@ -322,7 +322,7 @@ class MailjetEventBounce
     /**
      * Get blocked
      *
-     * @return boolean
+     * @return integer
      */
     public function getBlocked()
     {
@@ -332,7 +332,7 @@ class MailjetEventBounce
     /**
      * Set hardBounce
      *
-     * @param boolean $hardBounce
+     * @param integer $hardBounce
      *
      * @return MailjetEventBounce
      */
@@ -346,7 +346,7 @@ class MailjetEventBounce
     /**
      * Get hardBounce
      *
-     * @return boolean
+     * @return integer
      */
     public function getHardBounce()
     {
