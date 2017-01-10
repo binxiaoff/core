@@ -85,7 +85,7 @@ class ContactController extends Controller
     {
         /** @var SearchService $search */
         $search = $this->get('unilend.service.search_service');
-        $query  = urldecode($query);
+        $query  = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
 
         /** @var BaseUser $user */
         $user = $this->getUser();
