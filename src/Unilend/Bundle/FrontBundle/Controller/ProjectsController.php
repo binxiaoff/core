@@ -1034,7 +1034,7 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/var/dirs/{projectSlug}.pdf", requirements={"projectSlug"="^[a-z0-9-]+$"})
+     * @Route("/var/dirs/{projectSlug}.pdf", name="project_dirs", requirements={"projectSlug"="^[a-z0-9-]+$"})
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function dirsAction($projectSlug)

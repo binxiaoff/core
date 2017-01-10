@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Symfony\Component\Validator\Constraints\Bic;
 use Symfony\Component\Validator\Constraints\Iban;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
@@ -1093,28 +1094,6 @@ class LenderSubscriptionController extends Controller
         if (null !== $redirectPath && $currentPath !== $redirectPath) {
             return $this->redirect($redirectPath);
         }
-    }
-
-    /**
-     * @param $alreadyCompletedStep
-     * @param null $clientHash
-     * @return string
-     */
-    private function getSubscriptionStepRedirectRoute($alreadyCompletedStep, $clientHash = null)
-    {
-        switch($alreadyCompletedStep){
-            case 1 :
-                $redirectRoute = $this->generateUrl('lender_subscription_documents', ['clientHash' => $clientHash]);
-                break;
-            case 2 :
-            case 3 :
-                $redirectRoute = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
-                break;
-            default :
-                $redirectRoute = $this->generateUrl('projects_list');
-        }
-
-        return $redirectRoute;
     }
 
     /**

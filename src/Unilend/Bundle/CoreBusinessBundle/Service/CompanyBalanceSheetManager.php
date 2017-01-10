@@ -242,13 +242,10 @@ class CompanyBalanceSheetManager
             + $balanceDetails[$balanceSheetId]['details']['BS'] + $balanceDetails[$balanceSheetId]['details']['BV'] + $balanceDetails[$balanceSheetId]['details']['JY'];
 
         $CA = $AG - $BR;
+        $CA = $CA < 0 ? 0 : $CA;
 
-        $CE = $CA +  $balanceDetails[$balanceSheetId]['details']['CB'] + $balanceDetails[$balanceSheetId]['details']['CC'] + $balanceDetails[$balanceSheetId]['details']['CD'];
-
-        $CF = $BR - $AG;
-
-        $CN = $CF + $balanceDetails[$balanceSheetId]['details']['CG'] + $balanceDetails[$balanceSheetId]['details']['CH'] + $balanceDetails[$balanceSheetId]['details']['CK']
-            + $balanceDetails[$balanceSheetId]['details']['CL'] + $balanceDetails[$balanceSheetId]['details']['CM'];
+        $otherFinancialProduct = $balanceDetails[$balanceSheetId]['details']['CB'] + $balanceDetails[$balanceSheetId]['details']['CC'] + $balanceDetails[$balanceSheetId]['details']['CD'];
+        $otherObligations      = $balanceDetails[$balanceSheetId]['details']['CG'] + $balanceDetails[$balanceSheetId]['details']['CH'] + $balanceDetails[$balanceSheetId]['details']['CK'] + $balanceDetails[$balanceSheetId]['details']['CL'] + $balanceDetails[$balanceSheetId]['details']['CM'];
 
         $incomeStatement['details'] = [
             'income-statement_2035-recettes'        => $AG,
@@ -257,9 +254,9 @@ class CompanyBalanceSheetManager
             'income-statement_2035-autres-depenses' => $BR - $balanceDetails[$balanceSheetId]['details']['BA'] - $balanceDetails[$balanceSheetId]['details']['BB'] - $balanceDetails[$balanceSheetId]['details']['BC'],
             'income-statement_2035-total-depenses'  => $BR,
             'income-statement_2035-excedent-brut'   => $CA,
-            'income-statement_2035-autres-produits' => $CE,
-            'income-statement_2035-autres-charges'  => $CN,
-            'income-statement_2035-benefice-net'    => $CE - $CN,  //CP
+            'income-statement_2035-autres-produits' => $otherFinancialProduct,
+            'income-statement_2035-autres-charges'  => $otherObligations,
+            'income-statement_2035-benefice-net'    => $CA + $otherFinancialProduct - $otherObligations
         ];
 
         return $incomeStatement;

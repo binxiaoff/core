@@ -229,7 +229,7 @@ class BidManager
             throw new \Exception('bids-low-balance');
         }
 
-        if (empty($legacyBid->id_autobid) && $this->cipManager->isCIPValidationNeeded($legacyBid) && false === $this->cipManager->hasValidEvaluation($oLenderAccount)) {
+        if ($this->cipManager->isCIPValidationNeeded($legacyBid) && false === $this->cipManager->hasValidEvaluation($oLenderAccount)) {
             throw new \Exception('bids-cip-validation-needed');
         }
 
@@ -301,7 +301,11 @@ class BidManager
         if (bccomp($autoBid->getRateMin(), $rate, 1) <= 0) {
             /** @var \lenders_accounts $LenderAccount */
             $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
-            if ($oLenderAccount->get($autoBid->getIdLender()) && $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
+            if (
+                $oLenderAccount->get($autoBid->getIdLender())
+                && $this->oAutoBidSettingsManager->isOn($oLenderAccount)
+                && $this->oAutoBidSettingsManager->isQualified($oLenderAccount)
+            ) {
                 $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $autoBid->getIdLender()]);
                 $wallet         = $walletMatching->getIdWallet();
                 $this->bid($wallet, $autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);

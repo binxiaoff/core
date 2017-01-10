@@ -1035,21 +1035,26 @@ class LenderProfileController extends Controller
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
-        $files          = $request->request->get('files', []);
-        $contentHistory = '';
+        $files         = $request->request->get('files', []);
+        $uploadSuccess = [];
+        $uploadError   = [];
 
         foreach ($request->files->all() as $fileName => $file) {
-            $contentHistory = '<ul>';
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
-                $this->uploadAttachment($lenderAccount->id_lender_account, $request->request->get('files')[$fileName], $fileName);
-                $contentHistory .= '<li>' . $translator->trans('projet_document-type-' . $request->request->get('files')[$fileName]) . '</li>';
+                if (false === $this->uploadAttachment($lenderAccount->id_lender_account, $request->request->get('files')[$fileName], $fileName)) {
+                    $uploadError[] = $translator->trans('projet_document-type-' . $request->request->get('files')[$fileName]);
+                } else {
+                    $uploadSuccess[] = $translator->trans('projet_document-type-' . $request->request->get('files')[$fileName]);
+                }
             }
-            $contentHistory .= '</ul>';
         }
 
-        if (false !== strpos($contentHistory, '<li>')) {
-            $this->updateClientStatusAndNotifyClient($client, $contentHistory);
+        if (empty($uploadError) && false === empty($uploadSuccess)) {
+            $clientEmailContent = '<ul><li>' . implode('</li><li>', $uploadSuccess) . '</li></ul>';
+            $this->updateClientStatusAndNotifyClient($client, $clientEmailContent);
             $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));
+        } elseif (false === empty($uploadError)) {
+            $this->addFlash('completenessError', $translator->trans('lender-profile_completeness-form-error-message'));
         }
 
         $sSerialize = serialize(array('id_client' => $client->id_client, 'post' => $_POST));

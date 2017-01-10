@@ -109,7 +109,7 @@ class TemplateMessage extends \Swift_Message
         } catch (\Swift_RfcComplianceException $exception) {
             if ($this->logger instanceof LoggerInterface) {
                 $trace = debug_backtrace();
-                $this->logger->alert($exception->getMessage(), array('address' => $addresses, 'template' => $this->templateId, 'file' => $trace[0]['file'], 'line' => $trace[0]['line']));
+                $this->logger->error($exception->getMessage(), ['address' => $addresses, 'template' => $this->templateId, 'file' => $trace[0]['file'], 'line' => $trace[0]['line']]);
             }
         }
 

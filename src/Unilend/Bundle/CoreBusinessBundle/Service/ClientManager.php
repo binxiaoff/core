@@ -270,10 +270,9 @@ class ClientManager
     public function checkProgressAndRedirect(Request $request)
     {
         /** @var \clients $client */
-        $client       = $this->oEntityManager->getRepository('clients');
-        $currentPath  = $request->getPathInfo();
-
-        $token = $this->tokenStorage->getToken();
+        $client      = $this->oEntityManager->getRepository('clients');
+        $currentPath = $request->getPathInfo();
+        $token       = $this->tokenStorage->getToken();
 
         if ($token) {
             /** @var BaseUser $user */
@@ -295,7 +294,7 @@ class ClientManager
      * @param \clients $client
      * @return string
      */
-    private function getSubscriptionStepRedirectRoute(\clients $client)
+    public function getSubscriptionStepRedirectRoute(\clients $client)
     {
         switch ($client->etape_inscription_preteur) {
             case \clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
