@@ -78,15 +78,28 @@ class preteursController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         if (isset($_POST['form_search_preteur'])) {
-            $nonValide       = (isset($_POST['nonValide']) && $_POST['nonValide'] != false) ? 1 : '';
 
-            if (false === filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                $_SESSION['error_search']  = 'Format email non valide';
+            if (empty($_POST['id']) && empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['raison_sociale'])) {
+                $_SESSION['error_search'][]  = 'Veuillez remplir au moins un champ';
+            }
+
+            $email = empty($_POST['email']) ? '' : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            if (false === $email) {
+                $_SESSION['error_search'][]  = 'Format de l\'email est non valide';
+            }
+
+            if (false === empty($_POST['id']) && false === is_numeric($_POST['id'])) {
+                $_SESSION['error_search'][]  = 'L\'id du client doit être numérique';
+            }
+
+            if (false === empty($_SESSION['error_search'])) {
                 header('Location:' . $this->lurl . '/preteurs/search');
                 die;
             }
 
-            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
+            $nonValide = (isset($_POST['nonValide']) && $_POST['nonValide'] != false) ? 1 : '';
+
+            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $email, $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
