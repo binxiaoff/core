@@ -126,10 +126,7 @@ class preteursController extends bootstrap
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             $this->companies = $this->loadData('companies');
-            if (in_array($this->clients->type, array(
-                clients::TYPE_LEGAL_ENTITY,
-                clients::TYPE_LEGAL_ENTITY_FOREIGNER
-            ))) {
+            if (in_array($this->clients->type, [clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
             }
 
@@ -148,22 +145,18 @@ class preteursController extends bootstrap
             $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
 
             $this->echeanciers = $this->loadData('echeanciers');
-            $this->sumRembInte = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account));
+            $this->sumRembInte = $this->echeanciers->getRepaidInterests(['id_lender' => $this->lenders_accounts->id_lender_account]);
 
             try {
-                $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange($this->lenders_accounts->id_lender_account, (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'), array(\echeanciers::STATUS_PENDING));
+                $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange($this->lenders_accounts->id_lender_account, (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'));
             } catch (\Exception $exception) {
                 /** @var \Psr\Log\LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->error('Could not get next repayment amount (id_lender = ' . $this->lenders_accounts->id_lender_account . ')', array(
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__,
-                    'id_lender' => $this->lenders_accounts->id_lender_account
-                ));
+                $logger->error('Could not get next repayment amount (id_lender = ' . $this->lenders_accounts->id_lender_account . ')', ['class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->lenders_accounts->id_lender_account ]);
                 $this->nextRemb = 0;
             }
 
-            $this->sumRembMontant = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account));
+            $this->sumRembMontant = $this->echeanciers->getRepaidAmount(['id_lender' => $this->lenders_accounts->id_lender_account]);
 
             $this->bids           = $this->loadData('bids');
             $this->avgPreteur     = $this->bids->getAvgPreteur($this->lenders_accounts->id_lender_account, 'amount', '1,2');
@@ -179,7 +172,7 @@ class preteursController extends bootstrap
             $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
             $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
 
-            $this->aAvailableAttachments = array();
+            $this->aAvailableAttachments = [];
 
             $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
             $this->aAvailableAttachments = $this->aIdentity + $this->aDomicile + $this->aRibAndFiscale + $this->aOther;
@@ -188,7 +181,7 @@ class preteursController extends bootstrap
             $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
             $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
 
-            $this->lesStatuts = array(
+            $this->lesStatuts = [
                 \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('preteur-profile_versement-initial'),
                 \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('preteur-profile_alimentation-cb'),
                 \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('preteur-profile_alimentation-virement'),
@@ -205,7 +198,7 @@ class preteursController extends bootstrap
                 \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe-preteur'),
                 \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur'),
                 \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
-            );
+            ];
 
             $this->solde        = $this->transactions->getSolde($this->clients->id_client);
             $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_WITHDRAWAL . ' AND id_client = ' . $this->clients->id_client, 'montant');
@@ -400,7 +393,7 @@ class preteursController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager $taxManager */
                 $taxManager = $this->get('unilend.service.tax_manager');
 
-                if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+                if (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
 
                     if (false === empty($_POST['meme-adresse'])) {
                         $this->clients_adresses->meme_adresse_fiscal = 1;
@@ -524,11 +517,7 @@ class preteursController extends bootstrap
                     $this->lenders_accounts->update();
                     $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
-                    $serialize = serialize(array(
-                        'id_client' => $this->clients->id_client,
-                        'post'      => $_POST,
-                        'files'     => $_FILES
-                    ));
+                    $serialize = serialize(['id_client' => $this->clients->id_client, 'post'      => $_POST, 'files'     => $_FILES]);
                     $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
@@ -546,17 +535,9 @@ class preteursController extends bootstrap
                             die;
                         } elseif (1 == $this->clients->origine && 0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) {
                             $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
-                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), [
-                                'class'     => __CLASS__,
-                                'function'  => __FUNCTION__,
-                                'id_lender' => $this->clients->id_client
-                            ]);
+                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client ]);
                         } else {
-                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or the origine != 1.', [
-                                'class'     => __CLASS__,
-                                'function'  => __FUNCTION__,
-                                'id_lender' => $this->clients->id_client
-                            ]);
+                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or the origine != 1.', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
                         }
 
                         $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
@@ -731,11 +712,7 @@ class preteursController extends bootstrap
                     $this->clients_adresses->update();
 
                     // Histo user //
-                    $serialize = serialize(array(
-                        'id_client' => $this->clients->id_client,
-                        'post'      => $_POST,
-                        'files'     => $_FILES
-                    ));
+                    $serialize = serialize(['id_client' => $this->clients->id_client, 'post'      => $_POST, 'files'     => $_FILES ]);
                     $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
@@ -754,14 +731,14 @@ class preteursController extends bootstrap
                         $this->settings->get('Twitter', 'type');
                         $lien_tw = $this->settings->value;
 
-                        $varMail = array(
+                        $varMail = [
                             'surl'    => $this->surl,
                             'url'     => $this->furl,
                             'prenom'  => $this->clients->prenom,
                             'projets' => $this->furl . '/projets-a-financer',
                             'lien_fb' => $lien_fb,
                             'lien_tw' => $lien_tw
-                        );
+                        ];
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $varMail);
@@ -809,11 +786,11 @@ class preteursController extends bootstrap
     private function organizeAttachments(&$aDataToDisplay, &$aDataToAdd, array $aGPAttachmentStatus, $iType, array $aAttachmentType)
     {
         if (isset($this->attachments[$iType]['path'])) {
-            $aDataToDisplay[$iType] = array(
+            $aDataToDisplay[$iType] = [
                 'label' => $aAttachmentType['label'],
                 'path'  => $this->attachments[$iType]['path'],
                 'id'    => $this->attachments[$iType]['id']
-            );
+            ];
 
             if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label']) && \greenpoint_attachment::REVALIDATE_NO == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['revalidate']) {
                 $aDataToDisplay[$iType]['greenpoint_label'] = $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'];
@@ -849,13 +826,13 @@ class preteursController extends bootstrap
         $this->transactions = $this->loadData('transactions');
         $this->companies    = $this->loadData('companies');
 
-        $aStatusNotValidated = array(
+        $aStatusNotValidated = [
             \clients_status::TO_BE_CHECKED,
             \clients_status::COMPLETENESS,
             \clients_status::COMPLETENESS_REMINDER,
             \clients_status::COMPLETENESS_REPLY,
             \clients_status::MODIFICATION
-        );
+        ];
 
         $this->lPreteurs     = $this->clients->selectPreteursByStatus(
             implode(',', $aStatusNotValidated),
@@ -874,7 +851,7 @@ class preteursController extends bootstrap
             $oGreenPointKYC = $this->loadData('greenpoint_kyc');
 
             /** @var array aGreenPointStatus */
-            $this->aGreenPointStatus = array();
+            $this->aGreenPointStatus = [];
 
             foreach ($this->lPreteurs as $aLender) {
                 if ($oGreenPointKYC->get($aLender['id_client'], 'id_client')) {
@@ -938,7 +915,7 @@ class preteursController extends bootstrap
         $timeCreate     = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month          = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
-        $varMail = array(
+        $varMail = [
             'furl'          => $this->furl,
             'surl'          => $this->surl,
             'prenom_p'      => $this->clients->prenom,
@@ -947,9 +924,9 @@ class preteursController extends bootstrap
             'lien_upload'   => $this->furl . '/profile/documents',
             'lien_fb'       => $lien_fb,
             'lien_tw'       => $lien_tw
-        );
+        ];
 
-        $tabVars = array();
+        $tabVars = [];
         foreach ($varMail as $key => $value) {
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
@@ -1073,7 +1050,7 @@ class preteursController extends bootstrap
         }
 
         if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));
+            $this->attachmentHelper = $this->loadLib('attachment_helper', [$this->attachment, $this->attachment_type, $this->path]);
         }
 
         $sNewName = '';
@@ -1119,94 +1096,94 @@ class preteursController extends bootstrap
             $this->aNotificationPeriode = \clients_gestion_notifications::getAllPeriod();
 
             $this->aInfosNotifications['vos-offres-et-vos-projets']['title'] = 'Offres et Projets';
-            $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications'] = array(
-                \clients_gestion_type_notif::TYPE_NEW_PROJECT => array(
+            $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications'] = [
+                \clients_gestion_type_notif::TYPE_NEW_PROJECT => [
                     'title'           => 'Annonce des nouveaux projets',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                ),
-                \clients_gestion_type_notif::TYPE_BID_PLACED => array(
+                    ]
+                ],
+                \clients_gestion_type_notif::TYPE_BID_PLACED => [
                     'title'           => 'Offres réalisées',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                ),
-                \clients_gestion_type_notif::TYPE_BID_REJECTED => array(
+                    ]
+                ],
+                \clients_gestion_type_notif::TYPE_BID_REJECTED => [
                     'title'           => 'Offres refusées',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                ),
-                \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => array(
+                    ]
+                ],
+                \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => [
                     'title'           => 'Offres acceptées',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                ),
-                \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
+                    ]
+                ],
+                \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => [
                     'title'           => 'Problème sur un projet',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                ),
-                \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => array(
+                    ]
+                ],
+                \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => [
                     'title'           => 'Autolend : offre réalisée ou rejetée',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                )
-            );
+                    ]
+                ]
+            ];
             $this->aInfosNotifications['vos-remboursements']['title'] = 'Offres et Projets';
-            $this->aInfosNotifications['vos-remboursements']['notifications'] = array(
-                \clients_gestion_type_notif::TYPE_REPAYMENT => array(
+            $this->aInfosNotifications['vos-remboursements']['notifications'] = [
+                \clients_gestion_type_notif::TYPE_REPAYMENT => [
                     'title'           => 'Remboursement(s)',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                )
-            );
+                    ]
+                ]
+            ];
             $this->aInfosNotifications['mouvements-sur-votre-compte']['title'] = 'Mouvements sur le compte';
-            $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = array(
-                \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => array(
+            $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = [
+                \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => [
                     'title'           => 'Alimentation de votre compte par virement',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                ),
-                \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT => array(
+                    ]
+                ],
+                \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT => [
                     'title'           => 'Alimentation de votre compte par carte bancaire',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                ),
-                \clients_gestion_type_notif::TYPE_DEBIT => array(
+                    ]
+                ],
+                \clients_gestion_type_notif::TYPE_DEBIT => [
                     'title'           => 'retrait',
-                    'available_types' => array(
+                    'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                    )
-                )
-            );
+                    ]
+                ]
+            ];
 
             if (isset($_SESSION['FilterMails'])) {
                 $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);
@@ -1250,7 +1227,7 @@ class preteursController extends bootstrap
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
             }
 
@@ -1268,8 +1245,8 @@ class preteursController extends bootstrap
                 $this->IRR = $aIRR;
             }
 
-            $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);
-            $statusKo                = array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE);
+            $statusOk                = [\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE];
+            $statusKo                = [\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE];
             $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOk, $statusKo));
             $this->problProjects     = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
             $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
@@ -1294,7 +1271,7 @@ class preteursController extends bootstrap
             $this->aAutoBidSettings = [];
             /** @var autobid $autobid */
             $autobid          = $this->loadData('autobid');
-            $aAutoBidSettings = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+            $aAutoBidSettings = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
             foreach ($aAutoBidSettings as $aSetting) {
                 $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
                 $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
@@ -1340,13 +1317,13 @@ class preteursController extends bootstrap
         $from = $email->getFrom();
         $to   = $email->getTo();
 
-        $this->email = array(
+        $this->email = [
             'date'    => $sentAt->format('d/m/Y H:i'),
             'from'    => array_shift($from),
             'to'      => array_shift($to),
             'subject' => $email->getSubject(),
             'body'    => $email->getBody()
-        );
+        ];
     }
 
     private function changeClientStatus(\clients $oClient, $iStatus, $iOrigin)
@@ -1355,7 +1332,7 @@ class preteursController extends bootstrap
             $oClient->status = $iStatus;
             $oClient->update();
 
-            $serialize = serialize(array('id_client' => $oClient->id_client, 'status' => $oClient->status));
+            $serialize = serialize(['id_client' => $oClient->id_client, 'status' => $oClient->status]);
             switch ($iOrigin) {
                 case 1:
                     $this->users_history->histo($iOrigin, 'status preteur', $_SESSION['user']['id_user'], $serialize);
@@ -1393,13 +1370,13 @@ class preteursController extends bootstrap
         $oSettings->get('Twitter', 'type');
         $sTW = $oSettings->value;
 
-        $aVariablesMail = array(
+        $aVariablesMail = [
             'surl'    => $this->surl,
             'url'     => $this->furl,
             'prenom'  => $oClient->prenom,
             'lien_fb' => $sFB,
             'lien_tw' => $sTW
-        );
+        ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-fermeture-compte-preteur', $aVariablesMail);
@@ -1418,12 +1395,12 @@ class preteursController extends bootstrap
         $oSettings->get('Twitter', 'type');
         $lien_tw = $oSettings->value;
 
-        $lapage = (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
+        $lapage = (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) ? 'particulier_doc' : 'societe_doc';
 
         $timeCreate = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month      = $this->dates->tableauMois['fr'][ date('n', $timeCreate) ];
 
-        $varMail = array(
+        $varMail = [
             'furl'          => $this->furl,
             'surl'          => $this->surl,
             'prenom_p'      => $this->clients->prenom,
@@ -1432,7 +1409,7 @@ class preteursController extends bootstrap
             'lien_upload'   => $this->furl . '/profile/' . $lapage,
             'lien_fb'       => $lien_fb,
             'lien_tw'       => $lien_tw
-        );
+        ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $varMail);
@@ -1488,7 +1465,7 @@ class preteursController extends bootstrap
         $oClient                = $this->loadData('clients');
         $oLendersAccount        = $this->loadData('lenders_accounts');
 
-         if(isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], array('on', 'off'))){
+         if(isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], ['on', 'off'])){
              $oClient->get($this->params[0]);
              $oLendersAccount->get($oClient->id_client, 'id_client_owner');
              $sValue = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
@@ -1506,7 +1483,7 @@ class preteursController extends bootstrap
         $iClientId          = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
 
         if (false === $iClientId) {
-            echo json_encode(array('text' => 'Une erreur est survenue', 'severity' => 'error'));
+            echo json_encode(['text' => 'Une erreur est survenue', 'severity' => 'error']);
             return;
         }
         /** @var \lenders_accounts $oLendersAccounts */
@@ -1519,7 +1496,7 @@ class preteursController extends bootstrap
 
         for ($i = 1; $i <= 7; $i++) {
             if (empty($_POST['iban' . $i])) {
-                echo json_encode(array('text' => 'IBAN incorrect', 'severity' => 'error'));
+                echo json_encode(['text' => 'IBAN incorrect', 'severity' => 'error']);
                 return;
             }
             $sIban .= strtoupper($_POST['iban' . $i]);
@@ -1559,10 +1536,10 @@ class preteursController extends bootstrap
                 $sSeverity   = 'error';
             }
         } else {
-            echo json_encode(array('text' => 'Aucune modification', 'severity' => 'warning'));
+            echo json_encode(['text' => 'Aucune modification', 'severity' => 'warning']);
             return;
         }
-        echo json_encode(array('text' => $sMessage, 'severity' => $sSeverity));
+        echo json_encode(['text' => $sMessage, 'severity' => $sSeverity]);
     }
 
     /**
@@ -1686,11 +1663,11 @@ class preteursController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $header = array('Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux');
+        $header = ['Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
 
         PHPExcel_Settings::setCacheStorageMethod(
             PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+            ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
         );
 
         $document    = new PHPExcel();
