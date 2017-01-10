@@ -8,7 +8,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
@@ -35,8 +34,6 @@ class ClientManager
     private $requestStack;
     /** @var  RouterInterface */
     private $router;
-    /** @var  AuthorizationChecker */
-    private $authorizationChecker;
     /** @var WalletCreationManager */
     private $walletCreationManager;
     /** @var EntityManager*/
@@ -55,7 +52,6 @@ class ClientManager
      * @param EntityManager          $em
      * @param LoggerInterface        $logger
      * @param RouterInterface        $router
-     * @param AuthorizationChecker   $authorizationChecker
      */
     public function __construct(
         EntityManagerSimulator $oEntityManager,
@@ -65,8 +61,7 @@ class ClientManager
         WalletCreationManager $walletCreationManager,
         EntityManager $em,
         LoggerInterface $logger,
-        RouterInterface $router,
-        AuthorizationChecker $authorizationChecker
+        RouterInterface $router
     ) {
         $this->oEntityManager         = $oEntityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
@@ -76,7 +71,6 @@ class ClientManager
         $this->em                     = $em;
         $this->logger                 = $logger;
         $this->router                 = $router;
-        $this->authorizationChecker   = $authorizationChecker;
     }
 
 
@@ -277,7 +271,7 @@ class ClientManager
             $user = $token->getUser();
             $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
             if (
-                $this->authorizationChecker->isGranted('ROLE_LENDER', $user) && $client && $client->getEtapeInscriptionPreteur() < Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
+                $client && $this->isLender($client) && $client->getEtapeInscriptionPreteur() < Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
                 $redirectPath = $this->getSubscriptionStepRedirectRoute($client);
 
                 if ($redirectPath != $currentPath) {

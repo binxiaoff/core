@@ -200,6 +200,13 @@ class Projects
     /**
      * @var integer
      *
+     * @ORM\Column(name="balance_count", type="integer", nullable=false)
+     */
+    private $balanceCount;
+
+    /**
+     * @var integer
+     *
      * @ORM\Column(name="id_company_rating_history", type="integer", nullable=false)
      */
     private $idCompanyRatingHistory;
@@ -942,6 +949,30 @@ class Projects
     public function getIdDernierBilan()
     {
         return $this->idDernierBilan;
+    }
+
+    /**
+     * Set balanceCount
+     *
+     * @param integer $balanceCount
+     *
+     * @return Projects
+     */
+    public function setBalanceCount($balanceCount)
+    {
+        $this->balanceCount = $balanceCount;
+
+        return $this;
+    }
+
+    /**
+     * Get balanceCount
+     *
+     * @return integer
+     */
+    public function getBalanceCount()
+    {
+        return $this->balanceCount;
     }
 
     /**
