@@ -12,19 +12,19 @@ use Swift_Mime_Message;
 class MailjetTransport implements \Swift_Transport
 {
     /** The event dispatching layer */
-    private $oEventDispatcher;
+    private $eventDispatcher;
     /** @var Client */
-    private $oMailJetClient;
+    private $mailJetClient;
     /** @var array */
     private $spool = [];
     /** @var  LoggerInterface */
     private $logger;
 
-    public function __construct(\Swift_Events_EventDispatcher $oDispatcher, Client $oMailJetClient, LoggerInterface $logger)
+    public function __construct(\Swift_Events_EventDispatcher $dispatcher, Client $mailJetClient, LoggerInterface $logger)
     {
-        $this->oEventDispatcher = $oDispatcher;
-        $this->oMailJetClient   = $oMailJetClient;
-        $this->logger           = $logger;
+        $this->eventDispatcher = $dispatcher;
+        $this->mailJetClient   = $mailJetClient;
+        $this->logger          = $logger;
     }
 
     /**
@@ -46,20 +46,21 @@ class MailjetTransport implements \Swift_Transport
 
     /**
      * Stops this Transport mechanism.
+     *
      * @return Response
      */
     public function stop()
     {
-        return $this->oMailJetClient->post(Resources::$Email, ['body' => ['Messages' => $this->spool]]);
+        return $this->mailJetClient->post(Resources::$Email, ['body' => ['Messages' => $this->spool]]);
     }
 
     /**
      * @param Swift_Mime_Message $message
-     * @param string[]           $aFailedRecipients
+     * @param string[]           $failedRecipients
      *
      * @return int
      */
-    public function send(Swift_Mime_Message $message, &$aFailedRecipients = null)
+    public function send(Swift_Mime_Message $message, &$failedRecipients = null)
     {
 
         $count = (
@@ -69,8 +70,15 @@ class MailjetTransport implements \Swift_Transport
         );
 
         if (0 === $count) {
-            $trace = debug_backtrace();
-            $this->logger->error('email address empty : ', ['address'  => $message->getTo(), 'template' => $message->getSubject(), 'file'  => $trace[0]['file'], 'line'  => $trace[0]['line']]);
+            $completeTrace = debug_backtrace();
+            $backtrace     = [];
+
+            foreach ($completeTrace as $key => $trace){
+                $backtrace[$key]['file'] = isset($trace['file']) ? $trace['file'] : '';
+                $backtrace[$key]['line'] = isset($trace['line']) ? $trace['line'] : '';
+            }
+
+            $this->logger->error('email address empty : ', ['template' => $message->getSubject(), 'backtrace'  => $backtrace]);
 
             return 0;
         }
@@ -116,10 +124,10 @@ class MailjetTransport implements \Swift_Transport
     /**
      * Register a plugin.
      *
-     * @param Swift_Events_EventListener $oPlugin
+     * @param Swift_Events_EventListener $plugin
      */
-    public function registerPlugin(Swift_Events_EventListener $oPlugin)
+    public function registerPlugin(Swift_Events_EventListener $plugin)
     {
-        $this->oEventDispatcher->bindEventListener($oPlugin);
+        $this->eventDispatcher->bindEventListener($plugin);
     }
 }
