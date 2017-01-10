@@ -608,7 +608,7 @@ class dossiersController extends bootstrap
 
                         if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                             try {
-                                $this->projects->id_rate = $oProjectManager->getProjectRateRange($this->projects);
+                                $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projects);
                             } catch (\Exception $exception) {
                                 $_SESSION['freeow']['message'] .= $exception->getMessage();
                             }

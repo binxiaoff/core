@@ -890,7 +890,7 @@ class ProjectManager
         return $projectAverageFundingDuration;
     }
 
-    public function getProjectRateRange(\projects $project)
+    public function getProjectRateRangeId(\projects $project)
     {
         if (empty($project->period)) {
             throw new \Exception('project period not set.');

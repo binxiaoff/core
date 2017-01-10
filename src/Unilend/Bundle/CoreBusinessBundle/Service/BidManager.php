@@ -360,7 +360,7 @@ class BidManager
         $project = $this->oEntityManager->getRepository('projects');
 
         $autobid = $bid->getAutobid();
-        if ($autobid instanceof Autobid && false === empty($bid->getIdBid())) {
+        if ($autobid instanceof Autobid && false === empty($bid->getIdBid()) && $project->get($bid->getProject()->getIdProject())) {
             if (
                 bccomp($currentRate, $this->getProjectRateRange($project)['rate_min'], 1) >= 0
                 && bccomp($currentRate, $autobid->getRateMin(), 1) >= 0

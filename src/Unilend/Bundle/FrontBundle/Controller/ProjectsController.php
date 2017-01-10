@@ -462,8 +462,9 @@ class ProjectsController extends Controller
             $bidManager = $this->get('unilend.service.bid_manager');
             try {
                 $walletMatching = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $lenderAccount->id_lender_account]);
-                $wallet = $walletMatching->getIdWallet();
-                $bids = $bidManager->bid($wallet, $lenderAccount->id_lender_account, $project->id_project, $bidAmount, $rate);
+                $wallet         = $walletMatching->getIdWallet();
+                $projectEntity  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+                $bids           = $bidManager->bid($wallet, $lenderAccount->id_lender_account, $projectEntity, $bidAmount, $rate);
                 /** @var MemcacheCachePool $oCachePool */
                 $oCachePool = $this->get('memcache.default');
                 $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);

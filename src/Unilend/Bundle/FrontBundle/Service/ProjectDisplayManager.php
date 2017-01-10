@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -13,6 +14,8 @@ class ProjectDisplayManager
     private $entityManager;
     /** @var ProjectManager */
     private $projectManager;
+    /** @var BidManager  */
+    private $bidManager;
     /** @var LenderAccountDisplayManager */
     private $lenderAccountDisplayManager;
     /** @var CompanyBalanceSheetManager */
@@ -39,6 +42,7 @@ class ProjectDisplayManager
     /**
      * @param EntityManager               $entityManager
      * @param ProjectManager              $projectManager
+     * @param BidManager                  $bidManager
      * @param LenderAccountDisplayManager $lenderAccountDisplayManager
      * @param CompanyBalanceSheetManager  $companyBalanceSheetManager
      * @param CacheItemPoolInterface      $cachePool
@@ -46,6 +50,7 @@ class ProjectDisplayManager
     public function __construct(
         EntityManager $entityManager,
         ProjectManager $projectManager,
+        BidManager $bidManager,
         LenderAccountDisplayManager $lenderAccountDisplayManager,
         CompanyBalanceSheetManager $companyBalanceSheetManager,
         CacheItemPoolInterface $cachePool
@@ -53,6 +58,7 @@ class ProjectDisplayManager
     {
         $this->entityManager               = $entityManager;
         $this->projectManager              = $projectManager;
+        $this->bidManager                  = $bidManager;
         $this->lenderAccountDisplayManager = $lenderAccountDisplayManager;
         $this->companyBalanceSheetManager  = $companyBalanceSheetManager;
         $this->cachePool                   = $cachePool;
@@ -163,13 +169,10 @@ class ProjectDisplayManager
 
         $projectData   = $this->getBaseData($project);
         $alreadyFunded = $bids->getSoldeBid($project->id_project);
+        $projectRateSettings = $this->bidManager->getProjectRateRange($project);
 
-        /** @var \project_rate_settings $projectRateSettings */
-        $projectRateSettings = $this->entityManager->getRepository('project_rate_settings');
-        $projectRateSettings->get($this->projectManager->getProjectRateRange($project));
-
-        $projectData['minRate']      = (float) $projectRateSettings->rate_min;
-        $projectData['maxRate']      = (float) $projectRateSettings->rate_max;
+        $projectData['minRate']      = (float) $projectRateSettings['rate_min'];
+        $projectData['maxRate']      = (float) $projectRateSettings['rate_min'];
         $projectData['totalLenders'] = (\projects_status::EN_FUNDING >= $project->status) ? $bids->countLendersOnProject($project->id_project) : $loans->getNbPreteurs($project->id_project);
 
         if ($alreadyFunded >= $project->amount) {
@@ -179,7 +182,7 @@ class ProjectDisplayManager
         } else {
             $projectData['costFunded']    = $alreadyFunded;
             $projectData['percentFunded'] = round($alreadyFunded / $project->amount * 100, 1);
-            $projectData['maxValidRate']  = $projectRateSettings->rate_max;
+            $projectData['maxValidRate']  = $projectRateSettings['rate_min'];
         }
 
         $projectData['navigation'] = $project->positionProject($project->id_project, self::$projectsStatus, [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]);
@@ -205,7 +208,7 @@ class ProjectDisplayManager
             $bidsCount       = array_sum(array_column($bidsSummary, 'bidsCount'));
             $bidsTotalAmount = array_sum(array_column($bidsSummary, 'totalAmount'));
 
-            foreach (range($projectRateSettings->rate_max, $projectRateSettings->rate_min, 0.1) as $rate) {
+            foreach (range($projectRateSettings['rate_max'], $projectRateSettings['rate_min'], 0.1) as $rate) {
                 $rate = (string) $rate; // Fix an issue with float array keys
                 $rateSummary[$rate] = [
                     'rate'              => $rate,
