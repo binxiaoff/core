@@ -297,9 +297,9 @@ class ProjectManager
             $this->oLogger->info('Project ' . $oProject->id_project . ' is now changed to status funded', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
-        $creteria      = ['idProject' => $oProject->id_project, 'status' => Bids::STATUS_BID_PENDING];
-        $bids          = $bidRepo->findBy($creteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
-        $iBidNbTotal   = $bidRepo->countBy($creteria);
+        $criteria      = ['idProject' => $oProject->id_project, 'status' => Bids::STATUS_BID_PENDING];
+        $bids          = $bidRepo->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
+        $iBidNbTotal   = $bidRepo->countBy($criteria);
         $iBidBalance   = 0;
         $iTreatedBitNb = 0;
 
