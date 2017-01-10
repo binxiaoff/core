@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
@@ -29,7 +30,7 @@ class LenderSubscriptionController extends Controller
         $client   = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client, $request->getUri());
 
-        if (false === $response instanceof \clients){
+        if (false === $response instanceof \clients) {
             return $response;
         }
 
@@ -111,7 +112,7 @@ class LenderSubscriptionController extends Controller
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client, $request->getPathInfo());
-        if (false === $response instanceof \clients){
+        if (false === $response instanceof \clients) {
             return $response;
         }
 
@@ -291,7 +292,7 @@ class LenderSubscriptionController extends Controller
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client, $request->getPathInfo());
-        if (false === $response instanceof \clients){
+        if (false === $response instanceof \clients) {
             return $response;
         }
         /** @var TranslatorInterface $translator */
@@ -611,7 +612,7 @@ class LenderSubscriptionController extends Controller
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
 
-        if (false === $response instanceof \clients){
+        if (false === $response instanceof \clients) {
             return $response;
         }
         /** @var \clients_adresses $clientAddress */
@@ -651,7 +652,7 @@ class LenderSubscriptionController extends Controller
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
-        if (false === $response instanceof \clients){
+        if (false === $response instanceof \clients) {
             return $response;
         }
         /** @var ClientStatusManager $clientStatusManager */
@@ -862,7 +863,7 @@ class LenderSubscriptionController extends Controller
         /** @var \clients $client */
         $client   = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
-        if (false === $response instanceof \clients){
+        if (false === $response instanceof \clients) {
             return $response;
         }
 
@@ -1069,7 +1070,7 @@ class LenderSubscriptionController extends Controller
 
         if (false === empty($post['prospect_email']) && $clients->existEmail($post['prospect_email']) && $clients->get($post['prospect_email'], 'email')){
             $response = $this->checkProgressAndRedirect($clients, $request->getPathInfo());
-            if (false === $response instanceof \clients){
+            if (false === $response instanceof \clients) {
                 return $response;
             }
         }
@@ -1104,8 +1105,15 @@ class LenderSubscriptionController extends Controller
     private function checkProgressAndRedirect(\clients &$client, $requestPathInfo, $clientHash = null)
     {
         if (false === empty($client->id_client) || (false === is_null($clientHash) && $client->get($clientHash, 'hash'))) {
-            if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur >= 1 && $client->etape_inscription_preteur <= 3) {
-                $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur,$client->hash);
+            if (
+                \clients::STATUS_ONLINE == $client->status
+                && $client->etape_inscription_preteur >= \clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION
+                && $client->etape_inscription_preteur <= \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT
+            ) {
+                /** @var ClientManager $clientManager */
+                $clientManager = $this->get('unilend.service.client_manager');
+                $redirectRoute = $clientManager->getSubscriptionStepRedirectRoute($client);
+
                 if ($requestPathInfo !== $redirectRoute) {
                     return $this->redirect($redirectRoute);
                 }
@@ -1114,13 +1122,14 @@ class LenderSubscriptionController extends Controller
             }
         }
 
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+        $authorizationChecker = $this->get('security.authorization_checker');
 
-            if ($this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')) {
+        if ($authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')) {
+            if ($authorizationChecker->isGranted('ROLE_BORROWER')) {
                 return $this->redirectToRoute('projects_list');
             }
 
-            if ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER')) {
+            if ($authorizationChecker->isGranted('ROLE_LENDER')) {
                 if (false === is_null($clientHash) && $client->get($clientHash, 'hash') && $client->id_client != $this->getUser()->getClientId()) {
                     return $this->redirectToRoute('projects_list');
                 }
@@ -1133,7 +1142,10 @@ class LenderSubscriptionController extends Controller
                     return $this->redirectToRoute('lender_dashboard');
                 }
 
-                $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
+                /** @var ClientManager $clientManager */
+                $clientManager = $this->get('unilend.service.client_manager');
+                $redirectRoute = $clientManager->getSubscriptionStepRedirectRoute($client);
+
                 if ($requestPathInfo !== $redirectRoute) {
                     return $this->redirect($redirectRoute);
                 }
@@ -1141,23 +1153,6 @@ class LenderSubscriptionController extends Controller
         }
 
         return $client;
-    }
-
-    private function getSubscriptionStepRedirectRoute($alreadyCompletedStep, $clientHash = null)
-    {
-        switch($alreadyCompletedStep){
-            case 1 :
-                $redirectRoute = $this->generateUrl('lender_subscription_documents', ['clientHash' => $clientHash]);
-                break;
-            case 2 :
-            case 3 :
-                $redirectRoute = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
-                break;
-            default :
-                $redirectRoute = $this->generateUrl('projects_list');
-        }
-
-        return $redirectRoute;
     }
 
     /**
@@ -1170,13 +1165,13 @@ class LenderSubscriptionController extends Controller
         $clientType = in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
 
         switch ($client->etape_inscription_preteur) {
-            case 1:
+            case \clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
                 $post['client_password']              = md5($post['client_password']);
                 $post['client_password_confirmation'] = md5($post['client_password_confirmation']);
                 $post['client_secret_response']       = md5($post['client_secret_answer']);
                 $formId                               = 14;
                 break;
-            case 2:
+            case \clients::SUBSCRIPTION_STEP_DOCUMENTS:
                 $formId = in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 17 : 19;
                 break;
         }

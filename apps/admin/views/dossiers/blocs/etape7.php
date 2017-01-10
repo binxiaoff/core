@@ -1,4 +1,8 @@
-<div id="content_etape7"><?php if ($this->projects->status >= \projects_status::COMITE) : ?>
+<div id="content_etape7">
+    <?php if (
+        $this->projects->status >= \projects_status::COMITE
+        || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::COMITE)
+    ) : ?>
         <?php
         $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
         $start = '';
