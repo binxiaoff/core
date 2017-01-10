@@ -104,7 +104,7 @@ class ProjectManager
 
     public function prePublish(\projects $oProject)
     {
-       // $this->autoBid($oProject);
+        $this->autoBid($oProject);
 
         if ($this->isFunded($oProject)) {
             $this->markAsFunded($oProject);
@@ -177,7 +177,8 @@ class ProjectManager
                     } else {
                         // For a autobid, we don't send reject notification, we don't create payback transaction, either. So we just flag it here as reject temporarily
                         $bid->setStatus(Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY);
-                        $this->entityManager->flush();
+                        $this->entityManager->flush($bid);
+                        $this->entityManager->clear($bid);
                     }
                     $iRejectedBids++;
                 }
@@ -315,7 +316,8 @@ class ProjectManager
                         $this->oBidManager->rejectPartially($bid, $fAmountToCredit);
                     } else {
                         $bid->setStatus(Bids::STATUS_BID_ACCEPTED);
-                        $this->entityManager->flush();
+                        $this->entityManager->flush($bid);
+                        $this->entityManager->clear($bid);
                     }
 
                     if ($this->oLogger instanceof LoggerInterface) {
