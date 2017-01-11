@@ -137,7 +137,7 @@ EOF
         }
         $entityManager->getConnection()->beginTransaction();
         try {
-            if ($fundReleaseDate < $dateOfChange) {
+            if ($fundReleaseDate >= $dateOfChange) {
                 if (false === filter_var($commission, FILTER_VALIDATE_INT) || $commission <= 0) {
                     throw new \Exception('Invalid commission');
                 }
@@ -159,7 +159,7 @@ EOF
                 $lender   = $walletRepo->findOneBy(['idClient' => $clientId]);
                 if ($lender) {
                     $operationManager->repaymentCollection($lender, $project, $amount);
-                    if ($fundReleaseDate >= $dateOfChange && false === empty($aRow[2])) {
+                    if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
                         $commissionLender = str_replace(',', '.', $aRow[2]);
                         $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender);
                     }
