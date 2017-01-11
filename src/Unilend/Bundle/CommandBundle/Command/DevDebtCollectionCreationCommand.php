@@ -42,7 +42,7 @@ EOF
                 $this->provision($input, $output);
                 break;
             case 'repayment' :
-                $this->repayment($output);
+                $this->repayment($input, $output);
                 break;
             default:
                 $output->writeln('Invalid action.');
@@ -82,16 +82,23 @@ EOF
             $output->writeln('Invalid commission');
             return;
         }
+        $entityManager->getConnection()->beginTransaction();
+        try {
+            $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_RECOVERY)
+                      ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
+                      ->setIdClient($client)
+                      ->setIdProject($project)
+                      ->setAssignmentDate(new \DateTime());
+            $borrower  = $clientRepo->getWalletByType($client->getIdClient(), WalletType::BORROWER);
+            $collector = $clientRepo->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
+            $this->getContainer()->get('unilend.service.operation_manager')->provisionCollection($collector, $borrower, $reception, $commission);
 
-        $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_RECOVERY)
-                  ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
-                  ->setIdClient($client)
-                  ->setIdProject($project);
-        $borrower  = $clientRepo->getWalletByType($client->getIdClient(), WalletType::BORROWER);
-        $collector = $clientRepo->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
-        $this->getContainer()->get('unilend.service.operation_manager')->provisionCollection($collector, $borrower, $reception, $commission);
-
-        $entityManager->flush();
+            $entityManager->flush();
+            $entityManager->getConnection()->commit();
+        } catch (\Exception $e) {
+            $entityManager->getConnection()->rollBack();
+            $output->writeln('Transaction rollbacked. Error : ' . $e->getMessage());
+        }
     }
 
     private function repayment(InputInterface $input, OutputInterface $output)
@@ -101,15 +108,15 @@ EOF
         $projectRepo      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $walletRepo       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $clientRepo       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $projectId        = $input->getOption('project-id');
+        $commission       = $input->getOption('commission');
+        $project          = $projectRepo->find($projectId);
 
-        $projectId  = $input->getOption('project-id');
-        $commission = $input->getOption('commission');
-
-        $project = $projectRepo->find($projectId);
         if (null === $project) {
             $output->writeln('Project id: ' . $projectId . ' not found.');
             return;
         }
+
         $statusHistory   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findStatusFirstOccurrence($projectId, ProjectsStatus::REMBOURSEMENT);
         $fundReleaseDate = $statusHistory->getAdded();
         $fundReleaseDate->setTime(0, 0, 0);
@@ -119,45 +126,50 @@ EOF
         $clientCollector = $clientRepo->findOneBy(['hash' => '2f9f590e-d689-11e6-b3d7-005056a378e2']);
         $borrower        = $clientRepo->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $collector       = $clientRepo->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
+
         if (null === $clientCollector) {
-            $output->writeln('Borrower with client id : '. $project->getIdCompany()->getIdClientOwner() .' not found.');
+            $output->writeln('Borrower with client id : ' . $project->getIdCompany()->getIdClientOwner() . ' not found.');
             return;
         }
         if (null === $collector) {
             $output->writeln('Collector with client hash : 2f9f590e-d689-11e6-b3d7-005056a378e2 not found.');
             return;
         }
-
-        if ($fundReleaseDate < $dateOfChange) {
-            if (false === filter_var($commission, FILTER_VALIDATE_INT) || $commission <= 0) {
-                $output->writeln('Invalid commission');
-                return;
+        $entityManager->getConnection()->beginTransaction();
+        try {
+            if ($fundReleaseDate < $dateOfChange) {
+                if (false === filter_var($commission, FILTER_VALIDATE_INT) || $commission <= 0) {
+                    throw new \Exception('Invalid commission');
+                }
+                $operationManager->payCollectionCommissionByBorrower($borrower, $collector, $commission);
             }
-            $operationManager->payCollectionCommissionByBorrower($borrower, $collector, $commission);
-        }
 
-        //Encode: UTF-8, new line : LF
-        $fileName = $this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv';
-        if (false === file_exists($fileName)) {
-            $output->writeln($this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv not found');
-            return;
-        }
-        if (false === ($rHandle = fopen($fileName, 'r'))) {
-            $output->writeln($this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv cannot be opened');
-            return;
-        }
-        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
-            $clientId  = $aRow[0];
-            $amount    = str_replace(',', '.', $aRow[1]);
-            $lender    = $walletRepo->findOneBy(['idClient' => $clientId]);
-            if ($lender) {
-                $operationManager->repaymentCollection($lender, $project, $amount);
-                if ($fundReleaseDate >= $dateOfChange && false === empty($aRow[2])) {
-                    $commissionLender = str_replace(',', '.', $aRow[2]);
-                    $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender);
+            //Encode: UTF-8, new line : LF
+            $fileName = $this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv';
+            if (false === file_exists($fileName)) {
+                throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv not found');
+            }
+            if (false === ($rHandle = fopen($fileName, 'r'))) {
+                throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv cannot be opened');
+            }
+
+            while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+                $clientId = $aRow[0];
+                $amount   = str_replace(',', '.', $aRow[1]);
+                $lender   = $walletRepo->findOneBy(['idClient' => $clientId]);
+                if ($lender) {
+                    $operationManager->repaymentCollection($lender, $project, $amount);
+                    if ($fundReleaseDate >= $dateOfChange && false === empty($aRow[2])) {
+                        $commissionLender = str_replace(',', '.', $aRow[2]);
+                        $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender);
+                    }
                 }
             }
+            fclose($rHandle);
+            $entityManager->getConnection()->commit();
+        } catch (\Exception $e) {
+            $entityManager->getConnection()->rollBack();
+            $output->writeln('Transaction rollbacked. Error : ' . $e->getMessage());
         }
-        fclose($rHandle);
     }
 }

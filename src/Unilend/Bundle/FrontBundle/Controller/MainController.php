@@ -412,7 +412,6 @@ class MainController extends Controller
      * @param Request       $request
      * @param array         $content
      * @param array         $complement
-     * @param EntityManager $entityManager
      * @return Response
      */
     private function renderBorrowerLandingPage(Request $request, array $content, array $complement)

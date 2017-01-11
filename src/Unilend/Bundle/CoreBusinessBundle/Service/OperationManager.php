@@ -1081,7 +1081,7 @@ class OperationManager
     public function payCollectionCommissionByLender(Wallet $lender, Wallet $collector, $commission)
     {
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_LENDER]);
-        $this->newOperation($commission, $operationType, $lender, $collector);
+        $this->newOperation($commission, $operationType, $lender, $collector, [], true);
     }
 
     /**
@@ -1092,7 +1092,7 @@ class OperationManager
     public function payCollectionCommissionByBorrower(Wallet $borrower, Wallet $collector, $commission)
     {
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_BORROWER]);
-        $this->newOperation($commission, $operationType, $borrower, $collector);
+        $this->newOperation($commission, $operationType, $borrower, $collector, [], true);
     }
 
     /**
@@ -1150,15 +1150,15 @@ class OperationManager
     }
 
     /**
-     * @param Wallet $borrower
-     * @param Wallet $lender
-     * @param        $capital
-     * @param        $interest
-     * @param array  $origins
+     * @param Wallet       $borrower
+     * @param Wallet       $lender
+     * @param              $capital
+     * @param              $interest
+     * @param array|object $origins
      *
      * @return bool
      */
-    private function repaymentGeneric(Wallet $borrower, Wallet $lender, $capital, $interest, array $origins = [])
+    private function repaymentGeneric(Wallet $borrower, Wallet $lender, $capital, $interest, $origins = [])
     {
         if ($borrower->getIdType()->getLabel() !== WalletType::BORROWER) {
             return false;

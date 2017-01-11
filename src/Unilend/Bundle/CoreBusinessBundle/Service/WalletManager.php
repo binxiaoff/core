@@ -50,12 +50,12 @@ class WalletManager
         $debtor = $operation->getWalletDebtor();
         $this->debit($operation, $debtor, $virtual);
 
-        if ($creditor instanceof Wallet) {
-            $this->snap($creditor, $operation);
-        }
-
         if ($debtor instanceof Wallet) {
             $this->snap($debtor, $operation);
+        }
+
+        if ($creditor instanceof Wallet) {
+            $this->snap($creditor, $operation);
         }
     }
 
@@ -207,11 +207,11 @@ class WalletManager
     }
 
     /**
-     * @param Operation $operation
-     * @param Wallet    $creditor
-     * @param boolean   $virtual
+     * @param Operation   $operation
+     * @param Wallet|null $creditor
+     * @param boolean     $virtual
      */
-    private function credit(Operation $operation, Wallet $creditor, $virtual)
+    private function credit(Operation $operation, Wallet $creditor = null, $virtual)
     {
         if ($creditor instanceof Wallet) {
             $balance = bcadd($creditor->getAvailableBalance(), $operation->getAmount(), 2);
@@ -225,11 +225,11 @@ class WalletManager
     }
 
     /**
-     * @param Operation $operation
-     * @param Wallet    $debtor
-     * @param boolean   $virtual
+     * @param Operation   $operation
+     * @param Wallet|null $debtor
+     * @param boolean     $virtual
      */
-    private function debit(Operation $operation, Wallet $debtor, $virtual)
+    private function debit(Operation $operation, Wallet $debtor = null, $virtual)
     {
         if ($debtor instanceof Wallet) {
             switch ($operation->getType()->getLabel()) {
