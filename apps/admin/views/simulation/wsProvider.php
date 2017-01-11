@@ -10,6 +10,7 @@
         <tr>
             <td>
                 <select name="resourceId">
+                    <option>-Select a web service-</option>
                     <?php foreach ($this->resources as $resource) : ?>
                         <option value="<?= $resource['id_resource'] ?>">
                             <?= $resource['provider_name'] . ' -> ' . $resource['resource_name'] ?>
@@ -37,6 +38,6 @@
 <?php
 if (false === empty($this->result)) {
     echo '<pre>';
-    print_r($this->result);
+    var_dump($this->result);
     echo '</pre>';
 }

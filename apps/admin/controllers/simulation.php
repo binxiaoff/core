@@ -49,25 +49,41 @@ class simulationController extends bootstrap
 
         $this->resources = $wsResources->select();
         $this->result    = [];
-
-        if (isset($_POST['send'], $_POST['siren'])) {
-            if (is_numeric($_POST['resourceId']) && $wsResources->get($_POST['resourceId'])) {
-                $provider = $this->get('unilend.ws_client.' . $wsResources->provider_name . '_manager');
-                $endpoint = $wsResources->resource_name;
-                switch ($wsResources->provider_name) {
-                    case 'euler':
-                        $countryCode  = (empty($_POST['countryCode'])) ? 'fr' : $_POST['countryCode'];
-                        $this->result = $provider->$endpoint($_POST['siren'], $countryCode);
-                        break;
-                    default:
-                        $this->result = $provider->{$wsResources->resource_name}($_POST['siren']);
-                        break;
+        try {
+            if (isset($_POST['send'], $_POST['siren'])) {
+                if (is_numeric($_POST['resourceId']) && $wsResources->get($_POST['resourceId'])) {
+                    $provider = $this->get('unilend.ws_client.' . $wsResources->provider_name . '_manager');
+                    $endpoint = $wsResources->resource_name;
+                    switch ($wsResources->provider_name) {
+                        case 'euler':
+                            $countryCode  = (empty($_POST['countryCode'])) ? 'fr' : $_POST['countryCode'];
+                            $this->result = $provider->$endpoint($_POST['siren'], $countryCode);
+                            break;
+                        case 'altares':
+                            switch ($wsResources->resource_name) {
+                                case 'getFinancialSummary':
+                                case 'getBalanceManagementLine':
+                                    $this->result = $provider->{$wsResources->resource_name}($_POST['siren'], $_POST['balanceId']);
+                                    break;
+                                default:
+                                    $this->result = $provider->{$wsResources->resource_name}($_POST['siren']);
+                                    break;
+                            }
+                            break;
+                        default:
+                            $this->result = $provider->{$wsResources->resource_name}($_POST['siren']);
+                            break;
+                    }
+                } else {
+                    $this->result = 'Please select a web service to call';
                 }
             }
-        }
 
-        if ($this->result instanceof \Psr\Http\Message\ResponseInterface) {
-            $this->result = $this->result->getBody()->getContents();
+            if ($this->result instanceof \Psr\Http\Message\ResponseInterface) {
+                $this->result = $this->result->getBody()->getContents();
+            }
+        } catch (\Exception $exception) {
+            $this->result = 'Error code: ' . $exception->getCode() . '. Error message: ' . $exception->getMessage() . ' at line: ' . $exception->getLine();
         }
     }
 }

@@ -2,7 +2,12 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
+use JMS\Serializer\DeserializationContext;
+use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentity;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
 
 class AltaresManager
 {
@@ -18,6 +23,8 @@ class AltaresManager
     private $identityClient;
     /** @var \SoapClient */
     private $riskClient;
+    /** @var Serializer */
+    private $serializer;
 
     /**
      * AltaresManager constructor.
@@ -27,8 +34,9 @@ class AltaresManager
      * @param CallHistoryManager $callHistoryManager
      * @param \SoapClient $identityClient
      * @param \SoapClient $riskClient
+     * @param Serializer $serializer
      */
-    public function __construct($login, $password, LoggerInterface $logger, CallHistoryManager $callHistoryManager, \SoapClient $identityClient, \SoapClient $riskClient)
+    public function __construct($login, $password, LoggerInterface $logger, CallHistoryManager $callHistoryManager, \SoapClient $identityClient, \SoapClient $riskClient, Serializer $serializer)
     {
         $this->login              = $login;
         $this->password           = $password;
@@ -36,50 +44,73 @@ class AltaresManager
         $this->callHistoryManager = $callHistoryManager;
         $this->identityClient     = $identityClient;
         $this->riskClient         = $riskClient;
+        $this->serializer         = $serializer;
     }
 
     /**
-     * Returns the score and outstanding amounts from a siren
-     * @param $siren
-     * @return mixed
+     * @param string $siren
+     * @return null|CompanyRating
      */
     public function getScore($siren)
     {
-        return $this->riskSoapCall('getScore', ['siren' => $siren]);
+        if (null !== $response = $this->riskSoapCall('getScore', ['siren' => $siren])) {
+            return $this->serializer->deserialize(json_encode($response), CompanyRating::class, 'json');
+        }
+
+        return null;
     }
 
+    /**
+     * @param string $siren
+     * @param int $iSheetsCount
+     * @return mixed
+     */
     public function getBalanceSheets($siren, $iSheetsCount = 3)
     {
         return $this->identitySoapCall('getDerniersBilans', ['siren' => $siren, 'nbBilans' => $iSheetsCount]);
     }
 
     /**
-     * @param $siren
-     * @return mixed
+     * @param string $siren
+     * @return null|CompanyIdentity
+     * @throws \Exception
      */
     public function getCompanyIdentity($siren)
     {
-        $response = $this->identitySoapCall('getIdentiteAltaN3Entreprise', ['sirenRna' => $siren]);
-        return $response;
+        if (null !== $response = $this->identitySoapCall('getIdentiteAltaN3Entreprise', ['sirenRna' => $siren])) {
+            return $this->serializer->deserialize(json_encode($response), CompanyIdentity::class, 'json');
+        }
+
+        return null;
     }
 
     /**
-     * @param $siren
-     * @return mixed
+     * @param string $siren
+     * @return null|FinancialSummary
+     * @throws \Exception
      */
-    public function getFinancialSummary($siren)
+    public function getFinancialSummary($siren, $balanceId)
     {
-        return $this->identitySoapCall('getSyntheseFinanciere', ['siren' => $siren]);
+        if (null !== $response = $this->identitySoapCall('getSyntheseFinanciere', ['siren' => $siren, 'bilanId' => $balanceId])) {
+            return $this->serializer->deserialize(json_encode($response->syntheseFinanciereList), 'ArrayCollection<' . FinancialSummary::class . '>', 'json', DeserializationContext::create()->setGroups(['summary']));
+        }
+
+        return null;
     }
 
     /**
      * @param string $siren
      * @param string $balanceId
-     * @return mixed
+     * @return null|FinancialSummary
+     * @throws \Exception
      */
     public function getBalanceManagementLine($siren, $balanceId)
     {
-        return $this->identitySoapCall('getSoldeIntermediaireGestion', ['siren' => $siren, 'bilanId' => $balanceId]);
+        if (null !== $response = $this->identitySoapCall('getSoldeIntermediaireGestion', ['siren' => $siren, 'bilanId' => $balanceId])) {
+            return $this->serializer->deserialize(json_encode($response->SIGList), 'ArrayCollection<' . FinancialSummary::class . '>', 'json', DeserializationContext::create()->setGroups(['management_line']));
+        }
+
+        return null;
     }
 
     /**
@@ -99,8 +130,13 @@ class AltaresManager
         );
         call_user_func($callable);
         $this->logger->info('Call to ' . $action . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($action)]]);
-        return $response;
+
+        if ($response->return->correct && $response->return->myInfo) {
+            return $response->return->myInfo;
+        }
+        return null;
     }
+
     /**
      * Make SOAP call to Altares risk WS
      * @param string $action
@@ -118,7 +154,11 @@ class AltaresManager
         );
         call_user_func($callable);
         $this->logger->info('Call to ' . $action . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($action)]]);
-        return $response;
+
+        if ($response->return->correct && $response->return->myInfo) {
+            return $response->return->myInfo;
+        }
+        return null;
     }
 
     /**
@@ -136,7 +176,7 @@ class AltaresManager
     private function getSirenKey($action)
     {
         switch ($action) {
-            case 'getCompanyIdentity':
+            case 'getIdentiteAltaN3Entreprise':
                 return 'sirenRna';
             default:
                 return 'siren';

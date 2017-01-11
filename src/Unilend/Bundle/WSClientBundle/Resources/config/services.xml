@@ -39,8 +39,10 @@
             <argument>%euler.coverage_key%</argument>
             <argument>%euler.grading_key%</argument>
             <argument>%euler.account_key%</argument>
+            <argument>%euler.password%</argument>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
+            <argument type="service" id="jms_serializer"/>
         </service>
 
         <service id="unilend.ws_client.codinf_manager" class="Unilend\Bundle\WSClientBundle\Service\CodinfManager">
@@ -50,6 +52,7 @@
             <argument>%codinf.url%</argument>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
+            <argument type="service" id="jms_serializer"/>
         </service>
 
         <service id="unilend.ws_client.infolegale_manager" class="Unilend\Bundle\WSClientBundle\Service\InfolegaleManager">
@@ -57,6 +60,7 @@
             <argument>%infolegale.token%</argument>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
+            <argument type="service" id="jms_serializer"/>
         </service>
 
         <service id="unilend.ws_client.infogreffe_manager" class="Unilend\Bundle\WSClientBundle\Service\InfogreffeManager">
@@ -65,6 +69,7 @@
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
             <argument type="service" id="unilend.ws_client.soap_client.infogreffe"/>
+            <argument type="service" id="jms_serializer"/>
         </service>
 
         <service id="unilend.ws_client.altares_manager" class="Unilend\Bundle\WSClientBundle\Service\AltaresManager">
@@ -74,6 +79,7 @@
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
             <argument type="service" id="unilend.ws_client.soap_client.altares_identity"/>
             <argument type="service" id="unilend.ws_client.soap_client.altares_risque"/>
+            <argument type="service" id="jms_serializer"/>
         </service>
     </services>
 </container>

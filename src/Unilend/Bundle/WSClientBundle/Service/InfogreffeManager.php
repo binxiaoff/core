@@ -2,14 +2,16 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
+use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
 
 use SoapClient;
+use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 
 class InfogreffeManager
 {
     const PRIVILEGES_SECU_REGIMES_COMPLEMENT = '03';
-    const PRIVILEGES_TRESORE_PUBLIC          = '04';
+    const PRIVILEGES_TRESOR_PUBLIC           = '04';
 
     /** @var  string */
     private $login;
@@ -21,27 +23,31 @@ class InfogreffeManager
     private $callHistoryManager;
     /** @var \SoapClient */
     private $client;
+    /** @var Serializer */
+    private $serializer;
 
     /**
      * InfogreffeManager constructor.
-     * @param $login
-     * @param $password
+     * @param string $login
+     * @param string $password
      * @param LoggerInterface $logger
-     * @param SoapClient $client
      * @param CallHistoryManager $callHistoryManager
+     * @param SoapClient $client
+     * @param Serializer $serializer
      */
-    public function __construct($login, $password, LoggerInterface $logger, CallHistoryManager $callHistoryManager, SoapClient $client)
+    public function __construct($login, $password, LoggerInterface $logger, CallHistoryManager $callHistoryManager, SoapClient $client, Serializer $serializer)
     {
         $this->login              = $login;
         $this->password           = $password;
         $this->logger             = $logger;
         $this->callHistoryManager = $callHistoryManager;
         $this->client             = $client;
+        $this->serializer         = $serializer;
     }
 
     /**
      * @param $siren
-     * @return array
+     * @return array|CompanyIndebtedness
      */
     public function getIndebtedness($siren)
     {
@@ -52,14 +58,21 @@ class InfogreffeManager
         $request = $this->addRequestHeader($xml, 'PN', 'XL');
         $order   = $request->addChild('commande');
         $order->addChild('num_siren', $siren);
-        $order->addChild('type_inscription', self::PRIVILEGES_SECU_REGIMES_COMPLEMENT . self::PRIVILEGES_TRESORE_PUBLIC);
-
+        $order->addChild('type_inscription', self::PRIVILEGES_SECU_REGIMES_COMPLEMENT . self::PRIVILEGES_TRESOR_PUBLIC);
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
         /** @var callable $callBack */
         $callBack = $this->callHistoryManager->addResourceCallHistoryLog('infogreffe', __FUNCTION__, 'POST', $siren);
+
         try {
-            $this->client->__soapCall('getProduitsWebServicesXML', [$request->asXML()]);
+            $response = $this->client->__soapCall('getProduitsWebServicesXML', [$request->asXML()]);
+
+            if (preg_match('/(^\d{3}) (.*)/', $response, $matches)) {
+                if (isset($matches[1], $matches[2])) {
+                    return ['code' => $matches[1], 'message' => $matches[2]];
+                }
+            }
         } catch (\SoapFault $exception) {
-            $this->logger->warning('Calling infogreffe Indebtedness siren: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+            $this->logger->warning('Calling infogreffe Indebtedness siren: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
         }
         call_user_func($callBack);
 
@@ -70,13 +83,15 @@ class InfogreffeManager
             $indebtedness = $xmlResponse->xpath('//return');
 
             if (false !== $indebtedness) {
-                return $this->xml2array($indebtedness[0]);
+                $responseArray = $this->xml2array($indebtedness[0]);
+                $this->logger->info('Extracted Array: ' . json_encode($responseArray), $logContext);
+                return $this->serializer->deserialize($this->getSubscription_3_4($responseArray), CompanyIndebtedness::class, 'json');
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get response from Infogreffe Indebtedness ws. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+            $this->logger->error('Could not get response from Infogreffe Indebtedness ws. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
         }
 
-        return [];
+        return null;
     }
 
     /**
@@ -92,13 +107,13 @@ class InfogreffeManager
         $request = $this->addRequestHeader($xml, 'KB', 'T');
         $order   = $request->addChild('commande');
         $order->addChild('num_siren', $siren);
-
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
         /** @var callable $callBack */
         $callBack = $this->callHistoryManager->addResourceCallHistoryLog('infogreffe', __FUNCTION__, 'POST', $siren);
         try {
             $this->client->__soapCall('getProduitsWebServicesXML', [$request->asXML()]);
         } catch (\SoapFault $exception) {
-            $this->logger->warning('Calling infogreffe Indebtedness siren: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+            $this->logger->warning('Calling infogreffe Indebtedness siren: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
         }
         call_user_func($callBack);
 
@@ -112,7 +127,7 @@ class InfogreffeManager
                 return $this->xml2array($indebtedness[0]);
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get response from Infogreffe Indebtedness ws. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+            $this->logger->error('Could not get response from Infogreffe Indebtedness ws. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
         }
 
         return [];
@@ -147,7 +162,7 @@ class InfogreffeManager
      * @param mixed $xml
      * @return array
      */
-    function xml2array($xml)
+    private function xml2array($xml)
     {
         $result = [];
         foreach ((array) $xml as $key => $node) {
@@ -155,5 +170,41 @@ class InfogreffeManager
         }
 
         return $result;
+    }
+
+    /**
+     * @param array $data
+     * @return mixed|string
+     */
+    private function getSubscription_3_4(array $data)
+    {
+        $subscriptionList = [];
+
+        if (isset($data['etat'], $data['etat']['debiteur'])) {
+
+            if (array_key_exists('inscription_3', $data['etat']['debiteur'])) {
+                $subscriptionList['inscription_3'][] = $data['etat']['debiteur']['inscription_3'];
+            }
+
+            if (array_key_exists('inscription_4', $data['etat']['debiteur'])) {
+                $subscriptionList['inscription_4'][] = $data['etat']['debiteur']['inscription_4'];
+            }
+
+            if (false === empty($subscriptionList)) {
+                return json_encode($subscriptionList);
+            }
+
+            foreach ($data['etat']['debiteur'] as $debtor) {
+                if (is_array($debtor) && array_key_exists('inscription_3', $debtor)) {
+                    $subscriptionList['inscription_3'] = $debtor['inscription_3'];
+                }
+
+                if (is_array($debtor) && array_key_exists('inscription_4', $debtor)) {
+                    $subscriptionList['inscription_4'] = $debtor['inscription_4'];
+                }
+            }
+        }
+
+        return json_encode($subscriptionList);
     }
 }
