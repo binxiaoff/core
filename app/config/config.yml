@@ -84,6 +84,11 @@ doctrine:
             host: "%server1.memcache_host%"
             port: "%server1.memcache_port%"
             instance_class: Memcache
+        metadata_cache_driver:
+            type: memcache
+            host: "%server1.memcache_host%"
+            port: "%server1.memcache_port%"
+            instance_class: Memcache
 
 cache_adapter:
     providers:

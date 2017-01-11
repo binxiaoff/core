@@ -23,6 +23,7 @@ class WalletType
     const TAX_CONTRIBUTIONS_ADDITIONNELLES = 'tax_contributions_additionnelles';
     const TAX_PRELEVEMENTS_DE_SOLIDARITE   = 'tax_prelevements_de_solidarite';
     const TAX_CRDS                         = 'tax_crds';
+    const DEBT_COLLECTOR                   = 'debt_collector';
 
     /**
      * @var string

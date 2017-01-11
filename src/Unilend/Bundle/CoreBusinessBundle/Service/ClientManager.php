@@ -266,10 +266,8 @@ class ClientManager
         $currentPath = $request->getPathInfo();
         $token       = $this->tokenStorage->getToken();
 
-        if ($token) {
-            /** @var BaseUser $user */
-            $user = $token->getUser();
-            $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+        if ($token && $token->getUser() instanceof UserLender) {
+            $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($token->getUser()->getClientId());
             if (
                 $client && $this->isLender($client) && $client->getEtapeInscriptionPreteur() < Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
                 $redirectPath = $this->getSubscriptionStepRedirectRoute($client);

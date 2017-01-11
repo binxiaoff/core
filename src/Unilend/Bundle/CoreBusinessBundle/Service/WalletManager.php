@@ -40,14 +40,15 @@ class WalletManager
 
     /**
      * @param Operation $operation
+     * @param boolean   $virtual
      */
-    public function handle(Operation $operation)
+    public function handle(Operation $operation, $virtual)
     {
         $creditor = $operation->getWalletCreditor();
-        $this->credit($operation, $creditor);
+        $this->credit($operation, $creditor, $virtual);
 
         $debtor = $operation->getWalletDebtor();
-        $this->debit($operation, $debtor);
+        $this->debit($operation, $debtor, $virtual);
 
         if ($creditor instanceof Wallet) {
             $this->snap($creditor, $operation);
@@ -72,7 +73,7 @@ class WalletManager
         $this->entityManager->getConnection()->beginTransaction();
         try {
             if (-1 === bccomp($wallet->getAvailableBalance(), $amount)) {
-                throw new \DomainException('The available balance for wallet id : '.$wallet->getId().' must not be lower than zero');
+                throw new \DomainException('The available balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }
 
             $availableBalance = bcsub($wallet->getAvailableBalance(), $amount, 2);
@@ -102,13 +103,13 @@ class WalletManager
     {
         $transaction = null;
         if ($origin instanceof Bids) {
-           $transaction = $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
+            $transaction = $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
         }
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
             if (-1 === bccomp($wallet->getCommittedBalance(), $amount)) {
-                throw new \DomainException('The committed balance for wallet id : '.$wallet->getId().' must not be lower than zero');
+                throw new \DomainException('The committed balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }
 
             $availableBalance = bcadd($wallet->getAvailableBalance(), $amount, 2);
@@ -206,15 +207,16 @@ class WalletManager
     }
 
     /**
-     * @param Operation   $operation
-     * @param Wallet|null $creditor
+     * @param Operation $operation
+     * @param Wallet    $creditor
+     * @param boolean   $virtual
      */
-    private function credit(Operation $operation, Wallet $creditor = null)
+    private function credit(Operation $operation, Wallet $creditor, $virtual)
     {
         if ($creditor instanceof Wallet) {
             $balance = bcadd($creditor->getAvailableBalance(), $operation->getAmount(), 2);
-            if ($balance < 0) {
-                throw new \DomainException('The available balance for wallet id : '.$creditor->getId().' must not be lower than zero');
+            if (false === $virtual && $balance < 0) {
+                throw new \DomainException('The available balance for wallet id : ' . $creditor->getId() . ' must not be lower than zero');
             }
             $creditor->setAvailableBalance($balance);
 
@@ -223,24 +225,25 @@ class WalletManager
     }
 
     /**
-     * @param Operation   $operation
-     * @param Wallet|null $debtor
+     * @param Operation $operation
+     * @param Wallet    $debtor
+     * @param boolean   $virtual
      */
-    private function debit(Operation $operation, Wallet $debtor = null)
+    private function debit(Operation $operation, Wallet $debtor, $virtual)
     {
         if ($debtor instanceof Wallet) {
             switch ($operation->getType()->getLabel()) {
                 case OperationType::LENDER_LOAN :
                     $balance = bcsub($debtor->getCommittedBalance(), $operation->getAmount(), 2);
-                    if ($balance < 0) {
-                        throw new \DomainException('The committed balance for wallet id : '.$debtor->getId().'  must not be lower than zero');
+                    if (false === $virtual && $balance < 0) {
+                        throw new \DomainException('The committed balance for wallet id : ' . $debtor->getId() . '  must not be lower than zero');
                     }
                     $debtor->setCommittedBalance($balance);
                     break;
                 default :
                     $balance = bcsub($debtor->getAvailableBalance(), $operation->getAmount(), 2);
-                    if ($balance < 0) {
-                        throw new \DomainException('The available balance for wallet id : '.$debtor->getId().'  must not be lower than zero');
+                    if (false === $virtual && $balance < 0) {
+                        throw new \DomainException('The available balance for wallet id : ' . $debtor->getId() . '  must not be lower than zero');
                     }
 
                     if (OperationType::LENDER_WITHDRAW === $operation->getType()->getLabel()) {
@@ -252,12 +255,9 @@ class WalletManager
                         }
 
                         if (bcadd($operation->getAmount(), $promotionalAmountTotal, 2) > $debtor->getAvailableBalance()) {
-                            throw new \DomainException('The promotional offer for wallet id : '.$debtor->getId().'  cannot be withdraw');
+                            throw new \DomainException('The promotional offer for wallet id : ' . $debtor->getId() . '  cannot be withdraw');
                         }
                     }
-
-                    // todo: if unilend withdraw, check
-
                     $debtor->setAvailableBalance($balance);
                     break;
             }

@@ -64,8 +64,10 @@ class WalletCreationManager
     }
 
     /**
-     * @param Clients $client
+     * @param Clients    $client
      * @param WalletType $walletType
+     *
+     * @return Wallet
      */
     private function createBaseWallet(Clients $client, WalletType $walletType)
     {

@@ -121,7 +121,7 @@ EOF
                         }
 
                         if (isset($aRow['unilend_bienvenue'])) {
-                            $this->processWelcomeOffer($aRow, $transactions, $bank_unilend);
+                            $this->processWelcomeOffer($aRow);
                         } else {
                             $reception = new Receptions();
                             $reception->setRemb(0)
@@ -323,15 +323,13 @@ EOF
 
     /**
      * @param array $aRow
-     * @param \transactions $transactions
-     * @param \bank_unilend $bank_unilend
      */
-    private function processWelcomeOffer(array $aRow, \transactions $transactions, \bank_unilend $bank_unilend)
+    private function processWelcomeOffer(array $aRow)
     {
         $this->oLogger->info('Bank transfer welcome offer: ' . json_encode($aRow['unilend_bienvenue']), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         $amount = round(bcdiv($aRow['montant'], 100, 4), 2);
-        $this->getContainer()->get('unilend.service.operation_manager')->provisionUnilendWallet($amount);
+        $this->getContainer()->get('unilend.service.operation_manager')->provisionUnilendPromotionalWallet($amount);
     }
 
     /**

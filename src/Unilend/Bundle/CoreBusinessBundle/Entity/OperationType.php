@@ -18,11 +18,9 @@ class OperationType
     const BORROWER_WITHDRAW                         = 'borrower_withdraw';
     const CAPITAL_REPAYMENT                         = 'capital_repayment';
     const GROSS_INTEREST_REPAYMENT                  = 'gross_interest_repayment';
-    const LENDER_BID                                = 'lender_bid';
     const LENDER_LOAN                               = 'lender_loan';
     const LENDER_PROVISION                          = 'lender_provision';
     const LENDER_PROVISION_CANCEL                   = 'lender_provision_cancel';
-    const LENDER_REJECTED_BID                       = 'lender_rejected_bid';
     const LENDER_WITHDRAW                           = 'lender_withdraw';
     const LENDER_TRANSFER                           = 'lender_transfer';
     const TAX_CONTRIBUTIONS_ADDITIONNELLES          = 'tax_contributions_additionnelles';
@@ -41,12 +39,12 @@ class OperationType
     const TAX_RETENUES_A_LA_SOURCE_WITHDRAW         = 'tax_retenues_a_la_source_withdraw';
     const UNILEND_PROMOTIONAL_OPERATION             = 'unilend_promotional_operation';
     const UNILEND_PROMOTIONAL_OPERATION_CANCEL      = 'unilend_promotional_operation_cancel';
+    const UNILEND_PROMOTIONAL_OPERATION_PROVISION   = 'unilend_promotional_operation_provision';
     const UNILEND_PROVISION                         = 'unilend_provision';
     const UNILEND_WITHDRAW                          = 'unilend_withdraw';
-    const UNILEND_PROMOTIONAL_OPERATION_PROVISION   = 'unilend_promotional_operation_provision';
-    const COLLECTION_PROVISION                      = 'collection_provision';
-    const COLLECTION_REPAYMENT                      = 'collection_repayment';
     const COLLECTION_COMMISSION_PROVISION           = 'collection_commission_provision';
+    const COLLECTION_COMMISSION_BORROWER            = 'collection_commission_borrower';
+    const COLLECTION_COMMISSION_LENDER              = 'collection_commission_lender';
 
     /**
      * @var integer
