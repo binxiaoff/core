@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -40,15 +41,14 @@ class WalletManager
 
     /**
      * @param Operation $operation
-     * @param boolean   $virtual
      */
-    public function handle(Operation $operation, $virtual)
+    public function handle(Operation $operation)
     {
         $creditor = $operation->getWalletCreditor();
-        $this->credit($operation, $creditor, $virtual);
+        $this->credit($operation, $creditor);
 
         $debtor = $operation->getWalletDebtor();
-        $this->debit($operation, $debtor, $virtual);
+        $this->debit($operation, $debtor);
 
         if ($debtor instanceof Wallet) {
             $this->snap($debtor, $operation);
@@ -209,13 +209,12 @@ class WalletManager
     /**
      * @param Operation   $operation
      * @param Wallet|null $creditor
-     * @param boolean     $virtual
      */
-    private function credit(Operation $operation, Wallet $creditor = null, $virtual)
+    private function credit(Operation $operation, Wallet $creditor = null)
     {
         if ($creditor instanceof Wallet) {
             $balance = bcadd($creditor->getAvailableBalance(), $operation->getAmount(), 2);
-            if (false === $virtual && $balance < 0) {
+            if (WalletType::DEBT_COLLECTOR !== $creditor->getIdType()->getLabel() && $balance < 0) {
                 throw new \DomainException('The available balance for wallet id : ' . $creditor->getId() . ' must not be lower than zero');
             }
             $creditor->setAvailableBalance($balance);
@@ -227,22 +226,21 @@ class WalletManager
     /**
      * @param Operation   $operation
      * @param Wallet|null $debtor
-     * @param boolean     $virtual
      */
-    private function debit(Operation $operation, Wallet $debtor = null, $virtual)
+    private function debit(Operation $operation, Wallet $debtor = null)
     {
         if ($debtor instanceof Wallet) {
             switch ($operation->getType()->getLabel()) {
                 case OperationType::LENDER_LOAN :
                     $balance = bcsub($debtor->getCommittedBalance(), $operation->getAmount(), 2);
-                    if (false === $virtual && $balance < 0) {
+                    if (WalletType::DEBT_COLLECTOR !== $debtor->getIdType()->getLabel() && $balance < 0) {
                         throw new \DomainException('The committed balance for wallet id : ' . $debtor->getId() . '  must not be lower than zero');
                     }
                     $debtor->setCommittedBalance($balance);
                     break;
                 default :
                     $balance = bcsub($debtor->getAvailableBalance(), $operation->getAmount(), 2);
-                    if (false === $virtual && $balance < 0) {
+                    if (WalletType::DEBT_COLLECTOR !== $debtor->getIdType()->getLabel() && $balance < 0) {
                         throw new \DomainException('The available balance for wallet id : ' . $debtor->getId() . '  must not be lower than zero');
                     }
 

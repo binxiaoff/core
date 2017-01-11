@@ -76,7 +76,7 @@ class OperationManager
      * @return bool
      * @throws \Exception
      */
-    private function newOperation($amount, OperationType $type, Wallet $debtor = null, Wallet $creditor = null, $parameters = [], $virtual = false)
+    private function newOperation($amount, OperationType $type, Wallet $debtor = null, Wallet $creditor = null, $parameters = [])
     {
         if (bccomp('0', $amount, 2) >= 0) {
             return true;
@@ -130,7 +130,7 @@ class OperationManager
             }
             $this->em->persist($operation);
 
-            $this->walletManager->handle($operation, $virtual);
+            $this->walletManager->handle($operation);
 
             $this->em->flush();
 
@@ -1046,7 +1046,7 @@ class OperationManager
         }
         $amount        = round(bcdiv($reception->getMontant(), 100, 4), 2);
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_PROVISION]);
-        $this->newOperation($commission, $operationType, $collector, $borrower, $reception, true);
+        $this->newOperation($commission, $operationType, $collector, $borrower, $reception);
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
         $this->newOperation($amount, $operationType, null, $borrower, $reception);
 
@@ -1081,7 +1081,7 @@ class OperationManager
     public function payCollectionCommissionByLender(Wallet $lender, Wallet $collector, $commission)
     {
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_LENDER]);
-        $this->newOperation($commission, $operationType, $lender, $collector, [], true);
+        $this->newOperation($commission, $operationType, $lender, $collector);
     }
 
     /**
@@ -1092,7 +1092,7 @@ class OperationManager
     public function payCollectionCommissionByBorrower(Wallet $borrower, Wallet $collector, $commission)
     {
         $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_BORROWER]);
-        $this->newOperation($commission, $operationType, $borrower, $collector, [], true);
+        $this->newOperation($commission, $operationType, $borrower, $collector);
     }
 
     /**

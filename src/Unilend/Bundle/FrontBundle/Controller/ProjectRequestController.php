@@ -305,30 +305,32 @@ class ProjectRequestController extends Controller
                     $exception->getMessage(),
                     ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->getSiren()]
                 );
+                if ($this->getParameter('kernel.environment') === 'prod') {
+                    $payload = new ChatPostMessagePayload();
+                    $payload->setChannel('#it-monitoring');
+                    $payload->setText("Altares is down  :skull_and_crossbones:\n> " . $exception->getMessage());
+                    $payload->setUsername('Altares');
+                    $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
+                    $payload->setAsUser(false);
 
-                $payload = new ChatPostMessagePayload();
-                $payload->setChannel('#it-monitoring');
-                $payload->setText("Altares is down  :skull_and_crossbones:\n> " . $exception->getMessage());
-                $payload->setUsername('Altares');
-                $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
-                $payload->setAsUser(false);
-
-                $this->get('cl_slack.api_client')->send($payload);
+                    $this->get('cl_slack.api_client')->send($payload);
+                }
             }
         }
 
         if (! $altaresStatus) {
             $settingsAltaresStatus->value = '1';
             $settingsAltaresStatus->update();
+            if ($this->getParameter('kernel.environment') === 'prod') {
+                $payload = new ChatPostMessagePayload();
+                $payload->setChannel('#it-monitoring');
+                $payload->setText('Altares is up  :white_check_mark:');
+                $payload->setUsername('Altares');
+                $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
+                $payload->setAsUser(false);
 
-            $payload = new ChatPostMessagePayload();
-            $payload->setChannel('#it-monitoring');
-            $payload->setText('Altares is up  :white_check_mark:');
-            $payload->setUsername('Altares');
-            $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
-            $payload->setAsUser(false);
-
-            $this->get('cl_slack.api_client')->send($payload);
+                $this->get('cl_slack.api_client')->send($payload);
+            }
         }
 
         return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);

@@ -103,7 +103,7 @@ class loans extends loans_crud
             ['projectId' => \PDO::PARAM_INT, 'status' => \PDO::PARAM_INT],
             new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__))
         );
-        $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+        $result = $statement->fetchColumn();
         $statement->closeCursor();
 
         return (int) $result[0];

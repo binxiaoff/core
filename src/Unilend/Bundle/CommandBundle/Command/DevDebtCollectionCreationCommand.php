@@ -21,7 +21,7 @@ class DevDebtCollectionCreationCommand extends ContainerAwareCommand
     {
         $this
             ->setName('unilend:dev_tools:debt_collection:create')
-            ->setDescription('Retake the Altares result for the given projects')
+            ->setDescription('Import manually the debt collection repayment')
             ->addArgument('action', InputArgument::REQUIRED, 'Which action do you want to take?')
             ->addOption('reception-id', null, InputOption::VALUE_OPTIONAL, 'Use with the action "provision". The reception id of the provision.')
             ->addOption('project-id', null, InputOption::VALUE_OPTIONAL, 'Use with the action "provision" and "repayment". The project id of the debt collection.')
