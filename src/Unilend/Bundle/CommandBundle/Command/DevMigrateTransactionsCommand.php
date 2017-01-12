@@ -190,7 +190,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             'bidId'            => empty($bid['id_bid']) ? null : $bid['id_bid'],
             'loanId'           => empty($operation['id_loan']) ? empty($loan['id_loan']) ? null : $loan['id_loan'] : $operation['id_loan'],
             'autobidId'        => empty($bid['id_autobid']) ? null : $bid['id_autobid'],
-            'projectId'        => empty($operation['id_projet'])? empty($bid['id_project']) ? empty($loan['id_project']) ? null : $loan['id_project'] : $bid['id_project'] : $operation['id_project'],
+            'projectId'        => empty($operation['id_project'])? (empty($bid['id_project']) ? (empty($loan['id_project']) ? null : $loan['id_project']) : $bid['id_project']) : $operation['id_project'],
             'added'            => isset($operation['added']) ? $operation['added'] : (isset($bid['added']) ? $bid['added'] : $loan['added'])
         ]);
     }
