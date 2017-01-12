@@ -188,9 +188,9 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             'committedBalance' => $wallet['committed_balance'],
             'operationId'      => isset($operation['id']) ? $operation['id'] : null,
             'bidId'            => empty($bid['id_bid']) ? null : $bid['id_bid'],
-            'loanId'           => empty($loan['id_loan']) ? null : $loan['id_loan'],
+            'loanId'           => empty($operation['id_loan']) ? empty($loan['id_loan']) ? null : $loan['id_loan'] : $operation['id_loan'],
             'autobidId'        => empty($bid['id_autobid']) ? null : $bid['id_autobid'],
-            'projectId'        => empty($bid['id_project']) ? empty($loan['id_project']) ? null : $loan['id_project'] : $bid['id_project'],
+            'projectId'        => empty($operation['id_projet'])? empty($bid['id_project']) ? empty($loan['id_project']) ? null : $loan['id_project'] : $bid['id_project'] : $operation['id_project'],
             'added'            => isset($operation['added']) ? $operation['added'] : (isset($bid['added']) ? $bid['added'] : $loan['added'])
         ]);
     }
@@ -259,7 +259,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             $this->updateWalletBalance($lenderWallet, $bid);
             $this->saveWalletBalanceHistory($lenderWallet, null, $bid);
         } else {
-            $this->getContainer()->get('logger')->error('Bid could not be found for transaction : ' . $transaction['id_transaction']);
+            $this->getContainer()->get('monolog.logger.migration')->error('Bid could not be found for transaction : ' . $transaction['id_transaction']);
         }
     }
 
@@ -314,7 +314,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $wallet = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         if (empty($wallet)){
-            $this->getContainer()->get('logger.migration')->error('Could not find wallet for client ' . $clientId);
+            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for client ' . $clientId);
             return false;
         }
 
@@ -627,7 +627,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                         $walletLabel          = 'tax_retenues_a_la_source';
                         break;
                     default :
-                        $this->getContainer()->get('logger.migration')->error('Unknown tax_type for transaction : ' . $transaction['id_transaction']);
+                        $this->getContainer()->get('monolog.logger.migration')->error('Unknown tax_type for transaction : ' . $transaction['id_transaction']);
                         return;
                 }
 
@@ -759,7 +759,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         unset($taxWallet, $operation);
 
         if (0 < abs($totalTaxAmount)) {
-            $this->getContainer()->get('logger.migration')->error('Monthly tax amounts do not match for transaction : ' . $transaction['id_transaction'] . ' - difference of ' . $totalTaxAmount);
+            $this->getContainer()->get('monolog.logger.migration')->error('Monthly tax amounts do not match for transaction : ' . $transaction['id_transaction'] . ' - difference of ' . $totalTaxAmount);
         }
     }
 
@@ -791,23 +791,19 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         if (0 > $transaction['montant']) {
             $debtorWallet   = $this->getWallet($transaction['id_transaction']);
             $creditorWallet = $this->getWallet($transfer->id_client_receiver);
-        } else {
-            $debtorWallet   = $this->getWallet($transfer->id_client_origin);
-            $creditorWallet = $this->getWallet($transaction['id_transaction']);
+            $operation['id_type']              = $this->getOperationType('lender_transfer');
+            $operation['id_wallet_debtor']     = $debtorWallet['id'];
+            $operation['id_wallet_creditor']   = $creditorWallet['id'];
+            $operation['amount']               = $this->calculateOperationAmount($transaction['montant']);
+            $operation['id_transfer']          = $transfer->id_transfer;
+            $operation['added']                = $transaction['date_transaction'];
+            $operation['id']                   = $this->newOperation($operation);
+
+            $this->debitAvailableBalance($debtorWallet, $operation);
+            $this->saveWalletBalanceHistory($debtorWallet, $operation);
+            $this->creditAvailableBalance($creditorWallet, $operation);
+            $this->saveWalletBalanceHistory($creditorWallet, $operation);
         }
-
-        $operation['id_type']              = $this->getOperationType('lender_transfer');
-        $operation['id_wallet_debtor']     = $debtorWallet['id'];
-        $operation['id_wallet_creditor']   = $creditorWallet['id'];
-        $operation['amount']               = $this->calculateOperationAmount($transaction['montant']);
-        $operation['id_transfer']          = $transfer->id_transfer;
-        $operation['added']                = $transaction['date_transaction'];
-        $operation['id']                   = $this->newOperation($operation);
-
-        $this->debitAvailableBalance($debtorWallet, $operation);
-        $this->saveWalletBalanceHistory($debtorWallet, $operation);
-        $this->creditAvailableBalance($creditorWallet, $operation);
-        $this->saveWalletBalanceHistory($creditorWallet, $operation);
     }
 
     private function migrateBorrowerProvisionCancel(array $transaction)
@@ -869,7 +865,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['id_type']             = $this->getOperationType('collection_commission_provision');
         $operation['id_wallet_debtor']    = $collectorWallet['id'];
         $operation['id_wallet_creditor']  = $borrowerWallet['id'];
-        $operation['amount']              = $this->getRecoveryCommissionAmount($transaction);
+        $operation['amount']              = $this->calculateOperationAmount($this->getRecoveryCommissionAmount($transaction));
         $operation['added']               = $transaction['date_transaction'];
         $operation['id']                  = $this->newOperation($operation);
 
@@ -883,13 +879,15 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
     private function migrateRecoveryToLender(array $transaction)
     {
         $filePrefix = $transaction['id_project'] . '_' . substr($transaction['date_transaction'], 0, 10);
-        $recoveryDetails = $this->getRecoveryFile($filePrefix);
+        $recoveryDetails = $this->getRecoveryDetails($filePrefix);
+
+        $netTransactionAmount = $this->calculateOperationAmount($transaction['montant']);
 
         $transaction['montant'] = bcmul($recoveryDetails[$transaction['id_client']]['gross_amount'], 100);
         $this->migrateCapitalRepayments($transaction);
 
         $collectorWallet = $this->getWalletByLabel('debt_collector');
-        $lenderWallet  = $this->getWallet($transaction['id_client']);
+        $lenderWallet    = $this->getWallet($transaction['id_client']);
 
         $operation['id_type']             = $this->getOperationType('collection_commission_lender');
         $operation['id_wallet_debtor']    = $lenderWallet['id'];
@@ -902,32 +900,21 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->saveWalletBalanceHistory($lenderWallet, $operation);
         $this->creditAvailableBalance($collectorWallet, $operation);
         $this->saveWalletBalanceHistory($collectorWallet, $operation);
+
+        if (bcsub($recoveryDetails[$transaction['id_client']]['gross_amount'], $recoveryDetails[$transaction['id_client']]['commission_amount'], 2) != $netTransactionAmount) {
+            $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment amounts do not match: ' . $recoveryDetails[$transaction['id_client']]['gross_amount'] . ' - ' .  $recoveryDetails[$transaction['id_client']]['commission_amount'] . ' != ' . $netTransactionAmount . PHP_EOL . 'clientid = ' . $transaction['id_client'] . ' - project : ' . $transaction['id_project'] . ' - date : ' . $transaction['date_transaction'] );
+        }
     }
 
 
-    private function getRecoveryFile($filePrefix)
+    private function getRecoveryDetails($filePrefix)
     {
         $cachePool = $this->getContainer()->get('memcache.default');
 
         $cachedItem = $cachePool->getItem('recovery_' . $filePrefix);
         if (false === $cachedItem->isHit()) {
-
-            $recoveryDetails = [];
-            $fileName        = $this->getContainer()->getParameter('path.protected') . 'import/' . $filePrefix . '_recouvrement.csv';
-            if (false === file_exists($fileName)) {
-                throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv not found');
-            }
-            if (false === ($handle = fopen($fileName, 'r'))) {
-                throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv cannot be opened');
-            }
-
-            while (($row = fgetcsv($handle, 0, ';')) !== false) {
-                $clientId                                        = $row[0];
-                $recoveryDetails[$clientId]['gross_amount']      = str_replace(',', '.', $row[1]);
-                $recoveryDetails[$clientId]['commission_amount'] = str_replace(',', '.', $row[2]);
-            }
-            fclose($handle);
-            $cachedItem->set($recoveryDetails)->expiresAfter(CacheKeys::LONG_TIME);
+            $recoveryDetails = $this->getRecoveryFileContents($filePrefix);
+            $cachedItem->set($recoveryDetails)->expiresAfter(CacheKeys::SHORT_TIME);
             $cachePool->save($cachedItem);
 
             return $recoveryDetails;
@@ -936,72 +923,93 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         }
     }
 
+    private function getRecoveryFileContents($filePrefix)
+    {
+        $recoveryDetails = [];
+        $fileName        = $this->getContainer()->getParameter('path.protected') . 'import/soldes_recouvrement/' . $filePrefix . '_recouvrement.csv';
+        if (false === file_exists($fileName)) {
+            throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/soldes_recouvrement/' . $filePrefix . '_recouvrement.csv not found');
+        }
+        if (false === ($handle = fopen($fileName, 'r'))) {
+            throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/soldes_recouvrement/' . $filePrefix . '_recouvrement.csv cannot be opened');
+        }
+
+        while (($row = fgetcsv($handle, 0, ';')) !== false) {
+            $clientId                                        = $row[0];
+            $recoveryDetails[$clientId]['gross_amount']      = str_replace(',', '.', $row[1]);
+            $recoveryDetails[$clientId]['commission_amount'] = str_replace(',', '.', $row[2]);
+        }
+        fclose($handle);
+
+        return $recoveryDetails;
+    }
+
 
     private function getRecoveryCommissionAmount(array $transaction)
     {
         switch ($transaction['id_project']) {
             case 1124:
-                switch($transaction['date']) {
-                    case '2016-03-09':
-                        return bcmul(62.32, 100); //TODO ask Bin if string is better
+                switch(substr($transaction['date_transaction'], 0, 10)) {
+                    case '2016-03-08':
+                        return bcmul(62.32, 100);
                     case '2016-03-29':
                         return bcmul(382.10, 100);
-                    case '2016-05-14':
-                        return bcmul(366.24, 100);
-                    case '2016-10-27':
+                    case '2016-05-17':
+                    case '2016-06-14':
+                    case '2016-10-07':
                         return bcmul(366.24, 100);
                     default:
-                        $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                        $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
                         break;
                 }
                 break;
             case 2900:
-                switch($transaction['date']){
+                switch(substr($transaction['date_transaction'], 0, 10)){
                     case '2016-03-29':
                         return bcmul(1084.25, 100);
-                    case '2016-10-27':
+                    case '2016-10-07':
                         return bcmul(5421.61, 100);
                     default:
-                        $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                        $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
                         break;
                 }
                 break;
             case 3013:
-                switch($transaction['date']){
-                    case '2016-03-09':
+                switch(substr($transaction['date_transaction'], 0, 10)){
+                    case '2016-03-08':
                         return bcmul(343.20, 100);
                     case '2016-03-29':
                         return bcmul(117.4, 100);
-                    case '2016-07-27':
+                    case '2016-07-26':
                         return bcmul(156.08, 100);
                     case '2016-08-12':
-                        return bcmul(78.15, 100);
                     case '2016-10-27':
                         return bcmul(78.15, 100);
                     default:
-                        $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                        $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
                         break;
                 }
                 break;
             case 8544:
-                switch($transaction['date']) {
-                    case '2016-07-27':
+                switch(substr($transaction['date_transaction'], 0, 10)) {
+                    case '2016-07-26':
                         return bcmul(194.08, 100);
                     case '2016-12-09':
                         return bcmul(583.91, 100);
                     default:
-                        $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                        $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
                         break;
                 }
+                break;
             case 9386:
-                if ($transaction['date'] == '2016-10-27') {
+                if (substr($transaction['date_transaction'], 0, 10) == '2016-10-27') {
                     return bcmul(946.31, 100);
                 } else {
-                    $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                    $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
                 }
                 break;
             default:
-                $this->getContainer()->get('logger')->error('Recovery payment could not be found for project : ' . $transaction['id_project']);
+                $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment could not be found for project : ' . $transaction['id_project']);
                 break;
         }
 
