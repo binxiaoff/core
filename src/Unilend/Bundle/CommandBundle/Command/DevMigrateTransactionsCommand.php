@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Service\LoanManager;
+use Unilend\librairies\CacheKeys;
 
 class DevMigrateTransactionsCommand extends ContainerAwareCommand
 {
@@ -60,21 +61,26 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                         $this->migrateWelcomeOfferCancellation($transaction);
                         break;
                     case \transactions_types::TYPE_LENDER_WITHDRAWAL:
+                    case \transactions_types::TYPE_LENDER_REGULATION:
                         $this->migrateLenderWithdrawal($transaction);
                         break;
                     case \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL:
                     case \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT:
-                    case \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT:
                         $this->migrateCapitalRepayments($transaction);
                         break;
+                    case \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT:
+                        $this->migrateRecoveryToLender($transaction);
                     case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
                         $this->migrateInterestRepayment($transaction);
                         break;
                     case \transactions_types::TYPE_BORROWER_REPAYMENT:
                     case \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT:
                     case \transactions_types::TYPE_REGULATION_BANK_TRANSFER:
+                        $this->migrateBorrowerRepayment($transaction);
+                        break;
                     case \transactions_types::TYPE_RECOVERY_BANK_TRANSFER:
                         $this->migrateBorrowerRepayment($transaction);
+                        $this->migrateRecoveryCommissionToBorrower($transaction);
                         break;
                     case \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT:
                         $this->createLoans($transaction);
@@ -88,15 +94,16 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                         $this->migrateUnilendWithdrawal($transaction);
                         break;
                     case \transactions_types::TYPE_LENDER_BALANCE_TRANSFER:
-                        $this->migrateBalanceTransfer($transaction); //TODO
+                        $this->migrateBalanceTransfer($transaction);
                         break;
                     case \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION:
                         $this->migrateBorrowerProvisionCancel($transaction);
                         break;
+                    case \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER:
+                        $this->migrateWelcomeOfferProvision($transaction);
+                        break;
                     case \transactions_types::TYPE_UNILEND_REPAYMENT:
                     case \transactions_types::TYPE_REGULATION_COMMISSION:
-                    case \transactions_types::TYPE_LENDER_REGULATION:
-                    case \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER:
                         'no migration necessary';
                         break;
                     default:
@@ -153,13 +160,6 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->updateWalletBalance($wallet, $operation);
     }
 
-    private function creditCommittedBalance(array &$wallet, array $operation)
-    {
-        $balance                     = bcadd($wallet['committed_balance'], $operation['amount'], 2);
-        $wallet['committed_balance'] = $balance;
-        $this->updateWalletBalance($wallet, $operation);
-    }
-
     private function creditAvailableBalance(array &$wallet, array $operation)
     {
         $balance                     = bcadd($wallet['available_balance'], $operation['amount'], 2);
@@ -169,31 +169,29 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function updateWalletBalance(array $wallet, array $operation)
     {
-        $query = 'UPDATE wallet SET available_balance = :availableBalance, committed_balance = :committedBalance, updated = :added WHERE id = :walletId';
+        $query = 'UPDATE wallet SET available_balance = :availableBalance, committed_balance = :committedBalance, updated = :updated WHERE id = :walletId';
         $this->dataBaseConnection->executeQuery($query, [
             'availableBalance' => $wallet['available_balance'],
             'committedBalance' => $wallet['committed_balance'],
-            'added'            => $operation['added'],
+            'updated'          => $operation['added'],
             'walletId'         => $wallet['id']
         ]);
     }
 
-    private function saveWalletBalanceHistory(
-        array &$wallet,
-        array $operation = null,
-        array $bid = null,
-        array $loan = null
-    ) {
-        $query = 'INSERT INTO wallet_balance_history (id_wallet, available_balance, committed_balance, id_operation, id_bid, id_loan, added) 
-                          VALUES (:walletId, :availableBalance, :committedBalance, :operationId, :bidId, :loanId, :added)';
+    private function saveWalletBalanceHistory(array &$wallet, array $operation = null, array $bid = null, array $loan = null)
+    {
+        $query = 'INSERT INTO wallet_balance_history (id_wallet, available_balance, committed_balance, id_operation, id_bid, id_loan, id_autobid, id_project, added) 
+                          VALUES (:walletId, :availableBalance, :committedBalance, :operationId, :bidId, :loanId, :autobidId, :projectId, :added)';
         $this->dataBaseConnection->executeQuery($query, [
-            'walletId' => $wallet['id'],
+            'walletId'         => $wallet['id'],
             'availableBalance' => $wallet['available_balance'],
             'committedBalance' => $wallet['committed_balance'],
-            'operationId' => isset($operation['id']) ? $operation['id'] : null,
-            'bidId' => (false === empty($bid['id_bid'])) ? $bid['id_bid'] : null,
-            'loanId' => (false === empty($loan['id_loan'])) ? $loan['id_loan'] : null,
-            'added' => isset($operation['added']) ? $operation['added'] : (isset($bid['added']) ? $bid['added'] : $loan['added'])
+            'operationId'      => isset($operation['id']) ? $operation['id'] : null,
+            'bidId'            => empty($bid['id_bid']) ? null : $bid['id_bid'],
+            'loanId'           => empty($loan['id_loan']) ? null : $loan['id_loan'],
+            'autobidId'        => empty($bid['id_autobid']) ? null : $bid['id_autobid'],
+            'projectId'        => empty($bid['id_project']) ? empty($loan['id_project']) ? null : $loan['id_project'] : $bid['id_project'],
+            'added'            => isset($operation['added']) ? $operation['added'] : (isset($bid['added']) ? $bid['added'] : $loan['added'])
         ]);
     }
 
@@ -212,11 +210,11 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             $this->migratePayline($transaction, $lenderWallet);
         }
 
-        $operation['id_type']             = 1;
+        $operation['id_type']             = $this->getOperationType('lender_provision');
         $operation['id_wallet_creditor']  = $lenderWallet['id'];
-        $operation['amount']              = round(bcdiv($transaction['montant'], 100, 4), 2);
-        $operation['id_backpayline']      = (false === empty($transaction['id_backpayline']) ? $transaction['id_backpayline'] : null);
-        $operation['id_wire_transfer_in'] = (false === empty($transaction['id_virement']) ? $transaction['id_virement'] : null);
+        $operation['amount']              = $this->calculateOperationAmount($transaction['montant']);
+        $operation['id_backpayline']      = empty($transaction['id_backpayline']) ? null : $transaction['id_backpayline'];
+        $operation['id_wire_transfer_in'] = empty($transaction['id_virement']) ? null : $transaction['id_virement'];
         $operation['added']               = $transaction['date_transaction'];
         $operation['id']                  = $this->newOperation($operation);
 
@@ -235,32 +233,6 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         }
     }
 
-    private function migrateRefusedLoan($clientId, $loanId)
-    {
-        /** @var \loans $loanEntity */
-        $loanEntity = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('loans');
-
-        if ($loanEntity->get($loanId)){
-            $borrowerWallet = $this->getBorrowerWallet($loanEntity->id_project);
-            $lenderWallet   = $this->getWallet($clientId);
-
-            $operation['id_type']            = 5;
-            $operation['id_wallet_creditor'] = $lenderWallet['id'];
-            $operation['id_wallet_debtor']   = $borrowerWallet['id'];
-            $operation['id_loan']            = $loanEntity->id_loan;
-            $operation['id_project']         = $loanEntity->id_project;
-            $operation['amount']             = abs(round(bcdiv($loanEntity->amount, 100, 4), 2));
-            $operation['added']              = $loanEntity->updated;
-            $operation['id']                 = $this->newOperation($operation);
-
-            $this->debitCommittedBalance($borrowerWallet, $operation);
-            $this->saveWalletBalanceHistory($borrowerWallet, $operation);
-
-            $this->creditAvailableBalance($lenderWallet, $operation);
-            $this->saveWalletBalanceHistory($lenderWallet, $operation);
-        }
-    }
-
     private function migrateBid(array $transaction)
     {
         /** @var \wallets_lines $walletLines */
@@ -276,7 +248,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
             $bid['id_bid'] = $bidEntity->id_bid;
             $bid['added']  = $bidEntity->added;
-            $amount        = abs(round(bcdiv($transaction['montant'], 100, 4), 2));
+            $amount        = $this->calculateOperationAmount($transaction['montant']);
 
             $availableBalance = bcsub($lenderWallet['available_balance'], $amount, 2);
             $committedBalance = bcadd($lenderWallet['committed_balance'], $amount, 2);
@@ -307,12 +279,12 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         $borrowerWallet = $this->getBorrowerWallet($loan['id_project']);
 
-        $operation['id_type']            = 4;
+        $operation['id_type']            = $this->getOperationType('lender_loan');
         $operation['id_wallet_creditor'] = $borrowerWallet['id'];
         $operation['id_wallet_debtor']   = $lenderWallet['id'];
         $operation['id_loan']            = $loan['id_loan'];
         $operation['id_project']         = $loan['id_project'];
-        $operation['amount']             = abs(round(bcdiv($loan['amount'], 100, 4), 2));
+        $operation['amount']             = $this->calculateOperationAmount($loan['amount']);
         $operation['added']              = $transaction['added'];
         $operation['id']                 = $this->newOperation($operation);
 
@@ -342,19 +314,11 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $wallet = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         if (empty($wallet)){
-            $this->getContainer()->get('logger')->error('Could not find wallet for client ' . $clientId);
+            $this->getContainer()->get('logger.migration')->error('Could not find wallet for client ' . $clientId);
             return false;
         }
 
         return $wallet[0];
-    }
-
-    private function getUnilendWallet()
-    {
-        $query     = 'SELECT * FROM wallet where id_type = 3';
-        $statement = $this->dataBaseConnection->executeQuery($query);
-
-        return $statement->fetchAll(\PDO::FETCH_ASSOC)[0];
     }
 
     private function migrateWelcomeOffer(array $transaction)
@@ -365,21 +329,21 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             return;
         }
 
-        $unilendWallet = $this->getUnilendWallet();
+        $promotionWallet = $this->getWalletByLabel('unilend_promotional_operation');
 
-        $operation['id_type']            = 27;
+        $operation['id_type']            = $this->getOperationType('unilend_promotional_operation');
         $operation['id_wallet_creditor'] = $clientWallet['id'];
-        $operation['id_wallet_debtor']   = $unilendWallet['id'];
-        $operation['amount']             = round(bcdiv($transaction['montant'], 100, 4), 2);
+        $operation['id_wallet_debtor']   = $promotionWallet['id'];
+        $operation['amount']             = $this->calculateOperationAmount($transaction['montant']);
         $operation['id_welcome_offer']   = $transaction['id_offre_bienvenue_detail'];
         $operation['added']              = $transaction['date_transaction'];
         $operation['id']                 = $this->newOperation($operation);
 
+        $this->debitAvailableBalance($promotionWallet, $operation);
+        $this->saveWalletBalanceHistory($promotionWallet, $operation);
+
         $this->creditAvailableBalance($clientWallet, $operation);
         $this->saveWalletBalanceHistory($clientWallet, $operation);
-
-        $this->debitAvailableBalance($unilendWallet, $operation);
-        $this->saveWalletBalanceHistory($unilendWallet, $operation);
     }
 
     private function migrateWelcomeOfferCancellation(array $transaction)
@@ -389,20 +353,22 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             return;
         }
 
-        $unilendWallet = $this->getUnilendWallet();
+        $promotionWallet = $this->getWalletByLabel('unilend_promotional_operation');
 
-        $operation['id_type']            = 28;
+        $operation['id_type']            = $this->getOperationType('unilend_promotional_operation_cancel');
         $operation['id_wallet_debtor']   = $clientWallet['id'];
-        $operation['id_wallet_creditor'] = $unilendWallet['id'];
-        $operation['amount']             = abs(round(bcdiv($transaction['montant'], 100, 4), 2));
+        $operation['id_wallet_creditor'] = $promotionWallet['id'];
+        $operation['amount']             = $this->calculateOperationAmount($transaction['montant']);
         $operation['id_welcome_offer']   = $transaction['id_offre_bienvenue_detail'];
         $operation['added']              = $transaction['date_transaction'];
         $operation['id']                 = $this->newOperation($operation);
 
-        $this->creditAvailableBalance($unilendWallet, $operation);
-        $this->saveWalletBalanceHistory($unilendWallet, $operation);
         $this->debitAvailableBalance($clientWallet, $operation);
         $this->saveWalletBalanceHistory($clientWallet, $operation);
+
+        $this->creditAvailableBalance($promotionWallet, $operation);
+        $this->saveWalletBalanceHistory($promotionWallet, $operation);
+
     }
 
     private function migrateLenderWithdrawal(array $transaction)
@@ -416,10 +382,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $wireTransferOut = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('virements');
         $wireTransferOut->get($transaction['id_transaction'], 'id_transaction');
 
-        $operation['id_type']              = 3;
+        $operation['id_type']              = $this->getOperationType('lender_withdraw');
         $operation['id_wallet_debtor']     = $wallet['id'];
-        $operation['amount']               = abs(round(bcdiv($transaction['montant'], 100, 4), 2));
-        $operation['id_wire_transfer_out'] = false === empty($wireTransferOut->id_virement) ? $wireTransferOut->id_virement :  null;
+        $operation['amount']               = $this->calculateOperationAmount($transaction['montant']);
+        $operation['id_wire_transfer_out'] = empty($wireTransferOut->id_virement) ? null : $wireTransferOut->id_virement;
         $operation['added']                = $transaction['date_transaction'];
         $operation['id']                   = $this->newOperation($operation);
 
@@ -435,7 +401,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             return;
         }
 
-        $amount                            = abs(round(bcdiv($transaction['montant'], 100, 4), 2));
+        $amount                            = $this->calculateOperationAmount($transaction['montant']);
         $availableBalance                  = bcadd($lenderWallet['available_balance'], $amount, 2);
         $committedBalance                  = bcsub($lenderWallet['committed_balance'], $amount, 2);
         $lenderWallet['available_balance'] = $availableBalance;
@@ -461,7 +427,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             $bids->get($walletLines->id_bid_remb);
         }
 
-        $bid['id']    = (false === empty($bids->id_bid)) ? $bids->id_bid : null;
+        $bid['id']    = empty($bids->id_bid) ? null : $bids->id_bid;
         $bid['added'] = $transaction['added'];
 
         $this->updateWalletBalance($lenderWallet, $transaction);
@@ -487,20 +453,20 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         $borrowerWallet = $this->getBorrowerWallet($idProject);
 
-        $operation['id_type']               = 11;
+        $operation['id_type']               = $this->getOperationType('capital_repayment');
         $operation['id_wallet_creditor']    = $lenderWallet['id'];
         $operation['id_wallet_debtor']      = $borrowerWallet['id'];
-        $operation['id_repayment_schedule'] = (false === empty($transaction['id_echeancier'])) ? $transaction['id_echeancier'] : null;
+        $operation['id_repayment_schedule'] = empty($transaction['id_echeancier']) ? null: $transaction['id_echeancier'];
         $operation['id_project']            = $idProject;
-        $operation['amount']                = round(bcdiv($transaction['montant'], 100, 4), 2);
+        $operation['amount']                = $this->calculateOperationAmount($transaction['montant']);
         $operation['added']                 = $transaction['date_transaction'];
         $operation['id']                    = $this->newOperation($operation);
 
-        $this->creditAvailableBalance($lenderWallet, $operation);
-        $this->saveWalletBalanceHistory($lenderWallet, $operation);
-
         $this->debitAvailableBalance($borrowerWallet, $operation);
         $this->saveWalletBalanceHistory($borrowerWallet, $operation);
+
+        $this->creditAvailableBalance($lenderWallet, $operation);
+        $this->saveWalletBalanceHistory($lenderWallet, $operation);
     }
 
     private function migrateBorrowerRepayment(array $transaction)
@@ -516,11 +482,11 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         $borrowerWallet = $this->getBorrowerWallet($idProject);
 
-        $operation['id_type']             = 6;
+        $operation['id_type']             = $this->getOperationType('borrower_provision');
         $operation['id_wallet_creditor']  = $borrowerWallet['id'];
         $operation['id_project']          = $idProject;
-        $operation['id_wire_transfer_in'] = (false === empty($transaction['id_virement'])) ? $transaction['id_virement'] : null;
-        $operation['amount']              = round(bcdiv($transaction['montant'], 100, 4), 2);
+        $operation['id_wire_transfer_in'] = empty($transaction['id_virement']) ? null : $transaction['id_virement'];
+        $operation['amount']              = $this->calculateOperationAmount($transaction['montant']);
         $operation['added']               = $transaction['date_transaction'];
         $operation['id']                  = $this->newOperation($operation);
 
@@ -540,8 +506,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             return;
         }
 
-        $operation['id_type']              = 10;
-        $operation['amount']               = abs(round(bcdiv($transaction['montant'], 100, 4), 2));
+        $operation['id_type']              = $this->getOperationType('borrower_withdraw');
+        $operation['amount']               = $this->calculateOperationAmount($transaction['montant']);
         $operation['id_project']           = $transaction['id_project'];
         $operation['added']                = $transaction['added'];
         $operation['id_wire_transfer_out'] = $wireTransferOut->id_virement;
@@ -569,15 +535,15 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateUnilendProjectCommission(array $transaction)
     {
-        $unilendWallet = $this->getUnilendWallet();
+        $unilendWallet  = $this->getWalletByLabel('unilend');
         $borrowerWallet = $this->getWallet($transaction['id_client']);
 
         if (false === $borrowerWallet) {
             return;
         }
 
-        $operation['id_type']            = 8;
-        $operation['amount']             = round(bcdiv($transaction['montant_unilend'], 100, 4), 2);
+        $operation['id_type']            = $this->getOperationType('borrower_commission');
+        $operation['amount']             = $this->calculateOperationAmount($transaction['montant_unilend']);
         $operation['id_project']         = $transaction['id_project'];
         $operation['id_wallet_creditor'] = $unilendWallet['id'];
         $operation['id_wallet_debtor']   = $borrowerWallet['id'];
@@ -614,12 +580,12 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         $borrowerWallet = $this->getBorrowerWallet($idProject);
 
-        $operation['id_type']               = 12;
+        $operation['id_type']               = $this->getOperationType('gross_interest_repayment');
         $operation['id_wallet_creditor']    = $lenderWallet['id'];
         $operation['id_wallet_debtor']      = $borrowerWallet['id'];
         $operation['id_repayment_schedule'] = (false === empty($transaction['id_echeancier'])) ? $transaction['id_echeancier'] : null;
         $operation['id_project']            = $idProject;
-        $operation['amount']                = round(bcdiv(bcadd($transaction['montant'], $totalTax), 100, 4), 2);
+        $operation['amount']                = $this->calculateOperationAmount(bcadd($transaction['montant'], $totalTax, 4));
         $operation['added']                 = $transaction['date_transaction'];
         $operation['id']                    = $this->newOperation($operation);
 
@@ -633,57 +599,58 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             if (0 < $tax['amount']) {
                 switch ($tax['id_tax_type']) {
                     case \tax_type::TYPE_INCOME_TAX:
-                        $operation['id_type'] = 21;
+                        $operation['id_type'] = $this->getOperationType('tax_prelevements_obligatoires');
                         $walletLabel          = 'tax_prelevements_obligatoires';
                         break;
                     case \tax_type::TYPE_CSG:
-                        $operation['id_type'] = 17;
+                        $operation['id_type'] = $this->getOperationType('tax_csg');
                         $walletLabel          = 'tax_csg';
                         break;
                     case \tax_type::TYPE_SOCIAL_DEDUCTIONS:
-                        $operation['id_type'] = 23;
+                        $operation['id_type'] = $this->getOperationType('tax_prelevements_sociaux');
                         $walletLabel          = 'tax_prelevements_sociaux';
                         break;
                     case \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS:
-                        $operation['id_type'] = 13;
+                        $operation['id_type'] = $this->getOperationType('tax_contributions_additionnelles');
                         $walletLabel          = 'tax_contributions_additionnelles';
                         break;
                     case \tax_type::TYPE_SOLIDARITY_DEDUCTIONS:
-                        $operation['id_type'] = 19;
+                        $operation['id_type'] = $this->getOperationType('tax_prelevements_de_solidarite');
                         $walletLabel          = 'tax_prelevements_de_solidarite';
                         break;
                     case \tax_type::TYPE_CRDS:
-                        $operation['id_type'] = 15;
+                        $operation['id_type'] = $this->getOperationType('tax_crds');
                         $walletLabel          = 'tax_crds';
                         break;
                     case \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE:
-                        $operation['id_type'] = 25;
+                        $operation['id_type'] = $this->getOperationType('tax_retenues_a_la_source');
                         $walletLabel          = 'tax_retenues_a_la_source';
                         break;
                     default :
-                        $this->getContainer()->get('logger')->error('Unknown tax_type for transaction : ' . $transaction['id_transaction']);
+                        $this->getContainer()->get('logger.migration')->error('Unknown tax_type for transaction : ' . $transaction['id_transaction']);
                         return;
                 }
 
-                $taxWallet = $this->getTaxWallet($walletLabel);
+                $taxWallet = $this->getWalletByLabel($walletLabel);
 
-                $operation['amount']                = abs(round(bcdiv($tax['amount'], 100, 4), 2));
+                $operation['amount']                = $this->calculateOperationAmount($tax['amount']);
                 $operation['id_repayment_schedule'] = $transaction['id_echeancier'];
                 $operation['id_wallet_creditor']    = $taxWallet['id'];
                 $operation['id_wallet_debtor']      = $lenderWallet['id'];
                 $operation['added']                 = $transaction['date_transaction'];
                 $operation['id']                    = $this->newOperation($operation);
 
+                $this->debitAvailableBalance($lenderWallet, $operation);
+                $this->saveWalletBalanceHistory($lenderWallet, $operation);
+
                 $this->creditAvailableBalance($taxWallet, $operation);
                 $this->saveWalletBalanceHistory($taxWallet, $operation);
 
-                $this->debitAvailableBalance($lenderWallet, $operation);
-                $this->saveWalletBalanceHistory($lenderWallet, $operation);
             }
         }
     }
 
-    private function getTaxWallet($label)
+    private function getWalletByLabel($label)
     {
         $query = 'SELECT wallet.*
                     FROM wallet 
@@ -699,8 +666,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
     {
         $totalTaxAmount = abs(round(bcdiv($transaction['montant'], 100, 4), 2));
 
-        $taxWallet                     = $this->getTaxWallet('tax_prelevements_obligatoires');
-        $operation['id_type']          = 22;
+        $taxWallet                     = $this->getWalletByLabel('tax_prelevements_obligatoires');
+        $operation['id_type']          = $this->getOperationType('tax_prelevements_obligatoires_withdraw');
         $operation['amount']           = $taxWallet['available_balance'];
         $operation['id_wallet_debtor'] = $taxWallet['id'];
         $operation['added']            = $transaction['date_transaction'];
@@ -713,8 +680,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         unset($taxWallet, $operation);
 
-        $taxWallet                     = $this->getTaxWallet('tax_csg');
-        $operation['id_type']          = 18;
+        $taxWallet                     = $this->getWalletByLabel('tax_csg');
+        $operation['id_type']          = $this->getOperationType('tax_csg_withdraw');
         $operation['amount']           = $taxWallet['available_balance'];
         $operation['id_wallet_debtor'] = $taxWallet['id'];
         $operation['added']            = $transaction['date_transaction'];
@@ -726,8 +693,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->saveWalletBalanceHistory($taxWallet, $operation);
         unset($taxWallet, $operation);
 
-        $taxWallet                     = $this->getTaxWallet('tax_prelevements_sociaux');
-        $operation['id_type']          = 24;
+        $taxWallet                     = $this->getWalletByLabel('tax_prelevements_sociaux');
+        $operation['id_type']          = $this->getOperationType('tax_prelevements_sociaux_withdraw');
         $operation['amount']           = $taxWallet['available_balance'];
         $operation['id_wallet_debtor'] = $taxWallet['id'];
         $operation['added']            = $transaction['date_transaction'];
@@ -739,8 +706,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->saveWalletBalanceHistory($taxWallet, $operation);
         unset($taxWallet, $operation);
 
-        $taxWallet                     = $this->getTaxWallet('tax_contributions_additionnelles');
-        $operation['id_type']          = 14;
+        $taxWallet                     = $this->getWalletByLabel('tax_contributions_additionnelles');
+        $operation['id_type']          = $this->getOperationType('tax_contributions_additionnelles_withdraw');
         $operation['amount']           = $taxWallet['available_balance'];
         $operation['id_wallet_debtor'] = $taxWallet['id'];
         $operation['added']            = $transaction['date_transaction'];
@@ -752,8 +719,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->saveWalletBalanceHistory($taxWallet, $operation);
         unset($taxWallet, $operation);
 
-        $taxWallet                     = $this->getTaxWallet('tax_prelevements_de_solidarite');
-        $operation['id_type']          = 20;
+        $taxWallet                     = $this->getWalletByLabel('tax_prelevements_de_solidarite');
+        $operation['id_type']          = $this->getOperationType('tax_prelevements_de_solidarite_withdraw');
         $operation['amount']           = $taxWallet['available_balance'];
         $operation['id_wallet_debtor'] = $taxWallet['id'];
         $operation['added']            = $transaction['date_transaction'];
@@ -765,8 +732,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->saveWalletBalanceHistory($taxWallet, $operation);
         unset($taxWallet, $operation);
 
-        $taxWallet                     = $this->getTaxWallet('tax_crds');
-        $operation['id_type']          = 16;
+        $taxWallet                     = $this->getWalletByLabel('tax_crds');
+        $operation['id_type']          = $this->getOperationType('tax_crds_withdraw');
         $operation['amount']           = $taxWallet['available_balance'];
         $operation['id_wallet_debtor'] = $taxWallet['id'];
         $operation['added']            = $transaction['date_transaction'];
@@ -778,8 +745,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->saveWalletBalanceHistory($taxWallet, $operation);
         unset($taxWallet, $operation);
 
-        $taxWallet                     = $this->getTaxWallet('tax_retenues_a_la_source');
-        $operation['id_type']          = 26;
+        $taxWallet                     = $this->getWalletByLabel('tax_retenues_a_la_source');
+        $operation['id_type']          = $this->getOperationType('tax_retenues_a_la_source_withdraw');
         $operation['amount']           = $taxWallet['available_balance'];
         $operation['id_wallet_debtor'] = $taxWallet['id'];
         $operation['added']            = $transaction['date_transaction'];
@@ -792,21 +759,21 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         unset($taxWallet, $operation);
 
         if (0 < abs($totalTaxAmount)) {
-            $this->getContainer()->get('logger')->error('Monthly tax amounts do not match for transaction : ' . $transaction['id_transaction'] . ' - difference of ' . $totalTaxAmount);
+            $this->getContainer()->get('logger.migration')->error('Monthly tax amounts do not match for transaction : ' . $transaction['id_transaction'] . ' - difference of ' . $totalTaxAmount);
         }
     }
 
     private function migrateUnilendWithdrawal(array $transaction)
     {
-        $wallet = $this->getUnilendWallet();
+        $wallet = $this->getWalletByLabel('unilend');
 
         /** @var \virements $wireTransferOut */
         $wireTransferOut = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('virements');
         $wireTransferOut->get($transaction['id_transaction'], 'id_transaction');
 
-        $operation['id_type']              = 30;
+        $operation['id_type']              = $this->getOperationType('unilend_withdraw');
         $operation['id_wallet_debtor']     = $wallet['id'];
-        $operation['amount']               = abs(round(bcdiv($transaction['montant'], 100, 4), 2));
+        $operation['amount']               = $this->calculateOperationAmount($transaction['montant']);
         $operation['id_wire_transfer_out'] = false === empty($wireTransferOut->id_virement) ? $wireTransferOut->id_virement :  null;
         $operation['added']                = $transaction['date_transaction'];
         $operation['id']                   = $this->newOperation($operation);
@@ -817,25 +784,30 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateBalanceTransfer(array $transaction)
     {
+        /** @var \transfer $transfer */
+        $transfer = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('transfer');
+        $transfer->get($transaction['id_transfer']);
 
-    }
-
-
-    private function checkAndCreateLoan(array $transaction)
-    {
-        $query = 'SELECT l.* FROM loans l
-                  INNER JOIN lenders_accounts la ON l.id_lender = la.id_lender_account
-                  WHERE l.updated <= :transactionDate AND l.status = 0 AND id_loan NOT IN (SELECT id_loan FROM operation WHERE id_type = 4) AND la.id_client_owner = :idClient';
-
-        $loans = $this->dataBaseConnection->executeQuery($query, [
-            'transactionDate' => $transaction['date_transaction'],
-            'idClient'        => $transaction['id_client']
-        ])->fetchAll(\PDO::FETCH_ASSOC);
-
-
-        foreach ($loans as $loan) {
-            $this->createLoan($transaction['id_client'], $loan);
+        if (0 > $transaction['montant']) {
+            $debtorWallet   = $this->getWallet($transaction['id_transaction']);
+            $creditorWallet = $this->getWallet($transfer->id_client_receiver);
+        } else {
+            $debtorWallet   = $this->getWallet($transfer->id_client_origin);
+            $creditorWallet = $this->getWallet($transaction['id_transaction']);
         }
+
+        $operation['id_type']              = $this->getOperationType('lender_transfer');
+        $operation['id_wallet_debtor']     = $debtorWallet['id'];
+        $operation['id_wallet_creditor']   = $creditorWallet['id'];
+        $operation['amount']               = $this->calculateOperationAmount($transaction['montant']);
+        $operation['id_transfer']          = $transfer->id_transfer;
+        $operation['added']                = $transaction['date_transaction'];
+        $operation['id']                   = $this->newOperation($operation);
+
+        $this->debitAvailableBalance($debtorWallet, $operation);
+        $this->saveWalletBalanceHistory($debtorWallet, $operation);
+        $this->creditAvailableBalance($creditorWallet, $operation);
+        $this->saveWalletBalanceHistory($creditorWallet, $operation);
     }
 
     private function migrateBorrowerProvisionCancel(array $transaction)
@@ -849,15 +821,192 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             return;
         }
 
-        $operation['id_type']              = 7;
-        $operation['amount']               = abs(round(bcdiv($transaction['montant'], 100, 4), 2));
+        $operation['id_type']              = $this->getOperationType('borrower_provision_cancel');
+        $operation['amount']               = $this->calculateOperationAmount($transaction['montant']);
         $operation['id_wallet_debtor']     = $borrowerWallet['id'];
         $operation['added']                = $transaction['added'];
-        $operation['id_project']           = false === empty($directDebit->id_project) ? $directDebit->id_reception : null;
+        $operation['id_project']           = empty($directDebit->id_project) ? null : $directDebit->id_reception;
         $operation['id_wire_transfer_in']  = $directDebit->id_reception;
         $operation['id']                   = $this->newOperation($operation);
 
         $this->debitAvailableBalance($borrowerWallet, $operation);
         $this->saveWalletBalanceHistory($borrowerWallet, $operation);
     }
+
+    private function getOperationType($label)
+    {
+        $query = 'SELECT id FROM operation_type WHERE label = :label';
+        $statement = $this->dataBaseConnection->executeQuery($query, ['label' => $label]);
+
+        return $statement->fetchColumn();
+    }
+
+    private function migrateWelcomeOfferProvision(array $transaction)
+    {
+        $promotionWallet = $this->getWalletByLabel('unilend_promotional_operation');
+
+        $operation['id_type']             = $this->getOperationType('unilend_promotional_operation_provision');
+        $operation['id_wallet_creditor']  = $promotionWallet['id'];
+        $operation['amount']              = $this->calculateOperationAmount($transaction['montant']);
+        $operation['id_wire_transfer_in'] = empty($transaction['id_virement']) ? null : $transaction['id_virement'];
+        $operation['added']               = $transaction['date_transaction'];
+        $operation['id']                  = $this->newOperation($operation);
+
+        $this->creditAvailableBalance($promotionWallet, $operation);
+        $this->saveWalletBalanceHistory($promotionWallet, $operation);
+    }
+
+    private function calculateOperationAmount($amount)
+    {
+        return abs(round(bcdiv($amount, 100, 4), 2));
+    }
+
+    private function migrateRecoveryCommissionToBorrower(array $transaction)
+    {
+        $collectorWallet = $this->getWalletByLabel('debt_collector');
+        $borrowerWallet  = $this->getWallet($transaction['id_client']);
+
+        $operation['id_type']             = $this->getOperationType('collection_commission_provision');
+        $operation['id_wallet_debtor']    = $collectorWallet['id'];
+        $operation['id_wallet_creditor']  = $borrowerWallet['id'];
+        $operation['amount']              = $this->getRecoveryCommissionAmount($transaction);
+        $operation['added']               = $transaction['date_transaction'];
+        $operation['id']                  = $this->newOperation($operation);
+
+        $this->debitAvailableBalance($collectorWallet, $operation);
+        $this->saveWalletBalanceHistory($collectorWallet, $operation);
+        $this->creditAvailableBalance($borrowerWallet, $operation);
+        $this->saveWalletBalanceHistory($borrowerWallet, $operation);
+    }
+
+
+    private function migrateRecoveryToLender(array $transaction)
+    {
+        $filePrefix = $transaction['id_project'] . '_' . substr($transaction['date_transaction'], 0, 10);
+        $recoveryDetails = $this->getRecoveryFile($filePrefix);
+
+        $transaction['montant'] = bcmul($recoveryDetails[$transaction['id_client']]['gross_amount'], 100);
+        $this->migrateCapitalRepayments($transaction);
+
+        $collectorWallet = $this->getWalletByLabel('debt_collector');
+        $lenderWallet  = $this->getWallet($transaction['id_client']);
+
+        $operation['id_type']             = $this->getOperationType('collection_commission_lender');
+        $operation['id_wallet_debtor']    = $lenderWallet['id'];
+        $operation['id_wallet_creditor']  = $collectorWallet['id'];
+        $operation['amount']              = $recoveryDetails[$transaction['id_client']]['commission_amount'];
+        $operation['added']               = $transaction['date_transaction'];
+        $operation['id']                  = $this->newOperation($operation);
+
+        $this->debitAvailableBalance($lenderWallet, $operation);
+        $this->saveWalletBalanceHistory($lenderWallet, $operation);
+        $this->creditAvailableBalance($collectorWallet, $operation);
+        $this->saveWalletBalanceHistory($collectorWallet, $operation);
+    }
+
+
+    private function getRecoveryFile($filePrefix)
+    {
+        $cachePool = $this->getContainer()->get('memcache.default');
+
+        $cachedItem = $cachePool->getItem('recovery_' . $filePrefix);
+        if (false === $cachedItem->isHit()) {
+
+            $recoveryDetails = [];
+            $fileName        = $this->getContainer()->getParameter('path.protected') . 'import/' . $filePrefix . '_recouvrement.csv';
+            if (false === file_exists($fileName)) {
+                throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv not found');
+            }
+            if (false === ($handle = fopen($fileName, 'r'))) {
+                throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/' . 'recouvrement.csv cannot be opened');
+            }
+
+            while (($row = fgetcsv($handle, 0, ';')) !== false) {
+                $clientId                                        = $row[0];
+                $recoveryDetails[$clientId]['gross_amount']      = str_replace(',', '.', $row[1]);
+                $recoveryDetails[$clientId]['commission_amount'] = str_replace(',', '.', $row[2]);
+            }
+            fclose($handle);
+            $cachedItem->set($recoveryDetails)->expiresAfter(CacheKeys::LONG_TIME);
+            $cachePool->save($cachedItem);
+
+            return $recoveryDetails;
+        } else {
+            return $cachedItem->get();
+        }
+    }
+
+
+    private function getRecoveryCommissionAmount(array $transaction)
+    {
+        switch ($transaction['id_project']) {
+            case 1124:
+                switch($transaction['date']) {
+                    case '2016-03-09':
+                        return bcmul(62.32, 100); //TODO ask Bin if string is better
+                    case '2016-03-29':
+                        return bcmul(382.10, 100);
+                    case '2016-05-14':
+                        return bcmul(366.24, 100);
+                    case '2016-10-27':
+                        return bcmul(366.24, 100);
+                    default:
+                        $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                        break;
+                }
+                break;
+            case 2900:
+                switch($transaction['date']){
+                    case '2016-03-29':
+                        return bcmul(1084.25, 100);
+                    case '2016-10-27':
+                        return bcmul(5421.61, 100);
+                    default:
+                        $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                        break;
+                }
+                break;
+            case 3013:
+                switch($transaction['date']){
+                    case '2016-03-09':
+                        return bcmul(343.20, 100);
+                    case '2016-03-29':
+                        return bcmul(117.4, 100);
+                    case '2016-07-27':
+                        return bcmul(156.08, 100);
+                    case '2016-08-12':
+                        return bcmul(78.15, 100);
+                    case '2016-10-27':
+                        return bcmul(78.15, 100);
+                    default:
+                        $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                        break;
+                }
+                break;
+            case 8544:
+                switch($transaction['date']) {
+                    case '2016-07-27':
+                        return bcmul(194.08, 100);
+                    case '2016-12-09':
+                        return bcmul(583.91, 100);
+                    default:
+                        $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                        break;
+                }
+            case 9386:
+                if ($transaction['date'] == '2016-10-27') {
+                    return bcmul(946.31, 100);
+                } else {
+                    $this->getContainer()->get('logger')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                }
+                break;
+            default:
+                $this->getContainer()->get('logger')->error('Recovery payment could not be found for project : ' . $transaction['id_project']);
+                break;
+        }
+
+        return null;
+    }
+
+
 }
