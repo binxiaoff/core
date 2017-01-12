@@ -246,8 +246,9 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         ) {
             $lenderWallet = $this->getWallet($transaction['id_client']);
 
-            $bid['id_bid'] = $bidEntity->id_bid;
-            $bid['added']  = $bidEntity->added;
+            $bid['id_bid']     = $bidEntity->id_bid;
+            $bid['added']      = $bidEntity->added;
+            $bid['id_project'] = $bidEntity->id_project;
             $amount        = $this->calculateOperationAmount($transaction['montant']);
 
             $availableBalance = bcsub($lenderWallet['available_balance'], $amount, 2);
@@ -412,8 +413,9 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $loan  = [];
 
         if ($loans->get($transaction['id_loan_remb'])) {
-            $loan['id']    = $loans->id_loan;
-            $loan['added'] = $transaction['added'];
+            $loan['id']         = $loans->id_loan;
+            $loan['id_project'] = $loans->id_project;
+            $loan['added']      = $transaction['added'];
         }
 
         /** @var \bids $bids */
@@ -427,8 +429,9 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             $bids->get($walletLines->id_bid_remb);
         }
 
-        $bid['id']    = empty($bids->id_bid) ? null : $bids->id_bid;
-        $bid['added'] = $transaction['added'];
+        $bid['id']         = empty($bids->id_bid) ? null : $bids->id_bid;
+        $bid['id_project'] = empty($bids->id_project) ? null : $bids->id_project;
+        $bid['added']      = $transaction['added'];
 
         $this->updateWalletBalance($lenderWallet, $transaction);
         $this->saveWalletBalanceHistory($lenderWallet, null, $bid, $loan);
