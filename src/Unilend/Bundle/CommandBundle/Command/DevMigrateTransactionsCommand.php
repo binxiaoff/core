@@ -673,7 +673,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['added']            = $transaction['date_transaction'];
         $operation['id']               = $this->newOperation($operation);
 
-        $totalTaxAmount -= $operation['amount'];
+        $totalTaxAmount = bcsub($totalTaxAmount, $operation['amount'], 2);
 
         $this->debitAvailableBalance($taxWallet, $operation);
         $this->saveWalletBalanceHistory($taxWallet, $operation);
@@ -687,7 +687,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['added']            = $transaction['date_transaction'];
         $operation['id']               = $this->newOperation($operation);
 
-        $totalTaxAmount -= $operation['amount'];
+        $totalTaxAmount = bcsub($totalTaxAmount, $operation['amount'], 2);
 
         $this->debitAvailableBalance($taxWallet, $operation);
         $this->saveWalletBalanceHistory($taxWallet, $operation);
@@ -700,7 +700,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['added']            = $transaction['date_transaction'];
         $operation['id']               = $this->newOperation($operation);
 
-        $totalTaxAmount -= $operation['amount'];
+        $totalTaxAmount = bcsub($totalTaxAmount, $operation['amount'], 2);
 
         $this->debitAvailableBalance($taxWallet, $operation);
         $this->saveWalletBalanceHistory($taxWallet, $operation);
@@ -713,7 +713,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['added']            = $transaction['date_transaction'];
         $operation['id']               = $this->newOperation($operation);
 
-        $totalTaxAmount -= $operation['amount'];
+        $totalTaxAmount = bcsub($totalTaxAmount, $operation['amount'], 2);
 
         $this->debitAvailableBalance($taxWallet, $operation);
         $this->saveWalletBalanceHistory($taxWallet, $operation);
@@ -726,7 +726,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['added']            = $transaction['date_transaction'];
         $operation['id']               = $this->newOperation($operation);
 
-        $totalTaxAmount -= $operation['amount'];
+        $totalTaxAmount = bcsub($totalTaxAmount, $operation['amount'], 2);
 
         $this->debitAvailableBalance($taxWallet, $operation);
         $this->saveWalletBalanceHistory($taxWallet, $operation);
@@ -739,7 +739,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['added']            = $transaction['date_transaction'];
         $operation['id']               = $this->newOperation($operation);
 
-        $totalTaxAmount -= $operation['amount'];
+        $totalTaxAmount = bcsub($totalTaxAmount, $operation['amount'], 2);
 
         $this->debitAvailableBalance($taxWallet, $operation);
         $this->saveWalletBalanceHistory($taxWallet, $operation);
@@ -752,7 +752,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['added']            = $transaction['date_transaction'];
         $operation['id']               = $this->newOperation($operation);
 
-        $totalTaxAmount -= $operation['amount'];
+        $totalTaxAmount = bcsub($totalTaxAmount, $operation['amount'], 2);
 
         $this->debitAvailableBalance($taxWallet, $operation);
         $this->saveWalletBalanceHistory($taxWallet, $operation);
