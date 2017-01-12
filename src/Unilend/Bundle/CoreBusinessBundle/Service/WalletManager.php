@@ -281,6 +281,7 @@ class WalletManager
         foreach ($parameters as $item) {
             if ($item instanceof Operation) {
                 $walletSnap->setIdOperation($item);
+                $walletSnap->setLoan($item->getLoan());
             }
             if ($item instanceof Bids) {
                 $walletSnap->setBid($item);

@@ -238,7 +238,7 @@ class OperationManager
     {
         $operationType  = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_LOAN]);
         $lenderWallet   = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $loan->getIdLender()])->getIdWallet();
-        $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($loan->getIdProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($loan->getProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $amount         = round(bcdiv($loan->getAmount(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, $lenderWallet, $borrowerWallet, $loan);
@@ -786,7 +786,7 @@ class OperationManager
         $loan                = $repaymentSchedule->getIdLoan();
         $accountMatching     = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $loan->getIdLender()]);
         $lenderWallet        = $accountMatching->getIdWallet();
-        $borrowerClientId    = $loan->getIdProject()->getIdCompany()->getIdClientOwner();
+        $borrowerClientId    = $loan->getProject()->getIdCompany()->getIdClientOwner();
         $borrowerWallet      = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($borrowerClientId, WalletType::BORROWER);
         $amountInterestGross = round(bcdiv(bcsub($repaymentSchedule->getInterets(), $repaymentSchedule->getInteretsRembourses()), 100, 4), 2);
         $amountCapital       = round(bcdiv(bcsub($repaymentSchedule->getCapital(), $repaymentSchedule->getCapitalRembourse()), 100, 4), 2);
@@ -873,7 +873,7 @@ class OperationManager
         $repaymentSchedule = $this->entityManager->getRepository('echeanciers');
 
         $outstandingCapital = $repaymentSchedule->getOwedCapital(['id_loan' => $loan->getIdLoan()]);
-        $borrowerWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($loan->getIdProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($loan->getProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $accountMatching    = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $loan->getIdLender()]);
         $lenderWallet       = $accountMatching->getIdWallet();
 
@@ -900,7 +900,7 @@ class OperationManager
         $transaction->montant          = bcmul($amount, 100);
         $transaction->id_echeancier    = 0; // pas d'id_echeance car multiple
         $transaction->id_loan_remb     = $loan->getIdLoan();
-        $transaction->id_project       = $loan->getIdProject()->getIdProject();
+        $transaction->id_project       = $loan->getProject()->getIdProject();
         $transaction->id_langue        = 'fr';
         $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;

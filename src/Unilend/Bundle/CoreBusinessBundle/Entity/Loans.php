@@ -189,7 +189,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setIdProject(Projects $idProject)
+    public function setProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -201,7 +201,7 @@ class Loans
      *
      * @return Projects
      */
-    public function getIdProject()
+    public function getProject()
     {
         return $this->idProject;
     }
