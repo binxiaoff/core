@@ -61,68 +61,70 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 
         $pendingBankTransfers      = $bankTransfer->select('status = 0 AND added_xml = "0000-00-00 00:00:00"');
         $pendingBankTransfersCount = count($pendingBankTransfers);
-        $totalAmount               = bcdiv($bankTransfer->sum('status = 0 AND added_xml = "0000-00-00 00:00:00"'), 100, 2);
+        $totalAmount               = 0;
         $counterId                 = $counter->counter('type = 1') + 1;
         $date                      = date('Ymd');
+        $negativeBalanceError      = [];
+        $xmlBody                   = '';
 
         $counter->type  = 1;
         $counter->ordre = $counterId;
         $counter->create();
 
-        $negativeBalanceError = [];
-        $xmlBody = '';
         foreach ($pendingBankTransfers as $pendingBankTransfer) {
             $client->get($pendingBankTransfer['id_client'], 'id_client');
+            $transaction->get($pendingBankTransfer['id_transaction'], 'id_transaction');
 
-            if ($pendingBankTransfer['type'] == 4) {
-                $recipientIban = $unilendIban;
-                $recipientBic  = $unilendBic;
-                $recipientName = $unilendAccountHolder;
-            } elseif ($client->isBorrower()) {
-                $company->get($pendingBankTransfer['id_client'], 'id_client_owner');
-
-                $recipientIban = $company->iban;
-                $recipientBic  = $company->bic;
-                $recipientName = $company->name;
-            } else {
-                $balance = $transaction->getSolde($pendingBankTransfer['id_client']);
-                if ($balance < 0) {
-                    $pendingBankTransfersCount --;
-                    $amountLender = bcdiv($pendingBankTransfer['montant'], 100, 2);
-                    $totalAmount  = bcsub($totalAmount, $amountLender, 2);
-                    $negativeBalanceError[] = ['id_client' => $pendingBankTransfer['id_client'], 'balance' => $balance];
-                    continue;
-                }
-                $lender->get($pendingBankTransfer['id_client'], 'id_client_owner');
-
-                $recipientIban = $lender->iban;
-                $recipientBic  = $lender->bic;
-
-                if (in_array($client->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+            if (\DateTime::createFromFormat('Y-m-d H:i:s', $transaction->date_transaction) < new \DateTime('today')) {
+                if ($pendingBankTransfer['type'] == 4) {
+                    $recipientIban = $unilendIban;
+                    $recipientBic  = $unilendBic;
+                    $recipientName = $unilendAccountHolder;
+                } elseif ($client->isBorrower()) {
                     $company->get($pendingBankTransfer['id_client'], 'id_client_owner');
+
+                    $recipientIban = $company->iban;
+                    $recipientBic  = $company->bic;
                     $recipientName = $company->name;
                 } else {
-                    $recipientName = $client->nom . ' ' . $client->prenom;
+                    $balance = $transaction->getSolde($pendingBankTransfer['id_client']);
+                    if ($balance < 0) {
+                        $pendingBankTransfersCount--;
+                        $negativeBalanceError[] = ['id_client' => $pendingBankTransfer['id_client'], 'balance' => $balance];
+                        continue;
+                    }
+                    $lender->get($pendingBankTransfer['id_client'], 'id_client_owner');
+
+                    $recipientIban = $lender->iban;
+                    $recipientBic  = $lender->bic;
+
+                    if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                        $company->get($pendingBankTransfer['id_client'], 'id_client_owner');
+                        $recipientName = $company->name;
+                    } else {
+                        $recipientName = $client->nom . ' ' . $client->prenom;
+                    }
                 }
-            }
 
-            $bankTransfer->get($pendingBankTransfer['id_virement'], 'id_virement');
-            $bankTransfer->status    = 1;
-            $bankTransfer->added_xml = date('Y-m-d H:i') . ':00';
-            $bankTransfer->update();
+                $totalAmount = bcadd($pendingBankTransfer['montant'], $totalAmount);
 
-            if (strncmp('FR', strtoupper(str_replace(' ', '', $recipientIban)), 2) === 0) {
-                $frenchBic = '';
-            } else {
-                $frenchBic = '
+                $bankTransfer->get($pendingBankTransfer['id_virement'], 'id_virement');
+                $bankTransfer->status    = 1;
+                $bankTransfer->added_xml = date('Y-m-d H:i') . ':00';
+                $bankTransfer->update();
+
+                if (strncmp('FR', strtoupper(str_replace(' ', '', $recipientIban)), 2) === 0) {
+                    $frenchBic = '';
+                } else {
+                    $frenchBic = '
                 <CdtrAgt>
                     <FinInstnId>
                         <BIC>' . str_replace(' ', '', $recipientBic) . '</BIC>
                     </FinInstnId>
                 </CdtrAgt>';
-            }
+                }
 
-            $xmlBody .= '
+                $xmlBody .= '
             <CdtTrfTxInf>
                 <PmtId>
                     <EndToEndId>' . $accountHolder . '/' . $date . '/' . $pendingBankTransfer['id_virement'] . '</EndToEndId>
@@ -131,7 +133,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     <InstdAmt Ccy="EUR">' . bcdiv($pendingBankTransfer['montant'], 100, 2) . '</InstdAmt>
                 </Amt>' . $frenchBic . '
                 <Cdtr>
-                     <Nm>' . str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $recipientName) . '</Nm>
+                     <Nm>' . str_replace(['"', '\'', '\\', '>', '<', '&'], '', $recipientName) . '</Nm>
                      <PstlAdr>
                          <Ctry>FR</Ctry>
                      </PstlAdr>
@@ -145,9 +147,11 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                      <Ustrd>' . str_replace(' ', '', $pendingBankTransfer['motif']) . '</Ustrd>
                 </RmtInf>
             </CdtTrfTxInf>';
+            }
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>
+        $totalAmount = bcdiv($totalAmount, 100, 2);
+        $xml         = '<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
     <CstmrCdtTrfInitn>
         <GrpHdr>

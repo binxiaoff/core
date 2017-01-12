@@ -195,7 +195,8 @@ class LenderCIPController extends Controller
                     $cipManager->insertQuestion($evaluation, $question);
                     return $this->redirectToRoute('cip_continue_questionnaire');
                 case 'back':
-                    $bid = $request->getSession()->getFlashBag()->peek('cipBid')[0];
+                    $bidInfo = $request->getSession()->getFlashBag()->peek('cipBid');
+                    $bid     = false === empty($bidInfo) ? array_shift($bidInfo) : [];
 
                     if (false === empty($bid['project'])) {
                         /** @var \projects $project */
@@ -378,6 +379,12 @@ class LenderCIPController extends Controller
     {
         /** @var CIPManager $cipManager */
         $cipManager = $this->get('unilend.service.cip_manager');
-        return implode("\n", $cipManager->getAdvices($lender));
+        $advices    = $cipManager->getAdvices($lender);
+
+        if (null === $advices) {
+            $advices = [];
+        }
+
+        return implode("\n", $advices);
     }
 }

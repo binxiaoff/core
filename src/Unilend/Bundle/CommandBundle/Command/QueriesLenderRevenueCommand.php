@@ -223,7 +223,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
 
     private function fillTemporaryTransactionsTable(Connection $dataBaseConnection, $year)
     {
-        $dataBaseConnection->executeQuery('TRUNCATE temporary_lender_repayment_transactions');
+        $dataBaseConnection->executeQuery('DELETE FROM temporary_lender_repayment_transactions');
         $dataBaseConnection->executeQuery('INSERT INTO temporary_lender_repayment_transactions (id_transaction, id_client, type_transaction, id_echeancier, montant, date_transaction)
           SELECT
             id_transaction,
@@ -244,7 +244,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
 
     private function emptyTemporaryRepaymentTable(Connection $dataBaseConnection)
     {
-        $dataBaseConnection->executeQuery('TRUNCATE temporary_lender_repayment_transactions');
+        $dataBaseConnection->executeQuery('DELETE FROM temporary_lender_repayment_transactions');
     }
 
     private function fillTemporaryLenderImpositionHistory(Connection $dataBaseConnection, \clients $clients)
@@ -261,7 +261,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
 
     private function emptyTemporaryLenderImpositionHistory(Connection $dataBaseConnection)
     {
-        $dataBaseConnection->executeQuery('TRUNCATE temporary_lender_imposition_history');
+        $dataBaseConnection->executeQuery('DELETE FROM temporary_lender_imposition_history');
     }
 
     private function getAllClientsWithTransactions(Connection $dataBaseConnection)

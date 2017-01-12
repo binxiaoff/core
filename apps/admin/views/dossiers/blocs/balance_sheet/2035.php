@@ -25,7 +25,7 @@ $iOldestAnnualAccountsId = end($aAnnualAccountsYears);
     echo $this->generateBalanceGroupHtml('Total de BA à BP (case BR)', $codeDepenses, \company_tax_form_type::FORM_2035);
 
     $codeExcedent         = ['BA', 'BB', 'BC', 'BD', 'JY', 'BS', 'BV', 'BF', 'BG', 'BH', 'BJ', 'BK', 'BM', 'BN', 'BP'];
-    $codeDepensesNegative = array_map([$this, 'negtive'], $codeDepenses);
+    $codeDepensesNegative = array_map([$this, 'negative'], $codeDepenses);
     echo $this->generateBalanceSubTotalLineHtml('Excédent (AG - BR) (case CA)', array_merge($codeRecettes, $codeDepensesNegative), \company_tax_form_type::FORM_2035);
 
     $codeBenefice = ['CB', 'CC', 'CD'];
@@ -33,7 +33,7 @@ $iOldestAnnualAccountsId = end($aAnnualAccountsYears);
     $codeCE = array_merge($codeRecettes, $codeDepensesNegative, $codeBenefice);
     echo $this->generateBalanceSubTotalLineHtml('Total CA, CB, CC et CD (case CE)', $codeCE, \company_tax_form_type::FORM_2035);
 
-    $codeRecettesNegative = array_map([$this, 'negtive'], $codeRecettes);
+    $codeRecettesNegative = array_map([$this, 'negative'], $codeRecettes);
     $codeCF               = array_merge($codeDepenses, $codeRecettesNegative);
     echo $this->generateBalanceSubTotalLineHtml('Insuffisance (BR - AG) (case CF)', $codeCF, \company_tax_form_type::FORM_2035);
 
@@ -43,10 +43,10 @@ $iOldestAnnualAccountsId = end($aAnnualAccountsYears);
     $codeCN = array_merge($codeCF, $codeFrais);
     echo $this->generateBalanceSubTotalLineHtml('Total CF, CG, CH, CK, CL et CM (case CN)', $codeCN, \company_tax_form_type::FORM_2035);
 
-    $codeCNNegative = array_map([$this, 'negtive'], $codeCN);
+    $codeCNNegative = array_map([$this, 'negative'], $codeCN);
     echo $this->generateBalanceSubTotalLineHtml('Bénéfice (CE - CN) (case CP)', array_merge($codeCE, $codeCNNegative), \company_tax_form_type::FORM_2035);
 
-    $codeCENegative = array_map([$this, 'negtive'], $codeCE);
+    $codeCENegative = array_map([$this, 'negative'], $codeCE);
     echo $this->generateBalanceSubTotalLineHtml('Déficit (CN - CE) (case CR)', array_merge($codeCN, $codeCENegative), \company_tax_form_type::FORM_2035);
     ?>
     </tbody>

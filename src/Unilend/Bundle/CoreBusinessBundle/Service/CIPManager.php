@@ -455,7 +455,7 @@ class CIPManager
     public function getAdvices(\lenders_accounts $lender)
     {
         $advices    = [];
-        $indicators = $this->getIndicators($lender);
+        $indicators = $this->getIndicators($lender, false);
 
         if (null === $indicators) {
             return null;
@@ -519,14 +519,14 @@ class CIPManager
      * If no limitation is suggested, indicator value is null
      *
      * @param \lenders_accounts $lender
-     *
+     * @param bool              $checkEvaluationValidity
      * @return array|null
      */
-    public function getIndicators(\lenders_accounts $lender)
+    public function getIndicators(\lenders_accounts $lender, $checkEvaluationValidity = true)
     {
         $evaluation = $this->getCurrentEvaluation($lender);
 
-        if (null === $evaluation || false === $this->isValidEvaluation($evaluation)) {
+        if (null === $evaluation || $checkEvaluationValidity && false === $this->isValidEvaluation($evaluation)) {
             return null;
         }
 

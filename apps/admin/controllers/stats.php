@@ -156,8 +156,13 @@ class statsController extends bootstrap
         /** @var \transactions $transactions */
         $transactions = $this->loadData('transactions');
 
-        $clientList = $transactions->getClientsWithLoanRelatedTransactions(date('Y'));
-        $data = [];
+        if (in_array(date('m'), ['01', '02', '03'])) {
+            $year = (date('Y')-1);
+        } else {
+            $year = date('Y');
+        }
+
+        $clientList = $transactions->getClientsWithLoanRelatedTransactions($year);
 
         $filename = 'requete_beneficiaires' . date('Ymd');
         $headers = ['id_client', 'Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];

@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
-use Unilend\core\Loader;
 
 class LenderDashboardController extends Controller
 {
@@ -64,7 +63,7 @@ class LenderDashboardController extends Controller
 
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
-            if ($aLastIRR && $aLastIRR['status'] == 0) {
+            if ($aLastIRR && $aLastIRR['status'] == \lenders_account_stats::STAT_VALID_OK) {
                 $irr                = $aLastIRR['value'];
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
                 $hasIRR             = true;
@@ -124,7 +123,6 @@ class LenderDashboardController extends Controller
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
-
 
         return $this->render(
             '/pages/lender_dashboard/lender_dashboard.html.twig',

@@ -293,7 +293,7 @@ EOF
                     }
                 }
             }
-            $oLogger->info('Emails sent: ' . $iEmails);
+            $oLogger->info('Emails sent: ' . $iEmails, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
         }
     }
 }

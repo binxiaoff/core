@@ -110,8 +110,8 @@ class WelcomeOfferManager
                 $unilendBank->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
                 $unilendBank->create();
 
-                (0 == $this->mailerManager->sendWelcomeOfferEmail($client, $welcomeOffer)) ? $emailStatus = ' Email non envoyé.' : $emailStatus = ' Email envoyé.';
-                $return = ['code' => 0, 'message' => 'Offre de bienvenue créée.' . $emailStatus];
+                $this->mailerManager->sendWelcomeOfferEmail($client, $welcomeOffer);
+                $return = ['code' => 0, 'message' => 'Offre de bienvenue créée.'];
             }
         } else {
             $return = ['code' => 3, 'message' => "L'offre de bienvenue n'existe pas"];

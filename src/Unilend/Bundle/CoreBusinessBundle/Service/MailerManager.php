@@ -1894,7 +1894,7 @@ class MailerManager
 
     /**
      * @param \clients $client
-     * @param $mailType
+     * @param string   $mailType
      */
     public function sendClientValidationEmail(\clients $client, $mailType)
     {
@@ -1935,6 +1935,41 @@ class MailerManager
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('offre-de-bienvenue', $varMail);
         $message->setTo($client->email);
+        $this->mailer->send($message);
+    }
+
+    /**
+     * @param \projects_pouvoir $proxy
+     * @param \clients_mandats $mandate
+     */
+    public function sendProxyAndMandateSigned(\projects_pouvoir $proxy, \clients_mandats $mandate)
+    {
+        /** @var \projects $project */
+        $project = $this->oEntityManager->getRepository('projects');
+        $project->get($proxy->id_project, 'id_project');
+        /** @var \companies $company */
+        $company = $this->oEntityManager->getRepository('companies');
+        $company->get($project->id_company, 'id_company');
+        /** @var \clients $client */
+        $client = $this->oEntityManager->getRepository('clients');
+        $client->get($company->id_client_owner, 'id_client');
+        /** @var \settings $setting */
+        $setting = $this->oEntityManager->getRepository('settings');
+        $setting->get('Adresse notification pouvoir mandat signe', 'type');
+        $destinataire = $setting->value;
+
+        $template = [
+            '$surl'         => $this->sSUrl,
+            '$id_projet'    => $project->id_project,
+            '$nomProjet'    => $project->title_bo,
+            '$nomCompany'   => $company->name,
+            '$lien_pouvoir' => $proxy->url_pdf,
+            '$lien_mandat'  => $mandate->url_pdf
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('notification-pouvoir-mandat-signe', $template);
+        $message->setTo(explode(';', $destinataire));
         $this->mailer->send($message);
     }
 }

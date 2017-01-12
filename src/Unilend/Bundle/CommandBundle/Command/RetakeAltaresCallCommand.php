@@ -36,11 +36,6 @@ EOF
         $altares        = $this->getContainer()->get('unilend.service.altares');
         $projectManager = $this->getContainer()->get('unilend.service.project_manager');
 
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        $settings->get('Altares email alertes', 'type');
-        $alertEmail = $settings->value;
-
         /** @var \settings $settingsAltaresStatus */
         $settingsAltaresStatus = $entityManager->getRepository('settings');
         $settingsAltaresStatus->get('Altares status', 'type');

@@ -106,7 +106,6 @@ class clients extends clients_crud
 
     /**
      * @param DateTime $dateLogin
-     * @param string   $email
      */
     public function saveLogin(\DateTime $dateLogin)
     {
@@ -135,27 +134,6 @@ class clients extends clients_crud
         }
     }
 
-    /**
-     * @param string $email
-     * @param string $pass
-     * @return bool|array
-     */
-    public function login($email, $pass)
-    {
-        $email = $this->bdd->escape_string($email);
-        $sql   = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '" AND status = 1';
-        $res   = $this->bdd->query($sql);
-
-        if ($res->rowCount() === 1) {
-            $client = $res->fetch(\PDO::FETCH_ASSOC);
-
-            if (md5($pass) === $client['password'] || password_verify($pass, $client['password'])) {
-                return $client;
-            }
-        }
-        return false;
-    }
-
     public function changePassword($email, $pass)
     {
         $this->bdd->query('
@@ -167,10 +145,19 @@ class clients extends clients_crud
 
     public function existEmail($email)
     {
-        $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '"';
-        $res = $this->bdd->query($sql);
+        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
 
-        return ($this->bdd->num_rows($res) >= 1);
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('COUNT(*)')
+            ->from($this->userTable)
+            ->where('email = :email')
+            ->setParameter('email', $email);
+
+        $statement = $queryBuilder->execute();
+        return $statement->fetchColumn() > 0;
     }
 
     public function checkAccess()
@@ -273,7 +260,8 @@ class clients extends clients_crud
             WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
                 AND c.type NOT IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]) .')
             GROUP BY c.id_client
-            ORDER BY c.id_client DESC';
+            ORDER BY c.id_client DESC
+           LIMIT 100';
         $resultat = $this->bdd->query($query);
 
         while ($record = $this->bdd->fetch_assoc($resultat)) {

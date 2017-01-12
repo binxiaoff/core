@@ -9,11 +9,15 @@ use Unilend\librairies\CacheKeys;
 class StatisticsManager
 {
     /**
-     * Siren count has first started in an excel spreadsheet. For that reason DB data will always be inconsistent with previously announced data.
+     * Siren count has first started in an excel spreadsheet. Consequently DB data will always be inconsistent with previously announced data.
      * For that reason it has been decided to start counting only from a given date and adding this count to the historic value
      */
-    const HISTORIC_NUMBER_OF_SIREN = 26205;
+    const HISTORIC_NUMBER_OF_SIREN            = 26205;
     const VALUE_DATE_HISTORIC_NUMBER_OF_SIREN = '2016-08-31 00:00:00';
+    /**
+     * Day we started saving front statistics. Before that data there is no data.
+     */
+    const START_FRONT_STATISTICS_HISTORY      = '2016-11-17';
 
     /** @var EntityManager */
     private $entityManager;
@@ -228,7 +232,12 @@ class StatisticsManager
                 $cohortEndDate   = $year . '-12-31 23:59:59';
             }
 
-            $data['IRR'][$year]                                 = $this->IRRManager->getUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
+            try {
+                $data['IRR'][$year] = $this->IRRManager->getUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
+            } catch (\Exception $exception){
+                $data['IRR'][$year] = 'NA';
+            }
+
             $data['projects'][$year]                            = $fundedProjects[$year];
 
             $data['borrowed-capital'][$year]                    = $borrowedCapital[$year];
@@ -255,7 +264,7 @@ class StatisticsManager
 
             $capitalAndInterestLessProblemsPerYear      = bcsub(bcadd(bcadd($data['borrowed-capital'][$year], $data['repaid-interest'][$year], 2), $data['owed-healthy-interest'][$year], 2), $data['total-owed-problematic-capital'][$year], 2);
             $data['pct']['expected-performance'][$year] = $data['borrowed-capital'][$year] > 0 ? bcmul((bcdiv($capitalAndInterestLessProblemsPerYear, $data['borrowed-capital'][$year], 4) - 1), 100, 2) : 0;
-            $data['pct']['problematic-rate'][$year]     = bcmul(bcdiv($problematicCompanies[$year], $countFundedCompanies[$year], 4), 100, 2);
+            $data['pct']['problematic-rate'][$year]     = $countFundedCompanies[$year] > 0 ? bcmul(bcdiv($problematicCompanies[$year], $countFundedCompanies[$year], 4), 100, 2) : 0;
         }
 
         $data = $this->addTotalToData($data, $problematicCompanies, $countFundedCompanies);
@@ -298,10 +307,10 @@ class StatisticsManager
     private function addTotalPercentages(&$data, $problematicCompanies, $countFundedCompanies)
     {
         $data['pct']['owed-problematic-over-borrowed-capital']['total'] = $data['borrowed-capital']['total'] > 0 ? bcmul(bcdiv($data['total-owed-problematic-and-late-capital']['total'], $data['borrowed-capital']['total'], 4), 100, 2) : 0;
-        $data['pct']['interest-over-owed-problematic-capital']['total'] = bcmul(bcdiv(($data['repaid-interest']['total'] + $data['owed-healthy-interest']['total']), $data['total-owed-problematic-and-late-capital']['total'], 4), 100, 2);
+        $data['pct']['interest-over-owed-problematic-capital']['total'] = $data['total-owed-problematic-and-late-capital']['total'] > 0 ? bcmul(bcdiv(($data['repaid-interest']['total'] + $data['owed-healthy-interest']['total']), $data['total-owed-problematic-and-late-capital']['total'], 4), 100, 2) : 0;
 
         $capitalAndInterestLessProblems               = bcsub(bcadd(bcadd($data['borrowed-capital']['total'], $data['repaid-interest']['total']), $data['owed-healthy-interest']['total']), $data['total-owed-problematic-and-late-capital']['total']);
-        $data['pct']['expected-performance']['total'] = bcmul(bcdiv($capitalAndInterestLessProblems, $data['borrowed-capital']['total'], 4) - 1, 100, 2);
+        $data['pct']['expected-performance']['total'] = $data['borrowed-capital']['total'] > 0 ? bcmul(bcdiv($capitalAndInterestLessProblems, $data['borrowed-capital']['total'], 4) - 1, 100, 2) : 0;
         $data['pct']['problematic-rate']['total']     = bcmul(bcdiv(array_sum($problematicCompanies), array_sum($countFundedCompanies), 4), 100, 2);
 
         return $data;
