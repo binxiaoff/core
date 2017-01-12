@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\librairies\CacheKeys;
 
-class UnilendClearStatisticsCache extends ContainerAwareCommand
+class UnilendClearStatisticsCacheCommand extends ContainerAwareCommand
 {
 
     protected function configure()

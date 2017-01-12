@@ -4,10 +4,9 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
-class CheckIncomingSfpmeiFeedFile extends ContainerAwareCommand
+class CheckIncomingSfpmeiFeedFileCommand extends ContainerAwareCommand
 {
     const FILE_ROOT_NAME = 'UNILEND-00040631007-';
 
