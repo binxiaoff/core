@@ -17,11 +17,14 @@ class ExceptionController extends Controller
      */
     public function error404Action()
     {
+        $seoPage = $this->container->get('sonata.seo.page');
+        $seoPage->addMeta('name', 'robots', 'noindex');
+
         $translator  = $this->get('translator');
         $title       = $translator->trans('error-page_404-title');
         $details     = $translator->trans('error-page_404-details');
-        return $this->render('exception/error.html.twig', ['errorTitle' => $title, 'errorDetails' => $details]);
 
+        return $this->render('exception/error.html.twig', ['errorTitle' => $title, 'errorDetails' => $details]);
     }
 
     public function showAction(Request $request, FlattenException $exception, DebugLoggerInterface $logger = null)
@@ -48,6 +51,53 @@ class ExceptionController extends Controller
             ]
         );
     }
+
+    /**
+     * @Route("/cf-error/block", name="cloudflare_block")
+     *
+     * @return Response
+     */
+    public function blockAction()
+    {
+        $seoPage = $this->container->get('sonata.seo.page');
+        $seoPage->addMeta('name', 'robots', 'noindex');
+
+        $translator = $this->get('translator');
+        $pageTitle  = $translator->trans('error-page_blocked-page-title');
+        $title      = $translator->trans('error-page_blocked-title');
+        $details    = $translator->trans('error-page_blocked-details');
+
+        return $this->render('exception/error.html.twig', [
+            'errorPageTitle' => $pageTitle,
+            'errorTitle' => $title,
+            'errorDetails' => $details,
+            'cacheButtons' => true
+        ]);
+    }
+
+    /**
+     * @Route("/cf-error/challenge", name="cloudflare_challenge")
+     *
+     * @return Response
+     */
+    public function challengeAction()
+    {
+        $seoPage = $this->container->get('sonata.seo.page');
+        $seoPage->addMeta('name', 'robots', 'noindex');
+
+        $translator = $this->get('translator');
+        $pageTitle  = $translator->trans('error-page_challenge-page-title');
+        $title      = $translator->trans('error-page_challenge-title');
+        $details    = $translator->trans('error-page_challenge-details');
+
+        return $this->render('exception/error.html.twig', [
+            'errorPageTitle' => $pageTitle,
+            'errorTitle' => $title,
+            'errorDetails' => $details,
+            'cacheButtons' => true
+        ]);
+    }
+
 
     /**
      * @param int $startObLevel
