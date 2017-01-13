@@ -39,9 +39,9 @@ class ExceptionController extends Controller
         $code = $exception->getStatusCode();
 
         $translator = $this->get('translator');
-        $pageTitle  = $translator->trans('error-page_5xx-page-title');
-        $title      = $translator->trans('error-page_5xx-title');
-        $details    = $translator->trans('error-page_5xx-details');
+        $pageTitle  = $translator->trans('error-page_general-page-title');
+        $title      = $translator->trans('error-page_general-title');
+        $details    = $translator->trans('error-page_general-details');
 
         return $this->render(
             (string)$this->findTemplate($request, $request->getRequestFormat(), $showException),
@@ -69,9 +69,9 @@ class ExceptionController extends Controller
         $seoPage->addMeta('name', 'robots', 'noindex');
 
         $translator = $this->get('translator');
-        $pageTitle  = $translator->trans('error-page_5xx-page-title');
-        $title      = $translator->trans('error-page_5xx-title');
-        $details    = $translator->trans('error-page_5xx-details');
+        $pageTitle  = $translator->trans('error-page_general-page-title');
+        $title      = $translator->trans('error-page_general-title');
+        $details    = $translator->trans('error-page_general-details');
 
         return $this->render('exception/error.html.twig', [
             'errorPageTitle' => $pageTitle,
