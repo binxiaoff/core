@@ -24,6 +24,9 @@
         {% if app.request.get('_route') == 'cloudflare_5xx' %}
             <!-- ::CLOUDFLARE_ERROR_500S_BOX:: -->
         {% endif %}
+        {% if app.request.get('_route') == 'cloudflare_challenge' %}
+            ::CAPTCHA_BOX::
+        {% endif %}
         {% if hideButtons is not defined or hideButtons == false %}
             <br>
             <div class="btn-toolbar text-align-left">
