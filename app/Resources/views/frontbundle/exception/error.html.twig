@@ -3,7 +3,7 @@
 
 {% block pageTitle %}
     <h1 class="page-title">
-        {{ errorPageTitle|default('error-page_header-title'|trans) }}
+        {{ errorPageTitle }}
     </h1>
 {% endblock %}
 
@@ -20,6 +20,9 @@
         {% endif %}
         {% if errorDetails is defined %}
             {{ errorDetails|raw }}
+        {% endif %}
+        {% if app.request.get('_route') == 'cloudflare_5xx' %}
+            <!-- ::CLOUDFLARE_ERROR_500S_BOX:: -->
         {% endif %}
         {% if hideButtons is not defined or hideButtons == false %}
             <br>
