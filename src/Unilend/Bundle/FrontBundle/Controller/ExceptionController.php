@@ -17,36 +17,85 @@ class ExceptionController extends Controller
      */
     public function error404Action()
     {
-        $translator  = $this->get('translator');
-        $title       = $translator->trans('error-page_404-title');
-        $details     = $translator->trans('error-page_404-details');
-        return $this->render('exception/error.html.twig', ['errorTitle' => $title, 'errorDetails' => $details]);
+        $seoPage = $this->container->get('sonata.seo.page');
+        $seoPage->addMeta('name', 'robots', 'noindex');
 
+        $translator = $this->get('translator');
+        $title      = $translator->trans('error-page_404-title');
+        $details    = $translator->trans('error-page_404-details');
+
+        return $this->render('exception/error.html.twig', ['errorTitle' => $title, 'errorDetails' => $details]);
     }
 
     public function showAction(Request $request, FlattenException $exception, DebugLoggerInterface $logger = null)
     {
         $currentContent = $this->getAndCleanOutputBuffering($request->headers->get('X-Php-Ob-Level', -1));
-        $showException = $request->attributes->get('showException', $this->getParameter('kernel.debug'));
+        $showException  = $request->attributes->get('showException', $this->getParameter('kernel.debug'));
 
         $code = $exception->getStatusCode();
 
-        $translator  = $this->get('translator');
-        $title       = $translator->trans('error-page_404-title');
-        $details     = $translator->trans('error-page_404-details');
+        $translator = $this->get('translator');
+        $title      = $translator->trans('error-page_404-title');
+        $details    = $translator->trans('error-page_404-details');
 
         return $this->render(
-            (string) $this->findTemplate($request, $request->getRequestFormat(), $showException),
+            (string)$this->findTemplate($request, $request->getRequestFormat(), $showException),
             [
-                'status_code' => $code,
-                'status_text' => isset(Response::$statusTexts[$code]) ? Response::$statusTexts[$code] : '',
-                'exception' => $exception,
-                'logger' => $logger,
+                'status_code'    => $code,
+                'status_text'    => isset(Response::$statusTexts[$code]) ? Response::$statusTexts[$code] : '',
+                'exception'      => $exception,
+                'logger'         => $logger,
                 'currentContent' => $currentContent,
-                'errorTitle' => $title,
-                'errorDetails' => $details
+                'errorTitle'     => $title,
+                'errorDetails'   => $details
             ]
         );
+    }
+
+    /**
+     * @Route("/cf-error/block", name="cloudflare_block")
+     *
+     * @return Response
+     */
+    public function blockAction()
+    {
+        $seoPage = $this->container->get('sonata.seo.page');
+        $seoPage->addMeta('name', 'robots', 'noindex');
+
+        $translator = $this->get('translator');
+        $pageTitle  = $translator->trans('error-page_blocked-page-title');
+        $title      = $translator->trans('error-page_blocked-title');
+        $details    = $translator->trans('error-page_blocked-details');
+
+        return $this->render('exception/error.html.twig', [
+            'errorPageTitle' => $pageTitle,
+            'errorTitle'     => $title,
+            'errorDetails'   => $details,
+            'hideButtons'    => true
+        ]);
+    }
+
+    /**
+     * @Route("/cf-error/challenge", name="cloudflare_challenge")
+     *
+     * @return Response
+     */
+    public function challengeAction()
+    {
+        $seoPage = $this->container->get('sonata.seo.page');
+        $seoPage->addMeta('name', 'robots', 'noindex');
+
+        $translator = $this->get('translator');
+        $pageTitle  = $translator->trans('error-page_challenge-page-title');
+        $title      = $translator->trans('error-page_challenge-title');
+        $details    = $translator->trans('error-page_challenge-details');
+
+        return $this->render('exception/error.html.twig', [
+            'errorPageTitle' => $pageTitle,
+            'errorTitle'     => $title,
+            'errorDetails'   => $details,
+            'hideButtons'    => true
+        ]);
     }
 
     /**
@@ -79,7 +128,7 @@ class ExceptionController extends Controller
             $name = 'exception_full';
         }
 
-        if (!$showException) {
+        if (! $showException) {
             $template = sprintf('exception/%s.%s.twig', $name, $format);
             if ($this->templateExists($template)) {
                 return $template;
