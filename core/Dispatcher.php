@@ -1,6 +1,11 @@
 <?php
 namespace Unilend\core;
 
+use Monolog\ErrorHandler;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 class Dispatcher
 {
     private $Command;
@@ -20,6 +25,7 @@ class Dispatcher
         $this->path        = $this->kernel->getRootDir() . '/../';
 
         $this->handleUrl();
+        $this->handleError();
         $this->dispatch();
     }
 
@@ -252,5 +258,13 @@ class Dispatcher
 
         newrelic_set_appname ($applicationName);
         newrelic_name_transaction($transactionName);
+    }
+
+    private function handleError()
+    {
+        $logger = $this->kernel->getContainer()->get('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE);
+        if ($logger instanceof LoggerInterface) {
+            ErrorHandler::register($logger, [], LogLevel::ERROR, LogLevel::ERROR);
+        }
     }
 }
