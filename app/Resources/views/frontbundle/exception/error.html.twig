@@ -21,7 +21,7 @@
         {% if errorDetails is defined %}
             {{ errorDetails|raw }}
         {% endif %}
-        {% if cacheButtons is not defined or cacheButtons == false %}
+        {% if cacheButtons is not defined or hideButtons == false %}
             <br>
             <div class="btn-toolbar text-align-left">
                 <a href="{{ path('home') }}" class="btn-primary">{% trans %} error-page_button-home-page {% endtrans %}</a>

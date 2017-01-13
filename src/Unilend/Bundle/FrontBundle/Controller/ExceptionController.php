@@ -69,9 +69,9 @@ class ExceptionController extends Controller
 
         return $this->render('exception/error.html.twig', [
             'errorPageTitle' => $pageTitle,
-            'errorTitle' => $title,
-            'errorDetails' => $details,
-            'cacheButtons' => true
+            'errorTitle'     => $title,
+            'errorDetails'   => $details,
+            'hideButtons'    => true
         ]);
     }
 
@@ -92,9 +92,9 @@ class ExceptionController extends Controller
 
         return $this->render('exception/error.html.twig', [
             'errorPageTitle' => $pageTitle,
-            'errorTitle' => $title,
-            'errorDetails' => $details,
-            'cacheButtons' => true
+            'errorTitle'     => $title,
+            'errorDetails'   => $details,
+            'hideButtons'    => true
         ]);
     }
 
