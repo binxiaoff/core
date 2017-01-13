@@ -896,6 +896,7 @@ FormValidation.prototype.rules = {
     if (inputType) {
       switch (inputType.toLowerCase()) {
         case 'number':
+          inputValidation.value = inputValidation.value.replace(' ', '').replace(' ', '') // non-breakable spaces and regular spaces
           if (/[^\d\-\.\,]+/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',

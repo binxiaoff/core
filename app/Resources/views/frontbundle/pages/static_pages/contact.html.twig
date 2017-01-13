@@ -36,14 +36,12 @@
             {% endif %}
 
             <form action="{{ path('contact_search') }}" method="post" class="site-search" role="search">
-            {#<form id="contact-search" action="http://aide.unilend.fr/customer/portal/articles/search" method="get" class="site-search" role="search" data-formvalidation data-formvalidation-notificationselem="#contact-search-form-notifications">#}
                 <div id="contact-search-form-notifications" class="ui-formvalidation-notifications col-lg-8 col-md-8 col-sm-4"></div>
                 <div class="row">
                     <div class="form-field-inline">
                         <label for="contact-search-input" class="sr-only">
                             {% trans %} contact_search-label {% endtrans %}
                         </label>
-                        {#<input id="contact-search-input" type="text" name="q" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true">#}
                         <input id="contact-search-input" type="text" name="search" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" class="input-field">
                         <div class="btn-group">
                             <button type="submit" class="btn-primary" data-spinnerbutton><span class="icon fa-search"></span> <span class="label hide-xs">{% trans %} contact_search-submit {% endtrans %}</span></button>
@@ -89,12 +87,12 @@
                             </label>
                             <select id="contact-message-profession" name="message[role]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                                 <option value="0">{% trans %}contact_preciser{% endtrans %}</option>
-                                <option value="1" {% if formData.role is defined and formData.role == 1 %}selected {% endif %}>{% trans %}contact_relation-presse{% endtrans %}</option>
-                                <option value="2" {% if formData.role is defined and formData.role == 2 %}selected {% endif %}>{% trans %}contact_demande-preteur{% endtrans %}</option>
-                                <option value="3" {% if formData.role is defined and formData.role == 3 %}selected {% endif %}>{% trans %}contact_demande-emprunteur{% endtrans %}</option>
-                                <option value="4" {% if formData.role is defined and formData.role == 4 %}selected {% endif %}>{% trans %}contact_recrutement{% endtrans %}</option>
-                                <option value="5" {% if formData.role is defined and formData.role == 5 %}selected {% endif %}>{% trans %}contact_autre{% endtrans %}</option>
-                                <option value="6" {% if formData.role is defined and formData.role == 6 %}selected {% endif %}>{% trans %}contact_partenariat{% endtrans %}</option>
+                                <option value="1"{% if formData.role is defined and formData.role == 1 %} selected{% endif %}>{% trans %}contact_relation-presse{% endtrans %}</option>
+                                <option value="2"{% if formData.role is defined and formData.role == 2 %} selected{% endif %}>{% trans %}contact_demande-preteur{% endtrans %}</option>
+                                <option value="3"{% if formData.role is defined and formData.role == 3 %} selected{% endif %}>{% trans %}contact_demande-emprunteur{% endtrans %}</option>
+                                <option value="4"{% if formData.role is defined and formData.role == 4 %} selected{% endif %}>{% trans %}contact_recrutement{% endtrans %}</option>
+                                <option value="5"{% if formData.role is defined and formData.role == 5 %} selected{% endif %}>{% trans %}contact_autre{% endtrans %}</option>
+                                <option value="6"{% if formData.role is defined and formData.role == 6 %} selected{% endif %}>{% trans %}contact_partenariat{% endtrans %}</option>
                             </select>
                         </div><!-- /.form-field -->
                     </div>

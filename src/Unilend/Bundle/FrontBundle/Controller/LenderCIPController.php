@@ -178,10 +178,10 @@ class LenderCIPController extends Controller
             return $this->redirectToRoute('cip_continue_questionnaire');
         }
 
-        $answerValue   = $request->request->get('answer');
+        $answerValue   = filter_var($request->request->get('answer'), FILTER_SANITIZE_STRING);
         $continueValue = $request->request->get('continue');
 
-        if (null !== $continueValue) {
+        if (in_array($continueValue, ['next_question', 'loop', 'back'])) {
             switch ($continueValue) {
                 case 'next_question':
                     $cipManager->insertQuestion($evaluation, $cipManager->getNextQuestion($evaluation));
@@ -271,7 +271,10 @@ class LenderCIPController extends Controller
     }
 
     /**
-     * @Route("/pdf/conseil-cip/{clientHash}", name="pdf_cip")
+     * @Route("/pdf/conseil-cip/{clientHash}", name="pdf_cip", requirements={"clientHash": "[0-9a-f]{32}"})
+     *
+     * @param string $clientHash
+     * @return Response
      */
     public function cipAdvisePdfAction($clientHash)
     {

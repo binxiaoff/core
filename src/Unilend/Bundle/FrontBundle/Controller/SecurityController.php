@@ -115,14 +115,16 @@ class SecurityController extends Controller
         if ($request->isXMLHttpRequest()) {
             /** @var \clients $clients */
             $clients = $this->get('unilend.service.entity_manager')->getRepository('clients');
-            /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
             /** @var \settings $settings */
             $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
 
             $post = $request->request->all();
 
-            if (isset($post['client_email']) && $ficelle->isEmail($post['client_email']) && $clients->get($post['client_email'], 'email')) {
+            if (
+                isset($post['client_email'])
+                && filter_var($post['client_email'], FILTER_VALIDATE_EMAIL)
+                && $clients->get($post['client_email'], 'email')
+            ) {
                 $settings->get('Facebook', 'type');
                 $lien_fb = $settings->value;
                 $settings->get('Twitter', 'type');
@@ -154,7 +156,10 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/{clientHash}", name="define_new_password")
+     * @Route("/nouveau-mot-de-passe/{clientHash}", name="define_new_password", requirements={"clientHash": "[0-9a-f]{32}"})
+     *
+     * @param string $clientHash
+     * @return Response
      */
     public function defineNewPasswordAction($clientHash)
     {
@@ -166,8 +171,12 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/submit/{clientHash}", name="save_new_password")
+     * @Route("/nouveau-mot-de-passe/submit/{clientHash}", name="save_new_password", requirements={"clientHash": "[0-9a-f]{32}"})
      * @Method("POST")
+     *
+     * @param string  $clientHash
+     * @param Request $request
+     * @return Response
      */
     public function changePasswordFormAction($clientHash, Request $request)
     {
@@ -194,7 +203,7 @@ class SecurityController extends Controller
         }
 
         if (false === empty($post['client_new_password']) && false === empty($post['client_new_password_confirmation']) && false === empty($post['client_secret_answer'])) {
-            if ($post['client_new_password'] !== $post['client_new_password_confirmation']){
+            if ($post['client_new_password'] !== $post['client_new_password_confirmation']) {
                 $this->addFlash('passwordErrors', $translator->trans('common-validator_password-not-equal'));
             }
             if (false === $ficelle->password_fo($post['client_new_password'], 6)) {

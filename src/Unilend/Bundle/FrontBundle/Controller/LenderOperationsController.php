@@ -64,10 +64,11 @@ class LenderOperationsController extends Controller
     ];
 
     /**
-     * @param Request $request
-     * @return Response
      * @Route("/operations", name="lender_operations")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     * @return Response
      */
     public function indexAction(Request $request)
     {
@@ -144,7 +145,7 @@ class LenderOperationsController extends Controller
                         'lenderLoans'       => $loans['lenderLoans'],
                         'loanStatus'        => $loans['loanStatus'],
                         'seriesData'        => $loans['seriesData'],
-                        'currentFilters'    => $request->request->all()
+                        'currentFilters'    => $request->request->get('filter', [])
                     ]
                 )->getContent()
             ]
@@ -627,6 +628,7 @@ class LenderOperationsController extends Controller
 
         $orderField     = $request->request->get('type', 'start');
         $orderDirection = strtoupper($request->request->get('order', 'ASC'));
+        $orderDirection = in_array($orderDirection, ['ASC', 'DESC']) ? $orderDirection : 'ASC';
 
         switch ($orderField) {
             case 'status':
@@ -660,8 +662,9 @@ class LenderOperationsController extends Controller
         }
 
         $projectsInDept = $project->getProjectsInDebt();
-        $year           = empty($request->request->get('filter', null)['date']) ? null : $request->request->get('filter', null)['date'];
-        $status         = empty($request->request->get('filter', null)['status']) ? null : $request->request->get('filter', null)['status'];
+        $filters        = $request->request->get('filter', []);
+        $year           = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
+        $status         = isset($filters['status']) && false !== filter_var($filters['status'], FILTER_VALIDATE_INT) ? $filters['status'] : null;
         $lenderLoans    = $loanEntity->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
         $loanStatus     = [
             'no-problem'            => 0,
@@ -859,28 +862,38 @@ class LenderOperationsController extends Controller
      */
     private function getOperationFilters(Request $request)
     {
+        $defaultValues = [
+            'start'          => date('d/m/Y', strtotime('-1 month')),
+            'end'            => date('d/m/Y'),
+            'slide'          => 1,
+            'year'           => date('Y'),
+            'operation'      => 1,
+            'project'        => null,
+            'id_last_action' => 'operation'
+        ];
+
         if ($request->request->get('filter')) {
-            $filters = [
-                'start'          => $request->request->get('filter')['start'],
-                'end'            => $request->request->get('filter')['end'],
-                'slide'          => $request->request->get('filter')['slide'],
-                'year'           => (int) $request->request->get('filter')['year'],
-                'operation'      => $request->request->get('filter')['operation'],
-                'project'        => $request->request->get('filter')['project'],
-                'id_last_action' => $request->request->get('filter')['id_last_action']
+            $filters    = $request->request->get('filter');
+            $start      = isset($filters['start']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filters['start']) ? $filters['start'] : $defaultValues['start'];
+            $end        = isset($filters['end']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filters['end']) ? $filters['end'] : $defaultValues['end'];
+            $slide      = isset($filters['slide']) && in_array($filters['slide'], [1, 3, 6, 12]) ? $filters['slide'] : $defaultValues['slide'];
+            $year       = isset($filters['year']) && false !== filter_var($filters['year'], FILTER_VALIDATE_INT) ? $filters['year'] : $defaultValues['year'];
+            $operation  = isset($filters['operation']) && array_key_exists($filters['operation'], self::$transactionTypeList) ? $filters['operation'] : $defaultValues['operation'];
+            $project    = isset($filters['project']) && false !== filter_var($filters['project'], FILTER_VALIDATE_INT) ? $filters['project'] : $defaultValues['project'];
+            $lastAction = isset($filters['id_last_action']) ? $filters['id_last_action'] : $defaultValues['id_last_action'];
+            $filters    = [
+                'start'          => $start,
+                'end'            => $end,
+                'slide'          => $slide,
+                'year'           => $year,
+                'operation'      => $operation,
+                'project'        => $project,
+                'id_last_action' => $lastAction
             ];
         } elseif ($request->getSession()->has('lenderOperationsFilters')) {
             $filters = $request->getSession()->get('lenderOperationsFilters');
         } else {
-            $filters = [
-                'start'          => date('d/m/Y', strtotime('-1 month')),
-                'end'            => date('d/m/Y'),
-                'slide'          => 1,
-                'year'           => date('Y'),
-                'operation'      => 1,
-                'project'        => null,
-                'id_last_action' => 'operation'
-            ];
+            $filters = $defaultValues;
         }
 
         switch ($filters['id_last_action']) {

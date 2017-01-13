@@ -35,13 +35,18 @@ class LenderWalletController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
+
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
+        $clientData = $client->select('id_client = ' . $this->getUser()->getClientId())[0];
+
         /** @var \lenders_accounts $lender */
         $lender = $entityManager->getRepository('lenders_accounts');
-
-        $clientData = $client->select('id_client = ' . $this->getUser()->getClientId())[0];
         $lenderData = $lender->select('id_client_owner = ' . $clientData['id_client'])[0];
+
+        $depositResult = $request->query->get('depositResult', false);
+        $depositAmount = filter_var($request->query->get('depositAmount', 0), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $depositCode   = filter_var($request->query->get('depositCode', 0), FILTER_SANITIZE_NUMBER_INT);
 
         $template = [
             'balance'          => $this->getUser()->getBalance(),
@@ -50,9 +55,9 @@ class LenderWalletController extends Controller
             'client'           => $clientData,
             'lender'           => $lenderData,
             'lenderBankMotif'  => $client->getLenderPattern($clientData['id_client']),
-            'depositResult'    => $request->query->get('depositResult', false),
-            'depositAmount'    => $request->query->get('depositAmount', 0),
-            'depositCode'      => $request->query->get('depositCode', 0),
+            'depositResult'    => $depositResult,
+            'depositAmount'    => $depositAmount,
+            'depositCode'      => $depositCode,
             'showNavigation'   => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ];
 
@@ -95,6 +100,7 @@ class LenderWalletController extends Controller
         ];
 
         $form->handleRequest($request);
+
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $post = $form->getData();
@@ -156,10 +162,11 @@ class LenderWalletController extends Controller
 
             $lender->get($client->id_client, 'id_client_owner');
 
-            $amount = str_replace(',', '.', $post['amount']);
+            $amount = $post['amount'];
 
             /** @var UserPasswordEncoder $securityPasswordEncoder */
             $securityPasswordEncoder = $this->get('security.password_encoder');
+
 
             if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $post['password'])) {
                 $logger->info('Wrong password id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
@@ -242,7 +249,6 @@ class LenderWalletController extends Controller
 
                 $this->sendInternalWithdrawalNotification($client, $transaction, $lender, $amount);
 
-                $logger->debug('Withdraw money successfully done, id_client=' . $client->id_client . '. Withdraw amount='.$request->request->get('montant'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
                 $this->addFlash('withdrawalSuccess', $translator->trans('lender-wallet_withdrawal-success-message'));
             }
         }
@@ -273,12 +279,17 @@ class LenderWalletController extends Controller
         /** @var CsrfTokenManagerInterface $csrfTokenManager */
         $csrfTokenManager = $this->get('security.csrf.token_manager');
 
-        $amount = $ficelle->cleanFormatedNumber($request->request->get('amount'));
+        $amount    = $ficelle->cleanFormatedNumber($request->request->get('amount', ''));
         $csrfToken = $request->request->get('_csrf_token');
 
         $client->get($this->getUser()->getClientId());
 
-        if (is_numeric($amount) && $amount >= self::MIN_DEPOSIT_AMOUNT && $amount <= self::MAX_DEPOSIT_AMOUNT && $csrfTokenManager->isTokenValid(new CsrfToken('deposit', $csrfToken))) {
+        if (
+            is_numeric($amount)
+            && $amount >= self::MIN_DEPOSIT_AMOUNT
+            && $amount <= self::MAX_DEPOSIT_AMOUNT
+            && $csrfTokenManager->isTokenValid(new CsrfToken('deposit', $csrfToken))
+        ) {
             $amount = (number_format($amount, 2, '.', '') * 100);
 
             /** @var \clients_history_actions $clientActionHistory */
@@ -337,14 +348,14 @@ class LenderWalletController extends Controller
     }
 
     /**
-     * @Route("/alimentation/payment/{hash}", name="wallet_payment")
+     * @Route("/alimentation/payment/{hash}", name="wallet_payment", requirements={"clientHash": "[0-9a-f]{32}"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
-     * @param $hash
+     * @param string  $hash
      * @return JsonResponse
      */
-    public function paymentAction(Request $request, $hash)
+    public function paymentAction($hash, Request $request)
     {
         require_once $this->getParameter('path.payline') . 'include.php';
 

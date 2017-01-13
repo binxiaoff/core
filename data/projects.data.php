@@ -31,7 +31,7 @@ use \Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
 
 class projects extends projects_crud
 {
-    const MINIMUM_REVENUE                = 100000;
+    const MINIMUM_REVENUE = 100000;
 
     const DISPLAY_PROJECT_ON  = 0;
     const DISPLAY_PROJECT_OFF = 1;

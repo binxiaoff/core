@@ -9,6 +9,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -57,7 +58,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/reprise/{hash}", name="project_request_recovery", requirements={"hash": "[0-9a-f]{32}"})
      * @Route("/depot_de_dossier/stand_by/{hash}", name="project_request_stand_by", requirements={"hash": "[0-9a-f]{32}"})
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -194,7 +195,7 @@ class ProjectRequestController extends Controller
         $this->company = $entityManager->getRepository('companies');
         $this->company->id_client_owner               = $this->client->id_client;
         $this->company->siren                         = $siren;
-        $this->company->siret                         = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
+        $this->company->siret                         = $sirenLength === 14 ? $siren : '';
         $this->company->status_adresse_correspondance = 1;
         $this->company->email_dirigeant               = $email;
         $this->company->email_facture                 = $email;
@@ -315,7 +316,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("GET")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -405,7 +406,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact_form", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("POST")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -427,7 +428,7 @@ class ProjectRequestController extends Controller
 
         $errors = [];
 
-        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], ['Mme', 'M.'])) {
+        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [\clients::CIVILITY_MISS, \clients::CIVILITY_MISTER])) {
             $errors['contact']['civility'] = true;
         }
         if (empty($request->request->get('contact')['lastname'])) {
@@ -458,7 +459,7 @@ class ProjectRequestController extends Controller
             $errors['project']['description'] = true;
         }
         if ('no' === $request->request->get('manager')) {
-            if (empty($request->request->get('advisor')['civility']) || false === in_array($request->request->get('advisor')['civility'], ['Mme', 'M.'])) {
+            if (empty($request->request->get('advisor')['civility']) || false === in_array($request->request->get('advisor')['civility'], [\clients::CIVILITY_MISS, \clients::CIVILITY_MISTER])) {
                 $errors['advisor']['civility'] = true;
             }
             if (empty($request->request->get('advisor')['lastname'])) {
@@ -609,7 +610,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("GET")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -708,7 +709,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance_form", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("POST")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -860,7 +861,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("GET")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -957,7 +958,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner_form", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("POST")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -1067,7 +1068,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("GET")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -1108,7 +1109,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect_form", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("POST")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -1179,7 +1180,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("GET")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -1264,7 +1265,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files_form", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("POST")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -1293,7 +1294,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/fin/{hash}", name="project_request_end", requirements={"hash": "[0-9a-f]{32}"})
      * @Method("GET")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -1566,13 +1567,17 @@ class ProjectRequestController extends Controller
     /**
      * Check that hash is present in URL and valid
      * If hash is valid, check status and redirect to appropriate page
-     * @param string $route
-     * @param string $hash
+     * @param string  $route
+     * @param string  $hash
      * @param Request $request
      * @return Response|null
      */
     private function checkProjectHash($route, $hash, Request $request)
     {
+        if (1 !== preg_match('/^[a-z0-9]{32}$/', $hash)) {
+            throw new NotFoundHttpException('Invalid project hash');
+        }
+
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
 
