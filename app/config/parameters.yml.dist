@@ -62,3 +62,7 @@ parameters:
     new_relic.front_app_name:       Unilend-front
     new_relic.back_app_name:        Unilend-backoffice
     new_relic.console_app_name:     Unilend-batchjobs
+
+    ekomi.url:                      http://apps.ekomi.com/srr/add-recipient
+    ekomi.shop_id:                  ~
+    ekomi.password:                 ~
