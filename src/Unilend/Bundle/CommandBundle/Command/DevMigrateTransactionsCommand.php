@@ -105,7 +105,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                         break;
                     case \transactions_types::TYPE_UNILEND_REPAYMENT:
                     case \transactions_types::TYPE_REGULATION_COMMISSION:
-                        'no migration necessary';
+                        $this->insertIntoNonTreatedTransactions($transaction, 'transaction type not migrated', 1);
                         break;
                     default:
                         throw new \InvalidArgumentException('Unsupported transaction type : ' . $transaction['type_transaction']);
@@ -201,9 +201,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
      */
     private function migrateLenderProvision(array $transaction)
     {
-        $lenderWallet = $this->getWallet($transaction['id_client']);
+        $lenderWallet = $this->getClientWallet($transaction['id_client']);
 
         if (false === $lenderWallet) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'lender wallet not found');
             return;
         }
 
@@ -245,12 +246,12 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             $walletLines->get($transaction['id_transaction'], 'id_transaction')
             && $bidEntity->get($walletLines->id_wallet_line, 'id_lender_wallet_line')
         ) {
-            $lenderWallet = $this->getWallet($transaction['id_client']);
+            $lenderWallet = $this->getClientWallet($transaction['id_client']);
 
             $bid['id_bid']     = $bidEntity->id_bid;
             $bid['added']      = $bidEntity->added;
             $bid['id_project'] = $bidEntity->id_project;
-            $amount        = $this->calculateOperationAmount($transaction['montant']);
+            $amount            = $this->calculateOperationAmount($transaction['montant']);
 
             $availableBalance = bcsub($lenderWallet['available_balance'], $amount, 2);
             $committedBalance = bcadd($lenderWallet['committed_balance'], $amount, 2);
@@ -270,19 +271,19 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         if (false === empty($loan['id_transfer'])) {
             /** @var LoanManager $loanManager */
             $loanManager = $this->getContainer()->get('unilend.service.loan_manager');
-            $loanEntity = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('loans');
+            $loanEntity  = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('loans');
             $loanEntity->get($loan['id_loan']);
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $loanManager->getFirstOwner($loanEntity);
-            $lenderWallet = $this->getWallet($lenderAccount->id_client_owner);
+            $lenderWallet  = $this->getClientWallet($lenderAccount->id_client_owner);
         } else {
-            $lenderWallet   = $this->getWallet($clientId);
+            $lenderWallet = $this->getClientWallet($clientId);
         }
 
         $borrowerWallet = $this->getBorrowerWallet($loan['id_project']);
 
         if (false === $borrowerWallet) {
-            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for transaction ' . $transaction['id_transaction']);
+            $this->insertIntoNonTreatedTransactions($transaction, 'borrower wallet not found');
             return;
         }
 
@@ -313,14 +314,13 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $wallet = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         if (empty($wallet)){
-            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for project ' . $projectId);
             return false;
         }
 
         return $wallet[0];
     }
 
-    private function getWallet($clientId)
+    private function getClientWallet($clientId)
     {
         $query     = 'SELECT * FROM wallet where id_client = :clientId';
         $statement = $this->dataBaseConnection->executeQuery($query, ['clientId' => $clientId]);
@@ -328,7 +328,6 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $wallet = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         if (empty($wallet)){
-            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for client ' . $clientId);
             return false;
         }
 
@@ -337,9 +336,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateWelcomeOffer(array $transaction)
     {
-        $clientWallet  = $this->getWallet($transaction['id_client']);
+        $clientWallet  = $this->getClientWallet($transaction['id_client']);
 
         if (false === $clientWallet) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'lender wallet not found');
             return;
         }
 
@@ -362,8 +362,9 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateWelcomeOfferCancellation(array $transaction)
     {
-        $clientWallet  = $this->getWallet($transaction['id_client']);
+        $clientWallet  = $this->getClientWallet($transaction['id_client']);
         if (false === $clientWallet) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'lender wallet not found');
             return;
         }
 
@@ -387,8 +388,9 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateLenderWithdrawal(array $transaction)
     {
-        $wallet = $this->getWallet($transaction['id_client']);
+        $wallet = $this->getClientWallet($transaction['id_client']);
         if (false === $wallet) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'lender wallet not found');
             return;
         }
 
@@ -409,9 +411,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateRefusedBid(array $transaction)
     {
-        $lenderWallet = $this->getWallet($transaction['id_client']);
+        $lenderWallet = $this->getClientWallet($transaction['id_client']);
 
         if (false === $lenderWallet) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'lender wallet not found');
             return;
         }
 
@@ -452,9 +455,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateCapitalRepayments(array $transaction)
     {
-        $lenderWallet = $this->getWallet($transaction['id_client']);
+        $lenderWallet = $this->getClientWallet($transaction['id_client']);
 
         if (false === $lenderWallet) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'lender wallet not found');
             return;
         }
 
@@ -469,7 +473,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         $borrowerWallet = $this->getBorrowerWallet($idProject);
         if (false === $borrowerWallet) {
-            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for transaction ' . $transaction['id_transaction']);
+            $this->insertIntoNonTreatedTransactions($transaction, 'borrower wallet not found');
             return;
         }
 
@@ -505,11 +509,11 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $borrowerWallet = $this->getBorrowerWallet($idProject);
 
         if (false === $borrowerWallet && false === empty($transaction['id_client'])) {
-            $borrowerWallet = $this->getWallet($transaction['id_client']);
+            $borrowerWallet = $this->getClientWallet($transaction['id_client']);
         }
 
         if (false === $borrowerWallet) {
-            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for transaction ' . $transaction['id_transaction']);
+            $this->insertIntoNonTreatedTransactions($transaction, 'borrower wallet not found');
             return;
         }
 
@@ -531,9 +535,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $wireTransferOut = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('virements');
         $wireTransferOut->get($transaction['id_transaction'], 'id_transaction');
 
-        $borrowerWallet = $this->getWallet($transaction['id_client']);
+        $borrowerWallet = $this->getClientWallet($transaction['id_client']);
 
         if (false === $borrowerWallet) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'borrower wallet not found');
             return;
         }
 
@@ -567,9 +572,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
     private function migrateUnilendProjectCommission(array $transaction)
     {
         $unilendWallet  = $this->getWalletByLabel('unilend');
-        $borrowerWallet = $this->getWallet($transaction['id_client']);
+        $borrowerWallet = $this->getClientWallet($transaction['id_client']);
 
         if (false === $borrowerWallet) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'borrower wallet not found');
             return;
         }
 
@@ -595,9 +601,9 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $paidTaxes = $tax->select('id_transaction = ' . $transaction['id_transaction']);
         $totalTax  = array_sum(array_column($paidTaxes, 'amount'));
 
-        $lenderWallet = $this->getWallet($transaction['id_client']);
+        $lenderWallet = $this->getClientWallet($transaction['id_client']);
         if (false === $lenderWallet) {
-            $this->getContainer()->get('monolog.logger.migration')->error('Could not find lender wallet for transaction : ' . $transaction['id_transaction']);
+            $this->insertIntoNonTreatedTransactions($transaction, 'lender wallet not found');
             return;
         }
 
@@ -613,7 +619,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $borrowerWallet = $this->getBorrowerWallet($idProject);
 
         if (false === $borrowerWallet) {
-            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for transaction ' . $transaction['id_transaction']);
+            $this->insertIntoNonTreatedTransactions($transaction, 'borrower wallet not found');
             return;
         }
 
@@ -826,8 +832,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $transfer->get($transaction['id_transfer']);
 
         if (0 > $transaction['montant']) {
-            $debtorWallet   = $this->getWallet($transaction['id_transaction']);
-            $creditorWallet = $this->getWallet($transfer->id_client_receiver);
+            $debtorWallet   = $this->getClientWallet($transaction['id_client']);
+            $creditorWallet = $this->getClientWallet($transfer->id_client_receiver);
             $operation['id_type']              = $this->getOperationType('lender_transfer');
             $operation['id_wallet_debtor']     = $debtorWallet['id'];
             $operation['id_wallet_creditor']   = $creditorWallet['id'];
@@ -849,8 +855,9 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $directDebit = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('receptions');
         $directDebit->get($transaction['id_prelevement']);
 
-        $borrowerWallet = $this->getWallet($transaction['id_client']);
+        $borrowerWallet = $this->getClientWallet($transaction['id_client']);
         if (false === $borrowerWallet) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'borrower wallet not found');
             return;
         }
 
@@ -897,7 +904,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
     private function migrateRecoveryCommissionToBorrower(array $transaction)
     {
         $collectorWallet = $this->getWalletByLabel('debt_collector');
-        $borrowerWallet  = $this->getWallet($transaction['id_client']);
+        $borrowerWallet  = $this->getClientWallet($transaction['id_client']);
 
         $operation['id_type']             = $this->getOperationType('collection_commission_provision');
         $operation['id_wallet_debtor']    = $collectorWallet['id'];
@@ -924,7 +931,12 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->migrateCapitalRepayments($transaction);
 
         $collectorWallet = $this->getWalletByLabel('debt_collector');
-        $lenderWallet    = $this->getWallet($transaction['id_client']);
+        $lenderWallet    = $this->getClientWallet($transaction['id_client']);
+
+        if (empty($lenderWallet)) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'lender wallet not found');
+            return;
+        }
 
         $operation['id_type']             = $this->getOperationType('collection_commission_lender');
         $operation['id_wallet_debtor']    = $lenderWallet['id'];
@@ -1053,5 +1065,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         return null;
     }
 
+    private function insertIntoNonTreatedTransactions(array $transaction, $message, $status = 0)
+    {
+        $this->dataBaseConnection->executeQuery('INSERT INTO non_migrated_transactions (id_transaction, status, message) VALUE (:transactionId, :status, :message)',
+          ['transactionId' => $transaction['id_transaction'], 'status' => $status, 'message' => $message]);
+    }
 
 }
