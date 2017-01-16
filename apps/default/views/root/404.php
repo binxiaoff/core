@@ -13,6 +13,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1;"/>
+    <script type="text/javascript">
+      //<![CDATA[
+      try {
+        if (!window.CloudFlare) {
+          var CloudFlare = [{
+            verbose: 0,
+            p: 1483975702,
+            byc: 0,
+            owlid: "cf",
+            bag2: 1,
+            mirage2: 0,
+            oracle: 0,
+            paths: {cloudflare: "/cdn-cgi/nexp/dok3v=1613a3a185/"},
+            atok: "98db8ee7a64d5e429e53095db5843353",
+            petok: "c25e840f0fca9b7831018ba2c1be8d48809cdfd5-1484572622-1800",
+            zone: "unilend.fr",
+            rocket: "a",
+            apps: {}
+          }];
+          document.write('<script type="text/javascript" src="//ajax.cloudflare.com/cdn-cgi/nexp/dok3v=f2befc48d1/cloudflare.min.js"><' + '\/script>');
+        }
+      } catch (e) {
+      }
+      ;
+      //]]>
+    </script>
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
     <link href="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css" rel="stylesheet"/>
     <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css" rel="stylesheet"/>
@@ -30,6 +56,52 @@
     <link rel="shortcut icon" href="/assets/favicons/favicon.ico">
     <meta name="msapplication-config" content="/assets/favicons/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
+
+    <script data-cfasync="false" type='text/javascript'>
+      var _vwo_code = (function () {
+        var account_id = 249845,
+          settings_tolerance = 2000,
+          library_tolerance = 2500,
+          use_existing_jquery = false,
+                /* DO NOT EDIT BELOW THIS LINE */
+          f = false, d = document;
+        return {
+          use_existing_jquery: function () {
+            return use_existing_jquery;
+          }, library_tolerance: function () {
+            return library_tolerance;
+          }, finish: function () {
+            if (!f) {
+              f = true;
+              var a = d.getElementById('_vis_opt_path_hides');
+              if (a) a.parentNode.removeChild(a);
+            }
+          }, finished: function () {
+            return f;
+          }, load: function (a) {
+            var b = d.createElement('script');
+            b.src = a;
+            b.type = 'text/javascript';
+            b.innerText;
+            b.onerror = function () {
+              _vwo_code.finish();
+            };
+            d.getElementsByTagName('head')[0].appendChild(b);
+          }, init: function () {
+            settings_timer = setTimeout('_vwo_code.finish()', settings_tolerance);
+            var a = d.createElement('style'), b = 'body{opacity:0 !important;filter:alpha(opacity=0) !important;background:none !important;}', h = d.getElementsByTagName('head')[0];
+            a.setAttribute('id', '_vis_opt_path_hides');
+            a.setAttribute('type', 'text/css');
+            if (a.styleSheet) a.styleSheet.cssText = b; else a.appendChild(d.createTextNode(b));
+            h.appendChild(a);
+            this.load('//dev.visualwebsiteoptimizer.com/j.php?a=' + account_id + '&u=' + encodeURIComponent(d.URL) + '&r=' + Math.random());
+            return settings_timer;
+          }
+        };
+      }());
+      _vwo_settings_timer = _vwo_code.init();
+    </script>
+
 </head>
 <body class=" ui-no-user   layout-page-simple ">
 
@@ -64,8 +136,8 @@
                 </h1>
                 <nav class="site-nav" role="navigation">
                     <ul class="site-nav-menu">
-                        <li role="presentation"><a href="https://www.unilend.fr/pourquoi-preter" tabindex="2">Prêter</a></li>
-                        <li role="presentation"><a href="https://www.unilend.fr/pourquoi-emprunter" tabindex="2">Emprunter</a></li>
+                        <li role="presentation"><a href="/pourquoi-preter" tabindex="2">Prêter</a></li>
+                        <li role="presentation"><a href="/pourquoi-emprunter" tabindex="2">Emprunter</a></li>
                         <li role="presentation"><a href="/projets-a-financer" tabindex="2">Projets</a></li>
                         <li role="presentation"><a href="/qui-sommes-nous" tabindex="2">À propos</a></li>
                     </ul>
@@ -82,11 +154,6 @@
                         </div>
                         <input id="site-search-input" type="text" name="search" placeholder="Une question ? " value="" tabindex="1" class="input-field site-search-input">
                     </form>
-                    <div class="site-user">
-                        <a href="/login" class="btn-site-login" tabindex="3">
-                            <span class="label">S'inscrire&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; Se connecter</span>
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -257,7 +324,7 @@
                             <a href="/securite">Sécurité</a> |
                             <a href="/plan-du-site">Plan&nbsp;du&nbsp;site</a>
                         </div>
-                        <p class="site-copyright">&copy;2016 Tous droits réservés. | <a href="http://blackpizza.com">Design</a></p>
+                        <p class="site-copyright">&copy;2017 Tous droits réservés. | <a href="http://blackpizza.com">Design</a></p>
                     </div>
                 </div>
             </div>
