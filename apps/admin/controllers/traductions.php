@@ -75,6 +75,8 @@ class traductionsController extends bootstrap
     public function _export()
     {
         $this->hideDecoration();
+        $this->autoFireView = false;
+
         $_SESSION['request_url'] = $this->url;
 
         /** @var Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager $entityManger */

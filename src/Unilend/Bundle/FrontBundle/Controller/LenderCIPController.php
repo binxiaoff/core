@@ -195,7 +195,8 @@ class LenderCIPController extends Controller
                     $cipManager->insertQuestion($evaluation, $question);
                     return $this->redirectToRoute('cip_continue_questionnaire');
                 case 'back':
-                    $bid = $request->getSession()->getFlashBag()->peek('cipBid')[0];
+                    $bidInfo = $request->getSession()->getFlashBag()->peek('cipBid');
+                    $bid     = false === empty($bidInfo) ? array_shift($bidInfo) : [];
 
                     if (false === empty($bid['project'])) {
                         /** @var \projects $project */
