@@ -28,34 +28,12 @@
 
 class partenaires extends partenaires_crud
 {
-
-    function partenaires($bdd, $params = '')
+    public function partenaires($bdd, $params = '')
     {
         parent::partenaires($bdd, $params);
     }
 
-    function get($id, $field = 'id_partenaire')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_partenaire')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -63,95 +41,80 @@ class partenaires extends partenaires_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `partenaires`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM partenaires' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        $result   = [];
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `partenaires` ' . $where;
+        $sql = 'SELECT COUNT(*) FROM partenaires ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result);
     }
 
-    function exist($id, $field = 'id_partenaire')
+    public function exist($id, $field = 'id_partenaire')
     {
-        $sql    = 'SELECT * FROM `partenaires` WHERE ' . $field . '="' . $id . '"';
+        $sql    = 'SELECT * FROM partenaires WHERE ' . $field . ' = "' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 
-    // Recuperation du ca d'un partenaire
-    function recupCA($id_partenaire)
+    /**
+     * Récupération du CA d'un partenaire
+     * @param int $id_partenaire
+     * @return mixed
+     */
+    public function recupCA($id_partenaire)
     {
-        $sql = 'SELECT SUM(montant/100) FROM `transactions` WHERE status = 1 AND etat != 3 AND id_partenaire = ' . $id_partenaire;
+        $sql = '
+            SELECT ROUND(SUM(montant) / 100, 2) 
+            FROM transactions 
+            WHERE id_partenaire = ' . $id_partenaire . ' AND status != ' . \transactions::STATUS_CANCELED;
 
         $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0);
+        return $this->bdd->result($result);
     }
 
-    // Recuperation du nb de cmde d'un partenaire
-    function recupCmde($id_partenaire)
+    /**
+     * Récupération du nombre de commandes d'un partenaire
+     * @param int $id_partenaire
+     * @return mixed
+     */
+    public function recupCmde($id_partenaire)
     {
-        $sql = 'SELECT count(id_transaction) FROM `transactions` WHERE status = 1 AND etat != 3 AND id_partenaire = ' . $id_partenaire;
+        $sql = '
+            SELECT COUNT(id_transaction) 
+            FROM transactions 
+            WHERE id_partenaire = ' . $id_partenaire . ' AND status != ' . \transactions::STATUS_CANCELED;
 
         $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0);
+        return $this->bdd->result($result);
     }
 
-    // Recuperation du ca d'un partenaire
-    function statCA($id_partenaire, $deb_jour, $deb_mois, $deb_annee, $fin_jour, $fin_mois, $fin_annee)
+    /**
+     * Récupération du nombre de clic global
+     * @param int $id_partenaire
+     * @return int
+     */
+    public function nbClicTotal($id_partenaire)
     {
-        $deb = str_pad($deb_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($deb_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($deb_jour, 2, '0', STR_PAD_LEFT);
-        $fin = str_pad($fin_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($fin_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($fin_jour, 2, '0', STR_PAD_LEFT);
-
-        $sql = 'SELECT SUM(montant/100) FROM `transactions` WHERE status = 1 AND etat != 3 AND date_transaction >= "' . $deb . ' 00:00:00" AND date_transaction <= "' . $fin . ' 23:59:59" AND id_partenaire = ' . $id_partenaire;
+        $sql = '
+            SELECT SUM(nb_clics) 
+            FROM partenaires_clics
+            WHERE id_partenaire = ' . $id_partenaire;
 
         $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0);
-    }
-
-    // Recuperation du ca d'un partenaire
-    function statCmde($id_partenaire, $deb_jour, $deb_mois, $deb_annee, $fin_jour, $fin_mois, $fin_annee)
-    {
-        $deb = str_pad($deb_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($deb_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($deb_jour, 2, '0', STR_PAD_LEFT);
-        $fin = str_pad($fin_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($fin_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($fin_jour, 2, '0', STR_PAD_LEFT);
-
-        $sql = 'SELECT count(id_transaction) FROM `transactions` WHERE status = 1 AND etat != 3 AND date_transaction >= "' . $deb . ' 00:00:00" AND date_transaction <= "' . $fin . ' 23:59:59" AND id_partenaire = ' . $id_partenaire;
-
-        $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0);
-    }
-
-    // Recuperation du nombre de clic global
-    function nbClicTotal($id_partenaire)
-    {
-        $sql = 'SELECT SUM(nb_clics) FROM `partenaires_clics` WHERE id_partenaire = ' . $id_partenaire;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
-    }
-
-    // Recuperation du nombre de clic sur periode
-    function nbClic($id_partenaire, $deb_jour, $deb_mois, $deb_annee, $fin_jour, $fin_mois, $fin_annee)
-    {
-        $deb = str_pad($deb_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($deb_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($deb_jour, 2, '0', STR_PAD_LEFT);
-        $fin = str_pad($fin_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($fin_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($fin_jour, 2, '0', STR_PAD_LEFT);
-
-        $sql = 'SELECT SUM(nb_clics) FROM `partenaires_clics` WHERE date >= "' . $deb . '" AND date <= "' . $fin . '" AND id_partenaire = ' . $id_partenaire;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result);
     }
 }
