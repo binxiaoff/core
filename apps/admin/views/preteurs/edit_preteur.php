@@ -745,7 +745,7 @@
                         }
                     </style>
                     <div style="margin-top: 15px;">
-                        <h3>Historique des status client</h3>
+                    <h3>Historique des statuts client</h3>
                         <table class="tablesorter histo_status_client">
                         <?php foreach ($this->lActions as $historyEntry) {
                             $this->oClientsStatusForHistory->get($historyEntry['id_client_status'], 'id_client_status');
