@@ -70,6 +70,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                         break;
                     case \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT:
                         $this->migrateRecoveryToLender($transaction);
+                        break;
                     case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
                         $this->migrateInterestRepayment($transaction);
                         break;
@@ -280,6 +281,11 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         $borrowerWallet = $this->getBorrowerWallet($loan['id_project']);
 
+        if (false === $borrowerWallet) {
+            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for transaction ' . $transaction['id_transaction']);
+            return;
+        }
+
         $operation['id_type']            = $this->getOperationType('lender_loan');
         $operation['id_wallet_creditor'] = $borrowerWallet['id'];
         $operation['id_wallet_debtor']   = $lenderWallet['id'];
@@ -304,7 +310,14 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                       WHERE p.id_project =  :projectId AND w.id_type = 2';
         $statement = $this->dataBaseConnection->executeQuery($query, ['projectId' => $projectId]);
 
-        return $statement->fetchAll(\PDO::FETCH_ASSOC)[0];
+        $wallet = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (empty($wallet)){
+            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for project ' . $projectId);
+            return false;
+        }
+
+        return $wallet[0];
     }
 
     private function getWallet($clientId)
@@ -455,6 +468,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         }
 
         $borrowerWallet = $this->getBorrowerWallet($idProject);
+        if (false === $borrowerWallet) {
+            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for transaction ' . $transaction['id_transaction']);
+            return;
+        }
 
         $operation['id_type']               = $this->getOperationType('capital_repayment');
         $operation['id_wallet_creditor']    = $lenderWallet['id'];
@@ -476,18 +493,29 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
     {
         if (false === empty($transaction['id_project'])) {
             $idProject = $transaction['id_project'];
-        } else if(false === empty($transaction['id_prelevement'])){
+        }
+
+        if (false === empty($transaction['id_prelevement'])){
             /** @var \receptions $directDebit */
             $directDebit = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('receptions');
             $directDebit->get($transaction['id_prelevement']);
-            $idProject = $directDebit->id_project;
+            $idProject = isset($idProject) ? $idProject : $directDebit->id_project;
         }
 
         $borrowerWallet = $this->getBorrowerWallet($idProject);
 
+        if (false === $borrowerWallet && false === empty($transaction['id_client'])) {
+            $borrowerWallet = $this->getWallet($transaction['id_client']);
+        }
+
+        if (false === $borrowerWallet) {
+            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for transaction ' . $transaction['id_transaction']);
+            return;
+        }
+
         $operation['id_type']             = $this->getOperationType('borrower_provision');
         $operation['id_wallet_creditor']  = $borrowerWallet['id'];
-        $operation['id_project']          = $idProject;
+        $operation['id_project']          = empty($idProject) ? null : $idProject;
         $operation['id_wire_transfer_in'] = empty($transaction['id_virement']) ? null : $transaction['id_virement'];
         $operation['amount']              = $this->calculateOperationAmount($transaction['montant']);
         $operation['added']               = $transaction['date_transaction'];
@@ -569,6 +597,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         $lenderWallet = $this->getWallet($transaction['id_client']);
         if (false === $lenderWallet) {
+            $this->getContainer()->get('monolog.logger.migration')->error('Could not find lender wallet for transaction : ' . $transaction['id_transaction']);
             return;
         }
 
@@ -582,6 +611,11 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         }
 
         $borrowerWallet = $this->getBorrowerWallet($idProject);
+
+        if (false === $borrowerWallet) {
+            $this->getContainer()->get('monolog.logger.migration')->error('Could not find wallet for transaction ' . $transaction['id_transaction']);
+            return;
+        }
 
         $operation['id_type']               = $this->getOperationType('gross_interest_repayment');
         $operation['id_wallet_creditor']    = $lenderWallet['id'];
@@ -825,7 +859,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['id_wallet_debtor']     = $borrowerWallet['id'];
         $operation['added']                = $transaction['added'];
         $operation['id_project']           = empty($directDebit->id_project) ? null : $directDebit->id_reception;
-        $operation['id_wire_transfer_in']  = $directDebit->id_reception;
+        $operation['id_wire_transfer_in']  = empty($directDebit->id_reception) ? null : $directDebit->id_reception;
         $operation['id']                   = $this->newOperation($operation);
 
         $this->debitAvailableBalance($borrowerWallet, $operation);
