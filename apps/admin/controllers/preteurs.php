@@ -78,7 +78,6 @@ class preteursController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         if (isset($_POST['form_search_preteur'])) {
-
             if (empty($_POST['id']) && empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['raison_sociale'])) {
                 $_SESSION['error_search'][]  = 'Veuillez remplir au moins un champ';
             }
@@ -88,8 +87,24 @@ class preteursController extends bootstrap
                 $_SESSION['error_search'][]  = 'Format de l\'email est non valide';
             }
 
-            if (false === empty($_POST['id']) && false === is_numeric($_POST['id'])) {
+            $clientId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+            if (false === $clientId) {
                 $_SESSION['error_search'][]  = 'L\'id du client doit être numérique';
+            }
+
+            $lastName = empty($_POST['nom']) ? '' : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
+            if (false === $lastName) {
+                $_SESSION['error_search'][]  = 'Le format du nom n\'est pas valide';
+            }
+
+            $firstName = empty($_POST['prenom']) ? '' : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
+            if (false === $firstName) {
+                $_SESSION['error_search'][]  = 'Le format du prenom n\'est pas valide';
+            }
+
+            $companyName = empty($_POST['raison_sociale']) ? '' : filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING);
+            if (false === $companyName) {
+                $_SESSION['error_search'][]  = 'Le format de la raison sociale n\'est pas valide';
             }
 
             if (false === empty($_SESSION['error_search'])) {
@@ -99,7 +114,14 @@ class preteursController extends bootstrap
 
             $nonValide = (isset($_POST['nonValide']) && $_POST['nonValide'] != false) ? 1 : '';
 
-            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $email, $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
+            $this->lPreteurs = $this->clients->searchPreteurs($clientId, $lastName, $email, $firstName, $companyName, $nonValide);
+
+            if (1 == count($this->lPreteurs)) {
+                $lender = $this->lPreteurs[0];
+                header('Location:' . $this->lurl . '/preteurs/edit/' . $lender['id_lender_account']);
+                die;
+            }
+
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
