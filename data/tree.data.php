@@ -1200,35 +1200,34 @@ class tree extends tree_crud
     public function search($search, $includeProjects = false, $langue = 'fr')
     {
         $result = [];
-        $search = $this->bdd->escape_string($search);
-        $sql    = '
+        $search = strtolower($this->bdd->escape_string($search));
+        $query    = "
             SELECT t.slug AS slug,
               t.title AS title ,
               t.id_template AS id_template ,
               t.id_parent AS id_parent,
               te.value AS value
-            FROM tree_elements te
-            LEFT JOIN tree t ON t.id_tree = te.id_tree
-            LEFT JOIN elements e ON e.id_element  = te.id_element
+            FROM tree t
+              LEFT JOIN tree_elements te ON t.id_tree = te.id_tree
+              LEFT JOIN elements e ON e.id_element  = te.id_element
             WHERE t.status = 1
-              AND t.id_langue = "' . $langue . '"
-              AND lcase(te.value) LIKE "%' . strtolower($search) . '%"
-              AND t.id_tree NOT IN(16, 130)
+              AND t.id_langue = :lang
+              AND (te.value LIKE :search OR t.title LIKE :search OR t.slug LIKE :search)
             GROUP BY t.slug
-            ORDER BY t.ordre ASC';
+            ORDER BY t.ordre ASC";
 
-        $resultat = $this->bdd->query($sql);
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement     = $this->bdd->executeQuery($query, ['lang' => $langue, 'search' => '%' . $search . '%']);
+        $searchResults = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
-        if ($this->bdd->num_rows($resultat)) {
+        if (false === empty($searchResults)) {
             $result['cms'] = [];
 
-            while ($record = $this->bdd->fetch_assoc($resultat)) {
-                $replace  = strip_tags($record['value']);
-                $mystring = strtolower($replace);
-                $findme   = strtolower($search);
-                $pos      = strpos($mystring, $findme);
-
-                if ($pos !== false) {
+            foreach ($searchResults as $record) {
+                if (false !== strpos(strtolower(strip_tags($record['value'])), $search)
+                    || false !== strpos(strtolower(strip_tags($record['slug'])), $search)
+                    || false !== strpos(strtolower(strip_tags($record['title'])), $search)
+                ) {
                     $result['cms'][] = [
                         'title' => $record['title'],
                         'slug'  => $record['slug']
@@ -1242,29 +1241,31 @@ class tree extends tree_crud
         }
 
         if ($includeProjects) {
-            $sql = '
+            $query = '
                 SELECT p.slug AS slug,
                   p.title AS title,
                   (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status
                 FROM projects p
                 WHERE p.display = 0
-                  AND p.title LIKE "%' . $search . '%"
+                  AND p.title LIKE :search
                 HAVING status >= ' . \projects_status::EN_FUNDING . '
                 ORDER BY p.title ASC';
 
-            $resultatProjects = $this->bdd->query($sql);
+            /** @var \Doctrine\DBAL\Statement $statement */
+            $statement             = $this->bdd->executeQuery($query, ['search' => '%' . $search . '%']);
+            $searchProjectsResults = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
-            if ($this->bdd->num_rows($resultatProjects)) {
+            if (false === empty($searchProjectsResults)) {
                 $result['projects'] = [];
 
-                while ($recordProjects = $this->bdd->fetch_assoc($resultatProjects)) {
+                foreach ($searchProjectsResults as $recordProjects) {
                     $result['projects'][] = [
                         'title' => $recordProjects['title'],
                         'slug'  => 'projects/detail/' . $recordProjects['slug']
                     ];
                 }
 
-                usort($result['projects'], function($firstElement, $secondElement) {
+                usort($result['projects'], function ($firstElement, $secondElement) {
                     return strcmp($firstElement['title'], $secondElement['title']);
                 });
             }
