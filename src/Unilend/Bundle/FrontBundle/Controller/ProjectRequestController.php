@@ -54,9 +54,9 @@ class ProjectRequestController extends Controller
     private $attachmentHelper;
 
     /**
-     * @Route("/depot_de_dossier/{hash}", name="project_request_index", requirements={"hash": "[0-9a-f]{32}"})
-     * @Route("/depot_de_dossier/reprise/{hash}", name="project_request_recovery", requirements={"hash": "[0-9a-f]{32}"})
-     * @Route("/depot_de_dossier/stand_by/{hash}", name="project_request_stand_by", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/{hash}", name="project_request_index", requirements={"hash": "[0-9a-f-]{32,36}"})
+     * @Route("/depot_de_dossier/reprise/{hash}", name="project_request_recovery", requirements={"hash": "[0-9a-f-]{32,36}"})
+     * @Route("/depot_de_dossier/stand_by/{hash}", name="project_request_stand_by", requirements={"hash": "[0-9a-f-]{32,36}"})
      *
      * @param string  $hash
      * @param Request $request
@@ -313,7 +313,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string  $hash
@@ -403,7 +403,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact_form", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact_form", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
      * @param string  $hash
@@ -607,7 +607,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string  $hash
@@ -706,7 +706,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance_form", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance_form", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
      * @param string  $hash
@@ -858,7 +858,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string  $hash
@@ -955,7 +955,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner_form", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner_form", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
      * @param string  $hash
@@ -1065,7 +1065,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string  $hash
@@ -1106,7 +1106,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect_form", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect_form", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
      * @param string  $hash
@@ -1177,7 +1177,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string  $hash
@@ -1262,7 +1262,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files_form", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files_form", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
      * @param string  $hash
@@ -1291,7 +1291,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/fin/{hash}", name="project_request_end", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/fin/{hash}", name="project_request_end", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string  $hash
@@ -1390,7 +1390,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/emails/{hash}", name="project_request_emails", requirements={"hash": "[0-9a-f]{32}"})
+     * @Route("/depot_de_dossier/emails/{hash}", name="project_request_emails", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string $hash
