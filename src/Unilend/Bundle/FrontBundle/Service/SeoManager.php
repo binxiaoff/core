@@ -21,8 +21,9 @@ class SeoManager
      */
     public function setSeoData(Request $request)
     {
-        $route = $request->attributes->get('_route');
+        $route           = $request->attributes->get('_route');
         $translationName = str_replace('_', '-', $route);
+
         if (false === empty($translationName)) {
             $pageTitle           = $this->translator->trans('seo_' . $translationName . '-title');
             $pageMetaDescription = $this->translator->trans('seo_' . $translationName . '-description');

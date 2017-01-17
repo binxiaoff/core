@@ -76,17 +76,10 @@ class NotificationsController extends Controller
      */
     public function paginationAction(Request $request)
     {
-        $perPage     = $request->query->get('perPage');
-        $currentPage = $request->query->get('currentPage');
+        $perPage     = $request->query->getInt('perPage');
+        $currentPage = $request->query->getInt('currentPage');
 
-        if (
-            empty($perPage)
-            || empty($currentPage)
-            || false === filter_var($perPage, FILTER_VALIDATE_INT)
-            || false === filter_var($currentPage, FILTER_VALIDATE_INT)
-            || $perPage < 1
-            || $currentPage < 1
-        ) {
+        if (empty($perPage) || empty($currentPage) || $perPage < 1 || $currentPage < 1) {
             return new JsonResponse([
                 'error' => [
                     'details' => 'Invalid arguments',
