@@ -244,13 +244,11 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         if (
             $walletLines->get($transaction['id_transaction'], 'id_transaction')
-            && $bidEntity->get($walletLines->id_wallet_line, 'id_lender_wallet_line')
+            && $bidEntity->exist($walletLines->id_wallet_line, 'id_lender_wallet_line')
         ) {
             $lenderWallet = $this->getClientWallet($transaction['id_client']);
 
-            $bid['id_bid']     = $bidEntity->id_bid;
-            $bid['added']      = $bidEntity->added;
-            $bid['id_project'] = $bidEntity->id_project;
+            $bid               = $bidEntity->select('id_lender_wallet_line = ' . $walletLines->id_wallet_line)[0];
             $amount            = $this->calculateOperationAmount($transaction['montant']);
 
             $availableBalance = bcsub($lenderWallet['available_balance'], $amount, 2);
@@ -262,7 +260,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             $this->updateWalletBalance($lenderWallet, $bid);
             $this->saveWalletBalanceHistory($lenderWallet, null, $bid);
         } else {
-            $this->getContainer()->get('monolog.logger.migration')->error('Bid could not be found for transaction : ' . $transaction['id_transaction']);
+            $this->insertIntoNonTreatedTransactions($transaction, 'Bid could not be found');
         }
     }
 
