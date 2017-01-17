@@ -506,13 +506,13 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             $idProject = isset($idProject) ? $idProject : $directDebit->id_project;
         }
 
-        $borrowerWallet = $this->getBorrowerWallet($idProject);
+        $borrowerWallet = $this->getClientWallet($transaction['id_client']);
 
-        if (false === $borrowerWallet && false === empty($transaction['id_client'])) {
-            $borrowerWallet = $this->getClientWallet($transaction['id_client']);
+        if (false === $borrowerWallet && isset($idProject)) {
+            $borrowerWallet = $this->getBorrowerWallet($idProject);
         }
 
-        if (false === $borrowerWallet) {
+        if (empty($borrowerWallet)) {
             $this->insertIntoNonTreatedTransactions($transaction, 'borrower wallet not found');
             return;
         }
