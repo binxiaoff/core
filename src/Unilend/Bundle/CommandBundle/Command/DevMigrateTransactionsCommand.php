@@ -499,13 +499,18 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             $idProject = $transaction['id_project'];
         }
 
+        /** @var \receptions $directDebit */
+        $directDebit = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('receptions');
+
         if (false === empty($transaction['id_prelevement'])){
-            /** @var \receptions $directDebit */
-            $directDebit = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('receptions');
             $directDebit->get($transaction['id_prelevement']);
-            $idProject = isset($idProject) ? $idProject : $directDebit->id_project;
         }
 
+        if (false === empty($transaction['id_virement'])) {
+            $directDebit->get($transaction['id_virement']);
+        }
+
+        $idProject = isset($idProject) ? $idProject : $directDebit->id_project;
         $borrowerWallet = $this->getClientWallet($transaction['id_client']);
 
         if (false === $borrowerWallet && isset($idProject)) {
