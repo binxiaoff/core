@@ -271,7 +271,7 @@ class LenderCIPController extends Controller
     }
 
     /**
-     * @Route("/pdf/conseil-cip/{clientHash}", name="pdf_cip", requirements={"clientHash": "[0-9a-f]{32}"})
+     * @Route("/pdf/conseil-cip/{clientHash}", name="pdf_cip", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      *
      * @param string $clientHash
      * @return Response

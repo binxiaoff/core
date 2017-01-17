@@ -167,7 +167,6 @@ class LenderWalletController extends Controller
             /** @var UserPasswordEncoder $securityPasswordEncoder */
             $securityPasswordEncoder = $this->get('security.password_encoder');
 
-
             if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $post['password'])) {
                 $logger->info('Wrong password id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
                 $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
@@ -348,7 +347,7 @@ class LenderWalletController extends Controller
     }
 
     /**
-     * @Route("/alimentation/payment/{hash}", name="wallet_payment", requirements={"clientHash": "[0-9a-f]{32}"})
+     * @Route("/alimentation/payment/{hash}", name="wallet_payment", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request

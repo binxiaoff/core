@@ -14,10 +14,10 @@ class UniversignController extends Controller
      * @Route(
      *     "/universign/{status}/pouvoir/{documentId}/{clientHash}",
      *     name="proxy_signature_status",
-     *     requirements={"status":"\w+"},
-     *     requirements={"documentId":"\d+"},
-     *     requirements={"clientHash":"[0-9a-f]{32}"}
-     *     )
+     *     requirements={"status": "\w+"},
+     *     requirements={"documentId": "\d+"},
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
+     * )
      * @param string $status
      * @param int $documentId
      * @param string $clientHash
@@ -87,10 +87,10 @@ class UniversignController extends Controller
      * @Route(
      *     "/universign/{status}/mandat/{documentId}/{clientHash}",
      *     name="mandate_signature_status",
-     *     requirements={"status":"\w+"},
-     *     requirements={"documentId":"\d+"},
-     *     requirements={"clientHash":"[0-9a-f]{32}"}
-     *     )
+     *     requirements={"status": "\w+"},
+     *     requirements={"documentId": "\d+"},
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
+     * )
      * @param string $status
      * @param int $documentId
      * @param string $clientHash
@@ -155,10 +155,10 @@ class UniversignController extends Controller
      * @Route(
      *     "/universign/{status}/cgv_emprunteurs/{documentId}/{clientHash}",
      *     name="tos_signature_status",
-     *     requirements={"status":"\w+"},
-     *     requirements={"documentId":"\d+"},
-     *     requirements={"clientHash":"[0-9a-f]{32}"}
-     *     )
+     *     requirements={"status": "\w+"},
+     *     requirements={"documentId": "\d+"},
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
+     * )
      * @param string $status
      * @param int $documentId
      * @param string $clientHash

@@ -87,10 +87,7 @@ class LenderOperationsController extends Controller
         $lender->get($client->id_client, 'id_client_owner');
         $this->lenderOperationIndexing($lenderOperationsIndex, $lender);
 
-        /** @var SessionInterface $session */
-        $session = $request->getSession();
         $filters = $this->getOperationFilters($request);
-        $session->set('lenderOperationsFilters', $filters);
 
         $lenderOperations       = $lenderOperationsIndex->getLenderOperations(self::$transactionTypeList[$filters['operation']], $this->getUser()->getClientId(), $filters['startDate']->format('Y-m-d'), $filters['endDate']->format('Y-m-d'));
         $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('id_client = ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . $filters['startDate']->format('Y-m-d') . '" AND DATE(date_operation) <= "' . $filters['endDate']->format('Y-m-d') . '"');
@@ -163,10 +160,7 @@ class LenderOperationsController extends Controller
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
 
-        /** @var SessionInterface $session */
-        $session = $request->getSession();
         $filters = $this->getOperationFilters($request);
-        $session->set('lenderOperationsFilters', $filters);
 
         $transactionListFilter = self::$transactionTypeList[$filters['operation']];
         $startDate             = $filters['startDate']->format('Y-m-d');
@@ -920,6 +914,12 @@ class LenderOperationsController extends Controller
         $filters['id_client'] = $this->getUser()->getClientId();
         $filters['start']     = $filters['startDate']->format('d/m/Y');
         $filters['end']       = $filters['endDate']->format('d/m/Y');
+
+        /** @var SessionInterface $session */
+        $session = $request->getSession();
+        $session->set('lenderOperationsFilters', $filters);
+
+        unset($filters['id_last_action']);
 
         return $filters;
     }

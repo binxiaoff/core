@@ -135,7 +135,7 @@ class LenderSubscriptionController extends Controller
         ) {
             $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-age'));
         }
-        if (empty($post['client_form_of_address']) || false === in_array($post['client_form_of_address'], [\clients::CIVILITY_MISS, \clients::CIVILITY_MISTER, \clients::CIVILITY_UNDEFINED])) {
+        if (empty($post['client_form_of_address']) || false === in_array($post['client_form_of_address'], [\clients::TITLE_MISS, \clients::TITLE_MISTER, \clients::TITLE_UNDEFINED])) {
             $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-identity-missing-form-of-address'));
         }
         if (empty($post['client_name'])) {
@@ -607,7 +607,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents", requirements={"clientHash": "[0-9a-f]{32}"})
+     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string  $clientHash
@@ -652,7 +652,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents_form", requirements={"clientHash": "[0-9a-f]{32}"})
+     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
      * @param string  $clientHash
@@ -836,7 +836,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit", requirements={"clientHash": "[0-9a-f]{32}"})
+     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string  $clientHash
@@ -870,7 +870,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form", requirements={"clientHash": "[0-9a-f]{32}"})
+     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
      * @param string  $clientHash

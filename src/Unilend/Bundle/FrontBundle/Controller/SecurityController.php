@@ -156,7 +156,7 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/{clientHash}", name="define_new_password", requirements={"clientHash": "[0-9a-f]{32}"})
+     * @Route("/nouveau-mot-de-passe/{clientHash}", name="define_new_password", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      *
      * @param string $clientHash
      * @return Response
@@ -171,7 +171,7 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/submit/{clientHash}", name="save_new_password", requirements={"clientHash": "[0-9a-f]{32}"})
+     * @Route("/nouveau-mot-de-passe/submit/{clientHash}", name="save_new_password", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
      * @param string  $clientHash

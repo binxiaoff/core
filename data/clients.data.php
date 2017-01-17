@@ -49,9 +49,9 @@ class clients extends clients_crud
     const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
     const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
 
-    const CIVILITY_MISS      = 'Mme';
-    const CIVILITY_MISTER    = 'M.';
-    const CIVILITY_UNDEFINED = '';
+    const TITLE_MISS      = 'Mme';
+    const TITLE_MISTER    = 'M.';
+    const TITLE_UNDEFINED = '';
 
     public function __construct($bdd, $params = '')
     {

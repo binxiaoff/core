@@ -428,7 +428,7 @@ class ProjectRequestController extends Controller
 
         $errors = [];
 
-        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [\clients::CIVILITY_MISS, \clients::CIVILITY_MISTER])) {
+        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [\clients::TITLE_MISS, \clients::TITLE_MISTER])) {
             $errors['contact']['civility'] = true;
         }
         if (empty($request->request->get('contact')['lastname'])) {
@@ -459,7 +459,7 @@ class ProjectRequestController extends Controller
             $errors['project']['description'] = true;
         }
         if ('no' === $request->request->get('manager')) {
-            if (empty($request->request->get('advisor')['civility']) || false === in_array($request->request->get('advisor')['civility'], [\clients::CIVILITY_MISS, \clients::CIVILITY_MISTER])) {
+            if (empty($request->request->get('advisor')['civility']) || false === in_array($request->request->get('advisor')['civility'], [\clients::TITLE_MISS, \clients::TITLE_MISTER])) {
                 $errors['advisor']['civility'] = true;
             }
             if (empty($request->request->get('advisor')['lastname'])) {
