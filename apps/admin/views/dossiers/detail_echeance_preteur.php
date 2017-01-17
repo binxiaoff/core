@@ -64,17 +64,19 @@
             foreach ($this->lRemb as $r) :
                 $this->projects->get($r['id_project'], 'id_project');
                 $this->lenders_accounts->get($r['id_lender'], 'id_lender_account');
+                $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                /** @var \DateTime $transferDate */
-                $transferDate = $this->loanManager->getLoanTransferDate($this->loan);
-                $paymentDate = new \DateTime($r['date_echeance_reel']);
-                if ($r['date_echeance_reel'] !== '0000-00-00 00:00:00' && $paymentDate <= $transferDate) {
-                    /** @var \lenders_accounts $formerOwner */
-                    $formerOwner = $this->loanManager->getFormerOwner($this->loan);
-                    $this->clients->get($formerOwner->id_client_owner, 'id_client');
-                } else {
-                    $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                if (false === empty($this->loan->id_transfer)) {
+                    /** @var \DateTime $transferDate */
+                    $transferDate = $this->loanManager->getLoanTransferDate($this->loan);
+                    $paymentDate = new \DateTime($r['date_echeance_reel']);
+                    if ($r['date_echeance_reel'] !== '0000-00-00 00:00:00' && $paymentDate <= $transferDate) {
+                        /** @var \lenders_accounts $formerOwner */
+                        $formerOwner = $this->loanManager->getFormerOwner($this->loan);
+                        $this->clients->get($formerOwner->id_client_owner, 'id_client');
+                    }
                 }
+
                 ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $this->clients->nom ?></td>

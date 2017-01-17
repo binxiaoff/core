@@ -17,24 +17,23 @@ class temporary_links_login extends temporary_links_login_crud
         }
 
         $resultat = $this->bdd->query('SELECT * FROM `temporary_links_login`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')));
-        $result   = array();
+        $result   = [];
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    public function generateTemporaryLink($iClientId)
+    public function generateTemporaryLink($clientId)
     {
-        $sToken          = md5($iClientId).md5(time());
-        $oDateTime       =  new \datetime('NOW + 1 week');
-        $sExpiryDateTime = $oDateTime->format('Y-m-d H:i:s');
+        $token          = md5($clientId) . md5(time());
+        $expiryDateTime = new \DateTime('NOW + 1 week');
 
-        $this->id_client = $iClientId;
-        $this->token     = $sToken;
-        $this->expires   = $sExpiryDateTime;
+        $this->id_client = $clientId;
+        $this->token     = $token;
+        $this->expires   = $expiryDateTime->format('Y-m-d H:i:s');
         $this->create();
 
-        return $sToken;
+        return $token;
     }
 }

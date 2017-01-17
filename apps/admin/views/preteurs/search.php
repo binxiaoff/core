@@ -1,6 +1,14 @@
 <div id="contenu">
 <form method="post" name="search_preteur" id="search_preteur" enctype="multipart/form-data" action="<?=$this->lurl?>/preteurs/gestion" target="_parent">
-        <h1>Rechercher un prêteur</h1>            
+        <h1>Rechercher un prêteur</h1>
+        <?php if (isset($_SESSION['error_search'])) : ?>
+        <div class="attention">
+            <?php foreach ($_SESSION['error_search'] as $error ) : ?>
+                <?= $error ?><br>
+            <?php endforeach; ?>
+            <?php unset($_SESSION['error_search']); ?>
+        </div>
+        <?php endif; ?>
         <fieldset>
             <table class="formColor">
             	<tr>
