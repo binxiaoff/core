@@ -42,6 +42,7 @@
     "sonata-project/cache-bundle": "^2.3",
     "knplabs/knp-mailjet-bundle": "^1.1",
     "cleentfaar/slack-bundle": "^0.20.1",
+    "doctrine/mongodb-odm-bundle": "^3.2",
     "jms/serializer-bundle": "^1.1",
     "eightpoints/guzzle-bundle": "^5.2"
   },

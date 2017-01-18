@@ -14,10 +14,10 @@ class UniversignController extends Controller
      * @Route(
      *     "/universign/{status}/pouvoir/{documentId}/{clientHash}",
      *     name="proxy_signature_status",
-     *     requirements={"status":"\w+"},
-     *     requirements={"documentId":"\d+"},
-     *     requirements={"clientHash":"[0-9a-f]{32}"}
-     *     )
+     *     requirements={"status": "\w+"},
+     *     requirements={"documentId": "\d+"},
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
+     * )
      * @param string $status
      * @param int $documentId
      * @param string $clientHash
@@ -87,10 +87,10 @@ class UniversignController extends Controller
      * @Route(
      *     "/universign/{status}/mandat/{documentId}/{clientHash}",
      *     name="mandate_signature_status",
-     *     requirements={"status":"\w+"},
-     *     requirements={"documentId":"\d+"},
-     *     requirements={"clientHash":"[0-9a-f]{32}"}
-     *     )
+     *     requirements={"status": "\w+"},
+     *     requirements={"documentId": "\d+"},
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
+     * )
      * @param string $status
      * @param int $documentId
      * @param string $clientHash
@@ -155,10 +155,10 @@ class UniversignController extends Controller
      * @Route(
      *     "/universign/{status}/cgv_emprunteurs/{documentId}/{clientHash}",
      *     name="tos_signature_status",
-     *     requirements={"status":"\w+"},
-     *     requirements={"documentId":"\d+"},
-     *     requirements={"clientHash":"[0-9a-f]{32}"}
-     *     )
+     *     requirements={"status": "\w+"},
+     *     requirements={"documentId": "\d+"},
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
+     * )
      * @param string $status
      * @param int $documentId
      * @param string $clientHash
@@ -234,7 +234,8 @@ class UniversignController extends Controller
      *     requirements={"universignUpdate":"\w+"}
      *     )
      * @Route("/universign/pouvoir/{proxyId}", name="proxy_generation", requirements={"proxyId":"\d+"})
-     * @param int $proxyId
+     *
+     * @param int         $proxyId
      * @param null|string $universignUpdate
      * @return Response
      */
@@ -258,6 +259,7 @@ class UniversignController extends Controller
 
     /**
      * @Route("/universign/mandat/{mandateId}", name="mandate_generation", requirements={"mandateId":"\d+"})
+     *
      * @param int $mandateId
      * @return Response
      */
@@ -281,7 +283,8 @@ class UniversignController extends Controller
 
     /**
      * @Route("/universign/cgv_emprunteurs/{tosId}/{tosName}", name="tos_generation", requirements={"tosId":"\d+"})
-     * @param int $tosId
+     *
+     * @param int    $tosId
      * @param string $tosName
      * @return Response
      */
@@ -289,8 +292,6 @@ class UniversignController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
         /** @var \project_cgv $tos */
         $tos = $entityManager->getRepository('project_cgv');
         /** @var \Unilend\Bundle\FrontBundle\Service\UniversignManager $universignManager */
