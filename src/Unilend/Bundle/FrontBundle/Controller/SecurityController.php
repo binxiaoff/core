@@ -191,6 +191,10 @@ class SecurityController extends Controller
     /**
      * @Route("/nouveau-mot-de-passe/submit/{token}", name="save_new_password", requirements={"token": "[a-z0-9]{32}"})
      * @Method("POST")
+     *
+     * @param string  $token
+     * @param Request $request
+     * @return Response
      */
     public function changePasswordFormAction($token, Request $request)
     {

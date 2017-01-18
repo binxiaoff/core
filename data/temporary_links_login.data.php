@@ -21,7 +21,7 @@ class temporary_links_login extends temporary_links_login_crud
         }
 
         $resultat = $this->bdd->query('SELECT * FROM `temporary_links_login`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')));
-        $result   = array();
+        $result   = [];
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }

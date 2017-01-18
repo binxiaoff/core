@@ -187,7 +187,7 @@ class echeanciers extends echeanciers_crud
               AND e.id_project = :id_project
               AND e.status IN (:repayment_status)
               AND e.ordre >= :ordre';
-        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
+        return (float) bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
             ->fetchColumn(0), 100, 2);
     }
 

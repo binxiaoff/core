@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
@@ -59,7 +60,7 @@ class BorrowerAccountController extends Controller
             $projectId = $request->request->get('project');
 
             if (
-                $projectId == (int) $projectId
+                filter_var($projectId, FILTER_VALIDATE_INT)
                 && $project->get($projectId)
                 && $project->id_company == $this->getCompany()->id_company
             ) {
@@ -147,7 +148,7 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/operations", name="borrower_account_operations")
      *
      * @param Request $request
-     * @return Response|StreamedResponse
+     * @return Response
      */
     public function operationsAction(Request $request)
     {
@@ -165,29 +166,31 @@ class BorrowerAccountController extends Controller
 
         if ($request->isXmlHttpRequest()) {
             $filter = $request->query->get('filter');
-            $start  = \DateTime::createFromFormat('d/m/Y', $filter['start']);
-            $end    = \DateTime::createFromFormat('d/m/Y', $filter['end']);
 
-            if ($filter['op'] !== 'all') {
-                $operation = (int)$filter['op'];
-            } else {
-                $operation = 0;
+            if (
+                isset($filter['start'], $filter['end'], $filter['op'])
+                && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['start'])
+                && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['end'])
+            ) {
+                $start     = \DateTime::createFromFormat('d/m/Y', $filter['start']);
+                $end       = \DateTime::createFromFormat('d/m/Y', $filter['end']);
+                $operation = ($filter['op'] !== 'all' && filter_var($filter['op'], FILTER_VALIDATE_INT)) ? $filter['op'] : 0;
+
+                if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
+                    $projectsIds = [$filter['project']];
+                }
+
+                $borrowerOperations = $client->getDataForBorrowerOperations($projectsIds, $start, $end, $operation);
+
+                return $this->json([
+                    'count'         => count($borrowerOperations),
+                    'html_response' => $this->render('borrower_account/operations_ajax.html.twig', ['operations' => $borrowerOperations])->getContent()
+                ]);
             }
-
-            if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
-                $projectsIds = array($filter['project']);
-            }
-
-            $borrowerOperations = $client->getDataForBorrowerOperations($projectsIds, $start, $end, $operation);
-
-            return $this->json([
-                'count'         => count($borrowerOperations),
-                'html_response' => $this->render('borrower_account/operations_ajax.html.twig', ['operations' => $borrowerOperations])->getContent()
-            ]);
         }
 
-        $start                      = new \Datetime('NOW - 1 month');
-        $end                        = new \Datetime();
+        $start                      = new \DateTime('NOW - 1 month');
+        $end                        = new \DateTime();
         $defaultFilterDate['start'] = $start->format('d/m/Y');
         $defaultFilterDate['end']   = $end->format('d/m/Y');
 
@@ -212,7 +215,6 @@ class BorrowerAccountController extends Controller
             } else {
                 $projectsPostFunding[$iKey]['mandat'] = [];
             }
-
         }
 
         /** @var \factures $oInvoices */
@@ -387,15 +389,18 @@ class BorrowerAccountController extends Controller
         $projectsPostFunding = $this->getProjectsPostFunding();
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
 
-        $filter = $request->query->get('filter');
-        $start  = \DateTime::createFromFormat('d/m/Y', $filter['start']);
-        $end    = \DateTime::createFromFormat('d/m/Y', $filter['end']);
-
-        if ($filter['op'] !== 'all') {
-            $operation = (int)$filter['op'];
-        } else {
-            $operation = 0;
+        if (
+            false === isset($filter['start'], $filter['end'], $filter['op'])
+            && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['start'])
+            && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['end'])
+        ) {
+            throw new RouteNotFoundException('Invalid operation CSV export parameters');
         }
+
+        $filter    = $request->query->get('filter');
+        $start     = \DateTime::createFromFormat('d/m/Y', $filter['start']);
+        $end       = \DateTime::createFromFormat('d/m/Y', $filter['end']);
+        $operation = ($filter['op'] !== 'all' && filter_var($filter['op'], FILTER_VALIDATE_INT)) ? $filter['op'] : 0;
 
         if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
             $projectsIds = array($filter['project']);
@@ -445,15 +450,18 @@ class BorrowerAccountController extends Controller
         $projectsPostFunding = $this->getProjectsPostFunding();
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
 
-        $filter = $request->query->get('filter');
-        $start  = \DateTime::createFromFormat('d/m/Y', $filter['start']);
-        $end    = \DateTime::createFromFormat('d/m/Y', $filter['end']);
-
-        if ($filter['op'] !== 'all') {
-            $operation = (int)$filter['op'];
-        } else {
-            $operation = 0;
+        if (
+            false === isset($filter['start'], $filter['end'], $filter['op'])
+            && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['start'])
+            && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['end'])
+        ) {
+            throw new RouteNotFoundException('Invalid operation CSV export parameters');
         }
+
+        $filter    = $request->query->get('filter');
+        $start     = \DateTime::createFromFormat('d/m/Y', $filter['start']);
+        $end       = \DateTime::createFromFormat('d/m/Y', $filter['end']);
+        $operation = ($filter['op'] !== 'all' && filter_var($filter['op'], FILTER_VALIDATE_INT)) ? $filter['op'] : 0;
 
         if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
             $projectsIds = array($filter['project']);
@@ -500,8 +508,8 @@ class BorrowerAccountController extends Controller
     /**
      * @Route(
      *     "/espace-emprunteur/export/lender-detail/csv/{type}/{projectId}/{repaymentOrder}",
-     *     requirements={"projectId" = "\d+"},
-     *     defaults={"repaymentOrder" = null},
+     *     requirements={"projectId": "\d+"},
+     *     defaults={"repaymentOrder": null},
      *     name="borrower_account_export_lender_details_csv"
      * )
      *
@@ -584,14 +592,14 @@ class BorrowerAccountController extends Controller
     }
 
     /**
-     * @Route("/espace-emprunteur/securite/{token}", name="borrower_account_security")
+     * @Route("/espace-emprunteur/securite/{token}", name="borrower_account_security", requirements={"token": "[0-9a-f]+"})
      * @Template("borrower_account/security.html.twig")
      *
      * @param Request $request
      * @param $token
      * @return Response
      */
-    public function securityAction(Request $request, $token)
+    public function securityAction($token, Request $request)
     {
         /** @var \temporary_links_login $temporaryLinks */
         $temporaryLinks = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
@@ -612,14 +620,15 @@ class BorrowerAccountController extends Controller
 
             /** @var \clients $client */
             $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-
             $client->get($temporaryLinks->id_client);
+
             if ($request->isMethod('POST')) {
                 $translator = $this->get('translator');
                 /** @var \ficelle $ficelle */
-                $ficelle = Loader::loadLib('ficelle');
-                $formData = $request->request->get('borrower_security');
-                $error = false;
+                $ficelle  = Loader::loadLib('ficelle');
+                $formData = $request->request->get('borrower_security', []);
+                $error    = false;
+
                 if (empty($formData['password']) || false === $ficelle->password_fo($formData['password'], 6)) {
                     $error = true;
                     $this->addFlash('error', $translator->trans('common-validator_password-invalid'));
@@ -637,8 +646,11 @@ class BorrowerAccountController extends Controller
                     $this->addFlash('error', $translator->trans('common-validator_secret-answer-invalid'));
                 }
                 if (false === $error) {
+                    $formData['question'] = filter_var($formData['question'], FILTER_SANITIZE_STRING);
+
                     $borrower = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
                     $password = $this->get('security.password_encoder')->encodePassword($borrower, $formData['password']);
+
                     $client->password         = $password;
                     $client->secrete_question = $formData['question'];
                     $client->secrete_reponse  = md5($formData['answer']);
@@ -735,25 +747,30 @@ class BorrowerAccountController extends Controller
         /** @var \echeanciers_emprunteur $repaymentSchedule */
         $repaymentSchedule = $this->get('unilend.service.entity_manager')->getRepository('echeanciers_emprunteur');
 
-        foreach ($projectsPostFunding as $key => $project) {
+        foreach ($projectsPostFunding as $index => $project) {
             $projects->get($project['id_project']);
 
-            if (false === in_array($project['status'],[\projects_status::REMBOURSEMENT_ANTICIPE,\projects_status::REMBOURSE])) {
-               $aNextRepayment = $repaymentSchedule->select(
+            if (false === in_array($project['status'], [\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE])) {
+               $nextRepayment = $repaymentSchedule->select(
                    'id_project = ' . $project['id_project'] . ' AND status_emprunteur = 0',
                    'date_echeance_emprunteur ASC',
                    '',
                    1
                )[0];
             } else {
-                $aNextRepayment = 0;
+                $nextRepayment = [
+                    'montant'                  => 0,
+                    'commission'               => 0,
+                    'tva'                      => 0,
+                    'date_echeance_emprunteur' => date('Y-m-d H:i:s'),
+                ];
             }
 
-            $projectsPostFunding[$key] = $projectsPostFunding[$key] + [
+            $projectsPostFunding[$index] = $projectsPostFunding[$index] + [
                 'average_ir'          => round($projects->getAverageInterestRate(), 2),
                 'outstanding_capital' => $this->calculateOutstandingCapital($project['id_project']),
-                'monthly_payment'     => ($aNextRepayment['montant'] + $aNextRepayment['commission'] + $aNextRepayment['tva']) / 100,
-                'next_maturity_date'  => \DateTime::createFromFormat('Y-m-d H:i:s', $aNextRepayment['date_echeance_emprunteur']),
+                'monthly_payment'     => ($nextRepayment['montant'] + $nextRepayment['commission'] + $nextRepayment['tva']) / 100,
+                'next_maturity_date'  => \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment['date_echeance_emprunteur']),
                 'ended'               => $projectManager->getProjectEndDate($projects)
             ];
         }
@@ -799,10 +816,14 @@ class BorrowerAccountController extends Controller
     {
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->get('unilend.service.entity_manager')->getRepository('echeanciers');
+        $lastOrder         = $repaymentSchedule->getLastOrder($projectId);
 
-        $aPayment      = $repaymentSchedule->getLastOrder($projectId);
-        $iPaymentOrder = (isset($aPayment)) ? $aPayment['ordre'] + 1 : 1;
+        if (false === $lastOrder) {
+            return 0.0;
+        }
 
-        return $repaymentSchedule->getRemainingCapitalAtDue($projectId, $iPaymentOrder);
+        $paymentOrder = $lastOrder['ordre'] + 1;
+
+        return $repaymentSchedule->getRemainingCapitalAtDue($projectId, $paymentOrder);
     }
 }

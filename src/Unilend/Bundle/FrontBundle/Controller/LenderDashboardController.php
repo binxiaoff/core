@@ -192,7 +192,7 @@ class LenderDashboardController extends Controller
     }
 
     /**
-     * @Route("synthese/preferences", name="save_panel_preferences")
+     * @Route("/synthese/preferences", name="save_panel_preferences")
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
@@ -217,20 +217,26 @@ class LenderDashboardController extends Controller
                 $preferences = $panelPreferences->getLenderPreferencesByPage($lenderAccount->id_lender_account, $pageName);
 
                 foreach ($postData as $panel) {
-                    if (isset($preferences[$panel['id']])) {
-                        if ($preferences[$panel['id']]['hidden'] != $panel['hidden'] || $preferences[$panel['id']]['panel_order'] != $panel['order']) {
+                    if (
+                        isset($preferences[$panel['id']], $panel['hidden'], $panel['order'])
+                        && filter_var($panel['order'], FILTER_VALIDATE_INT)
+                    ) {
+                        if (
+                            $preferences[$panel['id']]['hidden'] != $panel['hidden']
+                            || $preferences[$panel['id']]['panel_order'] != $panel['order']
+                        ) {
                             $panelPreferences->get($preferences[$panel['id']]['id_lender_panel_preference']);
-                            $panelPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
+                            $panelPreferences->hidden      = ('true' === $panel['hidden']) ? 1 : 0;
                             $panelPreferences->panel_order = $panel['order'];
                             $panelPreferences->update();
+                        } else {
+                            $panelPreferences->id_lender   = $lenderAccount->id_lender_account;
+                            $panelPreferences->page_name   = $pageName;
+                            $panelPreferences->panel_name  = $panel['id'];
+                            $panelPreferences->panel_order = $panel['order'];
+                            $panelPreferences->hidden      = ('true' === $panel['hidden']) ? 1 : 0;
+                            $panelPreferences->create();
                         }
-                    } else {
-                        $panelPreferences->id_lender   = $lenderAccount->id_lender_account;
-                        $panelPreferences->page_name   = $pageName;
-                        $panelPreferences->panel_name  = $panel['id'];
-                        $panelPreferences->panel_order = $panel['order'];
-                        $panelPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
-                        $panelPreferences->create();
                     }
                 }
                 $result = ['success' => 1, 'data' => $postData, 'preferences' => $preferences];
