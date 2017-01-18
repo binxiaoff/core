@@ -96,7 +96,7 @@ class ExceptionController extends Controller
         $title      = $translator->trans('error-page_blocked-title');
         $details    = $translator->trans('error-page_blocked-details');
 
-        return $this->render('exception/error.html.twig', [
+        return $this->render('exception/cf_page.html.twig', [
             'errorPageTitle' => $pageTitle,
             'errorTitle'     => $title,
             'errorDetails'   => $details,
@@ -119,7 +119,7 @@ class ExceptionController extends Controller
         $title      = $translator->trans('error-page_challenge-title');
         $details    = $translator->trans('error-page_challenge-details');
 
-        return $this->render('exception/error.html.twig', [
+        return $this->render('exception/cf_page.html.twig', [
             'errorPageTitle' => $pageTitle,
             'errorTitle'     => $title,
             'errorDetails'   => $details,

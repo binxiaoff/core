@@ -1,11 +1,6 @@
 {# Error page #}
 {% extends 'layouts/_page-simple.html.twig' %}
 
-{% if app.request.get('_route') in ['cloudflare_challenge', 'cloudflare_block'] %}
-    {% block siteHeader %}{% endblock %}
-    {% block siteFooter %}{% endblock %}
-{% endif %}
-
 {% block pageTitle %}
     <h1 class="page-title">
         {{ errorPageTitle }}
