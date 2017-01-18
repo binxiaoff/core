@@ -6,7 +6,6 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
@@ -96,7 +95,7 @@ class LenderWalletController extends Controller
             'client'          => $clientData,
             'lender'          => $lenderData,
             'lenderBankMotif' => $client->getLenderPattern($clientData['id_client']),
-            'withdrawalForm'  => $form->createView(),
+            'withdrawalForm'  => $form->createView()
         ];
 
         $form->handleRequest($request);
@@ -119,7 +118,11 @@ class LenderWalletController extends Controller
         return $this->render('pages/lender_wallet/withdrawal.html.twig', $template);
     }
 
-    private function handleWithdrawalPost($post, $request)
+    /**
+     * @param array   $post
+     * @param Request $request
+     */
+    private function handleWithdrawalPost(array $post, Request $request)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -258,13 +261,14 @@ class LenderWalletController extends Controller
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
-     * @return JsonResponse
+     * @return Response
      */
     public function depositMoneyAction(Request $request)
     {
         if (false === $request->isXmlHttpRequest()) {
             return $this->redirectToRoute('lender_wallet_deposit');
         }
+
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \clients $client */
@@ -289,6 +293,9 @@ class LenderWalletController extends Controller
             && $amount <= self::MAX_DEPOSIT_AMOUNT
             && $csrfTokenManager->isTokenValid(new CsrfToken('deposit', $csrfToken))
         ) {
+            $token = $this->get('security.csrf.token_manager');
+            $token->refreshToken('deposit');
+
             $amount = (number_format($amount, 2, '.', '') * 100);
 
             /** @var \clients_history_actions $clientActionHistory */
@@ -352,7 +359,7 @@ class LenderWalletController extends Controller
      *
      * @param Request $request
      * @param string  $hash
-     * @return JsonResponse
+     * @return Response
      */
     public function paymentAction($hash, Request $request)
     {
@@ -407,7 +414,6 @@ class LenderWalletController extends Controller
      * @param string $route The name of the route
      * @param array $parameters An array of parameters
      * @param int $status The status code to use for the Response
-     *
      * @return Response
      */
     protected function redirectToRoute($route, array $parameters = array(), $status = 302)
