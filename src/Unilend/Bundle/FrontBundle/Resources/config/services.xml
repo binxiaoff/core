@@ -104,9 +104,5 @@
             <argument>%url.universign%</argument>
             <argument>%kernel.root_dir%</argument>
         </service>
-
-        <service id="unilend.frontbundle.security.client_role" class="Unilend\Bundle\FrontBundle\Security\ClientRole">
-            <argument type="service" id="security.role_hierarchy"/>
-        </service>
     </services>
 </container>
