@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
@@ -21,7 +22,8 @@ class CheckBalanceCommand extends ContainerAwareCommand
     {
         $this
             ->setName('unilend:dev_tools:balance:check')
-            ->setDescription('Check if the historic balance matches the wallet_balance and no balance is negative');
+            ->setDescription('Check if the historic balance matches the wallet_balance and no balance is negative')
+            ->addArgument('date', InputArgument::OPTIONAL, 'When do you want to start vérification YYYY-MM-DD');
     }
 
     /**
@@ -31,18 +33,21 @@ class CheckBalanceCommand extends ContainerAwareCommand
     {
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
+
+        $date          = $input->getArgument('date');
+        $dateLastCheck = empty($date) ? new \DateTime('NOW -1 DAY') : new \DateTime($date);
+
         $this->checkPositiveBalance($logger);
-        $this->checkLenderBalance($logger);
+        $this->checkLenderBalance($logger,  $dateLastCheck);
     }
 
-    private function checkLenderBalance(LoggerInterface $logger)
+    private function checkLenderBalance(LoggerInterface $logger, \DateTime $dateLastCheck)
     {
         /** @var \transactions $transaction */
         $transaction          = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('transactions');
         $walletRepository     = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
         $walletTypeRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:WalletType');
 
-        $dateLastCheck      = new \DateTime('NOW -1 DAY');
         $clientsToBeChecked = $transaction->getLenderWithTransactionsSinceDate($dateLastCheck);
 
         /** @var WalletType $walletType */
