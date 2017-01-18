@@ -30,17 +30,17 @@ class CallHistoryManager
     /**
      * WSProviderCallHistoryManager constructor.
      * @param EntityManager $entityManager
-     * @param string $stopwatch
+     * @param Stopwatch $stopwatch
      * @param ApiClient $slack
      * @param string $payload
      * @param string $alertChannel
      * @param Packages $assetPackage
      * @param LoggerInterface $logger
      */
-    public function __construct(EntityManager $entityManager, $stopwatch, ApiClient $slack, $payload, $alertChannel, Packages $assetPackage, LoggerInterface $logger)
+    public function __construct(EntityManager $entityManager, Stopwatch $stopwatch, ApiClient $slack, $payload, $alertChannel, Packages $assetPackage, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
-        $this->stopwatch     = new $stopwatch;
+        $this->stopwatch     = $stopwatch;
         $this->slack         = $slack;
         $this->payload       = new $payload;
         $this->alertChannel  = $alertChannel;

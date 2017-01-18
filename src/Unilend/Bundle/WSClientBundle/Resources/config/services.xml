@@ -6,7 +6,7 @@
     <services>
         <service id="unilend.ws_client.call_history_handler" class="Unilend\Bundle\WSClientBundle\Service\CallHistoryManager">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument>Symfony\Component\Stopwatch\Stopwatch</argument>
+            <argument type="service" id="debug.stopwatch"/>
             <argument type="service" id="cl_slack.api_client"/>
             <argument>CL\Slack\Payload\ChatPostMessagePayload</argument>
             <argument>%slack_monitoring_channel%</argument>
