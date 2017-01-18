@@ -7,7 +7,11 @@ use Symfony\Component\Security\Http\Logout\DefaultLogoutSuccessHandler;
 
 class LogoutSuccessHandler extends DefaultLogoutSuccessHandler
 {
-    public function onLogoutSuccess(Request $request) {
+    /**
+     * @inheritDoc
+     */
+    public function onLogoutSuccess(Request $request)
+    {
         $response = parent::onLogoutSuccess($request);
         $response->headers->clearCookie(LoginAuthenticator::COOKIE_NO_CF);
 

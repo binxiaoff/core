@@ -185,9 +185,9 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         $this->sessionStrategy->onAuthentication($request, $token);
 
-        if ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles()) && $client->etape_inscription_preteur < 3) {
+        if (in_array('ROLE_LENDER', $user->getRoles()) && $client->etape_inscription_preteur < 3) {
             $response = new RedirectResponse($this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]));
-        } elseif ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles()) && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
+        } elseif (in_array('ROLE_LENDER', $user->getRoles()) && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
             $response = new RedirectResponse($this->router->generate('lender_completeness'));
         } else {
             $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
