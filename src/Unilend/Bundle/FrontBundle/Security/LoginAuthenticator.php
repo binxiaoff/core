@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\FrontBundle\Security;
 
 use Symfony\Bridge\Monolog\Logger;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
@@ -30,6 +31,8 @@ use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
     use TargetPathTrait;
+
+    const COOKIE_NO_CF = 'uld-nocf';
 
     /** @var UserPasswordEncoder */
     private $securityPasswordEncoder;
@@ -182,35 +185,36 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         $this->sessionStrategy->onAuthentication($request, $token);
 
-        if ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles())) {
-            if ($client->etape_inscription_preteur < 3) {
-                return new RedirectResponse($this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]));
+        if ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles()) && $client->etape_inscription_preteur < 3) {
+            $response = new RedirectResponse($this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]));
+        } elseif ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles()) && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
+            $response = new RedirectResponse($this->router->generate('lender_completeness'));
+        } else {
+            $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+
+            if (! $targetPath) {
+                $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
             }
 
-            if (in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
-                return new RedirectResponse($this->router->generate('lender_completeness'));
+            $client->saveLogin(new \DateTime('NOW'));
+
+            /** @var \clients_history $clientHistory */
+            $clientHistory = $this->entityManager->getRepository('clients_history');
+            $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
+
+            /** @var \clients_gestion_notifications $clientNotificationSettings */
+            $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
+            if (false === $clientNotificationSettings->select('id_client = ' . $user->getClientId())) {
+                $this->notificationManager->generateDefaultNotificationSettings($client);
             }
+
+            $response = new RedirectResponse($targetPath);
         }
 
-        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+        $cookie = new Cookie(self::COOKIE_NO_CF, 1);
+        $response->headers->setCookie($cookie);
 
-        if (! $targetPath) {
-            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
-        }
-
-        $client->saveLogin(new \DateTime('NOW'));
-
-        /** @var \clients_history $clientHistory */
-        $clientHistory = $this->entityManager->getRepository('clients_history');
-        $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
-
-        /** @var \clients_gestion_notifications $clientNotificationSettings */
-        $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
-        if (false === $clientNotificationSettings->select('id_client = ' . $user->getClientId())) {
-            $this->notificationManager->generateDefaultNotificationSettings($client);
-        }
-
-        return new RedirectResponse($targetPath);
+        return $response;
     }
 
     /**
