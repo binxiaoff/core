@@ -126,7 +126,6 @@ class CallHistoryManager
                     $this->setPayload();
                     $this->payload->setText($provider . " is down  :skull_and_crossbones:\n> " . $extraInfo);
                 } else {
-                    var_dump('nothing to do ' . __LINE__);
                     return;
                 }
                 break;
@@ -136,15 +135,14 @@ class CallHistoryManager
                     $this->setPayload();
                     $this->payload->setText($provider . ' is up  :white_check_mark:');
                 } else {
-                    var_dump('nothing to do '. __LINE__);
                     return;
                 }
                 break;
             default:
-                var_dump('nothing to do ' . __LINE__);
                 unset($payload);
                 return;
         }
+        $setting->update();
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'provider' => $provider];
         try {
             $response = $this->slack->send($this->payload);
