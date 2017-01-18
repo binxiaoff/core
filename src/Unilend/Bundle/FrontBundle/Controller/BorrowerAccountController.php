@@ -589,20 +589,20 @@ class BorrowerAccountController extends Controller
      *
      * @param Request $request
      * @param $token
-     * @return array
+     * @return Response
      */
     public function securityAction(Request $request, $token)
     {
         /** @var \temporary_links_login $temporaryLinks */
-        $temporaryLinks   = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
-        $isLinkExpired = false;
+        $temporaryLinks = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
+        $isLinkExpired  = false;
 
         if (false === $temporaryLinks->get($token, 'token')) {
             return $this->redirectToRoute('home');
         }
 
-        $now         = new \datetime();
-        $linkExpires = new \datetime($temporaryLinks->expires);
+        $now         = new \DateTime();
+        $linkExpires = new \DateTime($temporaryLinks->expires);
 
         if ($linkExpires <= $now) {
             $isLinkExpired = true;

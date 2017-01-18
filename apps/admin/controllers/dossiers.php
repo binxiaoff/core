@@ -2698,6 +2698,7 @@ class dossiersController extends bootstrap
         $oSettings->get('Téléphone emprunteur', 'type');
         $sBorrowerPhoneNumber = $oSettings->value;
 
+        /** @var \temporary_links_login $oTemporaryLink */
         $oTemporaryLink = $this->loadData('temporary_links_login');
 
         return array(
@@ -2712,7 +2713,7 @@ class dossiersController extends bootstrap
             'lien_fb'                => $lien_fb,
             'lien_tw'                => $lien_tw,
             'lien_stop_relance'      => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
-            'link_compte_emprunteur' => $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client)
+            'link_compte_emprunteur' => $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG)
         );
     }
 
@@ -2795,7 +2796,7 @@ class dossiersController extends bootstrap
 
         /** @var \temporary_links_login $oTemporaryLink */
         $oTemporaryLink = $this->loadData('temporary_links_login');
-        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($this->clients->id_client);
+        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($this->clients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
 
         $aVariables = array(
             'surl'                   => $this->surl,
