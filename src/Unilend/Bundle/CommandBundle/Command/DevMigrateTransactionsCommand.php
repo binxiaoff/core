@@ -104,6 +104,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                         $this->migrateWelcomeOfferProvision($transaction);
                         break;
                     case \transactions_types::TYPE_UNILEND_REPAYMENT:
+                        $this->migrateUnilendProjectCommission($transaction);
+                        break;
                     case \transactions_types::TYPE_REGULATION_COMMISSION:
                         $this->insertIntoNonTreatedTransactions($transaction, 'transaction type not migrated', 1);
                         break;
@@ -574,8 +576,18 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateUnilendProjectCommission(array $transaction)
     {
-        $unilendWallet  = $this->getWalletByLabel('unilend');
-        $borrowerWallet = $this->getClientWallet($transaction['id_client']);
+        $unilendWallet = $this->getWalletByLabel('unilend');
+        $projectId     = empty($transaction['id_project']) ? null : $transaction['id_project'];
+
+        if (empty($transaction['id_client'])){
+            /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
+            $borrowerRepaymentSchedule = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('echeanciers_emprunteur');
+            $borrowerRepaymentSchedule->get($transaction['id_echeancier_emprunteur']);
+            $borrowerWallet = $this->getBorrowerWallet($borrowerRepaymentSchedule->id_project);
+            $projectId = $borrowerRepaymentSchedule->id_project;
+        } else {
+            $borrowerWallet = $this->getClientWallet($transaction['id_client']);
+        }
 
         if (false === $borrowerWallet) {
             $this->insertIntoNonTreatedTransactions($transaction, 'borrower wallet not found');
@@ -584,7 +596,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         $operation['id_type']            = $this->getOperationType('borrower_commission');
         $operation['amount']             = $this->calculateOperationAmount($transaction['montant_unilend']);
-        $operation['id_project']         = $transaction['id_project'];
+        $operation['id_project']         = $projectId;
         $operation['id_wallet_creditor'] = $unilendWallet['id'];
         $operation['id_wallet_debtor']   = $borrowerWallet['id'];
         $operation['added']              = $transaction['date_transaction'];
