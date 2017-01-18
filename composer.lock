@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f4d90f434b1cec4a3ed67f717f6fa43",
+    "content-hash": "90e3df782b23f1a1501a4c43ab1ab210",
     "packages": [
         {
             "name": "cache/adapter-bundle",
@@ -1527,17 +1527,17 @@
         },
         {
             "name": "eightpoints/guzzle-bundle",
-            "version": "v5.2.2",
+            "version": "v5.3.0",
             "target-dir": "EightPoints/Bundle/GuzzleBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/8p/GuzzleBundle.git",
-                "reference": "7630ef4eba3faee41ae5c94fc4e2bcc65935d123"
+                "reference": "59f0b3079954716a3be32a8537003be2540ad156"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/8p/GuzzleBundle/zipball/7630ef4eba3faee41ae5c94fc4e2bcc65935d123",
-                "reference": "7630ef4eba3faee41ae5c94fc4e2bcc65935d123",
+                "url": "https://api.github.com/repos/8p/GuzzleBundle/zipball/59f0b3079954716a3be32a8537003be2540ad156",
+                "reference": "59f0b3079954716a3be32a8537003be2540ad156",
                 "shasum": ""
             },
             "require": {
@@ -1587,7 +1587,7 @@
                 "symfony",
                 "web service"
             ],
-            "time": "2016-12-18 21:46:04"
+            "time": "2016-12-30T13:35:37+00:00"
         },
         {
             "name": "eightpoints/guzzle-wsse-middleware",
@@ -1642,7 +1642,7 @@
                 "web service",
                 "wsse"
             ],
-            "time": "2016-06-03 14:03:33"
+            "time": "2016-06-03T14:03:33+00:00"
         },
         {
             "name": "ekino/newrelic-bundle",
@@ -2448,7 +2448,7 @@
                 "serialization",
                 "xml"
             ],
-            "time": "2015-11-10 12:26:42"
+            "time": "2015-11-10T12:26:42+00:00"
         },
         {
             "name": "knplabs/knp-mailjet-bundle",

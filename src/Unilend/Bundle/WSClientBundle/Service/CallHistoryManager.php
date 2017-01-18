@@ -123,7 +123,7 @@ class CallHistoryManager
             case 'down':
                 if ($setting->value) {
                     $setting->value = '0';
-                    $this->setPayload($provider);
+                    $this->setPayload();
                     $this->payload->setText($provider . " is down  :skull_and_crossbones:\n> " . $extraInfo);
                 } else {
                     var_dump('nothing to do ' . __LINE__);
@@ -133,7 +133,7 @@ class CallHistoryManager
             case 'up':
                 if (! $setting->value) {
                     $setting->value = '1';
-                    $this->setPayload($provider);
+                    $this->setPayload();
                     $this->payload->setText($provider . ' is up  :white_check_mark:');
                 } else {
                     var_dump('nothing to do '. __LINE__);
@@ -158,16 +158,13 @@ class CallHistoryManager
         }
     }
 
-    /**
-     * @param $provider
-     */
-    private function setPayload($provider)
+    private function setPayload()
     {
         $this->payload->setChannel($this->alertChannel);
-        $this->payload->setUsername($provider);
+        $this->payload->setUsername('Unilend');
 
-        if (file_exists($this->assetPackage->getUrl('') . '/assets/images/slack/' . strtolower($provider) . '.png')) {
-            $this->payload->setIconUrl($this->assetPackage->getUrl('') . '/assets/images/slack/' . strtolower($provider) . '.png');
+        if (file_exists($this->assetPackage->getUrl('') . '/assets/images/slack/unilend.png')) {
+            $this->payload->setIconUrl($this->assetPackage->getUrl('') . '/assets/images/slack/unilend.png');
         }
         $this->payload->setAsUser(false);
     }
