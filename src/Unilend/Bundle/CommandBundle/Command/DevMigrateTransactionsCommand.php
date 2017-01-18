@@ -614,7 +614,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         }
 
         $operation['id_type']            = $this->getOperationType('borrower_commission');
-        $operation['amount']             = $this->calculateOperationAmount($borrowerRepaymentSchedule->commission);
+        $operation['amount']             = $this->calculateOperationAmount(bcadd($borrowerRepaymentSchedule->commission, $borrowerRepaymentSchedule->tva, 2));
         $operation['id_project']         = $borrowerRepaymentSchedule->id_project;
         $operation['id_wallet_creditor'] = $unilendWallet['id'];
         $operation['id_wallet_debtor']   = $borrowerWallet['id'];
