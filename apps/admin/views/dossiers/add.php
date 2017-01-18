@@ -102,12 +102,7 @@
     <?php } elseif (false === empty($this->projects->id_project)) { ?>
         <div id="lesEtapes">
             <?php $this->fireView('blocs/etape1'); ?>
-            <?php $this->fireView('blocs/etape2'); ?>
         </div>
         <br/><br/><br/>
-        <div class="btnDroite">
-            <a href="<?= $this->lurl ?>/dossiers/add/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a>
-            <a href="#" id="end_create" class="btn_link" onclick="valid_create(<?= $this->projects->id_project ?>); return false;">Terminer</a>
-        </div>
     <?php } ?>
 </div>

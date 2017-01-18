@@ -7,6 +7,11 @@
         <service id="unilend.ws_client.call_history_handler" class="Unilend\Bundle\WSClientBundle\Service\CallHistoryManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument>Symfony\Component\Stopwatch\Stopwatch</argument>
+            <argument type="service" id="cl_slack.api_client"/>
+            <argument>CL\Slack\Payload\ChatPostMessagePayload</argument>
+            <argument>%slack_monitoring_channel%</argument>
+            <argument type="service" id="assets.packages" />
+            <argument type="service" id="logger" />
         </service>
 
         <service id="unilend.ws_client.soap_client.infogreffe" class="SoapClient">
@@ -40,9 +45,13 @@
             <argument>%euler.grading_key%</argument>
             <argument>%euler.account_key%</argument>
             <argument>%euler.password%</argument>
+            <argument>%euler.email%</argument>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
             <argument type="service" id="jms_serializer"/>
+            <call method="setMonitoring">
+                <argument>true</argument>
+            </call>
         </service>
 
         <service id="unilend.ws_client.codinf_manager" class="Unilend\Bundle\WSClientBundle\Service\CodinfManager">
@@ -53,6 +62,9 @@
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
             <argument type="service" id="jms_serializer"/>
+            <call method="setMonitoring">
+                <argument>true</argument>
+            </call>
         </service>
 
         <service id="unilend.ws_client.infolegale_manager" class="Unilend\Bundle\WSClientBundle\Service\InfolegaleManager">
@@ -61,6 +73,9 @@
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
             <argument type="service" id="jms_serializer"/>
+            <call method="setMonitoring">
+                <argument>true</argument>
+            </call>
         </service>
 
         <service id="unilend.ws_client.infogreffe_manager" class="Unilend\Bundle\WSClientBundle\Service\InfogreffeManager">
@@ -70,6 +85,9 @@
             <argument type="service" id="unilend.ws_client.call_history_handler"/>
             <argument type="service" id="unilend.ws_client.soap_client.infogreffe"/>
             <argument type="service" id="jms_serializer"/>
+            <call method="setMonitoring">
+                <argument>true</argument>
+            </call>
         </service>
 
         <service id="unilend.ws_client.altares_manager" class="Unilend\Bundle\WSClientBundle\Service\AltaresManager">
@@ -80,6 +98,9 @@
             <argument type="service" id="unilend.ws_client.soap_client.altares_identity"/>
             <argument type="service" id="unilend.ws_client.soap_client.altares_risque"/>
             <argument type="service" id="jms_serializer"/>
+            <call method="setMonitoring">
+                <argument>true</argument>
+            </call>
         </service>
     </services>
 </container>

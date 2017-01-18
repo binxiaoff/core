@@ -5,6 +5,8 @@ use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class ajaxController extends bootstrap
 {
+    const MAX_COMPANY_BALANCE_DATE = 450;
+
     public function initialize()
     {
         parent::initialize();
@@ -268,6 +270,17 @@ class ajaxController extends bootstrap
                 $this->companies->get($this->projects->id_company, 'id_company');
                 $this->companies->siren = $_POST['siren_etape1'];
                 $this->companies->update();
+
+                if (\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $this->checkCompany($this->companies, $this->projects)) {
+                    echo 'Siren inconu';
+                    return;
+                } elseif (empty($this->companies->code_naf)) {
+                    echo 'Problème lors de la récupération des données de la socièté';
+                    return;
+                }
+                echo 'OK';
+                return;
+
             } elseif ($_POST['etape'] == 2) {
                 $this->projects->get($_POST['id_project'], 'id_project');
                 $this->projects->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
@@ -1626,5 +1639,121 @@ class ajaxController extends bootstrap
         $message->setTo($oClients->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);
+    }
+
+    /**
+     * @param companies $company
+     * @param projects $project
+     * @return string
+     */
+    private function checkCompany(\companies &$company, \projects &$project)
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \company_rating_history $companyRatingHistory */
+        $companyRatingHistory = $entityManager->getRepository('company_rating_history');
+        /** @var \Psr\Log\LoggerInterface $logger */
+        $logger                           = $this->get('logger');
+        $logContext                       = ['class' => __CLASS__, 'function' => __FUNCTION__];
+        $companyRatingHistory->id_company = $project->id_company;
+        $companyRatingHistory->id_user    = 0;
+        $companyRatingHistory->action     = \company_rating_history::ACTION_WS;
+        $companyRatingHistory->create();
+
+        /** @var \company_rating $companyRating */
+        $companyRating = $entityManager->getRepository('company_rating');
+
+        if (false === empty($project->id_company_rating_history)) {
+            foreach ($companyRating->getHistoryRatingsByType($project->id_company_rating_history) as $rating => $value) {
+                if (false === in_array($rating, \company_rating::$ratingTypes)) {
+                    $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
+                    $companyRating->type                      = $rating;
+                    $companyRating->value                     = $value;
+                    $companyRating->create();
+                }
+            }
+        }
+        $project->balance_count             = '0000-00-00' === $company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $company->date_creation)->diff(new \DateTime())->y;
+        $project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
+        $project->update();
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyFinanceCheck $companyFinanceCheck */
+        $companyFinanceCheck = $this->get('unilend.service.company_finance_check');
+
+        if (false === $companyFinanceCheck->isCompanySafe($company, $rejectionReason)) {
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+            return $rejectionReason;
+        }
+
+        if (true === $companyFinanceCheck->hasCodinfPaymentIncident($company->siren, $rejectionReason)) {
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+            return $rejectionReason;
+        }
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyScoringCheck $companyScoringCheck */
+        $companyScoringCheck = $this->get('unilend.service.company_scoring_check');
+        /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating $altaresScore */
+        $altaresScore = $companyScoringCheck->getAltaresScore($company->siren);
+
+        if (true === $companyScoringCheck->isAltaresScoreLow($altaresScore, $companyRatingHistory, $companyRating, $rejectionReason)) {
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+            return $rejectionReason;
+        }
+        /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList $balanceSheetList */
+        $balanceSheetList = $companyFinanceCheck->getBalanceSheets($company->siren);
+        $logger->info('Last balance sheet date: ' . $balanceSheetList->getLastBalanceSheet()->getCloseDate()->format('Y-m-d H:i:s') .
+            ' Number of days left: ' . (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days, $logContext);
+        if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= self::MAX_COMPANY_BALANCE_DATE) {
+            if (true === $companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $company->siren, $rejectionReason)) {
+                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+                return $rejectionReason;
+            }
+
+            if (true === $companyFinanceCheck->hasNegativeRawOperatingIncomes($balanceSheetList, $company->siren, $rejectionReason)) {
+                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+                return $rejectionReason;
+            }
+        }
+
+        if (false === $companyScoringCheck->isXerfiUnilendOk($company->code_naf, $companyRatingHistory, $companyRating, $rejectionReason)) {
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+            return $rejectionReason;
+        }
+
+        if (false === $companyScoringCheck->combineAltaresScoreAndUnilendXerfi($altaresScore, $company->code_naf, $rejectionReason)) {
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+            return $rejectionReason;
+        }
+
+        if (true === $companyScoringCheck->isInfolegaleScoreLow($company->siren, $companyRatingHistory, $companyRating, $rejectionReason)) {
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+            return $rejectionReason;
+        }
+
+        if (false === $companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $companyRatingHistory, $companyRating, $rejectionReason)) {
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+            return $rejectionReason;
+        }
+
+        if (true === $companyFinanceCheck->hasInfogreffePrivileges($company->siren, $rejectionReason)) {
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+
+            return $rejectionReason;
+        }
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+        $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+        $companyBalanceSheetManager->setCompanyBalance($company, $project, $balanceSheetList);
+
+        return 'OK';
     }
 }

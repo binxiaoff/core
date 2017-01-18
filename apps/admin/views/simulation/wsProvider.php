@@ -38,6 +38,6 @@
 <?php
 if (false === empty($this->result)) {
     echo '<pre>';
-    var_dump($this->result);
+    var_export($this->result);
     echo '</pre>';
 }

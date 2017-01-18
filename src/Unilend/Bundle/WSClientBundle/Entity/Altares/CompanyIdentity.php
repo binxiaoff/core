@@ -208,4 +208,12 @@ class CompanyIdentity
     {
         return $this->companyStatus;
     }
+
+    /**
+     * return boolean
+     */
+    public function getCollectiveProcedure()
+    {
+        return 'OUI' === $this->collectiveProcedure;
+    }
 }

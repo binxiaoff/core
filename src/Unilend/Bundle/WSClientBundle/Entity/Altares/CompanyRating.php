@@ -19,13 +19,25 @@ class CompanyRating
     private $sectoralScore20;
 
     /**
+     * @JMS\SerializedName("scoreSectorielCent")
+     * @JMS\Type("integer")
+     */
+    private $sectoralScore100;
+
+    /**
      * @JMS\SerializedName("scoreVingt")
      * @JMS\Type("integer")
      */
     private $score20;
 
     /**
-     * @return mixed
+     * @JMS\SerializedName("scoreCent")
+     * @JMS\Type("integer")
+     */
+    private $score100;
+
+    /**
+     * @return \DateTime
      */
     public function getScoreDate()
     {
@@ -46,5 +58,21 @@ class CompanyRating
     public function getScore20()
     {
         return $this->score20;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSectoralScore100()
+    {
+        return $this->sectoralScore100;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getScore100()
+    {
+        return $this->score100;
     }
 }

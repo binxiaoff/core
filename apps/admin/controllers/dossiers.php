@@ -71,6 +71,10 @@ class dossiersController extends bootstrap
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->fundingTimeValues = explode(',', $this->settings->value);
 
+        /** @var \project_need $projectNeed */
+        $projectNeed = $this->loadData('project_need');
+        $this->needs = $projectNeed->getTree();
+
         if (isset($_POST['form_search_dossier'])) {
             if ($_POST['date1'] != '') {
                 $d1    = explode('/', $_POST['date1']);
@@ -87,11 +91,16 @@ class dossiersController extends bootstrap
             }
             $iNbStartPagination = (isset($_POST['nbLignePagination'])) ? (int) $_POST['nbLignePagination'] : 0;
             $this->nb_lignes    = (isset($this->nb_lignes)) ? (int) $this->nb_lignes : 100;
-            $this->lProjects    = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'], null, $_POST['commercial'], $iNbStartPagination, $this->nb_lignes);
+            $this->lProjects    = $this->projects->searchDossiers($date1, $date2, $_POST['projectNeed'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'], null, $_POST['commercial'], $iNbStartPagination, $this->nb_lignes);
         } elseif (isset($this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
         $this->iCountProjects = (isset($this->lProjects) && is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
+
+        if (1 === $this->iCountProjects) {
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);
+            die;
+        }
     }
 
     public function _edit()
@@ -379,27 +388,6 @@ class dossiersController extends bootstrap
             } elseif (isset($_POST['submit-button'], $_POST['id_annual_accounts_remove']) && 'Supprimer' === $_POST['submit-button'] && is_numeric($_POST['id_annual_accounts_remove'])) {
                 $this->companies_bilans->get($_POST['id_annual_accounts_remove']);
                 $companyBalanceSheetManager->removeBalanceSheet($this->companies_bilans, $this->projects);
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                die;
-            } elseif (isset($this->params[1]) && $this->params[1] == 'altares') {
-                if (false === empty($this->companies->siren)) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
-                    $oAltares = $this->get('unilend.service.altares');
-                    try {
-                        $oAltares->setCompanyData($this->companies);
-                        $oAltares->setProjectData($this->projects);
-                        $oAltares->setCompanyBalance($this->companies);
-                        $_SESSION['freeow']['title']   = 'Données Altares';
-                        $_SESSION['freeow']['message'] = 'Données Altares récupéré !';
-                    } catch (\Exception $exception) {
-                        $_SESSION['freeow']['title']   = 'Données Altares';
-                        $_SESSION['freeow']['message'] = 'Données Altares erreur !';
-                    }
-                } else {
-                    $_SESSION['freeow']['title']   = 'Données Altares';
-                    $_SESSION['freeow']['message'] = 'Numéro de SIREN non renseigné';
-                }
-
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
             }
@@ -1083,7 +1071,7 @@ class dossiersController extends bootstrap
         $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
         $aReplacements['sujet'] = $this->mail_template->subject;
 
-        /** @var \Psr\Log\LoggerInterface $logger */
+        /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
         $logger->debug('Mail to send : ' . $sMailType . ' Variables : ' . json_encode($aReplacements), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
 
@@ -1229,7 +1217,7 @@ class dossiersController extends bootstrap
                     $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
                     $aReplacements['sujet'] = $this->mail_template->subject;
 
-                    /** @var \Psr\Log\LoggerInterface $logger */
+                    /** @var LoggerInterface $logger */
                     $logger = $this->get('logger');
                     $logger->debug('Mail to send : ' . $sMailType . ' Variables : ' . json_encode($aReplacements), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
 
@@ -1492,21 +1480,6 @@ class dossiersController extends bootstrap
 
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            if (isset($this->params[1]) && $this->params[1] === 'altares') {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
-                $oAltares = $this->get('unilend.service.altares');
-                try {
-                    $oAltares->setCompanyData($this->companies);
-                    $oAltares->setProjectData($this->projects);
-                    $oAltares->setCompanyBalance($this->companies);
-                } catch (\Exception $exception) {
-
-                }
-
-                header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
-                die;
-            }
-
             $this->bHasAdvisor = false;
 
             if (
@@ -1586,7 +1559,7 @@ class dossiersController extends bootstrap
 
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
-        /** @var \Psr\Log\LoggerInterface $oLogger */
+        /** @var LoggerInterface $oLogger */
         $oLogger = $this->get('logger');
 
         $taxRate   = $taxType->getTaxRateByCountry('fr');
@@ -1912,7 +1885,7 @@ class dossiersController extends bootstrap
                             }
                         }
                     } catch (\Exception $exception) {
-                        /** @var \Psr\Log\LoggerInterface $oLogger */
+                        /** @var LoggerInterface $oLogger */
                         $oLogger = $this->get('logger');
                         $oLogger->error(
                             'id_project=' . $e['id_project'] . ', id_echeancier=' . $e['id_echeancier'] . ' - An error occurred when calculating the refund details - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(),

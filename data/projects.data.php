@@ -103,7 +103,7 @@ class projects extends projects_crud
         return ($this->bdd->fetch_assoc($result) > 0);
     }
 
-    public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = '', $iSalesPersonId = '', $start = '', $nb = '')
+    public function searchDossiers($date1 = '', $date2 = '', $need = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = '', $iSalesPersonId = '', $start = '', $nb = '')
     {
         $where = [];
 
@@ -113,8 +113,8 @@ class projects extends projects_crud
         if (false === empty($date2)) {
             $where[] = 'p.added <= "' . $date2 . ' 23:59:59"';
         }
-        if (false === empty($montant)) {
-            $where[] = 'p.amount = "' . $montant . '"';
+        if (false === empty($need)) {
+            $where[] = 'p.id_project_need = "' . $need . '"';
         }
         if (false === empty($duree)) {
             $where[] = 'p.period = "' . $duree . '"';

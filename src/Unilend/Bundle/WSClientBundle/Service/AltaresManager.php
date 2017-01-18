@@ -5,6 +5,7 @@ namespace Unilend\Bundle\WSClientBundle\Service;
 use JMS\Serializer\DeserializationContext;
 use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
@@ -25,6 +26,8 @@ class AltaresManager
     private $riskClient;
     /** @var Serializer */
     private $serializer;
+    /** @var boolean */
+    private $monitoring;
 
     /**
      * AltaresManager constructor.
@@ -48,6 +51,14 @@ class AltaresManager
     }
 
     /**
+     * @param boolean $activate
+     */
+    public function setMonitoring($activate)
+    {
+        $this->monitoring = $activate;
+    }
+
+    /**
      * @param string $siren
      * @return null|CompanyRating
      */
@@ -63,11 +74,15 @@ class AltaresManager
     /**
      * @param string $siren
      * @param int $iSheetsCount
-     * @return mixed
+     * @return null|BalanceSheetList
      */
     public function getBalanceSheets($siren, $iSheetsCount = 3)
     {
-        return $this->identitySoapCall('getDerniersBilans', ['siren' => $siren, 'nbBilans' => $iSheetsCount]);
+        if (null !== $response = $this->identitySoapCall('getDerniersBilans', ['siren' => $siren, 'nbBilans' => $iSheetsCount])) {
+            return $this->serializer->deserialize(json_encode($response), BalanceSheetList::class, 'json');
+        }
+
+        return null;
     }
 
     /**
@@ -86,7 +101,8 @@ class AltaresManager
 
     /**
      * @param string $siren
-     * @return null|FinancialSummary
+     * @param string $balanceId
+     * @return null|FinancialSummary[]
      * @throws \Exception
      */
     public function getFinancialSummary($siren, $balanceId)
@@ -101,7 +117,7 @@ class AltaresManager
     /**
      * @param string $siren
      * @param string $balanceId
-     * @return null|FinancialSummary
+     * @return null|FinancialSummary[]
      * @throws \Exception
      */
     public function getBalanceManagementLine($siren, $balanceId)
@@ -121,19 +137,32 @@ class AltaresManager
      */
     private function identitySoapCall($action, $params)
     {
-        $callable = $this->callHistoryManager->addResourceCallHistoryLog('altares', $action, 'POST', $params[$this->getSirenKey($action)]);
-        $response = $this->identityClient->__soapCall(
-            $action,
-            [
-                ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
-            ]
-        );
-        call_user_func($callable);
-        $this->logger->info('Call to ' . $action . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($action)]]);
+        try {
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog('altares', $action, 'POST', $params[$this->getSirenKey($action)]);
+            ini_set("default_socket_timeout", 8);
+            $response = $this->identityClient->__soapCall(
+                $action,
+                [
+                    ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
+                ]
+            );
+            call_user_func($callable);
+            $this->logger->info('Call to ' . $action . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($action)]]);
 
-        if ($response->return->correct && $response->return->myInfo) {
-            return $response->return->myInfo;
+            if ($response->return->correct && $response->return->myInfo) {
+                if ($this->monitoring) {
+                    $this->callHistoryManager->sendMonitoringAlert('Altares', 'Altares status', 'up');
+                }
+
+                return $response->return->myInfo;
+            }
+        } catch (\Exception $exception) {
+            if ($this->monitoring) {
+                $this->callHistoryManager->sendMonitoringAlert('Altares', 'Altares status', 'down');
+            }
+            $this->logger->error($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__] + $params);
         }
+
         return null;
     }
 
@@ -145,18 +174,30 @@ class AltaresManager
      */
     private function riskSoapCall($action, $params)
     {
-        $callable = $this->callHistoryManager->addResourceCallHistoryLog('altares', $action, 'POST', $params[$this->getSirenKey($action)]);
-        $response = $this->riskClient->__soapCall(
-            $action,
-            [
-                ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
-            ]
-        );
-        call_user_func($callable);
-        $this->logger->info('Call to ' . $action . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($action)]]);
+        try {
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog('altares', $action, 'POST', $params[$this->getSirenKey($action)]);
+            ini_set("default_socket_timeout", 8);
+            $response = $this->riskClient->__soapCall(
+                $action,
+                [
+                    ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
+                ]
+            );
+            call_user_func($callable);
+            $this->logger->info('Call to ' . $action . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($action)]]);
 
-        if ($response->return->correct && $response->return->myInfo) {
-            return $response->return->myInfo;
+            if ($response->return->correct && $response->return->myInfo) {
+                if ($this->monitoring) {
+                    $this->callHistoryManager->sendMonitoringAlert('Altares', 'Altares status', 'up');
+                }
+
+                return $response->return->myInfo;
+            }
+        } catch (\Exception $exception) {
+            if ($this->monitoring) {
+                $this->callHistoryManager->sendMonitoringAlert('Altares', 'Altares status', 'down');
+            }
+            $this->logger->error($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__] + $params);
         }
         return null;
     }

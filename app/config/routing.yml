@@ -1,7 +1,3 @@
-ws_client:
-    resource: "@WSClientBundle/Resources/config/routing.xml"
-    prefix:   /
-
 unilend_front:
     resource: "@UnilendFrontBundle/Resources/config/routing.yml"
     prefix:   /

@@ -2,7 +2,11 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
+use CL\Slack\Payload\ChatPostMessagePayload;
+use CL\Slack\Transport\ApiClient;
 use GuzzleHttp\TransferStats;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -12,16 +16,36 @@ class CallHistoryManager
     private $entityManager;
     /** @var Stopwatch */
     private $stopwatch;
+    /** @var ApiClient */
+    private $slack;
+    /** @var  ChatPostMessagePayload */
+    private $payload;
+    /** @var string */
+    private $alertChannel;
+    /** @var Packages */
+    private $assetPackage;
+    /** @var  LoggerInterface */
+    private $logger;
 
     /**
      * WSProviderCallHistoryManager constructor.
      * @param EntityManager $entityManager
      * @param string $stopwatch
+     * @param ApiClient $slack
+     * @param string $payload
+     * @param string $alertChannel
+     * @param Packages $assetPackage
+     * @param LoggerInterface $logger
      */
-    public function __construct(EntityManager $entityManager, $stopwatch)
+    public function __construct(EntityManager $entityManager, $stopwatch, ApiClient $slack, $payload, $alertChannel, Packages $assetPackage, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->stopwatch     = new $stopwatch;
+        $this->slack         = $slack;
+        $this->payload       = new $payload;
+        $this->alertChannel  = $alertChannel;
+        $this->assetPackage  = $assetPackage;
+        $this->logger        = $logger;
     }
 
     /**
@@ -37,17 +61,22 @@ class CallHistoryManager
         $this->stopwatch->start($resourceId);
 
         return function ($stats = null) use ($resourceId, $siren) {
-            $event        = $this->stopwatch->stop($resourceId);
-            $transferTime = $event->getDuration() / 1000;
+            try {
+                $event        = $this->stopwatch->stop($resourceId);
+                $transferTime = $event->getDuration() / 1000;
 
-            if ($stats instanceof TransferStats && null != $stats) {
-                $statusCode = $stats->getResponse()->getStatusCode();
-            } else {
-                $statusCode = $stats;
-            }
+                if ($stats instanceof TransferStats && null != $stats) {
+                    $statusCode = $stats->getResponse()->getStatusCode();
+                } else {
+                    $statusCode = $stats;
+                }
 
-            if (false === empty($resourceId)) {
-                $this->createLog($resourceId, $siren, $transferTime, $statusCode);
+                if (false === empty($resourceId)) {
+                    $this->createLog($resourceId, $siren, $transferTime, $statusCode);
+                }
+            } catch (\Exception $exception) {
+                $this->logger->error('Unable to log response time into database. Error message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+                unset($exception);
             }
         };
     }
@@ -75,6 +104,71 @@ class CallHistoryManager
         $wsCallHistory->transfer_time = $transferTime;
         $wsCallHistory->status_code   = $statusCode;
         $wsCallHistory->create();
+    }
 
+    /**
+     * @param $provider
+     * @param $settingType
+     * @param $alertType
+     * @param $extraInfo
+     */
+    public function sendMonitoringAlert($provider, $settingType, $alertType, $extraInfo = null)
+    {
+        /** @var \settings $setting */
+        $setting = $this->entityManager->getRepository('settings');
+        $setting->get($settingType, 'type');
+        $provider = ucfirst(strtolower($provider));
+
+        switch ($alertType) {
+            case 'down':
+                if ($setting->value) {
+                    $setting->value = '0';
+                    $this->setPayload($provider);
+                    $this->payload->setText($provider . " is down  :skull_and_crossbones:\n> " . $extraInfo);
+                } else {
+                    var_dump('nothing to do ' . __LINE__);
+                    return;
+                }
+                break;
+            case 'up':
+                if (! $setting->value) {
+                    $setting->value = '1';
+                    $this->setPayload($provider);
+                    $this->payload->setText($provider . ' is up  :white_check_mark:');
+                } else {
+                    var_dump('nothing to do '. __LINE__);
+                    return;
+                }
+                break;
+            default:
+                var_dump('nothing to do ' . __LINE__);
+                unset($payload);
+                return;
+        }
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'provider' => $provider];
+        try {
+            $response = $this->slack->send($this->payload);
+
+            if (false == $response->isOk()) {
+                $this->logger->warning('Could not send slack notification for ' . $provider . '. Error: ' . $response->getError(), $logContext);
+            }
+        } catch (\Exception $exception) {
+            $this->logger->error('Unable to send slack notification for ' . $provider . '. Error message: ' . $exception->getMessage(), $logContext);
+            unset($exception);
+        }
+    }
+
+    /**
+     * @param $provider
+     */
+    private function setPayload($provider)
+    {
+        $this->payload->setChannel($this->alertChannel);
+        $this->payload->setUsername($provider);
+
+        if (file_exists($this->assetPackage->getUrl('') . '/assets/images/slack/' . strtolower($provider) . '.png')) {
+            $this->payload->setIconUrl($this->assetPackage->getUrl('') . '/assets/images/slack/' . strtolower($provider) . '.png');
+        }
+        $this->payload->setAsUser(false);
     }
 }

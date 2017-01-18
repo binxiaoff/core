@@ -135,19 +135,15 @@
                             <input type="text" name="date2" id="datepik_2" class="input_dp" value="<?= (isset($_POST['date2'])) ? $_POST['date2'] : '' ?>"/>
                         </td>
                         <td style="padding-top:23px;">
-                            <select name="montant" id="montant" class="select" style="width:80px;">
-                                <option value="0">Montant</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 50 ? 'selected' : '') ?> value="50">50</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 100 ? 'selected' : '') ?> value="100">100</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 500 ? 'selected' : '') ?> value="500">500</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 1000 ? 'selected' : '') ?> value="1000">1 000</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 1500 ? 'selected' : '') ?> value="1500">1 500</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 2000 ? 'selected' : '') ?> value="2000">2 000</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 5000 ? 'selected' : '') ?> value="2000">5 000</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 10000 ? 'selected' : '') ?> value="10000">10 000</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 50000 ? 'selected' : '') ?> value="50000">50 000</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 100000 ? 'selected' : '') ?> value="100000">100 000</option>
-                                <option <?= (isset($_POST['montant']) && $_POST['montant'] == 250000 ? 'selected' : '') ?> value="250000">250 000</option>
+                            <select name="projectNeed" id="projectNeed" class="select" style="width:80px;">
+                                <option value="0">Besoin</option>
+                                <?php foreach ($this->needs as $need) : ?>
+                                    <optgroup label="<?= $need['label'] ?>">
+                                        <?php foreach ($need['children'] as $needChild) : ?>
+                                            <option value="<?= $needChild['id_project_need'] ?>"><?= $needChild['label'] ?></option>
+                                        <?php endforeach; ?>
+                                    </optgroup>
+                                <?php endforeach; ?>
                             </select>
                         </td>
                         <td style="padding-top:23px;">
@@ -203,7 +199,6 @@
                     <th style="width:4%">Siren</th>
                     <th style="width:24%">Raison sociale</th>
                     <th style="width:7%">Date demande</th>
-                    <th style="width:7%">Date modification</th>
                     <th style="width:10%">Montant</th>
                     <th style="width:6%">Durée</th>
                     <th style="width:13%">Statut</th>
@@ -211,7 +206,6 @@
                     <th style="width:10%">Analyste</th>
                     <th style="width:2%">Presc.</th>
                     <th style="width:2%">Comment.</th>
-                    <th style="width:1%">&nbsp;</th>
                 </tr>
             </thead>
             <tbody>
@@ -226,7 +220,6 @@
                     <td><?= $p['siren'] ?></td>
                     <td><?= $p['name'] ?></td>
                     <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
-                    <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
                     <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
                     <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
                     <td><?= $p['label'] ?></td>
@@ -234,16 +227,6 @@
                     <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
                     <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
                     <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] && $p['comments'] != '' ? $p['comments'] : '' ?>"><?= $p['comments'] && $p['comments'] != '' ? 'oui' : 'non' ?></td>
-                    <td align="center">
-                        <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
-                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
-                        </a>
-                        <script>
-                            $("#ledossier<?=$p['id_project']?>").click(function () {
-                                $(location).attr('href', '<?=$this->lurl?>/dossiers/edit/<?=$p['id_project']?>');
-                            });
-                        </script>
-                    </td>
                 </tr>
                 <?php
                 $i++;

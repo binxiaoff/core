@@ -147,5 +147,4 @@ class FinancialSummary
     {
         return $this->keyPost;
     }
-
 }

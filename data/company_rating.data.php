@@ -2,6 +2,25 @@
 
 class company_rating extends company_rating_crud
 {
+    const TYPE_ALTARES_VALUE_DATE         = 'date_valeur_altares';
+    const TYPE_ALTARES_SCORE_20           = 'score_altares';
+    const TYPE_ALTARES_SECTORAL_SCORE_100 = 'score_sectoriel_altares';
+    const TYPE_INFOLEGALE_SCORE           = 'note_infolegale';
+    const TYPE_XERFI_RISK_SCORE           = 'xerfi';
+    const TYPE_UNILEND_XERFI_RISK         = 'xerfi_unilend';
+    const TYPE_EULER_HERMES_GRADE         = 'grade_euler_hermes';
+
+
+    public static $ratingTypes = [
+        self::TYPE_ALTARES_VALUE_DATE,
+        self::TYPE_ALTARES_SCORE_20,
+        self::TYPE_ALTARES_SECTORAL_SCORE_100,
+        self::TYPE_INFOLEGALE_SCORE,
+        self::TYPE_XERFI_RISK_SCORE,
+        self::TYPE_UNILEND_XERFI_RISK,
+        self::TYPE_EULER_HERMES_GRADE
+    ];
+
     public function __construct($bdd, $params = '')
     {
         parent::company_rating($bdd, $params);

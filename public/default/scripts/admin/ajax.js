@@ -270,6 +270,8 @@ function deleteMemo(id_project_comment, id_project) {
 
 function valid_etape1(id_project) {
 
+    $("#dossier_etape1").find(".btn_link").hide();
+
     var val = {
         montant_etape1: $("#montant_etape1").val(),
         duree_etape1: $("#duree_etape1").val(),
@@ -278,13 +280,18 @@ function valid_etape1(id_project) {
         etape: 1
     };
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
+        if ('OK' == data) {
+            $(location).attr('href', add_url + '/dossiers/edit/' + id_project);
+            return;
+        }
         $("#siren").val($("#siren_etape1").val());
         $("#montant").val($("#montant_etape1").val());
         $('#duree option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
 
         $("#montant_etape3").val($("#montant_etape1").val());
         $('#duree_etape3 option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
-
+        $("#dossier_etape1").find(".btn_link").show();
+        $("#valid_etape1").html(data);
         $("#valid_etape1").slideDown();
 
         if (0 == $("#duree_etape1").val()) {

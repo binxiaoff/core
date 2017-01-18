@@ -54,6 +54,11 @@ class simulationController extends bootstrap
                 if (is_numeric($_POST['resourceId']) && $wsResources->get($_POST['resourceId'])) {
                     $provider = $this->get('unilend.ws_client.' . $wsResources->provider_name . '_manager');
                     $endpoint = $wsResources->resource_name;
+
+                    if (is_callable([$provider, 'setMonitoring'])) {
+                        $provider->setMonitoring(false);
+                    }
+
                     switch ($wsResources->provider_name) {
                         case 'euler':
                             $countryCode  = (empty($_POST['countryCode'])) ? 'fr' : $_POST['countryCode'];
@@ -77,10 +82,6 @@ class simulationController extends bootstrap
                 } else {
                     $this->result = 'Please select a web service to call';
                 }
-            }
-
-            if ($this->result instanceof \Psr\Http\Message\ResponseInterface) {
-                $this->result = $this->result->getBody()->getContents();
             }
         } catch (\Exception $exception) {
             $this->result = 'Error code: ' . $exception->getCode() . '. Error message: ' . $exception->getMessage() . ' at line: ' . $exception->getLine();

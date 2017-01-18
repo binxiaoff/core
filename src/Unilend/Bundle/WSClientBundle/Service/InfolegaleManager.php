@@ -21,6 +21,8 @@ class InfolegaleManager
     private $callHistoryManager;
     /** @var  Serializer */
     private $serializer;
+    /** @var  boolean */
+    private $monitoring;
 
     /**
      * InfolegaleManager constructor.
@@ -37,6 +39,11 @@ class InfolegaleManager
         $this->logger             = $logger;
         $this->callHistoryManager = $callHistoryManager;
         $this->serializer         = $serializer;
+    }
+
+    public function setMonitoring($validate)
+    {
+        $this->monitoring = $validate;
     }
 
     /**
@@ -90,29 +97,39 @@ class InfolegaleManager
         if (true === empty($siren)) {
             throw new \InvalidArgumentException('Siren is missing');
         }
-
         $query['token'] = $this->token;
         $query['siren'] = $siren;
+        $logContext     = ['class' => __CLASS__, 'function' => __FUNCTION__, 'SIREN' => $siren];
+        $result         = null;
+        $alertType      = 'down';
 
-        /** @var ResponseInterface $response */
-        $response   = $this->client->$method(
-            $endpoint,
-            [
-                'query'    => $query,
-                'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('infolegale', $endpoint, strtoupper($method), $siren)
-            ]
-        );
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'SIREN' => $siren];
-        $content    = $response->getBody()->getContents();
+        try {
+            /** @var ResponseInterface $response */
+            $response = $this->client->$method(
+                $endpoint,
+                [
+                    'query'    => $query,
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('infolegale', $endpoint, strtoupper($method), $siren)
+                ]
+            );
+        } catch (\Exception $exception) {
+            $this->logger->error('Call to ' . $endpoint . ' using params: ' . json_encode($query) .'. Error message: ' . $exception->getMessage(), $logContext);
+        }
+        $content = $response->getBody()->getContents();
 
         if (200 === $response->getStatusCode()) {
-            $xml = new \SimpleXMLElement($content);
-            $this->logger->info('Call to ' . $endpoint . '. Result: ' . $content, $logContext);
-
-            return $xml->content[0];
+            $alertType = 'up';
+            $xml       = new \SimpleXMLElement($content);
+            $result    = $xml->content[0];
+            $this->logger->info('Call to ' . $endpoint . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
+        } else {
+            $this->logger->error('Call to ' . $endpoint . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
         }
-        $this->logger->error('Call to ' . $endpoint . '. Result: ' . $content, $logContext);
 
-        return null;
+        if ($this->monitoring) {
+            $this->callHistoryManager->sendMonitoringAlert('Infolegale', 'Infolegale status', $alertType);
+        }
+
+        return $result;
     }
 }

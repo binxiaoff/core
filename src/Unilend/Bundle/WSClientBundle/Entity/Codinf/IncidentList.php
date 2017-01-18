@@ -4,18 +4,25 @@ namespace Unilend\Bundle\WSClientBundle\Entity\Codinf;
 
 use JMS\Serializer\Annotation as JMS;
 
+/**
+ * Class IncidentList
+ * @package Unilend\Bundle\WSClientBundle\Entity\Codinf
+ * @JMS\XmlRoot("incidentList")
+ */
 class IncidentList
 {
     /**
+     * @var PaymentIncident[]
      * @JMS\Type("array<Unilend\Bundle\WSClientBundle\Entity\Codinf\PaymentIncident>")
+     * @JMS\XmlList(inline = true, entry = "incident")
      */
-    private $incident;
+    private $incidentList;
 
     /**
-     * @return mixed
+     * @return PaymentIncident[]
      */
-    public function getIncident()
+    public function getIncidentList()
     {
-        return $this->incident;
+        return $this->incidentList;
     }
 }
