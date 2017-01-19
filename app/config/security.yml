@@ -23,6 +23,7 @@ security:
             logout:
                 path: logout
                 target: /
+                success_handler: unilend.frontbundle.security.logout.success_handler
 
     access_denied_url: /login
 

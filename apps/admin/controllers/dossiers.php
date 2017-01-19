@@ -609,9 +609,12 @@ class dossiersController extends bootstrap
                     $this->projects->id_borrowing_motive = $_POST['motive'];
 
                     if (false === $this->bReadonlyRiskNote) {
-                        $this->projects->id_product = $_POST['assigned_product'];
                         $this->projects->period     = $_POST['duree'];
                         $this->projects->amount     = str_replace([' ', ','], ['', '.'], $_POST['montant']);
+                    }
+
+                    if ($this->projects->status <= \projects_status::PREP_FUNDING) {
+                        $this->projects->id_product = $_POST['assigned_product'];
                     }
 
                     if ($this->projects->status <= \projects_status::A_FUNDER) {
