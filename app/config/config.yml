@@ -78,6 +78,20 @@ doctrine:
             port: "%server1.memcache_port%"
             instance_class: Memcache
 
+doctrine_mongodb:
+    connections:
+        default:
+            server: "%mongodb_server%"
+            options:
+                authMechanism: SCRAM-SHA-1
+                ssl:           true
+                password:      "%mongodb_password%"
+                username:      "%mongodb_username%"
+    default_database: testing
+    document_managers:
+        default:
+            auto_mapping: true
+
 cache_adapter:
     providers:
         default_memcache_adapter:

@@ -85,7 +85,7 @@ class ContactController extends Controller
     {
         /** @var SearchService $search */
         $search = $this->get('unilend.service.search_service');
-        $query  = urldecode($query);
+        $query  = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
 
         /** @var BaseUser $user */
         $user = $this->getUser();
@@ -109,7 +109,7 @@ class ContactController extends Controller
             $this->addFlash('contactErrors', $translator->trans('common-validator_phone-number-invalid'));
         }
 
-        if (empty($post['role']) || 0 == $post['role']) {
+        if (empty($post['role']) || false === filter_var($post['role'], FILTER_VALIDATE_INT)) {
             $this->addFlash('contactErrors', $translator->trans('contact_contact-form-subject-error-message'));
         }
 
@@ -121,14 +121,13 @@ class ContactController extends Controller
             $this->addFlash('contactErrors', $translator->trans('common-validator_first-name-empty'));
         }
 
-        if (empty($post['email']) || false == filter_var($post['email'], FILTER_VALIDATE_EMAIL)) {
+        if (empty($post['email']) || false === filter_var($post['email'], FILTER_VALIDATE_EMAIL)) {
             $this->addFlash('contactErrors', $translator->trans('common-validator_email-address-invalid'));
         }
 
         if (empty($post['body'])) {
             $this->addFlash('contactErrors', $translator->trans('contact_contact-form-missing-message-error-message'));
         }
-
 
         if (false === $this->get('session')->getFlashBag()->has('contactErrors')) {
             /** @var \settings $settings */
@@ -161,27 +160,28 @@ class ContactController extends Controller
             $mailer = $this->get('mailer');
             $mailer->send($message);
 
-            switch($post['role']){
+            switch ($post['role']) {
                 case 1:
                     $settings->get('Adresse presse', 'type');
                     break;
                 case 2:
                     $settings->get('Adresse preteur', 'type');
                     break;
-                case 3 :
+                case 3:
                     $settings->get('Adresse emprunteur', 'type');
                     break;
-                case 4 :
+                case 4:
                     $settings->get('Adresse recrutement', 'type');
                     break;
-                case 5 :
+                case 5:
                     $settings->get('Adresse autre', 'type');
                     break;
-                case 6 :
+                case 6:
                     $settings->get('Adresse partenariat', 'type');
                     break;
                 default:
                     $settings->get('Adresse autre', 'type');
+                    break;
             }
 
             $destinataire = $settings->value;
@@ -214,9 +214,6 @@ class ContactController extends Controller
             $mailer->send($message);
 
             $this->addFlash('contactSuccess', $translator->trans('contact_confirmation'));
-
         }
     }
-
-
 }

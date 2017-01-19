@@ -38,6 +38,7 @@
         <service id="swiftmailer.mailer.transport.mailjet" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\MailjetTransport">
             <argument type="service" id="swiftmailer.mailer.default.transport.eventdispatcher"/>
             <argument type="service" id="mailjet.api.client"/>
+            <argument type="service" id="logger" />
         </service>
 
         <!-- Mailjet API -->

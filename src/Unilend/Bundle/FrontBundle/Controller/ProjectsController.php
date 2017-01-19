@@ -28,7 +28,7 @@ use Unilend\core\Loader;
 class ProjectsController extends Controller
 {
     /**
-     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page" = "1", "sortType" = "end", "sortDirection" = "desc"}, name="projects_list")
+     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list")
      * @Template("pages/projects.html.twig")
      *
      * @param int    $page
@@ -42,7 +42,7 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/{page}/{sortType}/{sortDirection}", defaults={"page" = "1", "sortType" = "end", "sortDirection" = "desc"}, requirements={"page" = "\d+"}, name="lender_projects")
+     * @Route("/projects/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="lender_projects")
      * @Template("lender_account/projects.html.twig")
      * @Security("has_role('ROLE_LENDER')")
      *
@@ -170,9 +170,11 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/detail/{projectSlug}", name="project_detail")
+     * @Route("/projects/detail/{projectSlug}", name="project_detail", requirements={"projectSlug": "[a-z0-9-]+"})
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param string  $projectSlug
+     * @param Request $request
+     * @return Response
      */
     public function projectDetailAction($projectSlug, Request $request)
     {
@@ -331,7 +333,7 @@ class ProjectsController extends Controller
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
 
-        if (false === $project->get($projectSlug, 'slug')) {
+        if (false === $project->get($projectSlug, 'slug') || $project->slug !== $projectSlug) { // MySQL does not check collation (hôtellerie = hotellerie) so we strictly check in PHP
             /** @var \redirections $redirection */
             $redirection = $entityManager->getRepository('redirections');
 
@@ -408,7 +410,7 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/bid/{projectId}", requirements={"projectId" = "^\d+$"}, name="place_bid")
+     * @Route("/projects/bid/{projectId}", requirements={"projectId": "\d+"}, name="place_bid")
      * @Method({"POST"})
      *
      * @param int     $projectId
@@ -508,8 +510,13 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/bids/{projectId}/{rate}", requirements={"projectId" = "^\d+$", "rate" = "^(?:\d+|\d*\.\d+)$"}, name="bids_on_project")
+     * @Route("/projects/bids/{projectId}/{rate}", requirements={"projectId": "\d+", "rate": "(?:\d+|\d*\.\d+)"}, name="bids_on_project")
      * @Method({"POST"})
+     *
+     * @param int     $projectId
+     * @param float   $rate
+     * @param Request $request
+     * @return Response
      */
     public function bidsListAction($projectId, $rate, Request $request)
     {
@@ -575,7 +582,10 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/export/income/{projectId}", requirements={"projectId" = "^\d+$"}, name="export_income_statement")
+     * @Route("/projects/export/income/{projectId}", requirements={"projectId": "\d+"}, name="export_income_statement")
+     *
+     * @param int $projectId
+     * @return Response
      */
     public function exportIncomeStatementAction($projectId)
     {
@@ -636,9 +646,12 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/export/balance/{projectId}", requirements={"projectId" = "^\d+$"}, name="export_balance_sheet")
+     * @Route("/projects/export/balance/{projectId}", requirements={"projectId": "\d+"}, name="export_balance_sheet")
+     *
+     * @param int $projectId
+     * @return Response
      */
-    public function exportBalanceSheetAction($projectId, Request $request)
+    public function exportBalanceSheetAction($projectId)
     {
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
@@ -767,7 +780,10 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/export/bids/{projectId}", requirements={"projectId" = "^\d+$"}, name="export_bids")
+     * @Route("/projects/export/bids/{projectId}", requirements={"projectId": "\d+"}, name="export_bids")
+     *
+     * @param int $projectId
+     * @return Response
      */
     public function exportBidsAction($projectId)
     {
@@ -845,15 +861,15 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()", requirements={"amount" = "^\d+$", "rate" ="^\d{1,2}(\.\d$|$)"})
+     * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()", requirements={"projectSlug": "[a-z0-9-]+", "amount": "\d+", "rate": "\d{1,2}(\.\d|)"})
      *
-     * @param $projectSlug
-     * @param $amount
-     * @param $rate
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param string  $projectSlug
+     * @param int     $amount
+     * @param float   $rate
+     * @param Request $request
+     * @return Response
      */
-    public function preCheckBidAction(Request $request, $projectSlug, $amount, $rate)
+    public function preCheckBidAction($projectSlug, $amount, $rate, Request $request)
     {
         $entityManager  = $this->get('unilend.service.entity_manager');
         $cipManager     = $this->get('unilend.service.cip_manager');
@@ -1040,8 +1056,10 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/var/dirs/{projectSlug}.pdf", requirements={"projectSlug"="^[a-z0-9-]+$"})
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @Route("/var/dirs/{projectSlug}.pdf", name="project_dirs", requirements={"projectSlug": "[a-z0-9-]+"})
+     *
+     * @param string $projectSlug
+     * @return Response
      */
     public function dirsAction($projectSlug)
     {

@@ -69,27 +69,26 @@
                 {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
                     <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
                 {% elseif conditions.canBid %}
-                    {% if project.maxValidRate > project.minRate %}
-                        <p>{% trans %} project-detail_project-funding-in-progress-make-an-offer {% endtrans %}</p>
-                    {% endif %}
-
-                    {% if lender.bidResult is defined %}
-                        <p class="{% if lender.bidResult.error is defined %} c-error {% elseif lender.bidResult.success is defined %} c-success {% else %} c-t2 {% endif %}">
-                            {{ lender.bidResult.message }}
-                        </p>
-                    {% endif %}
-
-                    {% if app.session.flashBag.has('bid_not_eligible_reason') %}
-                        {% for reason in app.session.flashBag.get('bid_not_eligible_reason') %}
-                            <p class="c-error">{{ reason }}</p>
-                        {% endfor %}
-                    {% endif %}
-
                     {% if isLenderEligible is defined and isLenderEligible == false %}
                         {% for reason in lenderNotEligibleReasons %}
                             <p>{{ ('project-detail_lender-not-eligible-reason-' ~ reason)|trans({'%amountMax%': amountMax|localizedcurrency('EUR')}) }}</p>
                         {% endfor %}
                     {% else %}
+                        {% if project.maxValidRate > project.minRate %}
+                            <p>{% trans %} project-detail_project-funding-in-progress-make-an-offer {% endtrans %}</p>
+                        {% endif %}
+
+                        {% if lender.bidResult is defined %}
+                            <p class="{% if lender.bidResult.error is defined %} c-error {% elseif lender.bidResult.success is defined %} c-success {% else %} c-t2 {% endif %}">
+                                {{ lender.bidResult.message }}
+                            </p>
+                        {% endif %}
+
+                        {% if app.session.flashBag.has('bid_not_eligible_reason') %}
+                            {% for reason in app.session.flashBag.get('bid_not_eligible_reason') %}
+                                <p class="c-error">{{ reason }}</p>
+                            {% endfor %}
+                        {% endif %}
                         {% if project.maxValidRate > project.minRate %}
                             <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation data-formvalidation data-formvalidation-shownotifications="false" data-has-spinner="#bid-confirmation-submit">
                                 <div class="row row-multi-col-sm">

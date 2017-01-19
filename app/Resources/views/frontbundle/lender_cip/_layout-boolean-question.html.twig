@@ -82,16 +82,12 @@
                             <h4>{{ ('lender-evaluation_questionnaire-result-not-eligible-' ~ lenderType ~ '-person-text')|trans|raw }}</h4>
                         </div>
                         <div class="row">
-                            {% if app.session.flashBag.has('cipBid') %}
-                                <div class="col-lg-5 col-md-5 col-sm-3 col-xs-2">
-                                    <button type="submit" name="continue" value="back" class="btn-primary btn-size-full cursor">{% trans %} lender-evaluation_questionnaire-result-non-eligible-acceptance-button {% endtrans %}</button>
-                                </div>
-                                <div class="col-lg-5 push-lg-2 col-md-5 push-md-2 col-sm-3 push-sm-2 col-xs-2">
-                                    <button type="submit" name="continue" value="loop" class="btn-primary btn-size-full cursor">{% trans %} lender-evaluation_questionnaire-result-non-eligible-insist-button {% endtrans %}</button>
-                                </div>
-                            {% else %}
-                                <button type="submit" name="continue" value="loop" class="btn-primary cursor">{% trans %} lender-evaluation_questionnaire-result-non-eligible-insist-button {% endtrans %}</button>
-                        {% endif %}
+                            <div class="col-lg-5 col-md-5 col-sm-3 col-xs-2">
+                                <button type="submit" name="continue" value="back" class="btn-primary btn-size-full cursor">{% trans %} lender-evaluation_questionnaire-result-non-eligible-acceptance-button {% endtrans %}</button>
+                            </div>
+                            <div class="col-lg-5 push-lg-2 col-md-5 push-md-2 col-sm-3 push-sm-2 col-xs-2">
+                                <button type="submit" name="continue" value="loop" class="btn-primary btn-size-full cursor">{% trans %} lender-evaluation_questionnaire-result-non-eligible-insist-button {% endtrans %}</button>
+                            </div>
                         </div>
                     {% endif %}
                 </form>

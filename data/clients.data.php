@@ -49,6 +49,10 @@ class clients extends clients_crud
     const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
     const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
 
+    const TITLE_MISS      = 'Mme';
+    const TITLE_MISTER    = 'M.';
+    const TITLE_UNDEFINED = '';
+
     public function __construct($bdd, $params = '')
     {
         parent::clients($bdd, $params);
@@ -260,7 +264,8 @@ class clients extends clients_crud
             WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
                 AND c.type NOT IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]) .')
             GROUP BY c.id_client
-            ORDER BY c.id_client DESC';
+            ORDER BY c.id_client DESC
+           LIMIT 100';
         $resultat = $this->bdd->query($query);
 
         while ($record = $this->bdd->fetch_assoc($resultat)) {

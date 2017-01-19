@@ -11,8 +11,8 @@
             <argument type="service" id="unilend.service.client_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
             <argument type="service" id="unilend.service.lender_manager"/>
-            <argument type="service" id="unilend.service_product.product_manager" />
-            <argument type="service" id="unilend.service_product_contract.contract_manager" />
+            <argument type="service" id="unilend.service_product.product_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
         </service>
 
         <service id="unilend.service.bid_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BidManager">
@@ -32,7 +32,7 @@
             <argument type="service" id="unilend.service.client_settings_manager"/>
             <argument type="service" id="security.token_storage"/>
             <argument type="service" id="request_stack"/>
-            <argument type="service" id="router" />
+            <argument type="service" id="router"/>
             <argument type="service" id="unilend.frontbundle.security.client_role"/>
         </service>
 
@@ -57,9 +57,9 @@
             <argument type="service" id="service_container"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
-            <argument type="service" id="swiftmailer.mailer.default" />
+            <argument type="service" id="swiftmailer.mailer.default"/>
             <argument>%kernel.default_locale%</argument>
-            <argument type="service" id="assets.packages" />
+            <argument type="service" id="assets.packages"/>
             <argument>%router.request_context.scheme%</argument>
             <argument>%url.host_default%</argument>
             <argument>%url.host_admin%</argument>
@@ -103,7 +103,7 @@
         <service id="unilend.service.project_rate_settings_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRateSettingsManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
-            <argument type="service" id="swiftmailer.mailer.default" />
+            <argument type="service" id="swiftmailer.mailer.default"/>
         </service>
 
         <service id="unilend.service.salesforce" class="Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager">
@@ -116,8 +116,8 @@
         <service id="unilend.service.statistics_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.irr_manager"/>
-            <argument type="service" id="memcache.default" />
-            <argument type="service" id="unilend.service.location_manager" />
+            <argument type="service" id="memcache.default"/>
+            <argument type="service" id="unilend.service.location_manager"/>
         </service>
 
         <service id="unilend.service.welcome_offer_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager">
@@ -126,19 +126,19 @@
         </service>
 
         <service id="unilend.service.project_request_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="unilend.service.project_manager" />
-            <argument type="service" id="unilend.frontbundle.service.source_manager" />
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="unilend.frontbundle.service.source_manager"/>
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
-            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service.entity_manager"/>
             <argument>%mapbox.token%</argument>
             <argument type="service" id="memcache.default"/>
         </service>
 
         <service id="unilend.service.search_service" class="Unilend\Bundle\CoreBusinessBundle\Service\SearchService">
-            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service.entity_manager"/>
             <argument>%desk_user%</argument>
             <argument>%desk_password%</argument>
         </service>
@@ -148,44 +148,44 @@
         </service>
 
         <service id="unilend.service_product.product_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="unilend.service_product.project_validator" />
-            <argument type="service" id="unilend.service_product.bid_validator" />
-            <argument type="service" id="unilend.service_product.lender_validator" />
-            <argument type="service" id="unilend.service_product.product_attribute_manager" />
-            <argument type="service" id="unilend.service_product_contract.contract_manager" />
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service_product.project_validator"/>
+            <argument type="service" id="unilend.service_product.bid_validator"/>
+            <argument type="service" id="unilend.service_product.lender_validator"/>
+            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
         </service>
 
         <service id="unilend.service_product.contract_attribute_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager" public="false">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="memcache.default" />
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="memcache.default"/>
         </service>
 
         <service id="unilend.service_product.product_attribute_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager" public="false">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="memcache.default" />
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="memcache.default"/>
         </service>
 
         <service id="unilend.service_product.project_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ProjectValidator" public="false">
-            <argument type="service" id="unilend.service_product.product_attribute_manager" />
-            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 
         <service id="unilend.service_product.bid_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\BidValidator" public="false">
-            <argument type="service" id="unilend.service_product.product_attribute_manager" />
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="unilend.service_product_contract.contract_manager" />
+            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
         </service>
 
         <service id="unilend.service_product.lender_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\LenderValidator" public="false">
-            <argument type="service" id="unilend.service_product.product_attribute_manager" />
-            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 
         <service id="unilend.service.client_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="unilend.service.notification_manager" />
-            <argument type="service" id="unilend.service.autobid_settings_manager" />
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.notification_manager"/>
+            <argument type="service" id="unilend.service.autobid_settings_manager"/>
         </service>
 
         <service id="unilend.service.recovery_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager">
@@ -194,26 +194,26 @@
         </service>
 
         <service id="unilend.service.cip_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CIPManager">
-            <argument type="service" id="unilend.service_product.product_manager" />
-            <argument type="service" id="unilend.service_product_contract.contract_manager" />
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="translator" />
+            <argument type="service" id="unilend.service_product.product_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="translator"/>
         </service>
 
         <service id="unilend.service_product_contract.contract_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager">
-            <argument type="service" id="unilend.service_product_contract.lender_validator" />
-            <argument type="service" id="unilend.service_product_contract.autobid_settings_validator" />
-            <argument type="service" id="unilend.service_product.contract_attribute_manager" />
+            <argument type="service" id="unilend.service_product_contract.lender_validator"/>
+            <argument type="service" id="unilend.service_product_contract.autobid_settings_validator"/>
+            <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
         </service>
 
         <service id="unilend.service_product_contract.lender_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\LenderValidator" public="false">
-            <argument type="service" id="unilend.service_product.contract_attribute_manager" />
-            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 
         <service id="unilend.service_product_contract.autobid_settings_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\AutoBidSettingsValidator" public="false">
-            <argument type="service" id="unilend.service_product.contract_attribute_manager" />
-            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 
         <service id="unilend.service.altares" class="Unilend\Bundle\CoreBusinessBundle\Service\Altares">
@@ -221,6 +221,14 @@
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>
             <argument type="service" id="cache"/>
+        </service>
+
+        <service id="unilend.service.ekomi" class="Unilend\Bundle\CoreBusinessBundle\Service\Ekomi">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="logger"/>
+            <argument>%ekomi.url%</argument>
+            <argument>%ekomi.shop_id%</argument>
+            <argument>%ekomi.password%</argument>
         </service>
 
         <service id="unilend.service.company_balance_sheet_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager">

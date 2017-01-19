@@ -447,7 +447,7 @@
                     <tr>
                         <th><label for="assigned_product">Produit associé* :</label></th>
                         <td>
-                            <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                            <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
                                 <option value=""></option>
                             <?php foreach ($this->eligibleProduct as $product) : ?>
                                 <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
@@ -787,7 +787,7 @@
                         </tr>
                     <?php } ?>
 
-                    <?php if ($this->projects->status == \projects_status::FUNDE) { ?>
+                    <?php if ($this->projects->status == \projects_status::FUNDE) : ?>
                         <tr>
                             <th>Prêt refusé :</th>
                             <td>
@@ -797,7 +797,19 @@
                                 </select>
                             </td>
                         </tr>
-                    <?php } ?>
+                        <?php if (empty($this->proxy) || $this->proxy['status'] != \projects_pouvoir::STATUS_VALIDATED) : ?>
+                        <tr>
+                            <th>Pouvoir :</th>
+                            <td><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></td>
+                        </tr>
+                        <?php endif ?>
+                        <?php if (empty($this->mandate) || $this->mandate['status'] != \clients_mandats::STATUS_SIGNED) : ?>
+                            <tr>
+                                <th>Mandat :</th>
+                                <td><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></td>
+                            </tr>
+                        <?php endif ?>
+                    <?php endif; ?>
                 </table>
             </div>
             <div style="display:none" class="recharge">

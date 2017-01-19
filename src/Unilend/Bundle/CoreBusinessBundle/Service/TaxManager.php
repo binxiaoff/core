@@ -151,7 +151,7 @@ class TaxManager
                 throw new \Exception('Unable to load underlying contract ' . $loan->id_type_contract);
             }
 
-            if ($contract->label == \underlying_contract::CONTRACT_BDC) {
+            if ($contract->label != \underlying_contract::CONTRACT_IFP) {
                 return $this->applyTaxes($transaction, [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
             }
         }
