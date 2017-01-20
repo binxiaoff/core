@@ -32,7 +32,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->dataBaseConnection = $this->getContainer()->get('database_connection');
         /** @var \transactions $transactions */
         $transactions          = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('transactions');
-        $transactionsToMigrate = $transactions->select('status = 1 AND NOT EXISTS(SELECT id_transaction FROM transaction_treated WHERE transaction_treated.id_transaction = transactions.id_transaction)', 'date_transaction ASC, id_transaction ASC', null, $limit);
+        $transactionsToMigrate = $transactions->select('type_transaction = 2 AND id_bid_remb != \'\' AND status = 1 AND NOT EXISTS(SELECT id_transaction FROM transaction_treated WHERE transaction_treated.id_transaction = transactions.id_transaction)', 'date_transaction ASC, id_transaction ASC', null, $limit);
         $transactionCount      = 0;
 
         $this->dataBaseConnection->beginTransaction();
@@ -429,7 +429,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $loan  = [];
 
         if ($loans->get($transaction['id_loan_remb'])) {
-            $loan['id']         = $loans->id_loan;
+            $loan['id_loan']    = $loans->id_loan;
             $loan['id_project'] = $loans->id_project;
             $loan['added']      = $transaction['added'];
         }
@@ -445,7 +445,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             $bids->get($walletLines->id_bid_remb);
         }
 
-        $bid['id']         = empty($bids->id_bid) ? null : $bids->id_bid;
+        $bid['id_bid']     = empty($bids->id_bid) ? null : $bids->id_bid;
         $bid['id_project'] = empty($bids->id_project) ? null : $bids->id_project;
         $bid['added']      = $transaction['added'];
 
