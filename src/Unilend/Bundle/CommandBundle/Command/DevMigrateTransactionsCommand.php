@@ -601,6 +601,12 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateUnilendRepaymentCommission(array $transaction)
     {
+        $previousCommissionTransaction = $this->checkIfCommissionHasAlreadyBeenMigrated($transaction);
+        if (false === empty($previousCommissionTransaction)) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'Commission already migrated with transaction : ' . $previousCommissionTransaction);
+            return;
+        }
+
         $unilendWallet = $this->getWalletByLabel('unilend');
 
         /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
@@ -1103,6 +1109,19 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
     {
         $this->dataBaseConnection->executeQuery('INSERT INTO non_migrated_transactions (id_transaction, status, message) VALUE (:transactionId, :status, :message)',
           ['transactionId' => $transaction['id_transaction'], 'status' => $status, 'message' => $message]);
+    }
+
+    private function checkIfCommissionHasAlreadyBeenMigrated(array $transaction)
+    {
+        $query = 'SELECT id_transaction
+                    FROM transaction_treated
+                  WHERE id_transaction = (SELECT id_transaction
+                                          FROM transactions
+                                          WHERE id_echeancier_emprunteur = :idEcheancierEmprunteur AND id_transaction != :idTransaction)';
+
+        $statement = $this->dataBaseConnection->executeQuery($query, ['idEcheancierEmprunteur' => $transaction['id_echeancier_emprunteur'], 'idTransaction' => $transaction['id_transaction']]);
+
+        return $statement->fetchColumn();
     }
 
 }
