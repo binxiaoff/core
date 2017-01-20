@@ -603,7 +603,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
     {
         $previousCommissionTransaction = $this->checkIfCommissionHasAlreadyBeenMigrated($transaction);
         if (false === empty($previousCommissionTransaction)) {
-            $this->insertIntoNonTreatedTransactions($transaction, 'Commission already migrated with transaction : ' . $previousCommissionTransaction);
+            $this->insertIntoNonTreatedTransactions($transaction, 'Commission already migrated with transaction : ' . $previousCommissionTransaction, 1);
             return;
         }
 
@@ -1115,7 +1115,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
     {
         $query = 'SELECT id_transaction
                     FROM transaction_treated
-                  WHERE id_transaction = (SELECT id_transaction
+                  WHERE id_transaction IN (SELECT id_transaction
                                           FROM transactions
                                           WHERE id_echeancier_emprunteur = :idEcheancierEmprunteur AND id_transaction != :idTransaction)';
 
