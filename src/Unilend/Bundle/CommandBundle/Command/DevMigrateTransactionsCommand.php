@@ -446,7 +446,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         }
 
         $bid['id_bid']     = empty($bids->id_bid) ? null : $bids->id_bid;
-        $bid['id_project'] = empty($bids->id_project) ? null : $bids->id_project;
+        $bid['id_project'] = empty($bids->id_project) ? empty($transaction['id_project']) ? null: $transaction['id_project'] : $bids->id_project;
         $bid['added']      = $transaction['added'];
 
         $this->updateWalletBalance($lenderWallet, $transaction);
