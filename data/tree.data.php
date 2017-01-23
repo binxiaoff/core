@@ -1196,9 +1196,14 @@ class tree extends tree_crud
         }
     }
 
-
     public function search($search, $includeProjects = false, $langue = 'fr')
     {
+        $search = filter_var($search, FILTER_SANITIZE_STRING);
+
+        if (empty($search)) {
+            return [];
+        }
+
         $result = [];
         $search = $this->bdd->escape_string($search);
         $sql    = '
@@ -1213,7 +1218,6 @@ class tree extends tree_crud
             WHERE t.status = 1
               AND t.id_langue = "' . $langue . '"
               AND lcase(te.value) LIKE "%' . strtolower($search) . '%"
-              AND t.id_tree NOT IN(16, 130)
             GROUP BY t.slug
             ORDER BY t.ordre ASC';
 
