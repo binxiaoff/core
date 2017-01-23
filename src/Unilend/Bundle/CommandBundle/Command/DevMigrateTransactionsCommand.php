@@ -565,7 +565,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $lenderAccount = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
 
         $query = 'SELECT * FROM loans
-                WHERE id_loan NOT IN (SELECT id_loan FROM operation WHERE id_type = 4) AND loans.id_project = :idProject';
+                WHERE id_loan NOT IN (SELECT id_loan FROM operation WHERE id_type = 4 AND id_project = :idProject) AND loans.id_project = :idProject';
 
         $statement = $this->dataBaseConnection->executeQuery($query, ['idProject' => $transaction['id_project']]);
         while ($loan = $statement->fetch(\PDO::FETCH_ASSOC)){
