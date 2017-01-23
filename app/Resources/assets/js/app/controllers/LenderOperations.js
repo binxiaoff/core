@@ -78,7 +78,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
           // Generate loan details HTML
           detailsItemsHtml += Templating.replace('<tr class="table-myloans-details-item">\
             <td class="table-myloans-item-amount">\
-              {{ amount }}€\
+              {{ amount }}&nbsp;€\
             </td>\
             <td class="table-myloans-item-interest">\
               {{ rate }}%\
@@ -102,7 +102,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
           // @todo may need to programmatically change the currency here
           // @note this relies on the backend to supply the correcly translated text for labels
           var classItem = (item.value >= 0 ? 'ui-value-positive' : 'ui-value-negative')
-          detailsItemsHtml += Templating.replace('<dt>{{ label }}</dt><dd><span class="{{ classNames }}">{{ value }}€</span></dd>', {
+          detailsItemsHtml += Templating.replace('<dt>{{ label }}</dt><dd><span class="{{ classNames }}">{{ value }}&nbsp;€</span></dd>', {
             label: item.label,
             value: __.formatNumber(item.value, 2, true),
             classNames: classItem
@@ -119,7 +119,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
           // @todo may need to programmatically change the currency here
           // @note this relies on the backend to supply the correcly translated text for labels
           var classItem = (item.value >= 0 ? 'ui-value-positive' : 'ui-value-negative')
-          detailsItemsHtml += Templating.replace('<dt>{{ label }}</dt><dd><span class="{{ classNames }}">{{ value }}€</span></dd>', {
+          detailsItemsHtml += Templating.replace('<dt>{{ label }}</dt><dd><span class="{{ classNames }}">{{ value }}&nbsp;€</span></dd>', {
             label: item.label,
             value: __.formatNumber(item.value, 2, true),
             classNames: classItem

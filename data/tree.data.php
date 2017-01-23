@@ -1196,9 +1196,14 @@ class tree extends tree_crud
         }
     }
 
-
     public function search($search, $includeProjects = false, $langue = 'fr')
     {
+        $search = filter_var($search, FILTER_SANITIZE_STRING);
+
+        if (empty($search)) {
+            return [];
+        }
+
         $result = [];
         $search = strtolower($this->bdd->escape_string($search));
         $query    = "
