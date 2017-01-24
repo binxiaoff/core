@@ -55,7 +55,8 @@ class NotificationManager
                 (
                     $notificationSettings->getNotif($clientId, $mailType, 'immediatement') == true
                     || false === $notificationSettings->exist(['id_client' => $clientId, 'id_notif'  => $mailType])
-                ) && null !== $mailFunction && method_exists($this->mailerManager, $mailFunction)
+                )
+                && null !== $mailFunction && method_exists($this->mailerManager, $mailFunction)
             ) {
                 $this->mailerManager->$mailFunction($notification);
                 $mailNotification->immediatement = 1;
