@@ -206,7 +206,11 @@ class ClientManager
             /** @var BaseUser $user */
             $user = $token->getUser();
 
-            if ($user instanceof UserLender && $this->clientRole->isGranted('ROLE_LENDER', $user) && $client->get($user->getClientId()) && $client->etape_inscription_preteur < \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
+            if ($user instanceof UserLender
+                && $this->clientRole->isGranted('ROLE_LENDER', $user)
+                && $client->get($user->getClientId())
+                && empty($user->getClientStatus())
+            ) {
                 $redirectPath = $this->getSubscriptionStepRedirectRoute($client);
 
                 if ($redirectPath != $currentPath) {

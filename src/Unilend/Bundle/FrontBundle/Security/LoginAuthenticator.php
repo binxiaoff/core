@@ -27,6 +27,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
@@ -183,33 +184,29 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $client->update();
         }
 
+        $this->saveLogin($client);
         $this->sessionStrategy->onAuthentication($request, $token);
 
-        if (in_array('ROLE_LENDER', $user->getRoles()) && $client->etape_inscription_preteur < 3 && empty($user->getClientStatus())) {
-            $response = new RedirectResponse($this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]));
-        } elseif (in_array('ROLE_LENDER', $user->getRoles()) && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
-            $response = new RedirectResponse($this->router->generate('lender_completeness'));
-        } else {
-            $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
-
-            if (! $targetPath) {
-                $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
-            }
-
-            $client->saveLogin(new \DateTime('NOW'));
-
-            /** @var \clients_history $clientHistory */
-            $clientHistory = $this->entityManager->getRepository('clients_history');
-            $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
-
-            /** @var \clients_gestion_notifications $clientNotificationSettings */
-            $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
-            if (false === $clientNotificationSettings->select('id_client = ' . $user->getClientId())) {
-                $this->notificationManager->generateDefaultNotificationSettings($client);
-            }
-
-            $response = new RedirectResponse($targetPath);
+        /** @var \clients_gestion_notifications $clientNotificationSettings */
+        $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
+        if (false === $clientNotificationSettings->select('id_client = ' . $client->id_client)) {
+            $this->notificationManager->generateDefaultNotificationSettings($client);
         }
+
+
+        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+        if (! $targetPath) {
+            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
+        }
+
+        if (
+            $user instanceof UserLender
+            && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])
+        ) {
+            $targetPath = $this->router->generate('lender_completeness');
+        }
+
+        $response = new RedirectResponse($targetPath);
 
         $cookie = new Cookie(self::COOKIE_NO_CF, 1);
         $response->headers->setCookie($cookie);
@@ -279,5 +276,14 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         return true;
+    }
+
+    private function saveLogin(\clients $client)
+    {
+        $client->saveLogin(new \DateTime('NOW'));
+
+        /** @var \clients_history $clientHistory */
+        $clientHistory = $this->entityManager->getRepository('clients_history');
+        $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
     }
 }
