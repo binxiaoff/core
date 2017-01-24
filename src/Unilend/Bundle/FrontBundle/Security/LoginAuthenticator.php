@@ -50,6 +50,16 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     /** @var Logger */
     private $logger;
 
+    /**
+     * LoginAuthenticator constructor.
+     * @param UserPasswordEncoder                    $securityPasswordEncoder
+     * @param RouterInterface                        $router
+     * @param EntityManager                          $entityManager
+     * @param NotificationManager                    $notificationManager
+     * @param SessionAuthenticationStrategyInterface $sessionStrategy
+     * @param CsrfTokenManagerInterface              $csrfTokenManager
+     * @param Logger                                 $logger
+     */
     public function __construct(
         UserPasswordEncoder $securityPasswordEncoder,
         RouterInterface $router,
@@ -68,6 +78,12 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->logger                  = $logger;
     }
 
+    /**
+     * @param Request       $request
+     * @param UserInterface $user
+     *
+     * @return mixed|string
+     */
     protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
     {
         $targetPath = $request->get('_target_path');
@@ -269,7 +285,12 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         return new RedirectResponse($this->getLoginUrl());
     }
 
-    private function checkCaptcha($credentials)
+    /**
+     * @param array $credentials
+     *
+     * @return bool
+     */
+    private function checkCaptcha(array $credentials)
     {
         if (isset($credentials['captchaInformation']['captchaCode']) && isset($credentials['captcha'])) {
             return $credentials['captchaInformation']['captchaCode'] == strtolower($credentials['captcha']);
@@ -278,6 +299,9 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         return true;
     }
 
+    /**
+     * @param \clients $client
+     */
     private function saveLogin(\clients $client)
     {
         $client->saveLogin(new \DateTime('NOW'));
