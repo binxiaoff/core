@@ -719,7 +719,7 @@ class MainController extends Controller
             $acceptCookies->create();
 
             $response = new JsonResponse(true);
-            $response->headers->setCookie(new Cookie("acceptCookies", $acceptCookies->id_accept_cookies, time() + (365 * 24 * 3600), '/'));
+            $response->headers->setCookie(new Cookie("acceptCookies", $acceptCookies->id_accept_cookies, time() + (365 * 24 * 3600), '/', null, false, false));
 
             return $response;
         }
