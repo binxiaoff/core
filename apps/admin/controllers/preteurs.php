@@ -615,7 +615,7 @@ class preteursController extends bootstrap
                 $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
                 header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                 die;
-            } elseif (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+            } elseif (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->name         = $_POST['raison-sociale'];
                 $this->companies->forme        = $_POST['form-juridique'];
                 $this->companies->capital      = str_replace(' ', '', $_POST['capital-sociale']);
@@ -627,7 +627,7 @@ class preteursController extends bootstrap
                 ////////////////////////////////////
                 // On verifie meme adresse ou pas //
                 ////////////////////////////////////
-                if ($_POST['meme-adresse'] != false) {
+                if (isset($_POST['meme-adresse'])) {
                     $this->companies->status_adresse_correspondance = '1';
                 } else {
                     $this->companies->status_adresse_correspondance = '0';
@@ -764,7 +764,7 @@ class preteursController extends bootstrap
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
                         $sTypeMail = 'preteur-validation-modification-compte';
                     } else {
-                        $this->create_offre_bienvenue($this->clients->id_client);
+                        $welcomeOfferManager->createWelcomeOffer($this->clients);
                         $sTypeMail = 'preteur-confirmation-activation';
                     }
 
