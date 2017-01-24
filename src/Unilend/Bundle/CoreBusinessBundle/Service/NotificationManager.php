@@ -6,170 +6,183 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 class NotificationManager
 {
     /** @var MailerManager */
-    private $oMailerManager;
+    private $mailerManager;
+    /** @var EntityManager  */
+    private $entityManager;
 
-    public function __construct(EntityManager $oEntityManager, MailerManager $oMailerManager)
+    /**
+     * NotificationManager constructor.
+     * @param EntityManager $entityManager
+     * @param MailerManager $mailerManager
+     */
+    public function __construct(EntityManager $entityManager, MailerManager $mailerManager)
     {
-        $this->oEntityManager = $oEntityManager;
-        $this->oMailerManager = $oMailerManager;
+        $this->entityManager = $entityManager;
+        $this->mailerManager = $mailerManager;
     }
 
     /**
-     * @param int        $iNotificationType
-     * @param int        $iMailType
-     * @param int        $iClientId
-     * @param null|int   $sMailFunction
-     * @param null|int   $iProjectId
-     * @param null|float $fAmount
-     * @param null|int   $iBidId
-     * @param null|int   $iTransactionId
-     * @param null|int   $iLoanId
+     * @param int        $notificationType
+     * @param int        $mailType
+     * @param int        $clientId
+     * @param null|int   $mailFunction
+     * @param null|int   $projectId
+     * @param null|float $amount
+     * @param null|int   $bidId
+     * @param null|int   $transactionId
+     * @param null|int   $loanId
      */
-    public function create($iNotificationType, $iMailType, $iClientId, $sMailFunction = null, $iProjectId = null, $fAmount = null, $iBidId = null, $iTransactionId = null, $iLoanId = null)
-    {
-        /** @var \clients_gestion_notifications $oNotificationSettings */
-        $oNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+    public function create(
+        $notificationType,
+        $mailType,
+        $clientId,
+        $mailFunction = null,
+        $projectId = null,
+        $amount = null,
+        $bidId = null,
+        $transactionId = null,
+        $loanId = null
+    ) {
+        /** @var \clients_gestion_notifications $notificationSettings */
+        $notificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
+        /** @var \clients_gestion_mails_notif $mailNotification */
+        $mailNotification = $this->entityManager->getRepository('clients_gestion_mails_notif');
 
-        $oNotification = $this->createNotification($iNotificationType, $iClientId, $iProjectId, $fAmount, $iBidId);
+        $notification = $this->createNotification($notificationType, $clientId, $projectId, $amount, $bidId);
 
-        if ($oNotificationSettings->getNotif($iClientId, $iMailType, 'uniquement_notif') == false) {
+        if ($notificationSettings->getNotif($clientId, $mailType, 'uniquement_notif') == false) {
             if (
                 (
-                    $oNotificationSettings->getNotif($iClientId, $iMailType, 'immediatement') == true
-                    || false === $oNotificationSettings->exist(array('id_client' => $iClientId, 'id_notif' => $iMailType))
-                )
-                && null !== $sMailFunction && method_exists($this->oMailerManager, $sMailFunction)
+                    $notificationSettings->getNotif($clientId, $mailType, 'immediatement') == true
+                    || false === $notificationSettings->exist(['id_client' => $clientId, 'id_notif'  => $mailType])
+                ) && null !== $mailFunction && method_exists($this->mailerManager, $mailFunction)
             ) {
-                $this->oMailerManager->$sMailFunction($oNotification);
-                $oMailNotification->immediatement = 1;
+                $this->mailerManager->$mailFunction($notification);
+                $mailNotification->immediatement = 1;
             } else {
-                $oMailNotification->immediatement = 0;
+                $mailNotification->immediatement = 0;
             }
 
-            $this->createEmailNotification($oNotification->id_notification, $iMailType, $iClientId, $iTransactionId, $iProjectId, $iLoanId);
+            $this->createEmailNotification($notification->id_notification, $mailType, $clientId, $transactionId, $projectId, $loanId);
         }
     }
 
     /**
-     * @param int $iNotificationType
-     * @param int $iClientId
-     * @param null|int $iProjectId
-     * @param null|float $fAmount
-     * @param null|int $iBidId
+     * @param int        $notificationType
+     * @param int        $clientId
+     * @param null|int   $projectId
+     * @param null|float $amount
+     * @param null|int   $bidId
+     *
      * @return \notifications
      */
-    public function createNotification($iNotificationType, $iClientId, $iProjectId = null, $fAmount = null, $iBidId = null)
+    public function createNotification($notificationType, $clientId, $projectId = null, $amount = null, $bidId = null)
     {
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
-        /** @var \notifications $oNotification */
-        $oNotification = $this->oEntityManager->getRepository('notifications');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
+        /** @var \notifications $notification */
+        $notification = $this->entityManager->getRepository('notifications');
 
-        $sLenderId = '';
-        if ($oLenderAccount->get($iClientId, 'id_client_owner')) {
-            $sLenderId = $oLenderAccount->id_lender_account;
+        $lenderId = '';
+        if ($lenderAccount->get($clientId, 'id_client_owner')) {
+            $lenderId = $lenderAccount->id_lender_account;
         }
-        $oNotification->type       = $iNotificationType;
-        $oNotification->id_lender  = $sLenderId;
-        $oNotification->id_project = $iProjectId;
-        $oNotification->amount     = $fAmount * 100;
-        $oNotification->id_bid     = $iBidId;
-        $oNotification->create();
+        $notification->type       = $notificationType;
+        $notification->id_lender  = $lenderId;
+        $notification->id_project = $projectId;
+        $notification->amount     = bcmul($amount, 100);
+        $notification->id_bid     = $bidId;
+        $notification->create();
 
-        return $oNotification;
+        return $notification;
     }
 
     /**
-     * @param int      $iNotificationId
-     * @param int      $iMailType
-     * @param int      $iClientId
-     * @param int|null $iTransactionId
-     * @param int|null $iProjectId
-     * @param int|null $iLoandId
+     * @param int      $notificationId
+     * @param int      $mailType
+     * @param int      $clientId
+     * @param int|null $transactionId
+     * @param int|null $projectId
+     * @param int|null $loanId
      */
-    public function createEmailNotification($iNotificationId, $iMailType, $iClientId, $iTransactionId = null, $iProjectId = null, $iLoandId = null)
+    public function createEmailNotification($notificationId, $mailType, $clientId, $transactionId = null, $projectId = null, $loanId = null)
     {
-        /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+        /** @var \clients_gestion_mails_notif $mailNotification */
+        $mailNotification = $this->entityManager->getRepository('clients_gestion_mails_notif');
 
-        $oMailNotification->id_client       = $iClientId;
-        $oMailNotification->id_project      = $iProjectId;
-        $oMailNotification->id_notif        = $iMailType;
-        $oMailNotification->date_notif      = date('Y-m-d H:i:s');
-        $oMailNotification->id_notification = $iNotificationId;
-        $oMailNotification->id_transaction  = $iTransactionId;
-        $oMailNotification->id_loan         = $iLoandId;
-        $oMailNotification->create();
+        $mailNotification->id_client       = $clientId;
+        $mailNotification->id_project      = $projectId;
+        $mailNotification->id_notif        = $mailType;
+        $mailNotification->date_notif      = date('Y-m-d H:i:s');
+        $mailNotification->id_notification = $notificationId;
+        $mailNotification->id_transaction  = $transactionId;
+        $mailNotification->id_loan         = $loanId;
+        $mailNotification->create();
     }
 
-    public function countUnreadNotificationsForClient(\clients $oClient)
+    /**
+     * @param \clients $client
+     *
+     * @return int
+     */
+    public function countUnreadNotificationsForClient(\clients $client)
     {
         /** @var \notifications $notifications */
-        $notifications  = $this->oEntityManager->getRepository('notifications');
+        $notifications  = $this->entityManager->getRepository('notifications');
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
-        $lenderAccount->get($oClient->id_client, 'id_client_owner');
+        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
+        $lenderAccount->get($client->id_client, 'id_client_owner');
 
         return $notifications->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND status = ' . \notifications::STATUS_UNREAD);
     }
 
-    public function generateDefaultNotificationSettings(\clients $oClient)
+    /**
+     * @param \clients $client
+     */
+    public function generateDefaultNotificationSettings(\clients $client)
     {
-        $aNotificationTypes = $this->getNotificationTypes();
+        $notificationTypes = $this->getNotificationTypes();
         /** @var \clients_gestion_notifications $clientNotificationSettings */
-        $clientNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
 
-        foreach ($aNotificationTypes as $notification) {
-            $clientNotificationSettings->id_client = $oClient->id_client;
+        foreach ($notificationTypes as $notification) {
+            $clientNotificationSettings->id_client = $client->id_client;
             $clientNotificationSettings->id_notif  = $notification['id_client_gestion_type_notif'];
 
-            if (in_array($notification['id_client_gestion_type_notif'],
-                array(
-                    \clients_gestion_type_notif::TYPE_BID_REJECTED,
-                    \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
-                    \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
-                    \clients_gestion_type_notif::TYPE_DEBIT
-                ))) {
-                $clientNotificationSettings->immediatement = 1;
-            } else {
-                $clientNotificationSettings->immediatement = 0;
-            }
+            $defaultImmediate = [
+                \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
+                \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
+                \clients_gestion_type_notif::TYPE_DEBIT
+            ];
 
-            if (
-            in_array($notification['id_client_gestion_type_notif'],
-                array(
-                    \clients_gestion_type_notif::TYPE_NEW_PROJECT,
-                    \clients_gestion_type_notif::TYPE_BID_PLACED,
-                    \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
-                    \clients_gestion_type_notif::TYPE_REPAYMENT
-                ))) {
-                $clientNotificationSettings->quotidienne = 1;
-            } else {
-                $clientNotificationSettings->quotidienne = 0;
-            }
+            $defaultDaily = [
+                \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                \clients_gestion_type_notif::TYPE_BID_PLACED,
+                \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                \clients_gestion_type_notif::TYPE_REPAYMENT
+            ];
 
-            if ( in_array(
-                $notification['id_client_gestion_type_notif'],
-                array(
-                    \clients_gestion_type_notif::TYPE_NEW_PROJECT,
-                    \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
-                ))) {
-                $clientNotificationSettings->hebdomadaire = 1;
-            } else {
-                $clientNotificationSettings->hebdomadaire = 0;
-            }
+            $defaultWeekly = [
+                \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
+            ];
 
-            $clientNotificationSettings->mensuelle = 0;
+            $clientNotificationSettings->immediatement = in_array($notification['id_client_gestion_type_notif'], $defaultImmediate) ? 1 : 0;
+            $clientNotificationSettings->quotidienne   = in_array($notification['id_client_gestion_type_notif'], $defaultDaily) ? 1 : 0;
+            $clientNotificationSettings->hebdomadaire  = in_array($notification['id_client_gestion_type_notif'], $defaultWeekly) ? 1 : 0;
+            $clientNotificationSettings->mensuelle     = 0;
             $clientNotificationSettings->create();
         }
     }
 
+    /**
+     * @return array
+     */
     public function getNotificationTypes()
     {
         /** @var \clients_gestion_type_notif $clientNotificationTypes */
-        $clientNotificationTypes = $this->oEntityManager->getRepository('clients_gestion_type_notif');
+        $clientNotificationTypes = $this->entityManager->getRepository('clients_gestion_type_notif');
         return $clientNotificationTypes->select();
     }
 
@@ -179,7 +192,7 @@ class NotificationManager
     public function deactivateAllNotificationSettings(\clients $client)
     {
         /** @var \clients_gestion_notifications $clientNotificationSettings */
-        $clientNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
 
         foreach ($clientNotificationSettings->getNotifs($client->id_client) as $idNotification => $notification){
             $clientNotificationSettings->get(['id_notif' => $idNotification]);
