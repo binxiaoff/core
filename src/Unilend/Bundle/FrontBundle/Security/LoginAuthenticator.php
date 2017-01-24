@@ -72,6 +72,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $targetPath = $request->get('_target_path');
 
         if ($targetPath) {
+            $targetPath = $this->removeHost($targetPath);
             return $targetPath;
         }
 
@@ -279,5 +280,26 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         return true;
+    }
+
+    /**
+     * Remove the host part from URL to avoid the external redirection
+     * @param $target
+     *
+     * @return string
+     */
+    private function removeHost($target)
+    {
+        // handle protocol-relative URLs that parse_url() doesn't like
+        if (substr($target, 0, 2) === '//') {
+            $target = 'proto:' . $target;
+        }
+
+        $parsedUrl = parse_url($target);
+        $path      = isset($parsedUrl['path']) ? $parsedUrl['path'] : '/';
+        $query     = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
+        $fragment  = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
+
+        return $path . $query . $fragment;
     }
 }
