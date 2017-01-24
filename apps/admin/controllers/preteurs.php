@@ -592,12 +592,6 @@ class preteursController extends bootstrap
 
                     $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
-                    if (false == $this->lNotifs) {
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
-                        $notificationManager = $this->get('unilend.service.notification_manager');
-                        $notificationManager->generateDefaultNotificationSettings($this->clients);
-                    }
-
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
                         $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
                     } else {
