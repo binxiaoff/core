@@ -28,9 +28,9 @@ function readCookie(name) {
 
 var displayCookieBox = function() {
   var accepted = readCookie('acceptCookies');
-  if (accepted) {
+  if (! accepted) {
     var CookieWrap = $('[data-cookies]')
-    $(CookieWrap).hide()
+    $(CookieWrap).show()
   }
 }
 
