@@ -31,10 +31,9 @@ class ExceptionController extends Controller
 
     public function showAction(Request $request, FlattenException $exception, DebugLoggerInterface $logger = null)
     {
-        $dbHost = $this->get('database_connection')->fetchColumn('Select @@hostname');
-
         if ($logger instanceof LoggerInterface) {
             try {
+                $dbHost = $this->get('database_connection')->fetchColumn('Select @@hostname');
                 $logger->info('Current database host is ' . $dbHost);
             } catch (\Exception $exception) {
                 $logger->error('Exception occurs when getting the database host name. Error message : ' . $exception->getMessage());
