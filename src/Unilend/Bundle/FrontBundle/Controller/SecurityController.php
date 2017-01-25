@@ -112,7 +112,7 @@ class SecurityController extends Controller
      */
     public function passwordForgottenAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             $entityManager = $this->get('unilend.service.entity_manager');
             /** @var \clients $clients */
             $clients = $entityManager->getRepository('clients');
@@ -132,8 +132,8 @@ class SecurityController extends Controller
                 $token         = $temporaryLink->generateTemporaryLink($clients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
 
                 $varMail = [
-                    'surl'          => $this->get('assets.packages')->getUrl(''),
-                    'url'           => $this->get('assets.packages')->getUrl(''),
+                    'surl'          => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+                    'url'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
                     'prenom'        => $clients->prenom,
                     'login'         => $clients->email,
                     'link_password' => $this->generateUrl('define_new_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
@@ -270,8 +270,8 @@ class SecurityController extends Controller
         $lien_tw = $settings->value;
 
         $varMail = [
-            'surl'     => $this->get('assets.packages')->getUrl(''),
-            'url'      => $this->get('assets.packages')->getUrl(''),
+            'surl'     => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+            'url'      => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
             'lien_fb'  => $lien_fb,
             'lien_tw'  => $lien_tw,
             'login'    => $client->email,
