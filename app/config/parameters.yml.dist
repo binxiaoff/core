@@ -30,6 +30,10 @@ parameters:
     dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
     dbal_driver_class:              Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
 
+    mongodb_server:                 mongodb://uld-mdb-admin:cyPKA2c0C6hq3JLp@datalake-shard-00-00-lnres.mongodb.net:27017
+    mongodb_username:               uld-mdb-admin
+    mongodb_password:               cyPKA2c0C6hq3JLp
+
     secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
     locale:                         fr_FR
 
@@ -38,9 +42,9 @@ parameters:
 
     image_resize:
         projets:
-            authorized: [72, 169] # Authorized heights
-            height: 1365          #  Source image maximum height
-            width: 2048           #  Source image maximum width
+            authorized:             [72, 169] # Authorized heights
+            height:                 1365      # Source image maximum height
+            width:                  2048      # Source image maximum width
 
     router.request_context.scheme:  https
 
@@ -60,3 +64,7 @@ parameters:
     new_relic.front_app_name:       Unilend-front
     new_relic.back_app_name:        Unilend-backoffice
     new_relic.console_app_name:     Unilend-batchjobs
+
+    ekomi.url:                      http://apps.ekomi.com/srr/add-recipient
+    ekomi.shop_id:                  ~
+    ekomi.password:                 ~

@@ -58,6 +58,9 @@
         <li><a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" title="Gestion prêteurs">Détail prêteurs</a> -</li>
         <li>Informations prêteur</li>
     </ul>
+    <?php if (empty($this->clients->id_client)) : ?>
+        <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>
+    <?php else : ?>
     <div><?= $this->sClientStatusMessage ?></div>
     <h1>Informations prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">
@@ -474,527 +477,528 @@
         </table>
         <br/><br/>
 
-        <style type="text/css">
-            .form-style-10{
-                padding:20px;
-                background: #FFF;
-                border-radius: 10px;
-                -webkit-border-radius:10px;
-                -moz-border-radius: 10px;
-                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.13);
-                -moz-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.13);
-                -webkit-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.13);
-            }
-            .form-style-10 .inner-wrap{
-                padding: 10px;
-                background: #F8F8F8;
-                border-radius: 6px;
-                margin-bottom: 15px;
-            }
-            .form-style-10 .section{
-                font: normal 20px 'Bitter', serif;
-                color: #B20066;
-                margin-bottom: 5px;
-            }
-            .form-style-10 .section span {
-                background: #B20066;
-                padding: 5px 10px 5px 10px;
-                position: absolute;
-                border-radius: 50%;
-                -webkit-border-radius: 50%;
-                -moz-border-radius: 50%;
-                border: 4px solid #fff;
-                font-size: 14px;
-                margin-left: -45px;
-                color: #fff;
-                margin-top: -3px;
-            }
-            span.st {
-                width: 25%;
-            }
-            .form-style-10 .add-attachment{
-                border-collapse: separate;
-                border-spacing: 2px;
-            }
-            .form-style-10 .add-attachment td{
-                padding: 5px;
-            }
-            .td-greenPoint-status-valid {
-                border-radius: 5px; background-color: #00A000; color: white; width: 250px;
-            }
-            .td-greenPoint-status-warning {
-                border-radius: 5px; background-color: #f79232; color: white; width: 250px;
-            }
-            .td-greenPoint-status-error {
-                border-radius: 5px; background-color: #ff0100; color: white; width: 250px;
-            }
-        </style>
-
-        <h2>Pièces jointes<span></span></h2>
-        <div class="form-style-10">
-            <div class="section"><span>1</span>Identité</div>
-            <div class="inner-wrap">
-                <table id="identity-attachments" class="add-attachment">
-                    <?php foreach ($this->aIdentity as $iIdType => $aAttachmentType): ?>
-                        <tr>
-                            <th><?= $aAttachmentType['label'] ?></th>
-                            <td>
-                                <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
-                                    <?= $aAttachmentType['path'] ?>
-                                </a>
-                            </td>
-                            <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
-                                <?= $aAttachmentType['greenpoint_label'] ?>
-                            </td>
-                            <td>
-                                <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    <tr class="row row-upload">
-                        <td>
-                            <select class="select">
-                                <option value="">Selectionnez un document</option>
-                                <?php foreach ($this->aIdentityToAdd as $iIdType => $aAttachmentType): ?>
-                                    <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="file" class="file-field">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <span class="btn btn-small btn-add-row">+</span>
-                            <span style="margin-left: 5px;">Cliquez pour ajouter</span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="section"><span>2</span>Justificatif de domicile</div>
-            <div class="inner-wrap">
-                <table id="domicile-attachments" class="add-attachment">
-                    <?php foreach ($this->aDomicile as $iIdType => $aAttachmentType): ?>
-                        <tr>
-                            <th><?= $aAttachmentType['label'] ?></th>
-                            <td>
-                                <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
-                                    <?= $aAttachmentType['path'] ?>
-                                </a>
-                            </td>
-                            <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
-                                <?= $aAttachmentType['greenpoint_label'] ?>
-                            </td>
-                            <td>
-                                <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-
-                    <tr class="row row-upload">
-                        <td>
-                            <select class="select">
-                                <option value="">Selectionnez un document</option>
-                                <?php foreach ($this->aDomicileToAdd as $iIdType => $aAttachmentType): ?>
-                                    <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="file" class="file-field">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <span class="btn btn-small btn-add-row">+</span>
-                            <span style="margin-left: 5px;">Cliquez pour ajouter</span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="section"><span>3</span>RIB et Jsutificatif fiscal</div>
-            <div class="inner-wrap">
-                <table id="rib-attachments" class="add-attachment">
-                    <?php foreach ($this->aRibAndFiscale as $iIdType => $aAttachmentType): ?>
-                        <tr>
-                            <th><?= $aAttachmentType['label'] ?></th>
-                            <td>
-                                <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
-                                    <?= $aAttachmentType['path'] ?>
-                                </a>
-                            </td>
-                            <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
-                                <?= $aAttachmentType['greenpoint_label'] ?>
-                            </td>
-                            <td>
-                                <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-
-                    <tr class="row row-upload">
-                        <td>
-                            <select class="select">
-                                <option value="">Selectionnez un document</option>
-                                <?php foreach ($this->aRibAndFiscaleToAdd as $iIdType => $aAttachmentType): ?>
-                                    <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="file" class="file-field">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <span class="btn btn-small btn-add-row">+</span>
-                            <span style="margin-left: 5px;">Cliquez pour ajouter</span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="section"><span>4</span>Autre</div>
-            <div class="inner-wrap">
-                <table id="other-attachments" class="add-attachment">
-                    <?php foreach ($this->aOther as $iIdType => $aAttachmentType): ?>
-                        <tr>
-                            <th><?= $aAttachmentType['label'] ?></th>
-                            <td>
-                                <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
-                                    <?= $aAttachmentType['path'] ?>
-                                </a>
-                            </td>
-                            <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
-                                 <?= $aAttachmentType['greenpoint_label'] ?>
-                            </td>
-                            <td>
-                                <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    <tr>
-                        <th>Mandat</th>
-                        <td>
-                            <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
-                                <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>"><?= $this->clients_mandats->name ?></a>
-                            <?php endif; ?>
-                        </td>
-                        <td><input type="file" name="mandat"></td>
-                    </tr>
-                    <tr class="row row-upload">
-                        <td>
-                            <select class="select">
-                                <option value="">Selectionnez un document</option>
-                                <?php foreach ($this->aOtherToAdd as $iIdType => $aAttachmentType): ?>
-                                    <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="file" class="file-field">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <span class="btn btn-small btn-add-row">+</span>
-                            <span style="margin-left: 5px;">Cliquez pour ajouter</span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        </br></br>
-        <div class="gauche">
-            <br/><br/>
-            <h2>Historique :</h2>
-            <style>
-                .histo_status_client li {
-                    margin-left: 15px;
-                    list-style: disc;
+            <style type="text/css">
+                .form-style-10{
+                    padding:20px;
+                    background: #FFF;
+                    border-radius: 10px;
+                    -webkit-border-radius:10px;
+                    -moz-border-radius: 10px;
+                    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.13);
+                    -moz-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.13);
+                    -webkit-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.13);
+                }
+                .form-style-10 .inner-wrap{
+                    padding: 10px;
+                    background: #F8F8F8;
+                    border-radius: 6px;
+                    margin-bottom: 15px;
+                }
+                .form-style-10 .section{
+                    font: normal 20px 'Bitter', serif;
+                    color: #B20066;
+                    margin-bottom: 5px;
+                }
+                .form-style-10 .section span {
+                    background: #B20066;
+                    padding: 5px 10px 5px 10px;
+                    position: absolute;
+                    border-radius: 50%;
+                    -webkit-border-radius: 50%;
+                    -moz-border-radius: 50%;
+                    border: 4px solid #fff;
+                    font-size: 14px;
+                    margin-left: -45px;
+                    color: #fff;
+                    margin-top: -3px;
+                }
+                span.st {
+                    width: 25%;
+                }
+                .form-style-10 .add-attachment{
+                    border-collapse: separate;
+                    border-spacing: 2px;
+                }
+                .form-style-10 .add-attachment td{
+                    padding: 5px;
+                }
+                .td-greenPoint-status-valid {
+                    border-radius: 5px; background-color: #00A000; color: white; width: 250px;
+                }
+                .td-greenPoint-status-warning {
+                    border-radius: 5px; background-color: #f79232; color: white; width: 250px;
+                }
+                .td-greenPoint-status-error {
+                    border-radius: 5px; background-color: #ff0100; color: white; width: 250px;
                 }
             </style>
-            <!-- Lender tax country history -->
-            <?php
-            if (false === empty($this->aTaxationCountryHistory)): ?>
-                <h3>Historique Fiscal</h3>
-                <table class="tablesorter histo_status_client">
-                    <?php if (array_key_exists('error', $this->aTaxationCountryHistory)): ?>
-                        <tr>
-                            <td><?= $this->aTaxationCountryHistory['error'] ?></td>
-                        </tr>
-                    <?php else:
-                        foreach ($this->aTaxationCountryHistory as $aRow) { ?>
+
+            <h2>Pièces jointes<span></span></h2>
+            <div class="form-style-10">
+                <div class="section"><span>1</span>Identité</div>
+                <div class="inner-wrap">
+                    <table id="identity-attachments" class="add-attachment">
+                        <?php foreach ($this->aIdentity as $iIdType => $aAttachmentType): ?>
                             <tr>
-                                <td>Nouveau pays fiscal: <b><?= $aRow['country_name'] ?></b>. Modifié par <?= $aRow['user_firstname'] ?> <?= $aRow['user_name'] ?> le <?= date('d/m/Y H:i:s', strtotime($aRow['added'])) ?>
+                                <th><?= $aAttachmentType['label'] ?></th>
+                                <td>
+                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
+                                        <?= $aAttachmentType['path'] ?>
+                                    </a>
+                                </td>
+                                <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
+                                    <?= $aAttachmentType['greenpoint_label'] ?>
+                                </td>
+                                <td>
+                                    <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
                                 </td>
                             </tr>
-                        <?php } ?>
-                    <?php endif; ?>
-                </table>
-            <?php endif; ?>
-            <!-- Lender status history -->
-            <?php if (false === empty($this->lActions)) : ?>
+                        <?php endforeach; ?>
+                        <tr class="row row-upload">
+                            <td>
+                                <select class="select">
+                                    <option value="">Selectionnez un document</option>
+                                    <?php foreach ($this->aIdentityToAdd as $iIdType => $aAttachmentType): ?>
+                                        <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="file" class="file-field">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="btn btn-small btn-add-row">+</span>
+                                <span style="margin-left: 5px;">Cliquez pour ajouter</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="section"><span>2</span>Justificatif de domicile</div>
+                <div class="inner-wrap">
+                    <table id="domicile-attachments" class="add-attachment">
+                        <?php foreach ($this->aDomicile as $iIdType => $aAttachmentType): ?>
+                            <tr>
+                                <th><?= $aAttachmentType['label'] ?></th>
+                                <td>
+                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
+                                        <?= $aAttachmentType['path'] ?>
+                                    </a>
+                                </td>
+                                <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
+                                    <?= $aAttachmentType['greenpoint_label'] ?>
+                                </td>
+                                <td>
+                                    <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+
+                        <tr class="row row-upload">
+                            <td>
+                                <select class="select">
+                                    <option value="">Selectionnez un document</option>
+                                    <?php foreach ($this->aDomicileToAdd as $iIdType => $aAttachmentType): ?>
+                                        <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="file" class="file-field">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="btn btn-small btn-add-row">+</span>
+                                <span style="margin-left: 5px;">Cliquez pour ajouter</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="section"><span>3</span>RIB et Jsutificatif fiscal</div>
+                <div class="inner-wrap">
+                    <table id="rib-attachments" class="add-attachment">
+                        <?php foreach ($this->aRibAndFiscale as $iIdType => $aAttachmentType): ?>
+                            <tr>
+                                <th><?= $aAttachmentType['label'] ?></th>
+                                <td>
+                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
+                                        <?= $aAttachmentType['path'] ?>
+                                    </a>
+                                </td>
+                                <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
+                                    <?= $aAttachmentType['greenpoint_label'] ?>
+                                </td>
+                                <td>
+                                    <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+
+                        <tr class="row row-upload">
+                            <td>
+                                <select class="select">
+                                    <option value="">Selectionnez un document</option>
+                                    <?php foreach ($this->aRibAndFiscaleToAdd as $iIdType => $aAttachmentType): ?>
+                                        <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="file" class="file-field">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="btn btn-small btn-add-row">+</span>
+                                <span style="margin-left: 5px;">Cliquez pour ajouter</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="section"><span>4</span>Autre</div>
+                <div class="inner-wrap">
+                    <table id="other-attachments" class="add-attachment">
+                        <?php foreach ($this->aOther as $iIdType => $aAttachmentType): ?>
+                            <tr>
+                                <th><?= $aAttachmentType['label'] ?></th>
+                                <td>
+                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
+                                        <?= $aAttachmentType['path'] ?>
+                                    </a>
+                                </td>
+                                <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
+                                     <?= $aAttachmentType['greenpoint_label'] ?>
+                                </td>
+                                <td>
+                                    <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <tr>
+                            <th>Mandat</th>
+                            <td>
+                                <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
+                                    <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>"><?= $this->clients_mandats->name ?></a>
+                                <?php endif; ?>
+                            </td>
+                            <td><input type="file" name="mandat"></td>
+                        </tr>
+                        <tr class="row row-upload">
+                            <td>
+                                <select class="select">
+                                    <option value="">Selectionnez un document</option>
+                                    <?php foreach ($this->aOtherToAdd as $iIdType => $aAttachmentType): ?>
+                                        <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="file" class="file-field">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="btn btn-small btn-add-row">+</span>
+                                <span style="margin-left: 5px;">Cliquez pour ajouter</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            </br></br>
+            <div class="gauche">
+                <br/><br/>
+                <h2>Historique :</h2>
                 <style>
                     .histo_status_client li {
                         margin-left: 15px;
                         list-style: disc;
                     }
                 </style>
-                <div style="margin-top: 15px;">
-                    <h3>Historique des statuts client</h3>
+                <!-- Lender tax country history -->
+                <?php
+                if (false === empty($this->aTaxationCountryHistory)): ?>
+                    <h3>Historique Fiscal</h3>
                     <table class="tablesorter histo_status_client">
-                    <?php foreach ($this->lActions as $historyEntry) {
-                        $this->oClientsStatusForHistory->get($historyEntry['id_client_status'], 'id_client_status');
-                        $this->users->get($historyEntry['id_user'], 'id_user');
-
-                        switch ($this->oClientsStatusForHistory->status) {
-                            case \clients_status::TO_BE_CHECKED: ?>
-                                <tr>
-                                    <td>
-                                        <?php if (empty($historyEntry['content'])) : ?>
-                                            Création de compte le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
-                                        <?php else: ?>
-                                            Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
-                                            <?= $historyEntry['content'] ?>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <?php break;
-                            case \clients_status::COMPLETENESS: ?>
-                                <tr>
-                                    <td>
-                                        Complétude le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
-                                        par <?= $this->users->name ?><br/>
-                                        <?= $historyEntry['content'] ?>
-                                    </td>
-                                </tr>
-                                <?php break;
-                            case \clients_status::COMPLETENESS_REMINDER: ?>
-                                <tr>
-                                    <td>
-                                        Complétude Relance le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
-                                        <?= $historyEntry['content'] ?>
-                                    </td>
-                                </tr>
-                                <?php break;
-                            case \clients_status::COMPLETENESS_REPLY: ?>
-                                <tr>
-                                    <td>
-                                        Complétude Reponse le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
-                                        <?= $historyEntry['content'] ?>
-                                    </td>
-                                </tr>
-                                <?php break;
-                            case \clients_status::MODIFICATION: ?>
-                                <tr>
-                                    <td>
-                                        Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
-                                        <?= $historyEntry['content'] ?>
-                                    </td>
-                                </tr>
-                                <?php break;
-                            case \clients_status::VALIDATED: ?>
-                                <tr>
-                                    <td>
-                                        <?php if (empty($historyEntry['content'])) : ?>
-                                            Compte validé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />par <?= $this->users->name ?></td>
-                                        <?php else : ?>
-                                            <?= $historyEntry['content'] . ' le ' . date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
-                                            <br>par <?= (-1 != $a['id_user']) ? $this->users->name : ' le CRON de validation automatique Greenpoint'?></td>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <?php break;
-                            case \clients_status::CLOSED_LENDER_REQUEST : ?>
-                                <tr>
-                                    <td>Compte clôturé à la demande du prêteur (mis hors ligne) <br />
-                                        le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />
-                                        par <?= $this->users->name ?></td>
-                                </tr>
-                                <?php break;
-                            case \clients_status::CLOSED_BY_UNILEND : ?>
-                                <tr>
-                                    <td>Compte clôturé par Unilend (mis hors ligne) <br />
-                                        le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?> <br />
-                                        par <?= $this->users->name ?><br />
-                                        <?= $historyEntry['content'] ?>
-                                    </td>
-                                </tr>
-                                <?php break;
-                            case \clients_status::CLOSED_DEFINITELY: ?>
-                                <tr>
-                                    <td>
-                                        Compte definitvement fermé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
-                                        <br>
-                                        <?= $historyEntry['content'] ?>
-                                        <br>par <?= $this->users->name ?>
-                                    </td>
-                                </tr>
-                                <?php break;
-                        }
-                    }
-                    ?>
-                    </table>
-                </div>
-            <?php endif; ?>
-            <!-- Lender tax exemption history -->
-            <?php if (false === empty($this->taxExemptionUserHistoryAction)): ?>
-                <table class="tablesorter histo_status_client">
-                    <?php foreach ($this->taxExemptionUserHistoryAction as $actions): ?>
-                        <?php foreach ($actions['modifications'] as $action): ?>
+                        <?php if (array_key_exists('error', $this->aTaxationCountryHistory)): ?>
                             <tr>
-                                <td>Dispense de prélèvement fiscal <b>année <?= $action['year'] ?></b>.
-                                    <?php if ('adding' === $action['action']): ?>
-                                        Ajoutée
-                                    <?php elseif ('deletion' === $action['action']): ?>
-                                        Supprimée
-                                    <?php endif; ?>
-                                    le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $actions['date'])->format('d/m/Y H:i:s') ?> par <?= $actions['user'] ?>
+                                <td><?= $this->aTaxationCountryHistory['error'] ?></td>
+                            </tr>
+                        <?php else:
+                            foreach ($this->aTaxationCountryHistory as $aRow) { ?>
+                                <tr>
+                                    <td>Nouveau pays fiscal: <b><?= $aRow['country_name'] ?></b>. Modifié par <?= $aRow['user_firstname'] ?> <?= $aRow['user_name'] ?> le <?= date('d/m/Y H:i:s', strtotime($aRow['added'])) ?>
+                                    </td>
+                                </tr>
+                            <?php } ?>
+                        <?php endif; ?>
+                    </table>
+                <?php endif; ?>
+                <!-- Lender status history -->
+                <?php if (false === empty($this->lActions)) : ?>
+                    <style>
+                        .histo_status_client li {
+                            margin-left: 15px;
+                            list-style: disc;
+                        }
+                    </style>
+                    <div style="margin-top: 15px;">
+                    <h3>Historique des statuts client</h3>
+                        <table class="tablesorter histo_status_client">
+                        <?php foreach ($this->lActions as $historyEntry) {
+                            $this->oClientsStatusForHistory->get($historyEntry['id_client_status'], 'id_client_status');
+                            $this->users->get($historyEntry['id_user'], 'id_user');
+
+                            switch ($this->oClientsStatusForHistory->status) {
+                                case \clients_status::TO_BE_CHECKED: ?>
+                                    <tr>
+                                        <td>
+                                            <?php if (empty($historyEntry['content'])) : ?>
+                                                Création de compte le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
+                                            <?php else: ?>
+                                                Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
+                                                <?= $historyEntry['content'] ?>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php break;
+                                case \clients_status::COMPLETENESS: ?>
+                                    <tr>
+                                        <td>
+                                            Complétude le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
+                                            par <?= $this->users->name ?><br/>
+                                            <?= $historyEntry['content'] ?>
+                                        </td>
+                                    </tr>
+                                    <?php break;
+                                case \clients_status::COMPLETENESS_REMINDER: ?>
+                                    <tr>
+                                        <td>
+                                            Complétude Relance le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
+                                            <?= $historyEntry['content'] ?>
+                                        </td>
+                                    </tr>
+                                    <?php break;
+                                case \clients_status::COMPLETENESS_REPLY: ?>
+                                    <tr>
+                                        <td>
+                                            Complétude Reponse le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
+                                            <?= $historyEntry['content'] ?>
+                                        </td>
+                                    </tr>
+                                    <?php break;
+                                case \clients_status::MODIFICATION: ?>
+                                    <tr>
+                                        <td>
+                                            Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
+                                            <?= $historyEntry['content'] ?>
+                                        </td>
+                                    </tr>
+                                    <?php break;
+                                case \clients_status::VALIDATED: ?>
+                                    <tr>
+                                        <td>
+                                            <?php if (empty($historyEntry['content'])) : ?>
+                                                Compte validé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />par <?= $this->users->name ?></td>
+                                            <?php else : ?>
+                                                <?= $historyEntry['content'] . ' le ' . date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
+                                                <br>par <?= (-1 != $a['id_user']) ? $this->users->name : ' le CRON de validation automatique Greenpoint'?></td>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php break;
+                                case \clients_status::CLOSED_LENDER_REQUEST : ?>
+                                    <tr>
+                                        <td>Compte clôturé à la demande du prêteur (mis hors ligne) <br />
+                                            le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />
+                                            par <?= $this->users->name ?></td>
+                                    </tr>
+                                    <?php break;
+                                case \clients_status::CLOSED_BY_UNILEND : ?>
+                                    <tr>
+                                        <td>Compte clôturé par Unilend (mis hors ligne) <br />
+                                            le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?> <br />
+                                            par <?= $this->users->name ?><br />
+                                            <?= $historyEntry['content'] ?>
+                                        </td>
+                                    </tr>
+                                    <?php break;
+                                case \clients_status::CLOSED_DEFINITELY: ?>
+                                    <tr>
+                                        <td>
+                                            Compte definitvement fermé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
+                                            <br>
+                                            <?= $historyEntry['content'] ?>
+                                            <br>par <?= $this->users->name ?>
+                                        </td>
+                                    </tr>
+                                    <?php break;
+                            }
+                        }
+                        ?>
+                        </table>
+                    </div>
+                <?php endif; ?>
+                <!-- Lender tax exemption history -->
+                <?php if (false === empty($this->taxExemptionUserHistoryAction)): ?>
+                    <table class="tablesorter histo_status_client">
+                        <?php foreach ($this->taxExemptionUserHistoryAction as $actions): ?>
+                            <?php foreach ($actions['modifications'] as $action): ?>
+                                <tr>
+                                    <td>Dispense de prélèvement fiscal <b>année <?= $action['year'] ?></b>.
+                                        <?php if ('adding' === $action['action']): ?>
+                                            Ajoutée
+                                        <?php elseif ('deletion' === $action['action']): ?>
+                                            Supprimée
+                                        <?php endif; ?>
+                                        le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $actions['date'])->format('d/m/Y H:i:s') ?> par <?= $actions['user'] ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </table>
+                <?php endif; ?>
+            </div>
+            <div class="droite">
+                <?php if($this->clients_status->status != \clients_status::CLOSED_DEFINITELY) : ?>
+                <table class="tabLesStatuts">
+                    <tr>
+                        <td>
+                            <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']
+                                || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide']) : ?>
+                            <a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']) : ?>
+                                <img src="<?= $this->surl ?>/images/admin/mail.png" alt="email" style="position: relative; top: 7px;"/>
+                                <span style="color:green;">Votre email a été envoyé</span>
+                                <?php unset($_SESSION['email_completude_confirm']); ?>
+                                <?php unset($_SESSION['compte_valide']); ?>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <?php if ($this->clients_status->status != clients_status::VALIDATED && $this->clients->status == \clients::STATUS_ONLINE) : ?>
+                            <input type="button" id="valider_preteur" class="btn" value="Valider le prêteur">
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_BY_UNILEND, \clients_status::CLOSED_LENDER_REQUEST))) : ?>
+                            <input type="button" id="completude_edit" class="btn btnCompletude" value="Complétude">
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
+                    <tr>
+                        <td colspan="2">
+                            <?php if ($this->clients->status == \clients::STATUS_ONLINE) :?>
+                                <input type="button"
+                                       onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
+                                       class="btnRouge"
+                                       value="Hors ligne / Clôturé par Unilend">
+                            <?php else: ?>
+                                <input type="button"
+                                       onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_ONLINE ?>';}"
+                                       class="btn"
+                                       value="En ligne / Status avant mis hors ligne">
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
+                            <input type="button"
+                                   onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
+                                   class="btnRouge" value="Hors ligne / Clôturé à la demande du client">
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+                <div class="message_completude">
+                    <h2>Complétude - Personnalisation du message</h2>
+
+                    <div class="liwording">
+                        <table>
+                            <?php foreach($this->completude_wording as $key => $message): ?>
+                                <tr>
+                                    <td><img class="add" id="add-<?= $key ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
+                                    <td><span class="content-add-<?= $key ?>"><?= $message ?></span></td>
+                                </tr>
+                                <?php if (substr($key, -1, 1) == 3) : ?>
+                                    <tr><td colspan="2">&nbsp;</td></tr>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </table>
+                    </div>
+                    <br/>
+                    <h3 class="test">Listes : </h3>
+                    <div class="content_li_wording">
+                    </div>
+                    <fieldset style="width:100%;">
+                        <table class="formColor" style="width:100%;">
+                            <tr>
+                                <td>
+                                    <label for="id">Saisir votre message :</label>
+                                    <textarea name="content_email_completude" id="content_email_completude"><?= isset($_SESSION['content_email_completude'][$this->params[0]]) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?></textarea>
                                 </td>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php endforeach; ?>
-                </table>
-            <?php endif; ?>
-        </div>
-        <div class="droite">
-            <?php if($this->clients_status->status != \clients_status::CLOSED_DEFINITELY) : ?>
-            <table class="tabLesStatuts">
-                <tr>
-                    <td>
-                        <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']
-                            || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide']) : ?>
-                        <a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']) : ?>
-                            <img src="<?= $this->surl ?>/images/admin/mail.png" alt="email" style="position: relative; top: 7px;"/>
-                            <span style="color:green;">Votre email a été envoyé</span>
-                            <?php unset($_SESSION['email_completude_confirm']); ?>
-                            <?php unset($_SESSION['compte_valide']); ?>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <?php if ($this->clients_status->status != clients_status::VALIDATED && $this->clients->status == \clients::STATUS_ONLINE) : ?>
-                        <input type="button" id="valider_preteur" class="btn" value="Valider le prêteur">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_BY_UNILEND, \clients_status::CLOSED_LENDER_REQUEST))) : ?>
-                        <input type="button" id="completude_edit" class="btn btnCompletude" value="Complétude">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
-                <tr>
-                    <td colspan="2">
-                        <?php if ($this->clients->status == \clients::STATUS_ONLINE) :?>
-                            <input type="button"
-                                   onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
-                                   class="btnRouge"
-                                   value="Hors ligne / Clôturé par Unilend">
-                        <?php else: ?>
-                            <input type="button"
-                                   onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_ONLINE ?>';}"
-                                   class="btn"
-                                   value="En ligne / Status avant mis hors ligne">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
-                        <input type="button"
-                               onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
-                               class="btnRouge" value="Hors ligne / Clôturé à la demande du client">
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            </table>
-            <br/>
-            <div class="message_completude">
-                <h2>Complétude - Personnalisation du message</h2>
-
-                <div class="liwording">
-                    <table>
-                        <?php foreach($this->completude_wording as $key => $message): ?>
                             <tr>
-                                <td><img class="add" id="add-<?= $key ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
-                                <td><span class="content-add-<?= $key ?>"><?= $message ?></span></td>
+                                <th>
+                                    <a id="completude_preview" href="<?= $this->lurl ?>/preteurs/completude_preview/<?= $this->clients->id_client ?>" class="thickbox"></a>
+                                    <input type="button" value="Prévisualiser" title="Prévisualiser" name="previsualisation" id="previsualisation" class="btn"/>
+                                </th>
                             </tr>
-                            <?php if (substr($key, -1, 1) == 3) : ?>
-                                <tr><td colspan="2">&nbsp;</td></tr>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    </table>
+                        </table>
+                    </fieldset>
+                    <br/><br/>
                 </div>
-                <br/>
-                <h3 class="test">Listes : </h3>
-                <div class="content_li_wording">
-                </div>
-                <fieldset style="width:100%;">
-                    <table class="formColor" style="width:100%;">
-                        <tr>
-                            <td>
-                                <label for="id">Saisir votre message :</label>
-                                <textarea name="content_email_completude" id="content_email_completude"><?= isset($_SESSION['content_email_completude'][$this->params[0]]) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?></textarea>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <a id="completude_preview" href="<?= $this->lurl ?>/preteurs/completude_preview/<?= $this->clients->id_client ?>" class="thickbox"></a>
-                                <input type="button" value="Prévisualiser" title="Prévisualiser" name="previsualisation" id="previsualisation" class="btn"/>
-                            </th>
-                        </tr>
-                    </table>
-                </fieldset>
-                <br/><br/>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
-        </div>
-        <div class="clear"></div>
-        <br/><br/>
-        <div class="content_cgv_accept">
-            <h2>Acceptation CGV</h2>
-            <?php if (count($this->lAcceptCGV) > 0) : ?>
-                <table class="tablesorter cgv_accept">
-                    <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Version</th>
-                        <th>URL</th>
-                        <th>Date validation</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($this->lAcceptCGV as $a) :
-                        $this->tree->get(array('id_tree' => $a['id_legal_doc'], 'id_langue' => $this->language));
-                        ?>
+            <div class="clear"></div>
+            <br/><br/>
+            <div class="content_cgv_accept">
+                <h2>Acceptation CGV</h2>
+                <?php if (count($this->lAcceptCGV) > 0) : ?>
+                    <table class="tablesorter cgv_accept">
+                        <thead>
                         <tr>
-                            <td><?= date('d/m/Y', strtotime($this->tree->added)) ?></td>
-                            <td><?= $this->tree->title ?></td>
-                            <td><a target="_blank" href="<?= $this->furl . '/' . $this->tree->slug ?>"><?= $this->furl . '/' . $this->tree->slug ?></a></td>
-                            <td><?= date('d/m/Y H:i:s', strtotime($a['updated'])) ?></td>
+                            <th>Date</th>
+                            <th>Version</th>
+                            <th>URL</th>
+                            <th>Date validation</th>
                         </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php else : ?>
-                <p style="text-align:center;" >Aucun CGV signé</p>
-            <?php endif; ?>
-        </div>
-        <br/><br/><br/><br/>
-        <input type="hidden" name="statut_valider_preteur" id="statut_valider_preteur" value="0"/>
-        <input type="hidden" name="send_edit_preteur" id="send_edit_preteur"/>
-        <div class="btnDroite"><input type="submit" id="save_etape_1" name="save_etape_1" value="Sauvegarder" class="btn"/></div>
-    </form>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($this->lAcceptCGV as $a) :
+                            $this->tree->get(array('id_tree' => $a['id_legal_doc'], 'id_langue' => $this->language));
+                            ?>
+                            <tr>
+                                <td><?= date('d/m/Y', strtotime($this->tree->added)) ?></td>
+                                <td><?= $this->tree->title ?></td>
+                                <td><a target="_blank" href="<?= $this->furl . '/' . $this->tree->slug ?>"><?= $this->furl . '/' . $this->tree->slug ?></a></td>
+                                <td><?= date('d/m/Y H:i:s', strtotime($a['updated'])) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else : ?>
+                    <p style="text-align:center;" >Aucun CGV signé</p>
+                <?php endif; ?>
+            </div>
+            <br/><br/><br/><br/>
+            <input type="hidden" name="statut_valider_preteur" id="statut_valider_preteur" value="0"/>
+            <input type="hidden" name="send_edit_preteur" id="send_edit_preteur"/>
+            <div class="btnDroite"><input type="submit" id="save_etape_1" name="save_etape_1" value="Sauvegarder" class="btn"/></div>
+        </form>
+    <?php endif; ?>
 </div>
 <script type="text/javascript">
     function addWordingli(id) {

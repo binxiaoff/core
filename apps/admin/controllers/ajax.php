@@ -1610,7 +1610,7 @@ class ajaxController extends bootstrap
 
         /** @var \temporary_links_login $oTemporaryLink */
         $oTemporaryLink = $this->loadData('temporary_links_login');
-        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client);
+        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
 
         $aVariables = array(
             'surl'                   => $this->surl,

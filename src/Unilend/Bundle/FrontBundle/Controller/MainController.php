@@ -45,7 +45,7 @@ class MainController extends Controller
 
     /**
      * @Route("/", name="home")
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function homeAction()
     {
@@ -72,7 +72,7 @@ class MainController extends Controller
 
     /**
      * @Route("/preter", name="home_lender")
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function homeLenderAction()
     {
@@ -133,7 +133,7 @@ class MainController extends Controller
 
     /**
      * @Route("/emprunter", name="home_borrower")
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function homeBorrowerAction()
     {
@@ -162,13 +162,16 @@ class MainController extends Controller
     /**
      * @Route("/simulateur-projet-etape1", name="project_simulator")
      * @Method("POST")
+     *
+     * @param Request $request
+     * @return Response
      */
     public function projectSimulatorStepOneAction(Request $request)
     {
         if ($request->isXmlHttpRequest()) {
-            $period   = $request->request->get('period');
-            $amount   = $request->request->get('amount');
-            $motiveId = $request->request->get('motiveId');
+            $period   = $request->request->getInt('period');
+            $amount   = $request->request->getInt('amount');
+            $motiveId = $request->request->getInt('motiveId');
 
             /** @var ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
@@ -212,6 +215,9 @@ class MainController extends Controller
     /**
      * @Route("/simulateur-projet", name="project_simulator_form")
      * @Method("POST")
+     *
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function projectSimulatorStepTwoAction(Request $request)
     {
@@ -233,8 +239,8 @@ class MainController extends Controller
 
     /**
      * @Route("/cgv_preteurs/{type}", name="lenders_terms_of_sales", requirements={"type": "morale"})
-     * @param string $type
      *
+     * @param string $type
      * @return Response
      */
     public function lenderTermsOfSalesAction($type = '')
@@ -408,9 +414,9 @@ class MainController extends Controller
     }
 
     /**
-     * @param Request       $request
-     * @param array         $content
-     * @param array         $complement
+     * @param Request $request
+     * @param array   $content
+     * @param array   $complement
      * @return Response
      */
     private function renderBorrowerLandingPage(Request $request, array $content, array $complement)
@@ -436,9 +442,9 @@ class MainController extends Controller
             ],
             'form'     => [
                 'values'  => [
-                    'amount' => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->get('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
-                    'siren'  => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->get('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
-                    'email'  => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : $request->query->get('email')) : $sessionHandler->get('projectRequest')['values']['email']
+                    'amount' => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
+                    'siren'  => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
+                    'email'  => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email']
                 ],
             ],
         ];
@@ -451,7 +457,7 @@ class MainController extends Controller
          */
         foreach (['prenom', 'nom', 'mobile'] as $fieldName) {
             if ($request->query->get($fieldName)) {
-                $session['values'][$fieldName] = $request->query->get($fieldName);
+                $session['values'][$fieldName] = filter_var($request->query->get($fieldName), FILTER_SANITIZE_STRING);
             }
         }
 
@@ -464,7 +470,7 @@ class MainController extends Controller
     }
 
     /**
-     * @param \tree         $tree
+     * @param \tree  $tree
      * @param string $lenderType
      * @return Response
      */
@@ -724,7 +730,7 @@ class MainController extends Controller
     /**
      * @Route("/qui-sommes-nous", name="about_us")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function aboutUsAction()
     {
@@ -747,10 +753,12 @@ class MainController extends Controller
 
     /**
      * @Route("/statistiques", name="statistics")
-     * @Route("/statistiques/{requestedDate}", name="historic_statistics")
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @Route("/statistiques/{requestedDate}", name="historic_statistics", requirements={"requestedDate": "20[0-9]{2}-[0-9]{2}-[0-9]{2}"})
+     *
+     * @param  string $requestedDate
+     * @return Response
      */
-    public function statisticsAction(Request $request, $requestedDate = null)
+    public function statisticsAction($requestedDate = null)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -759,8 +767,6 @@ class MainController extends Controller
         $tree->get(['slug' => 'statistiques']);
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-
-        $requestedDate = str_replace('_', '-', $requestedDate);
 
         if (false === empty($requestedDate)) {
             $firstHistoryDate = new \DateTime(StatisticsManager::START_FRONT_STATISTICS_HISTORY);
@@ -799,7 +805,7 @@ class MainController extends Controller
     /**
      * @Route("/faq-preteur", name="lender_faq")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function lenderFaqAction()
     {
@@ -816,7 +822,7 @@ class MainController extends Controller
     /**
      * @Route("/faq-emprunteur", name="borrower_faq")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function borrowerFaqAction()
     {
@@ -834,7 +840,7 @@ class MainController extends Controller
     /**
      * @Route("/plan-du-site", name="sitemap")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function siteMapAction()
     {
@@ -934,7 +940,7 @@ class MainController extends Controller
     /**
      * @Route("/temoignages", name="testimonials")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function testimonialAction()
     {

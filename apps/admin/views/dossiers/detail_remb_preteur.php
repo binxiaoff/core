@@ -86,18 +86,19 @@
                     <td>
                         <a href="<?= $this->furl . '/pdf/contrat/' . $this->clients->hash . '/' . $loan['id_loan'] ?>">PDF</a>
                     </td>
+                    <td>
+                        <?php if (false === empty($loan['id_transfer'])) :
+                            /** @var \lenders_accounts $formerOwner */
+                            $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
+                            <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                        <?php endif; ?>
+                    </td>
                     <td align="center">
                         <a target="_blank" href="<?= $this->lurl ?>/dossiers/detail_echeance_preteur/<?= $loan['id_project'] ?>/<?= $loan['id_loan'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/modif.png" alt="detail"/>
                         </a>
                     </td>
-                    <td>
-                        <?php if (false === empty($loan['id_transfer'])) :
-                        /** @var \lenders_accounts $formerOwner */
-                        $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
-                        <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
-                        <?php endif; ?>
-                    </td>
+
                 </tr>
                 <?php
                 $i++;

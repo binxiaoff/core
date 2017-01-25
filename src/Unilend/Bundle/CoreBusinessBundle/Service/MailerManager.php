@@ -1968,7 +1968,7 @@ class MailerManager
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('notification-pouvoir-mandat-signe', $template);
+        $message = $this->messageProvider->newMessage('notification-pouvoir-mandat-signe', $template, false);
         $message->setTo(explode(';', $destinataire));
         $this->mailer->send($message);
     }

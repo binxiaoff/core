@@ -163,7 +163,9 @@
                             <select name="status" id="status" class="select" style="width:80px;">
                                 <option value="">Status</option>
                                 <?php foreach ($this->lProjects_status as $s) { ?>
-                                    <option <?= (isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                    <option <?= (isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>">
+                                        <?= 55 == $this->sessionIdUser && \projects_status::COMITE == $s['status'] ? 'En attente beau papa' : $s['label'] ?>
+                                    </option>
                                 <?php } ?>
                             </select>
                         </td>
@@ -229,7 +231,7 @@
                     <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
                     <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
                     <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
-                    <td><?= $p['label'] ?></td>
+                    <td><?= 55 == $this->sessionIdUser && \projects_status::COMITE == $p['status'] ? 'En attente beau papa' : $p['label'] ?></td>
                     <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
                     <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
                     <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
