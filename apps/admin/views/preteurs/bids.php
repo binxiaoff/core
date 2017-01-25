@@ -32,9 +32,8 @@
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>
     <?php else : ?>
-    <div><?= $this->sClientStatusMessage ?></div>
-    <h1>Historique des bids prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
-
+        <div><?= $this->sClientStatusMessage ?></div>
+        <h1>Historique des bids prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
         <div class="btnDroite">
             <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
             <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
@@ -82,5 +81,5 @@
             <?php endforeach; ?>
             </tbody>
         </table>
-<?php endif; ?>
+    <?php endif; ?>
 </div>
