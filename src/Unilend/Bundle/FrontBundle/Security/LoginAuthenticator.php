@@ -57,7 +57,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         SessionAuthenticationStrategyInterface $sessionStrategy,
         CsrfTokenManagerInterface $csrfTokenManager,
         Logger $logger
-    ) {
+    )
+    {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
@@ -177,7 +178,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $user->useDefaultEncoder(); // force to use the default password encoder
             try {
                 $client->password = $this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']);
-            } catch (BadCredentialsException $exeption){
+            } catch (BadCredentialsException $exeption) {
 
             }
             $client->update();
