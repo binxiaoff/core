@@ -635,7 +635,9 @@ class ajaxController extends bootstrap
                 $oProjectStatus = $this->loadData('projects_status');
                 $oProjectStatus->get($oProjectStatusHistory->id_project_status);
 
-                $aPossibleStatus = $oProjectStatus->getPossibleStatus($this->projects->id_project, $oProjectStatusHistory);
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+                $projectStatusManager = $this->get('unilend.service.project_status_manager');
+                $aPossibleStatus      = $projectStatusManager->getPossibleStatus($this->projects);
 
                 if (count($aPossibleStatus) > 0) {
                     $select = '<select name="status" id="status" class="select">';

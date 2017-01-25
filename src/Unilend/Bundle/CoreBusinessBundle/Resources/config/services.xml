@@ -234,5 +234,9 @@
         <service id="unilend.service.company_balance_sheet_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager">
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>
+
+        <service id="unilend.service.project_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
     </services>
 </container>
