@@ -334,6 +334,14 @@ class dossiersController extends bootstrap
             }
 
             $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
+            /** @var \product selectedProduct */
+            $this->selectedProduct = $product;
+            $this->isProductUsable = false;
+            if ($this->projects->status = projects_status::PREP_FUNDING) {
+                if ($productManager->isProductUsable($this->selectedProduct)) {
+                    $this->isProductUsable = true;
+                }
+            }
 
             if (isset($_POST['last_annual_accounts'])) {
                 $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];

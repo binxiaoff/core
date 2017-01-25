@@ -449,12 +449,18 @@
                         <td>
                             <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
                                 <option value=""></option>
-                            <?php foreach ($this->eligibleProduct as $product) : ?>
-                                <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
-                                    <?= $this->translator->trans('product_label_' . $product->label) ?>
-                                </option>
-                            <?php endforeach; ?>
-                            </select>
+                                <?php if (false === empty($this->selectedProduct->id_product) && false === in_array($this->selectedProduct, $this->eligibleProduct)) : ?>
+                                    <option value="<?= $this->selectedProduct->id_product ?>" selected disabled >
+                                        <?= $this->translator->trans('product_label_' . $this->selectedProduct->label) ?>
+                                    </option>
+                                <?php endif; ?>
+                                <?php foreach ($this->eligibleProduct as $product) : ?>
+                                    <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
+                                        <?= $this->translator->trans('product_label_' . $product->label) ?>
+                                    </option>
+
+                                <?php endforeach; ?>
+                                </select>
                         </td>
                     </tr>
                     <?php if (isset($this->availableContracts) && in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)): ?>
@@ -605,6 +611,10 @@
                                             && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
                                         ) {
                                             $blockingPuttingOnlineError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                        }
+
+                                        if (false === $this->isProductUsable) {
+                                            $blockingPuttingOnlineError = 'Le produit associé au projet n\'est plus disponible. Veuillez sélectionner un autre produit.';
                                         }
 
                                         if (false === empty($blockingPuttingOnlineError)) {
