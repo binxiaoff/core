@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Debug\Exception\FlattenException;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,22 +22,36 @@ class ExceptionController extends Controller
         $seoPage->addMeta('name', 'robots', 'noindex');
 
         $translator = $this->get('translator');
+        $pageTitle  = $translator->trans('error-page_404-page-title');
         $title      = $translator->trans('error-page_404-title');
         $details    = $translator->trans('error-page_404-details');
 
-        return $this->render('exception/error.html.twig', ['errorTitle' => $title, 'errorDetails' => $details]);
+        return $this->render('exception/error.html.twig', ['errorPageTitle' => $pageTitle, 'errorTitle' => $title, 'errorDetails' => $details]);
     }
 
     public function showAction(Request $request, FlattenException $exception, DebugLoggerInterface $logger = null)
     {
+        if ($logger instanceof LoggerInterface) {
+            try {
+                $dbHost = $this->get('database_connection')->fetchColumn('Select @@hostname');
+                $logger->info('Current database host is ' . $dbHost);
+            } catch (\Exception $exception) {
+                $logger->error('Exception occurs when getting the database host name. Error message : ' . $exception->getMessage());
+            }
+        }
+
+        $seoPage = $this->container->get('sonata.seo.page');
+        $seoPage->addMeta('name', 'robots', 'noindex');
+
         $currentContent = $this->getAndCleanOutputBuffering($request->headers->get('X-Php-Ob-Level', -1));
         $showException  = $request->attributes->get('showException', $this->getParameter('kernel.debug'));
 
         $code = $exception->getStatusCode();
 
         $translator = $this->get('translator');
-        $title      = $translator->trans('error-page_404-title');
-        $details    = $translator->trans('error-page_404-details');
+        $pageTitle  = $translator->trans('error-page_general-page-title');
+        $title      = $translator->trans('error-page_general-title');
+        $details    = $translator->trans('error-page_general-details');
 
         return $this->render(
             (string)$this->findTemplate($request, $request->getRequestFormat(), $showException),
@@ -46,10 +61,34 @@ class ExceptionController extends Controller
                 'exception'      => $exception,
                 'logger'         => $logger,
                 'currentContent' => $currentContent,
+                'errorPageTitle' => $pageTitle,
                 'errorTitle'     => $title,
                 'errorDetails'   => $details
             ]
         );
+    }
+
+    /**
+     * @Route("/cf-error/error5xx", name="cloudflare_5xx")
+     *
+     * @return Response
+     */
+    public function error5xxAction()
+    {
+        $seoPage = $this->container->get('sonata.seo.page');
+        $seoPage->addMeta('name', 'robots', 'noindex');
+
+        $translator = $this->get('translator');
+        $pageTitle  = $translator->trans('error-page_general-page-title');
+        $title      = $translator->trans('error-page_general-title');
+        $details    = $translator->trans('error-page_general-details');
+
+        return $this->render('exception/error.html.twig', [
+            'errorPageTitle' => $pageTitle,
+            'errorTitle'     => $title,
+            'errorDetails'   => $details,
+            'hideButtons'    => true
+        ]);
     }
 
     /**
@@ -67,7 +106,7 @@ class ExceptionController extends Controller
         $title      = $translator->trans('error-page_blocked-title');
         $details    = $translator->trans('error-page_blocked-details');
 
-        return $this->render('exception/error.html.twig', [
+        return $this->render('exception/cf_page.html.twig', [
             'errorPageTitle' => $pageTitle,
             'errorTitle'     => $title,
             'errorDetails'   => $details,
@@ -90,7 +129,7 @@ class ExceptionController extends Controller
         $title      = $translator->trans('error-page_challenge-title');
         $details    = $translator->trans('error-page_challenge-details');
 
-        return $this->render('exception/error.html.twig', [
+        return $this->render('exception/cf_page.html.twig', [
             'errorPageTitle' => $pageTitle,
             'errorTitle'     => $title,
             'errorDetails'   => $details,

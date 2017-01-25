@@ -128,10 +128,14 @@ class LenderSubscriptionController extends Controller
         /** @var array $post */
         $post = $request->request->all();
 
-        if (false === $dates->ageplus18($post['client_year_of_birth'] . '-' . $post['client_month_of_birth'] . '-' . $post['client_day_of_birth'])) {
+        if (
+            false === isset($post['client_year_of_birth'], $post['client_month_of_birth'], $post['client_day_of_birth'])
+            || false === preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $post['client_year_of_birth'] . '-' . $post['client_month_of_birth'] . '-' . $post['client_day_of_birth'])
+            || false === $dates->ageplus18($post['client_year_of_birth'] . '-' . $post['client_month_of_birth'] . '-' . $post['client_day_of_birth'])
+        ) {
             $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-age'));
         }
-        if (empty($post['client_form_of_address'])) {
+        if (empty($post['client_form_of_address']) || false === in_array($post['client_form_of_address'], [\clients::TITLE_MISS, \clients::TITLE_MISTER, \clients::TITLE_UNDEFINED])) {
             $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-identity-missing-form-of-address'));
         }
         if (empty($post['client_name'])) {
@@ -603,8 +607,12 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents")
+     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
+     *
+     * @param string  $clientHash
+     * @param Request $request
+     * @return Response
      */
     public function documentsAction($clientHash, Request $request)
     {
@@ -644,8 +652,12 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents_form")
+     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
+     *
+     * @param string  $clientHash
+     * @param Request $request
+     * @return Response
      */
     public function documentsFormAction($clientHash, Request $request)
     {
@@ -719,6 +731,7 @@ class LenderSubscriptionController extends Controller
 
             $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($client, $post);
+            $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client);
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
             return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
@@ -824,8 +837,12 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit")
+     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
+     *
+     * @param string  $clientHash
+     * @param Request $request
+     * @return Response
      */
     public function moneyDepositAction($clientHash, Request $request)
     {
@@ -854,8 +871,11 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form")
+     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
+     *
+     * @param string  $clientHash
+     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function moneyDepositFormAction($clientHash, Request $request)

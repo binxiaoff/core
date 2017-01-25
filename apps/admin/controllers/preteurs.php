@@ -78,8 +78,50 @@ class preteursController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         if (isset($_POST['form_search_preteur'])) {
-            $nonValide       = (isset($_POST['nonValide']) && $_POST['nonValide'] != false) ? 1 : '';
-            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
+            if (empty($_POST['id']) && empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['raison_sociale'])) {
+                $_SESSION['error_search'][]  = 'Veuillez remplir au moins un champ';
+            }
+
+            $email = empty($_POST['email']) ? '' : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            if (false === $email) {
+                $_SESSION['error_search'][]  = 'Format de l\'email est non valide';
+            }
+
+            $clientId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+            if (false === $clientId) {
+                $_SESSION['error_search'][]  = 'L\'id du client doit être numérique';
+            }
+
+            $lastName = empty($_POST['nom']) ? '' : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
+            if (false === $lastName) {
+                $_SESSION['error_search'][]  = 'Le format du nom n\'est pas valide';
+            }
+
+            $firstName = empty($_POST['prenom']) ? '' : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
+            if (false === $firstName) {
+                $_SESSION['error_search'][]  = 'Le format du prenom n\'est pas valide';
+            }
+
+            $companyName = empty($_POST['raison_sociale']) ? '' : filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING);
+            if (false === $companyName) {
+                $_SESSION['error_search'][]  = 'Le format de la raison sociale n\'est pas valide';
+            }
+
+            if (false === empty($_SESSION['error_search'])) {
+                header('Location:' . $this->lurl . '/preteurs/search');
+                die;
+            }
+
+            $nonValide = (isset($_POST['nonValide']) && $_POST['nonValide'] != false) ? 1 : '';
+
+            $this->lPreteurs = $this->clients->searchPreteurs($clientId, $lastName, $email, $firstName, $companyName, $nonValide);
+
+            if (1 == count($this->lPreteurs)) {
+                $lender = $this->lPreteurs[0];
+                header('Location:' . $this->lurl . '/preteurs/edit/' . $lender['id_lender_account']);
+                die;
+            }
+
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
@@ -547,18 +589,12 @@ class preteursController extends bootstrap
 
                         $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
-                        if (false == $this->lNotifs) {
-                            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
-                            $notificationManager = $this->get('unilend.service.notification_manager');
-                            $notificationManager->generateDefaultNotificationSettings($this->clients);
-                        }
-
-                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
-                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
-                        } else {
-                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
-                        }
-                        $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
+                    if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
+                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
+                    } else {
+                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
+                    }
+                    $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
 
                         $_SESSION['compte_valide'] = true;
                     }

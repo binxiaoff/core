@@ -775,7 +775,7 @@ class transfertsController extends bootstrap
 
                     foreach ($echea as $key => $e) {
                         $dateEcheEmp = strtotime($e['date_echeance_emprunteur']);
-                        $result      = mktime(0, 0, 0, date("m", $dateEcheEmp), date("d", $dateEcheEmp) - 15, date("Y", $dateEcheEmp));
+                        $result      = mktime(0, 0, 0, date('m', $dateEcheEmp), date('d', $dateEcheEmp) - 15, date('Y', $dateEcheEmp));
 
                         $prelevements->id_client                          = $clients->id_client;
                         $prelevements->id_project                         = $project->id_project;
@@ -846,6 +846,9 @@ class transfertsController extends bootstrap
                 $paymentInspectionStopped->update();
 
                 $logger->info('Check refund status done (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+
+                $ekomi = $this->get('unilend.service.ekomi');
+                $ekomi->sendProjectEmail($project);
 
                 $payload = new ChatPostMessagePayload();
                 $payload->setChannel('#general');
