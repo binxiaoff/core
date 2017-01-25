@@ -1170,7 +1170,7 @@ class pdfController extends bootstrap
         }
 
         $sPath          = '/tmp/' . uniqid() . '/';
-        $sNamePdfClient = 'vos_prets_' . date('Y-m-d_H:i:s') . '.pdf';
+        $sNamePdfClient = 'vos_prets_' . date('Y-m-d_H:i:s');
 
         $this->lng['preteur-operations-detail'] = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']    = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
@@ -1186,6 +1186,8 @@ class pdfController extends bootstrap
         $this->loans       = $this->loadData('loans');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->lenders_accounts->get($clientId, 'id_client_owner');
+        $this->clients = $this->loadData('clients');
+        $this->clients->get($clientId);
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
         $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'debut DESC, p.title ASC');
