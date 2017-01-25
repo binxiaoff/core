@@ -23,7 +23,6 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -40,8 +39,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $router;
     /** @var EntityManager */
     private $entityManager;
-    /** @var NotificationManager */
-    private $notificationManager;
     /** @var SessionAuthenticationStrategyInterface */
     private $sessionStrategy;
     /** @var CsrfTokenManagerInterface */
@@ -53,7 +50,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         UserPasswordEncoder $securityPasswordEncoder,
         RouterInterface $router,
         EntityManager $entityManager,
-        NotificationManager $notificationManager,
         SessionAuthenticationStrategyInterface $sessionStrategy,
         CsrfTokenManagerInterface $csrfTokenManager,
         Logger $logger
@@ -62,7 +58,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
-        $this->notificationManager     = $notificationManager;
         $this->sessionStrategy         = $sessionStrategy;
         $this->csrfTokenManager        = $csrfTokenManager;
         $this->logger                  = $logger;
@@ -202,12 +197,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             /** @var \clients_history $clientHistory */
             $clientHistory = $this->entityManager->getRepository('clients_history');
             $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
-
-            /** @var \clients_gestion_notifications $clientNotificationSettings */
-            $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
-            if (false === $clientNotificationSettings->select('id_client = ' . $user->getClientId())) {
-                $this->notificationManager->generateDefaultNotificationSettings($client);
-            }
 
             $response = new RedirectResponse($targetPath);
         }
