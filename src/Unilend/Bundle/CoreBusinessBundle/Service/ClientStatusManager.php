@@ -91,6 +91,7 @@ class ClientStatusManager
                 $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $client->id_client, $sContent);
                 break;
             case \clients_status::VALIDATED:
+            case \clients_status::MODIFICATION:
                 $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $client->id_client, $sContent);
                 break;
             case \clients_status::TO_BE_CHECKED:
