@@ -88,7 +88,7 @@ class bootstrap extends Controller
         $this->blocs_elements   = $this->loadData('blocs_elements');
         $this->elements         = $this->loadData('elements');
         $this->tree             = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->furl, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
-        $this->users            = $this->loadData('users', array('config' => $this->Config, 'lurl' => $this->lurl));
+        $this->users            = $this->loadData('users', array('lurl' => $this->lurl));
         $this->users_zones      = $this->loadData('users_zones');
         $this->users_history    = $this->loadData('users_history');
         $this->mail_template    = $this->loadData('mail_templates');
@@ -187,10 +187,8 @@ class bootstrap extends Controller
         $this->settings->get('Paging Tableaux', 'type');
         $this->nb_lignes = $this->settings->value;
 
-        $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
-
-        $array           = array_keys($this->Config['multilanguage']['allowed_languages']);
-        $this->dLanguage = $array[0];
+        $this->lLangues  = ['fr' => 'Francais'];
+        $this->dLanguage = 'fr';
 
         if (isset($_SESSION['user']) && !empty($_SESSION['user']['id_user'])) {
             $this->sessionIdUser = $_SESSION['user']['id_user'];

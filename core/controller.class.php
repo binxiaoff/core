@@ -1,34 +1,34 @@
 <?php
+
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class Controller implements ContainerAwareInterface
 {
-    var $Command;
-    var $Config;
-    var $App;
-    var $autoFireHead   = true;
-    var $autoFireHeader = true;
-    var $autoFireView   = true;
-    var $autoFireFooter = true;
-    var $autoFireDebug  = true;
-    var $catchAll       = false;
-    var $bdd;
-    var $js;
-    var $css;
-    var $view;
-    var $included_js;
-    var $included_css;
+    public $Command;
+    public $App;
+    public $autoFireHead   = true;
+    public $autoFireHeader = true;
+    public $autoFireView   = true;
+    public $autoFireFooter = true;
+    public $autoFireDebug  = true;
+    public $catchAll       = false;
+    public $bdd;
+    public $js;
+    public $css;
+    public $view;
+    public $included_js;
+    public $included_css;
+
     /**
      * @var ContainerInterface
-     *
      * @api
      */
     protected $container;
 
     public $current_template = '';
 
-    final public function __construct(&$command, $config, $app)
+    final public function __construct(&$command, $app)
     {
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
@@ -40,9 +40,8 @@ abstract class Controller implements ContainerAwareInterface
             unset($_SESSION['msg']);
         }
 
-        $this->Command      = $command;
-        $this->Config       = $config;
-        $this->App          = $app;
+        $this->Command = $command;
+        $this->App     = $app;
     }
 
     protected function initialize()
@@ -149,40 +148,22 @@ abstract class Controller implements ContainerAwareInterface
         $this->params = $this->Command->getParameters();
         call_user_func(array($this, '_' . $FunctionToCall));
 
-        //Affiche le contenu(view) avant le menu(header) si on est en mode seo_optimize
-        if ($this->Config['params']['seo_optimize']) {
-            if ($this->autoFireHead) {
-                $this->fireHead();
-            }
-            if ($this->autoFireView) {
-                $this->fireView();
-            }
-            if ($this->autoFireHeader) {
-                $this->fireHeader();
-            }
-            if ($this->autoFireFooter) {
-                $this->fireFooter();
-            }
-        } else {
-            if ($this->autoFireHead) {
-                $this->fireHead();
-            }
-            if ($this->autoFireHeader) {
-                $this->fireHeader();
-            }
-            if ($this->autoFireView) {
-                $this->fireView();
-            }
-            if ($this->autoFireFooter) {
-                $this->fireFooter();
-            }
+        if ($this->autoFireHead) {
+            $this->fireHead();
         }
-
+        if ($this->autoFireHeader) {
+            $this->fireHeader();
+        }
+        if ($this->autoFireView) {
+            $this->fireView();
+        }
+        if ($this->autoFireFooter) {
+            $this->fireFooter();
+        }
         if ($this->autoFireDebug && $this->getParameter('kernel.debug')) {
             $this->fireDebug();
         }
     }
-
 
     //Gere l'affichage de l'entete
     public function fireHead($head = '')

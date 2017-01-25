@@ -467,15 +467,13 @@ class BorrowerAccountController extends Controller
             $projectsIds = array($filter['project']);
         }
 
-        /** @var array $config */
         $rootDir = $this->get('kernel')->getRootDir() . '/..';
 
-        include $rootDir . '/config.php';
         include $rootDir . '/apps/default/bootstrap.php';
         include $rootDir . '/apps/default/controllers/pdf.php';
 
         $pdfCommand    = new \Command('pdf', 'setDisplay', 'fr');
-        $pdfController = new \pdfController($pdfCommand, $config, 'default');
+        $pdfController = new \pdfController($pdfCommand, 'default');
         $pdfController->setContainer($this->container);
         $pdfController->initialize();
 
