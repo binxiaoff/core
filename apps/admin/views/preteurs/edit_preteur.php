@@ -8,7 +8,7 @@
 
         $("#datepik").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -17,7 +17,7 @@
 
         $("#debut").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -26,7 +26,7 @@
 
         $("#fin").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -38,8 +38,8 @@
         initAutocompleteCity($('#com-naissance'), $('#insee_birth'));
 
         <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?=$_SESSION['freeow']['title']?>",
-                message = "<?=$_SESSION['freeow']['message']?>",
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
                 opts = {},
                 container;
             opts.classes = ['smokey'];
@@ -52,12 +52,6 @@
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/preteurs" title="Prêteurs">Prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Gestion prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" title="Gestion prêteurs">Détail prêteurs</a> -</li>
-        <li>Informations prêteur</li>
-    </ul>
     <div><?= $this->sClientStatusMessage ?></div>
     <h1>Informations prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">
@@ -101,7 +95,7 @@
                             <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $iExemptionYear ?>/uncheck" class="thickbox cboxElement">
                                 <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked>
                             </a>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked disabled>
                             <?php endif; ?>
                             <label for="tax_exemption_<?= $iExemptionYear ?>"><?= $iExemptionYear ?></label>
@@ -535,7 +529,7 @@
             <div class="section"><span>1</span>Identité</div>
             <div class="inner-wrap">
                 <table id="identity-attachments" class="add-attachment">
-                    <?php foreach ($this->aIdentity as $iIdType => $aAttachmentType): ?>
+                    <?php foreach ($this->aIdentity as $iIdType => $aAttachmentType) : ?>
                         <tr>
                             <th><?= $aAttachmentType['label'] ?></th>
                             <td>
@@ -555,7 +549,7 @@
                         <td>
                             <select class="select">
                                 <option value="">Selectionnez un document</option>
-                                <?php foreach ($this->aIdentityToAdd as $iIdType => $aAttachmentType): ?>
+                                <?php foreach ($this->aIdentityToAdd as $iIdType => $aAttachmentType) : ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
                             </select>
@@ -575,7 +569,7 @@
             <div class="section"><span>2</span>Justificatif de domicile</div>
             <div class="inner-wrap">
                 <table id="domicile-attachments" class="add-attachment">
-                    <?php foreach ($this->aDomicile as $iIdType => $aAttachmentType): ?>
+                    <?php foreach ($this->aDomicile as $iIdType => $aAttachmentType) : ?>
                         <tr>
                             <th><?= $aAttachmentType['label'] ?></th>
                             <td>
@@ -596,7 +590,7 @@
                         <td>
                             <select class="select">
                                 <option value="">Selectionnez un document</option>
-                                <?php foreach ($this->aDomicileToAdd as $iIdType => $aAttachmentType): ?>
+                                <?php foreach ($this->aDomicileToAdd as $iIdType => $aAttachmentType) : ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
                             </select>
@@ -616,7 +610,7 @@
             <div class="section"><span>3</span>RIB et Jsutificatif fiscal</div>
             <div class="inner-wrap">
                 <table id="rib-attachments" class="add-attachment">
-                    <?php foreach ($this->aRibAndFiscale as $iIdType => $aAttachmentType): ?>
+                    <?php foreach ($this->aRibAndFiscale as $iIdType => $aAttachmentType) : ?>
                         <tr>
                             <th><?= $aAttachmentType['label'] ?></th>
                             <td>
@@ -637,7 +631,7 @@
                         <td>
                             <select class="select">
                                 <option value="">Selectionnez un document</option>
-                                <?php foreach ($this->aRibAndFiscaleToAdd as $iIdType => $aAttachmentType): ?>
+                                <?php foreach ($this->aRibAndFiscaleToAdd as $iIdType => $aAttachmentType) : ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
                             </select>
@@ -657,7 +651,7 @@
             <div class="section"><span>4</span>Autre</div>
             <div class="inner-wrap">
                 <table id="other-attachments" class="add-attachment">
-                    <?php foreach ($this->aOther as $iIdType => $aAttachmentType): ?>
+                    <?php foreach ($this->aOther as $iIdType => $aAttachmentType) : ?>
                         <tr>
                             <th><?= $aAttachmentType['label'] ?></th>
                             <td>
@@ -686,7 +680,7 @@
                         <td>
                             <select class="select">
                                 <option value="">Selectionnez un document</option>
-                                <?php foreach ($this->aOtherToAdd as $iIdType => $aAttachmentType): ?>
+                                <?php foreach ($this->aOtherToAdd as $iIdType => $aAttachmentType) : ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
                             </select>
@@ -716,10 +710,10 @@
             </style>
             <!-- Lender tax country history -->
             <?php
-            if (false === empty($this->aTaxationCountryHistory)): ?>
+            if (false === empty($this->aTaxationCountryHistory)) : ?>
                 <h3>Historique Fiscal</h3>
                 <table class="tablesorter histo_status_client">
-                    <?php if (array_key_exists('error', $this->aTaxationCountryHistory)): ?>
+                    <?php if (array_key_exists('error', $this->aTaxationCountryHistory)) : ?>
                         <tr>
                             <td><?= $this->aTaxationCountryHistory['error'] ?></td>
                         </tr>
@@ -754,7 +748,7 @@
                                     <td>
                                         <?php if (empty($historyEntry['content'])) : ?>
                                             Création de compte le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
-                                        <?php else: ?>
+                                        <?php else : ?>
                                             Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
                                             <?= $historyEntry['content'] ?>
                                         <?php endif; ?>
@@ -839,15 +833,15 @@
                 </div>
             <?php endif; ?>
             <!-- Lender tax exemption history -->
-            <?php if (false === empty($this->taxExemptionUserHistoryAction)): ?>
+            <?php if (false === empty($this->taxExemptionUserHistoryAction)) : ?>
                 <table class="tablesorter histo_status_client">
-                    <?php foreach ($this->taxExemptionUserHistoryAction as $actions): ?>
-                        <?php foreach ($actions['modifications'] as $action): ?>
+                    <?php foreach ($this->taxExemptionUserHistoryAction as $actions) : ?>
+                        <?php foreach ($actions['modifications'] as $action) : ?>
                             <tr>
                                 <td>Dispense de prélèvement fiscal <b>année <?= $action['year'] ?></b>.
-                                    <?php if ('adding' === $action['action']): ?>
+                                    <?php if ('adding' === $action['action']) : ?>
                                         Ajoutée
-                                    <?php elseif ('deletion' === $action['action']): ?>
+                                    <?php elseif ('deletion' === $action['action']) : ?>
                                         Supprimée
                                     <?php endif; ?>
                                     le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $actions['date'])->format('d/m/Y H:i:s') ?> par <?= $actions['user'] ?>
@@ -900,7 +894,7 @@
                                    onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
                                    class="btnRouge"
                                    value="Hors ligne / Clôturé par Unilend">
-                        <?php else: ?>
+                        <?php else : ?>
                             <input type="button"
                                    onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_ONLINE ?>';}"
                                    class="btn"
@@ -924,7 +918,7 @@
 
                 <div class="liwording">
                     <table>
-                        <?php foreach($this->completude_wording as $key => $message): ?>
+                        <?php foreach($this->completude_wording as $key => $message) : ?>
                             <tr>
                                 <td><img class="add" id="add-<?= $key ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
                                 <td><span class="content-add-<?= $key ?>"><?= $message ?></span></td>
@@ -1142,7 +1136,7 @@
         }
     });
 
-    <?php if ($this->lenders_accounts->origine_des_fonds == 1000000): ?>
+    <?php if ($this->lenders_accounts->origine_des_fonds == 1000000) : ?>
         $("#row_precision").show();
     <?php endif; ?>
 </script>

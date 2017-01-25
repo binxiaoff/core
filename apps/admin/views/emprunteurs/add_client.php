@@ -1,10 +1,10 @@
 <div id="popup">
-	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
-	<form method="post" name="add_emprunteur" id="add_emprunteur" enctype="multipart/form-data" action="<?=$this->lurl?>/emprunteurs/gestion" target="_parent">
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
+    <form method="post" name="add_emprunteur" id="add_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/gestion" target="_parent">
         <h1>Ajouter un emprunteur</h1>
         <fieldset>
             <table class="formColor" style="width: 755px;">
-            	<tr>
+                <tr>
                     <th><label for="nom">Nom :</label></th>
                     <td><input type="text" name="nom" id="nom" class="input_large" value=""/></td>
 
@@ -24,12 +24,9 @@
                     <th><label for="secteur">Secteur :</label></th>
                     <td>
                     <select name="secteur" id="secteur" class="select">
-                        <?
-                        foreach ($this->lSecteurs as $section) {
-                            ?>
-                            <option value="<?= $section['id_company_sector'] ?>"><?= $this->translator->trans('company-sector_sector-' . $section['id_company_sector']) ?></option><?
-                        }
-                        ?>
+                        <?php foreach ($this->lSecteurs as $section) : ?>
+                            <option value="<?= $section['id_company_sector'] ?>"><?= $this->translator->trans('company-sector_sector-' . $section['id_company_sector']) ?></option>
+                        <?php endforeach; ?>
                     </select>
                     </td>
                 </tr>
@@ -51,14 +48,13 @@
                     <th><label for="signature">Signature :</label></th>
                     <td><input type="file" name="signature" id="signature" value=""/></td>
                 </tr>
-            	<tr>
-
-                	<th colspan="4">
+                <tr>
+                    <th colspan="4">
                         <input type="hidden" name="form_add_emprunteur" id="form_add_emprunteur" />
                         <input type="submit" value="Valider" title="Valider" name="send_add_emprunteur" id="send_add_emprunteur" class="btn" />
                     </th>
                 </tr>
-        	</table>
+            </table>
         </fieldset>
     </form>
 </div>

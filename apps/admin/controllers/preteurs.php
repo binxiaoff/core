@@ -43,38 +43,12 @@ class preteursController extends bootstrap
 
     public function _default()
     {
-        // On remonte la page dans l'arborescence
-        if (isset($this->params[0]) && $this->params[0] == 'up') {
-            $this->tree->moveUp($this->params[1]);
-
-            header('Location:' . $this->lurl . '/preteurs');
-            die;
-        }
-
-        // On descend la page dans l'arborescence
-        if (isset($this->params[0]) && $this->params[0] == 'down') {
-            $this->tree->moveDown($this->params[1]);
-
-            header('Location:' . $this->lurl . '/preteurs');
-            die;
-        }
-
-        // On supprime la page et ses dependances
-        if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            $this->tree->deleteCascade($this->params[1]);
-
-            // Mise en session du message
-            $_SESSION['freeow']['title']   = 'Suppression d\'une page';
-            $_SESSION['freeow']['message'] = 'La page et ses enfants ont bien &eacute;t&eacute; supprim&eacute;s !';
-
-            header('Location:' . $this->lurl . '/preteurs');
-            die;
-        }
+        header('Location:' . $this->lurl . '/preteurs/search');
+        die;
     }
 
     public function _gestion()
     {
-        $this->loadData('transactions_types'); //To be able to use transactions_types class constants
         $this->clients = $this->loadData('clients');
 
         if (isset($_POST['form_search_preteur'])) {
@@ -131,7 +105,6 @@ class preteursController extends bootstrap
 
     public function _search()
     {
-        // On affiche les Head, header et footer originaux plus le debug
         $this->autoFireHeader = true;
         $this->autoFireHead   = true;
         $this->autoFireFooter = true;
@@ -142,11 +115,7 @@ class preteursController extends bootstrap
 
     public function _search_non_inscripts()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-
+        $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
     }
 

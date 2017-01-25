@@ -7,8 +7,7 @@
                 <tr>
                     <th><label for="section">Section :</label></th>
                     <td>
-                        <input type="text" name="section" id="section"
-                               value="<?= (isset($this->params[0]) && $this->params[0] != '' ? $this->params[0] : '') ?>" class="input_large"/>
+                        <input type="text" name="section" id="section" value="<?= (isset($this->params[0]) && $this->params[0] != '' ? $this->params[0] : '') ?>" class="input_large"/>
                     </td>
                 </tr>
                 <tr>

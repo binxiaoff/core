@@ -1,9 +1,10 @@
 <script>
-    $(function(){
-        $(".tablesorter").tablesorter({headers:{7:{sorter: false}}});
-        <?php  if ($this->nb_lignes != '') { ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
-        <?php } ?>
+    $(function() {
+        $(".tablesorter").tablesorter({headers:{7: {sorter: false}}});
+
+        <?php  if ($this->nb_lignes != '') : ?>
+            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
+        <?php endif; ?>
 
         $("#Reset").click(function() {
             $("#nom").val('');
@@ -13,18 +14,17 @@
             $("#company_name").val('');
             $('#status option[value="choisir"]').prop('selected', true);
         });
-    });
 
-    <?php if (isset($_SESSION['freeow'])) { ?>
-        $(document).ready(function(){
-            var title, message, opts, container;
-            title = "<?=$_SESSION['freeow']['title']?>";
-            message = "<?=$_SESSION['freeow']['message']?>";
-            opts = {};
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {};
+
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
-        });
-    <?php } ?>
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
+    });
 </script>
 <style>
     table.formColor{width: 100%;}
@@ -38,18 +38,14 @@
 </style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?=$this->lurl?>/prescripteurs" title="Prescripteurs">Prescripteurs</a> -</li>
-        <li>Gestion des prescripteurs</li>
-    </ul>
-    <?php if (isset($_POST['form_search_prescripteur'])) { ?>
+    <?php if (isset($_POST['form_search_prescripteur'])) : ?>
         <h1>Résultats de la recherche d'un prescripteur <?= count($this->aPrescripteurs) > 0 ? '(' . count($this->aPrescripteurs) . ')' : '' ?></h1>
-    <?php } elseif (isset($this->aPrescripteurs)) { ?>
+    <?php elseif (isset($this->aPrescripteurs)) : ?>
         <h1>Liste des <?= count($this->aPrescripteurs) ?> derniers prescripteurs</h1>
-    <?php } ?>
-    <div class="btnDroite"><a href="<?=$this->lurl?>/prescripteurs/add_client" class="btn_link thickbox">Ajouter un prescripteur</a></div>
+    <?php endif; ?>
+    <div class="btnDroite"><a href="<?= $this->lurl ?>/prescripteurs/add_client" class="btn_link thickbox">Ajouter un prescripteur</a></div>
     <div class="search-form-container">
-        <form method="post" name="search_prescripteurs" id="search_prescripteurs" enctype="multipart/form-data" action="<?=$this->lurl?>/prescripteurs/gestion" target="_parent">
+        <form method="post" name="search_prescripteurs" id="search_prescripteurs" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/gestion" target="_parent">
             <fieldset>
                 <table class="formColor">
                     <tr>
@@ -78,45 +74,41 @@
         </form>
     </div>
 
-    <?php if (isset($this->aPrescripteurs) && count($this->aPrescripteurs) > 0) { ?>
+    <?php if (false === empty($this->aPrescripteurs)) : ?>
         <table class="tablesorter">
             <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Email</th>
-                <th>&nbsp;</th>
-            </tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>&nbsp;</th>
+                </tr>
             </thead>
             <tbody>
-            <?php
-            $i = 1;
-            foreach ($this->aPrescripteurs as $c) {
-                ?>
-                <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="prescripteur<?= $c['id_prescripteur'] ?>">
-                    <td><?= $c['id_prescripteur'] ?></td>
-                    <td><?= $c['nom'] ?></td>
-                    <td><?= $c['prenom'] ?></td>
-                    <td><?= $c['email'] ?></td>
-                    <td align="center">
-                        <a href="<?= $this->lurl ?>/prescripteurs/edit/<?= $c['id_prescripteur'] ?>">
-                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $c['nom'] . ' ' . $c['prenom'] ?>">
-                        </a>
-                        <script>
-                            $("#prescripteur<?= $c['id_prescripteur'] ?>").click(function() {
-                                $(location).attr('href','<?= $this->lurl ?>/prescripteurs/edit/<?= $c['id_prescripteur'] ?>');
-                            });
-                        </script>
-                    </td>
-                </tr>
-                <?php
-                $i++;
-            }
-            ?>
+                <?php $i = 1; ?>
+                <?php foreach ($this->aPrescripteurs as $c) : ?>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="prescripteur<?= $c['id_prescripteur'] ?>">
+                        <td><?= $c['id_prescripteur'] ?></td>
+                        <td><?= $c['nom'] ?></td>
+                        <td><?= $c['prenom'] ?></td>
+                        <td><?= $c['email'] ?></td>
+                        <td align="center">
+                            <a href="<?= $this->lurl ?>/prescripteurs/edit/<?= $c['id_prescripteur'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $c['nom'] . ' ' . $c['prenom'] ?>">
+                            </a>
+                            <script>
+                                $("#prescripteur<?= $c['id_prescripteur'] ?>").click(function() {
+                                    $(location).attr('href','<?= $this->lurl ?>/prescripteurs/edit/<?= $c['id_prescripteur'] ?>');
+                                });
+                            </script>
+                        </td>
+                    </tr>
+                    <?php $i++; ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != '') { ?>
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -131,10 +123,8 @@
                     </td>
                 </tr>
             </table>
-        <?php } ?>
-    <?php } elseif (isset($_POST['form_search_prescripteurs'])) { ?>
+        <?php endif; ?>
+    <?php elseif (isset($_POST['form_search_prescripteurs'])) : ?>
         <p>Il n'y a aucun prescripteurs pour cette recherche.</p>
-    <?php } ?>
+    <?php endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>
-

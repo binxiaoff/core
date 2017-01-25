@@ -34,15 +34,7 @@
 
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/preteurs" title="Prêteurs">Prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Gestion prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Detail prêteur</a> -</li>
-        <li>Portefeuille & Performances</li>
-    </ul>
-
     <div><?= $this->sClientStatusMessage ?></div>
-
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
@@ -55,7 +47,7 @@
     <div class="form-body">
         <div class="form-row">
             <table>
-                <thead></thead>
+                <thead>
                     <tr>
                         <th width="auto"></th>
                         <th width="100px"><br>Immédiatement</th>
@@ -66,27 +58,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($this->aInfosNotifications as $sGroup => $aNotificationGroup) : ?>
-                    <tr>
-                        <th colspan="6"><span><br><?= $aNotificationGroup['title'] ?></span></th>
-                    </tr>
-                    <?php foreach ($aNotificationGroup['notifications'] as $iTypes => $aNotification) : ?>
+                    <?php foreach ($this->aInfosNotifications as $sGroup => $aNotificationGroup) : ?>
                         <tr>
-                            <td><?= $aNotification['title'] ?></td>
-                            <?php foreach ($this->aNotificationPeriode as $sPeriod) : ?>
-                                <td>
-                                    <?php if (in_array($sPeriod, $aNotification['available_types'])) : ?>
-                                        <?php if (1 == $this->aClientsNotifications[$iTypes][$sPeriod]) : ?>
-                                            <img alt="" src="<?=$this->surl?>/images/admin/check_on.png">
-                                        <?php else: ?>
-                                            <img alt="" src="<?=$this->surl?>/images/admin/check_off.png">
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-                                </td>
-                            <?php endforeach; ?>
+                            <th colspan="6"><span><br><?= $aNotificationGroup['title'] ?></span></th>
                         </tr>
+                        <?php foreach ($aNotificationGroup['notifications'] as $iTypes => $aNotification) : ?>
+                            <tr>
+                                <td><?= $aNotification['title'] ?></td>
+                                <?php foreach ($this->aNotificationPeriode as $sPeriod) : ?>
+                                    <td>
+                                        <?php if (in_array($sPeriod, $aNotification['available_types'])) : ?>
+                                            <?php if (1 == $this->aClientsNotifications[$iTypes][$sPeriod]) : ?>
+                                                <img alt="" src="<?= $this->surl ?>/images/admin/check_on.png">
+                                            <?php else : ?>
+                                                <img alt="" src="<?= $this->surl ?>/images/admin/check_off.png">
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </td>
+                                <?php endforeach; ?>
+                            </tr>
+                        <?php endforeach; ?>
                     <?php endforeach; ?>
-                <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -110,26 +102,26 @@
     </div>
     <table class="tablesorter">
         <thead>
-        <tr>
-            <th>Date</th>
-            <th>From</th>
-            <th>Sujet</th>
-            <th>Visualiser</th>
-        </tr>
+            <tr>
+                <th>Date</th>
+                <th>From</th>
+                <th>Sujet</th>
+                <th>Visualiser</th>
+            </tr>
         </thead>
         <tbody>
-        <?php foreach ($this->aEmailsSentToClient as $aEmail) : ?>
-            <tr>
-                <td><?= $this->dates->formatDate($aEmail['sent_at'], 'd/m/Y H:i') ?></td>
-                <td><?= $aEmail['sender_name'] ?></td>
-                <td><?= $aEmail['subject'] ?></td>
-                <td style="text-align: center">
-                    <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_queue'] ?>" class="thickbox">
-                        <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px" />
-                    </a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
+            <?php foreach ($this->aEmailsSentToClient as $aEmail) : ?>
+                <tr>
+                    <td><?= $this->dates->formatDate($aEmail['sent_at'], 'd/m/Y H:i') ?></td>
+                    <td><?= $aEmail['sender_name'] ?></td>
+                    <td><?= $aEmail['subject'] ?></td>
+                    <td style="text-align: center">
+                        <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_queue'] ?>" class="thickbox">
+                            <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px" />
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
         </tbody>
     </table>
 </div>

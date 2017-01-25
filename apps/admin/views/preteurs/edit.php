@@ -8,16 +8,16 @@
         $(".transac").tablesorter({headers: {}});
         $(".favoris").tablesorter({headers: {3: {sorter: false}}});
         <?php if ($this->nb_lignes != '') : ?>
-        $(".encheres").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
-        $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
+        $(".encheres").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
+        $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
         $("#annee").change(function () {
-            $('#changeDate').attr('href', "<?=$this->lurl?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
+            $('#changeDate').attr('href', "<?= $this->lurl ?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
 
         <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?=$_SESSION['freeow']['title']?>",
-                message = "<?=$_SESSION['freeow']['message']?>",
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
                 opts = {},
                 container;
             opts.classes = ['smokey'];
@@ -42,11 +42,6 @@
 </style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/preteurs" title="Prêteurs">Prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Gestion prêteurs</a> -</li>
-        <li>Detail prêteur</li>
-    </ul>
     <div><?= $this->sClientStatusMessage ?></div>
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">

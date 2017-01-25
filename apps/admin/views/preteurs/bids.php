@@ -23,14 +23,7 @@
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/preteurs" title="Prêteurs">Prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Gestion prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Detail prêteur</a> -</li>
-        <li>Portefeuille & Performances</li>
-    </ul>
     <h1>Historique des bids prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
-
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
         <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
@@ -56,26 +49,26 @@
     <div style="margin-bottom:20px; float:right;"><a href="<?= $this->lurl ?>/preteurs/extract_bids_csv/<?= $this->lenders_accounts->id_lender_account ?>"  class="btn_link">Récupération du CSV</a></div>
     <table class="tablesorter">
         <thead>
-        <tr>
-            <th>Id projet</th>
-            <th>Id bid</th>
-            <th>Date bid</th>
-            <th>Statut bid</th>
-            <th>Montant</th>
-            <th>Taux</th>
-        </tr>
+            <tr>
+                <th>ID projet</th>
+                <th>ID bid</th>
+                <th>Date bid</th>
+                <th>Statut bid</th>
+                <th>Montant</th>
+                <th>Taux</th>
+            </tr>
         </thead>
         <tbody>
-        <?php foreach ($this->bidList as $bid) : ?>
-            <tr>
-                <td><?= $bid['id_project'] ?></td>
-                <td><?= $bid['id_bid'] ?></td>
-                <td><?= $bid['added'] ?></td>
-                <td><?= $bid['status'] ?></td>
-                <td><?= $bid['amount'] ?> €</td>
-                <td><?= $bid['rate'] ?> %</td>
-            </tr>
-        <?php endforeach; ?>
+            <?php foreach ($this->bidList as $bid) : ?>
+                <tr>
+                    <td><?= $bid['id_project'] ?></td>
+                    <td><?= $bid['id_bid'] ?></td>
+                    <td><?= $bid['added'] ?></td>
+                    <td><?= $bid['status'] ?></td>
+                    <td><?= $bid['amount'] ?> €</td>
+                    <td><?= $bid['rate'] ?> %</td>
+                </tr>
+            <?php endforeach; ?>
         </tbody>
     </table>
 </div>

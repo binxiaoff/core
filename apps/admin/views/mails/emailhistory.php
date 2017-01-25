@@ -10,14 +10,14 @@
             );
         <?php endif; ?>
 
-        <?php if(isset($_SESSION['freeow'])) : ?>
-            var title, message, opts, container;
-            title = "<?= $_SESSION['freeow']['title'] ?>";
-            message = "<?= $_SESSION['freeow']['message'] ?>";
-            opts = {};
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
-
             <?php unset($_SESSION['freeow']); ?>
         <?php endif; ?>
 
@@ -43,51 +43,44 @@
             }
         });
 
-        <?php if (false === isset($this->aEmails)) : ?>
+        <?php if (false === isset($this->emails)) : ?>
             $('.btnDroite .btn_link.lightbox').click();
         <?php endif; ?>
     });
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/settings" title="Configuration">Configuration</a> -</li>
-        <li><a href="<?= $this->lurl ?>/mails" title="Mails">Mails</a> -</li>
-        <li>Historique des emails</li>
-    </ul>
     <h1>Historique des emails</h1>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/mails/recherche" class="btn_link lightbox">Rechercher</a>
     </div>
-    <?php if (isset($this->aEmails) && count($this->aEmails) > 0) : ?>
+    <?php if (isset($this->emails) && count($this->emails) > 0) : ?>
         <table class="tablesorter">
             <thead>
-            <tr>
-                <th>Date</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Sujet</th>
-                <th>&nbsp;</th>
-            </tr>
+                <tr>
+                    <th>Date</th>
+                    <th>From</th>
+                    <th>Destinataire</th>
+                    <th>Sujet</th>
+                    <th>&nbsp;</th>
+                </tr>
             </thead>
             <tbody>
-            <?php
-            $i = 1;
-            foreach ($this->aEmails as $aEmail) : ?>
-                <tr <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><?= $this->dates->formatDate($aEmail['sent_at'], 'd/m/Y H:i') ?></td>
-                    <td><?= $aEmail['sender_name'] ?></td>
-                    <td><?= $aEmail['recipient'] ?></td>
-                    <td><?= $aEmail['subject'] ?></td>
-                    <td align="center">
-                        <a href="<?= $this->url ?>/mails/emailpreview/<?= $aEmail['id_queue'] ?>" class="thickbox">
-                            <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir <?= $aEmail['subject'] ?>"/>
-                        </a>
-                    </td>
-                </tr>
-                <?php
-                $i++;
-            endforeach; ?>
+                <?php $i = 1; ?>
+                <?php foreach ($this->emails as $email) : ?>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
+                        <td><?= $this->dates->formatDate($email['sent_at'], 'd/m/Y H:i') ?></td>
+                        <td><?= $email['sender_name'] ?></td>
+                        <td><?= $email['recipient'] ?></td>
+                        <td><?= $email['subject'] ?></td>
+                        <td align="center">
+                            <a href="<?= $this->url ?>/mails/emailpreview/<?= $email['id_queue'] ?>" class="thickbox">
+                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir <?= $email['subject'] ?>"/>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php $i++; ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
         <?php if ($this->nb_lignes != '') : ?>
@@ -106,7 +99,7 @@
                 </tr>
             </table>
         <?php endif; ?>
-    <?php elseif (isset($this->aEmails)) : ?>
+    <?php elseif (isset($this->emails)) : ?>
         <p>Aucun email ne correspond à cette recherche</p>
     <?php endif; ?>
 </div>

@@ -64,34 +64,29 @@ abstract class Controller implements ContainerAwareInterface
         $this->logPath    = $this->get('kernel')->getLogDir();
 
         $this->surl = $this->get('assets.packages')->getUrl('');
-
-        $this->url = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_' . $this->App);
-        //admin
+        $this->url  = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_' . $this->App);
         $this->aurl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin');
+        $this->furl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default');
 
-        $frontUrl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default');
         if (isset($_SERVER['HTTP_HOST'])) {
             switch ($_SERVER['HTTP_HOST']) {
                 case 'prets-entreprises-unilend.capital.fr':
-                    $frontUrl = 'http://prets-entreprises-unilend.capital.fr';
+                    $this->furl = 'http://prets-entreprises-unilend.capital.fr';
                     break;
                 case 'partenaire.unilend.challenges.fr':
-                    $frontUrl = 'http://partenaire.unilend.challenges.fr';
+                    $this->furl = 'http://partenaire.unilend.challenges.fr';
                     break;
                 case 'financementparticipatifpme.lefigaro.fr':
-                    $frontUrl = 'http://financementparticipatifpme.lefigaro.fr';
+                    $this->furl = 'http://financementparticipatifpme.lefigaro.fr';
                     break;
             }
         }
+
         if ('default' == $this->App) {
-            $this->url = $frontUrl;
+            $this->url = $this->furl;
         }
+
         $this->lurl = $this->url;
-
-        $this->furl = $frontUrl;
-
-        // Recuperation du type de plateforme
-        $this->cms = $this->getParameter('cms');
 
         //*** SESSION IS DEAD ***//
         if (isset($_POST['killsession'])) {

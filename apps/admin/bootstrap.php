@@ -2,6 +2,9 @@
 
 class bootstrap extends Controller
 {
+    /**
+     * Helpers
+     */
     /** @var \dates */
     protected $dates;
     /** @var \ficelle */
@@ -12,6 +15,10 @@ class bootstrap extends Controller
     protected $photos;
     /** @var \translations */
     protected $ln;
+
+    /**
+     * Data
+     */
     /** @var \settings */
     protected $settings;
     /** @var \tree_elements */
@@ -46,6 +53,20 @@ class bootstrap extends Controller
     protected $lenders_accounts;
     /** @var \echeanciers */
     protected $echeanciers;
+
+    /**
+     * Config
+     */
+    /** @var string */
+    protected $spath;
+    /** @var string */
+    protected $furl;
+    /** @var string */
+    protected $lurl;
+    /** @var string */
+    protected $surl;
+    /** @var string */
+    protected $url;
 
     public function initialize()
     {
@@ -163,26 +184,11 @@ class bootstrap extends Controller
         $this->loadCss('../scripts/admin/external/jquery/plugin/jquery-ui/jquery-ui.min');
         $this->loadCss('admin/main');
 
-        // Recuperation du code Google Analytics
-        $this->settings->get('Google Analytics', 'type');
-        $this->google_analytics = $this->settings->value;
-
-        // Recuperation du mail du compte Google Analytics
-        $this->settings->get('Google Mail', 'type');
-        $this->google_mail = $this->settings->value;
-
-        // Recuperation du password cu compte Google Analytics
-        $this->settings->get('Google Password', 'type');
-        $this->google_password = $this->settings->value;
-
-        // Recuperation du paging des tableaux
         $this->settings->get('Paging Tableaux', 'type');
         $this->nb_lignes = $this->settings->value;
 
-        // Recuperation de la liste des langues disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
 
-        // Recuperation de la langue par défaut
         $array           = array_keys($this->Config['multilanguage']['allowed_languages']);
         $this->dLanguage = $array[0];
 

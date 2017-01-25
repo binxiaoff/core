@@ -790,7 +790,7 @@ class pdfController extends bootstrap
         $this->settings->get('Declaration contrat pret - raison sociale', 'type');
         $this->raisonSociale = mb_strtoupper($this->settings->value, 'UTF-8');
 
-        $this->settings->get('Facture - SFF PME', 'type');
+        $this->settings->get('Facture - Unilend', 'type');
         $this->sffpme = mb_strtoupper($this->settings->value, 'UTF-8');
 
         $this->settings->get('Facture - capital', 'type');

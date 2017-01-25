@@ -4,8 +4,8 @@
     <div id="errors" style="background-color: #fadfe4; font-size: 14px; line-height: 1.3em; text-align: center; margin-top: 20px; margin-bottom: 20px; ">
         <?php if (false === empty($_SESSION['succession']['error'])) : ?>
             <?= $_SESSION['succession']['error'] ?>
+            <?php unset($_SESSION['succession']['error']); ?>
         <?php endif; ?>
-        <?php unset($_SESSION['succession']['error']); ?>
     </div>
     <form action="<?= $this->lurl ?>/transferts/succession" method="post" enctype="multipart/form-data">
     <table style="width:500px; margin:auto;text-align:left;margin-bottom:10px; border:2px solid;padding:10px;">
@@ -93,6 +93,6 @@
             </tr>
         </table>
     </div>
-<?php unset($_SESSION['succession']['success']) ?>
+    <?php unset($_SESSION['succession']['success']) ?>
 <?php endif; ?>
 </div>
