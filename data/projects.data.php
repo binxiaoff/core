@@ -1158,7 +1158,6 @@ class projects extends projects_crud
     public function getDataForBDFDeclaration(\DateTime $declarationDate)
     {
         $bind = [
-            'declaration_first_day'    => $declarationDate->format('Y-m-1'),
             'declaration_last_day'     => $declarationDate->format('Y-m-t'),
             'problematic_status'       => [
                 \projects_status::PROCEDURE_SAUVEGARDE,
@@ -1179,7 +1178,6 @@ class projects extends projects_crud
             ]
         ];
         $type = [
-            'declaration_first_day'    => \PDO::PARAM_STR,
             'declaration_last_day'     => \PDO::PARAM_STR,
             'problematic_status'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'status_to_exclude'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
@@ -1205,6 +1203,7 @@ class projects extends projects_crud
           END AS loan_type,
           p.amount AS loan_amount,
           (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . \projects_status::REMBOURSEMENT . ") AS loan_date,
+          (SELECT MAX(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . \projects_status::PROBLEME . " AND p.status IN (" . \projects_status::PROBLEME . ", " . \projects_status::PROBLEME_J_X . ")) AS late_payment_date,
           p.period AS loan_duration,
           ROUND(SUM(l.amount * l.rate) / SUM(l.amount), 2) AS average_loan_rate,
           'M' AS repayment_frequency,
@@ -1229,7 +1228,9 @@ class projects extends projects_crud
         INNER JOIN companies com ON  com.id_company = p.id_company
         INNER JOIN loans l ON l.id_project = p.id_project AND l.status = " . \loans::STATUS_ACCEPTED . "
         WHERE p.status >= " . \projects_status::REMBOURSEMENT . " AND p.status NOT IN (:status_to_exclude)
-        GROUP BY p.id_project";
+        GROUP BY p.id_project
+        HAVING DATE(loan_date) <= :declaration_last_day
+        ORDER BY loan_date ASC";
 
         /** @var Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);
