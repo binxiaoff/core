@@ -394,6 +394,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             return;
         }
 
+        if (\transactions_types::TYPE_LENDER_REGULATION == $transaction['type_transation'] && $transaction['id_client'] == 330 ) {
+            $wallet['committed_balance'] = 0;
+        }
+
         /** @var \virements $wireTransferOut */
         $wireTransferOut = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('virements');
         $wireTransferOut->get($transaction['id_transaction'], 'id_transaction');
