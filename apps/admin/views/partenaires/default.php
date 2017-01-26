@@ -3,7 +3,7 @@
         $(".tablesorter").tablesorter({headers:{7:{sorter: false}}});
 
         <?php if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
+            $(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
 
         <?php if (isset($_SESSION['freeow'])) : ?>
@@ -19,9 +19,6 @@
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li>Campagnes</li>
-    </ul>
     <h1>Liste des campagnes</h1>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/partenaires/add" class="btn_link thickbox">Ajouter une campagne</a></div>
     <?php if (count($this->lPartenaires) > 0) : ?>

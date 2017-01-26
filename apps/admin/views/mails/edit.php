@@ -1,9 +1,4 @@
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/settings" title="Configuration">Configuration</a> -</li>
-        <li><a href="<?= $this->lurl ?>/mails" title="Mails">Mails</a> -</li>
-        <li>Modifier un email</li>
-    </ul>
     <form method="post" name="mod_mail" enctype="multipart/form-data">
         <fieldset>
             <h1>Modifier <?= $this->oMailTemplate->type ?></h1>

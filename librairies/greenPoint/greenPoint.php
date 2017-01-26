@@ -30,13 +30,9 @@ class greenPoint
     /** @var int */
     private $iCustomerId;
 
-    /** @var array */
-    private $aConfig;
-
     public function __construct($environment)
     {
         $this->iCustomerId = '';
-        $this->aConfig     = Loader::loadConfig();
         $this->oSettings   = Loader::loadData('settings');
 
         switch ($environment) {

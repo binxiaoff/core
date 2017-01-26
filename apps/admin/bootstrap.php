@@ -2,6 +2,9 @@
 
 class bootstrap extends Controller
 {
+    /**
+     * Helpers
+     */
     /** @var \dates */
     protected $dates;
     /** @var \ficelle */
@@ -12,6 +15,10 @@ class bootstrap extends Controller
     protected $photos;
     /** @var \translations */
     protected $ln;
+
+    /**
+     * Data
+     */
     /** @var \settings */
     protected $settings;
     /** @var \tree_elements */
@@ -47,6 +54,20 @@ class bootstrap extends Controller
     /** @var \echeanciers */
     protected $echeanciers;
 
+    /**
+     * Config
+     */
+    /** @var string */
+    protected $spath;
+    /** @var string */
+    protected $furl;
+    /** @var string */
+    protected $lurl;
+    /** @var string */
+    protected $surl;
+    /** @var string */
+    protected $url;
+
     public function initialize()
     {
         parent::initialize();
@@ -67,7 +88,7 @@ class bootstrap extends Controller
         $this->blocs_elements   = $this->loadData('blocs_elements');
         $this->elements         = $this->loadData('elements');
         $this->tree             = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->furl, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
-        $this->users            = $this->loadData('users', array('config' => $this->Config, 'lurl' => $this->lurl));
+        $this->users            = $this->loadData('users', array('lurl' => $this->lurl));
         $this->users_zones      = $this->loadData('users_zones');
         $this->users_history    = $this->loadData('users_history');
         $this->mail_template    = $this->loadData('mail_templates');
@@ -163,28 +184,11 @@ class bootstrap extends Controller
         $this->loadCss('../scripts/admin/external/jquery/plugin/jquery-ui/jquery-ui.min');
         $this->loadCss('admin/main');
 
-        // Recuperation du code Google Analytics
-        $this->settings->get('Google Analytics', 'type');
-        $this->google_analytics = $this->settings->value;
-
-        // Recuperation du mail du compte Google Analytics
-        $this->settings->get('Google Mail', 'type');
-        $this->google_mail = $this->settings->value;
-
-        // Recuperation du password cu compte Google Analytics
-        $this->settings->get('Google Password', 'type');
-        $this->google_password = $this->settings->value;
-
-        // Recuperation du paging des tableaux
         $this->settings->get('Paging Tableaux', 'type');
         $this->nb_lignes = $this->settings->value;
 
-        // Recuperation de la liste des langues disponibles
-        $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
-
-        // Recuperation de la langue par défaut
-        $array           = array_keys($this->Config['multilanguage']['allowed_languages']);
-        $this->dLanguage = $array[0];
+        $this->lLangues  = ['fr' => 'Francais'];
+        $this->dLanguage = 'fr';
 
         if (isset($_SESSION['user']) && !empty($_SESSION['user']['id_user'])) {
             $this->sessionIdUser = $_SESSION['user']['id_user'];

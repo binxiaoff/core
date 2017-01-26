@@ -1,10 +1,10 @@
 <div id="popup">
-	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
-	<form method="post" name="add_users" id="add_users" enctype="multipart/form-data" action="<?=$this->lurl?>/users" target="_parent" onsubmit="return checkFormAjoutUser();">
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
+    <form method="post" name="add_users" id="add_users" enctype="multipart/form-data" action="<?= $this->lurl ?>/users" target="_parent" onsubmit="return checkFormAjoutUser();">
         <h1>Ajouter un utilisateur</h1>
         <fieldset>
             <table class="formColor">
-            	<tr>
+                <tr>
                     <th><label for="firstname">Pr&eacute;nom :</label></th>
                     <td><input type="text" name="firstname" id="firstname" class="input_large" /></td>
                 </tr>
@@ -29,9 +29,9 @@
                     <td>
                         <select name="id_user_type" id="id_user_type" class="select">
                             <option value="0">Choisir</option>
-                            <?php foreach($this->lUsersTypes as $type) { ?>
-                            	<option value="<?=$type['id_user_type']?>"><?=$type['label']?></option>
-                            <?php } ?>
+                            <?php foreach($this->lUsersTypes as $type) : ?>
+                                <option value="<?=$type['id_user_type']?>"><?=$type['label']?></option>
+                            <?php endforeach; ?>
                         </select>
                     </td>
                 </tr>
@@ -46,13 +46,12 @@
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
-                	<th>
+                    <th>
                         <input type="hidden" name="form_add_users" id="form_add_users" />
                         <input type="submit" value="Valider" title="Valider" name="send_users" id="send_users" class="btn" />
                     </th>
                 </tr>
-            </tr>
-        </table>
+            </table>
         </fieldset>
     </form>
 </div>

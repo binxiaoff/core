@@ -3,10 +3,10 @@
         $(".tablesorter").tablesorter({headers: {7: {sorter: false}}});
 
         <?php if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
+            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
 
-        $("#Reset").click(function () {
+        $("#Reset").click(function() {
             $("#siret").val('');
             $("#nom").val('');
             $("#societe").val('');
@@ -42,10 +42,6 @@
 
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/emprunteurs" title="Emprunteurs">Emprunteurs</a> -</li>
-        <li>Gestion des emprunteurs</li>
-    </ul>
     <?php if (isset($_POST['form_search_client'])) : ?>
         <h1>Résultats de la recherche d'emprunteurs <?= (count($this->lClients) > 0 ? '(' . count($this->lClients) . ')' : '') ?></h1>
     <?php else : ?>

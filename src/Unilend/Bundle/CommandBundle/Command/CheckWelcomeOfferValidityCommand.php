@@ -20,66 +20,64 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \settings $oSettings */
-        $oSettings = $entityManager->getRepository('settings');
-        /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
-        $oWelcomeOfferDetails = $entityManager->getRepository('offres_bienvenues_details');
-        /** @var \transactions $oTransactions */
-        $oTransactions = $entityManager->getRepository('transactions');
-        /** @var \wallets_lines $oWalletsLines */
-        $oWalletsLines = $entityManager->getRepository('wallets_lines');
-        /** @var \bank_unilend $oBankUnilend */
-        $oBankUnilend = $entityManager->getRepository('bank_unilend');
-        /** @var \lenders_accounts $oLendersAccounts */
-        $oLendersAccounts = $entityManager->getRepository('lenders_accounts');
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
+        /** @var \offres_bienvenues_details $welcomeOfferDetails */
+        $welcomeOfferDetails = $entityManager->getRepository('offres_bienvenues_details');
+        /** @var \transactions $transactions */
+        $transactions = $entityManager->getRepository('transactions');
+        /** @var \wallets_lines $walletsLines */
+        $walletsLines = $entityManager->getRepository('wallets_lines');
+        /** @var \bank_unilend $bankUnilend */
+        $bankUnilend = $entityManager->getRepository('bank_unilend');
+        /** @var \lenders_accounts $lendersAccounts */
+        $lendersAccounts = $entityManager->getRepository('lenders_accounts');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
 
-        $oSettings->get('Durée validité Offre de bienvenue', 'type');
-        $sOfferValidity = $oSettings->value;
+        $settings->get('Durée validité Offre de bienvenue', 'type');
+        $offerValidity               = $settings->value;
+        $dateLimit                   = new \DateTime('NOW - ' . $offerValidity . ' DAYS');
+        $numberOfUnusedWelcomeOffers = 0;
 
-        $aUnusedWelcomeOffers = $oWelcomeOfferDetails->select('status = 0');
-        $oDateTime            = new \DateTime();
+        foreach ($welcomeOfferDetails->getUnusedWelcomeOffers($dateLimit) as $welcomeOffer) {
+            if ($lendersAccounts->get($welcomeOffer['id_client'], 'id_client_owner')){
+                $accountBalance = $transactions->getSolde($lendersAccounts->id_client_owner);
 
-        $iNumberOfUnusedWelcomeOffers = 0;
+                if (0 > bccomp($accountBalance, bcdiv($welcomeOffer['montant'], 100, 2), 2)){
+                    $logger->info('Balance of ' . $accountBalance . ' is insufficient to withdraw unused welcome offer for client : ' . $lendersAccounts->id_client_owner);
+                } else {
+                    $welcomeOfferDetails->get($welcomeOffer['id_offre_bienvenue_detail']);
+                    $welcomeOfferDetails->status = \offres_bienvenues_details::STATUS_CANCELED;
+                    $welcomeOfferDetails->update();
 
-        foreach ($aUnusedWelcomeOffers as $aWelcomeOffer) {
-            $oAdded    = \DateTime::createFromFormat('Y-m-d H:i:s', $aWelcomeOffer['added']);
-            $oInterval = $oDateTime->diff($oAdded);
+                    $transactions->id_client                 = $welcomeOffer['id_client'];
+                    $transactions->montant                   = -$welcomeOffer['montant'];
+                    $transactions->id_offre_bienvenue_detail = $welcomeOffer['id_offre_bienvenue_detail'];
+                    $transactions->id_langue                 = 'fr';
+                    $transactions->date_transaction          = date('Y-m-d H:i:s');
+                    $transactions->status                    = \transactions::STATUS_VALID;
+                    $transactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION;
+                    $transactions->create();
 
-            if ($oInterval->days >= $sOfferValidity) {
-                $oWelcomeOfferDetails->get($aWelcomeOffer['id_offre_bienvenue_detail']);
-                $oWelcomeOfferDetails->status = 2;
-                $oWelcomeOfferDetails->update();
+                    $walletsLines->id_lender                = $lendersAccounts->id_lender_account;
+                    $walletsLines->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
+                    $walletsLines->id_transaction           = $transactions->id_transaction;
+                    $walletsLines->status                   = 1;
+                    $walletsLines->type                     = 1;
+                    $walletsLines->amount                   = -$welcomeOffer['montant'];
+                    $walletsLines->create();
 
-                $oTransactions->id_client                 = $aWelcomeOffer['id_client'];
-                $oTransactions->montant                   = -$aWelcomeOffer['montant'];
-                $oTransactions->id_offre_bienvenue_detail = $aWelcomeOffer['id_offre_bienvenue_detail'];
-                $oTransactions->id_langue                 = 'fr';
-                $oTransactions->date_transaction          = date('Y-m-d H:i:s');
-                $oTransactions->status                    = \transactions::STATUS_VALID;
-                $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION;
-                $oTransactions->create();
+                    $bankUnilend->id_transaction = $transactions->id_transaction;
+                    $bankUnilend->montant        = abs($welcomeOfferDetails->montant);
+                    $bankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
+                    $bankUnilend->create();
 
-                $oLendersAccounts->get($aWelcomeOffer['id_client'], 'id_client_owner');
-
-                $oWalletsLines->id_lender                = $oLendersAccounts->id_lender_account;
-                $oWalletsLines->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-                $oWalletsLines->id_transaction           = $oTransactions->id_transaction;
-                $oWalletsLines->status                   = 1;
-                $oWalletsLines->type                     = 1;
-                $oWalletsLines->amount                   = -$aWelcomeOffer['montant'];
-                $oWalletsLines->create();
-
-                $oBankUnilend->id_transaction = $oTransactions->id_transaction;
-                $oBankUnilend->montant        = abs($oWelcomeOfferDetails->montant);
-                $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
-                $oBankUnilend->create();
-
-                $iNumberOfUnusedWelcomeOffers +=1;
+                    $numberOfUnusedWelcomeOffers +=1;
+                }
             }
         }
 
-        $logger->info('Number of withdrawn welcome offers: ' . $iNumberOfUnusedWelcomeOffers);
+        $logger->info('Number of withdrawn welcome offers: ' . $numberOfUnusedWelcomeOffers);
     }
 }

@@ -1,28 +1,24 @@
-<script type="text/javascript">
-<?php if (isset($_SESSION['freeow'])) { ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?= $_SESSION['freeow']['title'] ?>";
-        message = "<?= $_SESSION['freeow']['message'] ?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
+<?php if (isset($_SESSION['freeow'])) : ?>
+    <script type="text/javascript">
+        $(function() {
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+        });
+    </script>
     <?php unset($_SESSION['freeow']); ?>
-<?php } ?>
-</script>
+<?php endif; ?>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/prescripteurs" title="Prescripteurs">Prescripteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/prescripteurs/gestion" title="Gestion prescripteurs">Gestion prescripteurs</a> -</li>
-        <li>Detail prescripteur</li>
-    </ul>
     <h1>Detail prescripteur : <?= $this->clients->nom . ' ' . $this->clients->prenom ?></h1>
-    <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') { ?>
+    <?php if (false === empty($_SESSION['error_email_exist'])) : ?>
         <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
         <?php unset($_SESSION['error_email_exist']); ?>
-    <?php } ?>
+    <?php endif; ?>
     <form method="post" name="edit_prescripteur" id="edit_prescripteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/edit/<?= $this->prescripteurs->id_prescripteur ?>" target="_parent">
         <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
@@ -34,8 +30,6 @@
                     <input <?= $this->clients->civilite == 'M.' ? 'checked' : '' ?> type="radio" name="civilite" id="civilite_m" value="M."/>
                     <label for="civilite_m">Monsieur</label>
                 </td>
-                <th></th>
-                <td></td>
             </tr>
             <tr>
                 <th><label for="nom">Nom :</label></th>
@@ -82,56 +76,52 @@
 </div>
 <div style="margin: 30px auto; padding: 10px 20px 20px; width: 1160px; background-color: #fff; text-align: left;">
     <h1>Liste des dossiers<?= $this->iProjectsCount > 0 ? ' (' . $this->iProjectsCount . ' résultat' . ($this->iProjectsCount == 1 ? '' : 's') . ')' : '' ?></h1>
-    <?php if ($this->iProjectsCount > 0) { ?>
+    <?php if ($this->iProjectsCount > 0) : ?>
         <table class="tablesorter">
             <thead>
-            <tr>
-                <th>ID</th>
-                <th>Siren</th>
-                <th>Raison sociale</th>
-                <th>Date demande</th>
-                <th>Date modification</th>
-                <th>Montant</th>
-                <th>Durée</th>
-                <th>Statut</th>
-                <th>Analyste</th>
-                <th>&nbsp;</th>
-            </tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Siren</th>
+                    <th>Raison sociale</th>
+                    <th>Date demande</th>
+                    <th>Date modification</th>
+                    <th>Montant</th>
+                    <th>Durée</th>
+                    <th>Statut</th>
+                    <th>Analyste</th>
+                    <th>&nbsp;</th>
+                </tr>
             </thead>
             <tbody>
-            <?php
-            $i = 1;
-            foreach ($this->aProjects as $p) {
-                $this->users->get($p['id_analyste'], 'id_user');
-                ?>
-                <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
-                    <td><?= $p['id_project'] ?></td>
-                    <td><?= $p['siren'] ?></td>
-                    <td><?= $p['name'] ?></td>
-                    <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
-                    <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
-                    <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
-                    <td><?= (in_array($p['period'], array(0, 1000000))) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
-                    <td><?= $p['label'] ?></td>
-                    <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>
-                    <td align="center">
-                        <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
-                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
-                        </a>
-                        <script>
-                            $("#ledossier<?=$p['id_project']?>").click(function () {
-                                $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>');
-                            });
-                        </script>
-                    </td>
-                </tr>
-                <?php
-                $i++;
-            }
-            ?>
+                <?php $i = 1; ?>
+                <?php foreach ($this->aProjects as $p) : ?>
+                    <?php $this->users->get($p['id_analyste'], 'id_user'); ?>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
+                        <td><?= $p['id_project'] ?></td>
+                        <td><?= $p['siren'] ?></td>
+                        <td><?= $p['name'] ?></td>
+                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
+                        <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
+                        <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
+                        <td><?= (in_array($p['period'], array(0, 1000000))) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                        <td><?= $p['label'] ?></td>
+                        <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>
+                        <td align="center">
+                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
+                            </a>
+                            <script>
+                                $("#ledossier<?= $p['id_project']?> ").click(function () {
+                                    $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>');
+                                });
+                            </script>
+                        </td>
+                    </tr>
+                    <?php $i++; ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
-    <?php } else { ?>
+    <?php else : ?>
         Aucun dossier
-    <?php } ?>
+    <?php endif; ?>
 </div>

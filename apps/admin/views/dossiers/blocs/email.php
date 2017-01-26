@@ -25,7 +25,7 @@
                     <h2>Complétude - Personnalisation du message</h2>
                     <div class="liwording">
                         <table>
-                            <?php foreach ($this->completude_wording as $sSlug => $sWording): ?>
+                            <?php foreach ($this->completude_wording as $sSlug => $sWording) : ?>
                                 <tr>
                                 <td>
                                     <a class="add_wording" id="add-<?= $sSlug ?>"><img src="<?= $this->surl ?>/images/admin/add.png"></a>

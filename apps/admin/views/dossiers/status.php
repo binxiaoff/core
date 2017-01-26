@@ -50,24 +50,24 @@
                         <td rowspan="2">
                             <select id="status" name="status" class="select">
                                 <option></option>
-                                <?php foreach ($this->aStatuses as $aStatus) : ?>
-                                    <option value="<?= $aStatus['id_project_status'] ?>"<?= isset($this->iBaseStatus) && $this->iBaseStatus == $aStatus['id_project_status'] ? 'selected="selected"' : '' ?>><?= $aStatus['label'] ?></option>
+                                <?php foreach ($this->statuses as $status) : ?>
+                                    <option value="<?= $status['id_project_status'] ?>"<?= isset($this->baseStatus) && $this->baseStatus == $status['id_project_status'] ? 'selected="selected"' : '' ?>><?= $status['label'] ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </td>
                         <td>
-                            <input type="text" id="first-range-start" name="first-range-start" placeholder="Date de début" value="<?= isset($this->oFirstRangeStart) ? $this->oFirstRangeStart->format('d/m/Y') : '' ?>" class="input_dp" />
+                            <input type="text" id="first-range-start" name="first-range-start" placeholder="Date de début" value="<?= isset($this->firstRangeStart) ? $this->firstRangeStart->format('d/m/Y') : '' ?>" class="input_dp" />
                         </td>
                         <td>
-                            <input type="text" id="second-range-start" name="second-range-start" placeholder="Date de début" value="<?= isset($this->oSecondRangeStart) ? $this->oSecondRangeStart->format('d/m/Y') : '' ?>" class="input_dp" />
+                            <input type="text" id="second-range-start" name="second-range-start" placeholder="Date de début" value="<?= isset($this->secondRangeStart) ? $this->secondRangeStart->format('d/m/Y') : '' ?>" class="input_dp" />
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <input type="text" id="first-range-end" name="first-range-end" placeholder="Date de fin" value="<?= isset($this->oFirstRangeEnd) ? $this->oFirstRangeEnd->format('d/m/Y') : '' ?>" class="input_dp" />
+                            <input type="text" id="first-range-end" name="first-range-end" placeholder="Date de fin" value="<?= isset($this->firstRangeEnd) ? $this->firstRangeEnd->format('d/m/Y') : '' ?>" class="input_dp" />
                         </td>
                         <td>
-                            <input type="text" id="second-range-end" name="second-range-end" placeholder="Date de fin" value="<?= isset($this->oSecondRangeEnd) ? $this->oSecondRangeEnd->format('d/m/Y') : '' ?>" class="input_dp" />
+                            <input type="text" id="second-range-end" name="second-range-end" placeholder="Date de fin" value="<?= isset($this->secondRangeEnd) ? $this->secondRangeEnd->format('d/m/Y') : '' ?>" class="input_dp" />
                         </td>
                     </tr>
                 </tbody>
@@ -75,11 +75,17 @@
             <div style="text-align: right;"><button type="submit" class="btn">Valider</button></div>
         </fieldset>
     </form>
-    <?php if (isset($this->iBaseStatus)) : ?>
-        <span id="status-chart" class="status-chart<?php if (isset($this->aCompareHistory)) : ?> half<?php endif; ?>"><?= $this->oFirstRangeStart->format('d/m/Y') ?></span>
-        <?php if (isset($this->aCompareHistory)) : ?>
+    <?php if (isset($this->history)) : ?>
+        <span id="status-chart" class="status-chart<?php if (isset($this->compareHistory)) : ?> half<?php endif; ?>"><?= $this->firstRangeStart->format('d/m/Y') ?></span>
+        <?php if (isset($this->compareHistory)) : ?>
             <span id="second-status-chart" class="status-chart half"></span>
         <?php endif; ?>
+    <?php endif; ?>
+
+    <?php if (isset($this->params[0]) && false === isset($this->history)) : ?>
+        <div class="attention" style="background-color:#F2F258">
+            Les critères de recherche n'ont retourné aucun résultat.
+        </div>
     <?php endif; ?>
 </div>
 <script type="text/javascript">
@@ -93,20 +99,20 @@
             yearRange: '2013:<?= date('Y') ?>'
         });
 
-        <?php if (isset($this->aHistory)) : ?>
+        <?php if (isset($this->history)) : ?>
             var nodes = new vis.DataSet([
-                {id: 'level1', label: '<?= $this->aHistory['label'] ?> : <?= $this->aHistory['count'] ?>', level: 1},
-                <?php foreach ($this->aHistory['children'] as $iChildStatus => $aChild) : ?>
-                    <?php if (0 == $iChildStatus) : ?>
-                        {id: 'level2-<?= $iChildStatus ?>', label: 'Pas de changement : <?= $aChild['count'] ?>', level: 2, group: 'disabled'},
+                {id: 'level1', label: '<?= $this->history['label'] ?> : <?= $this->history['count'] ?>', level: 1},
+                <?php foreach ($this->history['children'] as $childStatus => $child) : ?>
+                    <?php if (0 == $childStatus) : ?>
+                        {id: 'level2-<?= $childStatus ?>', label: 'Pas de changement : <?= $child['count'] ?>', level: 2, group: 'disabled'},
                     <?php else : ?>
-                        {id: 'level2-<?= $iChildStatus ?>', label: '<?= $aChild['label'] ?> : <?= $aChild['count'] ?>\n\nMoyenne : <?= $aChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aChild['max_date'], 'd/m/Y') ?>', level: 2},
-                        <?php if (count($aChild['children']) > 1 || false === isset($aChild['children'][0])) : ?>
-                            <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
-                                <?php if (0 == $iSubChildStatus) : ?>
-                                    {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: 'Pas de changement : <?= $aSubChild['count'] ?>', level: 3, group: 'disabled'},
+                        {id: 'level2-<?= $childStatus ?>', label: '<?= $child['label'] ?> : <?= $child['count'] ?>\n\nMoyenne : <?= $child['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($child['max_date'], 'd/m/Y') ?>', level: 2},
+                        <?php if (count($child['children']) > 1 || false === isset($child['children'][0])) : ?>
+                            <?php foreach ($child['children'] as $subChildStatus => $subChild) : ?>
+                                <?php if (0 == $subChildStatus) : ?>
+                                    {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: 'Pas de changement : <?= $subChild['count'] ?>', level: 3, group: 'disabled'},
                                 <?php else : ?>
-                                    {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= $aSubChild['label'] ?> : <?= $aSubChild['count'] ?>\n\nMoyenne : <?= $aSubChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aSubChild['max_date'], 'd/m/Y') ?>', level: 3},
+                                    {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= $subChild['label'] ?> : <?= $subChild['count'] ?>\n\nMoyenne : <?= $subChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($subChild['max_date'], 'd/m/Y') ?>', level: 3},
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -115,16 +121,16 @@
             ]);
 
             var edges = new vis.DataSet([
-                <?php foreach ($this->aHistory['children'] as $iChildStatus => $aChild) : ?>
-                    <?php if (0 == $iChildStatus) : ?>
-                        {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aHistory['count'] * 100, 1) ?> %', color: '#aaa'},
+                <?php foreach ($this->history['children'] as $childStatus => $child) : ?>
+                    <?php if (0 == $childStatus) : ?>
+                        {from: 'level1', to: 'level2-<?= $childStatus ?>', label: '<?= round($child['count'] / $this->history['count'] * 100, 1) ?> %', color: '#aaa'},
                     <?php else : ?>
-                        {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aHistory['count'] * 100, 1) ?> %'},
-                        <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
-                            <?php if (0 == $iSubChildStatus) : ?>
-                                {from: 'level2-<?= $iChildStatus ?>', to: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= round($aSubChild['count'] / $aChild['count'] * 100, 1) ?> %', color: '#aaa'},
+                        {from: 'level1', to: 'level2-<?= $childStatus ?>', label: '<?= round($child['count'] / $this->history['count'] * 100, 1) ?> %'},
+                        <?php foreach ($child['children'] as $subChildStatus => $subChild) : ?>
+                            <?php if (0 == $subChildStatus) : ?>
+                                {from: 'level2-<?= $childStatus ?>', to: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= round($subChild['count'] / $child['count'] * 100, 1) ?> %', color: '#aaa'},
                             <?php else : ?>
-                                {from: 'level2-<?= $iChildStatus ?>', to: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= round($aSubChild['count'] / $aChild['count'] * 100, 1) ?> %'},
+                                {from: 'level2-<?= $childStatus ?>', to: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= round($subChild['count'] / $child['count'] * 100, 1) ?> %'},
                             <?php endif; ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -199,20 +205,20 @@
             };
             var statusTree = new vis.Network(container, data, options);
 
-            <?php if (isset($this->aCompareHistory)) : ?>
+            <?php if (isset($this->compareHistory)) : ?>
                 nodes = new vis.DataSet([
-                    {id: 'level1', label: '<?= $this->aCompareHistory['label'] ?> : <?= $this->aCompareHistory['count'] ?>', level: 1},
-                    <?php foreach ($this->aCompareHistory['children'] as $iChildStatus => $aChild) : ?>
-                        <?php if (0 == $iChildStatus) : ?>
-                            {id: 'level2-<?= $iChildStatus ?>', label: 'Pas de changement : <?= $aChild['count'] ?>', level: 2, group: 'disabled'},
+                    {id: 'level1', label: '<?= $this->compareHistory['label'] ?> : <?= $this->compareHistory['count'] ?>', level: 1},
+                    <?php foreach ($this->compareHistory['children'] as $childStatus => $child) : ?>
+                        <?php if (0 == $childStatus) : ?>
+                            {id: 'level2-<?= $childStatus ?>', label: 'Pas de changement : <?= $child['count'] ?>', level: 2, group: 'disabled'},
                         <?php else : ?>
-                            {id: 'level2-<?= $iChildStatus ?>', label: '<?= $aChild['label'] ?> : <?= $aChild['count'] ?>\n\nMoyenne : <?= $aChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aChild['max_date'], 'd/m/Y') ?>', level: 2},
-                            <?php if (count($aChild['children']) > 1 || false === isset($aChild['children'][0])) : ?>
-                                <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
-                                    <?php if (0 == $iSubChildStatus) : ?>
-                                        {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: 'Pas de changement : <?= $aSubChild['count'] ?>', level: 3, group: 'disabled'},
+                            {id: 'level2-<?= $childStatus ?>', label: '<?= $child['label'] ?> : <?= $child['count'] ?>\n\nMoyenne : <?= $child['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($child['max_date'], 'd/m/Y') ?>', level: 2},
+                            <?php if (count($child['children']) > 1 || false === isset($child['children'][0])) : ?>
+                                <?php foreach ($child['children'] as $subChildStatus => $subChild) : ?>
+                                    <?php if (0 == $subChildStatus) : ?>
+                                        {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: 'Pas de changement : <?= $subChild['count'] ?>', level: 3, group: 'disabled'},
                                     <?php else : ?>
-                                        {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= $aSubChild['label'] ?> : <?= $aSubChild['count'] ?>\n\nMoyenne : <?= $aSubChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aSubChild['max_date'], 'd/m/Y') ?>', level: 3},
+                                        {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= $subChild['label'] ?> : <?= $subChild['count'] ?>\n\nMoyenne : <?= $subChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($subChild['max_date'], 'd/m/Y') ?>', level: 3},
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -221,16 +227,16 @@
                 ]);
 
                 edges = new vis.DataSet([
-                    <?php foreach ($this->aCompareHistory['children'] as $iChildStatus => $aChild) : ?>
-                        <?php if (0 == $iChildStatus) : ?>
-                            {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aCompareHistory['count'] * 100, 1) ?> %', color: '#aaa'},
+                    <?php foreach ($this->compareHistory['children'] as $childStatus => $child) : ?>
+                        <?php if (0 == $childStatus) : ?>
+                            {from: 'level1', to: 'level2-<?= $childStatus ?>', label: '<?= round($child['count'] / $this->compareHistory['count'] * 100, 1) ?> %', color: '#aaa'},
                         <?php else : ?>
-                            {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aCompareHistory['count'] * 100, 1) ?> %'},
-                            <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
-                                <?php if (0 == $iSubChildStatus) : ?>
-                                    {from: 'level2-<?= $iChildStatus ?>', to: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= round($aSubChild['count'] / $aChild['count'] * 100, 1) ?> %', color: '#aaa'},
+                            {from: 'level1', to: 'level2-<?= $childStatus ?>', label: '<?= round($child['count'] / $this->compareHistory['count'] * 100, 1) ?> %'},
+                            <?php foreach ($child['children'] as $subChildStatus => $subChild) : ?>
+                                <?php if (0 == $subChildStatus) : ?>
+                                    {from: 'level2-<?= $childStatus ?>', to: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= round($subChild['count'] / $child['count'] * 100, 1) ?> %', color: '#aaa'},
                                 <?php else : ?>
-                                    {from: 'level2-<?= $iChildStatus ?>', to: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= round($aSubChild['count'] / $aChild['count'] * 100, 1) ?> %'},
+                                    {from: 'level2-<?= $childStatus ?>', to: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= round($subChild['count'] / $child['count'] * 100, 1) ?> %'},
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         <?php endif; ?>

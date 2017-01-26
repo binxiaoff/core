@@ -12,7 +12,7 @@
         <div class="logo"></div>
         <br/><br/>
         <div style="float: left;">
-            <strong>Unilend – Société Française pour le financement des PME</strong><br/>
+            <strong>Unilend</strong><br/>
             6 Rue du général Clergerie<br/>
             75116 Paris
         </div>
