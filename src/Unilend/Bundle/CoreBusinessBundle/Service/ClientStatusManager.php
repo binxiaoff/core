@@ -15,6 +15,12 @@ class ClientStatusManager
     /** @var  AutoBidSettingsManager */
     private $autoBidSettingsManager;
 
+    /**
+     * ClientStatusManager constructor.
+     * @param EntityManager          $entityManager
+     * @param NotificationManager    $notificationManager
+     * @param AutoBidSettingsManager $autoBidSettingsManager
+     */
     public function __construct(
         EntityManager $entityManager,
         NotificationManager $notificationManager,
@@ -27,8 +33,8 @@ class ClientStatusManager
 
     /**
      * @param \clients $client
-     * @param int $userId
-     * @param string $comment
+     * @param int      $userId
+     * @param string   $comment
      * @throws \Exception
      */
     public function closeAccount(\clients $client, $userId, $comment)
@@ -74,38 +80,39 @@ class ClientStatusManager
 
     /**
      * @param \clients $client
-     * @param $sContent
+     * @param string   $content
      */
-    public function changeClientStatusTriggeredByClientAction(\clients $client, $sContent)
+    public function changeClientStatusTriggeredByClientAction(\clients $client, $content)
     {
-        /** @var \clients_status_history $oClientStatusHistory */
-        $oClientStatusHistory = $this->entityManager->getRepository('clients_status_history');
-        /** @var \clients_status $oLastClientStatus */
-        $oLastClientStatus = $this->entityManager->getRepository('clients_status');
-        $oLastClientStatus->getLastStatut($client->id_client);
+        /** @var \clients_status_history $clientStatusHistory */
+        $clientStatusHistory = $this->entityManager->getRepository('clients_status_history');
+        /** @var \clients_status $lastClientStatus */
+        $lastClientStatus = $this->entityManager->getRepository('clients_status');
+        $lastClientStatus->getLastStatut($client->id_client);
 
-        switch ($oLastClientStatus->status) {
+        switch ($lastClientStatus->status) {
             case \clients_status::COMPLETENESS:
             case \clients_status::COMPLETENESS_REMINDER:
             case \clients_status::COMPLETENESS_REPLY:
-                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $client->id_client, $sContent);
+                $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $client->id_client, $content);
                 break;
             case \clients_status::VALIDATED:
-                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $client->id_client, $sContent);
+            case \clients_status::MODIFICATION:
+                $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $client->id_client, $content);
                 break;
             case \clients_status::TO_BE_CHECKED:
             default:
-                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client, $sContent);
+                $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client, $content);
                 break;
         }
     }
 
     /**
-     * @param \clients $client
-     * @param int $userId
-     * @param int $clientStatus
+     * @param \clients    $client
+     * @param int         $userId
+     * @param int         $clientStatus
      * @param string|null $comment
-     * @param int|null $reminder
+     * @param int|null    $reminder
      */
     public function addClientStatus(\clients $client, $userId, $clientStatus, $comment = null, $reminder = null)
     {
