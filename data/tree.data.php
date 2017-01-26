@@ -1214,7 +1214,7 @@ class tree extends tree_crud
         }
 
         $result = [];
-        $search = strtolower($this->bdd->escape_string($search));
+        $search = $this->bdd->escape_string($search);
         $query  = '
             SELECT t.slug AS slug,
               t.title AS title ,
@@ -1225,26 +1225,21 @@ class tree extends tree_crud
               LEFT JOIN tree_elements te ON t.id_tree = te.id_tree
               LEFT JOIN elements e ON e.id_element  = te.id_element
             WHERE t.status = 1
-              AND t.id_langue = :lang
+              AND t.id_langue = :language
               AND (te.value LIKE :search OR t.title LIKE :search OR t.slug LIKE :search)
             GROUP BY t.slug
             ORDER BY t.ordre ASC';
 
         /** @var \Doctrine\DBAL\Statement $statement */
-        $statement     = $this->bdd->executeQuery($query, ['lang' => $langue, 'search' => '%' . $search . '%']);
+        $statement     = $this->bdd->executeQuery($query, ['language' => $langue, 'search' => '%' . $search . '%']);
         $searchResults = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         if (false === empty($searchResults)) {
             foreach ($searchResults as $record) {
-                if (false !== strpos(strtolower(strip_tags($record['value'])), $search)
-                    || false !== strpos(strtolower(strip_tags($record['slug'])), $search)
-                    || false !== strpos(strtolower(strip_tags($record['title'])), $search)
-                ) {
                     $result[] = [
                         'title' => $record['title'],
                         'slug'  => $record['slug']
                     ];
-                }
             }
 
             usort($result, function($firstElement, $secondElement) {

@@ -18,16 +18,6 @@ class SearchService
     /** @var string */
     private $deskPassword;
 
-    public static $keywords = [
-        'autolend',
-        'pret',
-        'prêt',
-        'operation',
-        'alimentation',
-        'alimenter',
-        'retrait'
-    ];
-
     /**
      * @param EntityManager       $entityManager
      * @param TranslatorInterface $translator
@@ -141,9 +131,9 @@ class SearchService
     }
 
     /**
-     * @param string $search
+     * @param $search
      *
-     * @return array|bool
+     * @return array
      */
     private function searchInNonCMSPages($search)
     {
