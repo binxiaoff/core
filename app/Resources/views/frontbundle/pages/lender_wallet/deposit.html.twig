@@ -105,7 +105,7 @@ classNames: 'user-preter-balance'
                 {% else %}
                     <section id="balance-deposit-result" role="tabpanel" class="panel collapse in" aria-expanded="true">
                         {% if depositCode == 200 %}
-                            {% trans with {'%depositAmount%' : depositAmount|localizednumber} %} lender-wallet_deposit-success-message {% endtrans %}
+                            {% trans with {'%depositAmount%': depositAmount|localizednumber} %} lender-wallet_deposit-success-message {% endtrans %}
                         {% else %}
                             {% trans %} lender-wallet_deposit-error-message {% endtrans %}
                         {% endif %}
