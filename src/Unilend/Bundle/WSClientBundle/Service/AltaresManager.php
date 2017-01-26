@@ -147,8 +147,8 @@ class AltaresManager
      */
     private function identitySoapCall($resourceLabel, $params)
     {
+        $wsResource = $this->resourceManager->getResource($resourceLabel);
         try {
-            $wsResource = $this->resourceManager->getResource($resourceLabel);
             $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $params[$this->getSirenKey($wsResource->resource_name)]);
             ini_set("default_socket_timeout", 8);
             $response = $this->identityClient->__soapCall(
@@ -185,8 +185,8 @@ class AltaresManager
      */
     private function riskSoapCall($resourceLabel, $params)
     {
+        $wsResource = $this->resourceManager->getResource($resourceLabel);
         try {
-            $wsResource = $this->resourceManager->getResource($resourceLabel);
             $callable   = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $params[$this->getSirenKey($wsResource->resource_name)]);
             ini_set("default_socket_timeout", 8);
             $response = $this->riskClient->__soapCall(

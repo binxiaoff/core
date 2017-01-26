@@ -9,7 +9,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
 
-class InfolegaleManager extends ResourceManager
+class InfolegaleManager
 {
     const RESOURCE_COMPANY_SCORE    = 'get_score_infolegale';
     const RESOURCE_SEARCH_COMPANY   = 'search_company_infolegale';
@@ -37,6 +37,7 @@ class InfolegaleManager extends ResourceManager
      * @param LoggerInterface $logger
      * @param CallHistoryManager $callHistoryManager
      * @param Serializer $serializer
+     * @param ResourceManager $resourceManager
      */
     public function __construct(ClientInterface $client, $token, LoggerInterface $logger, CallHistoryManager $callHistoryManager, Serializer $serializer, ResourceManager $resourceManager)
     {
