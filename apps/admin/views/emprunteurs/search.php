@@ -1,7 +1,7 @@
 <div id="popup">
-	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
-	<form method="post" name="search_emprunteurs" id="search_emprunteur" enctype="multipart/form-data" action="<?=$this->lurl?>/emprunteurs/gestion" target="_parent">
-        <h1>Rechercher un emprunteur</h1>            
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
+    <form method="post" name="search_emprunteurs" id="search_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/gestion" target="_parent">
+        <h1>Rechercher un emprunteur</h1>
         <fieldset>
             <table class="formColor">
                 <tr>
@@ -18,12 +18,12 @@
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
-                	<th>
+                    <th>
                         <input type="hidden" name="form_search_emprunteur" id="form_search_emprunteur" />
                         <input type="submit" value="Valider" title="Valider" name="send_emprunteur" id="send_emprunteur" class="btn" />
                     </th>
                 </tr>
-        	</table>
+            </table>
         </fieldset>
     </form>
 </div>

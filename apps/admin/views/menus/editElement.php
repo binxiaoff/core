@@ -2,22 +2,22 @@
     function selectTypeLienMenu(type) {
         if (type == "L") {
             <?php foreach ($this->lLangues as $key => $lng) : ?>
-                document.getElementById('typeLX_<?=$key?>').style.display = 'none';
-                document.getElementById('typeL_<?=$key?>').style.display = 'table-row';
+                document.getElementById('typeLX_<?= $key ?>').style.display = 'none';
+                document.getElementById('typeL_<?= $key ?>').style.display = 'table-row';
             <?php endforeach; ?>
             document.getElementById('complement').value = 'L';
         }
         else if (type == "LX") {
             <?php foreach ($this->lLangues as $key => $lng) : ?>
-                document.getElementById('typeLX_<?=$key?>').style.display = 'table-row';
-                document.getElementById('typeL_<?=$key?>').style.display = 'none';
+                document.getElementById('typeLX_<?= $key ?>').style.display = 'table-row';
+                document.getElementById('typeL_<?= $key ?>').style.display = 'none';
             <?php endforeach; ?>
             document.getElementById('complement').value = 'LX';
         }
         else {
             <?php foreach ($this->lLangues as $key => $lng) : ?>
-                document.getElementById('typeLX_<?=$key?>').style.display = 'none';
-                document.getElementById('typeL_<?=$key?>').style.display = 'none';
+                document.getElementById('typeLX_<?= $key ?>').style.display = 'none';
+                document.getElementById('typeL_<?= $key ?>').style.display = 'none';
             <?php endforeach; ?>
             document.getElementById('complement').value = '';
         }
@@ -29,7 +29,7 @@
         <input type="hidden" name="id_menu" id="id_menu" value="<?= $this->menus->id_menu ?>"/>
         <input type="hidden" name="id" id="id" value="<?= $this->tree_menu->id ?>"/>
         <input type="hidden" name="complement" id="complement" value="<?= $this->tree_menu->complement ?>"/>
-        <h1>Modification de l'&eacute;l&eacute;ment du menu <?= $this->menus->nom ?></h1>
+        <h1>Modification de l'élément du menu <?= $this->menus->nom ?></h1>
         <fieldset>
             <table class="formColor" height="350px">
                 <tr>
@@ -79,7 +79,7 @@
                     </tr>
                     <tr>
                         <th>
-                            <label>Statut de l'&eacute;l&eacute;ment <?= (count($this->lLangues) > 1 ? '(' . $key . ')' : '') ?> :</label>
+                            <label>Statut de l'élément <?= (count($this->lLangues) > 1 ? '(' . $key . ')' : '') ?> :</label>
                         </th>
                         <td>
                             <input type="radio" value="1" id="status1_<?= $key ?>" name="status_<?= $key ?>" <?= ($this->tree_menu->status == 1 ? 'checked="checked"' : '') ?> class="radio"/>

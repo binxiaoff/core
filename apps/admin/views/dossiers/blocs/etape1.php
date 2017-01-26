@@ -8,7 +8,7 @@
                 <th><label for="duree_etape1">Durée du prêt :</label></th>
                 <td>
                     <select name="duree_etape1" id="duree_etape1" class="select">
-                        <?php foreach ($this->dureePossible as $duree): ?>
+                        <?php foreach ($this->dureePossible as $duree) : ?>
                             <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                         <?php endforeach ?>
                         <option<?= (in_array($this->projects->period, array(0, 1000000))) ? ' selected' : '' ?> value="0">Je ne sais pas</option>
@@ -18,9 +18,9 @@
             <tr>
                 <th><label for="siren_etape1">SIREN :</label></th>
                 <td colspan="3">
-                    <?php if ($this->projects->create_bo == 1): ?>
+                    <?php if ($this->projects->create_bo == 1) : ?>
                         <input type="text" name="siren_etape1" id="siren_etape1" class="input_moy" value="<?= $this->companies->siren ?>"/>
-                    <?php else: ?>
+                    <?php else : ?>
                         <input type="hidden" name="siren_etape1" id="siren_etape1" value="<?= $this->companies->siren ?>"/>
                         <?= $this->companies->siren ?>
                     <?php endif; ?>

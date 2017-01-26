@@ -1,9 +1,4 @@
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?=$this->lurl?>/emprunteurs" title="Emprunteur">Emprunteur</a> -</li>
-        <li><a href="<?=$this->lurl?>/product" title="Gestion des produits">Gestion des produits</a> -</li>
-        <li>Consultation d'un contrat sous-jacent</li>
-    </ul>
     <h1>Contrat sous-jacent</h1>
     <table class="form">
         <tr>
@@ -18,16 +13,16 @@
                 <?php else:
                     foreach ($this->lenderType as $type) {
                         switch ($type) {
-                            case 1 :
+                            case 1:
                                 echo '<li>Physique</li>';
                                 break;
-                            case 2 :
+                            case 2:
                                 echo '<li>Morale</li>';
                                 break;
-                            case 3 :
+                            case 3:
                                 echo '<li>Physique etrangère</li>';
                                 break;
-                            case 4 :
+                            case 4:
                                 echo '<li>Morale etrangère</li>';
                                 break;
                         }

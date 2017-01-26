@@ -28,13 +28,16 @@
 
 class settings extends settings_crud
 {
+    const STATUS_INACTIVE = 0;
+    const STATUS_ACTIVE   = 1;
+    const STATUS_BLOCKED  = 2;
 
-    function settings($bdd, $params = '')
+    public function settings($bdd, $params = '')
     {
         parent::settings($bdd, $params);
     }
 
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -46,80 +49,28 @@ class settings extends settings_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `settings` ' . $where;
+        $sql = 'SELECT COUNT(*) FROM `settings` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result);
     }
 
-    function exist($id, $field = 'id_setting')
+    public function exist($id, $field = 'id_setting')
     {
-        $sql    = 'SELECT * FROM `settings` WHERE ' . $field . '="' . $id . '"';
+        $sql    = 'SELECT * FROM `settings` WHERE ' . $field . ' = "' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
-    }
-
-    function getConstTemplate($id_template, $type)
-    {
-        $sql    = 'SELECT value FROM  `settings` WHERE id_template = ' . $id_template . ' AND type = "' . $type . '" ';
-        $result = $this->bdd->query($sql);
-        $record = $this->bdd->fetch_array($result);
-
-        return $record['value'];
-    }
-
-    function GenerationCle($Texte, $CleDEncryptage)
-    {
-        $CleDEncryptage = md5($CleDEncryptage);
-        $Compteur       = 0;
-        $VariableTemp   = "";
-        for ($Ctr = 0; $Ctr < strlen($Texte); $Ctr++) {
-            if ($Compteur == strlen($CleDEncryptage)) {
-                $Compteur = 0;
-            }
-            $VariableTemp .= substr($Texte, $Ctr, 1) ^ substr($CleDEncryptage, $Compteur, 1);
-            $Compteur++;
-        }
-        return $VariableTemp;
-    }
-
-    function Crypte($Texte, $Cle)
-    {
-        srand((double) microtime() * 1000000);
-        $CleDEncryptage = md5(rand(0, 32000));
-        $Compteur       = 0;
-        $VariableTemp   = "";
-        for ($Ctr = 0; $Ctr < strlen($Texte); $Ctr++) {
-            if ($Compteur == strlen($CleDEncryptage)) {
-                $Compteur = 0;
-            }
-            $VariableTemp .= substr($CleDEncryptage, $Compteur, 1) . (substr($Texte, $Ctr, 1) ^ substr($CleDEncryptage, $Compteur, 1));
-            $Compteur++;
-        }
-        return base64_encode($this->GenerationCle($VariableTemp, $Cle));
-    }
-
-    function Decrypte($Texte, $Cle)
-    {
-        $Texte        = $this->GenerationCle(base64_decode($Texte), $Cle);
-        $VariableTemp = "";
-        for ($Ctr = 0; $Ctr < strlen($Texte); $Ctr++) {
-            $md5 = substr($Texte, $Ctr, 1);
-            $Ctr++;
-            $VariableTemp .= (substr($Texte, $Ctr, 1) ^ $md5);
-        }
-        return $VariableTemp;
     }
 }

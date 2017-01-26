@@ -62,7 +62,7 @@
         <thead style="text-align:center;">
         <tr>
             <th>Actif</th>
-            <?php foreach ($this->aAnnualAccountsDates as $index => $aAnnualAccountsDate): ?>
+            <?php foreach ($this->aAnnualAccountsDates as $index => $aAnnualAccountsDate) : ?>
                 <th width="250"><?= $aAnnualAccountsDate['start']->format('d/m/Y') ?> au <?= $aAnnualAccountsDate['end']->format('d/m/Y') ?></th>
                 <?php if ($index != $oldestAnnualAccountsId) : ?>
                     <th width="50"></th>
@@ -71,7 +71,7 @@
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($aAssetsFields as $sFieldName => $sTitle): ?>
+        <?php foreach ($aAssetsFields as $sFieldName => $sTitle) : ?>
             <tr>
                 <td><?= $sTitle ?></td>
                 <?php
@@ -87,7 +87,7 @@
                         <?php endif; ?>
                         <td class="grisfonceBG"><?= empty($aAssetsDebts[$sFieldName]) ? '-' : $this->ficelle->formatNumber($aAssetsDebts[$sFieldName], 0) . ' €' ?></td>
                         <?php $previousTotal = empty($aAssetsDebts[$sFieldName]) ? null : $aAssetsDebts[$sFieldName]; ?>
-                    <?php else: ?>
+                    <?php else : ?>
                         <td></td>
                         <?php if ($column) : ?>
                             <td></td>
@@ -118,7 +118,7 @@
                     <?php endif; ?>
                     <td class="grisfonceBG"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
                     <?php $previousTotal = empty($iTotal) ? null : $iTotal; ?>
-                <?php else: ?>
+                <?php else : ?>
                     <td></td>
                     <?php if ($column) : ?>
                         <td></td>
@@ -158,7 +158,7 @@
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($aDebtsFields as $sFieldName => $sTitle): ?>
+        <?php foreach ($aDebtsFields as $sFieldName => $sTitle) : ?>
             <tr>
                 <td><?= $sTitle ?></td>
                 <?php
@@ -174,7 +174,7 @@
                         <?php endif; ?>
                         <td class="grisfonceBG"><?= empty($aAssetsDebts[$sFieldName]) ? '-' : $this->ficelle->formatNumber($aAssetsDebts[$sFieldName], 0) . ' €' ?></td>
                         <?php $previousTotal = empty($aAssetsDebts[$sFieldName]) ? null : $aAssetsDebts[$sFieldName]; ?>
-                    <?php else: ?>
+                    <?php else : ?>
                         <td></td>
                         <?php if ($column) : ?>
                             <td></td>
@@ -205,7 +205,7 @@
                     <?php endif; ?>
                     <td class="grisfonceBG"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
                     <?php $previousTotal = empty($iTotal) ? null : $iTotal; ?>
-                <?php else: ?>
+                <?php else : ?>
                     <td></td>
                     <?php if ($column) : ?>
                         <td></td>

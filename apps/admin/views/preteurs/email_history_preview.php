@@ -8,7 +8,7 @@
             <th>From : <?=  $this->email['from']?></th>
         </tr>
         <tr>
-            <th>To : <?= $this->email['to'] ?></th>
+            <th>Destinataire : <?= $this->email['to'] ?></th>
         </tr>
         <tr>
             <th>Sujet : <?= $this->email['subject'] ?></th>

@@ -53,11 +53,11 @@
                 </tr>
                 <tr>
                     <td colspan="8" style="text-align:center;">
-                        <?php if (false === $this->bReadonlyRiskNote): ?>
+                        <?php if (false === $this->bReadonlyRiskNote) : ?>
                             <label for="avis" style="text-align:left;display: block;">Avis :</label><br/>
                             <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"><?= $this->projects_notes->avis ?></textarea>
                             <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
-                        <?php else: ?>
+                        <?php else : ?>
                             <div style="color:black;"><?= $this->projects_notes->avis ?></div>
                         <?php endif; ?>
                     </td>
@@ -66,10 +66,10 @@
             <br/><br/>
             <div id="valid_etape6" class="valid_etape">Données sauvegardées</div>
             <div class="btnDroite listBtn_etape6">
-                <?php if(false === $this->bReadonlyRiskNote): ?>
+                <?php if(false === $this->bReadonlyRiskNote) : ?>
                     <input type="button" onclick="valid_rejete_etape6(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                 <?php endif; ?>
-                <?php if ($this->projects->status == \projects_status::REVUE_ANALYSTE): ?>
+                <?php if ($this->projects->status == \projects_status::REVUE_ANALYSTE) : ?>
                     <input type="button" onclick="valid_rejete_etape6(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
                     <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/6/<?= $this->projects->id_project ?>" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                 <?php endif; ?>

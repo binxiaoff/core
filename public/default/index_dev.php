@@ -11,7 +11,6 @@ use Symfony\Component\Debug\Debug;
 $loader = require __DIR__ . '/../../app/autoload.php';
 include __DIR__ . '/../../core/controller.class.php';
 include __DIR__ . '/../../core/command.class.php';
-include __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../app/AppKernel.php';
 
 error_reporting(E_ALL);

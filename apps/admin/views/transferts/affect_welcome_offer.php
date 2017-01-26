@@ -7,7 +7,7 @@
         </p>
     </div>
     <div id="affect_welcome_offer">
-        <form action="<?= $this->lurl ?>/transferts/rattrapage_offre_bienvenue/<?= $this->oClient->id_client . '/' . $this->oWelcomeOffer->id_offre_bienvenue ?>"
+        <form action="<?= $this->lurl ?>/transferts/rattrapage_offre_bienvenue/<?= $this->oClient->id_client ?>/<?= $this->oWelcomeOffer->id_offre_bienvenue ?>"
               method="post" name="affect_welcome_offer" id="affect_welcome_offer">
             <table border="1" style="margin:auto;">
                 <tr>
