@@ -572,30 +572,30 @@ class preteursController extends bootstrap
                         $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
                     }
 
-                $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-                header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
-                die;
-            } elseif (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                $this->companies->name         = $_POST['raison-sociale'];
-                $this->companies->forme        = $_POST['form-juridique'];
-                $this->companies->capital      = str_replace(' ', '', $_POST['capital-sociale']);
-                $this->companies->siren        = $_POST['siren'];
-                $this->companies->siret        = $_POST['siret']; //(19/11/2014)
-                $this->companies->phone        = str_replace(' ', '', $_POST['phone-societe']);
-                $this->companies->tribunal_com = $_POST['tribunal_com'];
+                    $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+                    header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
+                    die;
+                } elseif (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                    $this->companies->name         = $_POST['raison-sociale'];
+                    $this->companies->forme        = $_POST['form-juridique'];
+                    $this->companies->capital      = str_replace(' ', '', $_POST['capital-sociale']);
+                    $this->companies->siren        = $_POST['siren'];
+                    $this->companies->siret        = $_POST['siret']; //(19/11/2014)
+                    $this->companies->phone        = str_replace(' ', '', $_POST['phone-societe']);
+                    $this->companies->tribunal_com = $_POST['tribunal_com'];
 
-                ////////////////////////////////////
-                // On verifie meme adresse ou pas //
-                ////////////////////////////////////
-                if (false === empty($_POST['meme-adresse'])) {
-                    $this->companies->status_adresse_correspondance = '1';
-                } else {
-                    $this->companies->status_adresse_correspondance = '0';
-                }
-                // adresse fiscal (siege de l'entreprise)
-                $this->companies->adresse1 = $_POST['adresse'];
-                $this->companies->city     = $_POST['ville'];
-                $this->companies->zip      = $_POST['cp'];
+                    ////////////////////////////////////
+                    // On verifie meme adresse ou pas //
+                    ////////////////////////////////////
+                    if (false === empty($_POST['meme-adresse'])) {
+                        $this->companies->status_adresse_correspondance = '1';
+                    } else {
+                        $this->companies->status_adresse_correspondance = '0';
+                    }
+                    // adresse fiscal (siege de l'entreprise)
+                    $this->companies->adresse1 = $_POST['adresse'];
+                    $this->companies->city     = $_POST['ville'];
+                    $this->companies->zip      = $_POST['cp'];
 
                     // adresse fiscal (dans client entreprise) on vide car c'est pour les particulier ca
                     $this->clients_adresses->adresse_fiscal = '';
