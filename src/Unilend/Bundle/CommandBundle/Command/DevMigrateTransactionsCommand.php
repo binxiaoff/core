@@ -905,7 +905,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $operation['amount']               = $this->calculateOperationAmount($transaction['montant']);
         $operation['id_wallet_debtor']     = $borrowerWallet['id'];
         $operation['added']                = $transaction['added'];
-        $operation['id_project']           = empty($directDebit->id_project) ? null : $directDebit->id_reception;
+        $operation['id_project']           = empty($directDebit->id_project) ? null : $directDebit->id_project;
         $operation['id_wire_transfer_in']  = empty($directDebit->id_reception) ? null : $directDebit->id_reception;
         $operation['id']                   = $this->newOperation($operation);
 
