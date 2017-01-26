@@ -168,7 +168,7 @@ class CallHistoryManager
             $dm->persist($wsCall);
             $dm->flush();
         } catch (\Exception $exception) {
-            $this->logger->warning('Unable to save response to mangoDB: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+            $this->logger->warning('Unable to save response to mongoDB: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
         }
     }
 
