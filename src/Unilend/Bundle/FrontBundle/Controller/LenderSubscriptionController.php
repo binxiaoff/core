@@ -1048,7 +1048,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("devenir-preteur-lp-form", name="lender_landing_page_form_only")
+     * @Route("/devenir-preteur-lp-form", name="lender_landing_page_form_only")
      * @Method("GET")
      * @return Response
      */

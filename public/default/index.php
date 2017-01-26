@@ -1,4 +1,5 @@
 <?php
+
 use Symfony\Component\HttpFoundation\Request;
 
 $loader = require __DIR__ . '/../../app/autoload.php';
@@ -24,8 +25,6 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
         true
     );
 }
-
-header('X-Server: ' . exec('hostname'));
 
 $kernel   = new AppKernel('prod', false);
 $request  = Request::createFromGlobals();
