@@ -34,6 +34,10 @@ class tree extends tree_crud
      */
     const PRESS_SPEAKS = 101;
 
+    public static $keywordsPagesOutsideCMS = [
+        'statistique', 'statistiques', 'contact'
+    ];
+
     public function __construct($bdd, $params = '')
     {
         parent::tree($bdd, $params);
@@ -1167,82 +1171,55 @@ class tree extends tree_crud
         }
     }
 
-    public function search($search, $includeProjects = false, $langue = 'fr')
-    {
-        $search = filter_var($search, FILTER_SANITIZE_STRING);
 
+    /**
+     * @param string $search
+     * @param string $langue
+     *
+     * @return array
+     */
+    public function search($search, $langue = 'fr')
+    {
         if (empty($search)) {
             return [];
         }
 
         $result = [];
         $search = $this->bdd->escape_string($search);
-        $sql    = '
+        $query  = '
             SELECT t.slug AS slug,
               t.title AS title ,
               t.id_template AS id_template ,
               t.id_parent AS id_parent,
               te.value AS value
-            FROM tree_elements te
-            LEFT JOIN tree t ON t.id_tree = te.id_tree
-            LEFT JOIN elements e ON e.id_element  = te.id_element
+            FROM tree t
+              LEFT JOIN tree_elements te ON t.id_tree = te.id_tree
+              LEFT JOIN elements e ON e.id_element  = te.id_element
             WHERE t.status = 1
-              AND t.id_langue = "' . $langue . '"
-              AND lcase(te.value) LIKE "%' . strtolower($search) . '%"
+              AND t.id_langue = :language
+              AND (te.value LIKE :search OR t.title LIKE :search OR t.slug LIKE :search)
             GROUP BY t.slug
             ORDER BY t.ordre ASC';
 
-        $resultat = $this->bdd->query($sql);
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement     = $this->bdd->executeQuery($query, ['language' => $langue, 'search' => '%' . $search . '%']);
+        $searchResults = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
-        if ($this->bdd->num_rows($resultat)) {
-            $result['cms'] = [];
-
-            while ($record = $this->bdd->fetch_assoc($resultat)) {
-                $replace  = strip_tags($record['value']);
-                $mystring = strtolower($replace);
-                $findme   = strtolower($search);
-                $pos      = strpos($mystring, $findme);
-
-                if ($pos !== false) {
-                    $result['cms'][] = [
+        if (false === empty($searchResults)) {
+            foreach ($searchResults as $record) {
+                    $result[] = [
                         'title' => $record['title'],
                         'slug'  => $record['slug']
                     ];
-                }
             }
 
-            usort($result['cms'], function($firstElement, $secondElement) {
-                return strcmp($firstElement['title'], $secondElement['title']);
-            });
-        }
-
-        if ($includeProjects) {
-            $sql = '
-                SELECT p.slug AS slug,
-                  p.title AS title,
-                  (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status
-                FROM projects p
-                WHERE p.display = 0
-                  AND p.title LIKE "%' . $search . '%"
-                HAVING status >= ' . \projects_status::EN_FUNDING . '
-                ORDER BY p.title ASC';
-
-            $resultatProjects = $this->bdd->query($sql);
-
-            if ($this->bdd->num_rows($resultatProjects)) {
-                $result['projects'] = [];
-
-                while ($recordProjects = $this->bdd->fetch_assoc($resultatProjects)) {
-                    $result['projects'][] = [
-                        'title' => $recordProjects['title'],
-                        'slug'  => 'projects/detail/' . $recordProjects['slug']
-                    ];
-                }
-
-                usort($result['projects'], function($firstElement, $secondElement) {
+            usort($result, function($firstElement, $secondElement) {
+                if (in_array($firstElement['slug'], $this::$keywordsPagesOutsideCMS)) {
+                    return 0;
+                } else {
                     return strcmp($firstElement['title'], $secondElement['title']);
-                });
-            }
+                }
+            });
         }
 
         return $result;
