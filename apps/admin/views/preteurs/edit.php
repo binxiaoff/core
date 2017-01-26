@@ -8,18 +8,19 @@
         $(".transac").tablesorter({headers: {}});
         $(".favoris").tablesorter({headers: {3: {sorter: false}}});
         <?php if ($this->nb_lignes != '') : ?>
-        $(".encheres").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
-        $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
+            $(".encheres").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
+            $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
         $("#annee").change(function () {
-            $('#changeDate').attr('href', "<?=$this->lurl?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
+            $('#changeDate').attr('href', "<?= $this->lurl ?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
 
         <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?=$_SESSION['freeow']['title']?>",
-                message = "<?=$_SESSION['freeow']['message']?>",
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
                 opts = {},
                 container;
+
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
             <?php unset($_SESSION['freeow']); ?>
@@ -42,11 +43,6 @@
 </style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/preteurs" title="Prêteurs">Prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Gestion prêteurs</a> -</li>
-        <li>Detail prêteur</li>
-    </ul>
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>
     <?php else : ?>
@@ -355,15 +351,15 @@
                 </table>
             <?php endif; ?>
         <?php endif; ?>
-    <?php endif;?>
+    <?php endif; ?>
 </div>
 <script type="text/javascript">
-    $("#anneeMouvTransac").change(function () {
+    $("#anneeMouvTransac").change(function() {
         var val = {
-            id_client: <?=$this->clients->id_client?>,
+            id_client: <?= $this->clients->id_client ?>,
             year: $(this).val()
         };
-        $.post(add_url + '/ajax/loadMouvTransac', val).done(function (data) {
+        $.post(add_url + '/ajax/loadMouvTransac', val).done(function(data) {
             if (data != 'nok') {
                 $(".MouvTransac").html(data);
             }
@@ -374,7 +370,7 @@
         if (confirm('Etes vous sur de vouloir supprimer ce bid ?')) {
             var val = {
                 id_bid: id_bid,
-                id_lender: <?=$this->lenders_accounts->id_lender_account?>
+                id_lender: <?= $this->lenders_accounts->id_lender_account ?>
             };
             $.post(add_url + '/ajax/deleteBidPreteur', val).done(function (data) {
                 if (data != 'nok') {

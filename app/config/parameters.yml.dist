@@ -53,7 +53,6 @@ parameters:
     path.sftp:                      %path.shared%sftp/
     path.protected:                 %path.shared%protected/
     path.payline:                   /data/sites/unilend/librairies/payline/
-    cms:                            iZicom
 
     mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
 

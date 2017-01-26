@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Administration <?= $this->cms ?></title>
+    <title>Administration du site</title>
     <link rel="shortcut icon" href="<?= $this->surl ?>/images/admin/favicon.png" type="image/x-icon" />
     <script type="text/javascript">
         var add_surl = '<?= $this->surl ?>';
@@ -12,7 +12,7 @@
     <?php $this->callJs();?>
     <script>
         // Ad custom header function if in dev mode
-        $(document).ready(function() {
+        $(function() {
             (function() {
                 var current = window.location.hostname,
                     envBackgroundColor,

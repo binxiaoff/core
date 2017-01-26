@@ -1,15 +1,10 @@
 <div id="contenu">
-	<ul class="breadcrumbs">
-        <li><a href="<?=$this->lurl?>/tree" title="Edition">Edition</a> -</li>
-        <li><a href="<?=$this->lurl?>/templates" title="Templates">Templates</a> -</li>
-        <li>Edition du template</li>
-    </ul>
-    <h1>Edition du template <?=$this->templates->name?></h1>
+    <h1>Edition du template <?= $this->templates->name ?></h1>
     <form method="post" name="edition_template" id="edition_template" enctype="multipart/form-data">
         <fieldset>
             <table class="large">
                 <tr>
-                    <td><textarea name="filecontent" id="filecontent" class="textarea_big"><?=$this->edit?></textarea></td>
+                    <td><textarea name="filecontent" id="filecontent" class="textarea_big"><?= $this->edit ?></textarea></td>
                 </tr>
                 <tr>
                     <td>
@@ -19,5 +14,5 @@
                 </tr>
             </table>
         </fieldset>
- 	</form>
+     </form>
 </div>

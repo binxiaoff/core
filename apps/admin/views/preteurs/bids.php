@@ -23,12 +23,6 @@
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/preteurs" title="Prêteurs">Prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Gestion prêteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Detail prêteur</a> -</li>
-        <li>Portefeuille & Performances</li>
-    </ul>
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>
     <?php else : ?>
@@ -60,8 +54,8 @@
         <table class="tablesorter">
             <thead>
             <tr>
-                <th>Id projet</th>
-                <th>Id bid</th>
+                <th>ID projet</th>
+                <th>ID bid</th>
                 <th>Date bid</th>
                 <th>Statut bid</th>
                 <th>Montant</th>

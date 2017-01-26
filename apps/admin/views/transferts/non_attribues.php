@@ -10,13 +10,13 @@
 
         $(".tablesorter").tablesorter({headers: {5: {sorter: false}}});
 
-        <?php if ($this->nb_lignes != ''): ?>
+        <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
 
         $(".inline").colorbox({inline: true, width: "50%"});
 
-        <?php if (isset($_SESSION['freeow'])): ?>
+        <?php if (isset($_SESSION['freeow'])) : ?>
             var title = "<?= $_SESSION['freeow']['title'] ?>",
                 message = "<?= $_SESSION['freeow']['message'] ?>",
                 opts = {},
@@ -29,10 +29,6 @@
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/transferts">Dépôt de fonds</a> -</li>
-        <li>Opérations non attribuées</li>
-    </ul>
     <h1>Liste des mouvements non affectés</h1>
     <table class="tablesorter">
         <thead>
@@ -47,7 +43,7 @@
         </thead>
         <tbody>
             <?php $i = 1; ?>
-            <?php foreach ($this->aOperations as $aOperation): ?>
+            <?php foreach ($this->aOperations as $aOperation) : ?>
                 <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $aOperation['id_reception'] ?></td>
                     <td><?= $aOperation['motif'] ?></td>
@@ -65,7 +61,7 @@
             <?php endforeach; ?>
         </tbody>
     </table>
-    <?php if ($this->nb_lignes != ''): ?>
+    <?php if ($this->nb_lignes != '') : ?>
         <table>
             <tr>
                 <td id="pager">
