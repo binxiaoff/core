@@ -75,7 +75,7 @@ class ClientManager
 
 
     /**
-     * @param \clients $oClient
+     * @param \clients $client
      *
      * @return bool
      */
