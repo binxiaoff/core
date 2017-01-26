@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Administration <?= $this->cms ?></title>
+    <title>Administration du site</title>
     <link rel="shortcut icon" href="<?= $this->surl ?>/images/admin/favicon.png" type="image/x-icon"/>
     <script type="text/javascript">
         var add_surl = '<?= $this->surl ?>';
@@ -27,9 +27,8 @@
             margin-top: 90px;
         }
     </style>
-
     <script type="text/javascript">
-        $(document).ready(function () {
+        $(function() {
             <?php if (false === empty($_SESSION['msgErreur'])) : ?>
                 $.fn.colorbox({
                     href: "<?= $this->lurl ?>/thickbox/<?= $_SESSION['msgErreur'] ?>"
@@ -46,21 +45,22 @@
             <?php endif; ?>
 
             <?php if (isset($_SESSION['freeow'])) : ?>
-                var title, message, opts, container;
-                title = "<?= $_SESSION['freeow']['title'] ?>";
-                message = "<?= $_SESSION['freeow']['message'] ?>";
-                opts = {};
+                var title = "<?= $_SESSION['freeow']['title'] ?>",
+                    message = "<?= $_SESSION['freeow']['message'] ?>",
+                    opts = {},
+                    container;
+
                 opts.classes = ['smokey'];
                 $('#freeow-tr').freeow(title, message, opts);
                 <?php unset($_SESSION['freeow']); ?>
             <?php endif; ?>
         });
     </script>
-
     <div id="logo_site">
-        <a href="<?= $this->lurl ?>" title="<?= $this->cms ?>"><img src="<?= $this->surl ?>/images/admin/logo_<?= $this->cms ?>_big.png" alt="iZiCom"/></a>
+        <a href="<?= $this->lurl ?>" title="Administration du site">
+            <img src="<?= $this->surl ?>/styles/default/images/logo.png" alt="Administration du site"/>
+        </a>
     </div>
-
     <div id="freeow-tr" class="freeow freeow-top-right"></div>
     <div id="contenu">
         <center>
@@ -73,7 +73,6 @@
                 <i>Votre mot de passe doit contenir au minimum 10 caractères.
                     <br/>Au moins 1 chiffre et 1 caractère spécial.</i>
                 <br/>
-
                 <?php if (false === empty($this->retour_pass)) : ?>
                     <br/>
                     <div style="color:red; font-weight:bold;"><?= $this->retour_pass ?></div>

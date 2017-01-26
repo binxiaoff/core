@@ -1,7 +1,8 @@
 # Mac
 .DS_Store
-# Izinoa
+
 /data/crud/*
+
 /protected
 /public/default/images/dyn
 /public/default/var
@@ -18,9 +19,6 @@
 
 # PHPStorm
 .idea/
-
-# Vagrant
-/vagrant/.vagrant/
 
 # Composer
 /vendor/

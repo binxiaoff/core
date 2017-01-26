@@ -38,16 +38,16 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($this->aAttachmentTypes as $attachmentType): ?>
-                    <tr<?php if (in_array($attachmentType['id'], $this->aMandatoyAttachmentTypes)): ?> class="highlighted"<?php endif; ?>>
+                <?php foreach ($this->aAttachmentTypes as $attachmentType) : ?>
+                    <tr<?php if (in_array($attachmentType['id'], $this->aMandatoyAttachmentTypes)) : ?> class="highlighted"<?php endif; ?>>
                         <td class="remove_col">
-                            <?php if (isset($this->aAttachments[$attachmentType['id']]['path'])): ?>
+                            <?php if (isset($this->aAttachments[$attachmentType['id']]['path'])) : ?>
                                 <a href="#" data-id="<?= $this->aAttachments[$attachmentType['id']]['id'] ?>" data-label="<?= $attachmentType['label'] ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
                             <?php endif; ?>
                         </td>
                         <td class="type_col"><?= $attachmentType['label'] ?></td>
                         <td class="label_col">
-                            <?php if (isset($this->aAttachments[$attachmentType['id']]['path'])): ?>
+                            <?php if (isset($this->aAttachments[$attachmentType['id']]['path'])) : ?>
                                 <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$attachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$attachmentType['id']]['path']) ?>"><?= $this->aAttachments[$attachmentType['id']]['path'] ?></a>
                             <?php endif; ?>
                         </td>

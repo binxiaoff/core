@@ -122,6 +122,11 @@ class LenderProfileController extends Controller
         $notificationSettings = $this->get('unilend.service.entity_manager')->getRepository('clients_gestion_notifications');
         $notificationSetting  = $notificationSettings->getNotifs($client->id_client);
 
+        if (empty($notificationSetting)) {
+            $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client);
+            $notificationSetting  = $notificationSettings->getNotifs($client->id_client);
+        }
+
         $templateData['notification_settings']['immediate'] = [
             \clients_gestion_type_notif::TYPE_NEW_PROJECT                   => $notificationSetting[\clients_gestion_type_notif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
             \clients_gestion_type_notif::TYPE_BID_PLACED                    => $notificationSetting[\clients_gestion_type_notif::TYPE_BID_PLACED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
@@ -156,7 +161,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/notiication", name="lender_profile_notification", condition="request.isXmlHttpRequest()")
+     * @Route("/profile/notification", name="lender_profile_notification", condition="request.isXmlHttpRequest()")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      */

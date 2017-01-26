@@ -93,17 +93,18 @@ class mailsController extends bootstrap
 
     public function _emailhistory()
     {
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
-        $oMailQueueManager = $this->get('unilend.service.mail_queue');
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
+        $mailQueueManager = $this->get('unilend.service.mail_queue');
 
         if (isset($_POST['form_send_search'])) {
-            $sFrom      = isset($_POST['from']) && false === empty($_POST['from']) ? $_POST['from'] : null;
-            $sTo        = isset($_POST['to']) && false === empty($_POST['to']) ? $_POST['to'] : null;
-            $sSubject   = isset($_POST['subject']) && false === empty($_POST['subject']) ? $_POST['subject'] : null;
-            $oDateStart = isset($_POST['date_from']) && false === empty($_POST['date_from']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_from']) : new \DateTime('2013-01-01');
-            $oDateEnd   = isset($_POST['date_to']) && false === empty($_POST['date_to']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_to']) : new \DateTime('NOW');
+            $clientId  = isset($_POST['id_client']) && false === empty($_POST['id_client']) ? $_POST['id_client'] : null;
+            $from      = isset($_POST['from']) && false === empty($_POST['from']) ? $_POST['from'] : null;
+            $recipient = isset($_POST['to']) && false === empty($_POST['to']) ? $_POST['to'] : null;
+            $subject   = isset($_POST['subject']) && false === empty($_POST['subject']) ? $_POST['subject'] : null;
+            $startDate = isset($_POST['date_from']) && false === empty($_POST['date_from']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_from']) : new \DateTime('2013-01-01');
+            $endDate   = isset($_POST['date_to']) && false === empty($_POST['date_to']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_to']) : new \DateTime('NOW');
 
-            $this->aEmails = $oMailQueueManager->searchSentEmails(null, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd);
+            $this->emails = $mailQueueManager->searchSentEmails($clientId, $from, $recipient, $subject, $startDate, $endDate);
         }
     }
 

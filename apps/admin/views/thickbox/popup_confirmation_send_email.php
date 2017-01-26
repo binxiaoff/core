@@ -8,7 +8,6 @@
                     <td colspan="2" style="text-align: center;" >
                         <p>Etes vous sûr de vouloir envoyer l'email d'information aux prêteurs ?</p>
                     </td>
-
                 </tr>
                 <tr>
                     <td style="text-align: center;">

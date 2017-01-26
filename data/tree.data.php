@@ -927,37 +927,27 @@ class tree extends tree_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    // Recuperation des enfants et construction html de l'arbo
-    // $type  : Si 0 = Arbo principale
-    //            Si 1 = Arbo preteur
-    //            Si 2 = Arbo emprunteur
-    public function getChilds($id_parent, $langue = 'fr', $arbre, $type = 0)
+    public function getChilds($id_parent, $langue = 'fr')
     {
         $sSense     = (self::PRESS_SPEAKS == (int) $id_parent) ? 'DESC' : 'ASC';
-        $lRubriques = $this->select('id_parent = ' . $id_parent . ' AND id_langue = "' . $langue . '" AND arbo = ' . $type, 'ordre ' . $sSense);
+        $lRubriques = $this->select('id_parent = ' . $id_parent . ' AND id_langue = "' . $langue . '"', 'ordre ' . $sSense);
 
-        // Creation de l'arbo
         foreach ($lRubriques as $rub) {
-            // On recupere la premiere position pour voir si on affiche la fleche up
-            if ($rub['ordre'] == $this->getFirstPosition($rub['id_parent'], $type)) {
+            if ($rub['ordre'] == $this->getFirstPosition($rub['id_parent'])) {
                 $up = '';
             } else {
                 $up = '<a href="' . $this->params['url'] . '/tree/up/' . $rub['id_tree'] . '" title="Up"><img src="' . $this->params['surl'] . '/images/admin/up.png" alt="Up" /></a>';
             }
-            // On recupere la derniere position pour voir si on affiche la fleche down
-            if ($rub['ordre'] == $this->getLastPosition($rub['id_parent'], $type)) {
+            if ($rub['ordre'] == $this->getLastPosition($rub['id_parent'])) {
                 $down = '';
             } else {
-                $down = '
-                <a href="' . $this->params['url'] . '/tree/down/' . $rub['id_tree'] . '" title="Down"><img src="' . $this->params['surl'] . '/images/admin/down.png" alt="Down" /></a>';
+                $down = '<a href="' . $this->params['url'] . '/tree/down/' . $rub['id_tree'] . '" title="Down"><img src="' . $this->params['surl'] . '/images/admin/down.png" alt="Down" /></a>';
             }
 
-            // On tronque les noms trop longs pour l'affichage dans le menu
             if (strlen($rub['menu_title']) > 60) {
                 $rub['menu_title'] = substr($rub['menu_title'], 0, 60) . '...';
             }
 
-            // Mise en gras des principales rubriques (id_parent = 1)
             if ($rub['id_parent'] == 1) {
                 $b  = '<strong>';
                 $sb = '</strong>';
@@ -966,7 +956,6 @@ class tree extends tree_crud
                 $sb = '';
             }
 
-            // On check si ya encore un niveau en dessous pour afficher un icone de dossier ou de fichier
             if ($this->counter('id_parent = ' . $rub['id_tree']) > 0) {
                 if ($rub['status'] == 0) {
                     $class = 'folder hl';
@@ -981,26 +970,19 @@ class tree extends tree_crud
                 }
             }
 
-            // Constructions des edit,del et add
-            $edit = '
-            <a href="' . $this->params['url'] . '/tree/edit/' . $rub['id_tree'] . '" title="Edit"><img src="' . $this->params['surl'] . '/images/admin/edit.png" alt="Edit" /></a>';
+            $edit = '<a href="' . $this->params['url'] . '/tree/edit/' . $rub['id_tree'] . '" title="Edit"><img src="' . $this->params['surl'] . '/images/admin/edit.png" alt="Edit" /></a>';
+            $add  = '<a href="' . $this->params['url'] . '/tree/add/' . $rub['id_tree'] . '" title="Add"><img src="' . $this->params['surl'] . '/images/admin/add.png" alt="Add" /></a>';
+            $del  = '<a href="' . $this->params['url'] . '/tree/delete/' . $rub['id_tree'] . '" onclick="return confirm(\'Etes vous sur de vouloir supprimer cette page et toutes les pages qui en dépendent ?\')" title="Delete"><img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Delete" /></a>';
 
-            $add = '
-            <a href="' . $this->params['url'] . '/tree/add/' . $rub['id_tree'] . '" title="Add"><img src="' . $this->params['surl'] . '/images/admin/add.png" alt="Add" /></a>';
-
-            $del = '
-            <a href="' . $this->params['url'] . '/tree/delete/' . $rub['id_tree'] . '" onclick="return confirm(\'Etes vous sur de vouloir supprimer cette page et toutes les pages qui en dépendent ?\')" title="Delete"><img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Delete" /></a>';
-
-            // Construction de l'arbre
             $this->arbre .= '
             <li>
-                <span class="' . $class . '">' . $b . '' . $rub['menu_title'] . '' . $sb . '' . $up . '' . $down . '' . $edit . '' . $add . '' . ($id_parent == 1 && $type != 0 ? '' : $del) . '</span>';
+                <span class="' . $class . '">' . $b . '' . $rub['menu_title'] . '' . $sb . '' . $up . '' . $down . '' . $edit . '' . $add . '' . $del . '</span>';
 
             if ($this->counter('id_parent = ' . $rub['id_tree']) > 0) {
                 $this->arbre .= '
                 <ul>';
 
-                $this->getChilds($rub['id_tree'], $langue, $this->arbre, $type);
+                $this->getChilds($rub['id_tree'], $langue, $this->arbre);
 
                 $this->arbre .= '
                 </ul>';
@@ -1012,27 +994,16 @@ class tree extends tree_crud
     }
 
     // Recuperation et affichage de l'arbo du site
-    public function getArbo($id = '1', $langue = 'fr', $typeArbo = 0)
+    public function getArbo($id = '1', $langue = 'fr')
     {
-        //en fonction du type d'arbo demandé on appelle la fonction appropriée
-
-        $edit = '
-        <a href="' . $this->params['url'] . '/tree/edit/' . $id . '" title="Edit"><img src="' . $this->params['surl'] . '/images/admin/edit.png" alt="Edit" /></a>';
-
-        $add = '
-        <a href="' . $this->params['url'] . '/tree/add/' . $id . '" title="Add"><img src="' . $this->params['surl'] . '/images/admin/add.png" border="0" alt="Add" /></a>';
-
+        $edit = '<a href="' . $this->params['url'] . '/tree/edit/' . $id . '" title="Edit"><img src="' . $this->params['surl'] . '/images/admin/edit.png" alt="Edit" /></a>';
+        $add  = '<a href="' . $this->params['url'] . '/tree/add/' . $id . '" title="Add"><img src="' . $this->params['surl'] . '/images/admin/add.png" border="0" alt="Add" /></a>';
 
         $this->arbre = '<img src="' . $this->params['surl'] . '/images/admin/home.png" border="0" alt="Home" />';
-
-        // Si il s'agit de l'arbo de izinoa on affiche les options "editer + ajouter" à la maison
-        if ($typeArbo == 0) {
-            $this->arbre .= $edit . '' . $add;
-        }
-
+        $this->arbre .= $edit . '' . $add;
         $this->arbre .= '<ul id="browser" class="filetree">';
 
-        $this->getChilds($id, $langue, $this->arbre, $typeArbo);
+        $this->getChilds($id, $langue);
 
         $this->arbre .= '</ul>';
 

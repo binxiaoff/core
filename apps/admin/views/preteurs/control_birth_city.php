@@ -1,91 +1,71 @@
 <script type="text/javascript">
-    $(document).ready(function(){
-        $(".tablesorter").tablesorter({headers:{7:{sorter: false}}});
-<?php
-    if ($this->nb_lignes != '') :
-?>
-        $(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
-<?php
-    endif;
-?>
+    $(function() {
+        $(".tablesorter").tablesorter({headers:{7: {sorter: false}}});
+
+        <?php if ($this->nb_lignes != '') : ?>
+            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
+        <?php endif; ?>
     });
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?=$this->lurl?>/emprunteurs" title="Emprunteurs">Prêteurs</a> -</li>
-        <li>Matching villes de naissance Prêteurs</li>
-    </ul>
     <h1>Liste des Prêteurs à matcher</h1>
-<?php
-    if (isset($this->aLenders) && count($this->aLenders) > 0) :
-?>
+    <?php if (isset($this->aLenders) && count($this->aLenders) > 0) : ?>
         <table class="tablesorter">
             <thead>
-            <tr>
-                <th>ID Client</th>
-                <th>Ville de Naissance</th>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>&nbsp;</th>
-            </tr>
+                <tr>
+                    <th>ID Client</th>
+                    <th>Ville de Naissance</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>&nbsp;</th>
+                </tr>
             </thead>
             <tbody>
-<?php
-        foreach ($this->aLenders as $i => $aLender) :
-?>
-                <tr<?=($i % 2 == 1 ? '' : ' class="odd"')?> id="row_"<?=$aLender['id_client']?>>
-                    <td><?=$aLender['id_client']?></td>
-                    <td id="td_city_<?=$aLender['id_client']?>"><?=$aLender['ville_naissance']?></td>
-                    <td><?=$aLender['nom']?></td>
-                    <td><?=$aLender['prenom']?></td>
-                    <td align="center">
-                        <a href="#" class="edit_lender" data-clientId="<?=$aLender['id_client']?>">
-                            <img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$aLender['nom'].' '.$aLender['prenom']?>" />
-                        </a>
-                    </td>
-                </tr>
-                <tr id="edit_lenders_<?=$aLender['id_client']?>" style="display: none">
-                    <td colspan="3">
-                        <label for="city_<?=$aLender['id_client']?>">Ville ou CP de Naissance :</label>
-                        <input type="text" class="input_large" name="city" id="city_<?=$aLender['id_client']?>" data-autocomplete="birth_city" >
-                        <input type="hidden" name="insee_birth" id="insee_<?=$aLender['id_client']?>">
-                    </td>
-                    <td><a href="#" class="save_lender btn_link" data-clientId="<?=$aLender['id_client']?>">Sauvegarder</a></td>
-                    <td><a href="#" class="close_edit btn_link" data-clientId="<?=$aLender['id_client']?>">Fermer</a></td>
-                </tr>
-<?php
-        endforeach;
-?>
+                <?php foreach ($this->aLenders as $i => $aLender) : ?>
+                    <tr<?=($i % 2 == 1 ? '' : ' class="odd"')?> id="row_"<?= $aLender['id_client'] ?>>
+                        <td><?= $aLender['id_client'] ?></td>
+                        <td id="td_city_<?= $aLender['id_client'] ?>"><?= $aLender['ville_naissance'] ?></td>
+                        <td><?= $aLender['nom'] ?></td>
+                        <td><?= $aLender['prenom'] ?></td>
+                        <td align="center">
+                            <a href="#" class="edit_lender" data-clientId="<?= $aLender['id_client'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $aLender['nom'] . ' ' . $aLender['prenom'] ?>" />
+                            </a>
+                        </td>
+                    </tr>
+                    <tr id="edit_lenders_<?= $aLender['id_client'] ?>" style="display: none">
+                        <td colspan="3">
+                            <label for="city_<?= $aLender['id_client'] ?>">Ville ou CP de Naissance :</label>
+                            <input type="text" class="input_large" name="city" id="city_<?= $aLender['id_client'] ?>" data-autocomplete="birth_city" >
+                            <input type="hidden" name="insee_birth" id="insee_<?= $aLender['id_client'] ?>">
+                        </td>
+                        <td><a href="#" class="save_lender btn_link" data-clientId="<?= $aLender['id_client'] ?>">Sauvegarder</a></td>
+                        <td><a href="#" class="close_edit btn_link" data-clientId="<?= $aLender['id_client'] ?>">Fermer</a></td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
-<?php
-        if ($this->nb_lignes != '') :
-?>
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">
-                        <img src="<?=$this->surl?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?=$this->surl?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
+                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
                         <input type="text" class="pagedisplay" />
-                        <img src="<?=$this->surl?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?=$this->surl?>/images/admin/last.png" alt="Dernière" class="last"/>
+                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
+                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
                         <select class="pagesize">
-                            <option value="<?=$this->nb_lignes?>" selected="selected"><?=$this->nb_lignes?></option>
+                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
                         </select>
                     </td>
                 </tr>
             </table>
-<?php
-        endif;
-    elseif(isset($_POST['form_search_emprunteur'])) :
-?>
+        <?php endif; ?>
+    <?php elseif (isset($_POST['form_search_emprunteur'])) : ?>
         <p>Il n'y a aucun prêteur à matcher.</p>
-<?php
-    endif;
-?>
+    <?php endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>
 <script>
     $('.edit_lender').click(function(e){
         e.preventDefault();
@@ -107,7 +87,7 @@
         var insee = $('#insee_'+clientId).val();
         var city = $('#city_'+clientId).val();
         $.post(
-            '<?=$this->lurl?>/ajax/patchClient/' + clientId,
+            '<?= $this->lurl ?>/ajax/patchClient/' + clientId,
             {insee_birth: insee, ville_naissance: city}
         ).done(function(data){
             if (data == 'ok') {
