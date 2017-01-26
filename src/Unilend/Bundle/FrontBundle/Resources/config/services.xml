@@ -37,7 +37,6 @@
             <argument type="service" id="security.password_encoder"/>
             <argument type="service" id="router" />
             <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="unilend.service.notification_manager" />
             <argument type="service" id="security.authentication.session_strategy" />
             <argument type="service" id="security.csrf.token_manager" />
             <argument type="service" id="logger" />
@@ -63,6 +62,7 @@
             <argument type="service" id="translator" />
             <argument type="service" id="memcache.default" />
             <argument type="service" id="unilend.service.cip_manager" />
+            <argument type="service" id="unilend.service_product.product_manager" />
         </service>
 
         <service id="unilend.frontbundle.service.source_manager" class="Unilend\Bundle\FrontBundle\Service\SourceManager">
@@ -119,5 +119,7 @@
         <service id="unilend.frontbundle.security.client_role" class="Unilend\Bundle\FrontBundle\Security\ClientRole">
             <argument type="service" id="security.role_hierarchy"/>
         </service>
+
+        <service id="unilend.frontbundle.security.logout.success_handler" class="Unilend\Bundle\FrontBundle\Security\LogoutSuccessHandler" parent="security.logout.success_handler" />
     </services>
 </container>

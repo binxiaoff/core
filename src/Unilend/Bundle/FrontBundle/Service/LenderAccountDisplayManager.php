@@ -5,6 +5,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\librairies\CacheKeys;
 
@@ -22,19 +23,23 @@ class LenderAccountDisplayManager
     private $cipManager;
     /** @var array|null */
     private $cipIndicators = false;
+    /** @var  ProductManager */
+    private $productManager;
 
     public function __construct(
         EntityManager $entityManager,
         LocationManager $locationManager,
         TranslatorInterface $translator,
         CacheItemPoolInterface $cachePool,
-        CIPManager $cipManager
+        CIPManager $cipManager,
+        ProductManager $productManager
     ) {
         $this->entityManager   = $entityManager;
         $this->locationManager = $locationManager;
         $this->translator      = $translator;
         $this->cachePool       = $cachePool;
         $this->cipManager      = $cipManager;
+        $this->productManager  = $productManager;
     }
 
     public function getBidsForProject($projectId, \lenders_accounts $lenderAccount)
@@ -180,7 +185,7 @@ class LenderAccountDisplayManager
             $projects = $this->entityManager->getRepository('projects');
             try {
                 $projectsCountByCategory = $projects->getLoanDetailsAllocation($lenderId);
-                $cachedItem->set($projectsCountByCategory)->expiresAfter(86400);
+                $cachedItem->set($projectsCountByCategory)->expiresAfter(CacheKeys::DAY);
                 $this->cachePool->save($cachedItem);
             } catch (\Exception $exception) {
                 return [];
@@ -199,6 +204,10 @@ class LenderAccountDisplayManager
      */
     public function isProjectAdvisedForLender(\projects $project, \lenders_accounts $lender)
     {
+        if (false === $this->productManager->getLenderEligibility($lender, $project)) {
+            return false;
+        }
+
         if (false === $this->cipIndicators) {
             $this->cipIndicators = $this->cipManager->getIndicators($lender);
         }

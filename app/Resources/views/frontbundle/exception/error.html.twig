@@ -2,7 +2,9 @@
 {% extends 'layouts/_page-simple.html.twig' %}
 
 {% block pageTitle %}
-    <h1 class="page-title">{% trans %} error-page_header-title {% endtrans %}</h1>
+    <h1 class="page-title">
+        {{ errorPageTitle }}
+    </h1>
 {% endblock %}
 
 {% block pageAsideBody %}
@@ -19,10 +21,18 @@
         {% if errorDetails is defined %}
             {{ errorDetails|raw }}
         {% endif %}
-        <br>
-        <div class="btn-toolbar text-align-left">
-            <a href="{{ path('home') }}" class="btn-primary">{% trans %} error-page_button-home-page {% endtrans %}</a>
-            <a href="{{ path('aide') }}" class="btn-primary">{% trans %} error-page_button-help-page {% endtrans %}</a>
-        </div><!-- /.btn-toolbar -->
+        {% if app.request.get('_route') == 'cloudflare_5xx' %}
+            <!-- ::CLOUDFLARE_ERROR_500S_BOX:: -->
+        {% endif %}
+        {% if app.request.get('_route') == 'cloudflare_challenge' %}
+            ::CAPTCHA_BOX::
+        {% endif %}
+        {% if hideButtons is not defined or hideButtons == false %}
+            <br>
+            <div class="btn-toolbar text-align-left">
+                <a href="{{ path('home') }}" class="btn-primary">{% trans %} error-page_button-home-page {% endtrans %}</a>
+                <a href="{{ path('aide') }}" class="btn-primary">{% trans %} error-page_button-help-page {% endtrans %}</a>
+            </div><!-- /.btn-toolbar -->
+        {% endif %}
     </section><!-- /.page-section -->
 {% endblock %}

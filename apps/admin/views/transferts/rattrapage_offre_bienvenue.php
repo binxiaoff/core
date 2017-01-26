@@ -1,9 +1,9 @@
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(function() {
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
         $("#datepik_1").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -11,24 +11,24 @@
         });
         $("#datepik_2").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
             yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
         });
 
+        <?php if(isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
     });
-    <?php if(isset($_SESSION['freeow'])) : ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?=$_SESSION['freeow']['title']?>";
-        message = "<?=$_SESSION['freeow']['message']?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
-    <?php endif; ?>
 </script>
 <style>
     .datepicker_table {
@@ -53,16 +53,10 @@
 </style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/transferts">Dépot de fonds</a> -</li>
-        <li>Rattrapage offre de bienvenue</li>
-    </ul>
     <h1>Rattrapage offre de bienvenue</h1>
-
     <div class="csv">
         <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue/" class="btn colorAdd">Recuperation du CSV</a>
     </div>
-
     <div class="datepicker_table">
         <form method="post" name="date_select">
             <fieldset>
@@ -95,7 +89,7 @@
     </div>
     <?php if (empty($this->aClientsWithoutWelcomeOffer)) : ?>
         <p>Il n'y a aucun utilisateur pour le moment.</p>
-    <?php else: ?>
+    <?php else : ?>
         <div class="table">
             <table class="tablesorter">
                 <thead>
@@ -131,4 +125,3 @@
         </div>
     <?php endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>

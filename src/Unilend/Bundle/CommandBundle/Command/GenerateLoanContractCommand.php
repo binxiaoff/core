@@ -114,7 +114,7 @@ EOF
                     $_SERVER['REQUEST_URI'] = '';
 
                     $command    = new \Command('pdf', 'declarationContratPret_html', array(), 'fr');
-                    $controller = new \pdfController($command, Loader::loadConfig(), 'default');
+                    $controller = new \pdfController($command, 'default');
                     $controller->setContainer($this->getContainer());
                     $controller->initialize();
 

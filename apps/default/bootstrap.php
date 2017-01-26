@@ -66,7 +66,7 @@ class bootstrap extends Controller
         $this->dates   = $this->loadLib('dates');
 
         // Recuperation de la liste des langue disponibles
-        $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
+        $this->lLangues = ['fr' => 'Francais'];
 
         $this->loadCss('default/izicom');
         $this->loadCss('default/colorbox');

@@ -87,7 +87,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $data = $project->getDataForBDFDeclaration($this->declarationDate);
 
         if (true === empty($data)) {
-            $logger->debug('no data found', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $logger->error('no data found', ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
             return;
         }
@@ -113,7 +113,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
                 fwrite($file, $this->getEndSenderRecord());
                 fclose($file);
             } catch (\Exception $exception) {
-                $logger->error('An exception occured when writing the loan lines with message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                $logger->error('An exception occurred when writing the loan lines with message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 $transmissionSequence->resetToPreviousSequence($fileName);
                 fclose($file);
                 unlink($absoluteFilePath);
@@ -213,7 +213,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo .= $data['repayment_frequency'];
         $projectLineInfo .= $this->checkAmounts($amount['owed_capital']);
         $projectLineInfo .= $this->checkAmounts($amount['unpaid_amount']);
-        $projectLineInfo .= $this->checkUnpaidDate($data['recovery_date'], $data['judgement_date']);
+        $projectLineInfo .= $this->checkUnpaidDate($data['recovery_date'], $data['judgement_date'], $data['late_payment_date']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
         $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
@@ -292,7 +292,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        return $this->multiBytePad(strtoupper(trim(preg_replace('/[^A-Za-z0-9\.\-]/', ' ', $ficelle->stripAccents($name)))), 60, self::PADDING_CHAR, STR_PAD_RIGHT);
+        return $this->multiBytePad(strtoupper(trim(preg_replace('/[^A-Za-z0-9]/', ' ', $ficelle->stripAccents($name)))), 60, self::PADDING_CHAR, STR_PAD_RIGHT);
     }
 
     /**
@@ -357,16 +357,19 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param $recoveryDate
-     * @param $judgementDate
+     * @param string $recoveryDate
+     * @param string $judgementDate
+     * @param string $latePaymentDate
      * @return string
      */
-    private function checkUnpaidDate($recoveryDate, $judgementDate)
+    private function checkUnpaidDate($recoveryDate, $judgementDate, $latePaymentDate)
     {
         if (false === empty($recoveryDate)) {
             return \DateTime::createFromFormat('Y-m-d H:i:s', $recoveryDate)->format('Ymd');
         } elseif (false === empty($judgementDate)) {
             return \DateTime::createFromFormat('Y-m-d', $judgementDate)->format('Ymd');
+        } elseif(false === empty($latePaymentDate)) {
+            return \DateTime::createFromFormat('Y-m-d H:i:s', $latePaymentDate)->format('Ymd');
         } else {
             return '00000000';
         }
@@ -436,7 +439,10 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         ];
         $csvFileName     = self::UNILEND_IFP_ID . '_' . $this->declarationDate->format('Ym') . '.csv';
         $csvAbsolutePath = $this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . $csvFileName;
-        unlink($csvAbsolutePath);
+
+        if (file_exists($csvAbsolutePath)) {
+            unlink($csvAbsolutePath);
+        }
 
         if ($csvFile = fopen($csvAbsolutePath, 'a')) {
             fwrite($csvFile, implode(';', $header) . PHP_EOL);
@@ -464,7 +470,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo[] = $data['repayment_frequency'];
         $projectLineInfo[] = $this->checkAmounts($amount['owed_capital']);
         $projectLineInfo[] = $this->checkAmounts($amount['unpaid_amount']);
-        $projectLineInfo[] = $this->checkUnpaidDate($data['recovery_date'], $data['judgement_date']);
+        $projectLineInfo[] = $this->checkUnpaidDate($data['recovery_date'], $data['judgement_date'], $data['late_payment_date']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
         $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');

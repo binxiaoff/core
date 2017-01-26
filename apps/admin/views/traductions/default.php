@@ -1,23 +1,19 @@
-<script type="text/javascript">
-    <?php if (isset($_SESSION['freeow'])) : ?>
-        $(document).ready(function () {
-            var title, message, opts, container;
-            title = "<?=$_SESSION['freeow']['title']?>";
-            message = "<?=$_SESSION['freeow']['message']?>";
-            opts = {};
+<?php if (isset($_SESSION['freeow'])) : ?>
+    <script type="text/javascript">
+        $(function() {
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
         });
-
-        <?php unset($_SESSION['freeow']); ?>
-    <?php endif; ?>
-</script>
+    </script>
+    <?php unset($_SESSION['freeow']); ?>
+<?php endif; ?>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/settings" title="Configuration">Configuration</a> -</li>
-        <li>Traductions</li>
-    </ul>
     <h1>Liste des traductions</h1>
     <div class="btnGauche">
         <a href="<?= $this->lurl ?>/traductions/regenerateTranslationCache" class="btn_link" style="background-color: slateblue;">
@@ -67,7 +63,7 @@
             </tr>
         </table>
         <div id="elementTraduction">
-            <?php if (isset($this->params[1]) && $this->params[1] != '') : ?>
+            <?php if (false === empty($this->params[1])) : ?>
                 <form method="post" name="mod_traduction" id="mod_traduction" enctype="multipart/form-data" action="<?= $this->lurl ?>/traductions">
                     <input type="hidden" name="section" id="section" value="<?= $this->params[0] ?>"/>
                     <input type="hidden" name="nom" id="nom" value="<?= $this->params[1] ?>"/>

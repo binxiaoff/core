@@ -7,7 +7,7 @@
                     <th>From : "<?= $this->mail_template->sender_name ?>" <?= $this->mail_template->sender_email ?></th>
                 </tr>
                 <tr>
-                    <th>To : <?= $this->sRecipient ?></th>
+                    <th>Destinataire : <?= $this->sRecipient ?></th>
                 </tr>
                 <tr>
                     <th>Sujet : <?= $this->mail_template->subject ?></th>
@@ -53,4 +53,3 @@
         });
     });
 </script>
-

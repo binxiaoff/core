@@ -17,7 +17,7 @@
                 <aside class="col-lg-6 col-md-6 page-aside ui-sticky-bounds" data-equal-height="md lg" data-equal-height-group="content">
                     <div class="page-aside-body h-card vcard ui-has-sticky">
                         <h4>{% trans %} search_left-block-title {% endtrans %}</h4>
-                        <p>{% trans with {'%query%' : query} %} search_left-block-search {% endtrans %}</p>
+                        <p>{% trans with {'%query%' : query|e} %} search_left-block-search {% endtrans %}</p>
                     </div><!-- /.page-aside-body -->
                 </aside><!-- /.page-aside -->
 

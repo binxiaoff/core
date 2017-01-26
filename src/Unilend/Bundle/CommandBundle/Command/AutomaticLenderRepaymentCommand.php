@@ -259,7 +259,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     $oInvoice->id_project      = $projects->id_project;
                     $oInvoice->ordre           = $r['ordre'];
                     $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
-                    $oInvoice->commission      = bcmul($fCommissionRate, 100);
+                    $oInvoice->commission      = bcmul($fCommissionRate, 100, 1);
                     $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                     $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
                     $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;

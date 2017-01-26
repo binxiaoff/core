@@ -1,17 +1,25 @@
 <div id="contenu">
-<form method="post" name="search_preteur" id="search_preteur" enctype="multipart/form-data" action="<?=$this->lurl?>/preteurs/gestion" target="_parent">
-        <h1>Rechercher un prêteur</h1>            
+    <form method="post" name="search_preteur" id="search_preteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/preteurs/gestion" target="_parent">
+        <h1>Rechercher un prêteur</h1>
+        <?php if (isset($_SESSION['error_search'])) : ?>
+            <div class="attention">
+                <?php foreach ($_SESSION['error_search'] as $error ) : ?>
+                    <?= $error ?><br>
+                <?php endforeach; ?>
+                <?php unset($_SESSION['error_search']); ?>
+            </div>
+        <?php endif; ?>
         <fieldset>
             <table class="formColor">
-            	<tr>
+                <tr>
                     <th><label for="id">ID :</label></th>
                     <td><input type="text" name="id" id="id" class="input_large" /></td>
                 </tr>
                 <tr>
                     <th>&nbsp;</th>
                     <td>
-                    	<input type="checkbox" name="nonValide" id="nonValide" />
-                    	<label for="nonValide">Preteurs offline</label>
+                        <input type="checkbox" name="nonValide" id="nonValide" />
+                        <label for="nonValide">Preteurs offline</label>
                     </td>
                 </tr>
                 <tr>
@@ -38,12 +46,12 @@
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
-                	<th>
+                    <th>
                         <input type="hidden" name="form_search_preteur" id="form_search_preteur" />
                         <input type="submit" value="Valider" title="Valider" name="send_preteur" id="send_preteur" class="btn" />
                     </th>
                 </tr>
-        	</table>
+            </table>
         </fieldset>
     </form>
 </div>

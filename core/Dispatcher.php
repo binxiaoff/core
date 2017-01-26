@@ -1,25 +1,29 @@
 <?php
 namespace Unilend\core;
 
+use Monolog\ErrorHandler;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 class Dispatcher
 {
     private $Command;
-    private $Config;
     private $Route;
-    /** @var  \AppKernel */
+    /** @var \AppKernel */
     private $kernel;
 
-    public function __construct($kernel, $name, $config,$route = array())
+    public function __construct($kernel, $name, $route = array())
     {
         $this->kernel      = $kernel;
         $this->Route       = $route;
-        $this->Config      = $config;
         $this->App         = $name;
         $this->environment = $this->kernel->getEnvironment();
         $this->debug       = $this->kernel->isDebug();
         $this->path        = $this->kernel->getRootDir() . '/../';
 
         $this->handleUrl();
+        $this->handleError();
         $this->dispatch();
     }
 
@@ -36,40 +40,6 @@ class Dispatcher
             unset($commandArray[count($commandArray) - 1]);
         }
 
-        // Dans le cas ou le mode multilingue est activé, on va utiliser le premier élément de l'URL pour donner la langue
-        if ($this->Config['multilanguage']['enabled']) {
-            // Le mode litéral (le seul qui existe aujourd'hui, par opposition à un éventuel mode en session) est le mode dans lequel la langue apparait dans l'URL
-            if ($this->Config['multilanguage']['mode'] == 'literal') {
-                // Si le premier élément de l'URL ne fait pas partie des langues activées dans la conf, on rajoute la langue par défaut au début de l'URL
-                if (! array_key_exists($commandArray[0], $this->Config['multilanguage']['allowed_languages'])) {
-                    //on regarde si le sous domaine a une langue par défaut
-                    if (array_key_exists($_SERVER['HTTP_HOST'], $this->Config['multilanguage']['domain_default_languages'])) {
-                        $langue = $this->Config['multilanguage']['domain_default_languages'][$_SERVER['HTTP_HOST']];
-                        header('location:/' . $langue . '' . $_SERVER['REQUEST_URI']);
-                        die();
-                    } //sinon on prend la premiere langue du tableau
-                    else {
-                        $array  = array_keys($this->Config['multilanguage']['allowed_languages']);
-                        $langue = $array[0];
-                        header('location:/' . $langue . '' . $_SERVER['REQUEST_URI']);
-                        die();
-                    }
-                } // Sinon, le premier élément de l'URL nous donne la langue
-                else {
-                    $langue       = $commandArray[0];
-                    $commandArray = array_slice($commandArray, 1);
-                }
-            }
-        } else {
-            //on regarde si le sous domaine a une langue par défaut
-            if (array_key_exists($_SERVER['HTTP_HOST'], $this->Config['multilanguage']['domain_default_languages'])) {
-                $langue = $this->Config['multilanguage']['domain_default_languages'][$_SERVER['HTTP_HOST']];
-            } else {
-                $array  = array_keys($this->Config['multilanguage']['allowed_languages']);
-                $langue = $array[0];
-            }
-        }
-
         if (empty($commandArray[0])) {
             //si $commandArray[0] est vide c'est qu'on a aucun param dans l'url
             $controllerName     = 'root';
@@ -78,16 +48,7 @@ class Dispatcher
         } elseif (empty($commandArray[1])) {
             //si on a que le premier qui est rempli, on regarde ce que c'est
             //c'est un controller ?
-            if ($this->Config['params']['routage'] == true && $this->isInRoute($langue, $commandArray[0], 'default')) {
-                $controllerName     = $this->Route[$langue][$commandArray[0]]['default']['ctrl'];
-                $controllerFunction = $this->Route[$langue][$commandArray[0]]['default']['fct'];
-                $parameters         = array();
-            } elseif ($this->Config['params']['routage'] == true && $this->isInRoute($langue, 'root', $commandArray[0])) {
-                //c'est une fonction de root ?
-                $controllerName     = $this->Route[$langue]['root'][$commandArray[0]]['ctrl'];
-                $controllerFunction = $this->Route[$langue]['root'][$commandArray[0]]['fct'];
-                $parameters         = array();
-            } elseif ($this->isController($commandArray[0])) {
+            if ($this->isController($commandArray[0])) {
                 $controllerName     = $commandArray[0];
                 $controllerFunction = 'default';
                 $parameters         = array();
@@ -104,23 +65,7 @@ class Dispatcher
             }
         } else {
             //si on a au moins les deux premiers qui sont remplis
-            if ($this->Config['params']['routage'] == true && $this->isInRoute($langue, $commandArray[0], $commandArray[1])) {
-                //on regarde ce qu'est le premier
-                //c'est un couple controller/view ?
-                $controllerName     = $this->Route[$langue][$commandArray[0]][$commandArray[1]]['ctrl'];
-                $controllerFunction = $this->Route[$langue][$commandArray[0]][$commandArray[1]]['fct'];
-                $parameters         = array_slice($commandArray, 2);
-            } elseif ($this->Config['params']['routage'] == true && $this->isInRoute($langue, $commandArray[0], 'default')) {
-                //c'est un controller avec la vue default et un/des parametres ?
-                $controllerName     = $this->Route[$langue][$commandArray[0]]['default']['ctrl'];
-                $controllerFunction = $this->Route[$langue][$commandArray[0]]['default']['fct'];
-                $parameters         = array_slice($commandArray, 2);
-            } elseif ($this->Config['params']['routage'] == true && $this->isInRoute($langue, 'root', $commandArray[0])) {
-                //c'est le controller root avec une vue et un/des parametres ?
-                $controllerName     = $this->Route[$langue]['root'][$commandArray[0]]['ctrl'];
-                $controllerFunction = $this->Route[$langue]['root'][$commandArray[0]]['fct'];
-                $parameters         = array_slice($commandArray, 2);
-            } elseif ($this->isController($commandArray[0])) {
+            if ($this->isController($commandArray[0])) {
                 $controllerName = $commandArray[0];
 
                 if ($this->isActionInController($controllerName, $commandArray[1])) {
@@ -143,26 +88,7 @@ class Dispatcher
             }
         }
 
-        // Si le mode de traitement des paramètres est littéral, ce qui veut dire que le nom du paramètre et sa valeur sont présents dans l'URL, on va parcourir notre tableau de paramètres pour l'indexer avec le nom des paramètres, pour plus de simplicité à l'appel (mais des URL plus compliquées)
-        if ($this->Config['params']['mode'] == 'literal' && $requestURI[1] != 'admin') {
-            $i = 0;
-            foreach ($parameters as $p) {
-                $var = explode($this->Config['params']['separator'], $p);
-                if (! empty($var[1])) {
-                    $tmp[$var[0]] = $var[1];
-                } else {
-                    $tmp[$i] = $p;
-                }
-
-                $i++;
-            }
-            if ($i > 0) {
-                $parameters = $tmp;
-            }
-        }
-
-        // Enfin, on va construire notre commande, c'est la fin du traitement de l'URL
-        $this->Command = new \Command($controllerName, $controllerFunction, $parameters, $langue);
+        $this->Command = new \Command($controllerName, $controllerFunction, $parameters, 'fr');
         $this->newRelic($this->Command);
     }
 
@@ -175,25 +101,9 @@ class Dispatcher
 
         include $this->path . 'apps/' . $this->App . '/controllers/' . $controllerName . '.php';
 
-        $controller = new $controllerClass($this->Command, $this->Config, $this->App);
+        $controller = new $controllerClass($this->Command, $this->App);
         $controller->setContainer($this->kernel->getContainer());
         $controller->execute();
-    }
-
-    //regarde si le param est dans la table de routage
-    public function isInRoute($ln, $ctrl, $fct)
-    {
-        if ($ln == '' || $ctrl == '' || $fct == '') {
-            $alors = false;
-        } else {
-            if ($this->Route[$ln][$ctrl][$fct]['ctrl'] != '' && $this->Route[$ln][$ctrl][$fct]['fct'] != '') {
-                $alors = true;
-            } else {
-                $alors = false;
-            }
-        }
-
-        return $alors;
     }
 
     // Verifie qu'un controller existe (fichier)
@@ -252,5 +162,13 @@ class Dispatcher
 
         newrelic_set_appname ($applicationName);
         newrelic_name_transaction($transactionName);
+    }
+
+    private function handleError()
+    {
+        $logger = $this->kernel->getContainer()->get('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE);
+        if ($logger instanceof LoggerInterface) {
+            ErrorHandler::register($logger, [], LogLevel::ERROR, LogLevel::ERROR);
+        }
     }
 }

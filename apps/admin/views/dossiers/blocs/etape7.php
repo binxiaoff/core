@@ -1,4 +1,8 @@
-<div id="content_etape7"><?php if ($this->projects->status >= \projects_status::COMITE) : ?>
+<div id="content_etape7">
+    <?php if (
+        $this->projects->status >= \projects_status::COMITE
+        || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::COMITE)
+    ) : ?>
         <?php
         $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
         $start = '';
@@ -75,11 +79,11 @@
                 </tr>
                 <tr>
                     <td colspan="8" style="text-align:center;">
-                        <?php if (false === $this->bReadonlyRiskNote): ?>
+                        <?php if (false === $this->bReadonlyRiskNote) : ?>
                             <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
                             <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite ?></textarea>
                             <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
-                        <?php else: ?>
+                        <?php else : ?>
                             <div style="color:black;"><?= $this->projects_notes->avis_comite ?></div>
                         <?php endif; ?>
                     </td>

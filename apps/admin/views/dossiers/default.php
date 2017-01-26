@@ -1,5 +1,6 @@
 <script>
     var nbPages = <?= isset($this->nb_lignes) && $this->nb_lignes > 0 ? ceil($this->iCountProjects / $this->nb_lignes) : 0 ?>;
+
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
 
@@ -7,7 +8,7 @@
 
         $("#datepik_1").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -16,7 +17,7 @@
 
         $("#datepik_2").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -42,14 +43,25 @@
           delay: 100
         });
 
-
         $(".tablesorter").tablesorter({headers: {9: {sorter: false}, 5: {sorter: 'digit'}}});
 
         $('#displayPager').html($('#pageActive').val() + '/' + nbPages);
+
         $('#send_dossier').click(function () {
             $('#nbLignePagination').val(0);
             $('#pageActive').val(1);
         });
+
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
     });
 
     function paginationDossiers(directionPagination) {
@@ -83,29 +95,14 @@
         }
         $("#search_dossier").submit();
     }
-
-    <?php if (isset($_SESSION['freeow'])) { ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?=$_SESSION['freeow']['title']?>";
-        message = "<?=$_SESSION['freeow']['message']?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
-    <?php } ?>
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/emprunteurs" title="Emprunteurs">Emprunteurs</a> -</li>
-        <li>Gestion des dossiers</li>
-    </ul>
-    <?php if (isset($_POST['form_search_client'])) { ?>
+    <?php if (isset($_POST['form_search_client'])) : ?>
         <h1>Résultats de la recherche de dossiers <?= (count($this->lProjects) > 0 ? '(' . count($this->lProjects) . ')' : '') ?></h1>
-    <?php } else { ?>
+    <?php else : ?>
         <h1>Liste des <?= (isset($this->iCountProjects)) ? $this->iCountProjects : 0 ?> dossiers</h1>
-    <?php } ?>
+    <?php endif; ?>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/add/create" class="btn_link">Créer un dossier</a></div>
     <style>
         table.formColor {width: 1115px;}
@@ -162,25 +159,27 @@
                         <td style="padding-top:23px;">
                             <select name="status" id="status" class="select" style="width:80px;">
                                 <option value="">Status</option>
-                                <?php foreach ($this->lProjects_status as $s) { ?>
-                                    <option <?= (isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
-                                <?php } ?>
+                                <?php foreach ($this->lProjects_status as $s) : ?>
+                                    <option <?= (isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>">
+                                        <?= 55 == $this->sessionIdUser && \projects_status::COMITE == $s['status'] ? 'En attente beau papa' : $s['label'] ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </td>
                         <td style="padding-top:23px;">
                             <select name="commercial" id="commercial" class="select">
                                 <option value="0">Commercial</option>
-                                <?php foreach ($this->aSalesPersons as $aSalesPerson) { ?>
+                                <?php foreach ($this->aSalesPersons as $aSalesPerson) : ?>
                                     <option <?= (isset($_POST['commercial']) && $_POST['commercial'] == $aSalesPerson['id_user'] ? 'selected' : '') ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
-                                <?php } ?>
+                                <?php endforeach; ?>
                             </select>
                         </td>
                         <td style="padding-top:23px;">
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Analyste</option>
-                                <?php foreach ($this->aAnalysts as $aAnalyst) { ?>
+                                <?php foreach ($this->aAnalysts as $aAnalyst) : ?>
                                     <option <?= (isset($_POST['analyste']) && $_POST['analyste'] == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
-                                <?php } ?>
+                                <?php endforeach; ?>
                             </select>
                         </td>
                     </tr>
@@ -195,7 +194,7 @@
             </fieldset>
         </form>
     </div>
-    <?php if (isset($this->lProjects) && count($this->lProjects) > 0) { ?>
+    <?php if (isset($this->lProjects) && count($this->lProjects) > 0) : ?>
         <table class="tablesorter">
             <thead>
                 <tr>
@@ -215,43 +214,41 @@
                 </tr>
             </thead>
             <tbody>
-            <?php
-            $i = 1;
-            foreach ($this->lProjects as $p) {
-                $this->oUserAnalyst->get($p['id_analyste'], 'id_user');
-                $this->oUserSalesPerson->get($p['id_commercial'], 'id_user');
-                ?>
-                <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
-                    <td><?= $p['id_project'] ?></td>
-                    <td><?= $p['siren'] ?></td>
-                    <td><?= $p['name'] ?></td>
-                    <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
-                    <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
-                    <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
-                    <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
-                    <td><?= $p['label'] ?></td>
-                    <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
-                    <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
-                    <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
-                    <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] && $p['comments'] != '' ? $p['comments'] : '' ?>"><?= $p['comments'] && $p['comments'] != '' ? 'oui' : 'non' ?></td>
-                    <td align="center">
-                        <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
-                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
-                        </a>
-                        <script>
-                            $("#ledossier<?=$p['id_project']?>").click(function () {
-                                $(location).attr('href', '<?=$this->lurl?>/dossiers/edit/<?=$p['id_project']?>');
-                            });
-                        </script>
-                    </td>
-                </tr>
-                <?php
-                $i++;
-            }
-            ?>
+                <?php $i = 1; ?>
+                <?php foreach ($this->lProjects as $p) : ?>
+                    <?php
+                        $this->oUserAnalyst->get($p['id_analyste'], 'id_user');
+                        $this->oUserSalesPerson->get($p['id_commercial'], 'id_user');
+                    ?>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
+                        <td><?= $p['id_project'] ?></td>
+                        <td><?= $p['siren'] ?></td>
+                        <td><?= $p['name'] ?></td>
+                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
+                        <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
+                        <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
+                        <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                        <td><?= 55 == $this->sessionIdUser && \projects_status::COMITE == $p['status'] ? 'En attente beau papa' : $p['label'] ?></td>
+                        <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
+                        <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
+                        <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
+                        <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] && $p['comments'] != '' ? $p['comments'] : '' ?>"><?= $p['comments'] && $p['comments'] != '' ? 'oui' : 'non' ?></td>
+                        <td align="center">
+                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
+                            </a>
+                            <script>
+                                $("#ledossier<?=$p['id_project']?>").click(function () {
+                                    $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/<?=$p['id_project']?>');
+                                });
+                            </script>
+                        </td>
+                    </tr>
+                    <?php $i++; ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != '') { ?>
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -266,9 +263,8 @@
                     </td>
                 </tr>
             </table>
-        <?php } ?>
-    <?php } elseif (isset($_POST['form_search_emprunteur'])) { ?>
+        <?php endif; ?>
+    <?php elseif (isset($_POST['form_search_emprunteur'])) : ?>
         <p>Il n'y a aucun dossier pour cette recherche.</p>
-    <?php } ?>
+    <?php endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>
