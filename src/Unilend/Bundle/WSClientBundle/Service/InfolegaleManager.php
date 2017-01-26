@@ -9,8 +9,13 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
 
-class InfolegaleManager
+class InfolegaleManager extends ResourceManager
 {
+    const RESOURCE_COMPANY_SCORE    = 'get_score_infolegale';
+    const RESOURCE_SEARCH_COMPANY   = 'search_company_infolegale';
+    const RESOURCE_COMPANY_IDENTITY = 'get_identity_infolegale';
+    const RESOURCE_LEGAL_NOTICE     = 'get_legal_notice_infolegale';
+
     /** @var  Client */
     private $client;
     /** @var  string */
@@ -23,7 +28,8 @@ class InfolegaleManager
     private $serializer;
     /** @var  boolean */
     private $monitoring;
-
+    /** @var ResourceManager */
+    private $resourceManager;
     /**
      * InfolegaleManager constructor.
      * @param ClientInterface $client
@@ -32,13 +38,14 @@ class InfolegaleManager
      * @param CallHistoryManager $callHistoryManager
      * @param Serializer $serializer
      */
-    public function __construct(ClientInterface $client, $token, LoggerInterface $logger, CallHistoryManager $callHistoryManager, Serializer $serializer)
+    public function __construct(ClientInterface $client, $token, LoggerInterface $logger, CallHistoryManager $callHistoryManager, Serializer $serializer, ResourceManager $resourceManager)
     {
         $this->client             = $client;
         $this->token              = $token;
         $this->logger             = $logger;
         $this->callHistoryManager = $callHistoryManager;
         $this->serializer         = $serializer;
+        $this->resourceManager    = $resourceManager;
     }
 
     public function setMonitoring($validate)
@@ -52,7 +59,7 @@ class InfolegaleManager
      */
     public function getScore($siren)
     {
-        if (null !== $result = $this->sendRequest($siren, 'getScore', 'get')) {
+        if (null !== $result = $this->sendRequest(self::RESOURCE_COMPANY_SCORE, $siren)) {
             return $this->serializer->deserialize($result->scoreInfo[0]->asXML(), ScoreDetails::class, 'xml');
         }
 
@@ -65,7 +72,7 @@ class InfolegaleManager
      */
     public function searchCompany($siren)
     {
-        return $this->sendRequest($siren, 'searchCompany', 'get');
+        return $this->sendRequest(self::RESOURCE_SEARCH_COMPANY, $siren);
     }
 
     /**
@@ -74,7 +81,7 @@ class InfolegaleManager
      */
     public function getIdentity($siren)
     {
-        return $this->sendRequest($siren, 'getIdentity', 'get');
+        return $this->sendRequest(self::RESOURCE_COMPANY_IDENTITY, $siren);
     }
 
     /**
@@ -83,16 +90,16 @@ class InfolegaleManager
      */
     public function getListAnnonceLegale($siren)
     {
-        return $this->sendRequest($siren, 'getListAnnonceLegale', 'get');
+        return $this->sendRequest(self::RESOURCE_LEGAL_NOTICE, $siren);
     }
 
     /**
+     * @param string $resourceLabel
      * @param string $siren
-     * @param string $endpoint
      * @param string $method
      * @return null|\SimpleXMLElement
      */
-    private function sendRequest($siren, $endpoint, $method = 'get')
+    private function sendRequest($resourceLabel, $siren, $method = 'get')
     {
         if (true === empty($siren)) {
             throw new \InvalidArgumentException('Siren is missing');
@@ -102,32 +109,33 @@ class InfolegaleManager
         $logContext     = ['class' => __CLASS__, 'function' => __FUNCTION__, 'SIREN' => $siren];
         $result         = null;
         $alertType      = 'down';
+        $wsResource     = $this->resourceManager->getResource($resourceLabel);
 
         try {
             /** @var ResponseInterface $response */
             $response = $this->client->$method(
-                $endpoint,
+                $wsResource->resource_name,
                 [
                     'query'    => $query,
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('infolegale', $endpoint, strtoupper($method), $siren)
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
                 ]
             );
-        } catch (\Exception $exception) {
-            $this->logger->error('Call to ' . $endpoint . ' using params: ' . json_encode($query) .'. Error message: ' . $exception->getMessage(), $logContext);
-        }
-        $content = $response->getBody()->getContents();
+            $content = $response->getBody()->getContents();
 
-        if (200 === $response->getStatusCode()) {
-            $alertType = 'up';
-            $xml       = new \SimpleXMLElement($content);
-            $result    = $xml->content[0];
-            $this->logger->info('Call to ' . $endpoint . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
-        } else {
-            $this->logger->error('Call to ' . $endpoint . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
+            if (200 === $response->getStatusCode()) {
+                $alertType = 'up';
+                $xml       = new \SimpleXMLElement($content);
+                $result    = $xml->content[0];
+                $this->logger->info('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
+            } else {
+                $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
+            }
+        } catch (\Exception $exception) {
+            $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage(), $logContext);
         }
 
         if ($this->monitoring) {
-            $this->callHistoryManager->sendMonitoringAlert('Infolegale', 'Infolegale status', $alertType);
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, $alertType);
         }
 
         return $result;

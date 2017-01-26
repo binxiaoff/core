@@ -12,6 +12,12 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
 
 class AltaresManager
 {
+    const RESOURCE_COMPANY_SCORE     = 'get_score_altares';
+    const RESOURCE_BALANCE_SHEET     = 'get_balance_sheet_altares';
+    const RESOURCE_COMPANY_IDENTITY  = 'get_company_identity_altares';
+    const RESOURCE_FINANCIAL_SUMMARY = 'get_financial_summary_altares';
+    const RESOURCE_MANAGEMENT_LINE   = 'get_balance_management_line_altares';
+
     /** @var string */
     private $login;
     /** @var string */
@@ -28,6 +34,8 @@ class AltaresManager
     private $serializer;
     /** @var boolean */
     private $monitoring;
+    /** @var  ResourceManager */
+    private $resourceManager;
 
     /**
      * AltaresManager constructor.
@@ -38,8 +46,9 @@ class AltaresManager
      * @param \SoapClient $identityClient
      * @param \SoapClient $riskClient
      * @param Serializer $serializer
+     * @param ResourceManager $resourceManager
      */
-    public function __construct($login, $password, LoggerInterface $logger, CallHistoryManager $callHistoryManager, \SoapClient $identityClient, \SoapClient $riskClient, Serializer $serializer)
+    public function __construct($login, $password, LoggerInterface $logger, CallHistoryManager $callHistoryManager, \SoapClient $identityClient, \SoapClient $riskClient, Serializer $serializer, ResourceManager $resourceManager)
     {
         $this->login              = $login;
         $this->password           = $password;
@@ -48,6 +57,7 @@ class AltaresManager
         $this->identityClient     = $identityClient;
         $this->riskClient         = $riskClient;
         $this->serializer         = $serializer;
+        $this->resourceManager    = $resourceManager;
     }
 
     /**
@@ -64,7 +74,7 @@ class AltaresManager
      */
     public function getScore($siren)
     {
-        if (null !== $response = $this->riskSoapCall('getScore', ['siren' => $siren])) {
+        if (null !== $response = $this->riskSoapCall(self::RESOURCE_COMPANY_SCORE, ['siren' => $siren])) {
             return $this->serializer->deserialize(json_encode($response), CompanyRating::class, 'json');
         }
 
@@ -78,7 +88,7 @@ class AltaresManager
      */
     public function getBalanceSheets($siren, $iSheetsCount = 3)
     {
-        if (null !== $response = $this->identitySoapCall('getDerniersBilans', ['siren' => $siren, 'nbBilans' => $iSheetsCount])) {
+        if (null !== $response = $this->identitySoapCall(self::RESOURCE_BALANCE_SHEET, ['siren' => $siren, 'nbBilans' => $iSheetsCount])) {
             return $this->serializer->deserialize(json_encode($response), BalanceSheetList::class, 'json');
         }
 
@@ -92,7 +102,7 @@ class AltaresManager
      */
     public function getCompanyIdentity($siren)
     {
-        if (null !== $response = $this->identitySoapCall('getIdentiteAltaN3Entreprise', ['sirenRna' => $siren])) {
+        if (null !== $response = $this->identitySoapCall(self::RESOURCE_COMPANY_IDENTITY, ['sirenRna' => $siren])) {
             return $this->serializer->deserialize(json_encode($response), CompanyIdentity::class, 'json');
         }
 
@@ -107,7 +117,7 @@ class AltaresManager
      */
     public function getFinancialSummary($siren, $balanceId)
     {
-        if (null !== $response = $this->identitySoapCall('getSyntheseFinanciere', ['siren' => $siren, 'bilanId' => $balanceId])) {
+        if (null !== $response = $this->identitySoapCall(self::RESOURCE_FINANCIAL_SUMMARY, ['siren' => $siren, 'bilanId' => $balanceId])) {
             return $this->serializer->deserialize(json_encode($response->syntheseFinanciereList), 'ArrayCollection<' . FinancialSummary::class . '>', 'json', DeserializationContext::create()->setGroups(['summary']));
         }
 
@@ -122,7 +132,7 @@ class AltaresManager
      */
     public function getBalanceManagementLine($siren, $balanceId)
     {
-        if (null !== $response = $this->identitySoapCall('getSoldeIntermediaireGestion', ['siren' => $siren, 'bilanId' => $balanceId])) {
+        if (null !== $response = $this->identitySoapCall(self::RESOURCE_MANAGEMENT_LINE, ['siren' => $siren, 'bilanId' => $balanceId])) {
             return $this->serializer->deserialize(json_encode($response->SIGList), 'ArrayCollection<' . FinancialSummary::class . '>', 'json', DeserializationContext::create()->setGroups(['management_line']));
         }
 
@@ -131,34 +141,35 @@ class AltaresManager
 
     /**
      * Make SOAP call to Altares identity WS
-     * @param string $action
+     * @param string $resourceLabel
      * @param array $params
      * @return mixed
      */
-    private function identitySoapCall($action, $params)
+    private function identitySoapCall($resourceLabel, $params)
     {
         try {
-            $callable = $this->callHistoryManager->addResourceCallHistoryLog('altares', $action, 'POST', $params[$this->getSirenKey($action)]);
+            $wsResource = $this->resourceManager->getResource($resourceLabel);
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $params[$this->getSirenKey($wsResource->resource_name)]);
             ini_set("default_socket_timeout", 8);
             $response = $this->identityClient->__soapCall(
-                $action,
+                $wsResource->resource_name,
                 [
                     ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
                 ]
             );
-            call_user_func($callable);
-            $this->logger->info('Call to ' . $action . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($action)]]);
+            call_user_func($callable, json_encode($response));
+            $this->logger->info('Call to ' . $wsResource->resource_name . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($wsResource->resource_name)]]);
 
             if ($response->return->correct && $response->return->myInfo) {
                 if ($this->monitoring) {
-                    $this->callHistoryManager->sendMonitoringAlert('Altares', 'Altares status', 'up');
+                    $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
                 }
 
                 return $response->return->myInfo;
             }
         } catch (\Exception $exception) {
             if ($this->monitoring) {
-                $this->callHistoryManager->sendMonitoringAlert('Altares', 'Altares status', 'down');
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
             }
             $this->logger->error($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__] + $params);
         }
@@ -168,34 +179,35 @@ class AltaresManager
 
     /**
      * Make SOAP call to Altares risk WS
-     * @param string $action
+     * @param string $resourceLabel
      * @param array $params
      * @return mixed
      */
-    private function riskSoapCall($action, $params)
+    private function riskSoapCall($resourceLabel, $params)
     {
         try {
-            $callable = $this->callHistoryManager->addResourceCallHistoryLog('altares', $action, 'POST', $params[$this->getSirenKey($action)]);
+            $wsResource = $this->resourceManager->getResource($resourceLabel);
+            $callable   = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $params[$this->getSirenKey($wsResource->resource_name)]);
             ini_set("default_socket_timeout", 8);
             $response = $this->riskClient->__soapCall(
-                $action,
+                $wsResource->resource_name,
                 [
                     ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
                 ]
             );
-            call_user_func($callable);
-            $this->logger->info('Call to ' . $action . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($action)]]);
+            call_user_func($callable, json_encode($response));
+            $this->logger->info('Call to ' . $wsResource->resource_name . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($wsResource->resource_name)]]);
 
             if ($response->return->correct && $response->return->myInfo) {
                 if ($this->monitoring) {
-                    $this->callHistoryManager->sendMonitoringAlert('Altares', 'Altares status', 'up');
+                    $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
                 }
 
                 return $response->return->myInfo;
             }
         } catch (\Exception $exception) {
             if ($this->monitoring) {
-                $this->callHistoryManager->sendMonitoringAlert('Altares', 'Altares status', 'down');
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
             }
             $this->logger->error($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__] + $params);
         }
@@ -211,7 +223,7 @@ class AltaresManager
     }
 
     /**
-     * @param string
+     * @param string $action
      * @return string
      */
     private function getSirenKey($action)

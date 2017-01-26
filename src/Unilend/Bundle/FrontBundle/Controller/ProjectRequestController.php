@@ -35,7 +35,6 @@ class ProjectRequestController extends Controller
     const PAGE_ROUTE_INDEX              = 'project_request_index';
     const PAGE_ROUTE_RECOVERY           = 'project_request_recovery';
     const PAGE_ROUTE_STAND_BY           = 'project_request_stand_by';
-    const MAX_COMPANY_BALANCE_DATE      = 450;
 
     /** @var \clients */
     private $client;
@@ -293,7 +292,7 @@ class ProjectRequestController extends Controller
         /** @var BalanceSheetList $balanceSheetList */
         $balanceSheetList = $companyFinanceCheck->getBalanceSheets($this->company->siren);
 
-        if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= self::MAX_COMPANY_BALANCE_DATE) {
+        if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
             if (true === $companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $this->company->siren, $rejectionReason)) {
                 return $this->updateProjectStatusAndRedirect($rejectionReason);
             }
@@ -322,9 +321,12 @@ class ProjectRequestController extends Controller
         if (true === $companyFinanceCheck->hasInfogreffePrivileges($this->company->siren, $rejectionReason)) {
             return $this->updateProjectStatusAndRedirect($rejectionReason);
         }
-        /** @var CompanyBalanceSheetManager $companyBalanceSheetManager */
-        $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
-        $companyBalanceSheetManager->setCompanyBalance($this->company, $this->project, $balanceSheetList);
+
+        if (null !== $balanceSheetList) {
+            /** @var CompanyBalanceSheetManager $companyBalanceSheetManager */
+            $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+            $companyBalanceSheetManager->setCompanyBalance($this->company, $this->project, $balanceSheetList);
+        }
 
         return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);
     }

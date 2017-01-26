@@ -9,10 +9,10 @@
         <tbody>
         <tr>
             <td>
-                <select name="resourceId">
+                <select name="resource_label">
                     <option>-Select a web service-</option>
                     <?php foreach ($this->resources as $resource) : ?>
-                        <option value="<?= $resource['id_resource'] ?>">
+                        <option value="<?= $resource['label'] ?>">
                             <?= $resource['provider_name'] . ' -> ' . $resource['resource_name'] ?>
                         </option>
                     <?php endforeach; ?>

@@ -237,17 +237,17 @@ knp_mailjet:
 guzzle:
       clients:
           euler:
-              base_url: %euler.url%
+              base_url: "%euler.url%"
               options:
                   timeout: 8
                   http_errors: false
 
           codinf:
-              base_url: %codinf.url%
+              base_url: "%codinf.url%"
               options:
                   http_errors: false
 
           infolegale:
-              base_url: %infolegale.url%
+              base_url: "%infolegale.url%"
               options:
                   http_errors: false

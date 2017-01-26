@@ -233,7 +233,10 @@ class CompanyFinanceCheck
 
             if (is_array($privileges)) {
                 switch ($privileges['code']) {
+                    case '006':
                     case '013':
+                    case '025':
+
                         return false;
                     default:
                         $rejectionReason = $privileges['message'];

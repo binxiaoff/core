@@ -11,6 +11,10 @@ use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating;
 
 class EulerHermesManager
 {
+    const RESOURCE_SEARCH_COMPANY = 'search_company_euler';
+    const RESOURCE_EULER_GRADE    = 'get_grade_euler';
+    const RESOURCE_TRAFFIC_LIGHT  = 'get_traffic_light_euler';
+
     /** @var  Client */
     private $client;
     /** @var  string */
@@ -31,6 +35,8 @@ class EulerHermesManager
     private $accountEmail;
     /** @var bool */
     private $monitoring;
+    /** @var  ResourceManager */
+    private $resourceManager;
 
     /**
      * EulerHermesManager constructor.
@@ -43,8 +49,9 @@ class EulerHermesManager
      * @param LoggerInterface $logger
      * @param CallHistoryManager $callHistoryManager
      * @param Serializer $serializer
+     * @param ResourceManager $resourceManager
      */
-    public function __construct(Client $client, $coverageApiKey, $gradingApiKey, $accountApiKey, $accountPwd, $accountEmail, LoggerInterface $logger, CallHistoryManager $callHistoryManager, Serializer $serializer)
+    public function __construct(Client $client, $coverageApiKey, $gradingApiKey, $accountApiKey, $accountPwd, $accountEmail, LoggerInterface $logger, CallHistoryManager $callHistoryManager, Serializer $serializer, ResourceManager $resourceManager)
     {
         $this->client             = $client;
         $this->coverageApiKey     = $coverageApiKey;
@@ -55,6 +62,7 @@ class EulerHermesManager
         $this->accountKey         = $accountApiKey;
         $this->accountPwd         = $accountPwd;
         $this->accountEmail       = $accountEmail;
+        $this->resourceManager    = $resourceManager;
     }
 
     /**
@@ -81,7 +89,7 @@ class EulerHermesManager
             throw new \InvalidArgumentException('Country code parameter is missing');
         }
 
-        if (null !== $result = $this->sendRequest('transactor/' . strtolower($countryCode) . '/siren/' . $siren, $this->coverageApiKey, $siren, __FUNCTION__)) {
+        if (null !== $result = $this->sendRequest(self::RESOURCE_SEARCH_COMPANY, strtolower($countryCode) . '/siren/' . $siren, $this->coverageApiKey, $siren)) {
             return $this->serializer->deserialize($result, CompanyIdentity::class, 'json');
         }
 
@@ -100,7 +108,7 @@ class EulerHermesManager
         $company = $this->searchCompany($siren, $countryCode);
 
         if (null !== $company) {
-            if (null !== $result = $this->sendRequest('trafficLight/' . $company->getSingleInvoiceId(), $this->gradingApiKey, $siren, __FUNCTION__)) {
+            if (null !== $result = $this->sendRequest(self::RESOURCE_TRAFFIC_LIGHT, $company->getSingleInvoiceId(), $this->gradingApiKey, $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
         }
@@ -120,7 +128,7 @@ class EulerHermesManager
         $company = $this->searchCompany($siren, $countryCode);
 
         if (null !== $company) {
-            if (null !== $result = $this->sendRequest('transactor/grade/' . $company->getSingleInvoiceId(), $this->gradingApiKey, $siren, __FUNCTION__)) {
+            if (null !== $result = $this->sendRequest(self::RESOURCE_EULER_GRADE, $company->getSingleInvoiceId(), $this->gradingApiKey, $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
         }
@@ -129,40 +137,42 @@ class EulerHermesManager
     }
 
     /**
+     * @param string $resourceLabel
      * @param string $uri
      * @param string $apiKey
      * @param string $siren
-     * @param string $caller
      * @return null|string
      */
-    private function sendRequest($uri, $apiKey, $siren, $caller)
+    private function sendRequest($resourceLabel, $uri, $apiKey, $siren)
     {
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'SIREN' => $siren];
         $result     = null;
+        $wsResource = $this->resourceManager->getResource($resourceLabel);
+
         try {
-            $response = $this->client->get(
-                $uri,
+            $response   = $this->client->get(
+                $wsResource->resource_name . $uri,
                 [
                     'headers'  => ['apikey' => $apiKey],
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog('euler', $caller, 'GET', $siren)
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
                 ]
             );
 
             if (200 === $response->getStatusCode()) {
                 $result    = $response->getBody()->getContents();
                 $alertType = 'up';
-                $this->logger->info('Call to ' . $uri . '. Result: ' . $result, $logContext);
+                $this->logger->info('Call to ' . $wsResource->resource_name . '. Result: ' . $result, $logContext);
             } else {
                 $alertType = 'down';
-                $this->logger->error('Call to ' . $uri . '. Result: ' . $response->getBody()->getContents(), $logContext);
+                $this->logger->error('Call to ' . $wsResource->resource_name . '. Result: ' . $response->getBody()->getContents(), $logContext);
             }
         } catch (\Exception $exception) {
             $alertType = 'down';
-            $this->logger->error('Call to ' . $uri . '. Error message: ' . $exception->getMessage(), $logContext);
+            $this->logger->error('Call to ' . $wsResource->resource_name . '. Error message: ' . $exception->getMessage(), $logContext);
         }
 
         if ($this->monitoring) {
-            $this->callHistoryManager->sendMonitoringAlert('Euler', 'Euler status', $alertType);
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, $alertType);
         }
 
         return $result;

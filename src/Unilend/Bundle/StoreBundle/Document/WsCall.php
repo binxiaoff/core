@@ -27,7 +27,17 @@ class WsCall
     /**
      * @MongoDB\Field(type="string")
      */
+    protected $siren;
+
+    /**
+     * @MongoDB\Field(type="string")
+     */
     protected $response;
+
+    /**
+     * @MongoDB\Field(type="date")
+     */
+    protected $added;
 
     /**
      * Get id
@@ -103,5 +113,37 @@ class WsCall
     public function getResponse()
     {
         return $this->response;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSiren()
+    {
+        return $this->siren;
+    }
+
+    /**
+     * @param mixed $siren
+     */
+    public function setSiren($siren)
+    {
+        $this->siren = $siren;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAdded()
+    {
+        return $this->added;
+    }
+
+    /**
+     * @param mixed $added
+     */
+    public function setAdded($added)
+    {
+        $this->added = $added;
     }
 }

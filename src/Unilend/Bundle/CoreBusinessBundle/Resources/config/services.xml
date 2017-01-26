@@ -216,13 +216,6 @@
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 
-        <service id="unilend.service.altares" class="Unilend\Bundle\CoreBusinessBundle\Service\Altares">
-            <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
-            <argument type="service" id="unilend.service.project_manager"/>
-            <argument type="service" id="cache"/>
-        </service>
-
         <service id="unilend.service.ekomi" class="Unilend\Bundle\CoreBusinessBundle\Service\Ekomi">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="logger"/>
@@ -241,9 +234,9 @@
             <argument type="service" id="unilend.service.project_manager"/>
             <argument type="service" id="cache"/>
             <argument type="service" id="logger"/>
-            <argument type="service" id="unilend.ws_client.altares_manager"/>
-            <argument type="service" id="unilend.ws_client.infolegale_manager"/>
-            <argument type="service" id="unilend.ws_client.euler_manager"/>
+            <argument type="service" id="unilend.service.ws_client.altares_manager"/>
+            <argument type="service" id="unilend.service.ws_client.infolegale_manager"/>
+            <argument type="service" id="unilend.service.ws_client.euler_manager"/>
         </service>
 
         <service id="unilend.service.company_finance_check" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyFinanceCheck">
@@ -252,9 +245,9 @@
             <argument type="service" id="unilend.service.project_manager"/>
             <argument type="service" id="cache"/>
             <argument type="service" id="logger"/>
-            <argument type="service" id="unilend.ws_client.altares_manager"/>
-            <argument type="service" id="unilend.ws_client.codinf_manager"/>
-            <argument type="service" id="unilend.ws_client.infogreffe_manager"/>
+            <argument type="service" id="unilend.service.ws_client.altares_manager"/>
+            <argument type="service" id="unilend.service.ws_client.codinf_manager"/>
+            <argument type="service" id="unilend.service.ws_client.infogreffe_manager"/>
         </service>
     </services>
 </container>

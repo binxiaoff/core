@@ -12,6 +12,7 @@ class InfogreffeManager
 {
     const PRIVILEGES_SECU_REGIMES_COMPLEMENT = '03';
     const PRIVILEGES_TRESOR_PUBLIC           = '04';
+    const RESOURCE_INDEBTEDNESS              = 'get_indebtedness_infogreffe';
 
     /** @var  string */
     private $login;
@@ -27,6 +28,8 @@ class InfogreffeManager
     private $serializer;
     /** @var bool */
     private $monitoring;
+    /** @var ResourceManager */
+    private $resourceManager;
 
     /**
      * InfogreffeManager constructor.
@@ -36,8 +39,9 @@ class InfogreffeManager
      * @param CallHistoryManager $callHistoryManager
      * @param SoapClient $client
      * @param Serializer $serializer
+     * @param ResourceManager $resourceManager
      */
-    public function __construct($login, $password, LoggerInterface $logger, CallHistoryManager $callHistoryManager, SoapClient $client, Serializer $serializer)
+    public function __construct($login, $password, LoggerInterface $logger, CallHistoryManager $callHistoryManager, SoapClient $client, Serializer $serializer, ResourceManager $resourceManager)
     {
         $this->login              = $login;
         $this->password           = $password;
@@ -45,6 +49,7 @@ class InfogreffeManager
         $this->callHistoryManager = $callHistoryManager;
         $this->client             = $client;
         $this->serializer         = $serializer;
+        $this->resourceManager    = $resourceManager;
     }
 
     /**
@@ -64,6 +69,7 @@ class InfogreffeManager
         if (true === empty($siren)) {
             throw new \InvalidArgumentException('Siren is missing');
         }
+        $extraInfo  = '';
         $result     = null;
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
         $xml        = new \SimpleXMLElement('<xml/>');
@@ -71,22 +77,26 @@ class InfogreffeManager
         $order      = $request->addChild('commande');
         $order->addChild('num_siren', $siren);
         $order->addChild('type_inscription', self::PRIVILEGES_SECU_REGIMES_COMPLEMENT . self::PRIVILEGES_TRESOR_PUBLIC);
+        $wsResource = $this->resourceManager->getResource(self::RESOURCE_INDEBTEDNESS);
 
         /** @var callable $callBack */
-        $callBack = $this->callHistoryManager->addResourceCallHistoryLog('infogreffe', __FUNCTION__, 'POST', $siren);
+        $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
         try {
             ini_set("default_socket_timeout", 8);
-            $response  = $this->client->__soapCall('getProduitsWebServicesXML', [$request->asXML()]);
+            $response  = $this->client->__soapCall($wsResource->resource_name, [$request->asXML()]);
             $alertType = 'up';
         } catch (\SoapFault $exception) {
             $alertType = 'down';
             $this->logger->warning('Calling infogreffe Indebtedness siren: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
         }
-        call_user_func($callBack);
+        call_user_func($callBack, $this->client->__getLastResponse());
 
         if (isset($response) && preg_match('/(^\d{3}) (.*)/', $response, $matches)) {
             if (isset($matches[1], $matches[2])) {
-
+                if (true === in_array($matches[1], ['010', '012', '014', '999'])) {
+                    $alertType = 'down';
+                    $extraInfo = $matches[2];
+                }
                 $result = ['code' => $matches[1], 'message' => $matches[2]];
             }
         } else {
@@ -103,54 +113,15 @@ class InfogreffeManager
                     $result = $this->serializer->deserialize($this->getSubscription_3_4($responseArray), CompanyIndebtedness::class, 'json');
                 }
             } catch (\Exception $exception) {
-                $this->logger->error('Could not get response from Infogreffe Indebtedness ws. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
+                $this->logger->error('Could not get response from Infogreffe getProduitsWebServicesXML to get Indebtedness. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
             }
         }
 
         if ($this->monitoring) {
-            $this->callHistoryManager->sendMonitoringAlert('Infogreffe', 'Infogreffe status', $alertType);
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, $alertType, $extraInfo);
         }
 
         return $result;
-    }
-
-    /**
-     * @param $siren
-     * @return array
-     */
-    public function getKBisUrl($siren)
-    {
-        if (true === empty($siren)) {
-            throw new \InvalidArgumentException('Siren is missing');
-        }
-        $xml     = new \SimpleXMLElement('<xml/>');
-        $request = $this->addRequestHeader($xml, 'KB', 'T');
-        $order   = $request->addChild('commande');
-        $order->addChild('num_siren', $siren);
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
-        /** @var callable $callBack */
-        $callBack = $this->callHistoryManager->addResourceCallHistoryLog('infogreffe', __FUNCTION__, 'POST', $siren);
-        try {
-            $this->client->__soapCall('getProduitsWebServicesXML', [$request->asXML()]);
-        } catch (\SoapFault $exception) {
-            $this->logger->warning('Calling infogreffe Indebtedness siren: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
-        }
-        call_user_func($callBack);
-
-        try {
-            /** @var \SimpleXMLElement $xmlResponse */
-            $xmlResponse = new \SimpleXMLElement($this->client->__getLastResponse());
-            /** @var \SimpleXMLElement[] $indebtedness */
-            $indebtedness = $xmlResponse->xpath('//return');
-
-            if (false !== $indebtedness) {
-                return $this->xml2array($indebtedness[0]);
-            }
-        } catch (\Exception $exception) {
-            $this->logger->error('Could not get response from Infogreffe Indebtedness ws. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
-        }
-
-        return [];
     }
 
     /**

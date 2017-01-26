@@ -14,50 +14,36 @@ class simulationController extends bootstrap
         header('Location: ' . $this->lurl);
     }
 
-    public function _altares()
-    {
-        ini_set('default_socket_timeout', 60);
-        $this->hideDecoration();
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $altares */
-        $altares = $this->get('unilend.service.altares');
-
-        $siren = '';
-        if (isset($_POST['siren']) && $_POST['siren'] != '') {
-            $siren = $_POST['siren'];
-        }
-        $this->result = [];
-        if (isset($_POST['api'])) {
-            switch ($_POST['api']) {
-                case 1 :
-                    $this->result = $altares->getEligibility($siren);
-                    break;
-                case 2 :
-                    $this->result = $altares->getBalanceSheets($siren);
-                    break;
-                default :
-                    $this->result = [];
-                    break;
-            }
-        }
-    }
-
     public function _wsProvider()
     {
         $this->hideDecoration();
         /** @var \ws_external_resource $wsResources */
         $wsResources = $this->loadData('ws_external_resource');
 
+        $methods = [
+            'get_incident_list_codinf'            => 'getIncidentList',
+            'get_score_altares'                   => 'getScore',
+            'get_company_identity_altares'        => 'getCompanyIdentity',
+            'get_balance_sheet_altares'           => 'getBalanceSheets',
+            'get_financial_summary_altares'       => 'getFinancialSummary',
+            'get_balance_management_line_altares' => 'getBalanceManagementLine',
+            'get_score_infolegale'                => 'getScore',
+            'search_company_infolegale'           => 'searchCompany',
+            'get_identity_infolegale'             => 'getIdentity',
+            'get_legal_notice_infolegale'         => 'getListAnnonceLegale',
+            'get_indebtedness_infogreffe'         => 'getIndebtedness',
+            'search_company_euler'                => 'searchCompany',
+            'get_grade_euler'                     => 'getGrade',
+            'get_traffic_light_euler'             => 'getTrafficLight'
+        ];
+
         $this->resources = $wsResources->select();
         $this->result    = [];
         try {
             if (isset($_POST['send'], $_POST['siren'])) {
-                if (is_numeric($_POST['resourceId']) && $wsResources->get($_POST['resourceId'])) {
-                    $provider = $this->get('unilend.ws_client.' . $wsResources->provider_name . '_manager');
-                    $endpoint = $wsResources->resource_name;
-
-                    if (is_callable([$provider, 'setMonitoring'])) {
-                        $provider->setMonitoring(false);
-                    }
+                if ($wsResources->get($_POST['resource_label'], 'label')) {
+                    $provider = $this->get('unilend.service.ws_client.' . $wsResources->provider_name . '_manager');
+                    $endpoint = $methods[$wsResources->label];
 
                     switch ($wsResources->provider_name) {
                         case 'euler':
@@ -65,18 +51,18 @@ class simulationController extends bootstrap
                             $this->result = $provider->$endpoint($_POST['siren'], $countryCode);
                             break;
                         case 'altares':
-                            switch ($wsResources->resource_name) {
+                            switch ($endpoint) {
                                 case 'getFinancialSummary':
                                 case 'getBalanceManagementLine':
-                                    $this->result = $provider->{$wsResources->resource_name}($_POST['siren'], $_POST['balanceId']);
+                                    $this->result = $provider->$endpoint($_POST['siren'], $_POST['balanceId']);
                                     break;
                                 default:
-                                    $this->result = $provider->{$wsResources->resource_name}($_POST['siren']);
+                                    $this->result = $provider->$endpoint($_POST['siren']);
                                     break;
                             }
                             break;
                         default:
-                            $this->result = $provider->{$wsResources->resource_name}($_POST['siren']);
+                            $this->result = $provider->$endpoint($_POST['siren']);
                             break;
                     }
                 } else {
