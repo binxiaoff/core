@@ -790,7 +790,7 @@ class pdfController extends bootstrap
         $this->settings->get('Declaration contrat pret - raison sociale', 'type');
         $this->raisonSociale = mb_strtoupper($this->settings->value, 'UTF-8');
 
-        $this->settings->get('Facture - SFF PME', 'type');
+        $this->settings->get('Facture - Unilend', 'type');
         $this->sffpme = mb_strtoupper($this->settings->value, 'UTF-8');
 
         $this->settings->get('Facture - capital', 'type');
@@ -841,7 +841,7 @@ class pdfController extends bootstrap
         $this->taxes                = $aInvoices[0]['tva'] / 100;
         $this->ttc                  = $aInvoices[0]['montant_ttc'] / 100;
         $this->date_echeance_reel   = $aInvoices[0]['date'];
-        $this->commissionPercentage = round($aInvoices[0]['montant_ht'] / $this->projects->amount, 2);
+        $this->commissionPercentage = $aInvoices[0]['commission'];
 
         $this->setDisplay('facture_EF_html');
         $sDisplayInvoice = $this->sDisplay;
@@ -1170,7 +1170,7 @@ class pdfController extends bootstrap
         }
 
         $sPath          = '/tmp/' . uniqid() . '/';
-        $sNamePdfClient = 'vos_prets_' . date('Y-m-d_H:i:s') . '.pdf';
+        $sNamePdfClient = 'vos_prets_' . date('Y-m-d_H:i:s');
 
         $this->lng['preteur-operations-detail'] = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']    = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
@@ -1186,6 +1186,8 @@ class pdfController extends bootstrap
         $this->loans       = $this->loadData('loans');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->lenders_accounts->get($clientId, 'id_client_owner');
+        $this->clients = $this->loadData('clients');
+        $this->clients->get($clientId);
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
         $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'debut DESC, p.title ASC');

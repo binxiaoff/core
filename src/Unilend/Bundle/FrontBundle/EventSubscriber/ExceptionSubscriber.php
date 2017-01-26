@@ -27,10 +27,9 @@ class ExceptionSubscriber implements EventSubscriberInterface
     public function onNotFoundHttpException(GetResponseForExceptionEvent $event)
     {
         $exception = $event->getException();
+
         if ($exception instanceof NotFoundHttpException) {
-            /** @var $config */
-            include $this->kernel->getRootDir() . '/../config.php';
-            new Dispatcher($this->kernel, 'default', $config);
+            new Dispatcher($this->kernel, 'default');
             exit;
         }
     }

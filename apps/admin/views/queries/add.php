@@ -1,7 +1,7 @@
 <div id="popup">
-	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
-	<form method="post" name="add_requete" id="add_requete" enctype="multipart/form-data" action="<?=$this->lurl?>/queries" target="_parent">
-        <h1>Ajouter une requête</h1>            
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
+    <form method="post" name="add_requete" id="add_requete" enctype="multipart/form-data" action="<?= $this->lurl ?>/queries" target="_parent">
+        <h1>Ajouter une requête</h1>
         <fieldset>
             <table class="formColor">
             <tr>
@@ -17,7 +17,7 @@
                 <td><textarea name="sql" id="sql" class="textarea"></textarea></td>
             </tr>
             <tr>
-            	<td>&nbsp;</td>
+                <td>&nbsp;</td>
                 <th>
                     <input type="hidden" name="form_add_requete" id="form_add_requete" />
                     <input type="submit" value="Valider" title="Valider" name="send_requete" id="send_requete" class="btn" />

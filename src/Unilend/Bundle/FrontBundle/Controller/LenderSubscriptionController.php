@@ -731,6 +731,7 @@ class LenderSubscriptionController extends Controller
 
             $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($client, $post);
+            $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client);
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
             return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);

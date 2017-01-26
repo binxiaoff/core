@@ -1,7 +1,7 @@
 <div id="popup">
     <?php if (count($this->aProjects) == 1) : ?>
         <p><strong>Confirmer le changement de RIB pour <?= $this->aProjects[0]['title'] ?>&nbsp;:</strong></p>
-    <?php else: ?>
+    <?php else : ?>
         <p><strong>Confirmer le changement de RIB pour les projets suivants&nbsp;:</strong></p>
         <p>
             <ul>

@@ -333,7 +333,7 @@ class ProjectsController extends Controller
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
 
-        if (false === $project->get($projectSlug, 'slug')) {
+        if (false === $project->get($projectSlug, 'slug') || $project->slug !== $projectSlug) { // MySQL does not check collation (hôtellerie = hotellerie) so we strictly check in PHP
             /** @var \redirections $redirection */
             $redirection = $entityManager->getRepository('redirections');
 

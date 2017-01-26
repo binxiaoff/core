@@ -100,7 +100,7 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 #menu_deroulant { position: absolute; top: 0; left: 0; z-index:300; width: 1200px; list-style-type: none; margin: 0 0 0 0; padding: 0; border: 0; }
 
-#menu_deroulant li { float: left; width: 120px; text-align: center; margin: 0; padding: 0; border: 0; font-size: 12px; font-weight: bold; }
+#menu_deroulant li { float: left; width: 150px; text-align: center; margin: 0; padding: 0; border: 0; font-size: 12px; font-weight: bold; }
 
 #menu_deroulant li a:link, #menu_deroulant li a:visited { display: block; min-height: 22px; color: white; margin: 0; padding: 8px 0 0 0; border: 0; text-decoration: none; }
 
