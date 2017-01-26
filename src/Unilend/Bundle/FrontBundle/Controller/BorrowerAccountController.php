@@ -467,15 +467,13 @@ class BorrowerAccountController extends Controller
             $projectsIds = array($filter['project']);
         }
 
-        /** @var array $config */
         $rootDir = $this->get('kernel')->getRootDir() . '/..';
 
-        include $rootDir . '/config.php';
         include $rootDir . '/apps/default/bootstrap.php';
         include $rootDir . '/apps/default/controllers/pdf.php';
 
         $pdfCommand    = new \Command('pdf', 'setDisplay', 'fr');
-        $pdfController = new \pdfController($pdfCommand, $config, 'default');
+        $pdfController = new \pdfController($pdfCommand, 'default');
         $pdfController->setContainer($this->container);
         $pdfController->initialize();
 
@@ -597,13 +595,13 @@ class BorrowerAccountController extends Controller
      *
      * @param Request $request
      * @param $token
-     * @return array|RedirectResponse
+     * @return Response
      */
     public function securityAction($token, Request $request)
     {
         /** @var \temporary_links_login $temporaryLinks */
-        $temporaryLinks   = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
-        $isLinkExpired = false;
+        $temporaryLinks = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
+        $isLinkExpired  = false;
 
         if (false === $temporaryLinks->get($token, 'token')) {
             return $this->redirectToRoute('home');

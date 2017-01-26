@@ -40,13 +40,13 @@
 
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 
-        <?php if ($this->nb_lignes != ''): ?>
+        <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
 
         $(".inline").colorbox({inline: true, width: "50%"});
 
-        <?php if (isset($_SESSION['freeow'])): ?>
+        <?php if (isset($_SESSION['freeow'])) : ?>
             var title = "<?= $_SESSION['freeow']['title'] ?>",
                 message = "<?= $_SESSION['freeow']['message'] ?>",
                 opts = {},
@@ -59,10 +59,6 @@
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/transferts">Dépot de fonds</a> -</li>
-        <li>Opérations emprunteurs</li>
-    </ul>
     <h1>Opérations emprunteurs</h1>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn_link">Export CSV</a>
@@ -81,23 +77,23 @@
         </thead>
         <tbody>
             <?php $i = 1; ?>
-            <?php foreach ($this->aOperations as $aOperation): ?>
+            <?php foreach ($this->aOperations as $aOperation) : ?>
                 <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $aOperation['id_reception'] ?></td>
                     <td><?= $aOperation['motif'] ?></td>
                     <td style="text-align:right"><?= $this->ficelle->formatNumber($aOperation['montant'] / 100) ?> €</td>
                     <td class="statut_operation_<?= $aOperation['id_reception'] ?>">
-                        <?php if (1 == $aOperation['status_bo'] && isset($this->aUsers[$aOperation['id_user']])): ?>
+                        <?php if (1 == $aOperation['status_bo'] && isset($this->aUsers[$aOperation['id_user']])) : ?>
                             <?= $this->aUsers[$aOperation['id_user']]['firstname'] . ' ' . $this->aUsers[$aOperation['id_user']]['name'] ?><br/>
                             <?= date('d/m/Y à H:i:s', strtotime($aOperation['assignment_date'])) ?>
-                        <?php else: ?>
+                        <?php else : ?>
                             <?= $this->statusOperations[$aOperation['status_bo']] ?>
                         <?php endif; ?>
                     </td>
                     <td class="num_project_<?= $aOperation['id_reception'] ?>"><a href="/dossiers/edit/<?= $aOperation['id_project'] ?>"><?= $aOperation['id_project'] ?></a></td>
                     <td><?= date('d/m/Y', strtotime($aOperation['added'])) ?></td>
                     <td align="center">
-                        <?php if (in_array($aOperation['status_bo'], array(1, 2))): ?>
+                        <?php if (in_array($aOperation['status_bo'], array(1, 2))) : ?>
                             <img class="rejete_<?= $aOperation['id_reception'] ?>" style="cursor:pointer;" onclick="rejeterPrelevement(<?= $aOperation['id_project'] ?>, <?= $aOperation['id_reception'] ?>)" src="<?= $this->surl ?>/images/admin/edit.png" alt="Rejeter"/>
                             <img class="annuler_<?= $aOperation['id_reception'] ?>" style="cursor:pointer;" onclick="annulerAttribution(<?= $aOperation['id_project'] ?>, <?= $aOperation['id_reception'] ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Annuler"/>
                         <?php endif; ?>
@@ -112,7 +108,7 @@
             <?php endforeach; ?>
         </tbody>
     </table>
-    <?php if ($this->nb_lignes != ''): ?>
+    <?php if ($this->nb_lignes != '') : ?>
         <table>
             <tr>
                 <td id="pager">

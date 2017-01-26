@@ -83,6 +83,7 @@ class ProjectRequestManager
         $client->source2      = $this->sourceManager->getSource(SourceManager::SOURCE2);
         $client->source3      = $this->sourceManager->getSource(SourceManager::SOURCE3);
         $client->slug_origine = $this->sourceManager->getSource(SourceManager::ENTRY_SLUG);
+        $client->status       = \clients::STATUS_ONLINE;
         $client->create();
 
         $clientAddress->id_client = $client->id_client;

@@ -731,6 +731,7 @@ class LenderSubscriptionController extends Controller
 
             $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($client, $post);
+            $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client);
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
             return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
@@ -1047,7 +1048,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("devenir-preteur-lp-form", name="lender_landing_page_form_only")
+     * @Route("/devenir-preteur-lp-form", name="lender_landing_page_form_only")
      * @Method("GET")
      * @return Response
      */

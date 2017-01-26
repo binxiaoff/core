@@ -37,14 +37,24 @@ class SearchService
         $tree   = $this->entityManager->getRepository('tree');
         $result = $tree->search($query, $includeProjects);
 
+        $parameters = [
+            'text'              => $query,
+            'sort_field'        => 'score',
+            'sort_direction'    => 'desc',
+            // 'in_support_center' => true, Parameter exists in documentation but does not seem to work. Support request has been done to Desk. When this is working, parameter may be uncommented and condition deleted in above code.
+            'per_page'          => 10
+        ];
+
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://unilend.desk.com/api/v2/articles/search?text=' . urlencode($query) . '&sort_field=score&sort_direction=desc');
+        curl_setopt($ch, CURLOPT_URL, 'https://unilend.desk.com/api/v2/articles/search?' . http_build_query($parameters));
         curl_setopt($ch, CURLOPT_TIMEOUT, 3);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($ch, CURLOPT_USERPWD, $this->deskUser . ':' . $this->deskPassword);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json']);
         $response = curl_exec($ch);
+
+        curl_close($ch);
 
         if ($response) {
             $response = json_decode($response, true);

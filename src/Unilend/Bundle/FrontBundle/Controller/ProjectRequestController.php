@@ -1605,7 +1605,7 @@ class ProjectRequestController extends Controller
      */
     private function checkProjectHash($route, $hash, Request $request)
     {
-        if (1 !== preg_match('/^[a-z0-9]{32}$/', $hash)) {
+        if (1 !== preg_match('/^[a-z0-9-]{32,36}$/', $hash)) {
             throw new NotFoundHttpException('Invalid project hash');
         }
 

@@ -59,7 +59,7 @@ class zonesController extends bootstrap
         }
 
         $this->lUsers = $this->users->select('id_user != 1', 'name ASC');
-        $this->lZones = $this->zones->select(($this->cms == 'iZinoa' ? '(cms = "iZinoa" || cms = "") AND status > 0' : 'status > 0'), 'name ASC');
+        $this->lZones = $this->zones->select('', 'name ASC');
     }
 
     function _edit()

@@ -2,9 +2,7 @@
 
 class queriesController extends bootstrap
 {
-    /**
-     * @var queries
-     */
+    /** @var \queries */
     protected $queries;
 
     public function initialize()
@@ -37,7 +35,7 @@ class queriesController extends bootstrap
     public function _default()
     {
         $this->queries   = $this->loadData('queries');
-        $this->lRequetes = $this->queries->select(($this->cms == 'iZinoa' ? 'cms = "iZinoa" || cms = ""' : ''), 'executed DESC');
+        $this->lRequetes = $this->queries->select('', 'executed DESC');
 
         if (isset($_POST['form_edit_requete']) && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
             $this->queries->get($this->params[0], 'id_query');

@@ -100,7 +100,7 @@
         <label for="tax-form-type"  style="float:right" > Type de liasse :
             <select id="tax-form-type" name="tax_form_type" onchange="">
                 <option value="">Selectionez un type de liasse</option>
-                <?php foreach ($this->taxFormTypes as $type): ?>
+                <?php foreach ($this->taxFormTypes as $type) : ?>
                     <option value="<?= $type['id_type'] ?>"><?= $type['label'] ?></option>
                 <?php endforeach; ?>
             </select>
@@ -111,7 +111,7 @@
     <form id="last-annual-accounts-form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" class="balance-form">
         <h2>Dernier bilan</h2>
         <select id="last-annual-accounts" name="last_annual_accounts" title="Dernier bilan">
-        <?php foreach ($this->aAllAnnualAccounts as $aAnnualAccounts): ?>
+        <?php foreach ($this->aAllAnnualAccounts as $aAnnualAccounts) : ?>
             <option value="<?= $aAnnualAccounts['id_bilan'] ?>"<?= $aAnnualAccounts['id_bilan'] == $this->projects->id_dernier_bilan ? ' selected' : '' ?>><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</option>
         <?php endforeach; ?>
         </select>

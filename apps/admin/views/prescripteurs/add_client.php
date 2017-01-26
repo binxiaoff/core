@@ -80,7 +80,7 @@
         });
 
         $.ajax({
-            url: "<?=$this->lurl?>/prescripteurs/add_client",
+            url: "<?= $this->lurl ?>/prescripteurs/add_client",
             type: 'POST',
             data: values,
             dataType: 'json',

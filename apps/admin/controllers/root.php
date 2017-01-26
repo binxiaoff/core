@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\core\Loader;
-
 class rootController extends bootstrap
 {
     public function initialize()
@@ -74,11 +72,6 @@ class rootController extends bootstrap
 
     public function _default()
     {
-        if ($this->cms == 'iZinoa') {
-            header('Location:' . $this->lurl . '/tree');
-            die;
-        }
-
         $this->users->checkAccess('dashboard');
 
         $this->menu_admin = 'dashboard';
@@ -87,7 +80,7 @@ class rootController extends bootstrap
         $this->projects        = $this->loadData('projects');
 
         $this->lProjectsNok = $this->projects->selectProjectsByStatus([\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE]);
-        $this->lStatus      = $this->projects_status->select();
+        $this->lStatus      = $this->projects_status->select('', 'status ASC');
     }
 
     public function _edit_password()
@@ -135,8 +128,7 @@ class rootController extends bootstrap
                 $this->loggin_connection_admin->email          = $this->users->email;
                 $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
                 $this->loggin_connection_admin->ip             = $_SERVER["REMOTE_ADDR"];
-                $country_code                                  = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-                $this->loggin_connection_admin->pays           = $country_code;
+                $this->loggin_connection_admin->pays           = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
                 $this->loggin_connection_admin->statut         = 2;
                 $this->loggin_connection_admin->create();
 

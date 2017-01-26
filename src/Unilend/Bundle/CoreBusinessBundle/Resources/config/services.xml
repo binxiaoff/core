@@ -228,6 +228,11 @@
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 
+        <service id="unilend.service.project_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
+
+
         <service id="unilend.service.company_scoring_check" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyScoringCheck">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>

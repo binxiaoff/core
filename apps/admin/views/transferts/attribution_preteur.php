@@ -39,7 +39,7 @@
 </script>
 <br/><br/><br/>
 <div class="btnDroite"><a href="#" id="newRecherche" class="btn_link">Nouvelle recherche</a></div>
-<?php if (count($this->lPreteurs) > 0): ?>
+<?php if (count($this->lPreteurs) > 0) : ?>
     <table class="tablesorter tablePreteur">
         <thead>
         <tr>
@@ -52,7 +52,7 @@
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($this->lPreteurs as $c): ?>
+        <?php foreach ($this->lPreteurs as $c) : ?>
             <?php
                 $i = 1;
                 $companies = false;
@@ -88,10 +88,10 @@
         <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
         <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
     </div>
-<?php else: ?>
-    <?php if (isset($_POST['form_search_client'])): ?>
+<?php else : ?>
+    <?php if (isset($_POST['form_search_client'])) : ?>
         <p>Il n'y a aucun prêteur pour cette recherche.</p>
-    <?php else: ?>
+    <?php else : ?>
         <p>Il n'y a aucun prêteur pour le moment.</p>
     <?php endif; ?>
 <?php endif; ?>

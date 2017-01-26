@@ -37,33 +37,12 @@ class offres_bienvenues_details extends offres_bienvenues_details_crud
     const TYPE_CUT     = 1;
     const TYPE_PAYBACK = 2;
 
-    function offres_bienvenues_details($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::offres_bienvenues_details($bdd, $params);
     }
 
-    function get($id, $field = 'id_offre_bienvenue_detail')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_offre_bienvenue_detail')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -81,7 +60,7 @@ class offres_bienvenues_details extends offres_bienvenues_details_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -93,7 +72,7 @@ class offres_bienvenues_details extends offres_bienvenues_details_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    function sum($where = '', $champ)
+    public function sum($where = '', $champ)
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -105,10 +84,28 @@ class offres_bienvenues_details extends offres_bienvenues_details_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_offre_bienvenue_detail')
+    public function exist($id, $field = 'id_offre_bienvenue_detail')
     {
         $sql    = 'SELECT * FROM `offres_bienvenues_details` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
     }
+
+    public function getUnusedWelcomeOffers(\DateTime $date)
+    {
+        $query = '
+                SELECT obd.*
+                FROM offres_bienvenues_details obd
+                  INNER JOIN lenders_accounts la ON obd.id_client = la.id_client_owner
+                WHERE obd.status = 0 
+                  AND DATE(obd.added) > :dateLimit
+                  AND 0 = (
+                            SELECT count(*)
+                            FROM loans
+                            WHERE id_lender = la.id_lender_account
+                            );';
+
+        return $this->bdd->executeQuery($query, ['dateLimit' => $date->format('Y-m-d')])->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }

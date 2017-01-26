@@ -80,7 +80,7 @@ class rootController extends bootstrap
             @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
         } else {
             $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-            $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
+            $oPdf           = new \pdfController($oCommandPdf, 'default');
             $oPdf->setContainer($this->container);
             $oPdf->initialize();
             $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
