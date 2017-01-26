@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "87359402720b5c92c157a26d673a1898",
-    "content-hash": "b75d4abfba41732f8258780c78ac1b98",
+    "content-hash": "6f3bded8d2532b2c89e2d30eeacb05ce",
     "packages": [
         {
             "name": "cache/adapter-bundle",
@@ -57,7 +56,7 @@
                 {
                     "name": "Tobias Nyholm",
                     "email": "tobias.nyholm@gmail.com",
-                    "homepage": "https://github.com/Nyholm"
+                    "homepage": "https://github.com/nyholm"
                 }
             ],
             "description": "A bundle that registers cache implementations as Symfony services supporting PSR-6 and tagging",
@@ -2103,7 +2102,7 @@
                 "url",
                 "urlify"
             ],
-            "time": "2016-09-14 14:22:45"
+            "time": "2016-09-14T14:22:45+00:00"
         },
         {
             "name": "jdorn/sql-formatter",
@@ -2357,7 +2356,7 @@
             ],
             "authors": [
                 {
-                    "name": "KnpLabs Team",
+                    "name": "KNPLabs Team",
                     "homepage": "http://knplabs.com"
                 }
             ],
@@ -2415,7 +2414,7 @@
             ],
             "authors": [
                 {
-                    "name": "KnpLabs Team",
+                    "name": "KNPLabs Team",
                     "homepage": "http://knplabs.com"
                 },
                 {
@@ -2473,7 +2472,7 @@
             ],
             "authors": [
                 {
-                    "name": "KnpLabs Team",
+                    "name": "KNPLabs Team",
                     "homepage": "http://knplabs.com"
                 },
                 {
@@ -2530,7 +2529,7 @@
             ],
             "authors": [
                 {
-                    "name": "KnpLabs Team",
+                    "name": "KNPLabs Team",
                     "homepage": "http://knplabs.com"
                 }
             ],
@@ -3146,7 +3145,7 @@
                 "identifier",
                 "uuid"
             ],
-            "time": "2016-11-22 19:21:44"
+            "time": "2016-11-22T19:21:44+00:00"
         },
         {
             "name": "sensio/distribution-bundle",
@@ -3829,7 +3828,7 @@
             ],
             "authors": [
                 {
-                    "name": "Symfony CMF community",
+                    "name": "Symfony CMF Community",
                     "homepage": "https://github.com/symfony-cmf/Routing/contributors"
                 }
             ],
@@ -3847,44 +3846,36 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony-cmf/routing-bundle.git",
-                "reference": "d1b42c0fea4531e7ddec5a146404f3e8bbf96eed"
+                "reference": "c442f90a5b3b3ca9294f3270e243c9e785df20f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony-cmf/routing-bundle/zipball/d1b42c0fea4531e7ddec5a146404f3e8bbf96eed",
-                "reference": "d1b42c0fea4531e7ddec5a146404f3e8bbf96eed",
+                "url": "https://api.github.com/repos/symfony-cmf/routing-bundle/zipball/c442f90a5b3b3ca9294f3270e243c9e785df20f4",
+                "reference": "c442f90a5b3b3ca9294f3270e243c9e785df20f4",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.5.9|^7.0",
-                "symfony-cmf/routing": "^1.4.0",
+                "php": "^5.6|^7.0",
+                "symfony-cmf/routing": "^1.4|^2.0",
                 "symfony/framework-bundle": "^2.8|^3.0"
             },
             "conflict": {
-                "doctrine/phpcr-odm": "<2.0"
+                "doctrine/phpcr-odm": "<1.4"
             },
             "require-dev": {
                 "doctrine/data-fixtures": "^1.0.0",
-                "doctrine/orm": "^2.3",
-                "doctrine/phpcr-odm": "^2.0",
+                "doctrine/orm": "^2.5",
+                "doctrine/phpcr-odm": "^1.4|^2.0",
                 "matthiasnoback/symfony-config-test": "^1.3.1",
                 "matthiasnoback/symfony-dependency-injection-test": "~0.6",
-                "phpunit/php-code-coverage": "@stable",
-                "sonata-project/admin-bundle": "^2.3.7|^3.0",
-                "sonata-project/block-bundle": "^2.2.8|^3.0",
-                "sonata-project/core-bundle": "^2.2.5|^3.0",
-                "sonata-project/doctrine-phpcr-admin-bundle": "^1.2.4|^2.0",
-                "symfony-cmf/core-bundle": "^2.0",
                 "symfony-cmf/testing": "^2.0",
-                "symfony/monolog-bundle": "^2.3|^3.0"
+                "symfony/phpunit-bridge": "^3.2"
             },
             "suggest": {
-                "doctrine/orm": "To enable support for the ORM entities (^2.3)",
+                "doctrine/orm": "To enable support for the ORM entities (^2.5)",
                 "doctrine/phpcr-bundle": "To enable support for the PHPCR ODM documents",
-                "doctrine/phpcr-odm": "To enable support for the PHPCR ODM documents (^1.3)",
-                "sonata-project/doctrine-phpcr-admin-bundle": "To provide an admin interface for the PHPCR ODM documents (^1.1)",
-                "symfony-cmf/content-bundle": "To optionally use the configured value for 'content_basepath' from the CoreBundle",
-                "symfony-cmf/core-bundle": "To use the provided Doctrine\\Phpcr documents and for easier configuration (^1.1)"
+                "doctrine/phpcr-odm": "To enable support for the PHPCR ODM documents (^1.4)",
+                "symfony-cmf/content-bundle": "To optionally use the configured value for 'content_basepath' from the CoreBundle"
             },
             "type": "symfony-bundle",
             "extra": {
@@ -3894,7 +3885,7 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Symfony\\Cmf\\Bundle\\RoutingBundle\\": ""
+                    "Symfony\\Cmf\\Bundle\\RoutingBundle\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -3913,7 +3904,7 @@
                 "database",
                 "routing"
             ],
-            "time": "2016-07-12 06:16:59"
+            "time": "2017-01-23 07:31:54"
         },
         {
             "name": "symfony/monolog-bundle",
