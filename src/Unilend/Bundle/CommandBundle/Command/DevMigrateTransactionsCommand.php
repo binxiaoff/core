@@ -1095,10 +1095,14 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                 }
                 break;
             case 9386:
-                if (substr($transaction['date_transaction'], 0, 10) == '2016-10-27') {
-                    return bcmul(946.31, 100);
-                } else {
-                    $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                switch (substr($transaction['date_transaction'], 0, 10)) {
+                    case '2016-10-27':
+                        return bcmul(946.31, 100);
+                    case '2017-01-25':
+                        return bcmul(946,31, 100);
+                    default:
+                        $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
+                        break;
                 }
                 break;
             default:
