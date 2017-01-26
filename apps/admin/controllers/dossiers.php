@@ -2819,88 +2819,114 @@ class dossiersController extends bootstrap
     public function _status()
     {
         if (false === empty($_POST)) {
-            $sURL = '/dossiers/status/' . $_POST['status'];
+            $url = '/dossiers/status/' . $_POST['status'];
 
             if (false === empty($_POST['first-range-start']) && false === empty($_POST['first-range-end'])) {
-                $oStart = new \DateTime(str_replace('/', '-', $_POST['first-range-start']));
-                $oEnd   = new \DateTime(str_replace('/', '-', $_POST['first-range-end']));
-                $sURL .= '/' . $oStart->format('Y-m-d') . '_' . $oEnd->format('Y-m-d');
+                $start = new \DateTime(str_replace('/', '-', $_POST['first-range-start']));
+                $end   = new \DateTime(str_replace('/', '-', $_POST['first-range-end']));
+                $url .= '/' . $start->format('Y-m-d') . '_' . $end->format('Y-m-d');
 
                 if (false === empty($_POST['second-range-start']) && false === empty($_POST['second-range-end'])) {
-                    $oStart = new \DateTime(str_replace('/', '-', $_POST['second-range-start']));
-                    $oEnd   = new \DateTime(str_replace('/', '-', $_POST['second-range-end']));
-                    $sURL .= '/' . $oStart->format('Y-m-d') . '_' . $oEnd->format('Y-m-d');
+                    $start = new \DateTime(str_replace('/', '-', $_POST['second-range-start']));
+                    $end   = new \DateTime(str_replace('/', '-', $_POST['second-range-end']));
+                    $url .= '/' . $start->format('Y-m-d') . '_' . $end->format('Y-m-d');
                 }
             }
 
-            header('Location: ' . $sURL);
+            header('Location: ' . $url);
             exit;
         }
 
         $this->loadJs('admin/vis/vis.min');
         $this->loadCss('../scripts/admin/vis/vis.min');
 
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus  = $this->loadData('projects_status');
-        $this->aStatuses = $oProjectStatus->select('', 'status ASC');
+        /** @var \projects_status $projectStatus */
+        $projectStatus  = $this->loadData('projects_status');
+        $this->statuses = $projectStatus->select('', 'status ASC');
 
         if (
             isset($this->params[0], $this->params[1])
+            && false === empty($this->params[0])
             && $this->params[0] == (int) $this->params[0]
-            && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[1], $aMatches)
+            && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[1], $matches)
         ) {
-            $this->iBaseStatus      = $this->params[0];
-            $this->oFirstRangeStart = new \DateTime($aMatches[1]);
-            $this->oFirstRangeEnd   = new \DateTime($aMatches[2]);
+            $this->baseStatus      = $this->params[0];
+            $this->firstRangeStart = new \DateTime($matches[1]);
+            $this->firstRangeEnd   = new \DateTime($matches[2]);
 
-            $oProjectStatus->get($this->iBaseStatus);
+            $today = new \DateTime('NOW');
 
-            /** @var \projects_status_history $oProjectStatusHistory */
-            $oProjectStatusHistory = $this->loadData('projects_status_history');
-            $aBaseStatus           = $oProjectStatusHistory->getStatusByDates($this->iBaseStatus, $this->oFirstRangeStart, $this->oFirstRangeEnd);
-            $this->aHistory        = array(
-                'label'    => $aBaseStatus[0]['label'],
-                'count'    => count($aBaseStatus),
-                'status'   => $oProjectStatus->status,
-                'children' => $this->getStatusChildren(array_column($aBaseStatus, 'id_project_status_history'))
-            );
+            if (
+                $projectStatus->get($this->baseStatus)
+                && $this->firstRangeStart->getTimestamp() <= $today->getTimestamp()
+                && $this->firstRangeEnd->getTimestamp() <= $today->getTimestamp()
+                && $this->firstRangeStart->getTimestamp() <= $this->firstRangeEnd->getTimestamp()
+            ) {
+                /** @var \projects_status_history $projectStatusHistory */
+                $projectStatusHistory = $this->loadData('projects_status_history');
+                $baseStatus           = $projectStatusHistory->getStatusByDates($this->baseStatus, $this->firstRangeStart, $this->firstRangeEnd);
 
-            foreach ($this->aHistory['children'] as $iChildStatus => &$aChild) {
-                if ($iChildStatus > 0) {
-                    $this->aHistory['children'][$iChildStatus]['children'] = $this->getStatusChildren($aChild['id_project_status_history']);
-                }
-            }
+                if (false === empty($baseStatus)) {
+                    $this->history        = [
+                        'label'    => $baseStatus[0]['label'],
+                        'count'    => count($baseStatus),
+                        'status'   => $projectStatus->status,
+                        'children' => $this->getStatusChildren(array_column($baseStatus, 'id_project_status_history'))
+                    ];
 
-            if (isset($this->params[2]) && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[2], $aMatches)) {
-                $this->oSecondRangeStart = new \DateTime($aMatches[1]);
-                $this->oSecondRangeEnd   = new \DateTime($aMatches[2]);
-                $aBaseStatus             = $oProjectStatusHistory->getStatusByDates($this->iBaseStatus, $this->oSecondRangeStart, $this->oSecondRangeEnd);
-                $this->aCompareHistory   = array(
-                    'label'    => $aBaseStatus[0]['label'],
-                    'count'    => count($aBaseStatus),
-                    'status'   => $oProjectStatus->status,
-                    'children' => $this->getStatusChildren(array_column($aBaseStatus, 'id_project_status_history'))
-                );
+                    foreach ($this->history['children'] as $childStatus => &$child) {
+                        if ($childStatus > 0) {
+                            $this->history['children'][$childStatus]['children'] = $this->getStatusChildren($child['id_project_status_history']);
+                        }
+                    }
 
-                foreach ($this->aCompareHistory['children'] as $iChildStatus => &$aChild) {
-                    if ($iChildStatus > 0) {
-                        $this->aCompareHistory['children'][$iChildStatus]['children'] = $this->getStatusChildren($aChild['id_project_status_history']);
+                    if (isset($this->params[2]) && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[2], $matches)) {
+                        $this->secondRangeStart = new \DateTime($matches[1]);
+                        $this->secondRangeEnd   = new \DateTime($matches[2]);
+
+                        if (
+                            $this->secondRangeStart->getTimestamp() <= $today->getTimestamp()
+                            && $this->secondRangeEnd->getTimestamp() <= $today->getTimestamp()
+                            && $this->secondRangeStart->getTimestamp() <= $this->secondRangeEnd->getTimestamp()
+                        ) {
+                            $baseStatus = $projectStatusHistory->getStatusByDates($this->baseStatus, $this->secondRangeStart, $this->secondRangeEnd);
+
+                            if (false === empty($baseStatus)) {
+                                $this->compareHistory   = [
+                                    'label'    => $baseStatus[0]['label'],
+                                    'count'    => count($baseStatus),
+                                    'status'   => $projectStatus->status,
+                                    'children' => $this->getStatusChildren(array_column($baseStatus, 'id_project_status_history'))
+                                ];
+
+                                foreach ($this->compareHistory['children'] as $childStatus => &$child) {
+                                    if ($childStatus > 0) {
+                                        $this->compareHistory['children'][$childStatus]['children'] = $this->getStatusChildren($child['id_project_status_history']);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    private function getStatusChildren(array $aStatusHistory)
+    /**
+     * @param array $statusHistory
+     *
+     * @return array
+     */
+    private function getStatusChildren(array $statusHistory)
     {
-        /** @var \projects_status_history $oProjectStatusHistory */
-        $oProjectStatusHistory = $this->loadData('projects_status_history');
-        $aChildrenStatus       = $oProjectStatusHistory->getFollowingStatus($aStatusHistory);
-        $aStatus               = array();
+        /** @var \projects_status_history $projectStatusHistory */
+        $projectStatusHistory = $this->loadData('projects_status_history');
+        $childrenStatus       = $projectStatusHistory->getFollowingStatus($statusHistory);
+        $status               = array();
 
-        array_map(function ($aElement) use (&$aStatus) {
-            if (false === isset($aStatus[$aElement['status']])) {
-                $aStatus[$aElement['status']] = array(
+        array_map(function ($aElement) use (&$status) {
+            if (false === isset($status[$aElement['status']])) {
+                $status[$aElement['status']] = array(
                     'count'                     => 1,
                     'label'                     => $aElement['label'],
                     'max_date'                  => $aElement['added'],
@@ -2908,27 +2934,27 @@ class dossiersController extends bootstrap
                     'id_project_status_history' => array($aElement['id_project_status_history'])
                 );
             } else {
-                $aStatus[$aElement['status']]['count']++;
-                $aStatus[$aElement['status']]['total_days'] += $aElement['diff_days'];
-                $aStatus[$aElement['status']]['id_project_status_history'][] = $aElement['id_project_status_history'];
+                $status[$aElement['status']]['count']++;
+                $status[$aElement['status']]['total_days'] += $aElement['diff_days'];
+                $status[$aElement['status']]['id_project_status_history'][] = $aElement['id_project_status_history'];
 
-                if ($aElement['added'] > $aStatus[$aElement['status']]['max_date']) {
-                    $aStatus[$aElement['status']]['max_date'] = $aElement['added'];
+                if ($aElement['added'] > $status[$aElement['status']]['max_date']) {
+                    $status[$aElement['status']]['max_date'] = $aElement['added'];
                 }
             }
-        }, $aChildrenStatus);
+        }, $childrenStatus);
 
-        uasort($aStatus, function($aFirstElement, $aSecondElement) {
+        uasort($status, function($aFirstElement, $aSecondElement) {
             if ($aFirstElement['count'] === $aSecondElement['count']) {
                 return 0;
             }
             return $aFirstElement['count'] > $aSecondElement['count'] ? -1 : 1;
         });
 
-        return array_map(function ($aStatus) {
-            $aStatus['avg_days'] = round($aStatus['total_days'] / $aStatus['count'], 1);
-            return $aStatus;
-        }, $aStatus);
+        return array_map(function ($status) {
+            $status['avg_days'] = round($status['total_days'] / $status['count'], 1);
+            return $status;
+        }, $status);
     }
 
     public function _autocompleteCompanyName()

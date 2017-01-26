@@ -106,8 +106,6 @@ class UniversignController extends Controller
         $mandate = $entityManager->getRepository('clients_mandats');
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
 
