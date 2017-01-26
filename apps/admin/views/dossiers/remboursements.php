@@ -9,8 +9,9 @@
         });
 
         $(".tablesorter").tablesorter({headers: {10: {sorter: false}}});
-        <?php if ($this->nb_lignes != ''): ?>
-        $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
+
+        <?php if ($this->nb_lignes != '') : ?>
+            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
 
         $("#Reset").click(function() {
@@ -22,14 +23,15 @@
             $("#projet").val('');
         });
 
-        <?php if (isset($_SESSION['freeow'])): ?>
-        var title = "<?= $_SESSION['freeow']['title'] ?>",
-            message = "<?= $_SESSION['freeow']['message'] ?>",
-            opts = {},
-            container;
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-        <?php unset($_SESSION['freeow']); ?>
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
         <?php endif; ?>
     });
 </script>
@@ -39,13 +41,9 @@
 </style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/dossiers" title="Dossiers">Dossiers</a> -</li>
-        <li><?= $this->pageTitle ?></li>
-    </ul>
-    <?php if (isset($_POST['form_search_remb'])): ?>
+    <?php if (isset($_POST['form_search_remb'])) : ?>
         <h1>Résultats de la recherche des <?= $this->pageTitle ?> <?= (count($this->lProjects) > 0 ? '(' . count($this->lProjects) . ')' : '') ?></h1>
-    <?php else: ?>
+    <?php else : ?>
         <h1>Liste des <?= count($this->lProjects) ?> derniers <?= $this->pageTitle ?></h1>
     <?php endif; ?>
     <div style="width:673px; background-color:white; border:1px solid #A1A5A7; border-radius:10px; margin:0 auto 20px; padding:5px;">
@@ -81,57 +79,55 @@
             </fieldset>
         </form>
     </div>
-    <?php if (count($this->lProjects) > 0): ?>
+    <?php if (count($this->lProjects) > 0) : ?>
         <table class="tablesorter">
             <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Email</th>
-                <th>Société</th>
-                <th>Projet</th>
-                <th>Statut projet</th>
-                <th>Montant</th>
-                <th>Date</th>
-                <th>Auto</th>
-                <th>&nbsp;</th>
-            </tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Société</th>
+                    <th>Projet</th>
+                    <th>Statut projet</th>
+                    <th>Montant</th>
+                    <th>Date</th>
+                    <th>Auto</th>
+                    <th>&nbsp;</th>
+                </tr>
             </thead>
             <tbody>
-            <?php foreach ($this->lProjects as $iIndex => $aProject): ?>
-                <?php
-
-                $datePremiereEcheance = $this->echeanciers->getDatePremiereEcheance($aProject['id_project']);
-                $prochainRemb         = $this->echeanciers_emprunteur->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0', 'ordre ASC');
-
-                ?>
-                <tr<?= ($iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>"><?= $aProject['id_project'] ?></a></td>
-                    <td><?= $aProject['nom'] ?></td>
-                    <td><?= $aProject['prenom'] ?></td>
-                    <td><?= $aProject['email'] ?></td>
-                    <td><?= $aProject['company'] ?></td>
-                    <td><?= $aProject['title_bo'] ?></td>
-                    <td><?= $aProject['status_label'] ?></td>
-                    <?php if (false === empty($prochainRemb[0])): ?>
-                        <td class="right" style="white-space:nowrap;"><?= $this->ficelle->formatNumber(($prochainRemb[0]['montant'] + $prochainRemb[0]['commission'] + $prochainRemb[0]['tva']) / 100) ?> €</td>
-                        <td><?= $this->dates->formatDate($prochainRemb[0]['date_echeance_emprunteur'], 'd/m/Y') ?></td>
-                    <?php else: ?>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    <?php endif; ?>
-                    <td><?= ($aProject['remb_auto'] == 1 ? 'Non' : 'Oui') ?></td>
-                    <td class="center">
-                        <a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $aProject['id_project'] ?>">
-                            <img src="<?= $this->surl ?>/images/admin/modif.png" alt="detail"/>
-                        </a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
+                <?php foreach ($this->lProjects as $iIndex => $aProject) : ?>
+                    <?php
+                        $datePremiereEcheance = $this->echeanciers->getDatePremiereEcheance($aProject['id_project']);
+                        $prochainRemb         = $this->echeanciers_emprunteur->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0', 'ordre ASC');
+                    ?>
+                    <tr<?= ($iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
+                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>"><?= $aProject['id_project'] ?></a></td>
+                        <td><?= $aProject['nom'] ?></td>
+                        <td><?= $aProject['prenom'] ?></td>
+                        <td><?= $aProject['email'] ?></td>
+                        <td><?= $aProject['company'] ?></td>
+                        <td><?= $aProject['title_bo'] ?></td>
+                        <td><?= $aProject['status_label'] ?></td>
+                        <?php if (false === empty($prochainRemb[0])) : ?>
+                            <td class="right" style="white-space:nowrap;"><?= $this->ficelle->formatNumber(($prochainRemb[0]['montant'] + $prochainRemb[0]['commission'] + $prochainRemb[0]['tva']) / 100) ?> €</td>
+                            <td><?= $this->dates->formatDate($prochainRemb[0]['date_echeance_emprunteur'], 'd/m/Y') ?></td>
+                        <?php else : ?>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        <?php endif; ?>
+                        <td><?= ($aProject['remb_auto'] == 1 ? 'Non' : 'Oui') ?></td>
+                        <td class="center">
+                            <a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $aProject['id_project'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="detail"/>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != ''): ?>
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">

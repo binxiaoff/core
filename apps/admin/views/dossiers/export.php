@@ -27,7 +27,7 @@
 "Capital restant dû à date";"<?= $this->fCompanyOwedCapital ?>"
 ""
 "Bilans"
-"Actif";<?php foreach ($this->aAnnualAccounts as $aAnnualAccounts): ?>"<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>";"<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>";<?php endforeach; ?>
+"Actif";<?php foreach ($this->aAnnualAccounts as $aAnnualAccounts) : ?>"<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>";"<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>";<?php endforeach; ?>
 
 "Capital souscrit non appelé";"AA";<?php
     $iColumn = 0;

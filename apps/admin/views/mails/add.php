@@ -1,9 +1,4 @@
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/settings" title="Configuration">Configuration</a> -</li>
-        <li><a href="<?= $this->lurl ?>/mails" title="Mails">Mails</a> -</li>
-        <li>Ajouter un email</li>
-    </ul>
     <form method="post" name="add_mail" id="add_mail" enctype="multipart/form-data">
         <input type="hidden" name="lng_encours" id="lng_encours" value="<?= $this->language ?>"/>
         <fieldset>

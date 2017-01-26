@@ -12,7 +12,7 @@
 
         $("#date").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -45,11 +45,6 @@
 
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/emprunteurs" title="Emprunteurs">Emprunteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/dossiers" title="Gestion des dossiers">Gestion des dossiers</a> -</li>
-        <li>Création Dossier</li>
-    </ul>
     <h1>Création Dossier</h1>
     <?php if (isset($this->params['0']) && $this->params['0'] == 'create') : ?>
         <form action="<?= $this->lurl ?>/dossiers/add" method="post" onsubmit="$('#link_search').trigger('click'); return false;">

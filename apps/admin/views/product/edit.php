@@ -1,9 +1,4 @@
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?=$this->lurl?>/emprunteurs" title="Emprunteur">Emprunteur</a> -</li>
-        <li><a href="<?=$this->lurl?>/product" title="Gestion des produits">Gestion des produits</a> -</li>
-        <li>Consultation d'un produit</li>
-    </ul>
     <h1>Consulter des produits</h1>
     <table class="form">
         <tr>
@@ -35,7 +30,7 @@
             <th>Contrat(s) sous-jacent : </th>
             <td>
                 <ul>
-                    <?php foreach ($this->contracts as $contract): ?>
+                    <?php foreach ($this->contracts as $contract) : ?>
                     <li>
                         <a href="/product/contract_details/<?= $contract['id_contract'] ?>" title="<?= $this->translator->trans('contract-type-label_' . $contract['label']) ?>">
                             <?= $this->translator->trans('contract-type-label_' . $contract['label']) ?>
@@ -58,9 +53,9 @@
             <td>
                 <?php if (empty($this->borrowerMotives)) : ?>
                     pas de contrôle
-                <?php else: ?>
+                <?php else : ?>
                     <ul>
-                        <?php foreach ($this->borrowerMotives as $motive): ?>
+                        <?php foreach ($this->borrowerMotives as $motive) : ?>
                             <li><?= $motive ?></li>
                         <?php endforeach; ?>
                     </ul>
@@ -81,8 +76,8 @@
             <td>
                 <?php if (empty($this->nafcodes)) : ?>
                     pas de contrôle
-                <?php else: ?>
-                    <?php foreach ($this->nafcodes as $code): ?>
+                <?php else : ?>
+                    <?php foreach ($this->nafcodes as $code) : ?>
                         <?= $code ?>
                     <?php endforeach; ?>
                 <? endif ?>

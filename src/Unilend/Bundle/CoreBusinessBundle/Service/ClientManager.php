@@ -25,9 +25,9 @@ class ClientManager
     const SESSION_KEY_TOS_ACCEPTED = 'user_legal_doc_accepted';
 
     /** @var EntityManagerSimulator */
-    private $oEntityManager;
+    private $entityManager;
     /** @var ClientSettingsManager */
-    private $oClientSettingsManager;
+    private $clientSettingsManager;
     /** @var TokenStorageInterface */
     private $tokenStorage;
     /** @var RequestStack */
@@ -44,8 +44,8 @@ class ClientManager
     /**
      * ClientManager constructor.
      *
-     * @param EntityManagerSimulator $oEntityManager
-     * @param ClientSettingsManager  $oClientSettingsManager
+     * @param EntityManagerSimulator $entityManager
+     * @param ClientSettingsManager  $clientSettingsManager
      * @param TokenStorageInterface  $tokenStorage
      * @param RequestStack           $requestStack
      * @param WalletCreationManager  $walletCreationManager
@@ -54,8 +54,8 @@ class ClientManager
      * @param RouterInterface        $router
      */
     public function __construct(
-        EntityManagerSimulator $oEntityManager,
-        ClientSettingsManager $oClientSettingsManager,
+        EntityManagerSimulator $entityManager,
+        ClientSettingsManager $clientSettingsManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
         WalletCreationManager $walletCreationManager,
@@ -63,8 +63,8 @@ class ClientManager
         LoggerInterface $logger,
         RouterInterface $router
     ) {
-        $this->oEntityManager         = $oEntityManager;
-        $this->oClientSettingsManager = $oClientSettingsManager;
+        $this->entityManager          = $entityManager;
+        $this->clientSettingsManager  = $clientSettingsManager;
         $this->tokenStorage           = $tokenStorage;
         $this->requestStack           = $requestStack;
         $this->walletCreationManager  = $walletCreationManager;
@@ -79,22 +79,22 @@ class ClientManager
      *
      * @return bool
      */
-    public function isBetaTester(\clients $oClient)
+    public function isBetaTester(\clients $client)
     {
-        return (bool) $this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_BETA_TESTER);
+        return (bool) $this->clientSettingsManager->getSetting($client, \client_setting_type::TYPE_BETA_TESTER);
     }
 
     /**
-     * @param \clients $oClient
-     * @param          $iLegalDocId
+     * @param \clients $client
+     * @param          $legalDocId
      *
      * @return bool
      */
-    public function isAcceptedCGV(\clients $oClient, $iLegalDocId)
+    public function isAcceptedCGV(\clients $client, $legalDocId)
     {
         /** @var \acceptations_legal_docs $oAcceptationLegalDocs */
-        $oAcceptationLegalDocs = $this->oEntityManager->getRepository('acceptations_legal_docs');
-        return $oAcceptationLegalDocs->exist($oClient->id_client, 'id_legal_doc = ' . $iLegalDocId . ' AND id_client ');
+        $oAcceptationLegalDocs = $this->entityManager->getRepository('acceptations_legal_docs');
+        return $oAcceptationLegalDocs->exist($client->id_client, 'id_legal_doc = ' . $legalDocId . ' AND id_client ');
     }
 
     /**
@@ -116,7 +116,7 @@ class ClientManager
 
             if ($user instanceof UserLender) {
                 /** @var \clients $client */
-                $client = $this->oEntityManager->getRepository('clients');
+                $client = $this->entityManager->getRepository('clients');
 
                 if ($client->get($user->getClientId()) && false === $user->hasAcceptedCurrentTerms()) {
                     $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
@@ -170,89 +170,117 @@ class ClientManager
     }
 
     /**
-     * @param \clients | Clients $oClient
+     * @param \clients | Clients $client
      *
      * @return bool
      */
-    public function isLender($oClient)
+    public function isLender($client)
     {
-        if ($oClient instanceof Clients) {
-            $lenderWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($oClient->getIdClient(), WalletType::LENDER);
+        if ($client instanceof Clients) {
+            $lenderWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->getIdClient(), WalletType::LENDER);
             return null !== $lenderWallet;
         }
 
-        if ($oClient instanceof \clients) {
-            if (empty($oClient->id_client)) {
+        if ($client instanceof \clients) {
+            if (empty($client->id_client)) {
                 return false;
             }
-            return $oClient->isLender();
+            return $client->isLender();
         }
 
         return false;
     }
 
     /**
-     * @param \clients | Clients $oClient
+     * @param \clients | Clients $client
      *
      * @return bool
      */
-    public function isBorrower($oClient)
+    public function isBorrower($client)
     {
-        if ($oClient instanceof Clients) {
-            $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($oClient->getIdClient(), WalletType::BORROWER);
+        if ($client instanceof Clients) {
+            $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->getIdClient(), WalletType::BORROWER);
             return null !== $borrowerWallet;
         }
 
-        if ($oClient instanceof \clients) {
-            if (empty($oClient->id_client)) {
+        if ($client instanceof \clients) {
+            if (empty($client->id_client)) {
                 return false;
             }
-            return $oClient->isBorrower();
+            return $client->isBorrower();
         }
 
         return false;
     }
 
-    public function getClientBalance(\clients $oClient)
+    /**
+     * @param \clients $client
+     *
+     * @return float|int|mixed
+     */
+    public function getClientBalance(\clients $client)
     {
         /** @var \transactions $transactions */
-        $transactions = $this->oEntityManager->getRepository('transactions');
-        $balance      = $transactions->getSolde($oClient->id_client);
+        $transactions = $this->entityManager->getRepository('transactions');
+        $balance      = $transactions->getSolde($client->id_client);
+
         return $balance;
     }
 
-    public function getClientInitials(\clients $oClient)
+    /**
+     * @param \clients $client
+     *
+     * @return string
+     */
+    public function getClientInitials(\clients $client)
     {
-        $initials = substr($oClient->prenom, 0, 1) . substr($oClient->nom, 0, 1);
+        $initials = substr($client->prenom, 0, 1) . substr($client->nom, 0, 1);
         //TODO decide which initials to use in case of company
 
         return $initials;
     }
 
-    public function isActive(\clients $oClient)
+    /**
+     * @param \clients $client
+     *
+     * @return bool
+     */
+    public function isActive(\clients $client)
     {
-        return (bool) $oClient->status;
-    }
-
-    public function hasAcceptedCurrentTerms(\clients $oClient)
-    {
-        return $this->isAcceptedCGV($oClient, $this->getLastTosId($oClient));
-    }
-
-    public function getClientSubscriptionStep(\clients $oClient)
-    {
-        return $oClient->etape_inscription_preteur;
+        return (bool) $client->status;
     }
 
     /**
      * @param \clients $client
+     *
+     * @return bool
+     */
+    public function hasAcceptedCurrentTerms(\clients $client)
+    {
+        return $this->isAcceptedCGV($client, $this->getLastTosId($client));
+    }
+
+    /**
+     * @param \clients $client
+     *
+     * @return mixed
+     */
+    public function getClientSubscriptionStep(\clients $client)
+    {
+        return $client->etape_inscription_preteur;
+    }
+
+    /**
+     * @param \clients $client
+     *
      * @return bool
      */
     public function isValidated(\clients $client)
     {
         /** @var \clients_status $lastClientStatus */
-        $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
+        $lastClientStatus = $this->entityManager->getRepository('clients_status');
         $lastClientStatus->getLastStatut($client->id_client);
+
         return $lastClientStatus->status == \clients_status::VALIDATED;
     }
 

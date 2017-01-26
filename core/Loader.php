@@ -229,15 +229,4 @@ class Loader
             return new $sClassName($aParams);
         }
     }
-
-    /**
-     * @deprecated It will be removed with the project new infrastructure.
-     * @return array
-     */
-    public static function loadConfig()
-    {
-        /* @var array $config */
-        include __DIR__ . '/../config.php';
-        return $config;
-    }
 }

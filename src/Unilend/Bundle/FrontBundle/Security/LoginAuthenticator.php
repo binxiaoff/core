@@ -26,6 +26,7 @@ use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterfa
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
@@ -46,6 +47,15 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     /** @var Logger */
     private $logger;
 
+    /**
+     * LoginAuthenticator constructor.
+     * @param UserPasswordEncoder                    $securityPasswordEncoder
+     * @param RouterInterface                        $router
+     * @param EntityManager                          $entityManager
+     * @param SessionAuthenticationStrategyInterface $sessionStrategy
+     * @param CsrfTokenManagerInterface              $csrfTokenManager
+     * @param Logger                                 $logger
+     */
     public function __construct(
         UserPasswordEncoder $securityPasswordEncoder,
         RouterInterface $router,
@@ -63,11 +73,18 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->logger                  = $logger;
     }
 
+    /**
+     * @param Request       $request
+     * @param UserInterface $user
+     *
+     * @return mixed|string
+     */
     protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
     {
         $targetPath = $request->get('_target_path');
 
         if ($targetPath) {
+            $targetPath = $this->removeHost($targetPath);
             return $targetPath;
         }
 
@@ -179,27 +196,22 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $client->update();
         }
 
+        $this->saveLogin($client);
         $this->sessionStrategy->onAuthentication($request, $token);
 
-        if (in_array('ROLE_LENDER', $user->getRoles()) && $client->etape_inscription_preteur < 3) {
-            $response = new RedirectResponse($this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]));
-        } elseif (in_array('ROLE_LENDER', $user->getRoles()) && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
-            $response = new RedirectResponse($this->router->generate('lender_completeness'));
-        } else {
-            $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
-
-            if (! $targetPath) {
-                $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
-            }
-
-            $client->saveLogin(new \DateTime('NOW'));
-
-            /** @var \clients_history $clientHistory */
-            $clientHistory = $this->entityManager->getRepository('clients_history');
-            $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
-
-            $response = new RedirectResponse($targetPath);
+        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+        if (! $targetPath) {
+            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
         }
+
+        if (
+            $user instanceof UserLender
+            && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])
+        ) {
+            $targetPath = $this->router->generate('lender_completeness');
+        }
+
+        $response = new RedirectResponse($targetPath);
 
         $cookie = new Cookie(self::COOKIE_NO_CF, 1);
         $response->headers->setCookie($cookie);
@@ -262,12 +274,50 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         return new RedirectResponse($this->getLoginUrl());
     }
 
-    private function checkCaptcha($credentials)
+    /**
+     * @param array $credentials
+     *
+     * @return bool
+     */
+    private function checkCaptcha(array $credentials)
     {
         if (isset($credentials['captchaInformation']['captchaCode']) && isset($credentials['captcha'])) {
             return $credentials['captchaInformation']['captchaCode'] == strtolower($credentials['captcha']);
         }
 
         return true;
+    }
+
+    /**
+     * @param \clients $client
+     */
+    private function saveLogin(\clients $client)
+    {
+        $client->saveLogin(new \DateTime('NOW'));
+
+        /** @var \clients_history $clientHistory */
+        $clientHistory = $this->entityManager->getRepository('clients_history');
+        $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
+    }
+
+    /**
+     * Remove the host part from URL to avoid the external redirection
+     * @param $target
+     *
+     * @return string
+     */
+    private function removeHost($target)
+    {
+        // handle protocol-relative URLs that parse_url() doesn't like
+        if (substr($target, 0, 2) === '//') {
+            $target = 'proto:' . $target;
+        }
+
+        $parsedUrl = parse_url($target);
+        $path      = isset($parsedUrl['path']) ? $parsedUrl['path'] : '/';
+        $query     = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
+        $fragment  = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
+
+        return $path . $query . $fragment;
     }
 }

@@ -40,13 +40,13 @@
 
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 
-        <?php if ($this->nb_lignes != ''): ?>
+        <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
 
         $(".inline").colorbox({inline: true, width: "50%"});
 
-        <?php if (isset($_SESSION['freeow'])): ?>
+        <?php if (isset($_SESSION['freeow'])) : ?>
             var title = "<?= $_SESSION['freeow']['title'] ?>",
                 message = "<?= $_SESSION['freeow']['message'] ?>",
                 opts = {},
@@ -59,10 +59,6 @@
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/transferts">Dépot de fonds</a> -</li>
-        <li>Opérations emprunteurs</li>
-    </ul>
     <h1>Opérations emprunteurs</h1>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn_link">Export CSV</a>
@@ -115,7 +111,7 @@
             <?php endforeach; ?>
         </tbody>
     </table>
-    <?php if ($this->nb_lignes != ''): ?>
+    <?php if ($this->nb_lignes != '') : ?>
         <table>
             <tr>
                 <td id="pager">

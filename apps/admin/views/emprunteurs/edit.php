@@ -36,19 +36,11 @@
 </style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/emprunteurs" title="Emprunteurs">Emprunteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/emprunteurs/gestion" title="Gestion emprunteurs">Gestion emprunteurs</a> -</li>
-        <li>Detail emprunteur</li>
-    </ul>
-
     <h1>Detail emprunteur : <?= $this->clients->nom . ' ' . $this->clients->prenom ?></h1>
-
     <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>
         <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
         <?php unset($_SESSION['error_email_exist']); ?>
     <?php endif; ?>
-
     <form method="post" name="edit_emprunteur" id="edit_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>" target="_parent">
         <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
@@ -110,7 +102,7 @@
             <tr>
                 <th></th>
                 <td><input style="font-size: 11px; height: 25px;" type="button" id="initialiser_espace_emprunteur" name="initialiser_espace_emprunteur" value="Reinitialiser Espace Emprunteur" class="btn" onclick="send_email_borrower_area('<?= $this->clients->id_client ?>', 'initialize')"/></td>
-                <?php if (empty($this->clients->secrete_question) && empty($this->clients->secrete_reponse)): ?>
+                <?php if (empty($this->clients->secrete_question) && empty($this->clients->secrete_reponse)) : ?>
                     <td colspan="2"><input style="font-size: 11px; height: 25px;" type="button" id="ouvrir_espace_emprunteur" name="ouvrir_espace_emprunteur" value="Envoyer Email Ouverture Espace Emprunteur" class="btn" onclick="send_email_borrower_area('<?= $this->clients->id_client ?>', 'open')"/></td>
                 <?php endif ?>
                <td><span style="margin-left:5px;color:green; display:none;" class="reponse_email" >Email Envoyé</span></td>
