@@ -231,6 +231,11 @@ class ProductManager
         return $autobidContracts;
     }
 
+    /**
+     * @param \product $product
+     *
+     * @return bool
+     */
     public function isProductUsable(\product $product)
     {
         return in_array($product->status, [\product::STATUS_ONLINE, \product::STATUS_OFFLINE]);
