@@ -841,7 +841,7 @@ class pdfController extends bootstrap
         $this->taxes                = $aInvoices[0]['tva'] / 100;
         $this->ttc                  = $aInvoices[0]['montant_ttc'] / 100;
         $this->date_echeance_reel   = $aInvoices[0]['date'];
-        $this->commissionPercentage = round($aInvoices[0]['montant_ht'] / $this->projects->amount, 2);
+        $this->commissionPercentage = $aInvoices[0]['commission'];
 
         $this->setDisplay('facture_EF_html');
         $sDisplayInvoice = $this->sDisplay;
