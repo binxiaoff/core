@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Debug\Exception\FlattenException;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,6 +31,15 @@ class ExceptionController extends Controller
 
     public function showAction(Request $request, FlattenException $exception, DebugLoggerInterface $logger = null)
     {
+        if ($logger instanceof LoggerInterface) {
+            try {
+                $dbHost = $this->get('database_connection')->fetchColumn('Select @@hostname');
+                $logger->info('Current database host is ' . $dbHost);
+            } catch (\Exception $exception) {
+                $logger->error('Exception occurs when getting the database host name. Error message : ' . $exception->getMessage());
+            }
+        }
+
         $seoPage = $this->container->get('sonata.seo.page');
         $seoPage->addMeta('name', 'robots', 'noindex');
 

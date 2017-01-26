@@ -23,7 +23,6 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -41,8 +40,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $router;
     /** @var EntityManager */
     private $entityManager;
-    /** @var NotificationManager */
-    private $notificationManager;
     /** @var SessionAuthenticationStrategyInterface */
     private $sessionStrategy;
     /** @var CsrfTokenManagerInterface */
@@ -55,7 +52,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param UserPasswordEncoder                    $securityPasswordEncoder
      * @param RouterInterface                        $router
      * @param EntityManager                          $entityManager
-     * @param NotificationManager                    $notificationManager
      * @param SessionAuthenticationStrategyInterface $sessionStrategy
      * @param CsrfTokenManagerInterface              $csrfTokenManager
      * @param Logger                                 $logger
@@ -64,15 +60,14 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         UserPasswordEncoder $securityPasswordEncoder,
         RouterInterface $router,
         EntityManager $entityManager,
-        NotificationManager $notificationManager,
         SessionAuthenticationStrategyInterface $sessionStrategy,
         CsrfTokenManagerInterface $csrfTokenManager,
         Logger $logger
-    ) {
+    )
+    {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
-        $this->notificationManager     = $notificationManager;
         $this->sessionStrategy         = $sessionStrategy;
         $this->csrfTokenManager        = $csrfTokenManager;
         $this->logger                  = $logger;
@@ -89,6 +84,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $targetPath = $request->get('_target_path');
 
         if ($targetPath) {
+            $targetPath = $this->removeHost($targetPath);
             return $targetPath;
         }
 
@@ -194,7 +190,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $user->useDefaultEncoder(); // force to use the default password encoder
             try {
                 $client->password = $this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']);
-            } catch (BadCredentialsException $exeption){
+            } catch (BadCredentialsException $exeption) {
 
             }
             $client->update();
@@ -202,13 +198,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         $this->saveLogin($client);
         $this->sessionStrategy->onAuthentication($request, $token);
-
-        /** @var \clients_gestion_notifications $clientNotificationSettings */
-        $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
-        if (false === $clientNotificationSettings->select('id_client = ' . $client->id_client)) {
-            $this->notificationManager->generateDefaultNotificationSettings($client);
-        }
-
 
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
         if (! $targetPath) {
@@ -309,5 +298,26 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         /** @var \clients_history $clientHistory */
         $clientHistory = $this->entityManager->getRepository('clients_history');
         $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
+    }
+
+    /**
+     * Remove the host part from URL to avoid the external redirection
+     * @param $target
+     *
+     * @return string
+     */
+    private function removeHost($target)
+    {
+        // handle protocol-relative URLs that parse_url() doesn't like
+        if (substr($target, 0, 2) === '//') {
+            $target = 'proto:' . $target;
+        }
+
+        $parsedUrl = parse_url($target);
+        $path      = isset($parsedUrl['path']) ? $parsedUrl['path'] : '/';
+        $query     = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
+        $fragment  = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
+
+        return $path . $query . $fragment;
     }
 }

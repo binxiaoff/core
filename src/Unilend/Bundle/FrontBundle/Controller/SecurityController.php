@@ -12,6 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
@@ -33,16 +34,15 @@ class SecurityController extends Controller
         $authenticationUtils = $this->get('security.authentication_utils');
         $error               = $authenticationUtils->getLastAuthenticationError();
         $lastUsername        = $authenticationUtils->getLastUsername();
-
-        $pageData = [
-            'last_username'  => $lastUsername,
-            'error'          => $error
+        $pageData            = [
+            'last_username'      => $lastUsername,
+            'error'              => $error,
+            'captchaInformation' => $request->getSession()->get('captchaInformation', [])
         ];
 
-        $pageData['captchaInformation'] = $request->getSession()->get('captchaInformation', []);
         $request->getSession()->remove('captchaInformation');
 
-        return $this->render('pages/login.html.twig',$pageData);
+        return $this->render('pages/login.html.twig', $pageData);
     }
 
     /**
@@ -112,32 +112,33 @@ class SecurityController extends Controller
      */
     public function passwordForgottenAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
+            $entityManager = $this->get('unilend.service.entity_manager');
             /** @var \clients $clients */
-            $clients = $this->get('unilend.service.entity_manager')->getRepository('clients');
-            /** @var \settings $settings */
-            $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+            $clients = $entityManager->getRepository('clients');
+            $email   = $request->request->get('client_email');
 
-            $post = $request->request->all();
-
-            if (
-                isset($post['client_email'])
-                && filter_var($post['client_email'], FILTER_VALIDATE_EMAIL)
-                && $clients->get($post['client_email'], 'email')
-            ) {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) && $clients->get($email, 'status = ' . \clients::STATUS_ONLINE . ' AND email')) {
+                /** @var \settings $settings */
+                $settings = $entityManager->getRepository('settings');
                 $settings->get('Facebook', 'type');
-                $lien_fb = $settings->value;
+                $facebookLink = $settings->value;
+
                 $settings->get('Twitter', 'type');
-                $lien_tw = $settings->value;
+                $twitterLink = $settings->value;
+
+                /** @var \temporary_links_login $temporaryLink */
+                $temporaryLink = $entityManager->getRepository('temporary_links_login');
+                $token         = $temporaryLink->generateTemporaryLink($clients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
 
                 $varMail = [
-                    'surl'          => $this->get('assets.packages')->getUrl(''),
-                    'url'           => $this->get('assets.packages')->getUrl(''),
+                    'surl'          => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+                    'url'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
                     'prenom'        => $clients->prenom,
                     'login'         => $clients->email,
-                    'link_password' => $this->generateUrl('define_new_password', ['clientHash' => $clients->hash], UrlGeneratorInterface::ABSOLUTE_URL),
-                    'lien_fb'       => $lien_fb,
-                    'lien_tw'       => $lien_tw
+                    'link_password' => $this->generateUrl('define_new_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+                    'lien_fb'       => $facebookLink,
+                    'lien_tw'       => $twitterLink
                 ];
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -156,75 +157,107 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/{clientHash}", name="define_new_password", requirements={"clientHash": "[0-9a-f-]{32,36}"})
+     * @Route("/nouveau-mot-de-passe/{token}", name="define_new_password", requirements={"token": "[a-z0-9]{32}"})
      *
-     * @param string $clientHash
+     * @param string $token
      * @return Response
      */
-    public function defineNewPasswordAction($clientHash)
+    public function defineNewPasswordAction($token)
     {
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($clientHash, 'hash');
+        $entityManager = $this->get('unilend.service.entity_manager');
 
-        return $this->render('pages/password_forgotten.html.twig', ['clientHash' => $client->hash, 'secretQuestion' => $client->secrete_question]);
+        if ($this->get('session')->getFlashBag()->has('passwordSuccess')) {
+            return $this->render('pages/password_forgotten.html.twig', ['token' => $token]);
+        }
+
+        /** @var \temporary_links_login $temporaryLink */
+        $temporaryLink = $entityManager->getRepository('temporary_links_login');
+
+        if (false === $temporaryLink->get($token, 'expires > NOW() AND token')) {
+            $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
+            return $this->render('pages/password_forgotten.html.twig', ['token' => $token]);
+        }
+
+        $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
+        $temporaryLink->update();
+
+        /** @var \clients $client */
+        $client = $entityManager->getRepository('clients');
+        $client->get($temporaryLink->id_client, 'id_client');
+
+        return $this->render('pages/password_forgotten.html.twig', ['token' => $token, 'secretQuestion' => $client->secrete_question]);
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/submit/{clientHash}", name="save_new_password", requirements={"clientHash": "[0-9a-f-]{32,36}"})
+     * @Route("/nouveau-mot-de-passe/submit/{token}", name="save_new_password", requirements={"token": "[a-z0-9]{32}"})
      * @Method("POST")
      *
-     * @param string  $clientHash
+     * @param string  $token
      * @param Request $request
      * @return Response
      */
-    public function changePasswordFormAction($clientHash, Request $request)
+    public function changePasswordFormAction($token, Request $request)
     {
+        $entityManager = $this->get('unilend.service.entity_manager');
+
+        /** @var \temporary_links_login $temporaryLink */
+        $temporaryLink = $entityManager->getRepository('temporary_links_login');
+
+        if (false === $temporaryLink->get($token, 'expires > NOW() AND token')) {
+            $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
+            return $this->redirectToRoute('define_new_password', ['token' => $token]);
+        }
+
+        $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
+        $temporaryLink->update();
+
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($clientHash, 'hash');
+        $client = $entityManager->getRepository('clients');
+        $client->get($temporaryLink->id_client, 'id_client');
+
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
-        /** @var UserPasswordEncoder $securityPasswordEncoder */
-        $securityPasswordEncoder = $this->get('security.password_encoder');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
 
-        $post = $request->request->all();
-
-        if (empty($post['client_new_password'])) {
+        if (empty($request->request->get('client_new_password'))) {
             $this->addFlash('passwordErrors', $translator->trans('common-validator_missing-new-password'));
         }
-        if (empty($post['client_new_password_confirmation'])) {
+        if (empty($request->request->get('client_new_password_confirmation'))) {
             $this->addFlash('passwordErrors', $translator->trans('common-validator_missing-new-password-confirmation'));
         }
-        if (empty($post['client_secret_answer']) || md5($post['client_secret_answer']) !== $client->secrete_reponse) {
+        if (empty($request->request->get('client_secret_answer')) || md5($request->request->get('client_secret_answer')) !== $client->secrete_reponse) {
             $this->addFlash('passwordErrors', $translator->trans('common-validator_secret-answer-invalid'));
         }
 
-        if (false === empty($post['client_new_password']) && false === empty($post['client_new_password_confirmation']) && false === empty($post['client_secret_answer'])) {
-            if ($post['client_new_password'] !== $post['client_new_password_confirmation']) {
+        if (false === empty($request->request->get('client_new_password')) && false === empty($request->request->get('client_new_password_confirmation')) && false === empty($request->request->get('client_secret_answer'))) {
+            if ($request->request->get('client_new_password') !== $request->request->get('client_new_password_confirmation')) {
                 $this->addFlash('passwordErrors', $translator->trans('common-validator_password-not-equal'));
             }
-            if (false === $ficelle->password_fo($post['client_new_password'], 6)) {
+
+            /** @var \ficelle $ficelle */
+            $ficelle = Loader::loadLib('ficelle');
+            if (false === $ficelle->password_fo($request->request->get('client_new_password'), 6)) {
                 $this->addFlash('passwordErrors', $translator->trans('common-validator_password-invalid'));
             }
         }
 
-        if (false === $this->get('session')->getFlashBag()->has('passwordErrors')){
-            $user = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
-            $password = $securityPasswordEncoder->encodePassword($user, $post['client_new_password']);
+        if (false === $this->get('session')->getFlashBag()->has('passwordErrors')) {
+            $temporaryLink->revokeTemporaryLinks($temporaryLink->id_client);
+
+            $user     = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
+            $password = $this->get('security.password_encoder')->encodePassword($user, $request->request->get('client_new_password'));
+
             $client->password = $password;
             $client->update();
+
             $this->sendPasswordModificationEmail($client);
             $this->addFlash('passwordSuccess', $translator->trans('password-forgotten_new-password-form-success-message'));
 
             /** @var \clients_history_actions $clientHistoryActions */
-            $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
-            $clientHistoryActions->histo(7, 'mdp oublié', $client->id_client, serialize(['id_client' => $client->id_client, 'newmdp' => md5($post['client_new_password'])]));
+            $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
+            $clientHistoryActions->histo(7, 'mdp oublié', $client->id_client, serialize(['id_client' => $client->id_client, 'newmdp' => md5($request->request->get('client_new_password'))]));
         }
 
-        return $this->redirectToRoute('define_new_password', ['clientHash' => $client->hash]);
+        return $this->redirectToRoute('define_new_password', ['token' => $token]);
     }
 
     private function sendPasswordModificationEmail(\clients $client)
@@ -237,8 +270,8 @@ class SecurityController extends Controller
         $lien_tw = $settings->value;
 
         $varMail = [
-            'surl'     => $this->get('assets.packages')->getUrl(''),
-            'url'      => $this->get('assets.packages')->getUrl(''),
+            'surl'     => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+            'url'      => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
             'lien_fb'  => $lien_fb,
             'lien_tw'  => $lien_tw,
             'login'    => $client->email,
@@ -270,7 +303,7 @@ class SecurityController extends Controller
             } else {
                 return new JsonResponse([
                     'status' => false,
-                    'error' => $translator->trans('common-validator_password-invalid')
+                    'error'  => $translator->trans('common-validator_password-invalid')
                 ]);
             }
         }
