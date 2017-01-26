@@ -2976,10 +2976,16 @@ class dossiersController extends bootstrap
         echo json_encode($aNames);
     }
 
-    protected function generateBalanceLineHtml($codes, $formType, $extraClass = '')
+    /**
+     * @param array  $codes
+     * @param string $formType
+     * @param string $extraClass
+     * @return string
+     */
+    protected function generateBalanceLineHtml(array $codes, $formType, $extraClass = '')
     {
         $html = '';
-        foreach($codes as $code) {
+        foreach ($codes as $code) {
             $index = array_search($code, array_column($this->allTaxFormTypes[$formType], 'code'));
             $field = $this->allTaxFormTypes[$formType][$index];
 
@@ -3015,11 +3021,18 @@ class dossiersController extends bootstrap
         return $html;
     }
 
+    /**
+     * @param string $label
+     * @param array  $codes
+     * @param string $formType
+     * @param string $domId
+     * @return string
+     */
     protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '')
     {
-        $html = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
+        $html           = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
         $iPreviousTotal = null;
-        $iColumn = 0;
+        $iColumn        = 0;
         foreach ($this->aBalanceSheets as $aBalanceSheet) {
             if ($formType != $aBalanceSheet['form_type']) {
                 $html .= '<td></td>';
@@ -3034,24 +3047,37 @@ class dossiersController extends bootstrap
                     $html .= '<td>' . $movement . '</td>';
                 }
                 $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
-                $html .= '<td id="' . $domId . '">' . $formatedValue . '</td>';
+                $html .= '<td id="' . $domId . '" data-total="' . $iTotal . '">' . $formatedValue . '</td>';
                 $iPreviousTotal = $iTotal;
             }
-            $iColumn ++;
+            $iColumn++;
         }
         $html .= '</tr>';
 
         return $html;
     }
 
-    protected function generateBalanceGroupHtml($totalLabel, $code, $formType)
+    /**
+     * @param string $totalLabel
+     * @param array  $code
+     * @param string $formType
+     * @return string
+     */
+    protected function generateBalanceGroupHtml($totalLabel, array $code, $formType)
     {
         return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $code, $formType);
     }
 
-    protected function generateBalanceTotalLineHtml($label, $codes, $formType, $domId = '')
+    /**
+     * @param string $label
+     * @param array  $codes
+     * @param string $formType
+     * @param string $domId
+     * @return string
+     */
+    protected function generateBalanceTotalLineHtml($label, array $codes, $formType, $domId = '')
     {
-        $html = '<tr><th colspan="2">' . $label . '</th>';
+        $html           = '<tr><th colspan="2">' . $label . '</th>';
         $iPreviousTotal = null;
         $iIndex         = 0;
         $iColumn        = 0;
@@ -3069,16 +3095,20 @@ class dossiersController extends bootstrap
                     $html .= '<th>' . $movement . '</th>';
                 }
                 $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
-                $html .= '<th id="'.$domId . $iIndex++ . '">' . $formatedValue . '</th>';
+                $html .= '<th id="' . $domId . $iIndex++ . '" data-total="' . $iTotal . '">' . $formatedValue . '</th>';
                 $iPreviousTotal = $iTotal;
             }
-            $iColumn ++;
+            $iColumn++;
         }
         $html .= '</tr>';
 
         return $html;
     }
 
+    /**
+     * @param string $case
+     * @return string
+     */
     protected function negative($case)
     {
         if ('-' === substr($case, 0, 1)) {
