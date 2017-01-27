@@ -39,9 +39,6 @@
                         <td>
                             <?php if (file_exists($this->path . 'apps/default/views/templates/' . $t['slug'] . '.php')) : ?>
                                 <?= $t['slug'] ?>.php
-                                <?php if ($_SESSION['user']['id_user'] == 1) : ?>
-                                    [<a href="<?= $this->lurl ?>/templates/edition/<?= $t['slug'] ?>" title="Editer le fichier">Edition</a>]
-                                <?php endif; ?>
                             <?php else : ?>
                                 Pas de fichier
                             <?php endif; ?>
