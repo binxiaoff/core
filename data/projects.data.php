@@ -1237,4 +1237,47 @@ class projects extends projects_crud
 
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    /**
+     * @param string $search
+     *
+     * @return array
+     */
+    public function searchProjectsByName($search)
+    {
+        if (empty($search)) {
+            return [];
+        }
+
+        $query = '
+            SELECT p.slug AS slug,
+              p.title AS title,
+              (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status
+            FROM projects p
+            WHERE p.display = 0
+              AND p.title LIKE :search
+            HAVING status >= ' . \projects_status::EN_FUNDING . '
+            ORDER BY p.title ASC';
+
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement             = $this->bdd->executeQuery($query, ['search' => '%' . $search . '%']);
+        $searchProjectsResults = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $result = [];
+
+        if (false === empty($searchProjectsResults)) {
+            foreach ($searchProjectsResults as $recordProjects) {
+                $result[] = [
+                    'title' => $recordProjects['title'],
+                    'slug'  => 'projects/detail/' . $recordProjects['slug']
+                ];
+            }
+
+            usort($result, function ($firstElement, $secondElement) {
+                return strcmp($firstElement['title'], $secondElement['title']);
+            });
+        }
+
+        return $result;
+    }
+
 }

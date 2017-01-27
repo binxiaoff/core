@@ -324,4 +324,20 @@ class SecurityController extends Controller
 
         return true;
     }
+
+    /**
+     * @Route("/security/csrf-token/{tokenId}", name="security_csrf_token", condition="request.isXmlHttpRequest()")
+     *
+     * @param string $tokenId
+     *
+     * @return string
+     */
+    public function csrfTokenAction($tokenId)
+    {
+        $tokenId          = filter_var($tokenId, FILTER_SANITIZE_STRING);
+        $csrfTokenManager = $this->get('security.csrf.token_manager');
+        $token            = $csrfTokenManager->getToken($tokenId);
+
+        return $this->json($token->getValue());
+    }
 }

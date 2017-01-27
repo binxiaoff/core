@@ -139,6 +139,8 @@
 
         <service id="unilend.service.search_service" class="Unilend\Bundle\CoreBusinessBundle\Service\SearchService">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="translator.default"/>
+            <argument type="service" id="router"/>
             <argument>%desk_user%</argument>
             <argument>%desk_password%</argument>
         </service>
