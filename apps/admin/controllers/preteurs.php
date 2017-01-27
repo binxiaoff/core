@@ -411,7 +411,7 @@ class preteursController extends bootstrap
                     } else {
                         $this->clients_adresses->meme_adresse_fiscal = 0;
                     }
-                    $bTaxCountryChanged                     = false === empty($_POST['id_pays_fiscal']) && $this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'];
+                    $applyTaxCountry                        = false === empty($_POST['id_pays_fiscal']) && $this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'];
                     $this->clients_adresses->adresse_fiscal = $_POST['adresse'];
                     $this->clients_adresses->ville_fiscal   = $_POST['ville'];
                     $this->clients_adresses->cp_fiscal      = $_POST['cp'];
@@ -563,15 +563,12 @@ class preteursController extends bootstrap
                         } else {
                             $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
                         }
-                        $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
 
-                        if (true === $bTaxCountryChanged) {
-                            $bTaxCountryChanged = false;
-                        }
                         $_SESSION['compte_valide'] = true;
+                        $applyTaxCountry           = true;
                     }
 
-                    if (true === $bTaxCountryChanged) {
+                    if (true === $applyTaxCountry) {
                         $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
                     }
 
