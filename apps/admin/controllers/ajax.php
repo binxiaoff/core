@@ -1658,7 +1658,7 @@ class ajaxController extends bootstrap
         $logger                           = $this->get('logger');
         $logContext                       = ['class' => __CLASS__, 'function' => __FUNCTION__];
         $companyRatingHistory->id_company = $project->id_company;
-        $companyRatingHistory->id_user    = 0;
+        $companyRatingHistory->id_user    = $_SESSION['user']['id_user'];
         $companyRatingHistory->action     = \company_rating_history::ACTION_WS;
         $companyRatingHistory->create();
 
