@@ -1659,6 +1659,10 @@ class dossiersController extends bootstrap
             }
 
             if (isset($this->params[1]) && $this->params[1] == 'remb') {
+                /** @var \Symfony\Component\Stopwatch\Stopwatch $stopWatch */
+                $stopWatch = $this->get('debug.stopwatch');
+                $stopWatch->start('repayment');
+
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
 
@@ -1686,13 +1690,13 @@ class dossiersController extends bootstrap
                 $lenderRepayment = $this->loadData('lender_repayment');
 
                 $oLogger->info('Manual repayment, lender repayments found: ' . json_encode($lEcheances), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
-
+                $repaymentNb = 0;
                 foreach ($lEcheances as $e) {
                     $repaymentDate = date('Y-m-d H:i:s');
                     try {
                         if (false === $this->transactions->exist($e['id_echeancier'], 'id_echeancier')) {
                             $montant += $e['montant'];
-
+                            $repaymentNb ++;
                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
                             $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
@@ -2010,6 +2014,25 @@ class dossiersController extends bootstrap
 
                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                     $_SESSION['freeow']['message'] = 'Les prêteurs ont bien été remboursés !';
+
+                    $stopWatchEvent = $stopWatch->stop('repayment');
+                    if ($this->getParameter('kernel.environment') === 'prod') {
+                        /** @var users $user */
+                        $user = $this->get('unilend.service.entity_manager')->getRepository('users');
+                        $user->get($_SESSION['user']['id_user']);
+
+                        $payload = new \CL\Slack\Payload\ChatPostMessagePayload();
+                        $payload->setChannel('#plateforme');
+                        $payload->setText(
+                            '*<' . $this->furl . '/projects/detail/' . $projects->slug . '|' . $projects->title . '>* - Remboursement effectué par ' . trim($user->firstname . ' ' . $user->name)
+                            . ' en ' . round($stopWatchEvent->getDuration() / 1000, 2) . ' secondes  (' . $repaymentNb . ' prêts, échéance #' . $e['ordre'] . ').'
+                        );
+                        $payload->setUsername('Unilend');
+                        $payload->setIconUrl($this->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
+                        $payload->setAsUser(false);
+
+                        $this->get('cl_slack.api_client')->send($payload);
+                    }
                 } else {
                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
