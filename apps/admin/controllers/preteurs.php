@@ -558,13 +558,16 @@ class preteursController extends bootstrap
 
                         $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
-                    if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
-                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
-                    } else {
-                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
-                    }
-                    $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
+                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
+                        } else {
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
+                        }
+                        $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
 
+                        if (true === $bTaxCountryChanged) {
+                            $bTaxCountryChanged = false;
+                        }
                         $_SESSION['compte_valide'] = true;
                     }
 
