@@ -148,7 +148,7 @@ class dossiersController extends bootstrap
             }
             /** @var product $product */
             $product = $this->loadData('product');
-
+            $this->availableContracts = [];
             if (false === empty($this->projects->id_product) && $product->get($this->projects->id_product)) {
                 $durationMax = $productManager->getMaxEligibleDuration($product);
                 $durationMin = $productManager->getMinEligibleDuration($product);

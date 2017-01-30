@@ -238,6 +238,6 @@ class ProductManager
      */
     public function isProductUsable(\product $product)
     {
-        return in_array($product->status, [\product::STATUS_ONLINE, \product::STATUS_OFFLINE]);
+        return false === empty($product->id_product) && in_array($product->status, [\product::STATUS_ONLINE, \product::STATUS_OFFLINE]);
     }
 }
