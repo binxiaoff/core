@@ -34,13 +34,6 @@ class Tree
     private $idUser;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="arbo", type="integer", nullable=false)
-     */
-    private $arbo;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="title", type="string", length=191, nullable=false)
@@ -235,30 +228,6 @@ class Tree
     public function getIdUser()
     {
         return $this->idUser;
-    }
-
-    /**
-     * Set arbo
-     *
-     * @param integer $arbo
-     *
-     * @return Tree
-     */
-    public function setArbo($arbo)
-    {
-        $this->arbo = $arbo;
-
-        return $this;
-    }
-
-    /**
-     * Get arbo
-     *
-     * @return integer
-     */
-    public function getArbo()
-    {
-        return $this->arbo;
     }
 
     /**

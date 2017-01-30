@@ -20,13 +20,6 @@ class Settings
     private $type;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_template", type="integer", nullable=false)
-     */
-    private $idTemplate;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="value", type="text", length=16777215, nullable=false)
@@ -39,13 +32,6 @@ class Settings
      * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status = '0';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="cms", type="string", length=50, nullable=false)
-     */
-    private $cms;
 
     /**
      * @var \DateTime
@@ -97,30 +83,6 @@ class Settings
     }
 
     /**
-     * Set idTemplate
-     *
-     * @param integer $idTemplate
-     *
-     * @return Settings
-     */
-    public function setIdTemplate($idTemplate)
-    {
-        $this->idTemplate = $idTemplate;
-
-        return $this;
-    }
-
-    /**
-     * Get idTemplate
-     *
-     * @return integer
-     */
-    public function getIdTemplate()
-    {
-        return $this->idTemplate;
-    }
-
-    /**
      * Set value
      *
      * @param string $value
@@ -166,30 +128,6 @@ class Settings
     public function getStatus()
     {
         return $this->status;
-    }
-
-    /**
-     * Set cms
-     *
-     * @param string $cms
-     *
-     * @return Settings
-     */
-    public function setCms($cms)
-    {
-        $this->cms = $cms;
-
-        return $this;
-    }
-
-    /**
-     * Get cms
-     *
-     * @return string
-     */
-    public function getCms()
-    {
-        return $this->cms;
     }
 
     /**

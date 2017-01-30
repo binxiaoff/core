@@ -5,12 +5,12 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Queries
+ * Zones
  *
- * @ORM\Table(name="queries")
+ * @ORM\Table(name="zones")
  * @ORM\Entity
  */
-class Queries
+class Zones
 {
     /**
      * @var string
@@ -22,30 +22,16 @@ class Queries
     /**
      * @var string
      *
-     * @ORM\Column(name="sql", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="slug", type="string", length=191, nullable=false)
      */
-    private $sql;
+    private $slug;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="paging", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
-    private $paging;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="executions", type="integer", nullable=false)
-     */
-    private $executions;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="executed", type="datetime", nullable=false)
-     */
-    private $executed;
+    private $status;
 
     /**
      * @var \DateTime
@@ -64,20 +50,18 @@ class Queries
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_query", type="integer")
+     * @ORM\Column(name="id_zone", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idQuery;
-
-
+    private $idZone;
 
     /**
      * Set name
      *
      * @param string $name
      *
-     * @return Queries
+     * @return Zones
      */
     public function setName($name)
     {
@@ -97,99 +81,51 @@ class Queries
     }
 
     /**
-     * Set sql
+     * Set slug
      *
-     * @param string $sql
+     * @param string $slug
      *
-     * @return Queries
+     * @return Zones
      */
-    public function setSql($sql)
+    public function setSlug($slug)
     {
-        $this->sql = $sql;
+        $this->slug = $slug;
 
         return $this;
     }
 
     /**
-     * Get sql
+     * Get slug
      *
      * @return string
      */
-    public function getSql()
+    public function getSlug()
     {
-        return $this->sql;
+        return $this->slug;
     }
 
     /**
-     * Set paging
+     * Set status
      *
-     * @param integer $paging
+     * @param boolean $status
      *
-     * @return Queries
+     * @return Zones
      */
-    public function setPaging($paging)
+    public function setStatus($status)
     {
-        $this->paging = $paging;
+        $this->status = $status;
 
         return $this;
     }
 
     /**
-     * Get paging
+     * Get status
      *
-     * @return integer
+     * @return boolean
      */
-    public function getPaging()
+    public function getStatus()
     {
-        return $this->paging;
-    }
-
-    /**
-     * Set executions
-     *
-     * @param integer $executions
-     *
-     * @return Queries
-     */
-    public function setExecutions($executions)
-    {
-        $this->executions = $executions;
-
-        return $this;
-    }
-
-    /**
-     * Get executions
-     *
-     * @return integer
-     */
-    public function getExecutions()
-    {
-        return $this->executions;
-    }
-
-    /**
-     * Set executed
-     *
-     * @param \DateTime $executed
-     *
-     * @return Queries
-     */
-    public function setExecuted($executed)
-    {
-        $this->executed = $executed;
-
-        return $this;
-    }
-
-    /**
-     * Get executed
-     *
-     * @return \DateTime
-     */
-    public function getExecuted()
-    {
-        return $this->executed;
+        return $this->status;
     }
 
     /**
@@ -197,7 +133,7 @@ class Queries
      *
      * @param \DateTime $added
      *
-     * @return Queries
+     * @return Zones
      */
     public function setAdded($added)
     {
@@ -221,7 +157,7 @@ class Queries
      *
      * @param \DateTime $updated
      *
-     * @return Queries
+     * @return Zones
      */
     public function setUpdated($updated)
     {
@@ -241,12 +177,12 @@ class Queries
     }
 
     /**
-     * Get idQuery
+     * Get idZone
      *
      * @return integer
      */
-    public function getIdQuery()
+    public function getIdZone()
     {
-        return $this->idQuery;
+        return $this->idZone;
     }
 }
