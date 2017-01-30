@@ -102,9 +102,9 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 #menu_deroulant li { float: left; width: 150px; text-align: center; margin: 0; padding: 0; border: 0; font-size: 12px; font-weight: bold; }
 
-#menu_deroulant li a:link, #menu_deroulant li a:visited { display: block; min-height: 22px; color: white; margin: 0; padding: 8px 0 0 0; border: 0; text-decoration: none; }
+#menu_deroulant li > * { display: block; min-height: 22px; color: white; margin: 0; padding: 8px 0 0 0; border: 0; text-decoration: none; }
 
-#menu_deroulant li a:hover, #menu_deroulant li a:active, #menu_deroulant li a.active { background-color: #E3E4E5; color: black; }
+#menu_deroulant li > :hover, #menu_deroulant li > :active, #menu_deroulant li > .active { background-color: #E3E4E5; color: black; }
 
 #menu_deroulant li:hover > .sous_menu { display: block; }
 
@@ -116,7 +116,7 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 #menu_deroulant .sous_menu li a:hover { color:  white; background-color: #b20066; }
 
-#contenu { margin: 120px auto 0; padding: 20px; width: 1160px; text-align: left; background-color: #FFF; }
+#contenu { margin: 120px auto 25px; padding: 20px; width: 1160px; text-align: left; background-color: #FFF; }
 
 .breadcrumbs { margin: 0 0 10px 0; padding: 0; overflow: hidden; list-style: none; font-size: 12px; position: relative; }
 

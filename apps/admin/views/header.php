@@ -1,5 +1,5 @@
 <script type="text/javascript">
-    $(function () {
+    $(function() {
         $(".searchBox").colorbox({
             onComplete: function () {
                 $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
@@ -110,7 +110,7 @@
         <?php endif; ?>
         <?php if (in_array('stats', $this->lZonesHeader)) : ?>
             <li>
-                <a href="<?= $this->lurl ?>/queries" title="Stats"<?= ($this->menu_admin == 'stats' ? ' class="active"' : '') ?>>Stats</a>
+                <a href="<?= $this->lurl ?>/queries" title="Stats"<?= ($this->menu_admin == 'stats' ? ' class="active"' : '') ?>>Statistiques</a>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/queries" title="Requêtes">Requêtes</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/etape_inscription" title="Etape d'inscription">Etape d'inscription</a></li>
@@ -126,7 +126,7 @@
         <?php endif; ?>
         <?php if (in_array('preteurs', $this->lZonesHeader)) : ?>
             <li class="last">
-                <a href="<?= $this->lurl ?>/preteurs" title="preteurs"<?= ($this->menu_admin == 'preteurs' ? ' class="active"' : '') ?>>Preteurs</a>
+                <a href="<?= $this->lurl ?>/preteurs" title="preteurs"<?= ($this->menu_admin == 'preteurs' ? ' class="active"' : '') ?>>Prêteurs</a>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/preteurs/search" title="Recherche prêteurs">Recherche prêteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/activation" title="Activation prêteurs">Activation prêteurs</a></li>
@@ -142,18 +142,18 @@
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/dossiers" title="Dossiers">Dossiers</a></li>
                     <li><a href="<?= $this->lurl ?>/emprunteurs/gestion" title="Emprunteurs">Emprunteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/prescripteurs/gestion" title="Prescripteur">Prescripteur</a></li>
+                    <li><a href="<?= $this->lurl ?>/prescripteurs/gestion" title="Prescripteur">Prescripteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/funding" title="Dossiers en funding">Dossiers en funding</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/remboursements" title="Remboursements">Remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/no_remb" title="Erreurs remboursements">Erreurs remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/status" title="Suivi statuts projets">Suivi statuts projets</a></li>
-                    <li><a href="<?= $this->lurl ?>/product" title="Gestion produits">Gestion produits</a></li>
+                    <li><a href="<?= $this->lurl ?>/product" title="Produits">Produits</a></li>
                 </ul>
             </li>
         <?php endif; ?>
         <?php if (in_array('transferts', $this->lZonesHeader)) : ?>
             <li class="last">
-                <a href="<?= $this->lurl ?>/transferts" title="Dépôt de fonds"<?= ($this->menu_admin == 'transferts' ? ' class="active"' : '') ?>>Dépôt de fonds</a>
+                <span<?= ($this->menu_admin == 'transferts' ? ' class="active"' : '') ?>>Dépôt de fonds</span>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/transferts/preteurs" title="Prêteurs">Prêteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/emprunteurs" title="Emprunteurs">Emprunteurs</a></li>
@@ -166,9 +166,10 @@
         <?php endif; ?>
         <?php if (in_array('admin', $this->lZonesHeader)) : ?>
             <li class="last">
-                <a href="<?= $this->lurl ?>/users" title="Administration"<?= ($this->menu_admin == 'admin' ? ' class="active"' : '') ?>>Administrateurs</a>
+                <span<?= ($this->menu_admin == 'admin' ? ' class="active"' : '') ?>>Administration</span>
                 <ul class="sous_menu">
-                    <li><a href="<?= $this->lurl ?>/zones" title="Droits Administrateurs">Droits Administrateurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/users" title="Utilisateurs">Utilisateurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/zones" title="Droits d'accès">Droits d'accès</a></li>
                 </ul>
             </li>
         <?php endif; ?>
