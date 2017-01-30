@@ -430,7 +430,7 @@ class preteursController extends bootstrap
                     } else {
                         $this->clients_adresses->meme_adresse_fiscal = 0;
                     }
-                    $bTaxCountryChanged                     = false === empty($_POST['id_pays_fiscal']) && $this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'];
+                    $applyTaxCountry                        = false === empty($_POST['id_pays_fiscal']) && $this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'];
                     $this->clients_adresses->adresse_fiscal = $_POST['adresse'];
                     $this->clients_adresses->ville_fiscal   = $_POST['ville'];
                     $this->clients_adresses->cp_fiscal      = $_POST['cp'];
@@ -572,24 +572,24 @@ class preteursController extends bootstrap
 
                         $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
-                    if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
-                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
-                    } else {
-                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
-                    }
-                    $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
+                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
+                        } else {
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
+                        }
 
                         $_SESSION['compte_valide'] = true;
+                        $applyTaxCountry           = true;
                     }
 
-                    if (true === $bTaxCountryChanged) {
+                    if (true === $applyTaxCountry) {
                         $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
                     }
 
                     $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
                     header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                     die;
-                } elseif (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER ])) {
+                } elseif (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                     $this->companies->name         = $_POST['raison-sociale'];
                     $this->companies->forme        = $_POST['form-juridique'];
                     $this->companies->capital      = str_replace(' ', '', $_POST['capital-sociale']);
@@ -601,7 +601,7 @@ class preteursController extends bootstrap
                     ////////////////////////////////////
                     // On verifie meme adresse ou pas //
                     ////////////////////////////////////
-                    if ($_POST['meme-adresse'] != false) {
+                    if (false === empty($_POST['meme-adresse'])) {
                         $this->companies->status_adresse_correspondance = '1';
                     } else {
                         $this->companies->status_adresse_correspondance = '0';

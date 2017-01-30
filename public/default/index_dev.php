@@ -1,7 +1,7 @@
 <?php
 
 if (getenv('SYMFONY_ENV') && 'prod' === getenv('SYMFONY_ENV')) {
-    header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+    header($_SERVER["SERVER_PROTOCOL"] . ' 404 Not Found');
     exit;
 }
 
@@ -33,8 +33,7 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
 
 Debug::enable();
 
-$kernel = new AppKernel('dev', true);
-
+$kernel   = new AppKernel('dev', true);
 $request  = Request::createFromGlobals();
 $response = $kernel->handle($request);
 $response->send();

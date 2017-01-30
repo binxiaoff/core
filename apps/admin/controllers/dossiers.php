@@ -231,8 +231,10 @@ class dossiersController extends bootstrap
             $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = ' . $this->projects->id_commercial);
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_user > 0 AND id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC');
             $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added DESC');
-            $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            $projectStatusManager   = $this->get('unilend.service.project_status_manager');
+            $this->lProjects_status = $projectStatusManager->getPossibleStatus($this->projects);
 
             if (empty($this->projects->id_dernier_bilan)) {
                 $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
@@ -337,6 +339,14 @@ class dossiersController extends bootstrap
             }
 
             $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
+            /** @var \product selectedProduct */
+            $this->selectedProduct = $product;
+            $this->isProductUsable = false;
+            if (projects_status::PREP_FUNDING == $this->projects->status) {
+                if ($productManager->isProductUsable($this->selectedProduct)) {
+                    $this->isProductUsable = true;
+                }
+            }
 
             if (isset($_POST['last_annual_accounts'])) {
                 $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];
@@ -1671,6 +1681,10 @@ class dossiersController extends bootstrap
             }
 
             if (isset($this->params[1]) && $this->params[1] == 'remb') {
+                /** @var \Symfony\Component\Stopwatch\Stopwatch $stopWatch */
+                $stopWatch = $this->get('debug.stopwatch');
+                $stopWatch->start('repayment');
+
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
 
@@ -1698,13 +1712,13 @@ class dossiersController extends bootstrap
                 $lenderRepayment = $this->loadData('lender_repayment');
 
                 $oLogger->info('Manual repayment, lender repayments found: ' . json_encode($lEcheances), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
-
+                $repaymentNb = 0;
                 foreach ($lEcheances as $e) {
                     $repaymentDate = date('Y-m-d H:i:s');
                     try {
                         if (false === $this->transactions->exist($e['id_echeancier'], 'id_echeancier')) {
                             $montant += $e['montant'];
-
+                            $repaymentNb ++;
                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
                             $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
@@ -2019,7 +2033,7 @@ class dossiersController extends bootstrap
                         $oInvoice->id_project      = $projects->id_project;
                         $oInvoice->ordre           = $e['ordre'];
                         $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
-                        $oInvoice->commission      = bcmul($fCommissionRate, 100);
+                        $oInvoice->commission      = bcmul($fCommissionRate, 100, 1);
                         $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                         $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
                         $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
@@ -2028,6 +2042,25 @@ class dossiersController extends bootstrap
 
                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                     $_SESSION['freeow']['message'] = 'Les prêteurs ont bien été remboursés !';
+
+                    $stopWatchEvent = $stopWatch->stop('repayment');
+                    if ($this->getParameter('kernel.environment') === 'prod') {
+                        /** @var users $user */
+                        $user = $this->get('unilend.service.entity_manager')->getRepository('users');
+                        $user->get($_SESSION['user']['id_user']);
+
+                        $payload = new \CL\Slack\Payload\ChatPostMessagePayload();
+                        $payload->setChannel('#plateforme');
+                        $payload->setText(
+                            '*<' . $this->furl . '/projects/detail/' . $projects->slug . '|' . $projects->title . '>* - Remboursement effectué par ' . trim($user->firstname . ' ' . $user->name)
+                            . ' en ' . round($stopWatchEvent->getDuration() / 1000, 2) . ' secondes  (' . $repaymentNb . ' prêts, échéance #' . $e['ordre'] . ').'
+                        );
+                        $payload->setUsername('Unilend');
+                        $payload->setIconUrl($this->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
+                        $payload->setAsUser(false);
+
+                        $this->get('cl_slack.api_client')->send($payload);
+                    }
                 } else {
                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
@@ -2952,10 +2985,16 @@ class dossiersController extends bootstrap
         echo json_encode($aNames);
     }
 
-    protected function generateBalanceLineHtml($codes, $formType, $extraClass = '')
+    /**
+     * @param array  $codes
+     * @param string $formType
+     * @param string $extraClass
+     * @return string
+     */
+    protected function generateBalanceLineHtml(array $codes, $formType, $extraClass = '')
     {
         $html = '';
-        foreach($codes as $code) {
+        foreach ($codes as $code) {
             $index = array_search($code, array_column($this->allTaxFormTypes[$formType], 'code'));
             $field = $this->allTaxFormTypes[$formType][$index];
 
@@ -2991,11 +3030,18 @@ class dossiersController extends bootstrap
         return $html;
     }
 
+    /**
+     * @param string $label
+     * @param array  $codes
+     * @param string $formType
+     * @param string $domId
+     * @return string
+     */
     protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '')
     {
-        $html = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
+        $html           = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
         $iPreviousTotal = null;
-        $iColumn = 0;
+        $iColumn        = 0;
         foreach ($this->aBalanceSheets as $aBalanceSheet) {
             if ($formType != $aBalanceSheet['form_type']) {
                 $html .= '<td></td>';
@@ -3010,24 +3056,37 @@ class dossiersController extends bootstrap
                     $html .= '<td>' . $movement . '</td>';
                 }
                 $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
-                $html .= '<td id="' . $domId . '">' . $formatedValue . '</td>';
+                $html .= '<td id="' . $domId . '" data-total="' . $iTotal . '">' . $formatedValue . '</td>';
                 $iPreviousTotal = $iTotal;
             }
-            $iColumn ++;
+            $iColumn++;
         }
         $html .= '</tr>';
 
         return $html;
     }
 
-    protected function generateBalanceGroupHtml($totalLabel, $code, $formType)
+    /**
+     * @param string $totalLabel
+     * @param array  $code
+     * @param string $formType
+     * @return string
+     */
+    protected function generateBalanceGroupHtml($totalLabel, array $code, $formType)
     {
         return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $code, $formType);
     }
 
-    protected function generateBalanceTotalLineHtml($label, $codes, $formType, $domId = '')
+    /**
+     * @param string $label
+     * @param array  $codes
+     * @param string $formType
+     * @param string $domId
+     * @return string
+     */
+    protected function generateBalanceTotalLineHtml($label, array $codes, $formType, $domId = '')
     {
-        $html = '<tr><th colspan="2">' . $label . '</th>';
+        $html           = '<tr><th colspan="2">' . $label . '</th>';
         $iPreviousTotal = null;
         $iIndex         = 0;
         $iColumn        = 0;
@@ -3045,16 +3104,20 @@ class dossiersController extends bootstrap
                     $html .= '<th>' . $movement . '</th>';
                 }
                 $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
-                $html .= '<th id="'.$domId . $iIndex++ . '">' . $formatedValue . '</th>';
+                $html .= '<th id="' . $domId . $iIndex++ . '" data-total="' . $iTotal . '">' . $formatedValue . '</th>';
                 $iPreviousTotal = $iTotal;
             }
-            $iColumn ++;
+            $iColumn++;
         }
         $html .= '</tr>';
 
         return $html;
     }
 
+    /**
+     * @param string $case
+     * @return string
+     */
     protected function negative($case)
     {
         if ('-' === substr($case, 0, 1)) {

@@ -9,25 +9,34 @@
             <argument type="service" id="unilend.frontbundle.service.source_manager" />
             <tag name="kernel.event_subscriber" />
         </service>
+
         <service id="unilend.frontbundle.event.data_layer_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\DataLayerSubscriber">
             <argument type="service" id="unilend.frontbundle.service.data_layer_collector" />
             <tag name="kernel.event_subscriber" />
         </service>
+
         <service id="unilend.frontbundle.event.tos_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\TermsOfServiceSubscriber">
             <argument type="service" id="unilend.service.client_manager" />
             <tag name="kernel.event_subscriber" />
         </service>
+
         <service id="unilend.frontbundle.event.exception_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\ExceptionSubscriber">
             <argument type="service" id="kernel"/>
             <tag name="kernel.event_subscriber" />
         </service>
+
         <service id="unilend.frontbundle.event.sonata_seo_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\SonataSeoDataSubscriber">
             <argument type="service" id="unilend.frontbundle.seo_manager" />
             <tag name="kernel.event_subscriber" />
         </service>
+
         <service id="unilend.frontbundle.event.client_access_authorization_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\ClientAuthorizationAccessSubscriber">
             <argument type="service" id="unilend.service.client_manager" />
             <tag name="kernel.event_subscriber" />
+        </service>
+
+        <service id="unilend.frontbundle.event.response_listener" class="Unilend\Bundle\FrontBundle\EventSubscriber\ResponseListener">
+            <tag name="kernel.event_listener" event="kernel.response" method="onKernelResponse" />
         </service>
     </services>
 </container>

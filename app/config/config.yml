@@ -114,7 +114,7 @@ cache_adapter:
             aliases: ['memcache.default']
 
 monolog:
-    channels: [console]
+    channels: [console, migration]
     handlers:
         error:
             type: fingers_crossed
@@ -182,6 +182,13 @@ monolog:
             file_permission: 0664
             date_format: 'Y-m-d'
             channels: translation
+
+        migration_handler:
+            type : stream
+            level: info
+            channels: migration
+            path: "%kernel.logs_dir%/migration_transactions.log"
+            file_permission: 0664
 
 swiftmailer:
     transport: '%mailer_transport%'

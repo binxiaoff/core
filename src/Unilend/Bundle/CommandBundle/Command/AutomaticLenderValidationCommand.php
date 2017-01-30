@@ -82,7 +82,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
                 foreach ($attachments as $attachment) {
                     // Check if it is the final status and that no revalidation is required
-                    if (\greenpoint_attachment::REVALIDATE_YES == $attachment['revalidate'] || \greenpoint_attachment::FINAL_STATUS_NO == $attachment['final_status']) {
+                    if (\greenpoint_attachment::REVALIDATE_YES == $attachment['revalidate']) {
                         unset($clientsToValidate[$clientId]);
                         continue 2;
                     }

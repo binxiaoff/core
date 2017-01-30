@@ -118,6 +118,7 @@ require('./app/controllers/Projects')
 require('./app/controllers/BidConfirmation')
 require('./app/controllers/ProjectRequest')
 require('./app/controllers/Autolend')
+require('./app/controllers/ProjectDetails')
 
 //
 $doc.ready(function ($) {

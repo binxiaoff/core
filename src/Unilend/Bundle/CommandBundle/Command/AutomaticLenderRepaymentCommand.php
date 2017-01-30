@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use CL\Slack\Payload\ChatPostMessagePayload;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -52,11 +53,17 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
         $dates = Loader::loadLib('dates');
         /** @var LoggerInterface $logger */
         $logger                = $this->getContainer()->get('monolog.logger.console');
+        $stopWatch             = $this->getContainer()->get('debug.stopwatch');
         $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
+
         $repaymentScheduleRepo = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $paymentScheduleRepo   = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
+        $url       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
+
         foreach ($projectRepayment->getProjectsToRepay(new \DateTime(), 1) as $r) {
+            $stopWatch->start('autoRepayment');
             $repaymentLog->id_project       = $r['id_project'];
             $repaymentLog->ordre            = $r['ordre'];
             $repaymentLog->debut            = date('Y-m-d H:i:s');
@@ -216,21 +223,20 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $sFB = $settings->value;
                 $settings->get('Twitter', 'type');
                 $sTwitter = $settings->value;
-                $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
                 /** @var \ficelle $ficelle */
                 $ficelle = Loader::loadLib('ficelle');
 
                 $varMail = array(
-                    'surl'            => $sUrl,
-                    'url'             => $sUrl,
+                    'surl'            => $staticUrl,
+                    'url'             => $url,
                     'prenom'          => $emprunteur->prenom,
                     'pret'            => $ficelle->formatNumber($projects->amount),
                     'entreprise'      => stripslashes(trim($companies->name)),
                     'projet-title'    => $projects->title,
-                    'compte-p'        => $sUrl,
-                    'projet-p'        => $sUrl . '/projects/detail/' . $projects->slug,
-                    'link_facture'    => $sUrl . '/pdf/facture_ER/' . $emprunteur->hash . '/' . $r['id_project'] . '/' . $r['ordre'],
+                    'compte-p'        => $url,
+                    'projet-p'        => $url . '/projects/detail/' . $projects->slug,
+                    'link_facture'    => $url . '/pdf/facture_ER/' . $emprunteur->hash . '/' . $r['id_project'] . '/' . $r['ordre'],
                     'datedelafacture' => $day . ' ' . $month . ' ' . $year,
                     'mois'            => strtolower($dates->tableauMois['fr'][date('n')]),
                     'annee'           => date('Y'),
@@ -268,7 +274,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     $oInvoice->id_project      = $projects->id_project;
                     $oInvoice->ordre           = $r['ordre'];
                     $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
-                    $oInvoice->commission      = bcmul($fCommissionRate, 100);
+                    $oInvoice->commission      = bcmul($fCommissionRate, 100, 1);
                     $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                     $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
                     $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
@@ -300,6 +306,20 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     $mailerManager->setLogger($logger);
                     $mailerManager->sendInternalNotificationEndOfRepayment($projects);
                     $mailerManager->sendClientNotificationEndOfRepayment($projects);
+                }
+                $stopWatchEvent = $stopWatch->stop('autoRepayment');
+                if ($this->getContainer()->getParameter('kernel.environment') === 'prod') {
+                    $payload = new ChatPostMessagePayload();
+                    $payload->setChannel('#plateforme');
+                    $payload->setText(
+                        '*<' . $url . '/projects/detail/' . $projects->slug . '|' . $projects->title . '>* - Remboursement automatique effectué en '
+                        . round($stopWatchEvent->getDuration() / 1000, 2) . ' secondes (' . $nb_pret_remb . ' prêts, échéance #' . $r['ordre'] . ').'
+                    );
+                    $payload->setUsername('Unilend');
+                    $payload->setIconUrl($this->getContainer()->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
+                    $payload->setAsUser(false);
+
+                    $this->getContainer()->get('cl_slack.api_client')->send($payload);
                 }
             } else {
                 $projectRepayment->get($r['id_project_remb'], 'id_project_remb');

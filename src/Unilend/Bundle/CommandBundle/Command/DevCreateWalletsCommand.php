@@ -4,6 +4,7 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
@@ -15,7 +16,8 @@ class DevCreateWalletsCommand extends ContainerAwareCommand
     {
         $this
             ->setName('dev:migrate:create_wallet')
-            ->setDescription('Create all wallets for lenders and borrowers');
+            ->setDescription('Create all wallets for lenders and borrowers')
+            ->addArgument('limit', InputArgument::REQUIRED, 'limit');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -43,9 +45,9 @@ class DevCreateWalletsCommand extends ContainerAwareCommand
               INNER JOIN clients c ON co.id_client_owner = c.id_client
             WHERE c.id_client NOT IN (SELECT id_client from wallet where id_client IS NOT NULL)
             ORDER BY id_client ASC
-            LIMIT 10000';
+            LIMIT :limit';
 
-        $statement = $dataBaseConnection->executeQuery($query);
+        $statement = $dataBaseConnection->executeQuery($query, ['limit' => (int) $input->getArgument('limit')], ['limit' => \PDO::PARAM_INT]);
         $numberClients = 0;
 
         while ($client = $statement->fetch(\PDO::FETCH_ASSOC)) {
