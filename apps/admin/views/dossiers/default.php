@@ -219,7 +219,6 @@
                         <td><?= $p['siren'] ?></td>
                         <td><?= $p['name'] ?></td>
                         <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
-                        <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
                         <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
                         <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
                         <td><?= 55 == $this->sessionIdUser && \projects_status::COMITE == $p['status'] ? 'En attente beau papa' : $p['label'] ?></td>
@@ -227,16 +226,6 @@
                         <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
                         <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
                         <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] && $p['comments'] != '' ? $p['comments'] : '' ?>"><?= $p['comments'] && $p['comments'] != '' ? 'oui' : 'non' ?></td>
-                        <td align="center">
-                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
-                            </a>
-                            <script>
-                                $("#ledossier<?=$p['id_project']?>").click(function () {
-                                    $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/<?=$p['id_project']?>');
-                                });
-                            </script>
-                        </td>
                     </tr>
                     <?php $i++; ?>
                 <?php endforeach; ?>
