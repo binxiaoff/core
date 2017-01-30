@@ -46,13 +46,24 @@ class ProductManager
         $eligibleProducts = [];
 
         foreach ($this->getAvailableProducts($includeInactiveProduct) as $product) {
-            if ($this->projectValidator->isEligible($project, $product)) {
+            if ($this->isProjectEligible($project, $product)) {
                 $eligibleProduct    = clone $product;
                 $eligibleProducts[] = $eligibleProduct;
             }
         }
 
         return $eligibleProducts;
+    }
+
+    /**
+     * @param \projects $project
+     * @param \product  $product
+     *
+     * @return bool
+     */
+    public function isProjectEligible(\projects $project, \product $product)
+    {
+        return $this->isProductUsable($product) && $this->projectValidator->isEligible($project, $product);
     }
 
     /**\

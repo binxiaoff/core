@@ -340,7 +340,7 @@ class dossiersController extends bootstrap
             $this->selectedProduct = $product;
             $this->isProductUsable = false;
             if (projects_status::PREP_FUNDING == $this->projects->status) {
-                if ($productManager->isProductUsable($this->selectedProduct)) {
+                if ($productManager->isProjectEligible($this->projects, $this->selectedProduct)) {
                     $this->isProductUsable = true;
                 }
             }
