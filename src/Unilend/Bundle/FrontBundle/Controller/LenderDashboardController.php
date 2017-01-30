@@ -117,8 +117,9 @@ class LenderDashboardController extends Controller
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $lenderRepaymentsData   = $lenderRepayment->getDataForRepaymentWidget($lender->id_lender_account);
         $repaymentDateRange     = $lenderRepayment->getFirstAndLastRepaymentDates($lender->id_lender_account);
+        $lenderRepaymentsData   = $lenderRepayment->getDataForRepaymentWidget($lender->id_lender_account) + $this->getPaddingData($repaymentDateRange);
+        ksort($lenderRepaymentsData);
         $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
@@ -308,6 +309,33 @@ class LenderDashboardController extends Controller
      * @param array $repaymentDateRange
      * @return array
      */
+    private function getPaddingData(array $repaymentDateRange)
+    {
+        $firstDateTime   = new \DateTime($repaymentDateRange['first_repayment_date']);
+        $lastDateTime    = new \DateTime($repaymentDateRange['last_repayment_date']);
+        $interval        = new \DateInterval('P1M');
+        $paddingData     = [];
+
+        while ($firstDateTime->format('Y-m') <= $lastDateTime->format('Y-m')) {
+            $paddingData[$firstDateTime->format('Y-m')] = [
+                'month'        => $firstDateTime->format('Y-m'),
+                'quarter'      => ceil($firstDateTime->format('n') / 3),
+                'year'         => $firstDateTime->format('Y'),
+                'capital'      => 0,
+                'rawInterests' => 0,
+                'netInterests' => 0,
+                'taxes'        => 0
+            ];
+            $firstDateTime->add($interval);
+        }
+
+        return $paddingData;
+    }
+
+    /**
+     * @param array $repaymentDateRange
+     * @return array
+     */
     private function getMonthAxis(array $repaymentDateRange)
     {
         $firstDateTime   = new \DateTime($repaymentDateRange['first_repayment_date']);
@@ -338,18 +366,20 @@ class LenderDashboardController extends Controller
         $quarterLabels     = [1 => $monthNames[1] . '-' . $monthNames[3], 2 => $monthNames[4] . '-' . $monthNames[6], 3 => $monthNames[7] . '-' . $monthNames[9], 4 => $monthNames[10] . '-' . $monthNames[12]];
         $quarterAxis       = [];
         $quarterBandOrigin = 0;
+        $currentQuarter    = 0;
 
         foreach ($lenderRepaymentsData as $lenderRepayment) {
-            if (date('Y-m') == $lenderRepayment['month']) {
-                $quarterBandOrigin = count($quarterAxis) - 1.5;
+            if ($lenderRepayment['month'] <= date('Y-m') && $currentQuarter != $lenderRepayment['quarter']) {
+                $quarterBandOrigin++;
             }
+            $currentQuarter = $lenderRepayment['quarter'];
 
             if (false === in_array($quarterLabel = $quarterLabels[$lenderRepayment['quarter']] . ' ' . $lenderRepayment['year'], $quarterAxis)) {
                 $quarterAxis[] = $quarterLabel;
             }
         }
 
-        return ['quarterAxis' => $quarterAxis, 'quarterBandOrigin' => $quarterBandOrigin];
+        return ['quarterAxis' => $quarterAxis, 'quarterBandOrigin' => $quarterBandOrigin - 1.5];
     }
 
     /**
@@ -362,6 +392,7 @@ class LenderDashboardController extends Controller
         $monthCounter    = new \DateInterval('P1M');
         $fullMonthNames  = [];
         $shortMonthNames = [];
+
         for ($i = 1; $i <= 12; $i++) {
             $fullMonthNames[$i]  = strftime('%B', $startDate->getTimestamp());
             $shortMonthNames[$i] = strftime('%b', $startDate->getTimestamp());
