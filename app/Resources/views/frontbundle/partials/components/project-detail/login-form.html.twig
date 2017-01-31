@@ -1,5 +1,5 @@
 {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-    <form action="{{ path('login-check') }}" method="post" class="project-single-form project-single-form-access" data-formvalidation>
+    <form action="{{ path('login-check') }}" method="post" id="project-single-login-form" class="project-single-form project-single-form-access" data-formvalidation>
         <div class="form-field">
             <label for="form-access-email"><span class="sr-only">{% trans %} common_email {% endtrans %}</span></label>
             <div class="input-group set-left">

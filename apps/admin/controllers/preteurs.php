@@ -100,16 +100,16 @@ class preteursController extends bootstrap
 
             $this->lPreteurs = $this->clients->searchPreteurs($clientId, $lastName, $email, $firstName, $companyName, $nonValide);
 
-            if (1 == count($this->lPreteurs)) {
-                $lender = $this->lPreteurs[0];
-                header('Location:' . $this->lurl . '/preteurs/edit/' . $lender['id_lender_account']);
+            if (false === empty($clientId) && 1 == count($this->lPreteurs)) {
+                header('Location:' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_lender_account']);
                 die;
             }
 
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
-            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', null, '', '0', '300');
+            header('Location: ' . $this->lurl . '/preteurs/search');
+            die;
         }
     }
 

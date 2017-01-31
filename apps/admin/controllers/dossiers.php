@@ -151,7 +151,7 @@ class dossiersController extends bootstrap
             }
             /** @var \product $product */
             $product = $this->loadData('product');
-
+            $this->availableContracts = [];
             if (false === empty($this->projects->id_product) && $product->get($this->projects->id_product)) {
                 $durationMax = $productManager->getMaxEligibleDuration($product);
                 $durationMin = $productManager->getMinEligibleDuration($product);
@@ -343,7 +343,7 @@ class dossiersController extends bootstrap
             $this->selectedProduct = $product;
             $this->isProductUsable = false;
             if (projects_status::PREP_FUNDING == $this->projects->status) {
-                if ($productManager->isProductUsable($this->selectedProduct)) {
+                if ($productManager->isProjectEligible($this->projects, $this->selectedProduct)) {
                     $this->isProductUsable = true;
                 }
             }
@@ -659,6 +659,19 @@ class dossiersController extends bootstrap
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
                             }
                         } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
+                            if ($this->getParameter('kernel.environment') === 'prod' && $_POST['status'] == \projects_status::A_FUNDER) {
+                                $publicationDate = new DateTime($this->projects->date_publication);
+                                $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
+                                $payload         = new \CL\Slack\Payload\ChatPostMessagePayload();
+                                $payload->setChannel('#plateforme');
+                                $payload->setText('Le projet *<' . $this->furl . '/projects/detail/' . $this->projects->slug . '|' . $this->projects->title . '>* , :calendar: : '
+                                    . $this->projects->period . ' mois / Notation : ' . $star . ' :star: , sera mis en ligne le ' . $publicationDate->format('d/m/Y à H:i'));
+                                $payload->setUsername('Unilend');
+                                $payload->setIconUrl($this->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
+                                $payload->setAsUser(false);
+
+                                $this->get('cl_slack.api_client')->send($payload);
+                            }
                             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                             $companies        = $this->loadData('companies');
