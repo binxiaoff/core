@@ -610,7 +610,7 @@
                                         }
 
                                         if (false === $this->isProductUsable) {
-                                            $blockingPuttingOnlineError = 'Le produit associé au projet n\'est plus disponible. Veuillez sélectionner un autre produit.';
+                                            $blockingPuttingOnlineError = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
                                         }
 
                                         if (false === empty($blockingPuttingOnlineError)) {

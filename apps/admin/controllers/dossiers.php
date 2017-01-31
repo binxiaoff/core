@@ -148,7 +148,7 @@ class dossiersController extends bootstrap
             }
             /** @var product $product */
             $product = $this->loadData('product');
-
+            $this->availableContracts = [];
             if (false === empty($this->projects->id_product) && $product->get($this->projects->id_product)) {
                 $durationMax = $productManager->getMaxEligibleDuration($product);
                 $durationMin = $productManager->getMinEligibleDuration($product);
@@ -340,7 +340,7 @@ class dossiersController extends bootstrap
             $this->selectedProduct = $product;
             $this->isProductUsable = false;
             if (projects_status::PREP_FUNDING == $this->projects->status) {
-                if ($productManager->isProductUsable($this->selectedProduct)) {
+                if ($productManager->isProjectEligible($this->projects, $this->selectedProduct)) {
                     $this->isProductUsable = true;
                 }
             }
