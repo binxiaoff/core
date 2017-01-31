@@ -15,33 +15,8 @@ class emprunteursController extends bootstrap
 
     public function _default()
     {
-        // On remonte la page dans l'arborescence
-        if (isset($this->params[0]) && $this->params[0] == 'up') {
-            $this->tree->moveUp($this->params[1]);
-
-            header('Location: ' . $this->lurl . '/emprunteurs');
-            die;
-        }
-
-        // On descend la page dans l'arborescence
-        if (isset($this->params[0]) && $this->params[0] == 'down') {
-            $this->tree->moveDown($this->params[1]);
-
-            header('Location: ' . $this->lurl . '/emprunteurs');
-            die;
-        }
-
-        // On supprime la page et ses dependances
-        if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            $this->tree->deleteCascade($this->params[1]);
-
-            // Mise en session du message
-            $_SESSION['freeow']['title']   = 'Suppression d\'une page';
-            $_SESSION['freeow']['message'] = 'La page et ses enfants ont bien &eacute;t&eacute; supprim&eacute;s !';
-
-            header('Location: ' . $this->lurl . '/emprunteurs');
-            die;
-        }
+        header('Location: ' . $this->lurl . '/dossiers');
+        die;
     }
 
     public function _gestion()
@@ -111,37 +86,6 @@ class emprunteursController extends bootstrap
 
             header('Location: ' . $this->lurl . '/emprunteurs/gestion/' . $this->clients->id_client);
             die;
-        }
-    }
-
-    public function _edit_client()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-
-        $_SESSION['request_url'] = $this->url;
-
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->companies        = $this->loadData('companies');
-
-        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client')) {
-            $this->companies->get($this->clients->id_client, 'id_client_owner');
-
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            // meme adresse que le siege
-            if ($this->companies->status_adresse_correspondance == 1) {
-                $this->adresse = $this->companies->adresse1;
-                $this->ville   = $this->companies->city;
-                $this->cp      = $this->companies->zip;
-            } else {
-                $this->adresse = $this->clients_adresses->adresse1;
-                $this->ville   = $this->clients_adresses->ville;
-                $this->cp      = $this->clients_adresses->cp;
-            }
         }
     }
 

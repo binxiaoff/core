@@ -201,11 +201,6 @@
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/emprunteurs" title="Emprunteurs">Emprunteurs</a> -</li>
-        <li><a href="<?= $this->lurl ?>/dossiers" title="Gestion des dossiers">Gestion des dossiers</a> -</li>
-        <li>Detail Dossier</li>
-    </ul>
     <h1>Detail dossier<?php if (false === empty($this->projects->title)) : ?> : <?= $this->projects->title ?><?php endif; ?></h1>
     <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="resume">
@@ -358,7 +353,7 @@
                         <td><?= $this->fPredictAutoBid ?> % </td>
                     </tr>
                     <?php endif; ?>
-                    <?php if (isset($this->rate_min, $this->rate_max)): ?>
+                    <?php if (isset($this->rate_min, $this->rate_max)) : ?>
                         <tr>
                             <th><label for="project_rate"> Taux min / max :</label></th>
                             <td><?= $this->rate_min ?> % - <?= $this->rate_max ?> %</td>
@@ -449,22 +444,28 @@
                         <td>
                             <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
                                 <option value=""></option>
-                            <?php foreach ($this->eligibleProduct as $product) : ?>
-                                <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
-                                    <?= $this->translator->trans('product_label_' . $product->label) ?>
-                                </option>
-                            <?php endforeach; ?>
-                            </select>
+                                <?php if (false === empty($this->selectedProduct->id_product) && false === in_array($this->selectedProduct, $this->eligibleProduct)) : ?>
+                                    <option value="<?= $this->selectedProduct->id_product ?>" selected disabled >
+                                        <?= $this->translator->trans('product_label_' . $this->selectedProduct->label) ?>
+                                    </option>
+                                <?php endif; ?>
+                                <?php foreach ($this->eligibleProduct as $product) : ?>
+                                    <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
+                                        <?= $this->translator->trans('product_label_' . $product->label) ?>
+                                    </option>
+
+                                <?php endforeach; ?>
+                                </select>
                         </td>
                     </tr>
-                    <?php if (isset($this->availableContracts) && in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)): ?>
+                    <?php if (isset($this->availableContracts) && in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)) : ?>
                         <tr>
                             <th>DIRS</th>
                             <td>
                                 <a href="<?= $this->furl ?>/var/dirs/<?= $this->projects->slug ?>.pdf">
                                     <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF"/>
                                 </a>
-                                <?php if ($this->projects->status >= \projects_status::EN_FUNDING): ?>
+                                <?php if ($this->projects->status >= \projects_status::EN_FUNDING) : ?>
                                     <a href="<?= $this->url ?>/dossiers/regenerate_dirs/<?= $this->projects->id_project ?>" class="regenerate-dirs thickbox">
                                         <img src="<?= $this->surl ?>/images/admin/reload.png" alt="Regenerate" title="Régénérer le DIRS"/>
                                     </a>
@@ -482,7 +483,7 @@
                             <th>Statut</th>
                             <td><strong><?= $this->phrase_resultat ?></strong></td>
                         </tr>
-                        <?php if ($this->virement_recu): ?>
+                        <?php if ($this->virement_recu) : ?>
                             <tr>
                                 <th>Virement reçu le</th>
                                 <td><strong><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></strong></td>
@@ -499,7 +500,7 @@
                                 <th>Motif du virement</th>
                                 <td><strong><?= $this->receptions->motif ?></strong></td>
                             </tr>
-                        <?php else: ?>
+                        <?php else : ?>
                             <tr>
                                 <th>Virement à émettre avant le</th>
                                 <td><strong><?= (isset($this->nextRepaymentDate)) ? $this->nextRepaymentDate : '' ?></strong></td>
@@ -509,7 +510,7 @@
                             <th>Montant CRD (*)</th>
                             <td><strong><?= $this->ficelle->formatNumber($this->montant_restant_du_preteur) ?>&nbsp;€</strong></td>
                         </tr>
-                        <?php if (false == $this->virement_recu): ?>
+                        <?php if (false == $this->virement_recu) : ?>
                             <tr>
                                 <th>Motif à indiquer sur le virement</th>
                                 <td><strong>RA-<?= $this->projects->id_project ?></strong></td>
@@ -541,6 +542,7 @@
                         <th>ID emprunteur :</th>
                         <td>
                             <?= $this->clients->id_client ?>
+                            <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Éditer l'emprunteur" /></a>
                             <input id="id_client" type="hidden" value="<?= $this->clients->id_client ?>" name="id_client">
                         </td>
                     </tr>
@@ -605,6 +607,10 @@
                                             && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
                                         ) {
                                             $blockingPuttingOnlineError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                        }
+
+                                        if (false === $this->isProductUsable) {
+                                            $blockingPuttingOnlineError = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
                                         }
 
                                         if (false === empty($blockingPuttingOnlineError)) {
@@ -798,15 +804,15 @@
                             </td>
                         </tr>
                         <?php if (empty($this->proxy) || $this->proxy['status'] != \projects_pouvoir::STATUS_VALIDATED) : ?>
-                        <tr>
-                            <th>Pouvoir :</th>
-                            <td><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></td>
-                        </tr>
+                            <tr>
+                                <th>Pouvoir :</th>
+                                <td><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                            </tr>
                         <?php endif ?>
                         <?php if (empty($this->mandate) || $this->mandate['status'] != \clients_mandats::STATUS_SIGNED) : ?>
                             <tr>
                                 <th>Mandat :</th>
-                                <td><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></td>
+                                <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                             </tr>
                         <?php endif ?>
                     <?php endif; ?>
@@ -896,7 +902,7 @@
         <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a>
     </div>
         <div id="table_memo">
-            <?php if (count($this->lProjects_comments) > 0): ?>
+            <?php if (count($this->lProjects_comments) > 0) : ?>
             <table class="tablesorter">
                 <thead>
                     <tr>
@@ -907,7 +913,7 @@
                 </thead>
                 <tbody>
                 <?php $i = 1; ?>
-                <?php foreach ($this->lProjects_comments as $p): ?>
+                <?php foreach ($this->lProjects_comments as $p) : ?>
                     <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td align="center"><?= $this->dates->formatDate($p['added'], 'd/m/Y H:i:s') ?></td>
                         <td><?= nl2br($p['content']) ?></td>

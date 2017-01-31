@@ -82,7 +82,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
                 foreach ($attachments as $attachment) {
                     // Check if it is the final status and that no revalidation is required
-                    if (\greenpoint_attachment::REVALIDATE_YES == $attachment['revalidate'] || \greenpoint_attachment::FINAL_STATUS_NO == $attachment['final_status']) {
+                    if (\greenpoint_attachment::REVALIDATE_YES == $attachment['revalidate']) {
                         unset($clientsToValidate[$clientId]);
                         continue 2;
                     }
@@ -135,15 +135,6 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
         $serialize = serialize(array('id_client' => $client->id_client, 'attachment_data' => $attachment));
         $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
-
-        /** @var \clients_gestion_notifications $clientNotifications */
-        $clientNotifications = $entityManager->getRepository('clients_gestion_notifications');
-
-        if (false == $clientNotifications->select('id_client = ' . $client->id_client)) {
-            /** @var NotificationManager $notificationManager */
-            $notificationManager = $this->getContainer()->get('unilend.service.notification_manager');
-            $notificationManager->generateDefaultNotificationSettings($client);
-        }
 
         if ($clientStatusHistory->counter('id_client = ' . $client->id_client . ' AND id_client_status = 5') > 0) {
             $mailerManager->sendClientValidationEmail($client, 'preteur-validation-modification-compte');

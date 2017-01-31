@@ -25,10 +25,12 @@
         </fieldset>
     </form>
 </div>
+
 <?php if (isset($this->params[1]) && $this->params[1] == 'export') : ?>
-<script>
-    $('#send_params').click(function(){
-        $('#closeButton').click();
-    });
-</script>
+    <script>
+        $('#send_params').click(function(){
+            $('#closeButton').click();
+        });
+    </script>
 <?php endif; ?>
+

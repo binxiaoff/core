@@ -1,5 +1,5 @@
 <script type="text/javascript">
-    $(function () {
+    $(function() {
         jQuery.tablesorter.addParser({
             id: "fancyNumber", is: function (s) {
                 return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s);
@@ -12,7 +12,7 @@
 
         $("#datepik_1").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -21,7 +21,7 @@
 
         $("#datepik_2").datepicker({
             showOn: 'both',
-            buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -40,30 +40,28 @@
         });
 
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
-        <?php if ($this->nb_lignes != '') { ?>
-        $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
-        <?php } ?>
+
+        <?php if ($this->nb_lignes != '') : ?>
+            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
     });
-    <?php if (isset($_SESSION['freeow'])) { ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?=$_SESSION['freeow']['title']?>";
-        message = "<?=$_SESSION['freeow']['message']?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
-    <?php } ?>
 </script>
 
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/emprunteurs" title="Emprunteurs">Emprunteurs</a> -</li>
-        <li>Dossiers en funding</li>
-    </ul>
     <h1>Liste des <?= count($this->lProjects) ?> derniers dossiers en funding</h1>
-    <?php if (count($this->lProjects) > 0) { ?>
+    <?php if (count($this->lProjects) > 0) : ?>
         <table class="tablesorter">
             <thead>
                 <tr>
@@ -112,7 +110,7 @@
             ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != '') { ?>
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -127,9 +125,8 @@
                     </td>
                 </tr>
             </table>
-        <?php } ?>
-    <?php } elseif (isset($_POST['form_search_emprunteur'])) { ?>
+        <?php endif; ?>
+    <?php elseif (isset($_POST['form_search_emprunteur'])) : ?>
         <p>Il n'y a aucun dossier pour cette recherche.</p>
-    <?php } ?>
+    <?php endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>

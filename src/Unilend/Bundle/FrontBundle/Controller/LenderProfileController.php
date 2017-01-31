@@ -122,6 +122,11 @@ class LenderProfileController extends Controller
         $notificationSettings = $this->get('unilend.service.entity_manager')->getRepository('clients_gestion_notifications');
         $notificationSetting  = $notificationSettings->getNotifs($client->id_client);
 
+        if (empty($notificationSetting)) {
+            $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client);
+            $notificationSetting  = $notificationSettings->getNotifs($client->id_client);
+        }
+
         $templateData['notification_settings']['immediate'] = [
             \clients_gestion_type_notif::TYPE_NEW_PROJECT                   => $notificationSetting[\clients_gestion_type_notif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
             \clients_gestion_type_notif::TYPE_BID_PLACED                    => $notificationSetting[\clients_gestion_type_notif::TYPE_BID_PLACED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
@@ -156,7 +161,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/notiication", name="lender_profile_notification", condition="request.isXmlHttpRequest()")
+     * @Route("/profile/notification", name="lender_profile_notification", condition="request.isXmlHttpRequest()")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      */
@@ -598,7 +603,7 @@ class LenderProfileController extends Controller
                     $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-name-missing'));
                 } else {
                     $company->nom_dirigeant = $ficelle->majNom($form['company_director_name']);
-                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-name-label') . '</li>';
+                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_birth-name') . '</li>';
                 }
 
                 if (empty($form['company_director_first_name'])) {
@@ -612,7 +617,7 @@ class LenderProfileController extends Controller
                     $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-position-missing'));
                 } else {
                     $company->fonction_dirigeant = $form['company_director_position'];
-                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_firstname') . '</li>';
+                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_position') . '</li>';
                 }
 
                 if (empty($form['company_director_phone']) || false === is_numeric($form['company_director_phone']) || strlen($form['company_director_phone']) < 9 || strlen($form['company_director_phone']) > 14) {
@@ -623,7 +628,7 @@ class LenderProfileController extends Controller
                 }
 
                 if (empty($form['company_director_email']) || false === filter_var($form['company_director_email'], FILTER_VALIDATE_EMAIL)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('common_email-missing'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('common-validator_email-address-invalid'));
                 } else {
                     $company->email_dirigeant = $form['company_director_email'];
                     $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_email') . '</li>';
@@ -649,7 +654,7 @@ class LenderProfileController extends Controller
 
             if ($client->nom != $form['client_name']) {
                 $client->nom = $ficelle->majNom($form['client_name']);
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('lender-profile_information-tab-identity-section-name-label') . '</li>';
+                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('common_birth-name') . '</li>';
             }
 
             if ($client->prenom != $form['client_first_name']) {

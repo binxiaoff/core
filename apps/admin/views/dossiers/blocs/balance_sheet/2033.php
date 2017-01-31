@@ -9,7 +9,7 @@ $iOldestAnnualAccountsId = end($aAnnualAccountsYears);
         <img class="collapse_expand expanded" src="<?= $this->surl ?>/images/admin/up.png" alt="Déplier/replier"/>
         Actif
     </th>
-    <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
+    <?php foreach ($this->lbilans as $aAnnualAccounts) : ?>
         <th width="180" class="annual_accounts_dates" data-closing="<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>" data-duration="<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>" data-annual-account="<?= $aAnnualAccounts['id_bilan'] ?>"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
         <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
     <?php endforeach; ?>
@@ -82,7 +82,7 @@ echo $this->generateBalanceTotalLineHtml('Total actif', array_merge($codeImmoInc
             <img class="collapse_expand expanded" src="<?= $this->surl ?>/images/admin/up.png" alt="Déplier/replier"/>
             Passif
         </th>
-        <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
+        <?php foreach ($this->lbilans as $aAnnualAccounts) : ?>
             <th width="180"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
             <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
         <?php endforeach; ?>
@@ -133,7 +133,7 @@ echo $this->generateBalanceTotalLineHtml('Total actif', array_merge($codeImmoInc
             <img class="collapse_expand expanded" src="<?= $this->surl ?>/images/admin/up.png" alt="Déplier/replier"/>
             Autres infos
         </th>
-        <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
+        <?php foreach ($this->lbilans as $aAnnualAccounts) : ?>
             <th width="180"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
             <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
         <?php endforeach; ?>
@@ -154,7 +154,7 @@ echo $this->generateBalanceTotalLineHtml('Total actif', array_merge($codeImmoInc
             <img class="collapse_expand expanded" src="<?= $this->surl ?>/images/admin/up.png" alt="Déplier/replier"/>
             Compte de résultat
         </th>
-        <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
+        <?php foreach ($this->lbilans as $aAnnualAccounts) : ?>
             <th width="180"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
             <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
         <?php endforeach; ?>

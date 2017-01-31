@@ -176,44 +176,4 @@ class projects_status extends projects_status_crud
     {
         return (int) $this->bdd->result($this->bdd->query('SELECT status FROM projects_status WHERE status > ' . $iStatus . ' ORDER BY status ASC LIMIT 1'));
     }
-
-    /**
-     * @param int                     $iProjectId
-     * @param projects_status_history $oProjectStatusHistory
-     * @return array
-     */
-    public function getPossibleStatus($iProjectId, projects_status_history $oProjectStatusHistory)
-    {
-        switch ($this->status) {
-            case self::ABANDON:
-                return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatus($iProjectId) . ' OR status = ' . $this->status);
-            case self::A_TRAITER:
-            case self::EN_ATTENTE_PIECES:
-                $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ', ' . $this->getNextStatus($this->status) . ')';
-                break;
-            case self::ATTENTE_ANALYSTE:
-            case self::REVUE_ANALYSTE:
-            case self::COMITE:
-                $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ')';
-                break;
-            case self::PREP_FUNDING:
-                $sPossibleStatus = 'status IN (' . self::ABANDON . ',' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
-                break;
-            case self::LIQUIDATION_JUDICIAIRE:
-                $sPossibleStatus = 'status IN (' . self::LIQUIDATION_JUDICIAIRE . ',' . self::DEFAUT . ')';
-                break;
-            case self::REMBOURSEMENT_ANTICIPE:
-            case self::DEFAUT:
-                return array();
-            default:
-                if ($this->status < self::REMBOURSEMENT) {
-                    return array();
-                }
-                $sPossibleStatus = 'status >= '. self::REMBOURSEMENT . ' AND status != ' . self::DEFAUT;
-                break;
-        }
-
-        return $this->select($sPossibleStatus, 'status ASC');
-    }
-
 }

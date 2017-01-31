@@ -1252,9 +1252,9 @@ class clients extends clients_crud
           gpa.final_status,
           gpa.revalidate,
           gpa.id_attachment,
-          a.id_type        
+          a.id_type,
+          (SELECT group_concat(validation_status SEPARATOR '') FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND a.id_type IN (:attachment_type_id) WHERE ga.id_client = c.id_client) AS global_status
         FROM clients_status_history csh
-          INNER JOIN greenpoint_kyc kyc ON kyc.id_client = csh.id_client
           INNER JOIN greenpoint_attachment gpa ON gpa.id_client = csh.id_client
           INNER JOIN attachment a ON a.id = gpa.id_attachment AND a.id_type IN (:attachment_type_id)
           INNER JOIN clients c ON c.id_client = csh.id_client
@@ -1264,7 +1264,9 @@ class clients extends clients_crud
                                               FROM clients_status_history csh1
                                               WHERE csh1.id_client = csh.id_client
                                               LIMIT 1)
-              AND cs.status IN (:client_status_id) AND kyc.status = 999";
+              AND cs.status IN (:client_status_id) AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
+        HAVING global_status = 999";
+
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);
         return $statement->fetchAll(\PDO::FETCH_ASSOC);

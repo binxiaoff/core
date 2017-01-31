@@ -2,15 +2,14 @@
     $(function() {
         $(".tablesorter").tablesorter({headers: {8: {sorter: false}}});
 
-        <?php if ($this->nb_lignes != ''): ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
+        <?php if ($this->nb_lignes != '') : ?>
+            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['freeow'])): ?>
-            var title = "<?=$_SESSION['freeow']['title']?>",
-                message = "<?=$_SESSION['freeow']['message']?>",
-                opts = {},
-                container;
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {};
 
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
@@ -20,18 +19,8 @@
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/preteurs" title="Clients">Prêteurs</a> -</li>
-        <li>Gestion des prêteurs</li>
-    </ul>
-
-    <?php if (isset($_POST['form_search_client'])): ?>
-        <h1>Résultats de la recherche prêteurs <?= (count($this->lPreteurs) > 0 ? '(' . count($this->lPreteurs) . ')' : '') ?></h1>
-    <?php else: ?>
-        <h1>Gestion des prêteurs</h1>
-    <?php endif; ?>
-
-    <?php if (count($this->lPreteurs) > 0): ?>
+    <h1>Résultats de la recherche prêteurs <?= (count($this->lPreteurs) > 0 ? '(' . count($this->lPreteurs) . ')' : '') ?></h1>
+    <?php if (count($this->lPreteurs) > 0) : ?>
         <table class="tablesorter">
             <thead>
             <tr>
@@ -47,7 +36,7 @@
             </thead>
             <tbody>
             <?php $i = 1; ?>
-            <?php foreach ($this->lPreteurs as $c): ?>
+            <?php foreach ($this->lPreteurs as $c) : ?>
                 <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?> ">
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['id_client'] ?></td>
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['nom_ou_societe'] ?></td>
@@ -57,7 +46,7 @@
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['telephone'] ?></td>
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['status'] == 1 ? 'en ligne' : 'hors ligne' ?></td>
                     <td align="center">
-                        <?php if (1 == $c['novalid']): ?>
+                        <?php if (1 == $c['novalid']) : ?>
                             <a href="<?= $this->lurl ?>/preteurs/edit/<?= $c['id_lender_account'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $c['nom_ou_societe'] . ' ' . $c['prenom_ou_dirigeant'] ?>"/>
                             </a>
@@ -76,7 +65,7 @@
             <?php endforeach; ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != ''): ?>
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -93,7 +82,7 @@
                 </tr>
             </table>
         <?php endif; ?>
-    <?php elseif (isset($_POST['form_search_client'])): ?>
+    <?php else : ?>
         <p>Il n'y a aucun prêteur pour cette recherche.</p>
     <?php endif; ?>
 </div>

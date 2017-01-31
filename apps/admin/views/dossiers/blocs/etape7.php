@@ -79,11 +79,11 @@
                 </tr>
                 <tr>
                     <td colspan="8" style="text-align:center;">
-                        <?php if (false === $this->bReadonlyRiskNote): ?>
+                        <?php if (false === $this->bReadonlyRiskNote) : ?>
                             <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
                             <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite ?></textarea>
                             <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
-                        <?php else: ?>
+                        <?php else : ?>
                             <div style="color:black;"><?= $this->projects_notes->avis_comite ?></div>
                         <?php endif; ?>
                     </td>

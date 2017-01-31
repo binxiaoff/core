@@ -635,7 +635,9 @@ class ajaxController extends bootstrap
                 $oProjectStatus = $this->loadData('projects_status');
                 $oProjectStatus->get($oProjectStatusHistory->id_project_status);
 
-                $aPossibleStatus = $oProjectStatus->getPossibleStatus($this->projects->id_project, $oProjectStatusHistory);
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+                $projectStatusManager = $this->get('unilend.service.project_status_manager');
+                $aPossibleStatus      = $projectStatusManager->getPossibleStatus($this->projects);
 
                 if (count($aPossibleStatus) > 0) {
                     $select = '<select name="status" id="status" class="select">';
@@ -1610,7 +1612,7 @@ class ajaxController extends bootstrap
 
         /** @var \temporary_links_login $oTemporaryLink */
         $oTemporaryLink = $this->loadData('temporary_links_login');
-        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client);
+        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
 
         $aVariables = array(
             'surl'                   => $this->surl,

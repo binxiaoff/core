@@ -1,5 +1,5 @@
 {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-    <form action="{{ path('login-check') }}" method="post" class="project-single-form project-single-form-access" data-formvalidation>
+    <form action="{{ path('login-check') }}" method="post" id="project-single-login-form" class="project-single-form project-single-form-access" data-formvalidation>
         <div class="form-field">
             <label for="form-access-email"><span class="sr-only">{% trans %} common_email {% endtrans %}</span></label>
             <div class="input-group set-left">
@@ -37,7 +37,7 @@
                 <a href="{{ path('lender_subscription_personal_information') }}"><span class="icon fa-angle-right"></span> {% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
             </p>
         </div><!-- /.btn-toolbar -->
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <input type="hidden" name="_csrf_token">
     </form><!-- /.project-single-form-access -->
     {# Hidden text until made visible through the fancybox #}
     <div class="hide-accessible">
