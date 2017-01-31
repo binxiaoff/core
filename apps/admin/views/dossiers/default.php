@@ -215,7 +215,9 @@
                         $this->oUserSalesPerson->get($p['id_commercial'], 'id_user');
                     ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
-                        <td><?= $p['id_project'] ?></td>
+                        <td>
+                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>" title="Afficher le dossier"><?= $p['id_project'] ?></a>
+                        </td>
                         <td><?= $p['siren'] ?></td>
                         <td><?= $p['name'] ?></td>
                         <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
