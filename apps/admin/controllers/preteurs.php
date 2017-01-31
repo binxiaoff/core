@@ -90,16 +90,16 @@ class preteursController extends bootstrap
 
             $this->lPreteurs = $this->clients->searchPreteurs($clientId, $lastName, $email, $firstName, $companyName, $nonValide);
 
-            if (1 == count($this->lPreteurs)) {
-                $lender = $this->lPreteurs[0];
-                header('Location:' . $this->lurl . '/preteurs/edit/' . $lender['id_lender_account']);
+            if (false === empty($clientId) && 1 == count($this->lPreteurs)) {
+                header('Location:' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_lender_account']);
                 die;
             }
 
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
-            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', null, '', '0', '300');
+            header('Location: ' . $this->lurl . '/preteurs/search');
+            die;
         }
     }
 
@@ -410,7 +410,7 @@ class preteursController extends bootstrap
                     } else {
                         $this->clients_adresses->meme_adresse_fiscal = 0;
                     }
-                    $bTaxCountryChanged                     = false === empty($_POST['id_pays_fiscal']) && $this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'];
+                    $applyTaxCountry                        = false === empty($_POST['id_pays_fiscal']) && $this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'];
                     $this->clients_adresses->adresse_fiscal = $_POST['adresse'];
                     $this->clients_adresses->ville_fiscal   = $_POST['ville'];
                     $this->clients_adresses->cp_fiscal      = $_POST['cp'];
@@ -557,17 +557,17 @@ class preteursController extends bootstrap
 
                         $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
-                    if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
-                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
-                    } else {
-                        $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
-                    }
-                    $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
+                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
+                        } else {
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
+                        }
 
                         $_SESSION['compte_valide'] = true;
+                        $applyTaxCountry           = true;
                     }
 
-                    if (true === $bTaxCountryChanged) {
+                    if (true === $applyTaxCountry) {
                         $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
                     }
 

@@ -250,7 +250,7 @@ class ProjectRequestController extends Controller
         $companyRatingHistory = $entityManager->getRepository('company_rating_history');
 
         $companyRatingHistory->id_company = $this->project->id_company;
-        $companyRatingHistory->id_user    = 0;
+        $companyRatingHistory->id_user    = \users::USER_ID_FRONT;
         $companyRatingHistory->action     = \company_rating_history::ACTION_WS;
         $companyRatingHistory->create();
 

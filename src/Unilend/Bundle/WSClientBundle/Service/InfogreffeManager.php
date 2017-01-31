@@ -112,6 +112,7 @@ class InfogreffeManager
 
                     $result = $this->serializer->deserialize($this->getSubscription_3_4($responseArray), CompanyIndebtedness::class, 'json');
                 }
+                $alertType = 'up';
             } catch (\Exception $exception) {
                 $this->logger->error('Could not get response from Infogreffe getProduitsWebServicesXML to get Indebtedness. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
             }
