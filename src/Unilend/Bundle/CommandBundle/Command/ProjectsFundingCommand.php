@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use CL\Slack\Payload\ChatPostMessagePayload;
 use Unilend\librairies\CacheKeys;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
@@ -37,6 +38,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
 
+        $url                = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $hasProjectFinished = false;
         $projects           = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [], '', '', false);
 
@@ -74,6 +76,17 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                         $mailerManager->sendFundFailedToBorrower($project);
                         $mailerManager->sendFundFailedToLender($project);
                     }
+
+                    $now     = new \DateTime();
+                    $payload = new ChatPostMessagePayload();
+                    $payload->setChannel('#plateforme');
+                    $payload->setText('Le projet *<' . $url . '/projects/detail/' . $project->slug . '|' . $project->title . '>* est cloturé le ' . $now->format('d/m/Y à H:i'));
+                    $payload->setUsername('Unilend');
+                    $payload->setIconUrl($this->getContainer()->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
+                    $payload->setAsUser(false);
+
+                    $this->getContainer()->get('cl_slack.api_client')->send($payload);
+
                     $mailerManager->sendProjectFinishedToStaff($project);
                 }
             }
