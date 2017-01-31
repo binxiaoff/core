@@ -9,12 +9,9 @@ class attachmentController extends bootstrap
     {
         parent::initialize();
 
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireView   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
+        $this->autoFireView = false;
         $this->catchAll = true;
 
         $this->users->checkAccess();
