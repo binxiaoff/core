@@ -34,7 +34,8 @@ class DevMigrateLenderAccountCommand extends ContainerAwareCommand
                       la.bic,
                       la.iban
                     FROM wallet w
-                      INNER JOIN lenders_accounts la ON w.id_client = la.id_client_owner';
+                      INNER JOIN lenders_accounts la ON w.id_client = la.id_client_owner
+                      WHERE w.id_type = 1';
 
         $statement = $dataBaseConnection->executeQuery($query);
 
