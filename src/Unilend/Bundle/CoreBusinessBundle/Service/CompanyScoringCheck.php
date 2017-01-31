@@ -12,7 +12,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
 
 class CompanyScoringCheck
 {
-    const UNEXPECTED_RESPONSE = 'unexpected_response';
+    const UNEXPECTED_RESPONSE = 'unexpected_response_from_';
 
     /** @var  EntityManager */
     private $entityManager;
@@ -92,7 +92,7 @@ class CompanyScoringCheck
                 return false;
             }
         }
-        $rejectionReason = self::UNEXPECTED_RESPONSE;
+        $rejectionReason = self::UNEXPECTED_RESPONSE . 'altares_score';
 
         return true;
     }
@@ -177,7 +177,7 @@ class CompanyScoringCheck
             $this->logger->error('Could not get infolegale score: InfolegaleManager::getScore(' . $siren . '). Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
         }
-        $rejectionReason = self::UNEXPECTED_RESPONSE;
+        $rejectionReason = self::UNEXPECTED_RESPONSE . 'infolegal_score';
 
         return true;
     }
@@ -221,7 +221,7 @@ class CompanyScoringCheck
             $this->logger->error('Could not get Euler grade: EulerHermesManager::getGrade(' . $company->siren . '). Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]);
         }
-        $rejectionReason = self::UNEXPECTED_RESPONSE;
+        $rejectionReason = self::UNEXPECTED_RESPONSE . 'euler_grade';
 
         return false;
     }
