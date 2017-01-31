@@ -394,7 +394,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             return;
         }
 
-        if (\transactions_types::TYPE_LENDER_REGULATION == $transaction['type_transation'] && $transaction['id_client'] == 330 ) {
+        if (\transactions_types::TYPE_LENDER_REGULATION == $transaction['type_transaction'] && $transaction['id_client'] == 330 ) {
             $wallet['committed_balance'] = 0;
         }
 

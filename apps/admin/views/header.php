@@ -70,7 +70,8 @@
         <form id="quick_search" method="post">
             <input type="text" name="project" title="ID projet" placeholder="ID projet" size="10" />
             <input type="text" name="lender" title="ID client" placeholder="ID client" size="10" />
-            <input type="submit" value="search" style="display: none" />
+            <!-- Trick for enabling submitting form in Safari and IE -->
+            <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" />
         </form>
     </div>
 </div>
