@@ -96,6 +96,9 @@
             <argument type="service" id="unilend.service.ws_client.soap_client.infogreffe"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
+            <call method="setMonitoring">
+                <argument>true</argument>
+            </call>
         </service>
 
         <service id="unilend.service.ws_client.altares_manager" class="Unilend\Bundle\WSClientBundle\Service\AltaresManager" >
