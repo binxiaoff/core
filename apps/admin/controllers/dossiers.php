@@ -49,10 +49,9 @@ class dossiersController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess('emprunteurs');
 
-        $this->users->checkAccess('dossiers');
-
+        $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
     }
 
@@ -291,7 +290,7 @@ class dossiersController extends bootstrap
             $this->bCanEditStatus = false;
             if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
                 $this->loadData('users_types');
-                if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE, \users_types::TYPE_COMMERCIAL))) {
+                if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL))) {
                     $this->bCanEditStatus = true;
                 }
             }

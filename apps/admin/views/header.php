@@ -110,7 +110,7 @@
         <?php endif; ?>
         <?php if (in_array('stats', $this->lZonesHeader)) : ?>
             <li>
-                <a href="<?= $this->lurl ?>/queries" title="Stats"<?= ($this->menu_admin == 'stats' ? ' class="active"' : '') ?>>Statistiques</a>
+                <a href="<?= $this->lurl ?>/queries" title="Statistiques"<?= ($this->menu_admin == 'stats' ? ' class="active"' : '') ?>>Statistiques</a>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/queries" title="Requêtes">Requêtes</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/etape_inscription" title="Etape d'inscription">Etape d'inscription</a></li>

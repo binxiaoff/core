@@ -40,8 +40,8 @@
         <?php if (isset($_SESSION['freeow'])) : ?>
             var title = "<?= $_SESSION['freeow']['title'] ?>",
                 message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
+                opts = {};
+
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
             <?php unset($_SESSION['freeow']); ?>

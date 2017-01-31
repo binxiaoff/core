@@ -112,6 +112,34 @@ class projects_status extends projects_status_crud
         self::DEFAUT
     );
 
+    /**
+     * List of project status when project is considered as part of the commercial team pipe
+     * @var array
+     */
+    public static $saleTeam = [
+        self::A_TRAITER,
+        self::EN_ATTENTE_PIECES,
+        self::ATTENTE_ANALYSTE,
+        self::REVUE_ANALYSTE,
+        self::COMITE,
+        self::PREP_FUNDING,
+        self::A_FUNDER,
+        self::AUTO_BID_PLACED,
+        self::EN_FUNDING,
+        self::BID_TERMINATED,
+        self::FUNDE,
+    ];
+
+    /**
+     * List of project status when project is considered as part of the risk team pipe
+     * @var array
+     */
+    public static $riskTeam = [
+        self::ATTENTE_ANALYSTE,
+        self::REVUE_ANALYSTE,
+        self::COMITE
+    ];
+
     public function __construct($bdd, $params = '')
     {
         parent::projects_status($bdd, $params);

@@ -29,36 +29,18 @@
 class users_types extends users_types_crud
 {
     const TYPE_ADMIN      = 1;
-    const TYPE_ANALYSTE   = 2;
+    const TYPE_RISK       = 2;
     const TYPE_COMMERCIAL = 3;
+    const TYPE_MARKETING  = 4;
+    const TYPE_COMPLIANCE = 5;
+    const TYPE_OTHER      = 6;
 
-    function users_types($bdd, $params = '')
+    public function users_types($bdd, $params = '')
     {
         parent::users_types($bdd, $params);
     }
 
-    function get($id, $field = 'id_user_type')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_user_type')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -76,7 +58,7 @@ class users_types extends users_types_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -88,7 +70,7 @@ class users_types extends users_types_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_user_type')
+    public function exist($id, $field = 'id_user_type')
     {
         $sql    = 'SELECT * FROM `users_types` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
