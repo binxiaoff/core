@@ -154,64 +154,44 @@ class users extends users_crud
         return ($this->bdd->num_rows($res) >= 1);
     }
 
-    public function checkAccess($zone = '', $superAdmin = false)
+    public function checkAccess($zone = '')
     {
-        if ($superAdmin) {
-            if (! isset($_SESSION['user'])) {
-                $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE id_user = 1';
-                $res = $this->bdd->query($sql);
+        if (false === isset($_SESSION['auth']) || $_SESSION['auth'] != true) {
+            header('Location: ' . $this->params['lurl'] . '/login');
+            die;
+        }
 
-                if ($this->bdd->num_rows($res) == 1) {
-                    $_SESSION['auth']  = true;
-                    $_SESSION['token'] = md5(md5(time() . $this->securityKey));
-                    $_SESSION['user']  = $this->bdd->fetch_array($res);
-                } else {
-                    $_SESSION['msgErreur'] = 'loginError';
+        if (false === isset($_SESSION['token']) || trim($_SESSION['token']) == '') {
+            header('Location: ' . $this->params['lurl'] . '/login');
+            die;
+        }
 
-                    header('Location: ' . $this->params['lurl'] . '/login');
-                    die;
-                }
-            }
-        } else {
-            if (false === isset($_SESSION['auth']) || $_SESSION['auth'] != true) {
-                header('Location: ' . $this->params['lurl'] . '/login');
-                die;
-            }
+        $sql = 'SELECT COUNT(*) FROM ' . $this->userTable . ' WHERE id_user = "' . $_SESSION['user']['id_user'] . '" AND password = "' . $_SESSION['user']['password'] . '"';
+        $res = $this->bdd->query($sql);
 
-            if (false === isset($_SESSION['token']) || trim($_SESSION['token']) == '') {
-                header('Location: ' . $this->params['lurl'] . '/login');
-                die;
-            }
+        if ($this->bdd->result($res, 0) != 1) {
+            $_SESSION['msgErreur'] = 'loginError';
 
-            $sql = 'SELECT COUNT(*) FROM ' . $this->userTable . ' WHERE id_user = "' . $_SESSION['user']['id_user'] . '" AND password = "' . $_SESSION['user']['password'] . '"';
-            $res = $this->bdd->query($sql);
+            header('Location: ' . $this->params['lurl'] . '/login');
+            die;
+        } elseif ($zone != '') {
+            $sql    = 'SELECT id_zone FROM zones WHERE slug = "' . $zone . '"';
+            $result = $this->bdd->query($sql);
+            $record = $this->bdd->fetch_array($result);
 
-            if ($this->bdd->result($res, 0) != 1) {
-                $_SESSION['msgErreur'] = 'loginError';
+            $id_zone = $record['id_zone'];
 
-                header('Location: ' . $this->params['lurl'] . '/login');
-                die;
+            $sql    = 'SELECT * FROM users_zones WHERE id_user = ' . $_SESSION['user']['id_user'] . ' AND id_zone = "' . $id_zone . '"';
+            $result = $this->bdd->query($sql);
+            $nb     = $this->bdd->num_rows($result);
+
+            if ($nb == 1) {
+                return true;
             } else {
-                if ($zone != '') {
-                    $sql    = 'SELECT id_zone FROM zones WHERE slug = "' . $zone . '"';
-                    $result = $this->bdd->query($sql);
-                    $record = $this->bdd->fetch_array($result);
+                $_SESSION['msgErreur'] = 'loginInterdit';
 
-                    $id_zone = $record['id_zone'];
-
-                    $sql    = 'SELECT * FROM users_zones WHERE id_user = ' . $_SESSION['user']['id_user'] . ' AND id_zone = "' . $id_zone . '"';
-                    $result = $this->bdd->query($sql);
-                    $nb     = $this->bdd->num_rows($result);
-
-                    if ($nb == 1) {
-                        return true;
-                    } else {
-                        $_SESSION['msgErreur'] = 'loginInterdit';
-
-                        header('Location: ' . $this->params['lurl'] . '/login');
-                        die;
-                    }
-                }
+                header('Location: ' . $this->params['lurl'] . '/login');
+                die;
             }
         }
     }
