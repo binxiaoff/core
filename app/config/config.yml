@@ -87,7 +87,7 @@ doctrine_mongodb:
                 ssl:           true
                 password:      "%mongodb_password%"
                 username:      "%mongodb_username%"
-    default_database: testing
+    default_database: 'ws_call_%kernel.environment%'
     document_managers:
         default:
             auto_mapping: true

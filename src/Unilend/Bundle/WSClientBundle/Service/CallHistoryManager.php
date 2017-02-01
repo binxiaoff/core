@@ -159,8 +159,8 @@ class CallHistoryManager
         try {
             $wsCall = new WsCall();
             $wsCall->setSiren($siren);
-            $wsCall->setService($wsResource->provider_name);
-            $wsCall->setMethod($wsResource->resource_name);
+            $wsCall->setProvider($wsResource->provider_name);
+            $wsCall->setResource($wsResource->resource_name);
             $wsCall->setResponse($response);
             $wsCall->setAdded(new \DateTime());
 
@@ -181,5 +181,73 @@ class CallHistoryManager
             $this->payload->setIconUrl($this->assetPackage->getUrl('') . '/assets/images/slack/unilend.png');
         }
         $this->payload->setAsUser(false);
+    }
+
+    /**
+     * @param string $siren
+     * @param string $provider
+     * @param string $resource
+     * @param null|\DateTime $date
+     * @return false|WsCall
+     */
+    public function fetchLatestDataFromMongo($siren, $provider, $resource, \DateTime $date)
+    {
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'query_params' => json_encode([$siren, $provider, $resource, $date->format('Y-m-d H:i:s')])];
+        $wsCall     = false;
+        $time       = time();
+        $this->stopwatch->start(__FUNCTION__ . $time);
+
+        try {
+            /** @var WsCall $wsCall */
+            $wsCall = $this->managerRegistry->getManager()
+                ->createQueryBuilder('UnilendStoreBundle:WsCall')
+                ->field('siren')->equals($siren)
+                ->field('provider')->equals($provider)
+                ->field('resource')->equals($resource)
+                ->field('added')->gte($date)
+                ->sort('added', 'desc')
+                ->limit(1)
+                ->refresh()
+                ->getQuery()
+                ->getSingleResult();
+        } catch (\Exception $exception) {
+            $this->logger->warning('Unable to fetch data from mongoDB: ' . $exception->getMessage(), $logContext);
+        }
+        $this->logger->info('Data fetch from mongo DB took: ' . $this->stopwatch->stop(__FUNCTION__ . $time)->getDuration() . ' ms', $logContext);
+
+        return $wsCall;
+    }
+
+    /**
+     * @param \ws_external_resource $wsResource
+     * @param string $siren
+     * @return mixed
+     */
+    public function getStoredResponse(\ws_external_resource $wsResource, $siren)
+    {
+        if ($wsResource->validity_days > 0) {
+            $data = $this->fetchLatestDataFromMongo(
+                $siren,
+                $wsResource->provider_name,
+                $wsResource->resource_name,
+                $this->getDateTimeFromPassedDays($wsResource->validity_days)
+            );
+
+            if ($data instanceof WsCall) {
+                $this->logger->debug('Fetched data from mongoDB for: ' . $data->getProvider() . '->' . $data->getResource() . ': ' . $data->getResponse() . ' --- Stored at: ' . $data->getAdded()->format('Y-m-d H:i:s'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $data->getSiren()]);
+                return json_decode($data->getResponse());
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param int $days
+     * @return \DateTime
+     */
+    public function getDateTimeFromPassedDays($days = 3)
+    {
+        return (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
     }
 }

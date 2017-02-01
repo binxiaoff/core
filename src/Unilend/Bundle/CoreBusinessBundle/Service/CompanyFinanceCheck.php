@@ -80,14 +80,14 @@ class CompanyFinanceCheck
 
                 $company->update();
 
-                if (true === $companyData->getCollectiveProcedure()) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_PROCEEDING;
+                if (true === in_array($companyData->getCompanyStatus(), [7, 9])) {
+                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INACTIVE;
 
                     return false;
                 }
 
-                if (true === in_array($companyData->getCompanyStatus(), [7, 9])) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INACTIVE;
+                if (true === $companyData->getCollectiveProcedure()) {
+                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_PROCEEDING;
 
                     return false;
                 }

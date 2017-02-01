@@ -132,6 +132,15 @@ class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
         /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList $balanceSheetList */
         $balanceSheetList = $companyFinanceCheck->getBalanceSheets($company->siren);
 
+        if (null !== $balanceSheetList) {
+            $logger->info('Last balance sheet date: ' . $balanceSheetList->getLastBalanceSheet()->getCloseDate()->format('Y-m-d H:i:s') .
+                ' Number of days left: ' . (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days, $logContext);
+
+            /** @var CompanyBalanceSheetManager $companyBalanceSheetManager */
+            $companyBalanceSheetManager = $this->getContainer()->get('unilend.service.company_balance_sheet_manager');
+            $companyBalanceSheetManager->setCompanyBalance($company, $project, $balanceSheetList);
+        }
+
         if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
             if (true === $companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $company->siren, $rejectionReason)) {
                 $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
@@ -174,15 +183,6 @@ class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
             $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
-        }
-
-        if (null !== $balanceSheetList) {
-            $logger->info('Last balance sheet date: ' . $balanceSheetList->getLastBalanceSheet()->getCloseDate()->format('Y-m-d H:i:s') .
-                ' Number of days left: ' . (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days, $logContext);
-
-            /** @var CompanyBalanceSheetManager $companyBalanceSheetManager */
-            $companyBalanceSheetManager = $this->getContainer()->get('unilend.service.company_balance_sheet_manager');
-            $companyBalanceSheetManager->setCompanyBalance($company, $project, $balanceSheetList);
         }
 
         return true;

@@ -6,6 +6,11 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
 /**
  * @MongoDB\Document
+ * @MongoDB\Indexes({
+ *     @MongoDB\Index(keys={"provider", "resource"}, background="true"),
+ *     @MongoDB\Index(keys={"siren"}, background="true"),
+ *     @MongoDB\Index(keys={"added"}, background="true", order="desc")
+ *     })
  */
 class WsCall
 {
@@ -17,12 +22,12 @@ class WsCall
     /**
      * @MongoDB\Field(type="string")
      */
-    protected $service;
+    protected $provider;
 
     /**
      * @MongoDB\Field(type="string")
      */
-    protected $method;
+    protected $resource;
 
     /**
      * @MongoDB\Field(type="string")
@@ -52,12 +57,12 @@ class WsCall
     /**
      * Set service
      *
-     * @param string $service
+     * @param string $provider
      * @return $this
      */
-    public function setService($service)
+    public function setProvider($provider)
     {
-        $this->service = $service;
+        $this->provider = $provider;
         return $this;
     }
 
@@ -66,20 +71,20 @@ class WsCall
      *
      * @return string $service
      */
-    public function getService()
+    public function getProvider()
     {
-        return $this->service;
+        return $this->provider;
     }
 
     /**
      * Set method
      *
-     * @param string $method
+     * @param string $resource
      * @return $this
      */
-    public function setMethod($method)
+    public function setResource($resource)
     {
-        $this->method = $method;
+        $this->resource = $resource;
         return $this;
     }
 
@@ -88,9 +93,9 @@ class WsCall
      *
      * @return string $method
      */
-    public function getMethod()
+    public function getResource()
     {
-        return $this->method;
+        return $this->resource;
     }
 
     /**
