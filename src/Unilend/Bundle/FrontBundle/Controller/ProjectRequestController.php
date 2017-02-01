@@ -292,6 +292,12 @@ class ProjectRequestController extends Controller
         /** @var BalanceSheetList $balanceSheetList */
         $balanceSheetList = $companyFinanceCheck->getBalanceSheets($this->company->siren);
 
+        if (null !== $balanceSheetList) {
+            /** @var CompanyBalanceSheetManager $companyBalanceSheetManager */
+            $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+            $companyBalanceSheetManager->setCompanyBalance($this->company, $this->project, $balanceSheetList);
+        }
+
         if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
             if (true === $companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $this->company->siren, $rejectionReason)) {
                 return $this->updateProjectStatusAndRedirect($rejectionReason);
@@ -320,12 +326,6 @@ class ProjectRequestController extends Controller
 
         if (true === $companyFinanceCheck->hasInfogreffePrivileges($this->company->siren, $rejectionReason)) {
             return $this->updateProjectStatusAndRedirect($rejectionReason);
-        }
-
-        if (null !== $balanceSheetList) {
-            /** @var CompanyBalanceSheetManager $companyBalanceSheetManager */
-            $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
-            $companyBalanceSheetManager->setCompanyBalance($this->company, $this->project, $balanceSheetList);
         }
 
         return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);

@@ -79,19 +79,32 @@ class InfogreffeManager
         $order->addChild('type_inscription', self::PRIVILEGES_SECU_REGIMES_COMPLEMENT . self::PRIVILEGES_TRESOR_PUBLIC);
         $wsResource = $this->resourceManager->getResource(self::RESOURCE_INDEBTEDNESS);
 
-        /** @var callable $callBack */
-        $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
-        try {
-            ini_set("default_socket_timeout", 8);
-            $response  = $this->client->__soapCall($wsResource->resource_name, [$request->asXML()]);
-            $alertType = 'up';
-        } catch (\SoapFault $exception) {
-            $alertType = 'down';
-            $this->logger->warning('Calling infogreffe Indebtedness siren: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
+        if (false === $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
+            /** @var callable $callBack */
+            $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
+            try {
+                ini_set("default_socket_timeout", 8);
+                $this->client->__soapCall($wsResource->resource_name, [$request->asXML()]);
+                $alertType = 'up';
+            } catch (\SoapFault $exception) {
+                $alertType = 'down';
+                $this->logger->warning('Calling infogreffe Indebtedness siren: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
+            }
+            call_user_func($callBack, $this->client->__getLastResponse());
+            $response = $this->client->__getLastResponse();
+        } else {
+            $this->setMonitoring(false);
         }
-        call_user_func($callBack, $this->client->__getLastResponse());
+        try {
+            $xmlResponse = new \SimpleXMLElement($response);
+            /** @var \SimpleXMLElement[] $indebtedness */
+            $indebtedness = $xmlResponse->xpath('//return');
+        } catch (\Exception $exception) {
+            $this->logger->error('Unrecognized response from Infogreffe getProduitsWebServicesXML, could not create XML object. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
+            return $result;
+        }
 
-        if (isset($response) && preg_match('/(^\d{3}) (.*)/', $response, $matches)) {
+        if (isset($indebtedness[0]) && preg_match('/(^\d{3}) (.*)/', $indebtedness[0], $matches)) {
             if (isset($matches[1], $matches[2])) {
                 if (true === in_array($matches[1], ['010', '012', '014', '999'])) {
                     $alertType = 'down';
@@ -99,22 +112,15 @@ class InfogreffeManager
                 }
                 $result = ['code' => $matches[1], 'message' => $matches[2]];
             }
-        } else {
+        } elseif (isset($indebtedness[0])) {
             try {
-                /** @var \SimpleXMLElement $xmlResponse */
-                $xmlResponse = new \SimpleXMLElement($this->client->__getLastResponse());
-                /** @var \SimpleXMLElement[] $indebtedness */
-                $indebtedness = $xmlResponse->xpath('//return');
+                $responseArray = $this->xml2array($indebtedness[0]);
+                $this->logger->info('Extracted Array: ' . json_encode($responseArray), $logContext);
 
-                if (false !== $indebtedness) {
-                    $responseArray = $this->xml2array($indebtedness[0]);
-                    $this->logger->info('Extracted Array: ' . json_encode($responseArray), $logContext);
-
-                    $result = $this->serializer->deserialize($this->getSubscription_3_4($responseArray), CompanyIndebtedness::class, 'json');
-                }
+                $result = $this->serializer->deserialize($this->getSubscription_3_4($responseArray), CompanyIndebtedness::class, 'json');
                 $alertType = 'up';
             } catch (\Exception $exception) {
-                $this->logger->error('Could not get response from Infogreffe getProduitsWebServicesXML to get Indebtedness. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
+                $this->logger->error('Could not deserialize response from Infogreffe getProduitsWebServicesXML to get Indebtedness. Siren: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
             }
         }
 

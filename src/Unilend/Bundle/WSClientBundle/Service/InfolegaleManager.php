@@ -113,23 +113,27 @@ class InfolegaleManager
         $wsResource     = $this->resourceManager->getResource($resourceLabel);
 
         try {
-            /** @var ResponseInterface $response */
-            $response = $this->client->$method(
-                $wsResource->resource_name,
-                [
-                    'query'    => $query,
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
-                ]
-            );
-            $content = $response->getBody()->getContents();
+            if (false === $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
+                /** @var ResponseInterface $response */
+                $response = $this->client->$method(
+                    $wsResource->resource_name,
+                    [
+                        'query'    => $query,
+                        'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
+                    ]
+                );
+                $content = $response->getBody()->getContents();
 
-            if (200 === $response->getStatusCode()) {
-                $alertType = 'up';
-                $xml       = new \SimpleXMLElement($content);
-                $result    = $xml->content[0];
-                $this->logger->info('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
+                if (200 === $response->getStatusCode()) {
+                    $alertType = 'up';
+                    $xml       = new \SimpleXMLElement($content);
+                    $result    = $xml->content[0];
+                    $this->logger->info('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
+                } else {
+                    $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
+                }
             } else {
-                $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
+                $this->setMonitoring(false);
             }
         } catch (\Exception $exception) {
             $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage(), $logContext);

@@ -148,17 +148,24 @@ class AltaresManager
     private function identitySoapCall($resourceLabel, $params)
     {
         $wsResource = $this->resourceManager->getResource($resourceLabel);
+        $siren      = $params[$this->getSirenKey($wsResource->resource_name)];
+
         try {
-            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $params[$this->getSirenKey($wsResource->resource_name)]);
-            ini_set("default_socket_timeout", 8);
-            $response = $this->identityClient->__soapCall(
-                $wsResource->resource_name,
-                [
-                    ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
-                ]
-            );
-            call_user_func($callable, json_encode($response));
-            $this->logger->info('Call to ' . $wsResource->resource_name . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($wsResource->resource_name)]]);
+            if (false === $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
+                $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
+                ini_set("default_socket_timeout", 8);
+                $response = $this->identityClient->__soapCall(
+                    $wsResource->resource_name,
+                    [
+                        ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
+                    ]
+                );
+                call_user_func($callable, json_encode($response));
+                $this->logger->info('Call to ' . $wsResource->resource_name . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+            } else {
+                $response = json_decode($response);
+                $this->setMonitoring(false);
+            }
 
             if ($response->return->correct && $response->return->myInfo) {
                 if ($this->monitoring) {
@@ -186,17 +193,24 @@ class AltaresManager
     private function riskSoapCall($resourceLabel, $params)
     {
         $wsResource = $this->resourceManager->getResource($resourceLabel);
+        $siren      = $params[$this->getSirenKey($wsResource->resource_name)];
+
         try {
-            $callable   = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $params[$this->getSirenKey($wsResource->resource_name)]);
-            ini_set("default_socket_timeout", 8);
-            $response = $this->riskClient->__soapCall(
-                $wsResource->resource_name,
-                [
-                    ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
-                ]
-            );
-            call_user_func($callable, json_encode($response));
-            $this->logger->info('Call to ' . $wsResource->resource_name . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $params[$this->getSirenKey($wsResource->resource_name)]]);
+            if (false === $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
+                $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
+                ini_set("default_socket_timeout", 8);
+                $response = $this->riskClient->__soapCall(
+                    $wsResource->resource_name,
+                    [
+                        ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
+                    ]
+                );
+                call_user_func($callable, json_encode($response));
+                $this->logger->info('Call to ' . $wsResource->resource_name . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+            } else {
+                $response = json_decode($response);
+                $this->setMonitoring(false);
+            }
 
             if ($response->return->correct && $response->return->myInfo) {
                 if ($this->monitoring) {
