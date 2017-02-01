@@ -21,18 +21,10 @@
         {% if errorDetails is defined %}
             {{ errorDetails|raw }}
         {% endif %}
-        {% if app.request.get('_route') == 'cloudflare_5xx' %}
-            <!-- ::CLOUDFLARE_ERROR_500S_BOX:: -->
-        {% endif %}
-        {% if app.request.get('_route') == 'cloudflare_challenge' %}
-            ::CAPTCHA_BOX::
-        {% endif %}
-        {% if hideButtons is not defined or hideButtons == false %}
-            <br>
-            <div class="btn-toolbar text-align-left">
-                <a href="{{ path('home') }}" class="btn-primary">{% trans %} error-page_button-home-page {% endtrans %}</a>
-                <a href="{{ path('aide') }}" class="btn-primary">{% trans %} error-page_button-help-page {% endtrans %}</a>
-            </div><!-- /.btn-toolbar -->
-        {% endif %}
+        <br>
+        <div class="btn-toolbar text-align-left">
+            <a href="{{ path('home') }}" class="btn-primary">{% trans %} error-page_button-home-page {% endtrans %}</a>
+            <a href="{{ path('aide') }}" class="btn-primary">{% trans %} error-page_button-help-page {% endtrans %}</a>
+        </div><!-- /.btn-toolbar -->
     </section><!-- /.page-section -->
 {% endblock %}
