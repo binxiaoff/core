@@ -50,6 +50,8 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $incomeTaxBDC               = 0;
             $interestsIFP               = 0;
             $incomeTaxIFP               = 0;
+            $interestsMiniBon           = 0;
+            $incomeTaxMiniBon           = 0;
 
             foreach ($aResult as $row) {
                 $contract->get($row['id_type_contract']);
@@ -63,6 +65,10 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                             $interestsIFP = $row['interests'];
                             $incomeTaxIFP = $row['tax_' . \tax_type::TYPE_INCOME_TAX];
                             break;
+                        case \underlying_contract::CONTRACT_MINIBON:
+                            $interestsMiniBon = $row['interests'];
+                            $incomeTaxMiniBon = $row['tax_' . \tax_type::TYPE_INCOME_TAX];
+                            break;
                     }
                 }
 
@@ -74,7 +80,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                 if ((('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) || 'legal_entity' == $row['client_type'])) {
                     $deductionAtSourceInterests = bcadd($deductionAtSourceInterests, $row['interests'], 2);
 
-                    if (\underlying_contract::CONTRACT_BDC == $contract->label) {
+                    if ($contract->label != \underlying_contract::CONTRACT_IFP) {
                         $deductionAtSourceTax = bcadd($deductionAtSourceTax, $row['tax_' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE], 2);
                     }
                 }
@@ -129,6 +135,12 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                         <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[\tax_type::TYPE_INCOME_TAX]) . '%</td>
                     </tr>
                     <tr>
+                        <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (minibons)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : minibons-->
+                        <td class="right">' . $ficelle->formatNumber($interestsMiniBon) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($incomeTaxMiniBon) . '</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[\tax_type::TYPE_INCOME_TAX]) . '%</td>
+                    </tr>
+                    <tr>
                         <th style="background-color:#E6F4DA;">Dispens&eacute;</th> <!-- Somme des interets bruts pour : Personne physique, résident français, exonéré, type loan : 1-->
                         <td class="right">' . $ficelle->formatNumber($exemptedInterests) . '</td>
                         <td class="right">' . $ficelle->formatNumber($exemptedIncomeTax) . '</td>
@@ -136,12 +148,12 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Total</th>
-                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $exemptedInterests, 2)) . '</td>
-                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd($incomeTaxBDC, $incomeTaxIFP, 2), $exemptedIncomeTax, 2)) . '</td>
+                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $interestsMiniBon, 2), $exemptedInterests, 2)) . '</td>
+                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd(bcadd($incomeTaxBDC, $incomeTaxIFP, 2), $incomeTaxMiniBon, 2), $exemptedIncomeTax, 2)) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[\tax_type::TYPE_INCOME_TAX]) . '%</td>
                     </tr>
                     <tr>
-                        <th style="background-color:#ECAEAE;" colspan="4">Retenue &agrave; la source (bons de caisse)</th>
+                        <th style="background-color:#ECAEAE;" colspan="4">Retenue &agrave; la source (bons de caisse et minibons)</th>
                     </tr>
                     <tr>
                         <th>&nbsp;</th>
