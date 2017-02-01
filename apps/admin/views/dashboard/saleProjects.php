@@ -28,7 +28,7 @@
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project['id_project'] ?>"<?php if (in_array($status, $this->collapsedStatus)) : ?> style="display: none;"<?php endif; ?>>
                     <td><?= $project['id_project'] ?></td>
                     <td><?= $project['company_name'] ?></td>
-                    <td><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
+                    <td style="text-align: right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
                     <td><?= $project['duration'] ?> mois</td>
                     <td><?= $project['client_name'] ?></td>
                     <td><?= $project['client_phone'] ?></td>
@@ -41,7 +41,7 @@
                     <?php else : ?>
                         <td data-toggle="tooltip" class="tooltip" title="<?= nl2br(htmlentities($project['memo'], ENT_QUOTES)) ?>" style="text-align: center"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Mémo" /></td>
                     <?php endif; ?>
-                    <td><?= 10 == $project['priority'] ? '' : $project['priority'] ?></td>
+                    <td style="text-align: center"><?= 10 == $project['priority'] ? '' : $project['priority'] ?></td>
                 </tr>
                 <?php ++$i; ?>
             <?php endforeach; ?>

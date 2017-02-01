@@ -25,7 +25,7 @@
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project['id_project'] ?>">
                     <td><?= $project['id_project'] ?></td>
                     <td><?= $project['company_name'] ?></td>
-                    <td><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
+                    <td style="text-align: right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
                     <td><?= $project['duration'] ?> mois</td>
                     <td><?= $project['client_name'] ?></td>
                     <td><?= $project['client_phone'] ?></td>

@@ -33,7 +33,9 @@ class users_types extends users_types_crud
     const TYPE_COMMERCIAL = 3;
     const TYPE_MARKETING  = 4;
     const TYPE_COMPLIANCE = 5;
-    const TYPE_OTHER      = 6;
+    const TYPE_IT         = 6;
+    const TYPE_DIRECTION  = 7;
+    const TYPE_EXTERNAL   = 8;
 
     public function users_types($bdd, $params = '')
     {
