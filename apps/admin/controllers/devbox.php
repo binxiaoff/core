@@ -12,11 +12,8 @@ class devboxController extends bootstrap
 
     public function _importINSEEPostalCodes()
     {
-        $this->autoFireView   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         //Encode: UTF-8, new line : LF
         //Source: https://www.data.gouv.fr/fr/datasets/base-officielle-des-codes-postaux/
@@ -38,11 +35,8 @@ class devboxController extends bootstrap
 
     public function _importINSEECities()
     {
-        $this->autoFireView   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         //Encode: UTF-8, new line : LF
         //Source: http://www.insee.fr/fr/methodes/nomenclatures/cog/telechargement.asp?annee=2015
@@ -79,11 +73,8 @@ class devboxController extends bootstrap
 
     public function _importINSEEOldCities()
     {
-        $this->autoFireView   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         //Encode: UTF-8, new line : LF
         //Source: http://www.insee.fr/fr/methodes/nomenclatures/cog/telechargement.asp?annee=2015
@@ -117,20 +108,14 @@ class devboxController extends bootstrap
 
     public function _import_pays_insee()
     {
-        $this->autoFireView   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         //Encode: UTF-8, new line : LF
         //Source: http://www.insee.fr/fr/methodes/nomenclatures/cog/telechargement.asp?annee=2015
         if (($rHandle = fopen($this->path . '/protected/import/' . 'country.txt', 'r')) === false) {
             return;
         }
-
-        /** @var insee_pays $oPays */
-        $oPays = $this->loadData('insee_pays');
 
         while (($aRow = fgetcsv($rHandle, 0, "\t")) !== false) {
             $sql = 'INSERT INTO insee_pays (CODEISO2, COG, ACTUAL, CAPAY, CRPAY, ANI, LIBCOG, LIBENR, ANCNOM)
@@ -144,19 +129,13 @@ class devboxController extends bootstrap
 
     public function _importBirthCity()
     {
-        $this->autoFireView   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         //Encode: UTF-8, new line : LF
         if (($rHandle = fopen($this->path . '/protected/import/' . 'naissance.csv', 'r')) === false) {
             return;
         }
-
-        /** @var clients $oClient */
-        $oClient = $this->loadData('clients');
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
             $aRow = array_map('trim', $aRow);
@@ -182,19 +161,14 @@ class devboxController extends bootstrap
 
     public function _importFiscalCity()
     {
-        $this->autoFireView   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         //Encode: UTF-8, new line : LF
         if (($rHandle = fopen($this->path . '/protected/import/' . 'fiscal_city.csv', 'r')) === false) {
             return;
         }
 
-        /** @var clients_adresses $oClient */
-        $oClient = $this->loadData('clients_adresses');
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
             $aRow = array_map('trim', $aRow);
@@ -254,19 +228,14 @@ class devboxController extends bootstrap
 
     public function _importResidenceOverseas()
     {
-        $this->autoFireView   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         //Encode: UTF-8, new line : LF
         if (($rHandle = fopen($this->path . '/protected/import/' . 'etranger.csv', 'r')) === false) {
             return;
         }
 
-        /** @var lenders_imposition_history $oClient */
-        $oClient = $this->loadData('lenders_imposition_history');
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
             $aRow = array_map('trim', $aRow);
@@ -298,11 +267,8 @@ class devboxController extends bootstrap
 
     public function _addWelcomeOffer()
     {
-        $this->autoFireView   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         //Encode: UTF-8, new line : LF
         if (($rHandle = fopen($this->path . '/protected/import/' . 'welcome.csv', 'r')) === false) {
@@ -322,26 +288,5 @@ class devboxController extends bootstrap
         }
         fclose($rHandle);
         echo 'done';
-    }
-
-    public function _countInsert()
-    {
-        $this->autoFireView   = false;
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-        $aTables = array('accept_cookies','acceptations_legal_docs');
-        foreach ($aTables as $table) {
-            $query = $this->bdd->query('
-            SELECT count(*) AS inserted
-                FROM ' . $table . '
-                WHERE unix_timestamp(added) BETWEEN unix_timestamp()-1800 AND unix_timestamp()
-            ');
-            if ($query) {
-                $result = $this->bdd->fetch_assoc($query);
-                echo $table . ' : ' . $result['inserted'] . '<br>';
-            }
-        }
     }
 }

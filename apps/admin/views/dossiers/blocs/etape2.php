@@ -6,7 +6,7 @@
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
-            yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
+            yearRange: '<?= (date('Y') - 100) ?>:<?= (date('Y')) ?>'
         });
         $("#date_naissance_gerant").datepicker({
             showOn: 'both',

@@ -1320,10 +1320,7 @@ class dossiersController extends bootstrap
 
     public function _changeClient()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $this->clients = $this->loadData('clients');
 
@@ -1335,10 +1332,7 @@ class dossiersController extends bootstrap
     public function _addMemo()
     {
         // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         // Chargement des datas
         $this->projects_comments = $this->loadData('projects_comments');
@@ -1352,10 +1346,7 @@ class dossiersController extends bootstrap
 
     public function _file()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $this->projects = $this->loadData('projects');
 
@@ -1379,11 +1370,8 @@ class dossiersController extends bootstrap
 
     public function _remove_file()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireView   = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
@@ -1402,11 +1390,8 @@ class dossiersController extends bootstrap
 
     public function _tab_email()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireView   = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 

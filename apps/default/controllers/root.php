@@ -119,7 +119,6 @@ class rootController extends bootstrap
                 $this->autoFireHeader = false;
                 $this->autoFireHead   = true;
                 $this->autoFireFooter = false;
-                $this->autoFireDebug  = false;
             }
 
             if (isset($this->params[0]) && $this->params[0] == 'nosign') {

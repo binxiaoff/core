@@ -118,7 +118,6 @@ class preteursController extends bootstrap
         $this->autoFireHeader = true;
         $this->autoFireHead   = true;
         $this->autoFireFooter = true;
-        $this->autoFireDebug  = false;
 
         $_SESSION['request_url'] = $this->url;
     }
@@ -879,20 +878,14 @@ class preteursController extends bootstrap
 
     public function _completude()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->url;
     }
 
     public function _completude_preview()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->url;
 
@@ -906,10 +899,7 @@ class preteursController extends bootstrap
 
     public function _completude_preview_iframe()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->url;
 
