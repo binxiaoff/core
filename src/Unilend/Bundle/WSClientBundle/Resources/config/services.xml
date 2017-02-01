@@ -9,7 +9,7 @@
             <argument type="service" id="debug.stopwatch"/>
             <argument type="service" id="cl_slack.api_client"/>
             <argument>CL\Slack\Payload\ChatPostMessagePayload</argument>
-            <argument>%slack_monitoring_channel%</argument>
+            <argument>%slack.monitoring_channel%</argument>
             <argument type="service" id="assets.packages" />
             <argument type="service" id="logger" />
             <argument type="service" id="doctrine_mongodb"/>
