@@ -48,47 +48,48 @@ parameters:
     altares.wsdl_url_identity:      'https://intuiz.altares.fr/iws-v3.13/services/CallistoIdentite?wsdl'
     altares.wsdl_url_risk:          'https://intuiz.altares.fr/iws-v3.13/services/CallistoRisque?wsdl'
 
-    slack_monitoring_channel:        '#test-risqueauto'
+    slack.default_channel:           '#it-testing'
+    slack.monitoring_channel:        '#it-testing'
 
     # End of parameters managed also by Ansible
 
-    dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
-    dbal_driver_class:              Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
+    dbal_wrapper_class:              Unilend\Bridge\Doctrine\DBAL\Connection
+    dbal_driver_class:               Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
 
-    mongodb_server:                 mongodb://uld-mdb-admin:cyPKA2c0C6hq3JLp@datalake-shard-00-00-lnres.mongodb.net:27017
-    mongodb_username:               uld-mdb-admin
-    mongodb_password:               cyPKA2c0C6hq3JLp
+    mongodb_server:                  mongodb://uld-mdb-admin:cyPKA2c0C6hq3JLp@datalake-shard-00-00-lnres.mongodb.net:27017
+    mongodb_username:                uld-mdb-admin
+    mongodb_password:                cyPKA2c0C6hq3JLp
 
-    secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
-    locale:                         fr_FR
+    secret:                          440caf9a41b35b72dc75ec333e3a33b7cab2366b
+    locale:                          fr_FR
 
-    server1.memcache_host:          127.0.0.1
-    server1.memcache_port:          11211
+    server1.memcache_host:           127.0.0.1
+    server1.memcache_port:           11211
 
     image_resize:
         projets:
-            authorized:             [72, 169] # Authorized heights
-            height:                 1365      # Source image maximum height
-            width:                  2048      # Source image maximum width
+            authorized:              [72, 169] # Authorized heights
+            height:                  1365      # Source image maximum height
+            width:                   2048      # Source image maximum width
 
-    router.request_context.scheme:  https
+    router.request_context.scheme:   https
 
-    path.static:                    /data/sites/unilend/public/default/
-    path.shared:                    /data/medias/nfs/
-    path.shared_tmp:                %path.shared%tmp/
-    path.user:                      %path.shared%var/
-    path.sftp:                      %path.shared%sftp/
-    path.protected:                 %path.shared%protected/
-    path.payline:                   /data/sites/unilend/librairies/payline/
+    path.static:                     /data/sites/unilend/public/default/
+    path.shared:                     /data/medias/nfs/
+    path.shared_tmp:                 %path.shared%tmp/
+    path.user:                       %path.shared%var/
+    path.sftp:                       %path.shared%sftp/
+    path.protected:                  %path.shared%protected/
+    path.payline:                    /data/sites/unilend/librairies/payline/
 
-    mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
+    mapbox.token:                    pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
 
-    security.bcrypt.cost:           13
+    security.bcrypt.cost:            13
 
-    new_relic.front_app_name:       Unilend-front
-    new_relic.back_app_name:        Unilend-backoffice
-    new_relic.console_app_name:     Unilend-batchjobs
+    new_relic.front_app_name:        Unilend-front
+    new_relic.back_app_name:         Unilend-backoffice
+    new_relic.console_app_name:      Unilend-batchjobs
 
-    ekomi.url:                      http://apps.ekomi.com/srr/add-recipient
-    ekomi.shop_id:                  ~
-    ekomi.password:                 ~
+    ekomi.url:                       http://apps.ekomi.com/srr/add-recipient
+    ekomi.shop_id:                   ~
+    ekomi.password:                  ~

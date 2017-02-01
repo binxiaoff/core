@@ -91,10 +91,7 @@ class emprunteursController extends bootstrap
 
     public function _add_client()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->url;
 
@@ -352,10 +349,7 @@ class emprunteursController extends bootstrap
 
     public function _RIBlightbox()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->url;
 
@@ -372,10 +366,7 @@ class emprunteursController extends bootstrap
 
     public function _RIBlightbox_no_prelev()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->url;
 
@@ -384,10 +375,7 @@ class emprunteursController extends bootstrap
 
     public function _RIB_iban_existant()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->url;
 
@@ -406,18 +394,12 @@ class emprunteursController extends bootstrap
 
     public function _error_iban_lightbox()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
     }
 
     public function _error_bic_lightbox()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
     }
 
     public function _factures()

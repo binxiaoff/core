@@ -1239,7 +1239,7 @@ class echeanciers extends echeanciers_crud
             $row['rawInterests'] = null === $row['rawInterests'] ? (float) ($row['netInterests'] + $taxes) : (float) $row['rawInterests'];
             $row['netInterests'] = null === $row['netInterests'] ? (float) ($row['rawInterests'] - $taxes) : (float) $row['netInterests'];
             $row['taxes']        = $taxes;
-            $data[]              = $row;
+            $data[$row['month']] = $row;
         }
         $statement->closeCursor();
         return $data;
