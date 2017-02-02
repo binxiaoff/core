@@ -58,7 +58,10 @@ class ProjectStatusManager
                 if ($project->status < \projects_status::REMBOURSEMENT) {
                     return [];
                 }
-                $possibleStatus = \projects_status::$runningRepayment;
+                $possibleStatus = \projects_status::$afterRepayment;
+                if ($key = array_search(\projects_status::DEFAUT, $possibleStatus)) {
+                    unset($possibleStatus[$key]);
+                }
                 break;
         }
 
