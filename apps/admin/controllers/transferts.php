@@ -850,7 +850,7 @@ class transfertsController extends bootstrap
                 $ekomi->sendProjectEmail($project);
 
                 $slackManager = $this->container->get('unilend.service.slack_manager');
-                $message      = $slackManager->getProjectLink($project) . ' - Fonds débloqués par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
+                $message      = $slackManager->getProjectName($project) . ' - Fonds débloqués par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
                 $slackManager->sendMessage($message);
             } else {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';

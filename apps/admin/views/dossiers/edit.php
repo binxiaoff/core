@@ -764,7 +764,7 @@
                         <td id="status_dossier">
                         <?php if ($this->projects->status == \projects_status::EN_ATTENTE_PIECES) { ?>
                             <?php if (empty($this->projects->id_product)) : ?>
-                                Merci de séléctionner un produit avant de passer au prochin status.
+                                Merci de séléctionner un produit avant de passer au prochain statut.
                             <?php else : ?>
                                 <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossier(<?= \projects_status::ATTENTE_ANALYSTE ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
                                 <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#CC0000;border-color:#CC0000;font-size:10px;">Rejeter dossier</a>
@@ -853,8 +853,8 @@
                                 return;
                             }
 
-                            if($('#assigned_product').val().length < 1) {
-                                alert('Merci de séléctionner un produit avant de passer au prochin status.');
+                            if ($('#assigned_product').val().length < 1) {
+                                alert('Merci de séléctionner un produit avant de passer au prochain statut.');
                                 $('#status option[value="' + previous_status + '"]').prop('selected', true);
                                 return;
                             }

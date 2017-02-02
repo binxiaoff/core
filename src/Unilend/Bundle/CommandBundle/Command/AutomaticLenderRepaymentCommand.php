@@ -301,7 +301,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
                 if ($this->getContainer()->getParameter('kernel.environment') === 'prod') {
                     $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
-                    $message      = $slackManager->getProjectLink($projects) .
+                    $message      = $slackManager->getProjectName($projects) .
                         ' - Remboursement automatique effectué en '
                         . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $nb_pret_remb . ' prêts, échéance #' . $r['ordre'] . ').';
                     $slackManager->sendMessage($message);

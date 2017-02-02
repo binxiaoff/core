@@ -6,16 +6,18 @@ use CL\Slack\Payload\ChatPostMessagePayload;
 use CL\Slack\Payload\PayloadResponseInterface;
 use CL\Slack\Transport\ApiClient;
 use Symfony\Component\Asset\Packages;
-use Symfony\Component\Routing\RouterInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class SlackManager
 {
     /** @var ApiClient */
     private $apiClient;
-    /** @var RouterInterface */
-    private $router;
+    /** @var EntityManager */
+    private $entityManager;
     /** @var string */
     private $iconUrl;
+    /** @var string*/
+    private $frontUrl;
     /** @var string */
     private $defaultChannel;
 
@@ -24,11 +26,12 @@ class SlackManager
      * @param Packages  $assetsPackages
      * @param string    $defaultChannel
      */
-    public function __construct(ApiClient $apiClient, RouterInterface $router, Packages $assetsPackages, $defaultChannel)
+    public function __construct(ApiClient $apiClient, EntityManager $entityManager, Packages $assetsPackages, $defaultChannel)
     {
         $this->apiClient      = $apiClient;
-        $this->router         = $router;
+        $this->entityManager  = $entityManager;
         $this->iconUrl        = $assetsPackages->getUrl('/assets/images/slack/unilend.png');
+        $this->frontUrl       = $assetsPackages->getUrl('');
         $this->defaultChannel = $defaultChannel;
     }
 
@@ -57,8 +60,22 @@ class SlackManager
      * @param \projects $project
      * @return string
      */
-    public function getProjectLink(\projects $project)
+    public function getProjectName(\projects $project)
     {
-        return '*<' . $this->router->generate('project_detail', ['projectSlug' => $project->slug], RouterInterface::ABSOLUTE_URL) . '|' . $project->title . '>*';
+        $title = $project->title;
+
+        if (empty($title)) {
+            /** @var \companies $company */
+            $company = $this->entityManager->getRepository('companies');
+            $company->get($project->id_company);
+
+            $title = $company->name;
+        }
+
+        if ($project->status >= \projects_status::EN_FUNDING) {
+            return '*<' . $this->frontUrl . '/projects/detail/' . $project->slug . '|' . $title . '>*';
+        }
+
+        return '*' . $title . '*';
     }
 }

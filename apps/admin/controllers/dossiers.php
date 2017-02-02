@@ -665,7 +665,7 @@ class dossiersController extends bootstrap
                                 $slackManager    = $this->container->get('unilend.service.slack_manager');
                                 $publicationDate = new DateTime($this->projects->date_publication);
                                 $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
-                                $message         = $slackManager->getProjectLink($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - :calendar: ' . $this->projects->period . ' mois / ' . $star . ' :star:';
+                                $message         = $slackManager->getProjectName($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - :calendar: ' . $this->projects->period . ' mois / ' . $star . ' :star:';
 
                                 $slackManager->sendMessage($message);
                             }
@@ -2016,7 +2016,7 @@ class dossiersController extends bootstrap
                         $user->get($_SESSION['user']['id_user']);
 
                         $slackManager = $this->container->get('unilend.service.slack_manager');
-                        $message      = $slackManager->getProjectLink($this->projects) .
+                        $message      = $slackManager->getProjectName($this->projects) .
                             ' - Remboursement effectué par ' . trim($user->firstname . ' ' . $user->name) .
                             ' en ' . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes  (' . $repaymentNb . ' prêts, échéance #' . $e['ordre'] . ')';
 
@@ -2058,16 +2058,16 @@ class dossiersController extends bootstrap
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
                 $id_reception = $_POST['id_reception'];
 
-                $this->projects                      = $this->loadData('projects');
-                $this->echeanciers                   = $this->loadData('echeanciers');
-                $this->receptions                    = $this->loadData('receptions');
-                $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
-                $this->transactions                  = $this->loadData('transactions');
-                $this->lenders_accounts              = $this->loadData('lenders_accounts');
-                $this->clients                       = $this->loadData('clients');
-                $this->wallets_lines                 = $this->loadData('wallets_lines');
-                $this->mail_template                 = $this->loadData('mail_templates');
-                $this->companies                     = $this->loadData('companies');
+                $this->projects               = $this->loadData('projects');
+                $this->echeanciers            = $this->loadData('echeanciers');
+                $this->receptions             = $this->loadData('receptions');
+                $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+                $this->transactions           = $this->loadData('transactions');
+                $this->lenders_accounts       = $this->loadData('lenders_accounts');
+                $this->clients                = $this->loadData('clients');
+                $this->wallets_lines          = $this->loadData('wallets_lines');
+                $this->mail_template          = $this->loadData('mail_templates');
+                $this->companies              = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager= $this->get('unilend.service.project_manager');
 
@@ -2133,7 +2133,7 @@ class dossiersController extends bootstrap
                         $this->wallets_lines->status                   = 1; // non utilisé
                         $this->wallets_lines->type                     = 2; // transaction virtuelle
                         $this->wallets_lines->amount                   = bcmul($reste_a_payer_pour_preteur, 100);
-                        $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
+                        $this->wallets_lines->create();
 
                         $montant_total += $reste_a_payer_pour_preteur;
                     }
