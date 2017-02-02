@@ -74,6 +74,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                 if ($transaction['id_transaction'] == 364887) {
                     $amount =  $this->calculateOperationAmount($transaction['montant']);
                     $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
+                    continue;
                 }
 
                 if (in_array($transaction['id_transaction'], [1667967, 1667964])){
@@ -1185,7 +1186,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $lenderWallet  = $this->getClientWallet($clientId);
 
         $operation['id_type']            = $this->getOperationType('unilend_lender_regularization');
-        $operation['id_wallet_debtor']   = $unilendWallet['id_wallet'];
+        $operation['id_wallet_debtor']   = $unilendWallet['id'];
         $operation['id_wallet_creditor'] = $lenderWallet['id'];
         $operation['amount']             = $amount;
         $operation['added']              = $date;
