@@ -662,18 +662,14 @@ class dossiersController extends bootstrap
                             }
                         } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
                             if ($this->getParameter('kernel.environment') === 'prod' && $_POST['status'] == \projects_status::A_FUNDER) {
+                                $slackManager    = $this->container->get('unilend.service.slack_manager');
                                 $publicationDate = new DateTime($this->projects->date_publication);
                                 $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
-                                $payload         = new \CL\Slack\Payload\ChatPostMessagePayload();
-                                $payload->setChannel('#plateforme');
-                                $payload->setText('Le projet *<' . $this->furl . '/projects/detail/' . $this->projects->slug . '|' . $this->projects->title . '>* , :calendar: : '
-                                    . $this->projects->period . ' mois / Notation : ' . $star . ' :star: , sera mis en ligne le ' . $publicationDate->format('d/m/Y à H:i'));
-                                $payload->setUsername('Unilend');
-                                $payload->setIconUrl($this->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
-                                $payload->setAsUser(false);
+                                $message         = $slackManager->getProjectLink($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - :calendar: ' . $this->projects->period . ' mois / ' . $star . ' :star:';
 
-                                $this->get('cl_slack.api_client')->send($payload);
+                                $slackManager->sendMessage($message);
                             }
+
                             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                             $companies        = $this->loadData('companies');
@@ -2013,22 +2009,18 @@ class dossiersController extends bootstrap
                     $_SESSION['freeow']['message'] = 'Les prêteurs ont bien été remboursés !';
 
                     $stopWatchEvent = $stopWatch->stop('repayment');
+
                     if ($this->getParameter('kernel.environment') === 'prod') {
                         /** @var users $user */
                         $user = $this->get('unilend.service.entity_manager')->getRepository('users');
                         $user->get($_SESSION['user']['id_user']);
 
-                        $payload = new \CL\Slack\Payload\ChatPostMessagePayload();
-                        $payload->setChannel('#plateforme');
-                        $payload->setText(
-                            '*<' . $this->furl . '/projects/detail/' . $projects->slug . '|' . $projects->title . '>* - Remboursement effectué par ' . trim($user->firstname . ' ' . $user->name)
-                            . ' en ' . round($stopWatchEvent->getDuration() / 1000, 2) . ' secondes  (' . $repaymentNb . ' prêts, échéance #' . $e['ordre'] . ').'
-                        );
-                        $payload->setUsername('Unilend');
-                        $payload->setIconUrl($this->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
-                        $payload->setAsUser(false);
+                        $slackManager = $this->container->get('unilend.service.slack_manager');
+                        $message      = $slackManager->getProjectLink($this->projects) .
+                            ' - Remboursement effectué par ' . trim($user->firstname . ' ' . $user->name) .
+                            ' en ' . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes  (' . $repaymentNb . ' prêts, échéance #' . $e['ordre'] . ')';
 
-                        $this->get('cl_slack.api_client')->send($payload);
+                        $slackManager->sendMessage($message);
                     }
                 } else {
                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';

@@ -74,7 +74,6 @@
             <argument type="service" id="unilend.service.bid_manager"/>
             <argument type="service" id="unilend.service.loan_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
-            <argument type="service" id="unilend.service.autobid_settings_manager"/>
             <argument type="service" id="unilend.service.email_manager"/>
             <argument type="service" id="unilend.service.lender_manager"/>
             <argument type="service" id="unilend.service.project_rate_settings_manager"/>
@@ -234,7 +233,6 @@
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 
-
         <service id="unilend.service.company_scoring_check" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyScoringCheck">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
@@ -255,6 +253,13 @@
             <argument type="service" id="unilend.service.ws_client.altares_manager"/>
             <argument type="service" id="unilend.service.ws_client.codinf_manager"/>
             <argument type="service" id="unilend.service.ws_client.infogreffe_manager"/>
+        </service>
+
+        <service id="unilend.service.slack_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\SlackManager">
+            <argument type="service" id="cl_slack.api_client"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="assets.packages"/>
+            <argument>%slack.default_channel%</argument>
         </service>
     </services>
 </container>
