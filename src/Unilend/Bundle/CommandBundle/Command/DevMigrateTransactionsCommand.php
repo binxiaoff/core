@@ -39,6 +39,53 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         try {
             foreach ($transactionsToMigrate as $transaction) {
 
+                if ($transaction['id_transaction'] == 1460178) {
+                    continue;
+                }
+
+                if ($transaction['id_transaction'] == 2771937){
+                    $transaction['montant'] = '88880';
+                }
+
+                if ($transaction['id_transaction'] == 16952103) {
+                    $amount =  $this->calculateOperationAmount($transaction['montant']);
+                    $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
+
+                    $lenderWallet = $this->getClientWallet($transaction['id_client']);
+
+                    /** @var \bids $bidEntity */
+                    $bidEntity = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('bids');
+                    $bid               = $bidEntity->select('id_lender_wallet_line = 8277690')[0];
+                    $amount            = $this->calculateOperationAmount($transaction['montant']);
+
+                    $availableBalance = bcsub($lenderWallet['available_balance'], $amount, 2);
+                    $committedBalance = bcadd($lenderWallet['committed_balance'], $amount, 2);
+
+                    $lenderWallet['available_balance'] = $availableBalance;
+                    $lenderWallet['committed_balance'] = $committedBalance;
+
+                    $this->updateWalletBalance($lenderWallet, $bid);
+                    $this->saveWalletBalanceHistory($lenderWallet, null, $bid);
+
+                    $this->migrateBid($transaction);
+                    continue;
+                }
+
+                if ($transaction['id_transaction'] == 364887) {
+                    $amount =  $this->calculateOperationAmount($transaction['montant']);
+                    $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
+                }
+
+                if (in_array($transaction['id_transaction'], [1667967, 1667964])){
+                    $amount =  $this->calculateOperationAmount($transaction['montant']);
+                    $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
+                    continue;
+                }
+
+                if ($transaction['id_transaction'] == 2264291) {
+                    $this->lenderRegulation($transaction['id_client'], '39.63', $transaction['date_transaction']);
+                }
+
                 //var_dump($transaction['id_transaction']);
                 switch($transaction['type_transaction']) {
                     case \transactions_types::TYPE_LENDER_SUBSCRIPTION:
@@ -1130,6 +1177,24 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $statement = $this->dataBaseConnection->executeQuery($query, ['idEcheancierEmprunteur' => $transaction['id_echeancier_emprunteur'], 'idTransaction' => $transaction['id_transaction']]);
 
         return $statement->fetchColumn();
+    }
+
+    private function lenderRegulation($clientId, $amount, $date)
+    {
+        $unilendWallet = $this->getWalletByLabel('unilend');
+        $lenderWallet  = $this->getClientWallet($clientId);
+
+        $operation['id_type']            = $this->getOperationType('unilend_lender_regularization');
+        $operation['id_wallet_debtor']   = $unilendWallet['id_wallet'];
+        $operation['id_wallet_creditor'] = $lenderWallet['id'];
+        $operation['amount']             = $amount;
+        $operation['added']              = $date;
+        $operation['id']                 = $this->newOperation($operation);
+
+        $this->debitAvailableBalance($unilendWallet, $operation);
+        $this->saveWalletBalanceHistory($unilendWallet, $operation);
+        $this->creditAvailableBalance($lenderWallet, $operation);
+        $this->saveWalletBalanceHistory($lenderWallet, $operation);
     }
 
 }
