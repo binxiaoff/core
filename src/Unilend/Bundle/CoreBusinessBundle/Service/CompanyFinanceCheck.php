@@ -16,7 +16,7 @@ class CompanyFinanceCheck
 {
     const UNEXPECTED_RESPONSE = 'unexpected_response_from_';
 
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
     /** @var CompanyBalanceSheetManager */
     private $companyBalanceSheetManager;
@@ -24,25 +24,24 @@ class CompanyFinanceCheck
     private $projectManager;
     /** @var CacheItemPoolInterface */
     private $cacheItemPool;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
-    /** @var  AltaresManager */
+    /** @var AltaresManager */
     private $wsAltares;
     /** @var CodinfManager */
     private $wsCodinf;
-    /** @var InfogreffeManager $wsInfogreffe */
+    /** @var InfogreffeManager */
     private $wsInfogreffe;
 
     /**
-     * CompanyFinanceCheck constructor.
-     * @param EntityManager $entityManager
+     * @param EntityManager              $entityManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
-     * @param ProjectManager $projectManager
-     * @param CacheItemPoolInterface $cacheItemPool
-     * @param LoggerInterface $logger
-     * @param AltaresManager $wsAltares
-     * @param CodinfManager $wsCodinf
-     * @param InfogreffeManager $wsInfogreffe
+     * @param ProjectManager             $projectManager
+     * @param CacheItemPoolInterface     $cacheItemPool
+     * @param LoggerInterface            $logger
+     * @param AltaresManager             $wsAltares
+     * @param CodinfManager              $wsCodinf
+     * @param InfogreffeManager          $wsInfogreffe
      */
     public function __construct(EntityManager $entityManager, CompanyBalanceSheetManager $companyBalanceSheetManager, ProjectManager $projectManager, CacheItemPoolInterface $cacheItemPool, LoggerInterface $logger, AltaresManager $wsAltares, CodinfManager $wsCodinf, InfogreffeManager $wsInfogreffe)
     {
@@ -58,8 +57,9 @@ class CompanyFinanceCheck
 
     /**
      * Check if siren exists in Altares System, if company has collective procedures and if company is active
+     *
      * @param \companies $company
-     * @param string $rejectionReason
+     * @param string     $rejectionReason
      * @return bool
      */
     public function isCompanySafe(\companies &$company, &$rejectionReason)
@@ -122,6 +122,7 @@ class CompanyFinanceCheck
 
     /**
      * Check if there are more than two incidents or if there is at least one incident of type {2, 3, 4, 5, 6} in the last 12 past months
+     *
      * @param string $siren
      * @param string $rejectionReason
      * @return bool
@@ -163,8 +164,8 @@ class CompanyFinanceCheck
 
     /**
      * @param BalanceSheetList $balanceSheetList
-     * @param string $siren
-     * @param $rejectionReason
+     * @param string           $siren
+     * @param string           $rejectionReason
      * @return bool
      */
     public function hasNegativeCapitalStock(BalanceSheetList $balanceSheetList, $siren, &$rejectionReason)
@@ -222,7 +223,7 @@ class CompanyFinanceCheck
 
     /**
      * @param string $siren
-     * @param $rejectionReason
+     * @param string $rejectionReason
      * @return bool
      */
     public function hasInfogreffePrivileges($siren, &$rejectionReason)
@@ -292,8 +293,8 @@ class CompanyFinanceCheck
     }
 
     /**
-     * @param $postList FinancialSummary[]
-     * @param string $postType
+     * @param FinancialSummary[] $postList
+     * @param string             $postType
      * @return null|FinancialSummary
      */
     private function getSummaryFinancialPost(array $postList, $postType)
@@ -308,8 +309,8 @@ class CompanyFinanceCheck
     }
 
     /**
-     * @param $postList FinancialSummary[]
-     * @param string $postType
+     * @param FinancialSummary[] $postList
+     * @param string             $postType
      * @return null|FinancialSummary
      */
     private function getManagementLineFinancialPost(array $postList, $postType)

@@ -1325,7 +1325,7 @@ class projects extends projects_crud
      */
     public function getSaleUserProjects(\users $user)
     {
-        $statement = $this->getSaleProjectsQuery()
+        $statement = $this->getSaleProjectsQuery(\projects_status::$saleTeam)
             ->andWhere('p.id_commercial = :userId')
             ->setParameter('userId', $user->id_user)
             ->execute();
@@ -1342,7 +1342,7 @@ class projects extends projects_crud
      */
     public function getSaleProjectsExcludingUser(\users $user)
     {
-        $statement = $this->getSaleProjectsQuery()
+        $statement = $this->getSaleProjectsQuery(\projects_status::$saleTeam)
             ->andWhere('p.id_commercial != :userId')
             ->setParameter('userId', $user->id_user)
             ->execute();
@@ -1354,16 +1354,39 @@ class projects extends projects_crud
     }
 
     /**
+     * @return array
+     */
+    public function getUpcomingSaleProjects()
+    {
+        $statement = $this->getSaleProjectsQuery(\projects_status::$upcomingSaleTeam)
+            ->andWhere('DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added')
+            ->andWhere('p.stop_relances = 0')
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @param array $status
      * @return \Doctrine\DBAL\Query\QueryBuilder
      */
-    private function getSaleProjectsQuery()
+    private function getSaleProjectsQuery(array $status)
     {
         return $this->bdd->createQueryBuilder()
             ->select('p.id_project,
                 p.amount AS amount,
                 p.period AS duration,
-                p.status AS status,
-                ps.label AS status_label,
+                IF (
+                    p.status IN (' . implode(',', [\projects_status::DEMANDE_SIMULATEUR, \projects_status::COMPLETUDE_ETAPE_2]) . '), 5,
+                    IF (p.status IN (' . implode(',', [\projects_status::COMPLETUDE_ETAPE_3, \projects_status::A_TRAITER]) . '), 10, p.status)
+                ) AS status,
+                IF (
+                    p.status IN (' . implode(',', [\projects_status::DEMANDE_SIMULATEUR, \projects_status::COMPLETUDE_ETAPE_2]) . '), "En cours",
+                    IF (p.status IN (' . implode(',', [\projects_status::COMPLETUDE_ETAPE_3, \projects_status::A_TRAITER]) . '), "Complet", ps.label)
+                ) AS status_label,
                 co.name AS company_name,
                 CONCAT(cl.prenom, " ", cl.nom) AS client_name,
                 cl.telephone AS client_phone,
@@ -1377,14 +1400,17 @@ class projects extends projects_crud
             ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
             ->innerJoin('co', 'clients', 'cl', 'co.id_client_owner = cl.id_client')
             ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
-            ->leftJoin('p', 'company_rating', 'euler', 'p.id_company_rating_history = euler.id_company_rating_history AND euler.type = "grade_euler_hermes"')
-            ->leftJoin('p', 'company_rating', 'altares', 'p.id_company_rating_history = altares.id_company_rating_history AND altares.type = "score_altares"')
+            ->leftJoin('p', 'company_rating', 'euler', 'p.id_company_rating_history = euler.id_company_rating_history AND euler.type = :eulerScoringType')
+            ->leftJoin('p', 'company_rating', 'altares', 'p.id_company_rating_history = altares.id_company_rating_history AND altares.type = :altaresScoringType')
             ->leftJoin('p', 'pre_scoring', 'scoring', 'euler.value = scoring.euler_hermes AND altares.value = scoring.altares')
-            ->leftJoin('p', 'company_rating', 'infolegale', 'p.id_company_rating_history = infolegale.id_company_rating_history AND infolegale.type = "note_infolegale"')
+            ->leftJoin('p', 'company_rating', 'infolegale', 'p.id_company_rating_history = infolegale.id_company_rating_history AND infolegale.type = :infolegaleScoringType')
             ->leftJoin('p', 'users', 'u', 'p.id_commercial = u.id_user')
             ->where('p.status IN (:commercialStatus)')
-            ->setParameter('commercialStatus', \projects_status::$saleTeam, Connection::PARAM_INT_ARRAY)
-            ->addOrderBy('p.status', 'DESC')
+            ->setParameter('commercialStatus', $status, Connection::PARAM_INT_ARRAY)
+            ->setParameter('eulerScoringType', \company_rating::TYPE_EULER_HERMES_GRADE)
+            ->setParameter('altaresScoringType', \company_rating::TYPE_ALTARES_SCORE_20)
+            ->setParameter('infolegaleScoringType', \company_rating::TYPE_INFOLEGALE_SCORE)
+            ->addOrderBy('status', 'DESC')
             ->addOrderBy('priority', 'ASC')
             ->addOrderBy('infolegale', 'DESC')
             ->addOrderBy('p.amount', 'DESC')

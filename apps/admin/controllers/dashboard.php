@@ -35,11 +35,12 @@ class dashboardController extends bootstrap
                 $this->teamProjects = $this->getRiskTeamProjects($user);
                 break;
             case \users_types::TYPE_COMMERCIAL:
-                $this->template        = 'sale';
-                $this->userProjects    = $this->getSaleUserProjects($user);
-                $this->teamProjects    = $this->getSaleTeamProjects($user);
-                $this->collapsedStatus = self::$saleCollapsedStatus;
-                $this->salesPeople     = $user->select('status = 1 AND id_user_type = ' . \users_types::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
+                $this->template         = 'sale';
+                $this->userProjects     = $this->getSaleUserProjects($user);
+                $this->teamProjects     = $this->getSaleTeamProjects($user);
+                $this->upcomingProjects = $this->getSaleUpcomingProjects();
+                $this->collapsedStatus  = self::$saleCollapsedStatus;
+                $this->salesPeople      = $user->select('status = 1 AND id_user_type = ' . \users_types::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
                 break;
             default:
                 header('Location: ' . $this->lurl);
@@ -87,7 +88,7 @@ class dashboardController extends bootstrap
 
         return [
             'count'    => count($projects),
-            'projects' => $this->formatRiskProjects($projects)
+            'projects' => $this->formatProjects($projects)
         ];
     }
 
@@ -103,35 +104,8 @@ class dashboardController extends bootstrap
 
         return [
             'count'    => count($projects),
-            'projects' => $this->formatRiskProjects($projects)
+            'projects' => $this->formatProjects($projects)
         ];
-    }
-
-    /**
-     * @param array $projects
-     * @return array
-     */
-    private function formatRiskProjects(array $projects)
-    {
-        $formattedProjects = [];
-
-        foreach ($projects as $project) {
-            if (false === isset($formattedProjects[$project['status']])) {
-                $formattedProjects[$project['status']] = [
-                    'label'    => $project['status_label'],
-                    'count'    => 0,
-                    'projects' => []
-                ];
-            }
-
-            $project['creation']             = \DateTime::createFromFormat('Y-m-d H:i:s', $project['creation']);
-            $project['risk_status_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['risk_status_datetime']);
-
-            $formattedProjects[$project['status']]['count']++;
-            $formattedProjects[$project['status']]['projects'][] = $project;
-        }
-
-        return $formattedProjects;
     }
 
     /**
@@ -147,7 +121,7 @@ class dashboardController extends bootstrap
         return [
             'count'    => count($projects),
             'assignee' => false,
-            'projects' => $this->formatSaleProjects($projects)
+            'projects' => $this->formatProjects($projects)
         ];
     }
 
@@ -164,7 +138,23 @@ class dashboardController extends bootstrap
         return [
             'count'    => count($projects),
             'assignee' => true,
-            'projects' => $this->formatSaleProjects($projects)
+            'projects' => $this->formatProjects($projects)
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function getSaleUpcomingProjects()
+    {
+        /** @var \projects $project */
+        $project  = $this->loadData('projects');
+        $projects = $project->getUpcomingSaleProjects();
+
+        return [
+            'count'    => count($projects),
+            'assignee' => false,
+            'projects' => $this->formatProjects($projects)
         ];
     }
 
@@ -172,7 +162,7 @@ class dashboardController extends bootstrap
      * @param array $projects
      * @return array
      */
-    private function formatSaleProjects(array $projects)
+    private function formatProjects(array $projects)
     {
         $formattedProjects = [];
 
@@ -185,7 +175,11 @@ class dashboardController extends bootstrap
                 ];
             }
 
-            $project['creation']     = \DateTime::createFromFormat('Y-m-d H:i:s', $project['creation']);
+            $project['creation'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['creation']);
+
+            if (isset($project['risk_status_datetime'])) {
+                $project['risk_status_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['risk_status_datetime']);
+            }
 
             $formattedProjects[$project['status']]['count']++;
             $formattedProjects[$project['status']]['projects'][] = $project;

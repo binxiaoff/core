@@ -747,7 +747,7 @@ class ProjectManager
      */
     private function projectStatusUpdateTrigger(\projects_status $projectStatus, \projects $project, $userId)
     {
-        if ($project->status >= \projects_status::EN_ATTENTE_PIECES) {
+        if ($project->status >= \projects_status::COMPLETUDE_ETAPE_3) {
             /** @var \users $user */
             $user    = $this->entityManager->getRepository('users');
             $message = $this->slackManager->getProjectName($project) . ' passé en statut *' . $projectStatus->label . '*';

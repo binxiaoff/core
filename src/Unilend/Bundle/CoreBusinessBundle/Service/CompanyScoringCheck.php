@@ -14,7 +14,7 @@ class CompanyScoringCheck
 {
     const UNEXPECTED_RESPONSE = 'unexpected_response_from_';
 
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
     /** @var CompanyBalanceSheetManager */
     private $companyBalanceSheetManager;
@@ -22,25 +22,24 @@ class CompanyScoringCheck
     private $projectManager;
     /** @var CacheItemPoolInterface */
     private $cacheItemPool;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
-    /** @var  AltaresManager */
+    /** @var AltaresManager */
     private $wsAltares;
-    /** @var InfolegaleManager $wsInfolegale */
+    /** @var InfolegaleManager */
     private $wsInfolegale;
     /** @var EulerHermesManager $wsEuler */
     private $wsEuler;
 
     /**
-     * CompanyScoringCheck constructor.
-     * @param EntityManager $entityManager
+     * @param EntityManager              $entityManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
-     * @param ProjectManager $projectManager
-     * @param CacheItemPoolInterface $cacheItemPool
-     * @param LoggerInterface $logger
-     * @param AltaresManager $wsAltares
-     * @param InfolegaleManager $wsInfolegale
-     * @param EulerHermesManager $wsEuler
+     * @param ProjectManager             $projectManager
+     * @param CacheItemPoolInterface     $cacheItemPool
+     * @param LoggerInterface            $logger
+     * @param AltaresManager             $wsAltares
+     * @param InfolegaleManager          $wsInfolegale
+     * @param EulerHermesManager         $wsEuler
      */
     public function __construct(EntityManager $entityManager, CompanyBalanceSheetManager $companyBalanceSheetManager, ProjectManager $projectManager, CacheItemPoolInterface $cacheItemPool, LoggerInterface $logger, AltaresManager $wsAltares, InfolegaleManager $wsInfolegale, EulerHermesManager $wsEuler)
     {
@@ -71,10 +70,10 @@ class CompanyScoringCheck
     }
 
     /**
-     * @param CompanyRating $altaresScore
+     * @param CompanyRating           $altaresScore
      * @param \company_rating_history $companyRatingHistory
-     * @param \company_rating $companyRating
-     * @param $rejectionReason
+     * @param \company_rating         $companyRating
+     * @param string                  $rejectionReason
      * @return bool
      */
     public function isAltaresScoreLow(CompanyRating $altaresScore, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
@@ -98,10 +97,10 @@ class CompanyScoringCheck
     }
 
     /**
-     * @param $codeNaf
+     * @param string                  $codeNaf
      * @param \company_rating_history $companyRatingHistory
-     * @param \company_rating $companyRating
-     * @param $rejectionReason
+     * @param \company_rating         $companyRating
+     * @param                         $rejectionReason
      * @return bool
      */
     public function isXerfiUnilendOk($codeNaf, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
@@ -134,8 +133,8 @@ class CompanyScoringCheck
 
     /**
      * @param null|CompanyRating $altaresScore
-     * @param $codeNaf
-     * @param $rejectionReason
+     * @param string             $codeNaf
+     * @param string             $rejectionReason
      * @return bool
      */
     public function combineAltaresScoreAndUnilendXerfi($altaresScore, $codeNaf, &$rejectionReason)
@@ -153,10 +152,10 @@ class CompanyScoringCheck
     }
 
     /**
-     * @param string $siren
+     * @param string                  $siren
      * @param \company_rating_history $companyRatingHistory
-     * @param \company_rating $companyRating
-     * @param $rejectionReason
+     * @param \company_rating         $companyRating
+     * @param string                  $rejectionReason
      * @return bool
      */
     public function isInfolegaleScoreLow($siren, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
@@ -183,11 +182,11 @@ class CompanyScoringCheck
     }
 
     /**
-     * @param null|CompanyRating $altaresScore
-     * @param \companies $company
+     * @param null|CompanyRating      $altaresScore
+     * @param \companies              $company
      * @param \company_rating_history $companyRatingHistory
-     * @param \company_rating $companyRating
-     * @param $rejectionReason
+     * @param \company_rating         $companyRating
+     * @param string                  $rejectionReason
      * @return bool
      */
     public function combineEulerGradeUnilendXerfiAltaresScore($altaresScore, \companies $company, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
@@ -228,9 +227,9 @@ class CompanyScoringCheck
 
     /**
      * @param \company_rating_history $companyRatingHistory
-     * @param \company_rating $companyRating
-     * @param string $ratingType
-     * @param mixed $ratingValue
+     * @param \company_rating         $companyRating
+     * @param string                  $ratingType
+     * @param mixed                   $ratingValue
      */
     private function setRatingData(\company_rating_history $companyRatingHistory, \company_rating $companyRating, $ratingType, $ratingValue)
     {

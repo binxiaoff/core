@@ -59,8 +59,8 @@
     .warning {
         background-color: #ffe0f0 !important;
     }
-    #user-projects {
-        margin-bottom: 25px;
+    h1:not(:first-child) {
+        margin-top: 20px;
     }
 </style>
 <div id="contenu">
@@ -84,4 +84,11 @@
         <?php $this->templateProjects = $this->teamProjects; ?>
         <?php $this->fireView($this->template . 'Projects'); ?>
     </div>
+    <?php if (isset($this->upcomingProjects)) : ?>
+        <h1>À venir</h1>
+        <div id="upcoming-projects">
+            <?php $this->templateProjects = $this->upcomingProjects; ?>
+            <?php $this->fireView($this->template . 'Projects'); ?>
+        </div>
+    <?php endif; ?>
 </div>

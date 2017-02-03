@@ -113,11 +113,10 @@ class projects_status extends projects_status_crud
     );
 
     /**
-     * List of project status when project is considered as part of the commercial team pipe
+     * List of project status when project should be assigned to a commercial
      * @var array
      */
     public static $saleTeam = [
-        self::A_TRAITER,
         self::EN_ATTENTE_PIECES,
         self::ATTENTE_ANALYSTE,
         self::REVUE_ANALYSTE,
@@ -127,7 +126,18 @@ class projects_status extends projects_status_crud
         self::AUTO_BID_PLACED,
         self::EN_FUNDING,
         self::BID_TERMINATED,
-        self::FUNDE,
+        self::FUNDE
+    ];
+
+    /**
+     * List of project status when project is considered as part of the commercial team pipe
+     * @var array
+     */
+    public static $upcomingSaleTeam = [
+        self::DEMANDE_SIMULATEUR,
+        self::COMPLETUDE_ETAPE_2,
+        self::COMPLETUDE_ETAPE_3,
+        self::A_TRAITER
     ];
 
     /**
