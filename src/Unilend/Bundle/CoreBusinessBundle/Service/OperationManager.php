@@ -299,12 +299,15 @@ class OperationManager
     {
         $this->em->getConnection()->beginTransaction();
         try {
+            $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy(['idClient' => $wallet->getIdClient()]);
+
             $wireTransferOut = new Virements();
-            $wireTransferOut->setIdClient($wallet->getIdClient()->getIdClient());
+            $wireTransferOut->setClient($wallet->getIdClient());
             $wireTransferOut->setMontant(bcmul($amount, 100));
             $wireTransferOut->setMotif($wallet->getWireTransferPattern());
             $wireTransferOut->setType(Virements::TYPE_LENDER);
             $wireTransferOut->setStatus(Virements::STATUS_PENDING);
+            $wireTransferOut->setBankAccount($bankAccount);
             $this->em->persist($wireTransferOut);
 
             $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW]);
@@ -447,15 +450,18 @@ class OperationManager
     {
         $this->em->getConnection()->beginTransaction();
         try {
+            $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy(['idClient' => $wallet->getIdClient()]);
+
             $wireTransferOut = new Virements();
             if ($origin instanceof Projects) {
-                $wireTransferOut->setIdProject($origin);
+                $wireTransferOut->setProject($origin);
                 $wireTransferOut->setMotif($this->borrowerManager->getBorrowerBankTransferLabel($origin));
             }
-            $wireTransferOut->setIdClient($wallet->getIdClient()->getIdClient());
+            $wireTransferOut->setClient($wallet->getIdClient()->getIdClient());
             $wireTransferOut->setMontant(bcmul($amount, 100));
             $wireTransferOut->setType(Virements::TYPE_BORROWER);
             $wireTransferOut->setStatus(Virements::STATUS_PENDING);
+            $wireTransferOut->setBankAccount($bankAccount);
             $this->em->persist($wireTransferOut);
 
             $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);

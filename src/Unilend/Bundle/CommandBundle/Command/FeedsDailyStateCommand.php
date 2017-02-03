@@ -5,6 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Psr\Log\LoggerInterface;
@@ -316,7 +317,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                     $affectationEchEmpr = isset($lrembPreteurs[$date]) ? $lrembPreteurs[$date]['montant'] + $lrembPreteurs[$date]['etat'] + $commission + $rembRecouvPreteurs[$date]['montant'] : 0;
                     $ecartMouvInternes  = round($affectationEchEmpr - $commission - $iTotalTaxAmount - $capitalPreteur - $interetNetPreteur, 2);
                     $octroi_pret        = abs($virementEmprunteur[$date]['montant']) + $virementEmprunteur[$date]['montant_unilend'];
-                    $virementsOK        = $bankTransfer->sumVirementsbyDay($date, 'status > 0');
+                    $virementsOK        = $bankTransfer->sumVirementsbyDay($date, 'status = ' . Virements::STATUS_SENT);
                     $virementsAttente   = $virementUnilend[$date]['montant'];
                     $adminFiscalVir     = $virementEtat[$date]['montant'];
                     $prelevPonctuel     = $directDebit->sum('DATE(added_xml) = "' . $date . '" AND status > 0');

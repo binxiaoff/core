@@ -13,18 +13,23 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Virements
 {
-    const STATUS_PENDING   = 0;
-    const STATUS_SENT      = 1;
-    const STATUS_VALIDATED = 2;
+    const STATUS_PENDING          = 0;
+    const STATUS_CLIENT_VALIDATED = 10;
+    const STATUS_VALIDATED        = 20;
+    const STATUS_SENT             = 30;
+    const STATUS_DENIED           = 40;
 
     const TYPE_LENDER   = 1;
     const TYPE_BORROWER = 2;
     const TYPE_UNILEND  = 4;
 
     /**
-     * @var integer
+     * @var Clients
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
      */
     private $idClient;
 
@@ -65,6 +70,50 @@ class Virements
      * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
+
+    /**
+     * @var BankAccount
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_bank_account", referencedColumnName="id")
+     * })
+     */
+    private $bankAccount;
+
+    /**
+     * @var Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_request", referencedColumnName="id_user")
+     * })
+     */
+    private $userRequest;
+
+    /**
+     * @var Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_validation", referencedColumnName="id_user")
+     * })
+     */
+    private $userValidation;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="validated", type="datetime", nullable=true)
+     */
+    private $validated;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="transfer_at", type="datetime", nullable=true)
+     */
+    private $transferAt;
 
     /**
      * @var integer
@@ -108,11 +157,11 @@ class Virements
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param Clients $idClient
      *
      * @return Virements
      */
-    public function setIdClient($idClient)
+    public function setClient(Clients $idClient = null)
     {
         $this->idClient = $idClient;
 
@@ -122,9 +171,9 @@ class Virements
     /**
      * Get idClient
      *
-     * @return integer
+     * @return Clients
      */
-    public function getIdClient()
+    public function getClient()
     {
         return $this->idClient;
     }
@@ -136,7 +185,7 @@ class Virements
      *
      * @return Virements
      */
-    public function setIdProject(Projects $idProject = null)
+    public function setProject(Projects $idProject = null)
     {
         $this->idProject = $idProject;
 
@@ -148,7 +197,7 @@ class Virements
      *
      * @return Projects
      */
-    public function getIdProject()
+    public function getProject()
     {
         return $this->idProject;
     }
@@ -247,6 +296,126 @@ class Virements
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * Set bankAccount
+     *
+     * @param BankAccount $bankAccount
+     *
+     * @return Virements
+     */
+    public function setBankAccount(BankAccount $bankAccount = null)
+    {
+        $this->bankAccount = $bankAccount;
+
+        return $this;
+    }
+
+    /**
+     * Get bankAccount
+     *
+     * @return BankAccount
+     */
+    public function getBankAccount()
+    {
+        return $this->bankAccount;
+    }
+
+    /**
+     * Set userRequest
+     *
+     * @param Users $userRequest
+     *
+     * @return Virements
+     */
+    public function setUserRequest(Users $userRequest = null)
+    {
+        $this->userRequest = $userRequest;
+
+        return $this;
+    }
+
+    /**
+     * Get userRequest
+     *
+     * @return Users
+     */
+    public function getUserRequest()
+    {
+        return $this->userRequest;
+    }
+
+    /**
+     * Set userValidation
+     *
+     * @param Users $userValidation
+     *
+     * @return Virements
+     */
+    public function setUserValidation(Users $userValidation = null)
+    {
+        $this->userValidation = $userValidation;
+
+        return $this;
+    }
+
+    /**
+     * Get userValidation
+     *
+     * @return Users
+     */
+    public function getUserValidation()
+    {
+        return $this->userValidation;
+    }
+
+    /**
+     * Set validated
+     *
+     * @param \DateTime $validated
+     *
+     * @return Virements
+     */
+    public function setValidated(\DateTime $validated = null)
+    {
+        $this->validated = $validated;
+
+        return $this;
+    }
+
+    /**
+     * Get validated
+     *
+     * @return \DateTime
+     */
+    public function getValidated()
+    {
+        return $this->validated;
+    }
+
+    /**
+     * Set transferAt
+     *
+     * @param \DateTime $transferAt
+     *
+     * @return Virements
+     */
+    public function setTransferAt(\DateTime $transferAt = null)
+    {
+        $this->transferAt = $transferAt;
+
+        return $this;
+    }
+
+    /**
+     * Get transferAt
+     *
+     * @return \DateTime
+     */
+    public function getTransferAt()
+    {
+        return $this->transferAt;
     }
 
     /**
