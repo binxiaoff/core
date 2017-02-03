@@ -42,6 +42,7 @@ class OperationType
     const UNILEND_PROMOTIONAL_OPERATION_PROVISION   = 'unilend_promotional_operation_provision';
     const UNILEND_PROVISION                         = 'unilend_provision';
     const UNILEND_WITHDRAW                          = 'unilend_withdraw';
+    const UNILEND_LENDER_REGULARIZATION             = 'unilend_lender_regularization';
     const COLLECTION_COMMISSION_PROVISION           = 'collection_commission_provision';
     const COLLECTION_COMMISSION_BORROWER            = 'collection_commission_borrower';
     const COLLECTION_COMMISSION_LENDER              = 'collection_commission_lender';
