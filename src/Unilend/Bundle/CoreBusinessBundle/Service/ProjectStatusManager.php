@@ -1,18 +1,15 @@
 <?php
 
-
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
-
 
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectStatusManager
 {
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
 
     /**
-     * ProjectStatusManager constructor.
      * @param EntityManager $entityManager
      */
     public function __construct(EntityManager $entityManager)
@@ -58,14 +55,16 @@ class ProjectStatusManager
             case \projects_status::DEFAUT:
                 return [];
             default:
-                if ($projectStatus->status < \projects_status::REMBOURSEMENT) {
+                if ($project->status < \projects_status::REMBOURSEMENT) {
                     return [];
                 }
-                $possibleStatus = \projects_status::$runningRepayment;
+                $possibleStatus = \projects_status::$afterRepayment;
+                if ($key = array_search(\projects_status::DEFAUT, $possibleStatus)) {
+                    unset($possibleStatus[$key]);
+                }
                 break;
         }
 
         return $projectStatus->select('status IN (' . implode(',' , $possibleStatus) . ')', 'status ASC');
     }
-
 }

@@ -269,6 +269,10 @@ class ajaxController extends bootstrap
                 $this->companies->siren = $_POST['siren_etape1'];
                 $this->companies->update();
 
+                $this->clients->get($this->companies->id_client_owner);
+                $this->clients->source = $_POST['source_etape1'];
+                $this->clients->update();
+
                 if (\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $this->checkCompany($this->companies, $this->projects)) {
                     echo 'Siren inconu';
                     return;
@@ -278,7 +282,6 @@ class ajaxController extends bootstrap
                 }
                 echo 'OK';
                 return;
-
             } elseif ($_POST['etape'] == 2) {
                 $this->projects->get($_POST['id_project'], 'id_project');
                 $this->projects->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;

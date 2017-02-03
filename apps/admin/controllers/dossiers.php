@@ -1480,7 +1480,7 @@ class dossiersController extends bootstrap
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
             // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
-            if ($clientManager->isLender($this->clients)){
+            if ($clientManager->isLender($this->clients)) {
                 $this->clients->email = '';
             }
 
@@ -1500,6 +1500,8 @@ class dossiersController extends bootstrap
 
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->dureePossible = explode(',', $this->settings->value);
+
+        $this->sources = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
     }
 
     public function _funding()

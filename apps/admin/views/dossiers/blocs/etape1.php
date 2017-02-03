@@ -26,6 +26,17 @@
                     <?php endif; ?>
                 </td>
             </tr>
+            <tr>
+                <th><label for="source_etape1">Source :</label></th>
+                <td colspan="3">
+                    <select id="source_etape1" name="source_etape1">
+                        <option value=""></option>
+                        <?php foreach ($this->sources as $source) : ?>
+                            <option value="<?= stripslashes($source) ?>"<?= $this->clients->source === $source ? ' selected="selected"' : '' ?>><?= $source ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+            </tr>
         </table>
         <div id="valid_etape1" class="valid_etape">Données sauvegardées</div>
         <div class="btnDroite">
