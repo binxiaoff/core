@@ -93,3 +93,5 @@ parameters:
     ekomi.url:                       http://apps.ekomi.com/srr/add-recipient
     ekomi.shop_id:                   ~
     ekomi.password:                  ~
+
+    slack.token:                     xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5

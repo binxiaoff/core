@@ -49,10 +49,9 @@ class dossiersController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess('emprunteurs');
 
-        $this->users->checkAccess('dossiers');
-
+        $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
     }
 
@@ -291,7 +290,7 @@ class dossiersController extends bootstrap
             $this->bCanEditStatus = false;
             if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
                 $this->loadData('users_types');
-                if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE, \users_types::TYPE_COMMERCIAL))) {
+                if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL))) {
                     $this->bCanEditStatus = true;
                 }
             }
@@ -663,18 +662,14 @@ class dossiersController extends bootstrap
                             }
                         } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
                             if ($this->getParameter('kernel.environment') === 'prod' && $_POST['status'] == \projects_status::A_FUNDER) {
+                                $slackManager    = $this->container->get('unilend.service.slack_manager');
                                 $publicationDate = new DateTime($this->projects->date_publication);
                                 $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
-                                $payload         = new \CL\Slack\Payload\ChatPostMessagePayload();
-                                $payload->setChannel('#plateforme');
-                                $payload->setText('Le projet *<' . $this->furl . '/projects/detail/' . $this->projects->slug . '|' . $this->projects->title . '>* , :calendar: : '
-                                    . $this->projects->period . ' mois / Notation : ' . $star . ' :star: , sera mis en ligne le ' . $publicationDate->format('d/m/Y à H:i'));
-                                $payload->setUsername('Unilend');
-                                $payload->setIconUrl($this->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
-                                $payload->setAsUser(false);
+                                $message         = $slackManager->getProjectName($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - :calendar: ' . $this->projects->period . ' mois / ' . $star . ' :star:';
 
-                                $this->get('cl_slack.api_client')->send($payload);
+                                $slackManager->sendMessage($message);
                             }
+
                             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                             $companies        = $this->loadData('companies');
@@ -2014,22 +2009,18 @@ class dossiersController extends bootstrap
                     $_SESSION['freeow']['message'] = 'Les prêteurs ont bien été remboursés !';
 
                     $stopWatchEvent = $stopWatch->stop('repayment');
+
                     if ($this->getParameter('kernel.environment') === 'prod') {
                         /** @var users $user */
                         $user = $this->get('unilend.service.entity_manager')->getRepository('users');
                         $user->get($_SESSION['user']['id_user']);
 
-                        $payload = new \CL\Slack\Payload\ChatPostMessagePayload();
-                        $payload->setChannel('#plateforme');
-                        $payload->setText(
-                            '*<' . $this->furl . '/projects/detail/' . $projects->slug . '|' . $projects->title . '>* - Remboursement effectué par ' . trim($user->firstname . ' ' . $user->name)
-                            . ' en ' . round($stopWatchEvent->getDuration() / 1000, 2) . ' secondes  (' . $repaymentNb . ' prêts, échéance #' . $e['ordre'] . ').'
-                        );
-                        $payload->setUsername('Unilend');
-                        $payload->setIconUrl($this->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
-                        $payload->setAsUser(false);
+                        $slackManager = $this->container->get('unilend.service.slack_manager');
+                        $message      = $slackManager->getProjectName($this->projects) .
+                            ' - Remboursement effectué par ' . trim($user->firstname . ' ' . $user->name) .
+                            ' en ' . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes  (' . $repaymentNb . ' prêts, échéance #' . $e['ordre'] . ')';
 
-                        $this->get('cl_slack.api_client')->send($payload);
+                        $slackManager->sendMessage($message);
                     }
                 } else {
                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
@@ -2067,16 +2058,16 @@ class dossiersController extends bootstrap
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
                 $id_reception = $_POST['id_reception'];
 
-                $this->projects                      = $this->loadData('projects');
-                $this->echeanciers                   = $this->loadData('echeanciers');
-                $this->receptions                    = $this->loadData('receptions');
-                $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
-                $this->transactions                  = $this->loadData('transactions');
-                $this->lenders_accounts              = $this->loadData('lenders_accounts');
-                $this->clients                       = $this->loadData('clients');
-                $this->wallets_lines                 = $this->loadData('wallets_lines');
-                $this->mail_template                 = $this->loadData('mail_templates');
-                $this->companies                     = $this->loadData('companies');
+                $this->projects               = $this->loadData('projects');
+                $this->echeanciers            = $this->loadData('echeanciers');
+                $this->receptions             = $this->loadData('receptions');
+                $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+                $this->transactions           = $this->loadData('transactions');
+                $this->lenders_accounts       = $this->loadData('lenders_accounts');
+                $this->clients                = $this->loadData('clients');
+                $this->wallets_lines          = $this->loadData('wallets_lines');
+                $this->mail_template          = $this->loadData('mail_templates');
+                $this->companies              = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager= $this->get('unilend.service.project_manager');
 
@@ -2142,7 +2133,7 @@ class dossiersController extends bootstrap
                         $this->wallets_lines->status                   = 1; // non utilisé
                         $this->wallets_lines->type                     = 2; // transaction virtuelle
                         $this->wallets_lines->amount                   = bcmul($reste_a_payer_pour_preteur, 100);
-                        $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
+                        $this->wallets_lines->create();
 
                         $montant_total += $reste_a_payer_pour_preteur;
                     }

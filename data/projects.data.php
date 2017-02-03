@@ -1,32 +1,7 @@
 <?php
 
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
 use \Doctrine\DBAL\Statement;
+use \Unilend\Bridge\Doctrine\DBAL\Connection;
 use \Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
 
 class projects extends projects_crud
@@ -1280,4 +1255,165 @@ class projects extends projects_crud
         return $result;
     }
 
+    /**
+     * @param users $user
+     * @return array
+     */
+    public function getRiskUserProjects(\users $user)
+    {
+        $statement = $this->getRiskProjectsQuery()
+            ->andWhere('p.id_analyste = :userId')
+            ->setParameter('userId', $user->id_user)
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @param users $user
+     * @return array
+     */
+    public function getRiskProjectsExcludingUser(\users $user)
+    {
+        $statement = $this->getRiskProjectsQuery()
+            ->andWhere('p.id_analyste != :userId')
+            ->setParameter('userId', $user->id_user)
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @return \Doctrine\DBAL\Query\QueryBuilder
+     */
+    private function getRiskProjectsQuery()
+    {
+        return $this->bdd->createQueryBuilder()
+            ->select('p.id_project,
+                p.amount AS amount,
+                p.period AS duration,
+                p.status AS status,
+                ps.label AS status_label,
+                co.name AS company_name,
+                CONCAT(cl.prenom, " ", cl.nom) AS client_name,
+                cl.telephone AS client_phone,
+                p.added AS creation,
+                (SELECT MAX(added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status WHERE psh.id_project = p.id_project AND ps.status = :waitingAnalystStatus) AS risk_status_datetime,
+                TIMESTAMPDIFF(HOUR, (SELECT MAX(added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status WHERE psh.id_project = p.id_project AND ps.status = :waitingAnalystStatus), NOW()) AS risk_status_duration,
+                IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo
+            ')
+            ->from('projects', 'p')
+            ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
+            ->innerJoin('co', 'clients', 'cl', 'co.id_client_owner = cl.id_client')
+            ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
+            ->where('p.status IN (:riskStatus)')
+            ->setParameter('waitingAnalystStatus', \projects_status::ATTENTE_ANALYSTE)
+            ->setParameter('riskStatus', \projects_status::$riskTeam, Connection::PARAM_INT_ARRAY)
+            ->addOrderBy('status', 'ASC')
+            ->addOrderBy('risk_status_duration', 'DESC');
+    }
+
+    /**
+     * @param users $user
+     * @return array
+     */
+    public function getSaleUserProjects(\users $user)
+    {
+        $statement = $this->getSaleProjectsQuery(\projects_status::$saleTeam)
+            ->andWhere('p.id_commercial = :userId')
+            ->setParameter('userId', $user->id_user)
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @param users $user
+     * @return array
+     */
+    public function getSaleProjectsExcludingUser(\users $user)
+    {
+        $statement = $this->getSaleProjectsQuery(\projects_status::$saleTeam)
+            ->andWhere('p.id_commercial != :userId')
+            ->setParameter('userId', $user->id_user)
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @return array
+     */
+    public function getUpcomingSaleProjects()
+    {
+        $statement = $this->getSaleProjectsQuery(\projects_status::$upcomingSaleTeam)
+            ->andWhere('DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added')
+            ->andWhere('p.stop_relances = 0')
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @param array $status
+     * @return \Doctrine\DBAL\Query\QueryBuilder
+     */
+    private function getSaleProjectsQuery(array $status)
+    {
+        return $this->bdd->createQueryBuilder()
+            ->select('p.id_project,
+                p.amount AS amount,
+                p.period AS duration,
+                IF (
+                    p.status IN (' . implode(',', [\projects_status::DEMANDE_SIMULATEUR, \projects_status::COMPLETUDE_ETAPE_2]) . '), 5,
+                    IF (p.status IN (' . implode(',', [\projects_status::COMPLETUDE_ETAPE_3, \projects_status::A_TRAITER]) . '), 10, p.status)
+                ) AS status,
+                IF (
+                    p.status IN (' . implode(',', [\projects_status::DEMANDE_SIMULATEUR, \projects_status::COMPLETUDE_ETAPE_2]) . '), "En cours",
+                    IF (p.status IN (' . implode(',', [\projects_status::COMPLETUDE_ETAPE_3, \projects_status::A_TRAITER]) . '), "Complet", ps.label)
+                ) AS status_label,
+                co.name AS company_name,
+                CONCAT(cl.prenom, " ", cl.nom) AS client_name,
+                cl.telephone AS client_phone,
+                p.added AS creation,
+                IF(u.id_user IS NULL, "", CONCAT(u.firstname, " ", u.name)) AS assignee,
+                IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo,
+                IFNULL(scoring.note, 10) AS priority,
+                IFNULL(infolegale.value, 0) AS infolegale
+            ')
+            ->from('projects', 'p')
+            ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
+            ->innerJoin('co', 'clients', 'cl', 'co.id_client_owner = cl.id_client')
+            ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
+            ->leftJoin('p', 'company_rating', 'euler', 'p.id_company_rating_history = euler.id_company_rating_history AND euler.type = :eulerScoringType')
+            ->leftJoin('p', 'company_rating', 'altares', 'p.id_company_rating_history = altares.id_company_rating_history AND altares.type = :altaresScoringType')
+            ->leftJoin('p', 'pre_scoring', 'scoring', 'euler.value = scoring.euler_hermes AND altares.value = scoring.altares')
+            ->leftJoin('p', 'company_rating', 'infolegale', 'p.id_company_rating_history = infolegale.id_company_rating_history AND infolegale.type = :infolegaleScoringType')
+            ->leftJoin('p', 'users', 'u', 'p.id_commercial = u.id_user')
+            ->where('p.status IN (:commercialStatus)')
+            ->setParameter('commercialStatus', $status, Connection::PARAM_INT_ARRAY)
+            ->setParameter('eulerScoringType', \company_rating::TYPE_EULER_HERMES_GRADE)
+            ->setParameter('altaresScoringType', \company_rating::TYPE_ALTARES_SCORE_20)
+            ->setParameter('infolegaleScoringType', \company_rating::TYPE_INFOLEGALE_SCORE)
+            ->addOrderBy('status', 'DESC')
+            ->addOrderBy('priority', 'ASC')
+            ->addOrderBy('infolegale', 'DESC')
+            ->addOrderBy('p.amount', 'DESC')
+            ->addOrderBy('p.period', 'DESC');
+    }
 }

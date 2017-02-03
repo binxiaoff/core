@@ -5,8 +5,7 @@
         <?php if (isset($_SESSION['freeow'])) : ?>
             var title = "<?= $_SESSION['freeow']['title'] ?>",
                 message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
+                opts = {};
 
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
@@ -35,8 +34,8 @@
         <tbody>
             <?php foreach ($this->aProjects as $aProject) : ?>
                 <tr>
-                    <td><?= $aProject['id_project'] ?></td>
-                    <td><?= $aProject['title'] ?></td>
+                    <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>"><?= $aProject['id_project'] ?></a></td>
+                    <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>"><?= $aProject['title'] ?></a></td>
                     <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) . '&nbsp€' ?></td>
                     <td><?= isset($aProject['bic']) ? $aProject['bic'] : '' ?></td>
                     <td><?= isset($aProject['iban']) ? $aProject['iban'] : '' ?></td>

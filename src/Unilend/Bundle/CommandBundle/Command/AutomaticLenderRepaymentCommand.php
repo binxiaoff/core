@@ -1,7 +1,7 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use CL\Slack\Payload\ChatPostMessagePayload;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,7 +13,6 @@ use Unilend\core\Loader;
 
 class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 {
-
     protected function configure()
     {
         $this
@@ -297,19 +296,15 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     $mailerManager->sendInternalNotificationEndOfRepayment($projects);
                     $mailerManager->sendClientNotificationEndOfRepayment($projects);
                 }
-                $stopWatchEvent = $stopWatch->stop('autoRepayment');
-                if ($this->getContainer()->getParameter('kernel.environment') === 'prod') {
-                    $payload = new ChatPostMessagePayload();
-                    $payload->setChannel('#plateforme');
-                    $payload->setText(
-                        '*<' . $url . '/projects/detail/' . $projects->slug . '|' . $projects->title . '>* - Remboursement automatique effectué en '
-                        . round($stopWatchEvent->getDuration() / 1000, 2) . ' secondes (' . $nb_pret_remb . ' prêts, échéance #' . $r['ordre'] . ').'
-                    );
-                    $payload->setUsername('Unilend');
-                    $payload->setIconUrl($this->getContainer()->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
-                    $payload->setAsUser(false);
 
-                    $this->getContainer()->get('cl_slack.api_client')->send($payload);
+                $stopWatchEvent = $stopWatch->stop('autoRepayment');
+
+                if ($this->getContainer()->getParameter('kernel.environment') === 'prod') {
+                    $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
+                    $message      = $slackManager->getProjectName($projects) .
+                        ' - Remboursement automatique effectué en '
+                        . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $nb_pret_remb . ' prêts, échéance #' . $r['ordre'] . ').';
+                    $slackManager->sendMessage($message);
                 }
             } else {
                 $projectRepayment->get($r['id_project_remb'], 'id_project_remb');

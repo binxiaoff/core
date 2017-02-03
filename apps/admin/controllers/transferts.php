@@ -1,7 +1,6 @@
 <?php
 
 use Psr\Log\LoggerInterface;
-use CL\Slack\Payload\ChatPostMessagePayload;
 
 class transfertsController extends bootstrap
 {
@@ -850,14 +849,9 @@ class transfertsController extends bootstrap
                 $ekomi = $this->get('unilend.service.ekomi');
                 $ekomi->sendProjectEmail($project);
 
-                $payload = new ChatPostMessagePayload();
-                $payload->setChannel('#general');
-                $payload->setText('Fonds débloqués pour *<' . $this->furl . '/projects/detail/' . $project->slug . '|' . $project->title . '>*');
-                $payload->setUsername('Unilend');
-                $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/unilend.png');
-                $payload->setAsUser(false);
-
-                $this->get('cl_slack.api_client')->send($payload);
+                $slackManager = $this->container->get('unilend.service.slack_manager');
+                $message      = $slackManager->getProjectName($project) . ' - Fonds débloqués par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
+                $slackManager->sendMessage($message);
             } else {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Un remboursement est déjà en cours';

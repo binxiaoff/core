@@ -2,14 +2,13 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use CL\Slack\Payload\ChatPostMessagePayload;
-use CL\Slack\Transport\ApiClient;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use GuzzleHttp\TransferStats;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\StoreBundle\Document\WsCall;
 
 class CallHistoryManager
@@ -18,10 +17,8 @@ class CallHistoryManager
     private $entityManager;
     /** @var Stopwatch */
     private $stopwatch;
-    /** @var ApiClient */
-    private $slack;
-    /** @var  ChatPostMessagePayload */
-    private $payload;
+    /** @var SlackManager */
+    private $slackManager;
     /** @var string */
     private $alertChannel;
     /** @var Packages */
@@ -33,21 +30,27 @@ class CallHistoryManager
 
     /**
      * WSProviderCallHistoryManager constructor.
-     * @param EntityManager $entityManager
-     * @param Stopwatch $stopwatch
-     * @param ApiClient $slack
-     * @param string $payload
-     * @param string $alertChannel
-     * @param Packages $assetPackage
+     * @param EntityManager   $entityManager
+     * @param Stopwatch       $stopwatch
+     * @param SlackManager    $slackManager
+     * @param string          $alertChannel
+     * @param Packages        $assetPackage
      * @param LoggerInterface $logger
      * @param ManagerRegistry $managerRegistry
      */
-    public function __construct(EntityManager $entityManager, Stopwatch $stopwatch, ApiClient $slack, $payload, $alertChannel, Packages $assetPackage, LoggerInterface $logger, ManagerRegistry $managerRegistry)
+    public function __construct(
+        EntityManager $entityManager,
+        Stopwatch $stopwatch,
+        SlackManager $slackManager,
+        $alertChannel,
+        Packages $assetPackage,
+        LoggerInterface $logger,
+        ManagerRegistry $managerRegistry
+    )
     {
         $this->entityManager   = $entityManager;
         $this->stopwatch       = $stopwatch;
-        $this->slack           = $slack;
-        $this->payload         = new $payload;
+        $this->slackManager    = $slackManager;
         $this->alertChannel    = $alertChannel;
         $this->assetPackage    = $assetPackage;
         $this->logger          = $logger;
@@ -116,8 +119,7 @@ class CallHistoryManager
             case 'down':
                 if ($wsResource->is_available) {
                     $wsResource->is_available = 0;
-                    $this->setPayload();
-                    $this->payload->setText($provider . " is down  :skull_and_crossbones:\n> " . $extraInfo);
+                    $slackMessage = $provider . " is down  :skull_and_crossbones:\n> " . $extraInfo;
                 } else {
                     return;
                 }
@@ -125,20 +127,18 @@ class CallHistoryManager
             case 'up':
                 if (! $wsResource->is_available) {
                     $wsResource->is_available = 1;
-                    $this->setPayload();
-                    $this->payload->setText($provider . ' is up  :white_check_mark:');
+                    $slackMessage = $provider . ' is up  :white_check_mark:';
                 } else {
                     return;
                 }
                 break;
             default:
-                unset($payload);
                 return;
         }
         $wsResource->update();
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'provider' => $provider];
         try {
-            $response = $this->slack->send($this->payload);
+            $response = $this->slackManager->send($slackMessage, $this->alertChannel);
 
             if (false == $response->isOk()) {
                 $this->logger->warning('Could not send slack notification for ' . $provider . '. Error: ' . $response->getError(), $logContext);
@@ -170,17 +170,6 @@ class CallHistoryManager
         } catch (\Exception $exception) {
             $this->logger->warning('Unable to save response to mongoDB: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
         }
-    }
-
-    private function setPayload()
-    {
-        $this->payload->setChannel($this->alertChannel);
-        $this->payload->setUsername('Unilend');
-
-        if (file_exists($this->assetPackage->getUrl('') . '/assets/images/slack/unilend.png')) {
-            $this->payload->setIconUrl($this->assetPackage->getUrl('') . '/assets/images/slack/unilend.png');
-        }
-        $this->payload->setAsUser(false);
     }
 
     /**

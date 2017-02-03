@@ -190,8 +190,8 @@
         <?php if (isset($_SESSION['freeow'])) : ?>
             var title = "<?= $_SESSION['freeow']['title'] ?>",
                 message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
+                opts = {};
+
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
             <?php unset($_SESSION['freeow']); ?>
@@ -639,7 +639,7 @@
                         </td>
                         <td>
                             <?php if (
-                                in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE))
+                                in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_RISK))
                                 && in_array($this->projects->status, array(\projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE, \projects_status::REJETE))
                             ) : ?>
                                 <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"/></a>
@@ -764,7 +764,7 @@
                         <td id="status_dossier">
                         <?php if ($this->projects->status == \projects_status::EN_ATTENTE_PIECES) { ?>
                             <?php if (empty($this->projects->id_product)) : ?>
-                                Merci de séléctionner un produit avant de passer au prochin status.
+                                Merci de séléctionner un produit avant de passer au prochain statut.
                             <?php else : ?>
                                 <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossier(<?= \projects_status::ATTENTE_ANALYSTE ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
                                 <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#CC0000;border-color:#CC0000;font-size:10px;">Rejeter dossier</a>
@@ -853,8 +853,8 @@
                                 return;
                             }
 
-                            if($('#assigned_product').val().length < 1) {
-                                alert('Merci de séléctionner un produit avant de passer au prochin status.');
+                            if ($('#assigned_product').val().length < 1) {
+                                alert('Merci de séléctionner un produit avant de passer au prochain statut.');
                                 $('#status option[value="' + previous_status + '"]').prop('selected', true);
                                 return;
                             }
