@@ -33,7 +33,7 @@
                 {% endif %}
                 <p class="message">
                     {% if lenderDetails.hasIRR or lenderDetails.companiesLenderInvestedIn == 0 %}
-                        {{ "lender-dashboard_irr-#{ lenderDetails.irrTranslation }level-#{ lenderDetails.level }"|trans|raw }}
+                        {{ "lender-dashboard_irr-#{ lenderDetails.irrTranslation }level-#{ lenderDetails.level }"|trans({'%url%': app.request.getSchemeAndHttpHost()})|raw }}
                     {% else %}
                         {{ "lender-dashboard_irr-#{ lenderDetails.irrTranslation }"|trans|raw }}
                     {% endif %}
