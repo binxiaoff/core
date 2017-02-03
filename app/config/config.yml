@@ -87,6 +87,7 @@ doctrine_mongodb:
                 ssl:           true
                 password:      "%mongodb_password%"
                 username:      "%mongodb_username%"
+                readPreference:   secondaryPreferred
     default_database: 'ws_call_%kernel.environment%'
     document_managers:
         default:

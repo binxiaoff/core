@@ -56,7 +56,7 @@ parameters:
     dbal_wrapper_class:              Unilend\Bridge\Doctrine\DBAL\Connection
     dbal_driver_class:               Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
 
-    mongodb_server:                  mongodb://uld-mdb-admin:cyPKA2c0C6hq3JLp@datalake-shard-00-00-lnres.mongodb.net:27017
+    mongodb_server:                  mongodb://uld-mdb-admin:cyPKA2c0C6hq3JLp@datalake-shard-00-01-lnres.mongodb.net:27017
     mongodb_username:                uld-mdb-admin
     mongodb_password:                cyPKA2c0C6hq3JLp
 

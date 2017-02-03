@@ -6,11 +6,6 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
 /**
  * @MongoDB\Document
- * @MongoDB\Indexes({
- *     @MongoDB\Index(keys={"provider", "resource"}, background="true"),
- *     @MongoDB\Index(keys={"siren"}, background="true"),
- *     @MongoDB\Index(keys={"added"}, background="true", order="desc")
- *     })
  */
 class WsCall
 {
