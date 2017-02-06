@@ -30,7 +30,7 @@
                     <td><?= $project['client_name'] ?></td>
                     <td><?= $project['client_phone'] ?></td>
                     <td><?=$project['creation']->format('d/m/Y - H\hi') ?></td>
-                    <td data-toggle="tooltip" class="tooltip<?php if ($project['risk_status_duration'] > 48) : ?> warning<?php endif; ?>" title="<?= $this->ficelle->formatNumber($project['risk_status_duration'], 0) ?> heures"><?= $project['risk_status_datetime']->format('d/m/Y - H\hi') ?></td>
+                    <td data-toggle="tooltip" class="tooltip<?php if ($project['risk_status_duration'] > 48) : ?> warning<?php endif; ?>" title="<?= $project['risk_status_datetime']->format('d/m/Y - H\hi') ?>"><?= $this->ficelle->formatNumber($project['risk_status_duration'], 0) ?> heures</td>
                     <?php if (empty($project['memo'])) : ?>
                         <td></td>
                     <?php else : ?>
