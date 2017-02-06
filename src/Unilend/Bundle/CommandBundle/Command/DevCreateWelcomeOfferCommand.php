@@ -49,7 +49,7 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
         foreach ($clients as $clientId) {
             if (
                 $client->get($clientId)
-                && 0 == $transactions->sum('id_client = ' . $clientId . ' AND type_transaction IN (' . implode(',', [\transactions_types::TYPE_WELCOME_OFFER,\transactions_types::TYPE_WELCOME_OFFER_CANCELLATION]) . ')', 'montant')
+                && 0 == $transactions->sum('id_client = ' . $clientId . ' AND type_transaction IN (' . implode(',', [\transactions_types::TYPE_WELCOME_OFFER, \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION]) . ')', 'montant')
             ) {
                 $return = $welcomeOfferManager->createWelcomeOffer($client);
                 if (0 == $return['code']) {
