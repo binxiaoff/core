@@ -44,7 +44,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
             if ($lendersAccounts->get($welcomeOffer['id_client'], 'id_client_owner')){
                 $accountBalance = $transactions->getSolde($lendersAccounts->id_client_owner);
 
-                if (0 > bccomp($accountBalance, bcdiv($welcomeOffer['montant'], 100, 2), 2)){
+                if (0 >= bccomp($accountBalance, bcdiv($welcomeOffer['montant'], 100, 2), 2)){
                     $logger->info('Balance of ' . $accountBalance . ' is insufficient to withdraw unused welcome offer for client : ' . $lendersAccounts->id_client_owner);
                 } else {
                     $welcomeOfferDetails->get($welcomeOffer['id_offre_bienvenue_detail']);
