@@ -116,7 +116,7 @@ class OperationManager
                 }
                 if ($item instanceof Virements) {
                     $operation->setWireTransferOut($item);
-                    $operation->setProject($item->getIdProject());
+                    $operation->setProject($item->getProject());
                 }
                 if ($item instanceof Receptions) {
                     $operation->setWireTransferIn($item);
@@ -330,7 +330,7 @@ class OperationManager
         $transaction->id_langue        = 'fr';
         $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->ip_client        = '';
+        $transaction->ip_client        = empty($_SERVER['REMOTE_ADDR']) ? '' : $_SERVER['REMOTE_ADDR'];
         $transaction->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL;
         $transaction->create();
 
