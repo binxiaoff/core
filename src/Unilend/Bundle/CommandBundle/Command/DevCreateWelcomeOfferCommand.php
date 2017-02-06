@@ -22,7 +22,22 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
         /** @var WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->getContainer()->get('unilend.service.welcome_offer_manager');
 
-        $clients = [32932,98378,68571,96622,105200,105335,102574,99233,12705,105181,104845,104674,104666,104618,104429,104420,104414,104407,104384,104378,104344,104291,103403,83850,99995,10276,103886,103543,104374,103135,102689,100049,54946,33287,12636,101675,103259,30249,103934,102692,102053,101737,99977,82250,104165,104138,104125,104066,103972,103733,103730,103432,103295,103235,102905,103018,102890,102811,102808,104039,102565,102548,102452,102296,102278,102269,102199,102202,102088,102061,103664,103724,103616,103025,101999,101900,101650,68899,103156,103055,102739,102601,102589,102505,102431,102034,101758,102734,101566,101539,101513,101417,98075,100685,102085,7639,101695,101369,101119,95368,48900,102686,102064,102512,102866,101504,101033,100981,102406,101474,100795,101450,100787,101006,101446,101432,100978,100952,100852,100892,100748,100778,100589,100318,86675,80680,64687,61514,13283,100873,99967,99767,99373,96950,24296,16434,86934,101819,100463,100325,100291,101914,101875,101645,101507,101461,101018,100868,100942,100619,74762,100870,14181,99275,93702,32694,101578,100315,100261,98938,100228,100225,100151,100118,100133,100103,100054,99992,98557,93305,85175,63709,55815,59556,95561,99848,98900,97363,99980,99854,99851,99805,99782,99710,99697,99688,99487,99295,99269,99236,66853,99700,99899,99764,99461,99446,99316,99241,97639,99962,100580,100546,99196,99184,65908,95413,100361,99098,99058,99002,98660,98552,95504,81171,98443,93129,9357,100478,76296,100165,100027,100022,99842,99808,98845,99920,97481,84717,68487,54189,98588,97459,93494,87659,86949,76731,70775,99746,99496,98995,47292,96463,95333,98500,98587,98416,98407,98392,98320,98311,98306,68032,87114,97714,97681,97564,97562,97498,97469,97460,98617,98522,98503,98425,98348,98276,98071,96899,97142,97090,97037,97034,96947,96941,96811,96487,96311,54920,96238,96455,96614,86807,83156,96649,96547,96527,96493,96481,96478,32072,52269,97861,96449,95378,49935,96038,95876,95686,95684,35111,96724,96335,66003,95989,94846,94841,94287,86196,84369,95968,75821,13910,96638,96061,87189,56730,81222,94952,94403,87876,86987,87215,37470,36753,82559,93518,9465,94945,94930,95741,95008,94928,94922,94805,94802,94688,94631,94508,94445,94311,94182,94172,89006,94049,94007,85745,83787,83232,82575,78855,77931,93578,93239,85956,87149,84147,94639,94697,34472,95011,94855,94699,94643,94256,94245,79905,92874,94289,93575,93495,93371,93365,93330,93317,93314,93303,93242,93110,93102,93066,93044,92883,92880,89225,88836,77072,94019,88053,87377,89174,94329,88766,55596,88838,89094,89199,89054,89000,89004,88827,88797,88691,88527,88445,88362,87993,87969,87827,87761,87699,87741,87317,87617,86139,85347,82049,75747,61983,60155,42749,89181,93012,93195,13855,93285,83408,89102,88980,87455,88575,88898,87857,86862,88779,83939,75564,71347,64400,87825,4584,2816,88578];
+        $clients  = [];
+        $fileName = $this->getContainer()->getParameter('path.protected') . 'import/welcome_offer.csv';
+
+        if (false === file_exists($fileName)) {
+            throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/welcome_offer.csv not found');
+        }
+        if (false === ($handle = fopen($fileName, 'r'))) {
+            throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/import/welcome_offer.csv cannot be opened');
+        }
+
+        while (($row = fgetcsv($handle, 0, ';')) !== false) {
+            if (false !== filter_var($row[0], FILTER_VALIDATE_INT)) {
+                $clients[] = $row[0];
+            }
+        }
+        fclose($handle);
 
         /** @var \clients $client */
         $client = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('clients');
@@ -31,17 +46,20 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
 
         $distributedOffers = 0;
 
-        foreach ($clients as $clientId){
-            if ($client->get($clientId) && false === $transactions->exist($client->id_client . ' type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND id_client')) {
+        foreach ($clients as $clientId) {
+            if (
+                $client->get($clientId)
+                && 0 == $transactions->sum('id_client = ' . $clientId . ' AND type_transaction IN (' . implode(',', [\transactions_types::TYPE_WELCOME_OFFER, \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION]) . ')', 'montant')
+            ) {
                 $return = $welcomeOfferManager->createWelcomeOffer($client);
-                if (0 == $return['code']){
+                if (0 == $return['code']) {
                     $distributedOffers += 1;
-                    $output->writeln($return['message']);
+                    $output->writeln(' Client ' . $clientId . ' : ' . $return['message']);
                 } else {
-                    $output->writeln('Welcome Offer not distributed for client: ' . $clientId . ' : ' . $return['message']);
+                    $output->writeln('Client ' . $clientId . ' : Welcome Offer not distributed - ' . $return['message']);
                 }
             } else {
-                $output->writeln('Welcome Offer already distributed for client ' . $clientId);
+                $output->writeln(' Client ' . $clientId . ' : Welcome Offer already distributed');
             }
         }
         $output->writeln('Number of welcome offers created : ' . $distributedOffers);
