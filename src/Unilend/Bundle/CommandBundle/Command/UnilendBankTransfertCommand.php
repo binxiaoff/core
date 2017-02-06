@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class UnilendBankTransfertCommand extends ContainerAwareCommand
@@ -32,7 +33,15 @@ class UnilendBankTransfertCommand extends ContainerAwareCommand
 
         if ($total > 0) {
             $amount = round(bcdiv($total, 100, 4), 2);
-            $this->getContainer()->get('unilend.service.operation_manager')->withdrawUnilendWallet($amount);
+
+            $wireTransferOut = new Virements();
+            $wireTransferOut->setMontant($total);
+            $wireTransferOut->setMotif('UNILEND_' . date('dmY'));
+            $wireTransferOut->setType(Virements::TYPE_UNILEND);
+            $wireTransferOut->setStatus(Virements::STATUS_PENDING);
+            $this->getContainer()->get('doctrine.orm.entity_manager')->persist($wireTransferOut);
+
+            $this->getContainer()->get('unilend.service.operation_manager')->withdrawUnilendWallet($amount, $wireTransferOut);
         }
     }
 }

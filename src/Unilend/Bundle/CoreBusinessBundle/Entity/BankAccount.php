@@ -14,6 +14,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class BankAccount
 {
+    const STATUS_PENDING = 0;
+    const STATUS_VALIDATED = 1;
+    const STATUS_ARCHIVED = 2;
+
     /**
      * @var string
      * @Assert\Bic()
@@ -61,7 +65,12 @@ class BankAccount
      */
     private $idClient;
 
-
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="status", type="integer", nullable=false)
+     */
+    private $status;
 
     /**
      * Set bic
@@ -209,5 +218,29 @@ class BankAccount
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * Set status
+     *
+     * @param integer $status
+     *
+     * @return BankAccount
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * Get status
+     *
+     * @return integer
+     */
+    public function getStatus()
+    {
+        return $this->status;
     }
 }

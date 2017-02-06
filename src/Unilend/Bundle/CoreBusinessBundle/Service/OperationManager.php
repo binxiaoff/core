@@ -10,7 +10,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -71,7 +70,6 @@ class OperationManager
      * @param Wallet|null   $debtor
      * @param Wallet|null   $creditor
      * @param array         $parameters
-     * @param boolean       $virtual
      *
      * @return bool
      * @throws \Exception
@@ -289,33 +287,24 @@ class OperationManager
     }
 
     /**
-     * @param Wallet $wallet
-     * @param        $amount
+     * @param Wallet    $wallet
+     * @param           $amount
+     * @param Virements $wireTransferOut
      *
-     * @return Virements
+     * @return bool
      * @throws \Exception
      */
-    public function withdrawLenderWallet(Wallet $wallet, $amount)
+    public function withdrawLenderWallet(Wallet $wallet, $amount, Virements $wireTransferOut)
     {
         $this->em->getConnection()->beginTransaction();
         try {
-            $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy(['idClient' => $wallet->getIdClient()]);
-
-            $wireTransferOut = new Virements();
-            $wireTransferOut->setClient($wallet->getIdClient());
-            $wireTransferOut->setMontant(bcmul($amount, 100));
-            $wireTransferOut->setMotif($wallet->getWireTransferPattern());
-            $wireTransferOut->setType(Virements::TYPE_LENDER);
-            $wireTransferOut->setStatus(Virements::STATUS_PENDING);
-            $wireTransferOut->setBankAccount($bankAccount);
-            $this->em->persist($wireTransferOut);
-
             $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW]);
             $this->newOperation($amount, $operationType, $wallet, null, $wireTransferOut);
             $this->em->flush();
             $this->legacyWithdrawLenderWallet($wallet, $wireTransferOut);
             $this->em->getConnection()->commit();
-            return $wireTransferOut;
+
+            return true;
         } catch (\Exception $e) {
             $this->em->getConnection()->rollBack();
             throw $e;
@@ -368,30 +357,24 @@ class OperationManager
     }
 
     /**
-     * @param float $amount
+     * @param           $amount
+     * @param Virements $wireTransferOut
      *
-     * @return boolean
+     * @return bool
      * @throws \Exception
      */
-    public function withdrawUnilendWallet($amount)
+    public function withdrawUnilendWallet($amount, Virements $wireTransferOut)
     {
         $this->em->getConnection()->beginTransaction();
         try {
-            $walletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
-            $wallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $walletType]);
-
-            $wireTransferOut = new Virements();
-            $wireTransferOut->setMontant(bcmul($amount, 100));
-            $wireTransferOut->setMotif('UNILEND_' . date('dmY'));
-            $wireTransferOut->setType(Virements::TYPE_UNILEND);
-            $wireTransferOut->setStatus(Virements::STATUS_PENDING);
-            $this->em->persist($wireTransferOut);
-
+            $walletType    = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
+            $wallet        = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $walletType]);
             $operationType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_WITHDRAW]);
             $this->newOperation($amount, $operationType, $wallet, null, $wireTransferOut);
             $this->em->flush();
             $this->legacyWithdrawUnilendWallet($wireTransferOut);
             $this->em->getConnection()->commit();
+
             return true;
         } catch (\Exception $e) {
             $this->em->getConnection()->rollBack();

@@ -14,7 +14,10 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
@@ -193,8 +196,25 @@ class LenderWalletController extends Controller
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
                 $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             } else {
-                $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->id_client, WalletType::LENDER);
-                $wireTransferOut = $this->get('unilend.service.operation_manager')->withdrawLenderWallet($wallet, $amount);
+                $em          = $this->get('doctrine.orm.entity_manager');
+                /** @var ClientsRepository $clientRepo */
+                $clientRepo  = $em->getRepository('UnilendCoreBusinessBundle:Clients');
+                $wallet      = $clientRepo->getWalletByType($client->id_client, WalletType::LENDER);
+                $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy([
+                    'idClient' => $wallet->getIdClient(),
+                    'status'   => BankAccount::STATUS_VALIDATED
+                ]);
+
+                $wireTransferOut = new Virements();
+                $wireTransferOut->setClient($wallet->getIdClient());
+                $wireTransferOut->setMontant(bcmul($amount, 100));
+                $wireTransferOut->setMotif($wallet->getWireTransferPattern());
+                $wireTransferOut->setType(Virements::TYPE_LENDER);
+                $wireTransferOut->setStatus(Virements::STATUS_PENDING);
+                $wireTransferOut->setBankAccount($bankAccount);
+                $em->persist($wireTransferOut);
+
+                $this->get('unilend.service.operation_manager')->withdrawLenderWallet($wallet, $amount, $wireTransferOut);
                 $transaction->get($wireTransferOut->getIdTransaction());
 
                 $notification->type      = \notifications::TYPE_DEBIT;
