@@ -33,7 +33,9 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
         }
 
         while (($row = fgetcsv($handle, 0, ';')) !== false) {
-            $clients[] = $row[0];
+            if (false !== filter_var($row[0], FILTER_VALIDATE_INT)) {
+                $clients[] = $row[0];
+            }
         }
         fclose($handle);
 
@@ -44,13 +46,13 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
 
         $distributedOffers = 0;
 
-        foreach ($clients as $clientId){
+        foreach ($clients as $clientId) {
             if (
                 $client->get($clientId)
-                && 0 == $transactions->sum('id_client = ' . $clientId . ' AND type_transaction IN (' . implode(',', [\transactions_types::TYPE_WELCOME_OFFER, \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION]) . ')', 'montant')
+                && 0 == $transactions->sum('id_client = ' . $clientId . ' AND type_transaction IN (' . implode(',', [\transactions_types::TYPE_WELCOME_OFFER,\transactions_types::TYPE_WELCOME_OFFER_CANCELLATION]) . ')', 'montant')
             ) {
                 $return = $welcomeOfferManager->createWelcomeOffer($client);
-                if (0 == $return['code']){
+                if (0 == $return['code']) {
                     $distributedOffers += 1;
                     $output->writeln(' Client ' . $clientId . ' : ' . $return['message']);
                 } else {
