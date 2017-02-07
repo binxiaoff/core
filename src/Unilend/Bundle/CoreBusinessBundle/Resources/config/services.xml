@@ -261,6 +261,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="assets.packages"/>
             <argument>%slack.default_channel%</argument>
+            <argument>%kernel.environment%</argument>
         </service>
     </services>
 </container>

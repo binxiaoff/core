@@ -4,13 +4,13 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use CL\Slack\Payload\ChatPostMessagePayload;
 use CL\Slack\Payload\PayloadResponseInterface;
-use CL\Slack\Transport\ApiClient;
+use CL\Slack\Transport\ApiClientInterface;
 use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class SlackManager
 {
-    /** @var ApiClient */
+    /** @var ApiClientInterface */
     private $apiClient;
     /** @var EntityManager */
     private $entityManager;
@@ -19,20 +19,28 @@ class SlackManager
     /** @var string*/
     private $frontUrl;
     /** @var string */
-    private $defaultChannel;
+    private $environment;
 
     /**
-     * @param ApiClient $apiClient
-     * @param Packages  $assetsPackages
-     * @param string    $defaultChannel
+     * @param ApiClientInterface $apiClient
+     * @param Packages           $assetsPackages
+     * @param string             $defaultChannel
+     * @param string             $environment
      */
-    public function __construct(ApiClient $apiClient, EntityManager $entityManager, Packages $assetsPackages, $defaultChannel)
+    public function __construct(
+        ApiClientInterface $apiClient,
+        EntityManager $entityManager,
+        Packages $assetsPackages,
+        $defaultChannel,
+        $environment
+    )
     {
         $this->apiClient      = $apiClient;
         $this->entityManager  = $entityManager;
         $this->iconUrl        = $assetsPackages->getUrl('/assets/images/slack/unilend.png');
         $this->frontUrl       = $assetsPackages->getUrl('');
         $this->defaultChannel = $defaultChannel;
+        $this->environment    = $environment;
     }
 
     /**
@@ -52,6 +60,10 @@ class SlackManager
         $payload->setIconUrl($this->iconUrl);
         $payload->setChannel($channel);
         $payload->setText($message);
+
+        if ('prod' !== $this->environment) {
+            $payload->setChannel($this->defaultChannel);
+        }
 
         return $this->apiClient->send($payload);
     }

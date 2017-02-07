@@ -49,7 +49,6 @@ parameters:
     altares.wsdl_url_risk:          'https://intuiz.altares.fr/iws-v3.13/services/CallistoRisque?wsdl'
 
     slack.default_channel:           '#it-testing'
-    slack.monitoring_channel:        '#it-testing'
 
     # End of parameters managed also by Ansible
 
@@ -95,3 +94,4 @@ parameters:
     ekomi.password:                  ~
 
     slack.token:                     xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
+    slack.monitoring_channel:        '#it-monitoring'

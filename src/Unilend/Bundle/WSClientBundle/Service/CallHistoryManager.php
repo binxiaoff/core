@@ -138,7 +138,7 @@ class CallHistoryManager
         $wsResource->update();
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'provider' => $provider];
         try {
-            $response = $this->slackManager->send($slackMessage, $this->alertChannel);
+            $response = $this->slackManager->sendMessage($slackMessage, $this->alertChannel);
 
             if (false == $response->isOk()) {
                 $this->logger->warning('Could not send slack notification for ' . $provider . '. Error: ' . $response->getError(), $logContext);
