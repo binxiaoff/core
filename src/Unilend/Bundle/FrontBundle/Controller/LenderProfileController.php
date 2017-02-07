@@ -15,9 +15,8 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\Constraints\Bic;
 use Symfony\Component\Validator\Constraints\Iban;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -63,11 +62,12 @@ class LenderProfileController extends Controller
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->getLenderAccount();
 
-        $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        /** @var Wallet $walletEntity */
-        $walletEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        /** @var Clients $clientEntity */
+        $clientEntity = $clientRepository->find($client->id_client);
         /** @var BankAccount $currentBankAccount */
-        $currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getBankAccountByUsage($walletEntity->getId(), BankAccountUsageType::LENDER_DEFAULT);
+        $currentBankAccount = $clientRepository->getCurrentBankAccount($clientEntity);
 
         $templateData = [
             'client'        => $client->select('id_client = ' . $client->id_client)[0],
@@ -1217,12 +1217,11 @@ class LenderProfileController extends Controller
         $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->getLenderAccount();
-
-        $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        /** @var Wallet $walletEntity */
-        $walletEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
-        /** @var BankAccount $currentBankAccount */
-        $currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getBankAccountByUsage($walletEntity->getId(), BankAccountUsageType::LENDER_DEFAULT);
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        /** @var Clients $clientEntity */
+        $clientEntity       = $clientRepository->find($client->id_client);
+        $currentBankAccount = $clientRepository->getCurrentBankAccount($clientEntity);
 
         /** @var string $historyContent */
         $historyContent = '<ul>';
@@ -1265,7 +1264,7 @@ class LenderProfileController extends Controller
 
         if (false === $this->get('session')->getFlashBag()->has('bankInfoUpdateError')) {
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-            $bankAccountManager->saveBankInformation($clientEntity, $newSwift, $newIban, BankAccountUsageType::LENDER_DEFAULT);
+            $bankAccountManager->saveBankInformation($clientEntity, $newSwift, $newIban);
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
 
             if (false !== strpos($historyContent, '<li>')) {

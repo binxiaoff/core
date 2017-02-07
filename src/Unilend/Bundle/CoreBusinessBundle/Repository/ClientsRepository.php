@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -29,16 +30,17 @@ class ClientsRepository extends EntityRepository
             ->addOrderBy('csh.idClientStatusHistory',  'DESC')
             ->setMaxResults(1)
             ->setParameter('idClient', $idClient);
-        $query = $cb->getQuery();
+        $query  = $cb->getQuery();
         $result = $query->getOneOrNullResult();
 
         return $result;
     }
 
     /**
-     * @param integer|Clients $idClient
+     * @param integer|Clients   $idClient
      * @param string|WalletType $walletType
-     * @return mixed
+     *
+     * @return Clients|null
      */
     public function getWalletByType($idClient, $walletType)
     {
@@ -87,10 +89,9 @@ class ClientsRepository extends EntityRepository
 
     /**
      * @param integer|Clients $idClient
-     * @param string $iban
      * @return mixed
      */
-    public function getBankAccount($idClient, $iban)
+    public function getCurrentBankAccount($idClient, $iban = null)
     {
         if ($idClient instanceof Clients) {
             $idClient = $idClient->getIdClient();
@@ -100,9 +101,18 @@ class ClientsRepository extends EntityRepository
         $cb->select('ba')
             ->innerJoin('UnilendCoreBusinessBundle:BankAccount', 'ba', Join::WITH, 'c.idClient = ba.idClient')
             ->where('c.idClient = :idClient')
-            ->andWhere('ba.iban = :iban')
-            ->setParameters(['idClient' => $idClient, 'iban' => $iban]);
-        $query = $cb->getQuery();
+            ->andWhere('ba.status != :status')
+            ->setParameters([
+                'idClient' => $idClient,
+                'status'   => BankAccount::STATUS_ARCHIVED
+            ]);
+
+        if (null !== $iban) {
+            $cb->andWhere('ba.iban = :iban')
+                ->setParameter('iban', $iban);
+        }
+
+        $query  = $cb->getQuery();
         $result = $query->getOneOrNullResult();
 
         return $result;

@@ -10,13 +10,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Table(name="bank_account", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_iban_UNIQUE", columns={"id_client", "iban"})}, indexes={@ORM\Index(name="fk_bank_account_id_client_idx", columns={"id_client"})})
  * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class BankAccount
 {
-    const STATUS_PENDING = 0;
+    const STATUS_PENDING   = 0;
     const STATUS_VALIDATED = 1;
-    const STATUS_ARCHIVED = 2;
+    const STATUS_ARCHIVED  = 2;
 
     /**
      * @var string

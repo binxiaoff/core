@@ -7,13 +7,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsage;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class BankAccountManager
@@ -44,47 +39,49 @@ class BankAccountManager
      * @param Clients $clientEntity
      * @param string  $bic
      * @param string  $iban
-     * @param string  $bankAccountUsageType
+     *
+     * @return bool
+     *
+     * @throws \Exception
      */
-    public function saveBankInformation(Clients $clientEntity, $bic, $iban, $bankAccountUsageTypeLabel)
+    public function saveBankInformation(Clients $clientEntity, $bic, $iban)
     {
-        /** @var ClientsRepository $clientsRepository */
-        $clientsRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Clients');
-        /** @var BankAccount $bankAccount */
-        $bankAccount = $clientsRepository->getBankAccount($clientEntity->getIdClient(), $iban);
+        /** @var BankAccountRepository $bankAccountRepository */
+        $bankAccountRepository = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount');
 
-        if (null === $bankAccount) {
-            $bankAccount = new BankAccount();
-            $bankAccount->setIdClient($clientEntity);
-            $bankAccount->setIban($iban);
-            $bankAccount->setBic($bic);
-            $this->em->persist($bankAccount);
-        } elseif ($bankAccount->getBic() !== $bic) {
-            $bankAccount->setBic($bic);
+        /** @var BankAccount $bankAccount */
+        $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getCurrentBankAccount($clientEntity, $iban);
+
+        if (null !== $bankAccount) {
+            if ($bic !== $bankAccount->getBic()) {
+                $bankAccount->setBic($bic);
+                $bankAccount->setStatus(BankAccount::STATUS_PENDING);
+                $this->updateLegacyBankAccount($clientEntity, $bankAccount);
+                $this->em->flush();
+            }
+            return true;
         }
 
-        $walletType = $this->getWalletTypeFromBankAccountUsage($bankAccountUsageTypeLabel);
-        /** @var Wallet $wallet */
-        $wallet = $clientsRepository->getWalletByType($bankAccount->getIdClient()->getIdClient(), $walletType);
-        if ($wallet) {
-            /** @var BankAccountUsageType $bankAccountUsageType */
-            $bankAccountUsageType = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccountUsageType')->findOneByLabel($bankAccountUsageTypeLabel);
-            /** @var BankAccountUsage $bankAccountUsage */
-            $bankAccountUsage = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccountUsage')->findOneBy(['idWallet' => $wallet, 'idUsageType' => $bankAccountUsageType]);
+        $this->em->getConnection()->beginTransaction();
+        try {
 
-            if ($bankAccountUsage === null) {
-                $bankAccountUsage = new BankAccountUsage();
-                $bankAccountUsage->setIdUsageType($bankAccountUsageType);
-                $bankAccountUsage->setIdWallet($wallet);
-                $this->em->persist($bankAccountUsage);
+            $existingBankAccounts = $bankAccountRepository->findBy(['idClient' => $clientEntity->getIdClient()]);
+            if (false === empty($existingBankAccounts)) {
+                foreach ($existingBankAccounts as $bankAccount) {
+                    $bankAccount->setStatus(BankAccount::STATUS_ARCHIVED);
+                }
             }
 
-            $bankAccountUsage->setIdBankAccount($bankAccount);
+            $newBankAccount = $bankAccountRepository->saveBankAccount($clientEntity->getIdClient(), $bic, $iban);
+            $this->updateLegacyBankAccount($clientEntity, $newBankAccount);
+
+            $this->em->flush();
+            $this->em->getConnection()->commit();
+
+        } catch (\Exception $e) {
+            $this->em->getConnection()->rollBack();
+            throw $e;
         }
-
-        $this->em->flush();
-
-        $this->updateLegacyBankAccount($clientEntity, $bankAccount);
     }
 
     /**
@@ -100,28 +97,5 @@ class BankAccountManager
         $lenderAccount->iban  = $bankAccount->getIban();
         $lenderAccount->motif = $this->lenderManager->getLenderPattern($client);
         $lenderAccount->update();
-    }
-
-    /**
-     * @param string $bankAccountUsageType
-     *
-     * @return null|string
-     */
-    private function getWalletTypeFromBankAccountUsage($bankAccountUsageType)
-    {
-        switch ($bankAccountUsageType) {
-            case BankAccountUsageType::LENDER_DEFAULT:
-                $walletType = WalletType::LENDER;
-                break;
-            case BankAccountUsageType::BORROWER_DEFAULT:
-                $walletType = WalletType::BORROWER;
-                break;
-            default:
-                $this->logger->warning('Unknown bankAccountUsage : ' . $bankAccountUsageType, [['class' => __CLASS__, 'function' => __FUNCTION__]]);
-                $walletType = null;
-                break;
-        }
-
-        return $walletType;
     }
 }

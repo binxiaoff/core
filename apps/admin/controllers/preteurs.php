@@ -1,13 +1,8 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsage;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 
 class preteursController extends bootstrap
@@ -146,7 +141,7 @@ class preteursController extends bootstrap
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             $this->companies = $this->loadData('companies');
-            if (in_array($this->clients->type, [clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
             }
 
@@ -312,7 +307,7 @@ class preteursController extends bootstrap
 
             $this->companies = $this->loadData('companies');
 
-            if (in_array($this->clients->type, [clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
 
                 $this->meme_adresse_fiscal = $this->companies->status_adresse_correspondance;
@@ -350,12 +345,10 @@ class preteursController extends bootstrap
 
         /** @var ClientsRepository $clientRepository */
         $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-        /** @var Clients $clientEntity */
+            /** @var Clients $clientEntity */
         $clientEntity = $clientRepository->find($this->clients->id_client);
-        /** @var Wallet $walletEntity */
-        $walletEntity = $clientRepository->getWalletByType($clientEntity->getIdClient(), WalletType::LENDER);
         /** @var BankAccount $currentBankAccount */
-        $currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getBankAccountByUsage($walletEntity->getId(), BankAccountUsageType::LENDER_DEFAULT);
+        $currentBankAccount = $clientRepository->getCurrentBankAccount($clientEntity);
 
         if ($currentBankAccount->getIban() != '') {
             $this->iban1 = substr($currentBankAccount->getIban(), 0, 4);
@@ -565,11 +558,7 @@ class preteursController extends bootstrap
                         }
 
                         $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
-
-                        /** @var \clients_gestion_notifications clients_gestion_notifications */
-                        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-
-                        $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+                        $this->validateBankAccount($clientEntity);
 
                         if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
                             $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
@@ -732,34 +721,14 @@ class preteursController extends bootstrap
 
                     if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
                         $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
+                        $this->validateBankAccount($clientEntity);
 
                         if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
-                            $sTypeMail = 'preteur-validation-modification-compte';
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
                         } else {
                             $welcomeOfferManager->createWelcomeOffer($this->clients);;
-                            $sTypeMail = 'preteur-confirmation-activation';
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
                         }
-
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
-
-                        $varMail = [
-                            'surl'    => $this->surl,
-                            'url'     => $this->furl,
-                            'prenom'  => $this->clients->prenom,
-                            'projets' => $this->furl . '/projets-a-financer',
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw
-                        ];
-
-                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $varMail);
-                        $message->setTo($this->clients->email);
-                        $mailer = $this->get('mailer');
-                        $mailer->send($message);
 
                         $_SESSION['compte_valide'] = true;
                     }
@@ -1500,18 +1469,13 @@ class preteursController extends bootstrap
         $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
         /** @var Clients $clientEntity */
         $clientEntity = $clientRepository->find($clientId);
-        /** @var Wallet $wallet */
-        $wallet = $clientRepository->getWalletByType($clientId, WalletType::LENDER);
-        /** @var WalletRepository $walletRepository */
-        $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
         /** @var BankAccount $currentBankAccount */
-        $currentBankAccount = $walletRepository->getBankAccountByUsage($wallet->getId(), BankAccountUsageType::LENDER_DEFAULT);
-
+        $currentBankAccount = $clientRepository->getCurrentBankAccount($clientId);
         if (null !== $currentBankAccount) {
-            $currentBic = $currentBankAccount->getBic();
+            $currentBic  = $currentBankAccount->getBic();
             $currentIban = $currentBankAccount->getIban();
         } else {
-            $currentBic = '';
+            $currentBic  = '';
             $currentIban = '';
         }
         $newBic      = str_replace(' ', '', strtoupper($_POST['bic']));
@@ -1561,7 +1525,8 @@ class preteursController extends bootstrap
             if ($currentIban !== $newIban) {
                 $mailerManager->sendIbanUpdateToStaff($clientId, $currentIban, $newIban);
             }
-            $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban, BankAccountUsageType::LENDER_DEFAULT);
+            $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban);
+            $this->validateBankAccount($clientEntity);
         }
 
         if ($currentIban == $newIban && $currentBic == $newBic) {
@@ -1570,7 +1535,7 @@ class preteursController extends bootstrap
             return;
         }
 
-        echo json_encode(['text' => $sMessage, 'severity' => $sSeverity]);
+        echo json_encode(['text' => $message, 'severity' => $severity]);
     }
 
     public function _lenderOnlineOffline()
@@ -1739,5 +1704,20 @@ class preteursController extends bootstrap
             }
         }
         return $data;
+    }
+
+    /**
+     * @param Clients $clientEntity
+     */
+    private function validateBankAccount(Clients $clientEntity)
+    {
+        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var BankAccount $currentBankAccount */
+        $currentBankAccount = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getCurrentBankAccount($clientEntity);
+
+        if (BankAccount::STATUS_PENDING == $currentBankAccount->getStatus()) {
+            $currentBankAccount->setStatus(BankAccount::STATUS_VALIDATED);
+            $em->flush();
+        }
     }
 }

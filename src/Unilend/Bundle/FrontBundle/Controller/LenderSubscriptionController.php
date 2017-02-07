@@ -16,7 +16,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\Constraints\Bic;
 use Symfony\Component\Validator\Constraints\Iban;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccountUsageType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -677,8 +676,6 @@ class LenderSubscriptionController extends Controller
 
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
@@ -735,7 +732,7 @@ class LenderSubscriptionController extends Controller
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
             $bic                = trim(strtoupper($post['bic']));
             $iban               = trim(strtoupper(str_replace(' ', '', $post['iban'])));
-            $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban, BankAccountUsageType::LENDER_DEFAULT);
+            $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban);
 
             $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($clientEntity, $post);
