@@ -214,7 +214,7 @@ class LenderWalletController extends Controller
                 $wireTransferOut->setBankAccount($bankAccount);
                 $em->persist($wireTransferOut);
 
-                $this->get('unilend.service.operation_manager')->withdrawLenderWallet($wallet, $amount, $wireTransferOut);
+                $this->get('unilend.service.operation_manager')->withdrawLenderWallet($wallet, $wireTransferOut);
                 $transaction->get($wireTransferOut->getIdTransaction());
 
                 $notification->type      = \notifications::TYPE_DEBIT;

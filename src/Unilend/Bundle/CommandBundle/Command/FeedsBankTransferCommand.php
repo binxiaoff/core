@@ -74,7 +74,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 $bankAccount = $pendingBankTransfer->getBankAccount();
                 if ($pendingBankTransfer->getClient()) {
                     $client->get($pendingBankTransfer->getClient()->getIdClient(), 'id_client');
-                    if (null === $pendingBankTransfer->getBankAccount()) {
+                    if (null === $bankAccount) {
                         $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy([
                             'idClient' => $pendingBankTransfer->getClient(),
                             'status'   => BankAccount::STATUS_VALIDATED

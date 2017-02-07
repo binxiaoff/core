@@ -32,8 +32,6 @@ class UnilendBankTransfertCommand extends ContainerAwareCommand
         $total           = $oAccountUnilend->getBalance();
 
         if ($total > 0) {
-            $amount = round(bcdiv($total, 100, 4), 2);
-
             $wireTransferOut = new Virements();
             $wireTransferOut->setMontant($total);
             $wireTransferOut->setMotif('UNILEND_' . date('dmY'));
@@ -41,7 +39,7 @@ class UnilendBankTransfertCommand extends ContainerAwareCommand
             $wireTransferOut->setStatus(Virements::STATUS_PENDING);
             $this->getContainer()->get('doctrine.orm.entity_manager')->persist($wireTransferOut);
 
-            $this->getContainer()->get('unilend.service.operation_manager')->withdrawUnilendWallet($amount, $wireTransferOut);
+            $this->getContainer()->get('unilend.service.operation_manager')->withdrawUnilendWallet($wireTransferOut);
         }
     }
 }
