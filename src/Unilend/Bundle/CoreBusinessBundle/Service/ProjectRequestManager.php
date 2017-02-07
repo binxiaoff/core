@@ -8,10 +8,11 @@ use Unilend\Bundle\FrontBundle\Service\SourceManager;
 
 class ProjectRequestManager
 {
-    /** @var EntityManager  */
+    /** @var EntityManager */
     private $entityManager;
-    /** @var  ProjectManager */
+    /** @var ProjectManager */
     private $projectManager;
+    /** @var SourceManager */
     private $sourceManager;
 
     public function __construct(EntityManager $entityManager, ProjectManager $projectManager, SourceManager $sourceManager)

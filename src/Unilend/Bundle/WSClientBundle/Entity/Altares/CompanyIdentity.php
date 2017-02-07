@@ -36,7 +36,7 @@ class CompanyIdentity
     private $NAFLabel;
 
     /**
-     * @JMS\SerializedName("adresse")
+     * @JMS\SerializedName("rue")
      * @JMS\Type("string")
      */
     private $address;
@@ -70,10 +70,17 @@ class CompanyIdentity
     private $rcs;
 
     /**
+     * @JMS\SerializedName("greffe")
+     * @JMS\Type("string")
+     */
+    private $commercialCourt;
+
+    /**
      $ @JMS\SerializedName("etat")
      * @JMS\Type("integer")
      */
     private $companyStatus;
+
     /**
      * @JMS\SerializedName("procedureCollective")
      * @JMS\Type("string")
@@ -81,35 +88,35 @@ class CompanyIdentity
     private $collectiveProcedure;
 
     /**
-     * CompanyIdentity constructor.
-     * @param $corporateName
-     * @param $companyForm
-     * @param $capital
-     * @param $NAFCode
-     * @param $NAFLabel
-     * @param $address
-     * @param $postCode
-     * @param $city
-     * @param $siret
-     * @param $creationDate
-     * @param $rcs
-     * @param $companyStatus
-     * @param $collectiveProcedure
+     * @param string $corporateName
+     * @param string $companyForm
+     * @param string $capital
+     * @param string $NAFCode
+     * @param string $NAFLabel
+     * @param string $address
+     * @param string $postCode
+     * @param string $city
+     * @param string $siret
+     * @param string $creationDate
+     * @param string $rcs
+     * @param string $companyStatus
+     * @param string $collectiveProcedure
      */
-    public function __construct($corporateName, $companyForm, $capital, $NAFCode, $NAFLabel, $address, $postCode, $city, $siret, $creationDate, $rcs, $companyStatus, $collectiveProcedure)
+    public function __construct($corporateName, $companyForm, $capital, $NAFCode, $NAFLabel, $address, $postCode, $city, $siret, $creationDate, $rcs, $commercialCourt, $companyStatus, $collectiveProcedure)
     {
-        $this->corporateName = $corporateName;
-        $this->companyForm   = $companyForm;
-        $this->capital       = $capital;
-        $this->NAFCode       = $NAFCode;
-        $this->NAFLabel      = $NAFLabel;
-        $this->address       = $address;
-        $this->postCode      = $postCode;
-        $this->city          = $city;
-        $this->siret         = $siret;
-        $this->creationDate  = $creationDate;
-        $this->rcs           = $rcs;
-        $this->companyStatus = $companyStatus;
+        $this->corporateName       = $corporateName;
+        $this->companyForm         = $companyForm;
+        $this->capital             = $capital;
+        $this->NAFCode             = $NAFCode;
+        $this->NAFLabel            = $NAFLabel;
+        $this->address             = $address;
+        $this->postCode            = $postCode;
+        $this->city                = $city;
+        $this->siret               = $siret;
+        $this->creationDate        = $creationDate;
+        $this->rcs                 = $rcs;
+        $this->commercialCourt     = $commercialCourt;
+        $this->companyStatus       = $companyStatus;
         $this->collectiveProcedure = $collectiveProcedure;
     }
 
@@ -199,6 +206,14 @@ class CompanyIdentity
     public function getRcs()
     {
         return $this->rcs;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCommercialCourt()
+    {
+        return $this->commercialCourt;
     }
 
     /**

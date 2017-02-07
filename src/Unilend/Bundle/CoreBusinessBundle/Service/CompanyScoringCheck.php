@@ -161,7 +161,7 @@ class CompanyScoringCheck
     public function isInfolegaleScoreLow($siren, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
     {
         try {
-            if (null !== $infolegaleScore = $this->wsInfolegale->getScore($siren)) {
+            if (null !== ($infolegaleScore = $this->wsInfolegale->getScore($siren))) {
                 $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_INFOLEGALE_SCORE, $infolegaleScore->getScore());
 
                 if ($infolegaleScore->getScore() < 5) {
@@ -196,7 +196,7 @@ class CompanyScoringCheck
             $country = $this->entityManager->getRepository('pays_v2');
             $country->get($company->id_pays);
 
-            if (null !== $eulerGrade = $this->wsEuler->getGrade($company->siren, (empty($country->iso)) ? 'fr' : $country->iso)) {
+            if (null !== ($eulerGrade = $this->wsEuler->getGrade($company->siren, (empty($country->iso)) ? 'fr' : $country->iso))) {
                 $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_EULER_HERMES_GRADE, $eulerGrade->getGrade());
                 /** @var \xerfi $xerfi */
                 $xerfi = $this->entityManager->getRepository('xerfi');

@@ -65,7 +65,7 @@ class CompanyFinanceCheck
     public function isCompanySafe(\companies &$company, &$rejectionReason)
     {
         try {
-            if (null !== $companyData = $this->wsAltares->getCompanyIdentity($company->siren)) {
+            if (null !== ($companyData = $this->wsAltares->getCompanyIdentity($company->siren))) {
                 $company->name          = $companyData->getCorporateName();
                 $company->forme         = $companyData->getCompanyForm();
                 $company->capital       = $companyData->getCapital();
@@ -77,7 +77,7 @@ class CompanyFinanceCheck
                 $company->siret         = $companyData->getSiret();
                 $company->date_creation = $companyData->getCreationDate()->format('Y-m-d');
                 $company->rcs           = $companyData->getRcs();
-
+                $company->tribunal_com  = $companyData->getCommercialCourt();
                 $company->update();
 
                 if (true === in_array($companyData->getCompanyStatus(), [7, 9])) {
@@ -134,7 +134,7 @@ class CompanyFinanceCheck
             $startDate = (new \DateTime())->sub(new \DateInterval('P1Y'));
             $endDate   = new \DateTime();
 
-            if (null !== $incidentList = $this->wsCodinf->getIncidentList($siren, $startDate, $endDate)) {
+            if (null !== ($incidentList = $this->wsCodinf->getIncidentList($siren, $startDate, $endDate))) {
                 /** @var PaymentIncident[] $incidents */
                 $incidents = $incidentList->getIncidentList();
 
@@ -172,8 +172,8 @@ class CompanyFinanceCheck
     {
         $lastBalanceSheet = $balanceSheetList->getLastBalanceSheet();
         try {
-            if (null !== $financialSummary = $this->wsAltares->getFinancialSummary($siren, $lastBalanceSheet->getBalanceSheetId())) {
-                if (null !== $capitalStockPost = $this->getSummaryFinancialPost($financialSummary, 'posteSF_FPRO')) {
+            if (null !== ($financialSummary = $this->wsAltares->getFinancialSummary($siren, $lastBalanceSheet->getBalanceSheetId()))) {
+                if (null !== ($capitalStockPost = $this->getSummaryFinancialPost($financialSummary, 'posteSF_FPRO'))) {
                     if ($capitalStockPost->getAmountY() < 0) {
                         $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
 
@@ -202,8 +202,8 @@ class CompanyFinanceCheck
     {
         $lastBalanceSheet = $balanceSheetList->getLastBalanceSheet();
         try {
-            if (null !== $balanceManagementLine = $this->wsAltares->getBalanceManagementLine($siren, $lastBalanceSheet->getBalanceSheetId())) {
-                if (null !== $rawOperatingIncomePost = $this->getManagementLineFinancialPost($balanceManagementLine, 'posteSIG_EBE')) {
+            if (null !== ($balanceManagementLine = $this->wsAltares->getBalanceManagementLine($siren, $lastBalanceSheet->getBalanceSheetId()))) {
+                if (null !== ($rawOperatingIncomePost = $this->getManagementLineFinancialPost($balanceManagementLine, 'posteSIG_EBE'))) {
                     if ($rawOperatingIncomePost->getAmountY() < 0) {
                         $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
 

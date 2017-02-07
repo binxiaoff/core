@@ -108,43 +108,48 @@ class CallHistoryManager
 
     /**
      * @param \ws_external_resource $wsResource
-     * @param $alertType
-     * @param $extraInfo
+     * @param string                $alertType
+     * @param string                $extraInfo
      */
     public function sendMonitoringAlert(\ws_external_resource $wsResource, $alertType, $extraInfo = null)
     {
-        $provider = ucfirst(strtolower($wsResource->provider_name));
-
         switch ($alertType) {
             case 'down':
-                if ($wsResource->is_available) {
-                    $wsResource->is_available = 0;
-                    $slackMessage = $provider . " is down  :skull_and_crossbones:\n> " . $extraInfo;
-                } else {
+                if (false == $wsResource->is_available) {
                     return;
+                }
+
+                $wsResource->is_available = 0;
+                $slackMessage = $wsResource->provider_name . '(' . $wsResource->resource_name . ') is down  :skull_and_crossbones:';
+
+                if (null !== $extraInfo) {
+                    $slackMessage .= "\n> " . $extraInfo;
                 }
                 break;
             case 'up':
-                if (! $wsResource->is_available) {
-                    $wsResource->is_available = 1;
-                    $slackMessage = $provider . ' is up  :white_check_mark:';
-                } else {
+                if ($wsResource->is_available) {
                     return;
                 }
+
+                $wsResource->is_available = 1;
+                $slackMessage = $wsResource->provider_name . '(' . $wsResource->resource_name . ') is up  :white_check_mark:';
                 break;
             default:
                 return;
         }
+
         $wsResource->update();
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'provider' => $provider];
+
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'provider' => $wsResource->provider_name];
+
         try {
             $response = $this->slackManager->sendMessage($slackMessage, $this->alertChannel);
 
             if (false == $response->isOk()) {
-                $this->logger->warning('Could not send slack notification for ' . $provider . '. Error: ' . $response->getError(), $logContext);
+                $this->logger->warning('Could not send slack notification for ' . $wsResource->provider_name . '. Error: ' . $response->getError(), $logContext);
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Unable to send slack notification for ' . $provider . '. Error message: ' . $exception->getMessage(), $logContext);
+            $this->logger->error('Unable to send slack notification for ' . $wsResource->provider_name . '. Error message: ' . $exception->getMessage(), $logContext);
             unset($exception);
         }
     }
@@ -173,9 +178,9 @@ class CallHistoryManager
     }
 
     /**
-     * @param string $siren
-     * @param string $provider
-     * @param string $resource
+     * @param string         $siren
+     * @param string         $provider
+     * @param string         $resource
      * @param null|\DateTime $date
      * @return false|WsCall
      */
@@ -209,7 +214,7 @@ class CallHistoryManager
 
     /**
      * @param \ws_external_resource $wsResource
-     * @param string $siren
+     * @param string                $siren
      * @return mixed
      */
     public function getStoredResponse(\ws_external_resource $wsResource, $siren)
