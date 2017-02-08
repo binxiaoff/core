@@ -412,13 +412,13 @@ class dossiersController extends bootstrap
                     $bCreate = (false === $oProjectsStatusHistoryDetails->get($oProjectStatusHistory->id_project_status_history, 'id_project_status_history'));
 
                     switch ($this->projects->status) {
-                        case \projects_status::REJETE:
+                        case \projects_status::COMMERCIAL_REJECTION:
                             $oProjectsStatusHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
                             break;
-                        case \projects_status::REJET_ANALYSTE:
+                        case \projects_status::ANALYSIS_REJECTION:
                             $oProjectsStatusHistoryDetails->analyst_rejection_reason = $_POST['rejection_reason'];
                             break;
-                        case \projects_status::REJET_COMITE:
+                        case \projects_status::COMITY_REJECTION:
                             $oProjectsStatusHistoryDetails->comity_rejection_reason = $_POST['rejection_reason'];
                             break;
                     }
@@ -583,17 +583,17 @@ class dossiersController extends bootstrap
                     if (
                         $_POST['commercial'] > 0
                         && $_POST['commercial'] != $this->projects->id_commercial
-                        && $this->projects->status < \projects_status::EN_ATTENTE_PIECES
+                        && $this->projects->status < \projects_status::COMMERCIAL_REVIEW
                     ) {
-                        $_POST['status'] = \projects_status::EN_ATTENTE_PIECES;
+                        $_POST['status'] = \projects_status::COMMERCIAL_REVIEW;
                     }
 
                     if (
                         $_POST['analyste'] > 0
                         && $_POST['analyste'] != $this->projects->id_analyste
-                        && $this->projects->status < \projects_status::REVUE_ANALYSTE
+                        && $this->projects->status < \projects_status::ANALYSIS_REVIEW
                     ) {
-                        $_POST['status'] = \projects_status::REVUE_ANALYSTE;
+                        $_POST['status'] = \projects_status::ANALYSIS_REVIEW;
                     }
 
                     $this->projects->title               = $_POST['title'];
@@ -852,7 +852,7 @@ class dossiersController extends bootstrap
             $needs        = $oProjectNeed->getTree();
             $this->aNeeds = $needs;
 
-            if (in_array($this->projects->status, [\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE])) {
+            if (in_array($this->projects->status, [\projects_status::COMMERCIAL_REJECTION, \projects_status::ANALYSIS_REJECTION, \projects_status::COMITY_REJECTION])) {
                 /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
                 $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
                 /** @var \project_rejection_reason $oRejectionReason */
@@ -1458,12 +1458,12 @@ class dossiersController extends bootstrap
 
             $this->projects->id_company = $this->companies->id_company;
             $this->projects->create_bo  = 1; // on signale que le projet a été créé en Bo
-            $this->projects->status     = \projects_status::A_TRAITER;
+            $this->projects->status     = \projects_status::COMPLETE_REQUEST;
             $this->projects->create();
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('unilend.service.project_manager');
-            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects);
+            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMPLETE_REQUEST, $this->projects);
 
             $serialize = serialize(array('id_project' => $this->projects->id_project));
             $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], $serialize);
@@ -2673,7 +2673,7 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('unilend.service.project_manager');
-            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::EN_ATTENTE_PIECES, $oProjects, 1, $varMail['liste_pieces']);
+            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMMERCIAL_REVIEW, $oProjects, 1, $varMail['liste_pieces']);
 
             unset($_SESSION['project_submission_files_list'][$oProjects->id_project]);
 

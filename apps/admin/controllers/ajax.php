@@ -664,7 +664,7 @@ class ajaxController extends bootstrap
                     $select .= $oProjectStatus->label;
                 }
 
-                if ($this->projects->status != \projects_status::REJETE) {
+                if ($this->projects->status != \projects_status::COMMERCIAL_REJECTION) {
                     $etape_6  = '
                     <div class="tab_title" id="title_etape6">Etape 6</div>
                     <div class="tab_content" id="etape6">
@@ -729,7 +729,7 @@ class ajaxController extends bootstrap
                             <br /><br />
                             <div id="valid_etape6" class="valid_etape">Données sauvegardées</div>';
 
-                    if ($this->projects->status == \projects_status::REVUE_ANALYSTE) {
+                    if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) {
                         $etape_6 .= '
                             <div class="btnDroite listBtn_etape6">
                                 <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6"  value="Sauvegarder">
@@ -920,9 +920,9 @@ class ajaxController extends bootstrap
                 $oProjectManager = $this->get('unilend.service.project_manager');
 
                 if ($_POST['status'] == 1) {
-                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITY_REVIEW, $this->projects);
                 } elseif ($_POST['status'] == 2) {
-                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::ANALYSIS_REJECTION, $this->projects);
 
                     /** @var \projects_status_history $oProjectStatusHistory */
                     $oProjectStatusHistory = $this->loadData('projects_status_history');
@@ -972,7 +972,7 @@ class ajaxController extends bootstrap
                     $select .= ' (' . $oRejectionReason->label . ')';
                 }
 
-                if ($this->projects->status != \projects_status::REJET_ANALYSTE) {
+                if ($this->projects->status != \projects_status::ANALYSIS_REJECTION) {
                     $start = '';
                     if ($this->projects_notes->note_comite >= 0) {
                         $start = '2 étoiles';
@@ -1062,7 +1062,7 @@ class ajaxController extends bootstrap
                         <div class="btnDroite">
                             <input type="button" onclick="valid_rejete_etape7(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
                         ';
-                    if ($this->projects->status == \projects_status::COMITE) {
+                    if ($this->projects->status == \projects_status::COMITY_REVIEW) {
                         $etape_7 .= '
                             <input type="button" onclick="valid_rejete_etape7(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                             <a href="' . $this->lurl . '/dossiers/ajax_rejection/7/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape7 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
@@ -1315,7 +1315,7 @@ class ajaxController extends bootstrap
                         </td>
                     ';
                 } elseif ($_POST['status'] == 2) {
-                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITY_REJECTION, $this->projects);
 
                     /** @var \projects_status_history $oProjectStatusHistory */
                     $oProjectStatusHistory = $this->loadData('projects_status_history');
@@ -1354,7 +1354,7 @@ class ajaxController extends bootstrap
                     $mailer->send($message);
 
                 } elseif ($_POST['status'] == 4) {
-                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::ANALYSIS_REVIEW, $this->projects);
 
                     $btn_etape7 = '
                         <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
@@ -1686,13 +1686,13 @@ class ajaxController extends bootstrap
         $companyFinanceCheck = $this->get('unilend.service.company_finance_check');
 
         if (false === $companyFinanceCheck->isCompanySafe($company, $rejectionReason)) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (true === $companyFinanceCheck->hasCodinfPaymentIncident($company->siren, $rejectionReason)) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
@@ -1702,7 +1702,7 @@ class ajaxController extends bootstrap
         $altaresScore = $companyScoringCheck->getAltaresScore($company->siren);
 
         if (true === $companyScoringCheck->isAltaresScoreLow($altaresScore, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
@@ -1720,44 +1720,44 @@ class ajaxController extends bootstrap
 
         if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
             if (true === $companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $company->siren, $rejectionReason)) {
-                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
                 return $rejectionReason;
             }
 
             if (true === $companyFinanceCheck->hasNegativeRawOperatingIncomes($balanceSheetList, $company->siren, $rejectionReason)) {
-                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
                 return $rejectionReason;
             }
         }
 
         if (false === $companyScoringCheck->isXerfiUnilendOk($company->code_naf, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (false === $companyScoringCheck->combineAltaresScoreAndUnilendXerfi($altaresScore, $company->code_naf, $rejectionReason)) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (true === $companyScoringCheck->isInfolegaleScoreLow($company->siren, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (false === $companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (true === $companyFinanceCheck->hasInfogreffePrivileges($company->siren, $rejectionReason)) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }

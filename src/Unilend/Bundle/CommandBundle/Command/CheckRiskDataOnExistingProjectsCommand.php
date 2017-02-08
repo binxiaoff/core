@@ -109,13 +109,13 @@ class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
         $companyFinanceCheck = $this->getContainer()->get('unilend.service.company_finance_check');
 
         if (false === $companyFinanceCheck->isCompanySafe($company, $rejectionReason)) {
-            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (true === $companyFinanceCheck->hasCodinfPaymentIncident($company->siren, $rejectionReason)) {
-            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
@@ -125,7 +125,7 @@ class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
         $altaresScore = $companyScoringCheck->getAltaresScore($company->siren);
 
         if (true === $companyScoringCheck->isAltaresScoreLow($altaresScore, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
@@ -143,44 +143,44 @@ class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
 
         if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
             if (true === $companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $company->siren, $rejectionReason)) {
-                $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+                $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
                 return $rejectionReason;
             }
 
             if (true === $companyFinanceCheck->hasNegativeRawOperatingIncomes($balanceSheetList, $company->siren, $rejectionReason)) {
-                $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+                $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
                 return $rejectionReason;
             }
         }
 
         if (false === $companyScoringCheck->isXerfiUnilendOk($company->code_naf, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (false === $companyScoringCheck->combineAltaresScoreAndUnilendXerfi($altaresScore, $company->code_naf, $rejectionReason)) {
-            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (true === $companyScoringCheck->isInfolegaleScoreLow($company->siren, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (false === $companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }
 
         if (true === $companyFinanceCheck->hasInfogreffePrivileges($company->siren, $rejectionReason)) {
-            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $rejectionReason);
+            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOT_ELIGIBLE, $project, 0, $rejectionReason);
 
             return $rejectionReason;
         }

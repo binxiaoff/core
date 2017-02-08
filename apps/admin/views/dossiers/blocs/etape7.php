@@ -1,7 +1,7 @@
 <div id="content_etape7">
     <?php if (
-        $this->projects->status >= \projects_status::COMITE
-        || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::COMITE)
+        $this->projects->status >= \projects_status::COMITY_REVIEW
+        || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::COMITY_REVIEW)
     ) : ?>
         <?php
         $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
@@ -151,7 +151,7 @@
                 <?php if (false === $this->bReadonlyRiskNote) : ?>
                     <input type="button" onclick="valid_rejete_etape7(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                 <?php endif; ?>
-                <?php if ($this->projects->status == \projects_status::COMITE) : ?>
+                <?php if ($this->projects->status == \projects_status::COMITY_REVIEW) : ?>
                     <input id="min_rate" type="hidden" value="<?= isset($this->rate_min) ? $this->rate_min : '' ?>" />
                     <input id="max_rate" type="hidden" value="<?= isset($this->rate_max) ? $this->rate_max : '' ?>" />
                     <input type="button" onclick="valid_rejete_etape7(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">

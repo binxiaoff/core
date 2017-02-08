@@ -747,7 +747,7 @@ class ProjectManager
      */
     private function projectStatusUpdateTrigger(\projects_status $projectStatus, \projects $project, $userId)
     {
-        if ($project->status >= \projects_status::COMPLETUDE_ETAPE_3) {
+        if ($project->status >= \projects_status::COMPLETE_REQUEST) {
             /** @var \users $user */
             $user    = $this->entityManager->getRepository('users');
             $message = $this->slackManager->getProjectName($project) . ' passé en statut *' . $projectStatus->label . '*';
@@ -760,21 +760,21 @@ class ProjectManager
         }
 
         switch ($project->status) {
-            case \projects_status::A_TRAITER:
+            case \projects_status::COMPLETE_REQUEST:
                 /** @var \settings $setting */
                 $setting = $this->entityManager->getRepository('settings');
                 $setting->get('Adresse notification inscription emprunteur', 'type');
                 $this->mailerManager->sendProjectNotificationToStaff('notification-depot-de-dossier', $project, trim($setting->value));
                 break;
-            case \projects_status::ATTENTE_ANALYSTE:
+            case \projects_status::PENDING_ANALYSIS:
                 /** @var \settings $setting */
                 $setting = $this->entityManager->getRepository('settings');
                 $setting->get('Adresse notification analystes', 'type');
                 $this->mailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $project, trim($setting->value));
                 break;
-            case \projects_status::REJETE:
-            case \projects_status::REJET_ANALYSTE:
-            case \projects_status::REJET_COMITE:
+            case \projects_status::COMMERCIAL_REJECTION:
+            case \projects_status::ANALYSIS_REJECTION:
+            case \projects_status::COMITY_REJECTION:
                 $this->stopRemindersForOlderProjects($project);
                 break;
             case \projects_status::A_FUNDER:

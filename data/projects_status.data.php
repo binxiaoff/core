@@ -28,20 +28,17 @@
 
 class projects_status extends projects_status_crud
 {
-    const DEMANDE_SIMULATEUR      = 4;
-    const NOTE_EXTERNE_FAIBLE     = 5;
-    const PAS_3_BILANS            = 6;
-    const COMPLETUDE_ETAPE_2      = 7;
-    const COMPLETUDE_ETAPE_3      = 8;
-    const ABANDON                 = 9;
-    const A_TRAITER               = 10;
-    const EN_ATTENTE_PIECES       = 20;
-    const ATTENTE_ANALYSTE        = 25;
-    const REJETE                  = 30;
-    const REVUE_ANALYSTE          = 31;
-    const REJET_ANALYSTE          = 32;
-    const COMITE                  = 33;
-    const REJET_COMITE            = 34;
+    const NOT_ELIGIBLE            = 1;
+    const INCOMPLETE_REQUEST      = 5;
+    const COMPLETE_REQUEST        = 10;
+    const ABANDONED               = 15;
+    const COMMERCIAL_REVIEW       = 20;
+    const COMMERCIAL_REJECTION    = 25;
+    const PENDING_ANALYSIS        = 30;
+    const ANALYSIS_REVIEW         = 31;
+    const ANALYSIS_REJECTION      = 32;
+    const COMITY_REVIEW           = 33;
+    const COMITY_REJECTION        = 34;
     const PREP_FUNDING            = 35;
     const A_FUNDER                = 40;
     const AUTO_BID_PLACED         = 45;
@@ -117,10 +114,10 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $saleTeam = [
-        self::EN_ATTENTE_PIECES,
-        self::ATTENTE_ANALYSTE,
-        self::REVUE_ANALYSTE,
-        self::COMITE,
+        self::COMMERCIAL_REVIEW,
+        self::PENDING_ANALYSIS,
+        self::ANALYSIS_REVIEW,
+        self::COMITY_REVIEW,
         self::PREP_FUNDING,
         self::A_FUNDER,
         self::AUTO_BID_PLACED,
@@ -134,10 +131,8 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $upcomingSaleTeam = [
-        self::DEMANDE_SIMULATEUR,
-        self::COMPLETUDE_ETAPE_2,
-        self::COMPLETUDE_ETAPE_3,
-        self::A_TRAITER
+        self::INCOMPLETE_REQUEST,
+        self::COMPLETE_REQUEST
     ];
 
     /**
@@ -145,9 +140,9 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $riskTeam = [
-        self::ATTENTE_ANALYSTE,
-        self::REVUE_ANALYSTE,
-        self::COMITE
+        self::PENDING_ANALYSIS,
+        self::ANALYSIS_REVIEW,
+        self::COMITY_REVIEW
     ];
 
     public function __construct($bdd, $params = '')

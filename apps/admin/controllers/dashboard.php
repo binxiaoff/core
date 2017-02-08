@@ -3,9 +3,9 @@
 class dashboardController extends bootstrap
 {
     private static $saleCollapsedStatus = [
-        \projects_status::ATTENTE_ANALYSTE,
-        \projects_status::REVUE_ANALYSTE,
-        \projects_status::COMITE,
+        \projects_status::PENDING_ANALYSIS,
+        \projects_status::ANALYSIS_REVIEW,
+        \projects_status::COMITY_REVIEW,
         \projects_status::A_FUNDER,
         \projects_status::AUTO_BID_PLACED,
         \projects_status::EN_FUNDING,

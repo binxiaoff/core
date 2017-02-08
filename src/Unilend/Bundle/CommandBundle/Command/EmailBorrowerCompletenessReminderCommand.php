@@ -114,9 +114,9 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     }
                                 }
 
-                                if (in_array($iStatus, array(7, 8))) {
-                                    $oCompletenessDate                       = $projectStatusHistory->getDateProjectStatus($project->id_project, \projects_status::COMPLETUDE_ETAPE_2, true);
-                                    $aReplacements['date_completude_etape2'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
+                                if (in_array($iStatus, [\projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {
+                                    $oCompletenessDate                       = $projectStatusHistory->getDateProjectStatus($project->id_project, \projects_status::INCOMPLETE_REQUEST, true);
+                                    $aReplacements['date_demande'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
                                 }
 
                                 $aReplacements['liste_pieces']            = $projectStatusHistory->content;
@@ -145,8 +145,8 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                             /**
                              * When project is pending documents, abort status is not automatic and must be set manually in BO
                              */
-                            if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $project, $iReminderIndex, $projectStatusHistory->content);
+                            if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::COMMERCIAL_REVIEW) {
+                                $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::ABANDONED, $project, $iReminderIndex, $projectStatusHistory->content);
                             } else {
                                 $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);
                             }
