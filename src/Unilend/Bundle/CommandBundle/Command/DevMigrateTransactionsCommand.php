@@ -40,6 +40,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             foreach ($transactionsToMigrate as $transaction) {
 
                 if ($transaction['id_transaction'] == 1460178) {
+                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
                     continue;
                 }
 
@@ -55,8 +56,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
                     /** @var \bids $bidEntity */
                     $bidEntity = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('bids');
-                    $bid               = $bidEntity->select('id_lender_wallet_line = 8277690')[0];
-                    $amount            = $this->calculateOperationAmount($transaction['montant']);
+                    $bid       = $bidEntity->select('id_lender_wallet_line = 8277690')[0];
+                    $amount    = $this->calculateOperationAmount($transaction['montant']);
 
                     $availableBalance = bcsub($lenderWallet['available_balance'], $amount, 2);
                     $committedBalance = bcadd($lenderWallet['committed_balance'], $amount, 2);
@@ -68,18 +69,21 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                     $this->saveWalletBalanceHistory($lenderWallet, null, $bid);
 
                     $this->migrateBid($transaction);
+                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
                     continue;
                 }
 
                 if ($transaction['id_transaction'] == 364887) {
                     $amount =  $this->calculateOperationAmount($transaction['montant']);
                     $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
+                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
                     continue;
                 }
 
                 if (in_array($transaction['id_transaction'], [1667967, 1667964])){
                     $amount =  $this->calculateOperationAmount($transaction['montant']);
                     $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
+                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
                     continue;
                 }
 
@@ -87,7 +91,6 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                     $this->lenderRegulation($transaction['id_client'], '39.63', $transaction['date_transaction']);
                 }
 
-                //var_dump($transaction['id_transaction']);
                 switch($transaction['type_transaction']) {
                     case \transactions_types::TYPE_LENDER_SUBSCRIPTION:
                     case \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT:
@@ -443,7 +446,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         }
 
         if (\transactions_types::TYPE_LENDER_REGULATION == $transaction['type_transaction'] && $transaction['id_client'] == 330 ) {
-            $wallet['committed_balance'] = 0;
+            $wallet['committed_balance'] = bcadd($wallet['committed_balance'], 50, 2);
         }
 
         /** @var \virements $wireTransferOut */
@@ -1147,7 +1150,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                     case '2016-10-27':
                         return bcmul(946.31, 100);
                     case '2017-01-25':
-                        return bcmul(946,31, 100);
+                        return bcmul(946.31, 100);
                     default:
                         $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
                         break;
