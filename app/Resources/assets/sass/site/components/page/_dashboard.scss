@@ -220,6 +220,14 @@
       @include clearfix;
       @include site-wrap;
     }
+    .dashboard-tabs-nav {
+      background-color: $c-bg1;
+      .nav.nav-dashboard-tabs>li:not(.active) {
+        > a {
+          color: #7d325a;
+        }
+      }
+    }
   }
 
   // Responsive: xs, sm
