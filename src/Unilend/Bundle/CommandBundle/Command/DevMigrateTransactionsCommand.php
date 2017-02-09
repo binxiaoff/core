@@ -413,6 +413,10 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateWelcomeOfferCancellation(array $transaction)
     {
+        if (empty($transaction['montant'])) {
+            $this->insertIntoNonTreatedTransactions($transaction, 'welcome offer cancellation with amount 0', $status = 1);
+        }
+
         $clientWallet  = $this->getClientWallet($transaction['id_client']);
         if (false === $clientWallet) {
             $this->insertIntoNonTreatedTransactions($transaction, 'lender wallet not found');
