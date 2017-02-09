@@ -775,7 +775,7 @@ class ProjectManager
             case \projects_status::COMMERCIAL_REJECTION:
             case \projects_status::ANALYSIS_REJECTION:
             case \projects_status::COMITY_REJECTION:
-                $this->stopRemindersForOlderProjects($project);
+                $this->abandonOlderProjects($project, $userId);
                 break;
             case \projects_status::A_FUNDER:
                 $this->mailerManager->sendProjectOnlineToBorrower($project);
@@ -795,23 +795,24 @@ class ProjectManager
         }
     }
 
-    public function stopRemindersForOlderProjects(\projects $oProject)
+    /**
+     * @param \projects $project
+     * @param int       $userId
+     */
+    public function abandonOlderProjects(\projects $project, $userId)
     {
-        /** @var \companies $oCompany */
-        $oCompany = $this->entityManager->getRepository('companies');
+        /** @var \companies $company */
+        $company = $this->entityManager->getRepository('companies');
+        $company->get($project->id_company);
 
-        $oCompany->get($oProject->id_company);
-        $aPreviousProjectsWithSameSiren = $oProject->getPreviousProjectsWithSameSiren($oCompany->siren, $oProject->added);
-        foreach ($aPreviousProjectsWithSameSiren as $aProject) {
-            $oProject->get($aProject['id_project'], 'id_project');
-            $this->stopRemindersOnProject($oProject);
+        $previousProjects = $project->getPreviousProjectsWithSameSiren($company->siren, $project->added);
+
+        foreach ($previousProjects as $previousProject) {
+            if (in_array($previousProject['status'], [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {
+                $project->get($previousProject['id_project'], 'id_project');
+                $this->addProjectStatus($userId, \projects_status::ABANDONED, $project, 0, 'same_company_project_rejected');
+            }
         }
-    }
-
-    public function stopRemindersOnProject(\projects $oProject)
-    {
-        $oProject->stop_relances = '1';
-        $oProject->update();
     }
 
     public function isFunded(\projects $oProject)

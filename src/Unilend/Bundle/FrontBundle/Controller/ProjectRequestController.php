@@ -214,6 +214,9 @@ class ProjectRequestController extends Controller
         $this->project->status                               = \projects_status::INCOMPLETE_REQUEST;
         $this->project->create();
 
+        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::INCOMPLETE_REQUEST, $this->project);
+
         return $this->start();
     }
 
@@ -1421,10 +1424,8 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        $this->project->stop_relances = 1;
-        $this->project->update();
-
-        $this->sendCommercialEmail('notification-stop-relance-dossier');
+        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'client_not_interested');
 
         return $this->render('pages/project_request/emails.html.twig');
     }

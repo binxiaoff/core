@@ -34,7 +34,6 @@ class ProjectStatusManager
                 $formerStatus   = $projectStatusHistory->getBeforeLastStatus($project->id_project);
                 $possibleStatus = [$formerStatus, $project->status];
                 break;
-            case \projects_status::COMPLETE_REQUEST:
             case \projects_status::COMMERCIAL_REVIEW:
                 $nextStatus     = $projectStatus->getNextStatus($project->status);
                 $possibleStatus = [\projects_status::ABANDONED, $project->status, $nextStatus];

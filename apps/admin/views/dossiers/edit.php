@@ -65,7 +65,7 @@
         font-weight: bold;
     }
 
-    #tab_email_msg, .valid_etape {
+    .valid_etape {
         display: none;
         text-align: center;
         font-size: 16px;
@@ -1022,38 +1022,7 @@
         }
     });
 
-    $('#save_projects_tab_email').click(function(e){
-        e.preventDefault();
-        var iProjectId =$(this).data('project-id');
-        var iFlag = 0;
-        if ($('#stop_relances').is(':checked')) {
-            iFlag = 1;
-        }
-
-        $.ajax({
-            url: "<?= $this->lurl ?>/dossiers/tab_email",
-            type: 'POST',
-            data: {
-                project_id: iProjectId,
-                flag: iFlag
-            },
-            error: function() {
-                alert('An error has occurred');
-            },
-            success: function(data) {
-                if('ok' == data) {
-                    $("#tab_email_msg").slideDown();
-                    setTimeout(function () {
-                        $("#tab_email_msg").slideUp();
-                    }, 4000);
-                } else {
-                    alert('An error has occurred');
-                }
-            }
-        });
-    });
-
-    function deleteWordingli(id){
+    function deleteWordingli(id) {
         var id_delete = id;
         var id_input = id.replace("delete", "input");
         $("#"+id_delete).remove();
@@ -1071,7 +1040,7 @@
         }
     });
 
-    $( "#completude_preview" ).click(function() {
+    $("#completude_preview").click(function() {
         var content = $("#content_email_completude").val();
         var list = '';
         $(".input_li").each(function() {
@@ -1085,7 +1054,7 @@
                 content: content,
                 list: list
             }
-        ).done(function( data ) {
+        ).done(function(data) {
             if(data != 'nok'){
                 $( "#send_completeness" ).get(0).click();
             }

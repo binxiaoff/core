@@ -1336,7 +1336,6 @@ class projects extends projects_crud
     {
         $statement = $this->getSaleProjectsQuery(\projects_status::$upcomingSaleTeam)
             ->andWhere('DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added')
-            ->andWhere('p.stop_relances = 0')
             ->execute();
 
         $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);

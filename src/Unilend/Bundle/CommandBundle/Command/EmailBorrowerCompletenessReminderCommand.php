@@ -99,7 +99,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                 $client->get($company->id_client_owner, 'id_client');
                             }
 
-                            if (false === empty($client->email) && 0 == $project->stop_relances) {
+                            if (filter_var($client->email, FILTER_VALIDATE_EMAIL)) {
                                 $projectStatusHistory->loadLastProjectHistory($project->id_project);
 
                                 $oSubmissionDate = new \DateTime($project->added);

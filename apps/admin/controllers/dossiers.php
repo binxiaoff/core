@@ -1314,7 +1314,7 @@ class dossiersController extends bootstrap
 
         /** @var \project_rejection_reason $oProjectRejectionReason */
         $oProjectRejectionReason = $this->loadData('project_rejection_reason');
-        $this->aRejectionReasons = $oProjectRejectionReason->select();
+        $this->aRejectionReasons = $oProjectRejectionReason->select('', 'label');
         $this->iStep             = $this->params[0];
         $this->iProjectId        = $this->params[1];
     }
@@ -1387,27 +1387,6 @@ class dossiersController extends bootstrap
         }
 
         echo json_encode($aResult);
-    }
-
-    public function _tab_email()
-    {
-        $this->hideDecoration();
-        $this->autoFireView = false;
-
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-
-        $sResult = 'nok';
-
-        if (isset($_POST['project_id']) && isset($_POST['flag'])) {
-            $this->projects = $this->loadData('projects');
-            if ($this->projects->get($_POST['project_id'], 'id_project')) {
-                $this->projects->stop_relances = $_POST['flag'];
-                $this->projects->update();
-                $sResult = 'ok';
-            }
-        }
-
-        echo $sResult;
     }
 
     public function _add()
