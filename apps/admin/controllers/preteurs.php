@@ -348,16 +348,16 @@ class preteursController extends bootstrap
             /** @var Clients $clientEntity */
         $clientEntity = $clientRepository->find($this->clients->id_client);
         /** @var BankAccount $currentBankAccount */
-        $currentBankAccount = $clientRepository->getCurrentBankAccount($clientEntity);
+        $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
 
-        if ($currentBankAccount->getIban() != '') {
-            $this->iban1 = substr($currentBankAccount->getIban(), 0, 4);
-            $this->iban2 = substr($currentBankAccount->getIban(), 4, 4);
-            $this->iban3 = substr($currentBankAccount->getIban(), 8, 4);
-            $this->iban4 = substr($currentBankAccount->getIban(), 12, 4);
-            $this->iban5 = substr($currentBankAccount->getIban(), 16, 4);
-            $this->iban6 = substr($currentBankAccount->getIban(), 20, 4);
-            $this->iban7 = substr($currentBankAccount->getIban(), 24, 3);
+        if ($this->currentBankAccount->getIban() != '') {
+            $this->iban1 = substr($this->currentBankAccount->getIban(), 0, 4);
+            $this->iban2 = substr($this->currentBankAccount->getIban(), 4, 4);
+            $this->iban3 = substr($this->currentBankAccount->getIban(), 8, 4);
+            $this->iban4 = substr($this->currentBankAccount->getIban(), 12, 4);
+            $this->iban5 = substr($this->currentBankAccount->getIban(), 16, 4);
+            $this->iban6 = substr($this->currentBankAccount->getIban(), 20, 4);
+            $this->iban7 = substr($this->currentBankAccount->getIban(), 24, 3);
         }
 
             if ($this->clients->telephone != '') {
@@ -557,8 +557,8 @@ class preteursController extends bootstrap
                             $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or the origine != 1.', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
                         }
 
+                        $this->validateBankAccount($_POST['id_bank_account']);
                         $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
-                        $this->validateBankAccount($clientEntity);
 
                         if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
                             $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
@@ -720,8 +720,8 @@ class preteursController extends bootstrap
                     $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
+                        $this->validateBankAccount($_POST['id_bank_account']);
                         $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
-                        $this->validateBankAccount($clientEntity);
 
                         if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
                             $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
@@ -1455,7 +1455,8 @@ class preteursController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-        $clientId          = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
+        $clientId           = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
+        $idBankAccount      = filter_var($_POST['id_bank_account'], FILTER_VALIDATE_INT);
 
         if (false === $clientId) {
             echo json_encode(['text' => 'Une erreur est survenue', 'severity' => 'error']);
@@ -1470,7 +1471,7 @@ class preteursController extends bootstrap
         /** @var Clients $clientEntity */
         $clientEntity = $clientRepository->find($clientId);
         /** @var BankAccount $currentBankAccount */
-        $currentBankAccount = $clientRepository->getCurrentBankAccount($clientId);
+        $currentBankAccount =  $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
         if (null !== $currentBankAccount) {
             $currentBic  = $currentBankAccount->getBic();
             $currentIban = $currentBankAccount->getIban();
@@ -1522,11 +1523,12 @@ class preteursController extends bootstrap
             }
         }
         if (0 === count($ibanViolations) && 0 === count($bicVoilations)) {
+            /** @var BankAccount $bankAccount */
+            $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban);
+            $this->validateBankAccount($bankAccount->getId());
             if ($currentIban !== $newIban) {
                 $mailerManager->sendIbanUpdateToStaff($clientId, $currentIban, $newIban);
             }
-            $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban);
-            $this->validateBankAccount($clientEntity);
         }
 
         if ($currentIban == $newIban && $currentBic == $newBic) {
@@ -1703,21 +1705,27 @@ class preteursController extends bootstrap
                 ];
             }
         }
+
         return $data;
     }
 
     /**
-     * @param Clients $clientEntity
+     * @param string $idBankAccount
+     *
+     * @throws Exception
      */
-    private function validateBankAccount(Clients $clientEntity)
+    private function validateBankAccount($idBankAccount)
     {
         $em = $this->get('doctrine.orm.entity_manager');
         /** @var BankAccount $currentBankAccount */
-        $currentBankAccount = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getCurrentBankAccount($clientEntity);
+        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
 
-        if (BankAccount::STATUS_PENDING == $currentBankAccount->getStatus()) {
-            $currentBankAccount->setStatus(BankAccount::STATUS_VALIDATED);
-            $em->flush();
+        if (null === $bankAccount) {
+            throw new Exception('BankAccount could not be found with id : ' . $idBankAccount );
         }
+
+        /** @var BankAccountManager $bankAccountManager */
+        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+        $bankAccountManager->validateBankAccount($bankAccount);
     }
 }

@@ -61,13 +61,10 @@ class LenderProfileController extends Controller
         $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->getLenderAccount();
-
-        /** @var ClientsRepository $clientRepository */
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
         /** @var Clients $clientEntity */
-        $clientEntity = $clientRepository->find($client->id_client);
+        $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         /** @var BankAccount $currentBankAccount */
-        $currentBankAccount = $clientRepository->getCurrentBankAccount($clientEntity);
+        $currentBankAccount =  $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
 
         $templateData = [
             'client'        => $client->select('id_client = ' . $client->id_client)[0],
@@ -1217,11 +1214,10 @@ class LenderProfileController extends Controller
         $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->getLenderAccount();
-        /** @var ClientsRepository $clientRepository */
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
         /** @var Clients $clientEntity */
-        $clientEntity       = $clientRepository->find($client->id_client);
-        $currentBankAccount = $clientRepository->getCurrentBankAccount($clientEntity);
+        $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        /** @var BankAccount $currentBankAccount */
+        $currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
 
         /** @var string $historyContent */
         $historyContent = '<ul>';

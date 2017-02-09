@@ -87,35 +87,4 @@ class ClientsRepository extends EntityRepository
         return $result;
     }
 
-    /**
-     * @param integer|Clients $idClient
-     * @return mixed
-     */
-    public function getCurrentBankAccount($idClient, $iban = null)
-    {
-        if ($idClient instanceof Clients) {
-            $idClient = $idClient->getIdClient();
-        }
-
-        $cb = $this->createQueryBuilder('c');
-        $cb->select('ba')
-            ->innerJoin('UnilendCoreBusinessBundle:BankAccount', 'ba', Join::WITH, 'c.idClient = ba.idClient')
-            ->where('c.idClient = :idClient')
-            ->andWhere('ba.status != :status')
-            ->setParameters([
-                'idClient' => $idClient,
-                'status'   => BankAccount::STATUS_ARCHIVED
-            ]);
-
-        if (null !== $iban) {
-            $cb->andWhere('ba.iban = :iban')
-                ->setParameter('iban', $iban);
-        }
-
-        $query  = $cb->getQuery();
-        $result = $query->getOneOrNullResult();
-
-        return $result;
-    }
-
 }
