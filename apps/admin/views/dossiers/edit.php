@@ -345,6 +345,28 @@
                 </table>
             </div>
             <div class="droite">
+                <h2>Partenaire</h2>
+                <table class="form" style="width: 575px;">
+                    <tr>
+                        <th><label for="project_partner">Partenaire du projet :</label></th>
+                        <td>
+                            <select onchange="this.form.submit()" name="project_partner" id="project_partner" class="select" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                                <option value=""></option>
+                                <?php foreach ($this->partnerList as $partner) : ?>
+                                    <option value="<?= $partner['id_partner'] ?>"<?= $this->projects->id_partner === $partner['id_partner'] ? ' selected="selected"' : '' ?>><?= $partner['name'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Commission de déblocage des fonds:</th>
+                        <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 0) ?> %</td>
+                    </tr>
+                    <tr>
+                        <th>Commission de remboursement:</th>
+                        <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_repayment, 0) ?> %</td>
+                    </tr>
+                </table>
                 <h2>Projet</h2>
                 <table class="form" style="width: 575px;">
                     <?php if (isset($this->fPredictAutoBid) && false === empty($this->fPredictAutoBid)) : ?>

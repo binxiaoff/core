@@ -657,6 +657,9 @@ class ProjectManager
         }
     }
 
+    /**
+     * @param \projects $oProject
+     */
     public function createAmortizationPaymentSchedule(\projects $oProject)
     {
         ini_set('memory_limit', '512M');
@@ -665,12 +668,6 @@ class ProjectManager
         $oPaymentSchedule = $this->oEntityManager->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $oRepaymentSchedule */
         $oRepaymentSchedule = $this->oEntityManager->getRepository('echeanciers');
-        /** @var \settings $oSettings */
-        $oSettings = $this->oEntityManager->getRepository('settings');
-
-        $oSettings->get('Commission remboursement', 'type');
-        $fCommissionRate = $oSettings->value;
-
         /** @var \tax_type $taxType */
         $taxType = $this->oEntityManager->getRepository('tax_type');
 
@@ -679,7 +676,7 @@ class ProjectManager
 
         $fAmount           = $oProject->amount;
         $iMonthNb          = $oProject->period;
-        $aCommission       = \repayment::getRepaymentCommission($fAmount, $iMonthNb, $fCommissionRate, $fVAT);
+        $aCommission       = \repayment::getRepaymentCommission($fAmount, $iMonthNb, bcdiv($oProject->commission_rate_repayment, 100, 2), $fVAT);
         $aPaymentList      = $oRepaymentSchedule->getMonthlyScheduleByProject($oProject->id_project);
         $iPaymentsNbTotal  = count($aPaymentList);
         $iTreatedPaymentNb = 0;

@@ -28,11 +28,19 @@
             </tr>
             <tr>
                 <th><label for="source_etape1">Source :</label></th>
-                <td colspan="3">
+                <td>
                     <select id="source_etape1" name="source_etape1">
                         <option value=""></option>
                         <?php foreach ($this->sources as $source) : ?>
                             <option value="<?= stripslashes($source) ?>"<?= $this->clients->source === $source ? ' selected="selected"' : '' ?>><?= $source ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+                <th><label for="partner_id">Partenaire :</label></th>
+                <td >
+                    <select id="partner_id" name="partner_id">
+                        <?php foreach ($this->partnerList as $partner) : ?>
+                            <option value="<?= $partner['id_partner'] ?>"<?= $this->projects->id_partner === $partner['id_partner'] ? ' selected="selected"' : '' ?>><?= $partner['name'] ?></option>
                         <?php endforeach; ?>
                     </select>
                 </td>

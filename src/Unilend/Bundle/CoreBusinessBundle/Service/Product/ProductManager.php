@@ -45,7 +45,7 @@ class ProductManager
     {
         $eligibleProducts = [];
 
-        foreach ($this->getAvailableProducts($includeInactiveProduct) as $product) {
+        foreach ($this->getAvailablePartnerProducts($project->id_partner, $includeInactiveProduct) as $product) {
             if ($this->isProjectEligible($project, $product)) {
                 $eligibleProduct    = clone $product;
                 $eligibleProducts[] = $eligibleProduct;
@@ -191,9 +191,34 @@ class ProductManager
     {
         /** @var \product $product */
         $product           = $this->entityManager->getRepository('product');
-        $availableProducts = [];
 
-        foreach ($product->select() as $oneProduct) {
+        return $this->filterProductByStatus($product->select(), $includeInactiveProduct);
+    }
+
+    /**
+     * @param      $partnerId
+     * @param bool $includeInactiveProduct
+     * @return array
+     */
+    public function getAvailablePartnerProducts($partnerId, $includeInactiveProduct = false)
+    {
+        /** @var \partner_product $partnerProduct */
+        $partnerProduct = $this->entityManager->getRepository('partner_product');
+
+        return $this->filterProductByStatus($partnerProduct->getAvailableProducts($partnerId), $includeInactiveProduct);
+    }
+
+    /**
+     * @param array $productList
+     * @param bool  $includeInactiveProduct
+     * @return array
+     */
+    private function filterProductByStatus(array $productList, $includeInactiveProduct = false) {
+        /** @var \product $product */
+        $product = $this->entityManager->getRepository('product');
+        $availableProducts        = [];
+
+        foreach ($productList as $oneProduct) {
             $product->get($oneProduct['id_product']);
             if (
                 $product->status != \product::STATUS_ARCHIVED

@@ -261,8 +261,9 @@ class ajaxController extends bootstrap
 
             if ($_POST['etape'] == 1) {
                 $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->amount = $this->ficelle->cleanFormatedNumber($_POST['montant_etape1']);
-                $this->projects->period = (0 < (int) $_POST['duree_etape1']) ? (int) $_POST['duree_etape1'] : $this->projects->period;
+                $this->projects->amount     = $this->ficelle->cleanFormatedNumber($_POST['montant_etape1']);
+                $this->projects->period     = (0 < (int) $_POST['duree_etape1']) ? (int) $_POST['duree_etape1'] : $this->projects->period;
+                $this->projects->id_partner = $_POST['partner_id'];
                 $this->projects->update();
 
                 $this->companies->get($this->projects->id_company, 'id_company');

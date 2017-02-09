@@ -286,24 +286,36 @@ class dossiersController extends bootstrap
                     $this->bCanEditStatus = true;
                 }
             }
+            /** @var \partner $partner */
+            $partner = $this->loadData('partner');
+            $partner->get($this->projects->id_partner);
+            /** @var \partner_project_attachment $partnerProjectAttachment */
+            $partnerProjectAttachment = $this->loadData('partner_project_attachment');
 
             $this->attachment_type          = $this->loadData('attachment_type');
             $this->aAttachments             = $this->projects->getAttachments();
             $this->aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language);
-            $this->aMandatoyAttachmentTypes = [
-                \attachment_type::DERNIERE_LIASSE_FISCAL,
-                \attachment_type::LIASSE_FISCAL_N_1,
-                \attachment_type::LIASSE_FISCAL_N_2,
-                \attachment_type::RELEVE_BANCAIRE_MOIS_N,
-                \attachment_type::RELEVE_BANCAIRE_MOIS_N_1,
-                \attachment_type::RELEVE_BANCAIRE_MOIS_N_2,
-                \attachment_type::KBIS,
-                \attachment_type::RIB,
-                \attachment_type::CNI_PASSPORTE_DIRIGEANT,
-                \attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS,
-                \attachment_type::CGV
-            ];
 
+            switch ($partner->label) {
+                case \partner::PARTNER_U_CAR_LABEL :
+                    $this->aMandatoyAttachmentTypes = $partnerProjectAttachment->getAttachmentTypesByPartner($partner->id_partner);
+                    break;
+                default :
+                    $this->aMandatoyAttachmentTypes = [
+                        \attachment_type::DERNIERE_LIASSE_FISCAL,
+                        \attachment_type::LIASSE_FISCAL_N_1,
+                        \attachment_type::LIASSE_FISCAL_N_2,
+                        \attachment_type::RELEVE_BANCAIRE_MOIS_N,
+                        \attachment_type::RELEVE_BANCAIRE_MOIS_N_1,
+                        \attachment_type::RELEVE_BANCAIRE_MOIS_N_2,
+                        \attachment_type::KBIS,
+                        \attachment_type::RIB,
+                        \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+                        \attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS,
+                        \attachment_type::CGV
+                    ];
+                    break;
+            }
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
 
@@ -334,11 +346,13 @@ class dossiersController extends bootstrap
                     $this->rate_max = $rateRange['rate_max'];
                 }
             }
+            $this->partnerList = $partner->select('', 'name ASC');
 
             $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
             /** @var \product selectedProduct */
             $this->selectedProduct = $product;
             $this->isProductUsable = false;
+
             if (projects_status::PREP_FUNDING == $this->projects->status) {
                 if ($productManager->isProjectEligible($this->projects, $this->selectedProduct)) {
                     $this->isProductUsable = true;
@@ -624,7 +638,12 @@ class dossiersController extends bootstrap
                     }
 
                     if ($this->projects->status <= \projects_status::PREP_FUNDING) {
-                        $this->projects->id_product = $_POST['assigned_product'];
+                        if (false === empty($_POST['assigned_product'])) {
+                            $this->projects->id_product = $_POST['assigned_product'];
+                        }
+                        if (false === empty($_POST['project_partner'])) {
+                            $this->projects->id_partner = $_POST['project_partner'];
+                        }
                     }
 
                     if ($this->projects->status <= \projects_status::A_FUNDER) {
@@ -1429,10 +1448,17 @@ class dossiersController extends bootstrap
 
     public function _add()
     {
-        $this->clients          = $this->loadData('clients');
+        /** @var \clients clients */
+        $this->clients = $this->loadData('clients');
+        /** @var \clients_adresses clients_adresses */
         $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->companies        = $this->loadData('companies');
-        $this->projects         = $this->loadData('projects');
+        /** @var \companies companies */
+        $this->companies = $this->loadData('companies');
+        /** @var projects projects */
+        $this->projects = $this->loadData('projects');
+        /** @var \partner $partner */
+        $partner           = $this->loadData('partner');
+        $this->partnerList = $partner->select('', 'name ASC');
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
         $clientManager = $this->get('unilend.service.client_manager');
@@ -1472,10 +1498,13 @@ class dossiersController extends bootstrap
                 $this->companies->id_client_owner = $this->clients->id_client;
                 $this->companies->create();
             }
+            $this->projects->id_company                = $this->companies->id_company;
+            $this->projects->create_bo                 = 1; // on signale que le projet a été créé en Bo
+            $this->projects->status                    = \projects_status::A_TRAITER;
+            $this->projects->id_partner                = $this->projects->getPartnerId($partner);
+            $this->projects->commission_rate_funds     = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
+            $this->projects->commission_rate_repayment = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
 
-            $this->projects->id_company = $this->companies->id_company;
-            $this->projects->create_bo  = 1; // on signale que le projet a été créé en Bo
-            $this->projects->status     = \projects_status::A_TRAITER;
             $this->projects->create();
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
@@ -1975,9 +2004,13 @@ class dossiersController extends bootstrap
                     $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
 
                     // MAIL FACTURE REMBOURSEMENT EMPRUNTEUR //
-                    $projects                = $this->loadData('projects');
-                    $companies               = $this->loadData('companies');
-                    $emprunteur              = $this->loadData('clients');
+                    /** @var \projects $projects */
+                    $projects = $this->loadData('projects');
+                    /** @var \companies $companies */
+                    $companies = $this->loadData('companies');
+                    /** @var \clients $emprunteur */
+                    $emprunteur = $this->loadData('clients');
+                    /** @var \projects_status_history $projects_status_history */
                     $projects_status_history = $this->loadData('projects_status_history');
 
                     $projects->get($e['id_project'], 'id_project');
@@ -2014,14 +2047,14 @@ class dossiersController extends bootstrap
                     $message->setTo(trim($companies->email_facture));
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
-
-                    $oInvoiceCounter            = $this->loadData('compteur_factures');
-                    $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
+                    /** @var \compteur_factures $oInvoiceCounter */
+                    $oInvoiceCounter = $this->loadData('compteur_factures');
+                    /** @var \echeanciers $oLenderRepaymentSchedule */
+                    $oLenderRepaymentSchedule = $this->loadData('echeanciers');
+                    /** @var \echeanciers_emprunteur $oBorrowerRepaymentSchedule */
                     $oBorrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
-                    $oInvoice                   = $this->loadData('factures');
-
-                    $this->settings->get('Commission remboursement', 'type');
-                    $fCommissionRate = $this->settings->value;
+                    /** @var \factures $oInvoice */
+                    $oInvoice = $this->loadData('factures');
 
                     $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $e['ordre'], '', 0, 1);
 
@@ -2032,7 +2065,7 @@ class dossiersController extends bootstrap
                         $oInvoice->id_project      = $projects->id_project;
                         $oInvoice->ordre           = $e['ordre'];
                         $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
-                        $oInvoice->commission      = bcmul($fCommissionRate, 100, 1);
+                        $oInvoice->commission      = $projects->commission_rate_repayment;
                         $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                         $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
                         $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
@@ -2542,17 +2575,6 @@ class dossiersController extends bootstrap
         $oSettings->get('Twitter', 'type');
         $twitterUrl = $oSettings->value;
 
-        $oSettings->get('Part unilend', 'type');
-        $commission = $oSettings->value;
-
-        $oSettings->get('Commission remboursement', 'type');
-        $owedCapitalCommission = $oSettings->value;
-
-        /** @var \tax_type $taxType */
-        $taxType = $this->loadData('tax_type');
-        $taxType->get(\tax_type::TYPE_VAT);
-        $vatRate = $taxType->rate / 100;
-
         $varMail = array(
             'surl'                 => $this->surl,
             'url'                  => $this->furl,
@@ -2560,8 +2582,8 @@ class dossiersController extends bootstrap
             'lien_cgv_universign'  => $sCgvLink,
             'lien_tw'              => $twitterUrl,
             'lien_fb'              => $facebookUrl,
-            'commission_deblocage' => bcmul($commission / (1 + $vatRate), 100),
-            'commission_crd'       => bcmul($owedCapitalCommission, 100),
+            'commission_deblocage' => $this->ficelle->formatNumber($oProjects->commission_rate_funds, 0),
+            'commission_crd'       => $this->ficelle->formatNumber($oProjects->commission_rate_repayment, 0),
         );
 
         if (empty($oClients->email)) {

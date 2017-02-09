@@ -251,9 +251,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 /** @var \factures $oInvoice */
                 $oInvoice = $entityManager->getRepository('factures');
 
-                $settings->get('Commission remboursement', 'type');
-                $fCommissionRate = $settings->value;
-
                 $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $r['ordre'], '', 0, 1);
 
                 if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $r['ordre'] . '  AND id_project')) {
@@ -264,7 +261,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     $oInvoice->id_project      = $projects->id_project;
                     $oInvoice->ordre           = $r['ordre'];
                     $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
-                    $oInvoice->commission      = bcmul($fCommissionRate, 100, 1);
+                    $oInvoice->commission      = $projects->commission_rate_repayment;
                     $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                     $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
                     $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
