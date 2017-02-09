@@ -419,13 +419,11 @@ class BidManager
         if ($iWelcomeOfferTotal > 0) {
             if ($oBid->amount === $fAmountX100) { //Totally credit
                 $oWelcomeOfferDetails->montant = min($iWelcomeOfferTotal, $fAmountX100);
-            } elseif (($oBid->amount - $fAmountX100) <= $iWelcomeOfferTotal
-            ) { //Partially credit
+            } elseif (($oBid->amount - $fAmountX100) <= $iWelcomeOfferTotal) { //Partially credit
                 $oWelcomeOfferDetails->montant = $iWelcomeOfferTotal - ($oBid->amount - $fAmountX100);
             }
 
             if (false === empty($oWelcomeOfferDetails->montant)) {
-                $oWelcomeOfferDetails->unsetData();
                 $oWelcomeOfferDetails->id_offre_bienvenue = 0;
                 $oWelcomeOfferDetails->id_client          = $oLenderAccount->id_client_owner;
                 $oWelcomeOfferDetails->id_bid             = 0;
