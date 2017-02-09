@@ -650,7 +650,7 @@
                     <?php if ($this->projects->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->projects_status_history->content)) { ?>
                     <tr>
                         <th><label for="status">Motif :</label></th>
-                        <td><?= $this->projects_status_history->content ?></td>
+                        <td><?= $this->rejectionReasonMessage ?></td>
                     </tr>
                     <?php } ?>
                 </table>

@@ -197,8 +197,9 @@ class dossiersController extends bootstrap
             $this->projects_status->get($this->projects->status, 'status');
             $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
-            $this->bHasAdvisor       = false;
-            $this->bReadonlyRiskNote = $this->projects->status >= \projects_status::PREP_FUNDING;
+            $this->rejectionReasonMessage = $this->getRejectionMotiveTranslation($this->projects_status_history);
+            $this->bHasAdvisor            = false;
+            $this->bReadonlyRiskNote      = $this->projects->status >= \projects_status::PREP_FUNDING;
 
             if ($this->projects->status == \projects_status::FUNDE) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
@@ -924,6 +925,93 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers');
             die;
         }
+    }
+
+    /**
+     * @param projects_status_history $projectStatusHistory
+     * @return string
+     */
+    private function getRejectionMotiveTranslation(\projects_status_history $projectStatusHistory)
+    {
+        /** @var \Symfony\Bundle\FrameworkBundle\Translation\Translator $translator */
+        $translator = $this->get('translator');
+
+        switch ($projectStatusHistory->content) {
+            case \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-too-much-payment-incidents-message'); // Plusieurs incidents de payement Codinf
+                break;
+            case \projects_status::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-unauthorized-payment-incident-message'); // Incident de payment Codinf non autorisé
+                break;
+            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-elimination-xerfi-score-message'); // Score Xerfi Unilend éliminatroire
+                break;
+            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-altares-score-message'); // Croisement score Xerfi Unilend VS score Altares éliminatroire
+                break;
+            case \projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-low-altares-score-message'); // Score Altares faible
+                break;
+            case \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-low-infolegal-score-message'); // Score infolegal faible
+                break;
+            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_EULER_GRADE :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-euler-grade-message'); // Croisement score Xerfi Unilend VS grade Euler éliminatroire
+                break;
+            case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-vs-altares-score-message'); // Croisement grade Euler VS score Altares éliminatroire
+                break;
+            case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges-message'); // Possède des privilèges Infogreffe
+                break;
+            case \projects_status::UNEXPECTED_RESPONSE . 'altares_identity' :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-identity-error-message'); // Le webservice identité Altares n'a pas fonctionné
+                break;
+            case \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident' :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-codinf-incident-error-message'); // Le webservice incident Codinf n'a pas fonctionné
+                break;
+            case \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro' :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-fpro-error-message'); // Le webservice Altares synthèse financière n'a pas fonctionné
+                break;
+            case \projects_status::UNEXPECTED_RESPONSE . 'altares_ebe' :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-ebe-error-message'); // Le webservice Altares solde intermédiare de gestion n'a pas fonctionné
+                break;
+            case \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges' :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges-error-message'); // Le webservice des privilèges Infogreffe n'a pas fonctionné
+                break;
+            case \projects_status::UNEXPECTED_RESPONSE . 'altares_score' :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-score-error-message'); // Le webservice score Altares n'a pas fonctionné
+                break;
+            case \projects_status::UNEXPECTED_RESPONSE . 'infolegal_score' :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-score-error-message'); // Le webservice score Infolegale n'a pas fonctionné
+                break;
+            case \projects_status::UNEXPECTED_RESPONSE . 'euler_grade' :
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-eurler-grade-error-message'); // Le webservice grade Euler n'a pas fonctionné
+                break;
+            default:
+                $rejectReasons = explode(',', $projectStatusHistory->content);
+                if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
+                    $message = $translator->trans('project-rejection-reason-bo_collective-proceeding-message'); // En procédures collectives
+                } elseif (
+                    in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
+                ) {
+                    $message = $translator->trans('project-rejection-reason-bo_no-siren-message'); // SIREN inconnu
+                } elseif (
+                    in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
+                ) {
+                    $message = $translator->trans('project-rejection-reason-bo_negative-operating-result-message'); // Résultats financiers insuffisants
+                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
+                    $message = $translator->trans('project-rejection-reason-bo_product-not-found-message'); // Aucunne offre Unilend (produit) ne correspond
+                } else {
+                    $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-default-message'); // Les éléments financiers ne permettent pas de proposer le projet à la communauté Unilend.
+                }
+                break;
+        }
+        return $message;
     }
 
     protected function sumBalances(array $aBalances, $aBalanceSheet)

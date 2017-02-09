@@ -67,12 +67,10 @@ class projects_status extends projects_status_crud
     const NON_ELIGIBLE_REASON_PROCEEDING                      = 'in_proceeding';
     const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES  = 'negative_raw_operating_incomes';
     const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK          = 'negative_capital_stock';
-    const NON_ELIGIBLE_REASON_LOW_SCORE                       = 'low_score';
     const NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL         = 'negative_equity_capital';
     const NON_ELIGIBLE_REASON_LOW_TURNOVER                    = 'low_turnover';
     const NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT       = 'too_much_payment_incident';
     const NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT    = 'non_allowed_payment_incident';
-    const NON_ELIGIBLE_REASON_NO_BALANCE_SHEET_FOUND          = 'no_balance_sheet_found';
     const NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE = 'unilend_xerfi_elimination_score';
     const NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE  = 'unilend_xerfi_vs_altares_score';
     const NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE               = 'low_altares_score';
@@ -80,6 +78,7 @@ class projects_status extends projects_status_crud
     const NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_EULER_GRADE    = 'unilend_xerfi_vs_euler_grade';
     const NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE    = 'euler_grade_vs_altares_score';
     const NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES           = 'has_infogreffe_privileges';
+    const UNEXPECTED_RESPONSE                                 = 'unexpected_response_from_';
 
     /**
      * List of projects with pending repayments
