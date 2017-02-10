@@ -12,8 +12,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\CompanyFinanceCheck;
-use Unilend\Bundle\CoreBusinessBundle\Service\CompanyScoringCheck;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -273,23 +271,21 @@ class ProjectRequestController extends Controller
         $this->project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
         $this->project->update();
 
-        /** @var CompanyFinanceCheck $companyFinanceCheck */
         $companyFinanceCheck = $this->get('unilend.service.company_finance_check');
 
         if (false === $companyFinanceCheck->isCompanySafe($this->company, $rejectionReason)) {
-            return $this->updateProjectStatusAndRedirect($rejectionReason);
+            return $this->rejectProjectStatusAndRedirect($rejectionReason);
         }
 
         if (true === $companyFinanceCheck->hasCodinfPaymentIncident($this->company->siren, $rejectionReason)) {
-            return $this->updateProjectStatusAndRedirect($rejectionReason);
+            return $this->rejectProjectStatusAndRedirect($rejectionReason);
         }
-        /** @var CompanyScoringCheck $companyScoringCheck */
+
         $companyScoringCheck = $this->get('unilend.service.company_scoring_check');
-        /** @var CompanyRating $altaresScore */
-        $altaresScore = $companyScoringCheck->getAltaresScore($this->company->siren);
+        $altaresScore        = $companyScoringCheck->getAltaresScore($this->company->siren);
 
         if (true === $companyScoringCheck->isAltaresScoreLow($altaresScore, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            return $this->updateProjectStatusAndRedirect($rejectionReason);
+            return $this->rejectProjectStatusAndRedirect($rejectionReason);
         }
         /** @var BalanceSheetList $balanceSheetList */
         $balanceSheetList = $companyFinanceCheck->getBalanceSheets($this->company->siren);
@@ -302,32 +298,32 @@ class ProjectRequestController extends Controller
 
         if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
             if (true === $companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $this->company->siren, $rejectionReason)) {
-                return $this->updateProjectStatusAndRedirect($rejectionReason);
+                return $this->rejectProjectStatusAndRedirect($rejectionReason);
             }
 
             if (true === $companyFinanceCheck->hasNegativeRawOperatingIncomes($balanceSheetList, $this->company->siren, $rejectionReason)) {
-                return $this->updateProjectStatusAndRedirect($rejectionReason);
+                return $this->rejectProjectStatusAndRedirect($rejectionReason);
             }
         }
 
         if (false === $companyScoringCheck->isXerfiUnilendOk($this->company->code_naf, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            return $this->updateProjectStatusAndRedirect($rejectionReason);
+            return $this->rejectProjectStatusAndRedirect($rejectionReason);
         }
 
         if (false === $companyScoringCheck->combineAltaresScoreAndUnilendXerfi($altaresScore, $this->company->code_naf, $rejectionReason)) {
-            return $this->updateProjectStatusAndRedirect($rejectionReason);
+            return $this->rejectProjectStatusAndRedirect($rejectionReason);
         }
 
         if (true === $companyScoringCheck->isInfolegaleScoreLow($this->company->siren, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            return $this->updateProjectStatusAndRedirect($rejectionReason);
+            return $this->rejectProjectStatusAndRedirect($rejectionReason);
         }
 
         if (false === $companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $this->company, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            return $this->updateProjectStatusAndRedirect($rejectionReason);
+            return $this->rejectProjectStatusAndRedirect($rejectionReason);
         }
 
         if (true === $companyFinanceCheck->hasInfogreffePrivileges($this->company->siren, $rejectionReason)) {
-            return $this->updateProjectStatusAndRedirect($rejectionReason);
+            return $this->rejectProjectStatusAndRedirect($rejectionReason);
         }
 
         return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::INCOMPLETE_REQUEST);
@@ -337,10 +333,14 @@ class ProjectRequestController extends Controller
      * @param string $motive
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    private function updateProjectStatusAndRedirect($motive)
+    private function rejectProjectStatusAndRedirect($motive)
     {
+        $status = substr($motive, 0, strlen(\projects_status::UNEXPECTED_RESPONSE)) === \projects_status::UNEXPECTED_RESPONSE
+            ? \projects_status::IMPOSSIBLE_AUTO_EVALUATION
+            : \projects_status::NOT_ELIGIBLE;
+
         $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOT_ELIGIBLE, $this->project, 0, $motive);
+        $projectManager->addProjectStatus(\users::USER_ID_FRONT, $status, $this->project, 0, $motive);
 
         return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
     }
@@ -1616,6 +1616,7 @@ class ProjectRequestController extends Controller
 
         switch ($this->project->status) {
             case \projects_status::NOT_ELIGIBLE:
+            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_PROSPECT])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }

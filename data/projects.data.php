@@ -1345,6 +1345,35 @@ class projects extends projects_crud
     }
 
     /**
+     * @return array
+     */
+    public function getImpossibleEvaluationProjects()
+    {
+        $statement = $this->bdd->createQueryBuilder()
+            ->select('p.id_project,
+                p.amount AS amount,
+                p.period AS duration,
+                co.siren AS siren,
+                p.added AS creation
+            ')
+            ->from('projects', 'p')
+            ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
+            ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
+            ->where('p.status = :status')
+            ->andWhere('p.added > DATE_SUB(NOW(), INTERVAL 1 WEEK)')
+            ->setParameter('status', \projects_status::IMPOSSIBLE_AUTO_EVALUATION, PDO::PARAM_INT)
+            ->addOrderBy('creation', 'ASC')
+            ->addOrderBy('amount', 'DESC')
+            ->addOrderBy('duration', 'DESC')
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
      * @param array $status
      * @return \Doctrine\DBAL\Query\QueryBuilder
      */
@@ -1382,7 +1411,7 @@ class projects extends projects_crud
             ->addOrderBy('status', 'DESC')
             ->addOrderBy('priority', 'ASC')
             ->addOrderBy('infolegale', 'DESC')
-            ->addOrderBy('p.amount', 'DESC')
-            ->addOrderBy('p.period', 'DESC');
+            ->addOrderBy('amount', 'DESC')
+            ->addOrderBy('duration', 'DESC');
     }
 }

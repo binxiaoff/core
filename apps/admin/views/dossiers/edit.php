@@ -647,7 +647,7 @@
                             <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
                         </td>
                     </tr>
-                    <?php if ($this->projects->status == \projects_status::NOT_ELIGIBLE && false === empty($this->projects_status_history->content)) { ?>
+                    <?php if (in_array($this->projects->status, [\projects_status::NOT_ELIGIBLE, \projects_status::IMPOSSIBLE_AUTO_EVALUATION]) && false === empty($this->projects_status_history->content)) { ?>
                     <tr>
                         <th><label for="status">Motif :</label></th>
                         <td><?= $this->rejectionReasonMessage ?></td>

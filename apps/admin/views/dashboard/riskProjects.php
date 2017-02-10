@@ -4,15 +4,15 @@
     <table class="tablesorter projects">
         <thead>
         <tr>
-            <th style="width: 55px">ID</th>
+            <th style="width:55px">ID</th>
             <th>Raison sociale</th>
-            <th style="width: 75px">Montant</th>
-            <th style="width: 75px">Durée</th>
-            <th style="width: 175px">Nom dirigeant</th>
-            <th style="width: 90px">Téléphone</th>
-            <th style="width: 120px">Création</th>
-            <th style="width: 120px">Passage à l'analyse</th>
-            <th style="width: 65px">Dernier<br/>mémo</th>
+            <th style="width:75px">Montant</th>
+            <th style="width:75px">Durée</th>
+            <th style="width:175px">Nom dirigeant</th>
+            <th style="width:90px">Téléphone</th>
+            <th style="width:120px">Création</th>
+            <th style="width:120px">Passage à l'analyse</th>
+            <th style="width:65px">Dernier<br/>mémo</th>
         </tr>
         </thead>
         <tbody>
@@ -25,11 +25,11 @@
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project['id_project'] ?>">
                     <td><?= $project['id_project'] ?></td>
                     <td><?= $project['company_name'] ?></td>
-                    <td style="text-align: right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
+                    <td style="text-align:right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
                     <td><?= $project['duration'] ?> mois</td>
                     <td><?= $project['client_name'] ?></td>
                     <td><?= $project['client_phone'] ?></td>
-                    <td><?=$project['creation']->format('d/m/Y - H\hi') ?></td>
+                    <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
                     <td data-toggle="tooltip" class="tooltip<?php if ($project['risk_status_duration'] > 48) : ?> warning<?php endif; ?>" title="<?= $project['risk_status_datetime']->format('d/m/Y - H\hi') ?>"><?= $this->ficelle->formatNumber($project['risk_status_duration'], 0) ?> heures</td>
                     <?php if (empty($project['memo'])) : ?>
                         <td></td>

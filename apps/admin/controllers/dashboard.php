@@ -35,12 +35,13 @@ class dashboardController extends bootstrap
                 $this->teamProjects = $this->getRiskTeamProjects($user);
                 break;
             case \users_types::TYPE_COMMERCIAL:
-                $this->template         = 'sale';
-                $this->userProjects     = $this->getSaleUserProjects($user);
-                $this->teamProjects     = $this->getSaleTeamProjects($user);
-                $this->upcomingProjects = $this->getSaleUpcomingProjects();
-                $this->collapsedStatus  = self::$saleCollapsedStatus;
-                $this->salesPeople      = $user->select('status = 1 AND id_user_type = ' . \users_types::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
+                $this->template                     = 'sale';
+                $this->userProjects                 = $this->getSaleUserProjects($user);
+                $this->teamProjects                 = $this->getSaleTeamProjects($user);
+                $this->upcomingProjects             = $this->getSaleUpcomingProjects();
+                $this->impossibleEvaluationProjects = $this->getImpossibleEvaluationProjects();
+                $this->collapsedStatus              = self::$saleCollapsedStatus;
+                $this->salesPeople                  = $user->select('status = 1 AND id_user_type = ' . \users_types::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
                 break;
             default:
                 header('Location: ' . $this->lurl);
@@ -159,6 +160,21 @@ class dashboardController extends bootstrap
     }
 
     /**
+     * @return array
+     */
+    private function getImpossibleEvaluationProjects()
+    {
+        /** @var \projects $project */
+        $project  = $this->loadData('projects');
+        $projects = $project->getImpossibleEvaluationProjects();
+
+        return array_map(function($project) {
+            $project['creation'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['creation']);
+            return $project;
+        }, $projects);
+    }
+
+    /**
      * @param array $projects
      * @return array
      */
@@ -186,5 +202,16 @@ class dashboardController extends bootstrap
         }
 
         return $formattedProjects;
+    }
+
+    public function _evaluate_projects()
+    {
+        // @todo re-evaluate projects in status \projects_status::IMPOSSIBLE_AUTO_EVALUATION (DEV-1198)
+        /** @var \projects $project */
+        $project  = $this->loadData('projects');
+        $projects = $project->getImpossibleEvaluationProjects();
+
+        header('Location: ' . $this->lurl . '/dashboard');
+        die;
     }
 }

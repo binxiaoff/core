@@ -101,6 +101,7 @@ class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
                 }
             }
         }
+
         $project->balance_count             = '0000-00-00' === $company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $company->date_creation)->diff(new \DateTime())->y;
         $project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
         $project->update();
