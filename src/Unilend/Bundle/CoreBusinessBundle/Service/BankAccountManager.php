@@ -56,10 +56,11 @@ class BankAccountManager
             if ($bic !== $bankAccount->getBic()) {
                 $bankAccount->setBic($bic);
                 $bankAccount->setStatus(BankAccount::STATUS_PENDING);
+                $bankAccount->setDatePending(new \DateTime('NOW'));
                 $this->updateLegacyBankAccount($clientEntity, $bankAccount);
                 $this->em->flush();
+                return $bankAccount;
             }
-            return $bankAccount;
         }
 
         $this->em->getConnection()->beginTransaction();
@@ -94,21 +95,25 @@ class BankAccountManager
     }
 
     /**
-     * @param BankAccount $bankAccount
+     * @param BankAccount $newBankAccount
      */
     public function validateBankAccount(BankAccount $newBankAccount)
     {
+        $now = new \DateTime('NOW');
+
         if (BankAccount::STATUS_PENDING == $newBankAccount->getStatus()) {
             $newBankAccount->setStatus(BankAccount::STATUS_VALIDATED);
+            $newBankAccount->setDateValidated($now);
         }
 
         /** @var BankAccount[] $existingBankAccounts */
-        $existingBankAccounts = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getPreviousBankAccounts($newBankAccount->getAdded(), $newBankAccount->getIdClient());
+        $existingBankAccounts = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getPreviousBankAccounts($newBankAccount->getDatePending(), $newBankAccount->getIdClient());
 
         if (false === empty($existingBankAccounts)) {
             foreach ($existingBankAccounts as $bankAccount) {
                 if ($bankAccount !== $newBankAccount && $bankAccount->getStatus() !== BankAccount::STATUS_ARCHIVED) {
                     $bankAccount->setStatus(BankAccount::STATUS_ARCHIVED);
+                    $bankAccount->setDateArchived($now);
                 }
             }
         }

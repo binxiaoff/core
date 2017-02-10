@@ -21,9 +21,10 @@ class BankAccountRepository extends EntityRepository
     {
         $this->getEntityManager()
             ->getConnection()
-            ->executeQuery('INSERT INTO bank_account (id_client, bic, iban, status, added, updated) 
-                            VALUES (:idClient, :bic, :iban, :status, NOW(), null)
-                            ON DUPLICATE KEY UPDATE status = :status, updated = NOW()', ['idClient' => $idClient, 'bic' => $bic, 'iban' => $iban, 'status' => BankAccount::STATUS_PENDING]);
+            ->executeQuery('INSERT INTO bank_account (id_client, bic, iban, date_pending, date_validated, date_archived, status, added, updated)
+                            VALUES (:idClient, :bic, :iban, NOW(), NULL, NULL, :status, NOW(), NULL)
+                            ON DUPLICATE KEY UPDATE status = :status, date_pending = NOW(), date_validated = NULL, date_archived = NULL, updated = NOW()',
+                ['idClient' => $idClient, 'bic' => $bic, 'iban' => $iban, 'status' => BankAccount::STATUS_PENDING]);
 
         return $this->find($this->getEntityManager()->getConnection()->lastInsertId());
     }
@@ -40,7 +41,7 @@ class BankAccountRepository extends EntityRepository
          }
 
         $cb = $this->createQueryBuilder('ba');
-        $cb->select('ba', 'COALESCE(ba.updated, ba.added) AS dateOrder')
+        $cb->select('ba', 'COALESCE(ba.dateValidated, ba.datePending) AS dateOrder')
             ->where('ba.idClient = :idClient')
             ->andWhere('ba.status != :status')
             ->orderBy('dateOrder', 'DESC')
@@ -75,7 +76,7 @@ class BankAccountRepository extends EntityRepository
         $cb = $this->createQueryBuilder('ba');
         $cb->select('ba')
             ->where('ba.idClient = :idClient')
-            ->andWhere('ba.added < :dateTime')
+            ->andWhere('ba.datePending < :dateTime')
             ->setParameters([
                 'idClient' => $idClient,
                 'dateTime' => $dateTime

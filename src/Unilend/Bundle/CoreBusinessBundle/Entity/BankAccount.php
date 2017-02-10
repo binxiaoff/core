@@ -74,6 +74,27 @@ class BankAccount
     private $status;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="date_pending", type="datetime", nullable=false)
+     */
+    private $datePending;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="date_validated", type="datetime", nullable=true)
+     */
+    private $dateValidated;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="date_archived", type="datetime", nullable=true)
+     */
+    private $dateArchived;
+
+    /**
      * Set bic
      *
      * @param string $bic
@@ -244,4 +265,53 @@ class BankAccount
     {
         return $this->status;
     }
+
+    /**
+     * @return \DateTime
+     */
+    public function getDatePending()
+    {
+        return $this->datePending;
+    }
+
+    /**
+     * @param \DateTime $datePending
+     */
+    public function setDatePending($datePending)
+    {
+        $this->datePending = $datePending;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getDateValidated()
+    {
+        return $this->dateValidated;
+    }
+
+    /**
+     * @param \DateTime $dateValidated
+     */
+    public function setDateValidated($dateValidated)
+    {
+        $this->dateValidated = $dateValidated;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getDateArchived()
+    {
+        return $this->dateArchived;
+    }
+
+    /**
+     * @param \DateTime $dateArchived
+     */
+    public function setDateArchived($dateArchived)
+    {
+        $this->dateArchived = $dateArchived;
+    }
+
 }
