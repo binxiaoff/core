@@ -11,30 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 class ClientsRepository extends EntityRepository
 {
 
-    /**
-     * @param integer|Clients $idClient
-     * @return mixed
-     */
-    public function getLastClientStatus($idClient)
-    {
-        if ($idClient instanceof Clients) {
-            $idClient = $idClient->getIdClient();
-        }
 
-        $cb = $this->createQueryBuilder('c');
-        $cb->select('cs')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
-            ->where('csh.idClient = :idClient')
-            ->orderBy('csh.added', 'DESC')
-            ->addOrderBy('csh.idClientStatusHistory',  'DESC')
-            ->setMaxResults(1)
-            ->setParameter('idClient', $idClient);
-        $query  = $cb->getQuery();
-        $result = $query->getOneOrNullResult();
-
-        return $result;
-    }
 
     /**
      * @param integer|Clients   $idClient

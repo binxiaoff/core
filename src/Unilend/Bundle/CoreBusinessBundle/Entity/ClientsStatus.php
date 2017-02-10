@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * ClientsStatus
  *
  * @ORM\Table(name="clients_status")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientStatusRepository")
  */
 class ClientsStatus
 {
