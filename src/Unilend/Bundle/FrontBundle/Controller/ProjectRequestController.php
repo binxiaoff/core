@@ -245,102 +245,11 @@ class ProjectRequestController extends Controller
      */
     private function start()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \company_rating_history $companyRatingHistory */
-        $companyRatingHistory = $entityManager->getRepository('company_rating_history');
-        $companyRatingHistory->id_company = $this->project->id_company;
-        $companyRatingHistory->id_user    = \users::USER_ID_FRONT;
-        $companyRatingHistory->action     = \company_rating_history::ACTION_WS;
-        $companyRatingHistory->create();
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        /** @var \company_rating $companyRating */
-        $companyRating = $entityManager->getRepository('company_rating');
-
-        if (false === empty($this->project->id_company_rating_history)) {
-            foreach ($companyRating->getHistoryRatingsByType($this->project->id_company_rating_history) as $rating => $value) {
-                if (false === in_array($rating, \company_rating::$ratingTypes)) {
-                    $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
-                    $companyRating->type                      = $rating;
-                    $companyRating->value                     = $value;
-                    $companyRating->create();
-                }
-            }
+        if (null === $projectRequestManager->checkProjectRisk($this->company, $this->project, \users::USER_ID_FRONT)) {
+            return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::INCOMPLETE_REQUEST);
         }
-        $this->project->balance_count             = '0000-00-00' === $this->company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $this->company->date_creation)->diff(new \DateTime())->y;
-        $this->project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
-        $this->project->update();
-
-        $companyFinanceCheck = $this->get('unilend.service.company_finance_check');
-
-        if (false === $companyFinanceCheck->isCompanySafe($this->company, $rejectionReason)) {
-            return $this->rejectProjectStatusAndRedirect($rejectionReason);
-        }
-
-        if (true === $companyFinanceCheck->hasCodinfPaymentIncident($this->company->siren, $rejectionReason)) {
-            return $this->rejectProjectStatusAndRedirect($rejectionReason);
-        }
-
-        $companyScoringCheck = $this->get('unilend.service.company_scoring_check');
-        $altaresScore        = $companyScoringCheck->getAltaresScore($this->company->siren);
-
-        if (true === $companyScoringCheck->isAltaresScoreLow($altaresScore, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            return $this->rejectProjectStatusAndRedirect($rejectionReason);
-        }
-        /** @var BalanceSheetList $balanceSheetList */
-        $balanceSheetList = $companyFinanceCheck->getBalanceSheets($this->company->siren);
-
-        if (null !== $balanceSheetList) {
-            /** @var CompanyBalanceSheetManager $companyBalanceSheetManager */
-            $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
-            $companyBalanceSheetManager->setCompanyBalance($this->company, $this->project, $balanceSheetList);
-        }
-
-        if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
-            if (true === $companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $this->company->siren, $rejectionReason)) {
-                return $this->rejectProjectStatusAndRedirect($rejectionReason);
-            }
-
-            if (true === $companyFinanceCheck->hasNegativeRawOperatingIncomes($balanceSheetList, $this->company->siren, $rejectionReason)) {
-                return $this->rejectProjectStatusAndRedirect($rejectionReason);
-            }
-        }
-
-        if (false === $companyScoringCheck->isXerfiUnilendOk($this->company->code_naf, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            return $this->rejectProjectStatusAndRedirect($rejectionReason);
-        }
-
-        if (false === $companyScoringCheck->combineAltaresScoreAndUnilendXerfi($altaresScore, $this->company->code_naf, $rejectionReason)) {
-            return $this->rejectProjectStatusAndRedirect($rejectionReason);
-        }
-
-        if (true === $companyScoringCheck->isInfolegaleScoreLow($this->company->siren, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            return $this->rejectProjectStatusAndRedirect($rejectionReason);
-        }
-
-        if (false === $companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $this->company, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            return $this->rejectProjectStatusAndRedirect($rejectionReason);
-        }
-
-        if (true === $companyFinanceCheck->hasInfogreffePrivileges($this->company->siren, $rejectionReason)) {
-            return $this->rejectProjectStatusAndRedirect($rejectionReason);
-        }
-
-        return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::INCOMPLETE_REQUEST);
-    }
-
-    /**
-     * @param string $motive
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
-     */
-    private function rejectProjectStatusAndRedirect($motive)
-    {
-        $status = substr($motive, 0, strlen(\projects_status::UNEXPECTED_RESPONSE)) === \projects_status::UNEXPECTED_RESPONSE
-            ? \projects_status::IMPOSSIBLE_AUTO_EVALUATION
-            : \projects_status::NOT_ELIGIBLE;
-
-        $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus(\users::USER_ID_FRONT, $status, $this->project, 0, $motive);
 
         return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
     }
