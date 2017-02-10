@@ -14,8 +14,6 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
 
 class CompanyFinanceCheck
 {
-    const UNEXPECTED_RESPONSE = 'unexpected_response_from_';
-
     /** @var EntityManager */
     private $entityManager;
     /** @var CompanyBalanceSheetManager */
@@ -96,7 +94,7 @@ class CompanyFinanceCheck
             }
             $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
         } catch (\Exception $exception) {
-            $rejectionReason = self::UNEXPECTED_RESPONSE . 'altares_identity';
+            $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_identity';
             $this->logger->error('Could not get company identity: AltaresManager::getCompanyIdentity(' . $company->siren . '). Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]);
         }
@@ -157,7 +155,7 @@ class CompanyFinanceCheck
             $this->logger->error('Could not get incident list: CodinfManager::getIncidentList(' . $siren . ') for 1 year. Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
         }
-        $rejectionReason = self::UNEXPECTED_RESPONSE . 'codinf_incident';
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident';
 
         return true;
     }
@@ -187,7 +185,7 @@ class CompanyFinanceCheck
             $this->logger->error('Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
         }
-        $rejectionReason = self::UNEXPECTED_RESPONSE . 'altares_fpro';
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro';
 
         return true;
     }
@@ -216,7 +214,7 @@ class CompanyFinanceCheck
             $this->logger->error('Could not get balance management line: AltaresManager::getBalanceManagementLine(' . $siren . ', ' . $lastBalanceSheet->getBalanceSheetId() . '). Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
         }
-        $rejectionReason = self::UNEXPECTED_RESPONSE . 'altares_ebe';
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_ebe';
 
         return true;
     }
@@ -276,7 +274,7 @@ class CompanyFinanceCheck
         } catch (\Exception $exception) {
             $this->logger->warning('Could not get infogreffe privileges: InfogreffeManager::getIndebtedness(' . $siren .'). Message: ' . $exception->getMessage(), $logContext);
         }
-        $rejectionReason = self::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
 
         return true;
     }
