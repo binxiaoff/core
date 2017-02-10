@@ -4,18 +4,18 @@
     <table class="tablesorter projects">
         <thead>
         <tr>
-            <th style="width: 50px">ID</th>
+            <th style="width:50px">ID</th>
             <th>Raison sociale</th>
-            <th style="width: 70px">Montant</th>
-            <th style="width: 70px">Durée</th>
-            <th style="width: 150px">Nom dirigeant</th>
-            <th style="width: 80px">Téléphone</th>
-            <th style="width: 110px">Création</th>
+            <th style="width:70px">Montant</th>
+            <th style="width:70px">Durée</th>
+            <th style="width:150px">Nom dirigeant</th>
+            <th style="width:80px">Téléphone</th>
+            <th style="width:110px">Création</th>
             <?php if ($this->templateProjects['assignee']) : ?>
-                <th style="width: 150px">Commercial</th>
+                <th style="width:150px">Commercial</th>
             <?php endif; ?>
-            <th style="width: 50px">Dernier<br/>mémo</th>
-            <th style="width: 50px">Priorité</th>
+            <th style="width:50px">Dernier<br/>mémo</th>
+            <th style="width:50px">Priorité</th>
         </tr>
         </thead>
         <tbody>
@@ -28,11 +28,11 @@
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project['id_project'] ?>"<?php if (in_array($status, $this->collapsedStatus)) : ?> style="display: none;"<?php endif; ?>>
                     <td><?= $project['id_project'] ?></td>
                     <td><?= $project['company_name'] ?></td>
-                    <td style="text-align: right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
+                    <td style="text-align:right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
                     <td><?= $project['duration'] ?> mois</td>
                     <td><?= $project['client_name'] ?></td>
                     <td><?= $project['client_phone'] ?></td>
-                    <td><?=$project['creation']->format('d/m/Y - H\hi') ?></td>
+                    <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
                     <?php if ($this->templateProjects['assignee']) : ?>
                         <td><?= $project['assignee'] ?></td>
                     <?php endif; ?>

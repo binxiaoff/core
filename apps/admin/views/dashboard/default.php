@@ -62,6 +62,10 @@
     h1:not(:first-child) {
         margin-top: 20px;
     }
+    #impossible-evaluation-projects {
+        display: none;
+        margin-top: 20px;
+    }
 </style>
 <div id="contenu">
     <h1>Mes projets (<?= $this->userProjects['count'] ?>)</h1>
@@ -89,6 +93,36 @@
         <div id="upcoming-projects">
             <?php $this->templateProjects = $this->upcomingProjects; ?>
             <?php $this->fireView($this->template . 'Projects'); ?>
+        </div>
+    <?php endif; ?>
+    <?php if (false === empty($this->impossibleEvaluationProjects)) : ?>
+        <h1><a href="javascript:$('#impossible-evaluation-projects').slideToggle();">Évaluation impossible</a> (<?= count($this->impossibleEvaluationProjects) ?>)</h1>
+        <a href="<?= $this->lurl ?>/dashboard/evaluate_projects" class="btn_link">Ré-évaluer les projets</a>
+        <div id="impossible-evaluation-projects">
+            <table class="tablesorter projects">
+                <thead>
+                <tr>
+                    <th style="width: 150px">ID</th>
+                    <th>SIREN</th>
+                    <th style="width: 150px">Montant</th>
+                    <th style="width: 150px">Durée</th>
+                    <th style="width: 250px">Création</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($this->impossibleEvaluationProjects as $project) : ?>
+                    <?php $i = 0; ?>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project['id_project'] ?>">
+                        <td><?= $project['id_project'] ?></td>
+                        <td><?= $project['siren'] ?></td>
+                        <td style="text-align: right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
+                        <td><?php if (false === empty($project['duration'])) : ?><?= $project['duration'] ?> mois<?php endif; ?></td>
+                        <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
+                    </tr>
+                    <?php ++$i; ?>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     <?php endif; ?>
 </div>

@@ -106,10 +106,10 @@ class ProjectRequestManager
         $project->ca_declara_client                    = 0;
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;
-        $project->status                               = \projects_status::DEMANDE_SIMULATEUR;
+        $project->status                               = \projects_status::INCOMPLETE_REQUEST;
         $project->create();
 
-        $this->projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::DEMANDE_SIMULATEUR, $project);
+        $this->projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::INCOMPLETE_REQUEST, $project);
 
         return $project;
     }

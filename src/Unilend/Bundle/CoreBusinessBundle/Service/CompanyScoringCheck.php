@@ -26,7 +26,7 @@ class CompanyScoringCheck
     private $wsAltares;
     /** @var InfolegaleManager */
     private $wsInfolegale;
-    /** @var EulerHermesManager $wsEuler */
+    /** @var EulerHermesManager */
     private $wsEuler;
 
     /**

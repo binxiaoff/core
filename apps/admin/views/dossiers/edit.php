@@ -65,7 +65,7 @@
         font-weight: bold;
     }
 
-    #tab_email_msg, .valid_etape {
+    .valid_etape {
         display: none;
         text-align: center;
         font-size: 16px;
@@ -573,7 +573,7 @@
                             </select>
                         </td>
                     </tr>
-                    <tr id="analysts-row"<?php if ($this->projects->status < \projects_status::ATTENTE_ANALYSTE && empty($this->projects->id_analyste)) { ?> style="display: none;"<?php } ?>>
+                    <tr id="analysts-row"<?php if ($this->projects->status < \projects_status::PENDING_ANALYSIS && empty($this->projects->id_analyste)) { ?> style="display: none;"<?php } ?>>
                         <th><label for="analyste">Analyste :</label></th>
                         <td>
                             <select name="analyste" id="analyste" class="select">
@@ -639,15 +639,15 @@
                         </td>
                         <td>
                             <?php if (
-                                in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_RISK))
-                                && in_array($this->projects->status, array(\projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE, \projects_status::REJETE))
+                                in_array($this->users->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_RISK])
+                                && in_array($this->projects->status, [\projects_status::COMMERCIAL_REJECTION, \projects_status::ANALYSIS_REJECTION, \projects_status::COMITY_REJECTION])
                             ) : ?>
                                 <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"/></a>
                             <?php endif; ?>
                             <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
                         </td>
                     </tr>
-                    <?php if ($this->projects->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->projects_status_history->content)) { ?>
+                    <?php if (in_array($this->projects->status, [\projects_status::NOT_ELIGIBLE, \projects_status::IMPOSSIBLE_AUTO_EVALUATION]) && false === empty($this->projects_status_history->content)) { ?>
                     <tr>
                         <th><label for="status">Motif :</label></th>
                         <td><?= $this->rejectionReasonMessage ?></td>
@@ -659,7 +659,7 @@
                 <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
 
                 <table class="form" style="width: 538px;">
-                    <?php if (in_array($this->projects->status, array(\projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))) { ?>
+                    <?php if (in_array($this->projects->status, array(\projects_status::PENDING_ANALYSIS, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING))) { ?>
                         <tr class="change_statut" <?= ($this->projects->status == \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
                                 <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
@@ -672,7 +672,7 @@
                         <th><label for="date_publication">Date de publication* :</label></th>
                         <td id="date_publication">
                             <?php
-                            if (in_array($this->projects->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
+                            if (in_array($this->projects->status, array(\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
                                 ?>
                                 <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
                                 <?php
@@ -711,7 +711,7 @@
                         <th><label for="date_retrait">Date de retrait* :</label></th>
                         <td id="date_retrait">
                             <?php
-                            if (in_array($this->projects->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
+                            if (in_array($this->projects->status, array(\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
                                 ?>
                                 <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
                                 <?php
@@ -762,11 +762,11 @@
                     <tr>
                         <td></td>
                         <td id="status_dossier">
-                        <?php if ($this->projects->status == \projects_status::EN_ATTENTE_PIECES) { ?>
+                        <?php if ($this->projects->status == \projects_status::COMMERCIAL_REVIEW) { ?>
                             <?php if (empty($this->projects->id_product)) : ?>
                                 Merci de séléctionner un produit avant de passer au prochain statut.
                             <?php else : ?>
-                                <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossier(<?= \projects_status::ATTENTE_ANALYSTE ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
+                                <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
                                 <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#CC0000;border-color:#CC0000;font-size:10px;">Rejeter dossier</a>
                             <?php endif;?>
                             <?php } ?>
@@ -826,7 +826,7 @@
                     }).change(function() {
                         var status = $('#status').val();
 
-                        if (status == <?= \projects_status::ATTENTE_ANALYSTE ?>) {
+                        if (status == <?= \projects_status::PENDING_ANALYSIS ?>) {
                             var isNotBalanced = false;
 
                             if ($('#total_actif_0').data('total') != $('#total_passif_0').data('total')) {
@@ -876,7 +876,7 @@
                             $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_update/<?= $this->projects->id_project ?>/" + status});
                         } else if (
                           status != <?= \projects_status::REMBOURSEMENT ?>
-                          && status != <?= \projects_status::ABANDON ?>
+                          && status != <?= \projects_status::ABANDONED ?>
                         ) {
                             $(".change_statut").show();
                         }
@@ -1022,38 +1022,7 @@
         }
     });
 
-    $('#save_projects_tab_email').click(function(e){
-        e.preventDefault();
-        var iProjectId =$(this).data('project-id');
-        var iFlag = 0;
-        if ($('#stop_relances').is(':checked')) {
-            iFlag = 1;
-        }
-
-        $.ajax({
-            url: "<?= $this->lurl ?>/dossiers/tab_email",
-            type: 'POST',
-            data: {
-                project_id: iProjectId,
-                flag: iFlag
-            },
-            error: function() {
-                alert('An error has occurred');
-            },
-            success: function(data) {
-                if('ok' == data) {
-                    $("#tab_email_msg").slideDown();
-                    setTimeout(function () {
-                        $("#tab_email_msg").slideUp();
-                    }, 4000);
-                } else {
-                    alert('An error has occurred');
-                }
-            }
-        });
-    });
-
-    function deleteWordingli(id){
+    function deleteWordingli(id) {
         var id_delete = id;
         var id_input = id.replace("delete", "input");
         $("#"+id_delete).remove();
@@ -1071,7 +1040,7 @@
         }
     });
 
-    $( "#completude_preview" ).click(function() {
+    $("#completude_preview").click(function() {
         var content = $("#content_email_completude").val();
         var list = '';
         $(".input_li").each(function() {
@@ -1085,7 +1054,7 @@
                 content: content,
                 list: list
             }
-        ).done(function( data ) {
+        ).done(function(data) {
             if(data != 'nok'){
                 $( "#send_completeness" ).get(0).click();
             }

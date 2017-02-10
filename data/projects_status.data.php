@@ -1,65 +1,37 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
 
 class projects_status extends projects_status_crud
 {
-    const DEMANDE_SIMULATEUR      = 4;
-    const NOTE_EXTERNE_FAIBLE     = 5;
-    const PAS_3_BILANS            = 6;
-    const COMPLETUDE_ETAPE_2      = 7;
-    const COMPLETUDE_ETAPE_3      = 8;
-    const ABANDON                 = 9;
-    const A_TRAITER               = 10;
-    const EN_ATTENTE_PIECES       = 20;
-    const ATTENTE_ANALYSTE        = 25;
-    const REJETE                  = 30;
-    const REVUE_ANALYSTE          = 31;
-    const REJET_ANALYSTE          = 32;
-    const COMITE                  = 33;
-    const REJET_COMITE            = 34;
-    const PREP_FUNDING            = 35;
-    const A_FUNDER                = 40;
-    const AUTO_BID_PLACED         = 45;
-    const EN_FUNDING              = 50;
-    const BID_TERMINATED          = 55;
-    const FUNDE                   = 60;
-    const FUNDING_KO              = 70;
-    const PRET_REFUSE             = 75;
-    const REMBOURSEMENT           = 80;
-    const REMBOURSE               = 90;
-    const REMBOURSEMENT_ANTICIPE  = 95;
-    const PROBLEME                = 100;
-    const PROBLEME_J_X            = 110;
-    const RECOUVREMENT            = 120;
-    const PROCEDURE_SAUVEGARDE    = 130;
-    const REDRESSEMENT_JUDICIAIRE = 140;
-    const LIQUIDATION_JUDICIAIRE  = 150;
-    const DEFAUT                  = 160;
+    const NOT_ELIGIBLE               = 1;
+    const IMPOSSIBLE_AUTO_EVALUATION = 2;
+    const INCOMPLETE_REQUEST         = 5;
+    const COMPLETE_REQUEST           = 10;
+    const ABANDONED                  = 15;
+    const COMMERCIAL_REVIEW          = 20;
+    const COMMERCIAL_REJECTION       = 25;
+    const PENDING_ANALYSIS           = 30;
+    const ANALYSIS_REVIEW            = 31;
+    const ANALYSIS_REJECTION         = 32;
+    const COMITY_REVIEW              = 33;
+    const COMITY_REJECTION           = 34;
+    const PREP_FUNDING               = 35;
+    const A_FUNDER                   = 40;
+    const AUTO_BID_PLACED            = 45;
+    const EN_FUNDING                 = 50;
+    const BID_TERMINATED             = 55;
+    const FUNDE                      = 60;
+    const FUNDING_KO                 = 70;
+    const PRET_REFUSE                = 75;
+    const REMBOURSEMENT              = 80;
+    const REMBOURSE                  = 90;
+    const REMBOURSEMENT_ANTICIPE     = 95;
+    const PROBLEME                   = 100;
+    const PROBLEME_J_X               = 110;
+    const RECOUVREMENT               = 120;
+    const PROCEDURE_SAUVEGARDE       = 130;
+    const REDRESSEMENT_JUDICIAIRE    = 140;
+    const LIQUIDATION_JUDICIAIRE     = 150;
+    const DEFAUT                     = 160;
 
     const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND               = 'product_not_found';
     const NON_ELIGIBLE_REASON_INACTIVE                        = 'entity_inactive';
@@ -116,10 +88,10 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $saleTeam = [
-        self::EN_ATTENTE_PIECES,
-        self::ATTENTE_ANALYSTE,
-        self::REVUE_ANALYSTE,
-        self::COMITE,
+        self::COMMERCIAL_REVIEW,
+        self::PENDING_ANALYSIS,
+        self::ANALYSIS_REVIEW,
+        self::COMITY_REVIEW,
         self::PREP_FUNDING,
         self::A_FUNDER,
         self::AUTO_BID_PLACED,
@@ -133,10 +105,8 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $upcomingSaleTeam = [
-        self::DEMANDE_SIMULATEUR,
-        self::COMPLETUDE_ETAPE_2,
-        self::COMPLETUDE_ETAPE_3,
-        self::A_TRAITER
+        self::INCOMPLETE_REQUEST,
+        self::COMPLETE_REQUEST
     ];
 
     /**
@@ -144,9 +114,9 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $riskTeam = [
-        self::ATTENTE_ANALYSTE,
-        self::REVUE_ANALYSTE,
-        self::COMITE
+        self::PENDING_ANALYSIS,
+        self::ANALYSIS_REVIEW,
+        self::COMITY_REVIEW
     ];
 
     public function __construct($bdd, $params = '')

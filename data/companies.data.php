@@ -191,7 +191,7 @@ class companies extends companies_crud
             INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE p.status >= ' . \projects_status::EN_ATTENTE_PIECES . ' AND p.status < ' . \projects_status::EN_FUNDING . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status >= ' . \projects_status::COMMERCIAL_REVIEW . ' AND p.status < ' . \projects_status::EN_FUNDING . ' AND current_company.id_company = ' . $this->id_company . '
 
             UNION
 
@@ -202,7 +202,7 @@ class companies extends companies_crud
             INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE p.status < ' . \projects_status::EN_ATTENTE_PIECES . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status < ' . \projects_status::COMMERCIAL_REVIEW . ' AND current_company.id_company = ' . $this->id_company . '
             ORDER BY rank ASC, added DESC'
         );
         while ($aRecord = $this->bdd->fetch_assoc($rResult)) {

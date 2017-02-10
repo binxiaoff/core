@@ -493,30 +493,6 @@ class projects extends projects_crud
         return $aProjects;
     }
 
-    /**
-     * Retrieve the of projects in fast process that still at step 3 after one hour
-     * @return array
-     */
-    public function getFastProcessStep3()
-    {
-        $aProjects = array();
-        $rResult   = $this->bdd->query('
-            SELECT *
-            FROM projects
-            WHERE status = ' . \projects_status::COMPLETUDE_ETAPE_3 . '
-                AND DATE_SUB(NOW(), INTERVAL 1 HOUR) > added
-                AND process_fast = 1'
-        );
-
-        if ($this->bdd->num_rows($rResult) > 0) {
-            while ($aResult = $this->bdd->fetch_assoc($rResult)) {
-                $aProjects[] = (int) $aResult['id_project'];
-            }
-        }
-
-        return $aProjects;
-    }
-
     public function getProjectsInDebt()
     {
         $aProjects = array();
@@ -1313,7 +1289,7 @@ class projects extends projects_crud
             ->innerJoin('co', 'clients', 'cl', 'co.id_client_owner = cl.id_client')
             ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
             ->where('p.status IN (:riskStatus)')
-            ->setParameter('waitingAnalystStatus', \projects_status::ATTENTE_ANALYSTE)
+            ->setParameter('waitingAnalystStatus', \projects_status::PENDING_ANALYSIS)
             ->setParameter('riskStatus', \projects_status::$riskTeam, Connection::PARAM_INT_ARRAY)
             ->addOrderBy('status', 'ASC')
             ->addOrderBy('risk_status_duration', 'DESC');
@@ -1360,7 +1336,35 @@ class projects extends projects_crud
     {
         $statement = $this->getSaleProjectsQuery(\projects_status::$upcomingSaleTeam)
             ->andWhere('DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added')
-            ->andWhere('p.stop_relances = 0')
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @return array
+     */
+    public function getImpossibleEvaluationProjects()
+    {
+        $statement = $this->bdd->createQueryBuilder()
+            ->select('p.id_project,
+                p.amount AS amount,
+                p.period AS duration,
+                co.siren AS siren,
+                p.added AS creation
+            ')
+            ->from('projects', 'p')
+            ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
+            ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
+            ->where('p.status = :status')
+            ->andWhere('p.added > DATE_SUB(NOW(), INTERVAL 1 WEEK)')
+            ->setParameter('status', \projects_status::IMPOSSIBLE_AUTO_EVALUATION, PDO::PARAM_INT)
+            ->addOrderBy('creation', 'ASC')
+            ->addOrderBy('amount', 'DESC')
+            ->addOrderBy('duration', 'DESC')
             ->execute();
 
         $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -1379,14 +1383,8 @@ class projects extends projects_crud
             ->select('p.id_project,
                 p.amount AS amount,
                 p.period AS duration,
-                IF (
-                    p.status IN (' . implode(',', [\projects_status::DEMANDE_SIMULATEUR, \projects_status::COMPLETUDE_ETAPE_2]) . '), 5,
-                    IF (p.status IN (' . implode(',', [\projects_status::COMPLETUDE_ETAPE_3, \projects_status::A_TRAITER]) . '), 10, p.status)
-                ) AS status,
-                IF (
-                    p.status IN (' . implode(',', [\projects_status::DEMANDE_SIMULATEUR, \projects_status::COMPLETUDE_ETAPE_2]) . '), "En cours",
-                    IF (p.status IN (' . implode(',', [\projects_status::COMPLETUDE_ETAPE_3, \projects_status::A_TRAITER]) . '), "Complet", ps.label)
-                ) AS status_label,
+                p.status AS status,
+                ps.label AS status_label,
                 co.name AS company_name,
                 CONCAT(cl.prenom, " ", cl.nom) AS client_name,
                 cl.telephone AS client_phone,
@@ -1413,7 +1411,7 @@ class projects extends projects_crud
             ->addOrderBy('status', 'DESC')
             ->addOrderBy('priority', 'ASC')
             ->addOrderBy('infolegale', 'DESC')
-            ->addOrderBy('p.amount', 'DESC')
-            ->addOrderBy('p.period', 'DESC');
+            ->addOrderBy('amount', 'DESC')
+            ->addOrderBy('duration', 'DESC');
     }
 }
