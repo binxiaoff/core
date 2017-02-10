@@ -57,6 +57,7 @@ EOF
         $commission    = $input->getOption('commission');
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         $clientRepo    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $walletRepo    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $reception     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId);
         if (null === $reception) {
             $output->writeln('Reception id: ' . $receptionId . ' not found.');
@@ -89,8 +90,8 @@ EOF
                       ->setIdClient($client)
                       ->setIdProject($project)
                       ->setAssignmentDate(new \DateTime());
-            $borrower  = $clientRepo->getWalletByType($client->getIdClient(), WalletType::BORROWER);
-            $collector = $clientRepo->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
+            $borrower  = $walletRepo->getWalletByType($client->getIdClient(), WalletType::BORROWER);
+            $collector = $walletRepo->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
             $this->getContainer()->get('unilend.service.operation_manager')->provisionCollection($collector, $borrower, $reception, $commission);
 
             $entityManager->flush();
@@ -124,8 +125,8 @@ EOF
         $dateOfChange->setTime(0, 0, 0);
 
         $clientCollector = $clientRepo->findOneBy(['hash' => '2f9f590e-d689-11e6-b3d7-005056a378e2']);
-        $borrower        = $clientRepo->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
-        $collector       = $clientRepo->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
+        $borrower        = $walletRepo->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $collector       = $walletRepo->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
 
         if (null === $clientCollector) {
             $output->writeln('Borrower with client id : ' . $project->getIdCompany()->getIdClientOwner() . ' not found.');

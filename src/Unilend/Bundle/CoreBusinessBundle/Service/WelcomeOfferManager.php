@@ -101,7 +101,7 @@ class WelcomeOfferManager
                 $welcomeOfferDetail->status             = \offres_bienvenues_details::STATUS_NEW;
                 $welcomeOfferDetail->create();
 
-                $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->id_client, WalletType::LENDER);
+                $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
                 $welcomeOfferDetailEntity = $this->em->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->find($welcomeOfferDetail->id_offre_bienvenue_detail);
 
                 $this->operationManager->newWelcomeOffer($wallet, $welcomeOfferDetailEntity);

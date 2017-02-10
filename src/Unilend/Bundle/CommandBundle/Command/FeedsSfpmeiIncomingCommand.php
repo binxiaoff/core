@@ -528,7 +528,7 @@ EOF
             }
 
             $em        = $this->getContainer()->get('doctrine.orm.entity_manager');
-            $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($clients->id_client, WalletType::LENDER);
+            $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clients->id_client, WalletType::LENDER);
 
             $reception->setIdClient($wallet->getIdClient())
                       ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
@@ -623,7 +623,7 @@ EOF
             $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
             $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
             $reception        = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($transactions->id_prelevement);
-            $wallet           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
+            $wallet           = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
             if ($wallet) {
                 $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                 $operationManager->rejectProvisionBorrowerWallet($wallet, $amount, $reception); //todo: replace it by cancelProvisionBorrowerWallet

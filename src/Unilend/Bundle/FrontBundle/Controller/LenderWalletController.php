@@ -17,7 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
@@ -197,9 +197,9 @@ class LenderWalletController extends Controller
                 $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             } else {
                 $em          = $this->get('doctrine.orm.entity_manager');
-                /** @var ClientsRepository $clientRepo */
-                $clientRepo  = $em->getRepository('UnilendCoreBusinessBundle:Clients');
-                $wallet      = $clientRepo->getWalletByType($client->id_client, WalletType::LENDER);
+                /** @var WalletRepository $walletRepo */
+                $walletRepo  = $em->getRepository('UnilendCoreBusinessBundle:Wallet');
+                $wallet      = $walletRepo->getWalletByType($client->id_client, WalletType::LENDER);
                 $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy([
                     'idClient' => $wallet->getIdClient(),
                     'status'   => BankAccount::STATUS_VALIDATED

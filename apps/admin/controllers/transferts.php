@@ -213,7 +213,7 @@ class transfertsController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
             $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-            $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($_POST['id_client'], WalletType::LENDER);
+            $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($_POST['id_client'], WalletType::LENDER);
 
             if (null !== $reception && null !== $wallet) {
                 $user = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
@@ -293,7 +293,7 @@ class transfertsController extends bootstrap
             /** @var Receptions $reception */
             $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             if ($reception) {
-                $wallet = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::LENDER);
+                $wallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::LENDER);
                 $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                 if ($wallet) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
@@ -330,7 +330,7 @@ class transfertsController extends bootstrap
             $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             if ($reception) {
                 $projectId = $reception->getIdProject()->getIdProject();
-                $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
+                $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
                 if ($wallet) {
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
@@ -397,7 +397,7 @@ class transfertsController extends bootstrap
             /** @var Receptions $reception */
             $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             if (null !== $reception && in_array($reception->getStatusBo(), [Receptions::STATUS_MANUALLY_ASSIGNED, Receptions::STATUS_AUTO_ASSIGNED])) {
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
+                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
                 if ($wallet) {
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
@@ -671,7 +671,7 @@ class transfertsController extends bootstrap
                         $projectEntity   = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
                         $operationManager->projectCommission($projectEntity);
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $borrowerWallet */
-                        $borrowerWallet = $em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($companies->id_client_owner, WalletType::BORROWER);
+                        $borrowerWallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($companies->id_client_owner, WalletType::BORROWER);
 
                         //Todo: in MultiRIB, the bank account will be defined in the release funds process.
                         /** @var BankAccount $bankAccount */

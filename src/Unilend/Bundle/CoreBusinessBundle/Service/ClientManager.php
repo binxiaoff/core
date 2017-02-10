@@ -177,7 +177,7 @@ class ClientManager
     public function isLender($client)
     {
         if ($client instanceof Clients) {
-            $lenderWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+            $lenderWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
             return null !== $lenderWallet;
         }
 
@@ -199,7 +199,7 @@ class ClientManager
     public function isBorrower($client)
     {
         if ($client instanceof Clients) {
-            $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($client->getIdClient(), WalletType::BORROWER);
+            $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::BORROWER);
             return null !== $borrowerWallet;
         }
 

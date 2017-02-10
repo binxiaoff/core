@@ -236,7 +236,7 @@ class OperationManager
     {
         $operationType  = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_LOAN]);
         $lenderWallet   = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $loan->getIdLender()])->getIdWallet();
-        $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($loan->getProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($loan->getProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $amount         = round(bcdiv($loan->getAmount(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, $lenderWallet, $borrowerWallet, $loan);
@@ -747,7 +747,7 @@ class OperationManager
      */
     public function provisionBorrowerWallet(Receptions $reception)
     {
-        $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
+        $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
         if (null === $wallet) {
             return false;
         }
@@ -807,7 +807,7 @@ class OperationManager
         $accountMatching     = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $loan->getIdLender()]);
         $lenderWallet        = $accountMatching->getIdWallet();
         $borrowerClientId    = $loan->getProject()->getIdCompany()->getIdClientOwner();
-        $borrowerWallet      = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($borrowerClientId, WalletType::BORROWER);
+        $borrowerWallet      = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($borrowerClientId, WalletType::BORROWER);
         $amountInterestGross = round(bcdiv(bcsub($repaymentSchedule->getInterets(), $repaymentSchedule->getInteretsRembourses()), 100, 4), 2);
         $amountCapital       = round(bcdiv(bcsub($repaymentSchedule->getCapital(), $repaymentSchedule->getCapitalRembourse()), 100, 4), 2);
 
@@ -872,7 +872,7 @@ class OperationManager
      */
     public function repaymentCommission(EcheanciersEmprunteur $paymentSchedule)
     {
-        $borrowerWallet    = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($paymentSchedule->getIdProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerWallet    = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($paymentSchedule->getIdProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $unilendWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
         $unilendWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
         $amount            = round(bcdiv(bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2), 100, 4), 2);
@@ -893,7 +893,7 @@ class OperationManager
         $repaymentSchedule = $this->entityManager->getRepository('echeanciers');
 
         $outstandingCapital = $repaymentSchedule->getOwedCapital(['id_loan' => $loan->getIdLoan()]);
-        $borrowerWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($loan->getProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($loan->getProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $accountMatching    = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $loan->getIdLender()]);
         $lenderWallet       = $accountMatching->getIdWallet();
 
@@ -945,7 +945,7 @@ class OperationManager
      */
     public function projectCommission(Projects $project)
     {
-        $borrowerWallet    = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerWallet    = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $unilendWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
         $unilendWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
         $amountProject     = $project->getAmount();
@@ -963,8 +963,8 @@ class OperationManager
      */
     public function lenderTransfer(Transfer $transfer, $amount)
     {
-        $debtor   = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($transfer->getIdClientOrigin(), WalletType::LENDER);
-        $creditor = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($transfer->getIdClientReceiver(), WalletType::LENDER);
+        $debtor   = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($transfer->getIdClientOrigin(), WalletType::LENDER);
+        $creditor = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($transfer->getIdClientReceiver(), WalletType::LENDER);
         if (null === $debtor || null === $creditor) {
             return false;
         }
@@ -1128,7 +1128,7 @@ class OperationManager
     {
         $this->legacyRepaymentCollection($lender, $amount, $project);
 
-        $borrower = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrower = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         if (null === $borrower) {
             return false;
         }

@@ -4,44 +4,10 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class ClientsRepository extends EntityRepository
 {
-
-
-
-    /**
-     * @param integer|Clients   $idClient
-     * @param string|WalletType $walletType
-     *
-     * @return Clients|null
-     */
-    public function getWalletByType($idClient, $walletType)
-    {
-        if ($idClient instanceof Clients) {
-            $idClient = $idClient->getIdClient();
-        }
-
-        if ($walletType instanceof WalletType) {
-            $walletType = $walletType->getLabel();
-        }
-
-        $cb = $this->createQueryBuilder('c');
-        $cb->select('w')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->where('w.idClient = :idClient')
-            ->andWhere('wt.label = :walletType')
-            ->setMaxResults(1)
-            ->setParameters(['idClient' => $idClient, 'walletType' => $walletType]);
-        $query = $cb->getQuery();
-        $result = $query->getOneOrNullResult();
-
-        return $result;
-    }
 
     /**
      * @param integer|Clients $idClient

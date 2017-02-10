@@ -901,10 +901,8 @@ class LenderSubscriptionController extends Controller
 
             if (is_numeric($amount) && $amount >= LenderWalletController::MIN_DEPOSIT_AMOUNT && $amount <= LenderWalletController::MAX_DEPOSIT_AMOUNT) {
                 $em = $this->get('doctrine.orm.entity_manager');
-                /** @var ClientsRepository $clientRepo */
-                $clientRepo = $em->getRepository('UnilendCoreBusinessBundle:Clients');
-                $client = $clientRepo->findOneBy(['hash' => $clientHash]);
-                $wallet = $clientRepo->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                $client = $em->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+                $wallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
                 $successUrl = $this->generateUrl('lender_subscription_money_transfer', ['clientHash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
                 $cancelUrl = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
 
