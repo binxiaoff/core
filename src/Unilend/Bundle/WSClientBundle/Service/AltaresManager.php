@@ -7,16 +7,18 @@ use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentity;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
 
 class AltaresManager
 {
-    const RESOURCE_COMPANY_SCORE     = 'get_score_altares';
-    const RESOURCE_BALANCE_SHEET     = 'get_balance_sheet_altares';
-    const RESOURCE_COMPANY_IDENTITY  = 'get_company_identity_altares';
-    const RESOURCE_FINANCIAL_SUMMARY = 'get_financial_summary_altares';
-    const RESOURCE_MANAGEMENT_LINE   = 'get_balance_management_line_altares';
+    const RESOURCE_COMPANY_SCORE          = 'get_score_altares';
+    const RESOURCE_BALANCE_SHEET          = 'get_balance_sheet_altares';
+    const RESOURCE_COMPANY_IDENTITY       = 'get_company_identity_altares';
+    const RESOURCE_ESTABLISHMENT_IDENTITY = 'get_establishment_identity_altares';
+    const RESOURCE_FINANCIAL_SUMMARY      = 'get_financial_summary_altares';
+    const RESOURCE_MANAGEMENT_LINE        = 'get_balance_management_line_altares';
 
     /** @var string */
     private $login;
@@ -34,7 +36,7 @@ class AltaresManager
     private $serializer;
     /** @var boolean */
     private $monitoring;
-    /** @var  ResourceManager */
+    /** @var ResourceManager */
     private $resourceManager;
 
     /**
@@ -104,6 +106,20 @@ class AltaresManager
     {
         if (null !== ($response = $this->identitySoapCall(self::RESOURCE_COMPANY_IDENTITY, ['sirenRna' => $siren]))) {
             return $this->serializer->deserialize(json_encode($response), CompanyIdentity::class, 'json');
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $siren
+     * @return null|EstablishmentIdentity
+     * @throws \Exception
+     */
+    public function getEstablishmentIdentity($siren)
+    {
+        if (null !== ($response = $this->identitySoapCall(self::RESOURCE_ESTABLISHMENT_IDENTITY, ['sirenSiret' => $siren]))) {
+            return $this->serializer->deserialize(json_encode($response), EstablishmentIdentity::class, 'json');
         }
 
         return null;
@@ -247,6 +263,8 @@ class AltaresManager
         switch ($action) {
             case 'getIdentiteAltaN3Entreprise':
                 return 'sirenRna';
+            case 'getIdentiteAltaN3Etablissement':
+                return 'sirenSiret';
             default:
                 return 'siren';
         }

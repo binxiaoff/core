@@ -9,6 +9,7 @@ class simulationController extends bootstrap
         'get_incident_list_codinf'            => 'getIncidentList',
         'get_score_altares'                   => 'getScore',
         'get_company_identity_altares'        => 'getCompanyIdentity',
+        'get_establishment_identity_altares'  => 'getEstablishmentIdentity',
         'get_balance_sheet_altares'           => 'getBalanceSheets',
         'get_financial_summary_altares'       => 'getFinancialSummary',
         'get_balance_management_line_altares' => 'getBalanceManagementLine',
