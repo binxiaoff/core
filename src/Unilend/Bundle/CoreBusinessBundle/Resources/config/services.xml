@@ -129,6 +129,10 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>
             <argument type="service" id="unilend.frontbundle.service.source_manager"/>
+            <argument type="service" id="unilend.service.company_finance_check"/>
+            <argument type="service" id="unilend.service.company_scoring_check"/>
+            <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
