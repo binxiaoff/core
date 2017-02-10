@@ -415,12 +415,13 @@
         </table>
         <h2>Etape 2</h2>
         <table class="form" style="margin: auto;">
+            <input type="hidden" value="<?= $this->currentBankAccount->getId() ?>" name="id_bank_account" id="id_bank_account">
             <tr>
                 <th><label for="bic">BIC :</label></th>
-                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->lenders_accounts->bic ?>"/></td>
+                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->currentBankAccount->getBic() ?>"/></td>
             </tr>
             <tr>
-                <th style="text-align: right; vertical-align: top; padding: 5px 0px 10px 5px;><label for="iban1">IBAN :</label></th>
+                <th style="text-align: right; vertical-align: top; padding: 5px 0px 10px 5px;"><label for="iban1">IBAN :</label></th>
                 <td style="padding: 0 0 10px 0;">
                     <table>
                         <tr>
@@ -1105,6 +1106,7 @@
             iban5: $('#iban5').val(),
             iban6: $('#iban6').val(),
             iban7: $('#iban7').val(),
+            id_bank_account: $('#id_bank_account').val(),
             id_client: "<?= $this->clients->id_client ?>"
         };
 
