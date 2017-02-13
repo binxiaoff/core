@@ -24,8 +24,6 @@ class dossiersController extends bootstrap
     protected $companies_bilans;
     /** @var \clients_adresses */
     protected $clients_adresses;
-    /** @var \projects_comments */
-    protected $projects_comments;
     /** @var \projects_pouvoir */
     protected $projects_pouvoir;
     /** @var \notifications */
@@ -116,7 +114,6 @@ class dossiersController extends bootstrap
         $this->companies_bilans              = $this->loadData('companies_bilans');
         $this->clients                       = $this->loadData('clients');
         $this->clients_adresses              = $this->loadData('clients_adresses');
-        $this->projects_comments             = $this->loadData('projects_comments');
         $this->loans                         = $this->loadData('loans');
         $this->projects_pouvoir              = $this->loadData('projects_pouvoir');
         $this->lenders_accounts              = $this->loadData('lenders_accounts');
@@ -243,7 +240,7 @@ class dossiersController extends bootstrap
             $this->aAnalysts            = $this->users->select('(status = 1 AND id_user_type = 2) OR id_user = ' . $this->projects->id_analyste);
             $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = ' . $this->projects->id_commercial);
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_user > 0 AND id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC');
-            $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added DESC');
+            $this->projectComments      = $this->loadData('projects_comments')->select('id_project = ' . $this->projects->id_project, 'added DESC');
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager   = $this->get('unilend.service.project_status_manager');
@@ -1425,18 +1422,108 @@ class dossiersController extends bootstrap
         }
     }
 
-    public function _addMemo()
+    public function _memo()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->hideDecoration();
 
-        // Chargement des datas
-        $this->projects_comments = $this->loadData('projects_comments');
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case 'POST':
+                $this->editMemo();
+                break;
+            case 'DELETE':
+                $this->deleteMemo();
+                break;
+            case 'GET':
+            default:
+                $this->listMemo();
+                break;
+        }
+    }
 
-        if (isset($this->params[0]) && isset($this->params[1]) && $this->projects_comments->get($this->params[1], 'id_project_comment')) {
-            $this->type = 'edit';
+    private function listMemo()
+    {
+        /** @var \projects_comments $projectComments */
+        $projectComments = $this->loadData('projects_comments');
+
+        if (
+            isset($this->params[0], $this->params[1])
+            && $projectComments->get($this->params[1], 'id_project_comment')
+            && $projectComments->id_project == $this->params[0]
+        ) {
+            $this->type    = 'edit';
+            $this->content = $projectComments->content;
         } else {
-            $this->type = 'add';
+            $this->type    = 'add';
+            $this->content = '';
+        }
+
+        $this->setView('memo/edit');
+    }
+
+    private function editMemo()
+    {
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
+        /** @var \projects_comments $projectComments */
+        $projectComments = $this->loadData('projects_comments');
+
+        if (
+            isset($_POST['projectId'], $_POST['content'])
+            && filter_var($_POST['projectId'], FILTER_VALIDATE_INT)
+            && ($content = filter_var($_POST['content'], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES))
+            && $project->get($_POST['projectId'])
+        ) {
+            if (isset($_POST['commentId']) && $projectComments->get($_POST['commentId'])) {
+                if ($projectComments->id_user == $_SESSION['user']['id_user']) {
+                    $projectComments->content = $content;
+                    $projectComments->update();
+                }
+            } else {
+                $projectComments->id_project = $project->id_project;
+                $projectComments->content    = $content;
+                $projectComments->id_user    = $_SESSION['user']['id_user'];
+                $projectComments->create();
+            }
+        }
+
+        $this->projectComments = $projectComments->select('id_project = ' . $_POST['projectId'], 'added DESC');
+
+        $this->setView('memo/list');
+    }
+
+    private function deleteMemo()
+    {
+        $this->autoFireView = false;
+
+        header('Content-Type: application/json');
+
+        /** @var \projects_comments $projectComments */
+        $projectComments = $this->loadData('projects_comments');
+
+        if (
+            isset($this->params[0], $this->params[1])
+            && $projectComments->get($this->params[1], 'id_project_comment')
+            && $projectComments->id_project == $this->params[0]
+            && $projectComments->id_user == $_SESSION['user']['id_user']
+        ) {
+            $projectComments->delete($this->params[1], 'id_project_comment');
+
+            echo json_encode([
+                'success' => true
+            ]);
+        } else {
+            if ($projectComments->id_project != $this->params[0]) {
+                $error = 'Le mémo n\'appartient pas à ce projet';
+            } elseif ($projectComments->id_user != $_SESSION['user']['id_user']) {
+                $error = 'Vous ne disposez pas des droits pour supprimer ce mémo';
+            } else {
+                $error = 'Erreur inconnue';
+            }
+
+            echo json_encode([
+                'error'   => true,
+                'message' => $error
+            ]);
         }
     }
 

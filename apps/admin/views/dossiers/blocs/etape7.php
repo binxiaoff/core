@@ -29,7 +29,7 @@
         }
         ?>
         <div class="tab_title" id="title_etape7">Etape 7</div>
-        <div class="tab_content" id="etape7">
+        <div class="tab_content<?php if (\users_types::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape7">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>
                     <th><label for="performance_fianciere_comite">Performance financière</label></th>

@@ -16,13 +16,13 @@ class ProjectRequestManager
     private $projectManager;
     /** @var SourceManager */
     private $sourceManager;
-    /** @var  CompanyFinanceCheck */
+    /** @var CompanyFinanceCheck */
     private $companyFinanceCheck;
-    /** @var  CompanyScoringCheck */
+    /** @var CompanyScoringCheck */
     private $companyScoringCheck;
-    /** @var  CompanyBalanceSheetManager */
+    /** @var CompanyBalanceSheetManager */
     private $companyBalanceSheetManager;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
 
     /**
@@ -32,7 +32,7 @@ class ProjectRequestManager
      * @param SourceManager              $sourceManager
      * @param CompanyFinanceCheck        $companyFinanceCheck
      * @param CompanyScoringCheck        $companyScoringCheck
-     * @param CompanyBalanceSheetManager $companyBalanceSheetManager ,
+     * @param CompanyBalanceSheetManager $companyBalanceSheetManager
      * @param LoggerInterface            $logger
      */
     public function __construct(EntityManager $entityManager, ProjectManager $projectManager, SourceManager $sourceManager, CompanyFinanceCheck $companyFinanceCheck, CompanyScoringCheck $companyScoringCheck, CompanyBalanceSheetManager $companyBalanceSheetManager, LoggerInterface $logger)

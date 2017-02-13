@@ -32,6 +32,10 @@
         padding: 10px;
     }
 
+    .tab_content.expand {
+        display: block;
+    }
+
     .tab_content .btnDroite {
         margin: 10px 0 0 0;
     }
@@ -896,59 +900,23 @@
 
     <br/><br/>
 
-    <h2>Mémos</h2>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/dossiers/export/<?= $this->projects->id_project ?>" class="btn_link">CSV données financières</a>
-        <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a>
-    </div>
-        <div id="table_memo">
-            <?php if (count($this->lProjects_comments) > 0) : ?>
-            <table class="tablesorter">
-                <thead>
-                    <tr>
-                        <th width="120" align="center">Date ajout</th>
-                        <th align="center">Contenu</th>
-                        <th width="50" align="center">&nbsp;</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php $i = 1; ?>
-                <?php foreach ($this->lProjects_comments as $p) : ?>
-                    <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td align="center"><?= $this->dates->formatDate($p['added'], 'd/m/Y H:i:s') ?></td>
-                        <td><?= nl2br($p['content']) ?></td>
-                        <td align="center">
-                            <a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $p['id_project'] ?>/<?= $p['id_project_comment'] ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>
-                            <img style="cursor:pointer;" onclick="deleteMemo(<?= $p['id_project_comment'] ?>,<?= $p['id_project'] ?>);" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-            <?php endif; ?>
-        </div>
-        <br/>
-    <br/><br/>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $this->projects->id_project ?>" class="btn_link thickbox">Ajouter un mémo</a></div>
-
-    <div id="lesEtapes">
-        <?php $this->fireView('blocs/email'); ?>
-        <?php $this->fireView('blocs/etape2'); ?>
-        <?php $this->fireView('blocs/etape3'); ?>
-        <?php $this->fireView('blocs/etape4_1'); ?>
-        <?php $this->fireView('blocs/etape4_2'); ?>
-        <?php
-        $formTypes = array_column($this->aBalanceSheets, 'form_type', 'form_type');
-        if (1 === count($formTypes)
-            && array_values($formTypes)[0] == company_tax_form_type::FORM_2033) {
-            $this->fireView('blocs/etape4_3');
-        }
-        ?>
-        <?php $this->fireView('blocs/etape4_4'); ?>
-        <?php $this->fireView('blocs/etape5'); ?>
-        <?php $this->fireView('blocs/etape6'); ?>
-        <?php $this->fireView('blocs/etape7'); ?>
-    </div>
+    <?php $this->fireView('blocs/memos'); ?>
+    <?php $this->fireView('blocs/email'); ?>
+    <?php $this->fireView('blocs/etape2'); ?>
+    <?php $this->fireView('blocs/etape3'); ?>
+    <?php $this->fireView('blocs/etape4_1'); ?>
+    <?php $this->fireView('blocs/etape4_2'); ?>
+    <?php
+    $formTypes = array_column($this->aBalanceSheets, 'form_type', 'form_type');
+    if (1 === count($formTypes)
+        && array_values($formTypes)[0] == company_tax_form_type::FORM_2033) {
+        $this->fireView('blocs/etape4_3');
+    }
+    ?>
+    <?php $this->fireView('blocs/etape4_4'); ?>
+    <?php $this->fireView('blocs/etape5'); ?>
+    <?php $this->fireView('blocs/etape6'); ?>
+    <?php $this->fireView('blocs/etape7'); ?>
 </div>
 <script>
     $("#dossier_resume").submit(function (event) {

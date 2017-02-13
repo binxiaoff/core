@@ -244,32 +244,56 @@ function activeUserZone(id_user, id_zone, zone) {
     xhr_object.send(null);
 }
 
-function addMemo(id, type) {
-    var content_memo = $('#content_memo').val();
-    var val = {content_memo: content_memo, id: id, type: type};
-    $.post(add_url + '/ajax/addMemo', val).done(function (data) {
-        $("#table_memo").html(data);
+function editMemo(projectId, commentId) {
+    $.ajax({
+        url: add_url + '/dossiers/memo',
+        method: 'POST',
+        dataType: 'html',
+        data: {
+            projectId: projectId,
+            commentId: commentId,
+            content: $('#content_memo').val()
+        },
+        success: function(response) {
+            $('#table_memo').html(response)
+            $.fn.colorbox.close()
+        }
     });
 }
 
-function deleteMemo(id_project_comment, id_project) {
-    if (confirm('Etes vous sur de vouloir supprimer ?') == true) {
-        var memoRows = $("#table_memo .tablesorter tbody tr");
-        var targetedMemoRow = event.target;
-        var val = {id_project_comment: id_project_comment, id_project: id_project};
-        $.post(add_url + '/ajax/deleteMemo', val).done(function() {
-            if(memoRows.length == 1) {
-                 $("#table_memo *").remove();
+function deleteMemo(projectId, commentId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer le mémo ?')) {
+        var memoRows = $('#table_memo .tablesorter tbody tr'),
+            targetedMemoRow = event.target
+
+        $.ajax({
+            url: add_url + '/dossiers/memo/' + projectId + '/' + commentId,
+            method: 'DELETE',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success != undefined && response.success) {
+                    if (memoRows.length == 1) {
+                        $('#table_memo *').remove()
+                    } else {
+                        $(targetedMemoRow).closest('tr').remove()
+                    }
+                } else {
+                    if (response.error != undefined && response.error) {
+                        if (response.message != undefined) {
+                            alert(response.message)
+                        } else {
+                            alert('Erreur inconnue')
+                        }
+                    }
+                }
             }
-            else {
-                $(targetedMemoRow).closest("tr").remove();
-            }
-        });
+        })
     }
 }
 
 function valid_etape1(id_project) {
     $("#dossier_etape1").find(".btn_link").hide();
+
     var val = {
         montant_etape1: $("#montant_etape1").val(),
         duree_etape1: $("#duree_etape1").val(),
@@ -278,6 +302,7 @@ function valid_etape1(id_project) {
         id_project: id_project,
         etape: 1
     };
+
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         if ('OK' == data) {
             $(location).attr('href', add_url + '/dossiers/edit/' + id_project);

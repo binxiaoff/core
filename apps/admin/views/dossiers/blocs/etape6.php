@@ -5,7 +5,7 @@
     ) : ?>
         <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
         <div class="tab_title" id="title_etape6">Etape 6</div>
-        <div class="tab_content" id="etape6">
+        <div class="tab_content<?php if (\users_types::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape6">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>
                     <th><label for="performance_fianciere">Performance financière</label></th>

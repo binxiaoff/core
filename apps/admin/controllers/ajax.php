@@ -212,40 +212,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _addMemo()
-    {
-        $this->autoFireView = true;
-
-        if (isset($_POST['content_memo']) && isset($_POST['id']) && isset($_POST['type'])) {
-            $this->projects_comments = $this->loadData('projects_comments');
-
-            if ($_POST['type'] == 'edit') {
-                $this->projects_comments->get($_POST['id'], 'id_project_comment');
-                $this->projects_comments->content = $_POST['content_memo'];
-                $this->projects_comments->update();
-                $this->lProjects_comments = $this->projects_comments->select('id_project = ' . $this->projects_comments->id_project, 'added ASC');
-            } else {
-                $this->projects_comments->id_project = $_POST['id'];
-                $this->projects_comments->content    = $_POST['content_memo'];
-                $this->projects_comments->status     = 1;
-                $this->projects_comments->create();
-                $this->lProjects_comments = $this->projects_comments->select('id_project = ' . $_POST['id'], 'added ASC');
-            }
-        }
-    }
-
-    public function _deleteMemo()
-    {
-        $this->autoFireView = false;
-
-        if (isset($_POST['id_project_comment']) && isset($_POST['id_project'])) {
-            $this->projects_comments = $this->loadData('projects_comments');
-            $this->projects_comments->delete($_POST['id_project_comment'], 'id_project_comment');
-
-            $this->lProjects_comments = $this->projects_comments->select('id_project = ' . $_POST['id_project'], 'added ASC');
-        }
-    }
-
     public function _valid_etapes()
     {
         $this->autoFireView = false;

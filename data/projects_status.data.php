@@ -2,8 +2,8 @@
 
 class projects_status extends projects_status_crud
 {
-    const NOT_ELIGIBLE               = 1;
-    const IMPOSSIBLE_AUTO_EVALUATION = 2;
+    const IMPOSSIBLE_AUTO_EVALUATION = 1;
+    const NOT_ELIGIBLE               = 2;
     const INCOMPLETE_REQUEST         = 5;
     const COMPLETE_REQUEST           = 10;
     const ABANDONED                  = 15;
