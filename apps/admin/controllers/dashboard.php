@@ -209,7 +209,19 @@ class dashboardController extends bootstrap
         // @todo re-evaluate projects in status \projects_status::IMPOSSIBLE_AUTO_EVALUATION (DEV-1198)
         /** @var \projects $project */
         $project  = $this->loadData('projects');
+        /** @var \companies $company */
+        $company  = $this->loadData('companies');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $projects = $project->getImpossibleEvaluationProjects();
+
+        if (is_array($projects)) {
+            foreach ($projects as $p) {
+                $project->get($p['id_project']);
+                $company->get($project->id_company);
+                $projectRequestManager->checkProjectRisk($company, $project, $_SESSION['user']['id_user']);
+            }
+        }
 
         header('Location: ' . $this->lurl . '/dashboard');
         die;

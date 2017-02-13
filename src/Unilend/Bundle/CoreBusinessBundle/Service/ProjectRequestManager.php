@@ -187,9 +187,7 @@ class ProjectRequestManager
         $balanceSheetList = $this->companyFinanceCheck->getBalanceSheets($company->siren);
 
         if (null !== $balanceSheetList) {
-            /** @var CompanyBalanceSheetManager $companyBalanceSheetManager */
-            $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
-            $companyBalanceSheetManager->setCompanyBalance($company, $project, $balanceSheetList);
+            $this->companyBalanceSheetManager->setCompanyBalance($company, $project, $balanceSheetList);
         }
 
         if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
