@@ -7,18 +7,15 @@ class --classe-- extends --classe--_crud
         parent::--table--($bdd, $params);
     }
 
-    public function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $offset = '', $limit = '')
     {
-        if ($where != '') {
-            $where = ' WHERE ' . $where;
-        }
-
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
+        $query = 'SELECT * FROM --table--' .
+            (empty($where) ? '' : ' WHERE ' . $where) .
+            (empty($order) ? '' : ' ORDER BY ' . $order) .
+            (empty($limit) ? '' : ' LIMIT ' . $limit) .
+            (empty($offset) ? '' : ' OFFSET ' . $offset);
 
         $result    = [];
-        $query     = 'SELECT * FROM --table--' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $statement = $this->bdd->query($query);
         while ($record = $this->bdd->fetch_assoc($statement)) {
             $result[] = $record;
@@ -32,8 +29,8 @@ class --classe-- extends --classe--_crud
             $where = ' WHERE ' . $where;
         }
 
-        $result = $this->bdd->query('SELECT COUNT(*) FROM --table-- ' . $where);
-        return (int) $this->bdd->result($result);
+        $statement = $this->bdd->query('SELECT COUNT(*) FROM --table-- ' . $where);
+        return (int) $this->bdd->result($statement);
     }
 
     public function exist($fields)
@@ -43,7 +40,7 @@ class --classe-- extends --classe--_crud
             $list .= ' AND ' . $field . ' = "' . $value . '" ';
         }
 
-        $result = $this->bdd->query('SELECT * FROM --table-- WHERE 1 = 1' . $list);
-        return ($this->bdd->fetch_assoc($result) > 0);
+        $statement = $this->bdd->query('SELECT * FROM --table-- WHERE 1 = 1' . $list);
+        return $this->bdd->fetch_assoc($statement) > 0;
     }
 }
