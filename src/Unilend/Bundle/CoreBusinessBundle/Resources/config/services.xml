@@ -264,7 +264,6 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.wallet_manager"/>
             <argument type="service" id="unilend.service.tax_manager"/>
-            <argument type="service" id="unilend.service.borrower_manager"/>
         </service>
 
         <service id="unilend.service.wallet_creation_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WalletCreationManager">

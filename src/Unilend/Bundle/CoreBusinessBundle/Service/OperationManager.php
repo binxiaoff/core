@@ -41,10 +41,6 @@ class OperationManager
      * @var TaxManager
      */
     private $taxManager;
-    /**
-     * @var BorrowerManager
-     */
-    private $borrowerManager;
 
     /**
      * OperationManager constructor.
@@ -53,15 +49,13 @@ class OperationManager
      * @param EntityManagerSimulator $entityManager
      * @param WalletManager          $walletManager
      * @param TaxManager             $taxManager
-     * @param BorrowerManager        $borrowerManager
      */
-    public function __construct(EntityManager $em, EntityManagerSimulator $entityManager, WalletManager $walletManager, TaxManager $taxManager, BorrowerManager $borrowerManager)
+    public function __construct(EntityManager $em, EntityManagerSimulator $entityManager, WalletManager $walletManager, TaxManager $taxManager)
     {
         $this->entityManager   = $entityManager;
         $this->em              = $em;
         $this->walletManager   = $walletManager;
         $this->taxManager      = $taxManager;
-        $this->borrowerManager = $borrowerManager;
     }
 
     /**
