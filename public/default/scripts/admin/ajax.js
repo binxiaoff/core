@@ -312,8 +312,6 @@ function valid_etape1(id_project) {
         $("#montant").val($("#montant_etape1").val());
         $('#duree option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
 
-        $("#montant_etape3").val($("#montant_etape1").val());
-        $('#duree_etape3 option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
         $("#dossier_etape1").find(".btn_link").show();
         $("#valid_etape1").html(data);
         $("#valid_etape1").slideDown();
@@ -410,9 +408,6 @@ function valid_etape2(id_project) {
 
 function valid_etape3(id_project) {
     var val = {
-        montant_etape3:      $("#montant_etape3").val(),
-        duree_etape3:        $("#duree_etape3").val(),
-        titre_etape3:        $("#titre_etape3").val(),
         objectif_etape3:     $("#objectif_etape3").val(),
         presentation_etape3: $("#presentation_etape3").val(),
         moyen_etape3:        $("#moyen_etape3").val(),
@@ -422,11 +417,6 @@ function valid_etape3(id_project) {
     };
 
     $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
-        $("#montant").val($("#montant_etape3").val());
-        $("#montant_etape1").val($("#montant_etape3").val());
-        $('#duree option[value="' + $("#duree_etape3").val() + '"]').prop('selected', true);
-        $('#duree_etape1 option[value="' + $("#duree_etape3").val() + '"]').prop('selected', true);
-        $("#title").val($("#titre_etape3").val());
         $("#valid_etape3").slideDown();
 
         setTimeout(function () {

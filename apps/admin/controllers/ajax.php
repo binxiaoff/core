@@ -254,20 +254,22 @@ class ajaxController extends bootstrap
             } elseif ($_POST['etape'] == 2) {
                 $this->projects->get($_POST['id_project'], 'id_project');
                 $this->projects->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
-                $this->projects->balance_count   = empty($this->projects->balance_count) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $this->projects->balance_count;
+                $this->projects->balance_count   = empty($this->projects->balance_count) && false === empty($_POST['creation_date_etape2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $this->projects->balance_count;
                 $this->projects->update();
 
                 $this->companies->get($this->projects->id_company, 'id_company');
                 $this->companies->name                          = $_POST['raison_sociale_etape2'];
                 $this->companies->forme                         = $_POST['forme_juridique_etape2'];
                 $this->companies->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
-                $this->companies->date_creation                 = \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->format('Y-m-d');
+                $this->companies->date_creation                 = empty($_POST['creation_date_etape2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->format('Y-m-d');
                 $this->companies->adresse1                      = $_POST['address_etape2'];
                 $this->companies->city                          = $_POST['ville_etape2'];
                 $this->companies->zip                           = $_POST['postal_etape2'];
                 $this->companies->phone                         = $_POST['phone_etape2'];
                 $this->companies->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
                 $this->companies->status_client                 = $_POST['enterprise_etape2'];
+                $this->companies->latitude                      = (float) str_replace(',', '.', $_POST['latitude']);
+                $this->companies->longitude                     = (float) str_replace(',', '.', $_POST['longitude']);
                 $this->companies->update();
 
                 $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
@@ -297,9 +299,6 @@ class ajaxController extends bootstrap
                 /** @var projects $oProject */
                 $oProject = $this->loadData('projects');
                 $oProject->get($_POST['id_project'], 'id_project');
-                $oProject->amount               = $this->ficelle->cleanFormatedNumber($_POST['montant_etape3']);
-                $oProject->period               = $_POST['duree_etape3'];
-                $oProject->title                = $_POST['titre_etape3'];
                 $oProject->objectif_loan        = $_POST['objectif_etape3'];
                 $oProject->presentation_company = $_POST['presentation_etape3'];
                 $oProject->means_repayment      = $_POST['moyen_etape3'];

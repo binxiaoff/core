@@ -24,22 +24,32 @@
 
         $('#quick_search').submit(function(event) {
             var form = $(this),
-                project = form.children('[name=project]').val(),
+                siren = form.children('[name=siren]').val(),
+                projectName = form.children('[name=projectName]').val(),
+                projectId = form.children('[name=projectId]').val(),
                 lender = form.children('[name=lender]').val()
 
-            if ('' != project && project == parseInt(project)) {
+            if ('' != projectName) {
+                form.attr('action', '/dossiers')
+                form.append('<input type="hidden" name="form_search_dossier" value="1" />')
+                form.append('<input type="hidden" name="raison-sociale" value="' + projectName + '" />')
+                return
+            }
+
+            if ('' != siren) {
+                form.attr('action', '/dossiers')
+                form.append('<input type="hidden" name="form_search_dossier" value="1" />')
+                form.append('<input type="hidden" name="siren" value="' + siren + '" />')
+                return
+            }
+
+            if ('' != projectId && projectId == parseInt(projectId)) {
                 event.preventDefault();
-                window.location.replace('/dossiers/edit/' + project)
+                window.location.replace('/dossiers/edit/' + projectId)
                 return
             }
 
             if ('' != lender && lender == parseInt(lender)) {
-                console.log('lender')
-                var input = document.createElement('input')
-                    input.type  = 'text'
-                    input.name  = 'id'
-                    input.value = lender
-
                 form.attr('action', '/preteurs/gestion')
                 form.append('<input type="hidden" name="form_search_preteur" value="1" />')
                 form.append('<input type="hidden" name="id" value="' + lender + '" />')
@@ -64,12 +74,17 @@
                 <?= $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] ?>
             </a>
             &nbsp;&nbsp;|&nbsp;&nbsp;
-            <?= date('d/m/Y') ?>&nbsp;&nbsp;|&nbsp;&nbsp;
             <a href="<?= $this->lurl ?>/logout" title="Se déconnecter"><strong>Se déconnecter</strong></a>
         </div>
         <form id="quick_search" method="post">
-            <input type="text" name="project" title="ID projet" placeholder="ID projet" size="10" />
-            <input type="text" name="lender" title="ID client" placeholder="ID client" size="10" />
+            <?php if (in_array('emprunteurs', $this->lZonesHeader)) : ?>
+                <input type="text" name="projectName" title="Raison sociale" placeholder="Raison sociale" size="20" />
+                <input type="text" name="siren" title="SIREN" placeholder="SIREN" size="10" />
+                <input type="text" name="projectId" title="ID projet" placeholder="ID projet" size="10" />
+            <?php endif; ?>
+            <?php if (in_array('preteurs', $this->lZonesHeader)) : ?>
+                <input type="text" name="lender" title="ID client" placeholder="ID client" size="10" />
+            <?php endif; ?>
             <!-- Trick for enabling submitting form in Safari and IE -->
             <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" />
         </form>

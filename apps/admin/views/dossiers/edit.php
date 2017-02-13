@@ -205,7 +205,7 @@
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <h1>Detail dossier<?php if (false === empty($this->projects->title)) : ?> : <?= $this->projects->title ?><?php endif; ?></h1>
+    <?php if (false === empty($this->projects->title)) : ?> : <h1><?= $this->projects->title ?></h1><?php endif; ?>
     <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="resume">
             <div class="gauche">
@@ -213,139 +213,91 @@
                 <table class="form" style="width: 580px;">
                     <?php if ($this->projects->status >= \projects_status::A_FUNDER) : ?>
                     <tr>
-                        <th>Lien projet :</th>
+                        <th>Lien projet</th>
                         <td><a href="<?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?>" target="_blank"><?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?></a></td>
                     </tr>
                     <?php endif; ?>
                     <tr>
-                        <th>Date de la demande :</th>
+                        <th>Date de la demande</th>
                         <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y') ?></td>
                     </tr>
                     <tr>
-                        <th>Source :</th>
+                        <th>Source</th>
                         <td><?= $this->clients->source ?></td>
                     </tr>
                     <tr>
-                        <th>Slug origine :</th>
+                        <th>Slug origine</th>
                         <td><?= $this->clients->slug_origine ?></td>
                     </tr>
                     <tr>
-                        <th><label for="siren">SIREN :</label></th>
-                        <td>
-                        <?php if ($this->projects->create_bo == 1) { ?>
-                            <input type="text" name="siren" id="siren" class="input_large" value="<?= $this->companies->siren ?>">
-                        <?php } else { ?>
-                            <input type="hidden" name="siren" id="siren"value="<?= $this->companies->siren ?>">
-                            <?= $this->companies->siren ?>
-                        <?php } ?>
-                        </td>
+                        <th><label for="siren">SIREN</label></th>
+                        <td><?= $this->companies->siren ?></td>
                     </tr>
                     <tr>
-                        <th><label for="siret">SIRET :</label></th>
-                        <td>
-                            <input type="text" name="siret" id="siret" class="input_large" value="<?= $this->companies->siret ?>"/>
-                        </td>
+                        <th><label for="siret">SIRET</label></th>
+                        <td><?= empty($this->companies->siret) ? '-' : $this->companies->siret ?></td>
                     </tr>
                     <tr>
-                        <th><label for="code_naf">Code NAF :</label></th>
-                        <td>
-                            <input type="text" name="code_naf" id="code_naf" class="input_large" value="<?= $this->companies->code_naf ?>"/>
-                        </td>
+                        <th><label for="code_naf">Code NAF</label></th>
+                        <td><?= empty($this->companies->code_naf) ? '-' : $this->companies->code_naf ?></td>
                     </tr>
                     <tr>
-                        <th><label for="libelle_naf">Libellé NAF :</label></th>
-                        <td>
-                            <input type="text" name="libelle_naf" id="libelle_naf" class="input_large" value="<?= $this->companies->libelle_naf ?>"/>
-                        </td>
+                        <th><label for="libelle_naf">Libellé NAF</label></th>
+                        <td><?= empty($this->companies->libelle_naf) ? '-' : $this->companies->libelle_naf ?></td>
                     </tr>
                     <tr>
-                        <th><label for="title_bo">Titre du projet :</label></th>
+                        <th><label for="title_bo">Titre du projet</label></th>
                         <td>
                             <input type="text" name="title_bo" id="title_bo" class="input_large" value="<?= $this->projects->title_bo ?>"/>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="societe">Nom société :</label></th>
+                        <th><label for="societe">Nom société</label></th>
                         <td>
                             <input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"/>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="title">Titre du projet FO :</label></th>
+                        <th><label for="title">Titre du projet FO</label></th>
                         <td>
                             <input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"/>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="sector">Secteur de la société :</label></th>
+                        <th><label for="sector">Secteur de la société</label></th>
                         <td>
-                            <?= $this->translator->trans('company-sector_sector-' . $this->companies->sector) ?>
+                            <?= $this->companies->sector > 0 ? $this->translator->trans('company-sector_sector-' . $this->companies->sector) : '-' ?>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="tribunal_com">Tribunal de commerce :</label></th>
+                        <th><label for="tribunal_com">Tribunal de commerce</label></th>
                         <td>
                             <input type="text" name="tribunal_com" id="tribunal_com" class="input_large" value="<?= $this->companies->tribunal_com ?>"/>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="activite">Activité :</label></th>
+                        <th><label for="activite">Activité</label></th>
                         <td>
                             <input type="text" name="activite" id="activite" class="input_large" value="<?= $this->companies->activite ?>"/>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="lieu_exploi">Lieu exploitation :</label></th>
+                        <th><label for="lieu_exploi">Lieu exploitation</label></th>
                         <td>
                             <input type="text" name="lieu_exploi" id="lieu_exploi" class="input_large" value="<?= $this->companies->lieu_exploi ?>"/>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="nature_project">Nature du projet :</label></th>
+                        <th><label for="nature_project">Nature du projet</label></th>
 
                         <td>
                             <textarea class="textarea_lng" name="nature_project" id="nature_project" style="height: 100px;width: 427px;"><?= $this->projects->nature_project ?></textarea>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="photo_projet">Photo projet :</label></th>
+                        <th><label for="photo_projet">Photo projet</label></th>
                         <td><input type="file" name="photo_projet" id="photo_projet" /><br /><a target="_blank" href="<?= $this->surl ?>/images/dyn/projets/source/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a></td>
                     </tr>
-                </table>
-                <br><br>
-                <h2>Contact</h2>
-                <table class="form" style="width: 495px;">
-                    <tr>
-                        <th><label for="adresse">Adresse correspondance :</label></th>
-                        <td>
-                            <input type="text" name="adresse" id="adresse" class="input_large" value="<?= $this->adresse ?>"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="city">Ville correspondance :</label></th>
-                        <td><input type="text" name="city" id="city" class="input_large" value="<?= $this->city ?>"/></td>
-                    </tr>
-                    <tr>
-                        <th><label for="zip">Code postal correspondance :</label></th>
-                        <td><input type="text" name="zip" id="zip" class="input_court" value="<?= $this->zip ?>"/></td>
-                    </tr>
-                    <tr>
-                        <th><label for="phone">Téléphone correspondance :</label></th>
-                        <td><input type="text" name="phone" id="phone" class="input_moy" value="<?= $this->phone ?>"/></td>
-                    </tr>
-                    <tr>
-                        <th><label for="latitude">Latitude :</label></th>
-                        <td><input type="text" name="latitude" id="latitude" class="input_court" value="<?php if (false === empty($this->latitude)) : ?><?= $this->latitude ?><?php endif; ?>"/> N</td>
-                    </tr>
-                    <tr>
-                        <th><label for="longitude">Longitude :</label></th>
-                        <td><input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"/> E</td>
-                    </tr>
-                    <?php if (false === empty($this->latitude) && false === empty($this->longitude)) : ?>
-                        <tr>
-                            <td colspan="2"><a class="btn_link" target="_blank" href="http://maps.google.com/?q=<?= $this->latitude ?>,<?= $this->longitude ?>">Voir sur la carte</a></td>
-                        </tr>
-                    <?php endif; ?>
                 </table>
             </div>
             <div class="droite">
@@ -353,26 +305,26 @@
                 <table class="form" style="width: 575px;">
                     <?php if (isset($this->fPredictAutoBid) && false === empty($this->fPredictAutoBid)) : ?>
                     <tr>
-                        <th><label for="autobid_statistic"> AutoLend funding statistic :</label></th>
+                        <th><label for="autobid_statistic"> AutoLend funding statistic</label></th>
                         <td><?= $this->fPredictAutoBid ?> % </td>
                     </tr>
                     <?php endif; ?>
                     <?php if (isset($this->rate_min, $this->rate_max)) : ?>
                         <tr>
-                            <th><label for="project_rate"> Taux min / max :</label></th>
+                            <th><label for="project_rate"> Taux min / max</label></th>
                             <td><?= $this->rate_min ?> % - <?= $this->rate_max ?> %</td>
                         </tr>
 
                     <?php endif; ?>
                     <tr>
-                        <th><label for="montant">Montant du prêt* :</label></th>
+                        <th><label for="montant">Montant du prêt&nbsp;*</label></th>
                         <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> value="<?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>"/> €</td>
                     </tr>
                     <tr>
-                        <th><label for="duree">Durée du prêt* :</label></th>
+                        <th><label for="duree">Durée du prêt&nbsp;*</label></th>
                         <td>
                             <select name="duree" id="duree" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
-                                <option<?= (in_array($this->projects->period, array(0, 1000000)) ? ' selected' : '') ?> value="0">Je ne sais pas</option>
+                                <option<?= (in_array($this->projects->period, array(0, 1000000)) ? ' selected' : '') ?> value="0"></option>
                                 <?php foreach ($this->dureePossible as $duree) : ?>
                                     <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                                 <?php endforeach ?>
@@ -380,10 +332,10 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="motive">Motif de l'emprunt :</label></th>
+                        <th><label for="motive">Motif de l'emprunt</label></th>
                         <td>
                             <select name="motive" id="motive" class="select" style="width:160px;background-color:#AAACAC;">
-                                <option<?= (is_null($this->projects->id_borrowing_motive) ? ' selected' : '') ?> value="0">Non renseigné</option>
+                                <option<?= (is_null($this->projects->id_borrowing_motive) ? ' selected' : '') ?> value="0"></option>
                                 <?php foreach ($this->aBorrowingMotives as $motive) : ?>
                                     <option<?= ($this->projects->id_borrowing_motive == $motive['id_motive'] ? ' selected' : '') ?> value="<?= $motive['id_motive'] ?>"><?= $this->translator->trans('borrowing-motive_motive-' . $motive['id_motive']) ?> </option>
                                 <?php endforeach ?>
@@ -391,7 +343,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="need">Type de besoin :</label></th>
+                        <th><label for="need">Type de besoin</label></th>
                         <td>
                             <select name="need" id="need" class="select" style="width:160px;background-color:#AAACAC;">
                                 <option value="0"></option>
@@ -406,7 +358,7 @@
                         </td>
                     </tr>
                     <tr class="content_risk" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
-                        <th><label for="risk">Niveau de risque* :</label></th>
+                        <th><label for="risk">Niveau de risque&nbsp;*</label></th>
                         <td>
                             <?php
                                 switch ($this->projects->risk) {
@@ -444,7 +396,7 @@
                 <h2>Produit</h2>
                 <table class="form" style="width: 538px;">
                     <tr>
-                        <th><label for="assigned_product">Produit associé* :</label></th>
+                        <th><label for="assigned_product">Produit associé&nbsp;*</label></th>
                         <td>
                             <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
                                 <option value=""></option>
@@ -530,20 +482,7 @@
                 <h2>Actions</h2>
                 <table class="form" style="width: 538px;">
                     <tr>
-                        <th>Afficher projet :</th>
-                        <td>
-                            <input <?= ($this->projects->display == \projects::DISPLAY_PROJECT_ON ? 'checked' : '') ?> type="radio" name="display_project" id="oui_display_project" value="<?= \projects::DISPLAY_PROJECT_ON ?>"/>
-                            <label for="oui_display_project">Oui</label>
-                            <input <?= ($this->projects->display == \projects::DISPLAY_PROJECT_OFF ? 'checked' : '') ?> type="radio" name="display_project" id="non_display_project" value="<?= \projects::DISPLAY_PROJECT_OFF ?>"/>
-                            <label for="non_display_project">Non</label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>ID dossier :</th>
-                        <td><?= $this->projects->id_project ?></td>
-                    </tr>
-                    <tr>
-                        <th>ID emprunteur :</th>
+                        <th>ID emprunteur</th>
                         <td>
                             <?= $this->clients->id_client ?>
                             <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Éditer l'emprunteur" /></a>
@@ -551,7 +490,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="prenom">Prénom :</label></th>
+                        <th><label for="prenom">Prénom</label></th>
                         <td>
                             <input id="prenom" name="prenom" class="input_large" type="text" value="<?= $this->clients->prenom ?>">
                         </td>
@@ -560,14 +499,14 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="nom">Nom :</label></th>
+                        <th><label for="nom">Nom</label></th>
                         <td><input id="nom" name="nom" class="input_large" type="text" value="<?= $this->clients->nom ?>"></td>
                         <td class="align-right">
                             <a id="link_search" class="btn_link thickbox" onclick="$(this).attr('href', '<?= $this->lurl ?>/dossiers/changeClient/' + $('#search').val());" href="<?= $this->lurl ?>/dossiers/changeClient/">Rechercher</a>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="commercial">Commercial :</label></th>
+                        <th><label for="commercial">Commercial</label></th>
                         <td>
                             <select name="commercial" id="commercial" class="select">
                                 <option value="0">Choisir</option>
@@ -578,7 +517,7 @@
                         </td>
                     </tr>
                     <tr id="analysts-row"<?php if ($this->projects->status < \projects_status::PENDING_ANALYSIS && empty($this->projects->id_analyste)) { ?> style="display: none;"<?php } ?>>
-                        <th><label for="analyste">Analyste :</label></th>
+                        <th><label for="analyste">Analyste</label></th>
                         <td>
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Choisir</option>
@@ -589,7 +528,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="status">Statut :</label></th>
+                        <th><label for="status">Statut</label></th>
                         <td id="current_statut">
                             <input type="hidden" name="current_status" value="<?= $this->projects->status ?>"/>
                             <?php
@@ -653,7 +592,7 @@
                     </tr>
                     <?php if (in_array($this->projects->status, [\projects_status::NOT_ELIGIBLE, \projects_status::IMPOSSIBLE_AUTO_EVALUATION]) && false === empty($this->projects_status_history->content)) { ?>
                     <tr>
-                        <th><label for="status">Motif :</label></th>
+                        <th><label for="status">Motif</label></th>
                         <td><?= $this->rejectionReasonMessage ?></td>
                     </tr>
                     <?php } ?>
@@ -673,7 +612,7 @@
                         </tr>
                     <?php } ?>
                     <tr class="content_date_publicaion" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
-                        <th><label for="date_publication">Date de publication* :</label></th>
+                        <th><label for="date_publication">Date de publication*</label></th>
                         <td id="date_publication">
                             <?php
                             if (in_array($this->projects->status, array(\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
@@ -712,7 +651,7 @@
                         </td>
                     </tr>
                     <tr class="content_date_retrait" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
-                        <th><label for="date_retrait">Date de retrait* :</label></th>
+                        <th><label for="date_retrait">Date de retrait*</label></th>
                         <td id="date_retrait">
                             <?php
                             if (in_array($this->projects->status, array(\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
@@ -778,7 +717,7 @@
                     </tr>
                     <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) { ?>
                         <tr>
-                            <th><label for="pouvoir">Pouvoir :</label></th>
+                            <th><label for="pouvoir">Pouvoir</label></th>
                             <td>
                                 <div>
                                     <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
@@ -792,14 +731,14 @@
                         </tr>
                     <?php } elseif ($this->projects->status == \projects_status::FUNDE) { ?>
                         <tr>
-                            <th><label for="upload_pouvoir">Pouvoir :</label></th>
+                            <th><label for="upload_pouvoir">Pouvoir</label></th>
                             <td><input type="file" name="upload_pouvoir" id="upload_pouvoir"/></td>
                         </tr>
                     <?php } ?>
 
                     <?php if ($this->projects->status == \projects_status::FUNDE) : ?>
                         <tr>
-                            <th>Prêt refusé :</th>
+                            <th>Prêt refusé</th>
                             <td>
                                 <select name="pret_refuse" id="pret_refuse" class="select">
                                     <option value="0">Non</option>
@@ -809,13 +748,13 @@
                         </tr>
                         <?php if (empty($this->proxy) || $this->proxy['status'] != \projects_pouvoir::STATUS_VALIDATED) : ?>
                             <tr>
-                                <th>Pouvoir :</th>
+                                <th>Pouvoir</th>
                                 <td><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                             </tr>
                         <?php endif ?>
                         <?php if (empty($this->mandate) || $this->mandate['status'] != \clients_mandats::STATUS_SIGNED) : ?>
                             <tr>
-                                <th>Mandat :</th>
+                                <th>Mandat</th>
                                 <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                             </tr>
                         <?php endif ?>

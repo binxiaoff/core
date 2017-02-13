@@ -73,25 +73,23 @@ class dossiersController extends bootstrap
         $this->needs = $projectNeed->getTree();
 
         if (isset($_POST['form_search_dossier'])) {
-            if ($_POST['date1'] != '') {
-                $d1    = explode('/', $_POST['date1']);
-                $date1 = $d1[2] . '-' . $d1[1] . '-' . $d1[0];
-            } else {
-                $date1 = '';
-            }
-
-            if ($_POST['date2'] != '') {
-                $d2    = explode('/', $_POST['date2']);
-                $date2 = $d2[2] . '-' . $d2[1] . '-' . $d2[0];
-            } else {
-                $date2 = '';
-            }
-            $iNbStartPagination = (isset($_POST['nbLignePagination'])) ? (int) $_POST['nbLignePagination'] : 0;
-            $this->nb_lignes    = (isset($this->nb_lignes)) ? (int) $this->nb_lignes : 100;
-            $this->lProjects    = $this->projects->searchDossiers($date1, $date2, $_POST['projectNeed'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'], null, $_POST['commercial'], $iNbStartPagination, $this->nb_lignes);
+            $startDate          = empty($_POST['date1']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date1']);
+            $endDate            = empty($_POST['date2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date2']);
+            $projectNeed        = empty($_POST['projectNeed']) ? '' : $_POST['projectNeed'];
+            $duration           = empty($_POST['duree']) ? '' : $_POST['duree'];
+            $status             = empty($_POST['status']) ? '' : $_POST['status'];
+            $analyst            = empty($_POST['analyste']) ? '' : $_POST['analyste'];
+            $siren              = empty($_POST['siren']) ? '' : $_POST['siren'];
+            $projectId          = empty($_POST['id']) ? '' : $_POST['id'];
+            $companyName        = empty($_POST['raison-sociale']) ? '' : $_POST['raison-sociale'];
+            $commercial         = empty($_POST['commercial']) ? '' : $_POST['commercial'];
+            $iNbStartPagination = isset($_POST['nbLignePagination']) ? (int) $_POST['nbLignePagination'] : 0;
+            $this->nb_lignes    = isset($this->nb_lignes) ? (int) $this->nb_lignes : 100;
+            $this->lProjects    = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial, $iNbStartPagination, $this->nb_lignes);
         } elseif (isset($this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
+
         $this->iCountProjects = (isset($this->lProjects) && is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
 
         if (1 === $this->iCountProjects) {
@@ -219,18 +217,6 @@ class dossiersController extends bootstrap
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
                 $this->companies_prescripteurs->get($this->prescripteurs->id_entite, 'id_company');
                 $this->bHasAdvisor = true;
-            }
-
-            if ($this->companies->status_adresse_correspondance == 1) {
-                $this->adresse = $this->companies->adresse1;
-                $this->city    = $this->companies->city;
-                $this->zip     = $this->companies->zip;
-                $this->phone   = $this->companies->phone;
-            } else {
-                $this->adresse = $this->clients_adresses->adresse1;
-                $this->city    = $this->clients_adresses->ville;
-                $this->zip     = $this->clients_adresses->cp;
-                $this->phone   = $this->clients_adresses->telephone;
             }
 
             $this->latitude  = (float) $this->companies->latitude;
@@ -606,7 +592,6 @@ class dossiersController extends bootstrap
                     $this->projects->nature_project      = $_POST['nature_project'];
                     $this->projects->id_analyste         = $_POST['analyste'];
                     $this->projects->id_commercial       = $_POST['commercial'];
-                    $this->projects->display             = $_POST['display_project'];
                     $this->projects->id_project_need     = $_POST['need'];
                     $this->projects->id_borrowing_motive = $_POST['motive'];
 
@@ -666,7 +651,7 @@ class dossiersController extends bootstrap
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
                             }
                         } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
-                            if ($this->getParameter('kernel.environment') === 'prod' && $_POST['status'] == \projects_status::A_FUNDER) {
+                            if ($_POST['status'] == \projects_status::A_FUNDER) {
                                 $slackManager    = $this->container->get('unilend.service.slack_manager');
                                 $publicationDate = new DateTime($this->projects->date_publication);
                                 $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
@@ -677,13 +662,13 @@ class dossiersController extends bootstrap
 
                             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
-                            $companies        = $this->loadData('companies');
-                            $clients          = $this->loadData('clients');
-                            $clients_adresses = $this->loadData('clients_adresses');
+                            $companies = $this->loadData('companies');
+                            $clients   = $this->loadData('clients');
+                            $address   = $this->loadData('clients_adresses');
 
                             $companies->get($this->projects->id_company, 'id_company');
                             $clients->get($companies->id_client_owner, 'id_client');
-                            $clients_adresses->get($companies->id_client_owner, 'id_client');
+                            $address->get($companies->id_client_owner, 'id_client');
 
                             $mess = '<ul>';
 
@@ -741,13 +726,13 @@ class dossiersController extends bootstrap
                             if ($clients->email == '') {
                                 $mess .= '<li>Email emprunteur</li>';
                             }
-                            if ($clients_adresses->adresse1 == '') {
+                            if ($address->adresse1 == '') {
                                 $mess .= '<li>Adresse emprunteur</li>';
                             }
-                            if ($clients_adresses->cp == '') {
+                            if ($address->cp == '') {
                                 $mess .= '<li>CP emprunteur</li>';
                             }
-                            if ($clients_adresses->ville == '') {
+                            if ($address->ville == '') {
                                 $mess .= '<li>Ville emprunteur</li>';
                             }
 
@@ -779,7 +764,6 @@ class dossiersController extends bootstrap
                         }
                     }
 
-                    $this->companies->siren           = $_POST['siren'];
                     $this->companies->siret           = $_POST['siret'];
                     $this->companies->name            = $_POST['societe'];
                     $this->companies->id_client_owner = $_POST['id_client'];
@@ -788,20 +772,6 @@ class dossiersController extends bootstrap
                     $this->companies->tribunal_com    = $_POST['tribunal_com'];
                     $this->companies->activite        = $_POST['activite'];
                     $this->companies->lieu_exploi     = $_POST['lieu_exploi'];
-                    $this->companies->latitude        = (float) str_replace(',', '.', $_POST['latitude']);
-                    $this->companies->longitude       = (float) str_replace(',', '.', $_POST['longitude']);
-
-                    if ($this->companies->status_adresse_correspondance == 1) {
-                        $this->companies->adresse1 = $_POST['adresse'];
-                        $this->companies->city     = $_POST['city'];
-                        $this->companies->zip      = $_POST['zip'];
-                        $this->companies->phone    = $_POST['phone'];
-                    } else {
-                        $this->clients_adresses->adresse1  = $_POST['adresse'];
-                        $this->clients_adresses->ville     = $_POST['city'];
-                        $this->clients_adresses->cp        = $_POST['zip'];
-                        $this->clients_adresses->telephone = $_POST['phone'];
-                    }
 
                     $this->clients->get($this->companies->id_client_owner, 'id_client');
                     $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
@@ -810,7 +780,6 @@ class dossiersController extends bootstrap
                     $this->projects->update();
                     $this->companies->update();
                     $this->clients->update();
-                    $this->clients_adresses->update();
 
                     $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec succès';
 
@@ -2173,18 +2142,16 @@ class dossiersController extends bootstrap
 
                     $stopWatchEvent = $stopWatch->stop('repayment');
 
-                    if ($this->getParameter('kernel.environment') === 'prod') {
-                        /** @var users $user */
-                        $user = $this->get('unilend.service.entity_manager')->getRepository('users');
-                        $user->get($_SESSION['user']['id_user']);
+                    /** @var users $user */
+                    $user = $this->get('unilend.service.entity_manager')->getRepository('users');
+                    $user->get($_SESSION['user']['id_user']);
 
-                        $slackManager = $this->container->get('unilend.service.slack_manager');
-                        $message      = $slackManager->getProjectName($this->projects) .
-                            ' - Remboursement effectué par ' . trim($user->firstname . ' ' . $user->name) .
-                            ' en ' . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes  (' . $repaymentNb . ' prêts, échéance #' . $e['ordre'] . ')';
+                    $slackManager = $this->container->get('unilend.service.slack_manager');
+                    $message      = $slackManager->getProjectName($this->projects) .
+                        ' - Remboursement effectué par ' . trim($user->firstname . ' ' . $user->name) .
+                        ' en ' . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes  (' . $repaymentNb . ' prêts, échéance #' . $e['ordre'] . ')';
 
-                        $slackManager->sendMessage($message);
-                    }
+                    $slackManager->sendMessage($message);
                 } else {
                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
