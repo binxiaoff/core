@@ -1332,9 +1332,6 @@ class dossiersController extends bootstrap
         /** @var \companies_bilans $oAnnualAccounts */
         $oAnnualAccounts = $this->loadData('companies_bilans');
 
-        /** @var \company_balance $oCompanyBalance */
-        $oCompanyBalance = $this->loadData('company_balance');
-
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
 
@@ -1346,16 +1343,16 @@ class dossiersController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
 
-        $this->aRatings                 = $oCompanyRating->getHistoryRatingsByType($this->oProject->id_company_rating_history);
+        $this->ratings                 = $oCompanyRating->getHistoryRatingsByType($this->oProject->id_company_rating_history);
         $this->aAnnualAccounts          = $oAnnualAccounts->select('id_company = ' . $this->oCompany->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
         $aAnnualAccountsIds             = array_column($this->aAnnualAccounts, 'id_bilan');
-        $this->aBalanceSheets           = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds)['details'];
         $this->bIsProblematicCompany    = $this->oCompany->countProblemsBySIREN() > 0;
         $this->iDeclaredRevenue         = $this->oProject->ca_declara_client;
         $this->iDeclaredOperatingIncome = $this->oProject->resultat_exploitation_declara_client;
         $this->iDeclaredCapitalStock    = $this->oProject->fonds_propres_declara_client;
         $this->aCompanyProjects         = $this->oCompany->getProjectsBySIREN();
         $this->fCompanyOwedCapital      = $this->oCompany->getOwedCapitalBySIREN();
+        $this->aBalanceSheets           = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
 
         header('Content-Type: application/csv;charset=UTF-8');
         header('Content-Disposition: attachment;filename=risque-' . $this->oProject->id_project . '.csv');
