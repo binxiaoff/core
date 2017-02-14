@@ -51,16 +51,6 @@
             $('#nbLignePagination').val(0);
             $('#pageActive').val(1);
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 
     function paginationDossiers(directionPagination) {
@@ -95,7 +85,6 @@
         $("#search_dossier").submit();
     }
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (isset($_POST['form_search_client'])) : ?>
         <h1>Résultats de la recherche de dossiers <?= (count($this->lProjects) > 0 ? '(' . count($this->lProjects) . ')' : '') ?></h1>

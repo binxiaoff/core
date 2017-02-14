@@ -13,19 +13,8 @@
             $("#prenom").val('');
             $("#email").val('');
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title, message, opts, container;
-            title = "<?= $_SESSION['freeow']['title'] ?>";
-            message = "<?= $_SESSION['freeow']['message'] ?>";
-            opts = {};
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-
 <style>
     .form-container {
         width: 697px;
@@ -39,8 +28,6 @@
         width: 697px;
     }
 </style>
-
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (isset($_POST['form_search_client'])) : ?>
         <h1>Résultats de la recherche d'emprunteurs <?= (count($this->lClients) > 0 ? '(' . count($this->lClients) . ')' : '') ?></h1>

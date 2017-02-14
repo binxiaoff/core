@@ -1,17 +1,3 @@
-<?php if (isset($_SESSION['freeow'])) : ?>
-    <script type="text/javascript">
-        $(function() {
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-        });
-    </script>
-    <?php unset($_SESSION['freeow']); ?>
-<?php endif; ?>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Liste des éléments du menu <?= $this->menus->nom ?></h1>
     <div class="btnDroite">

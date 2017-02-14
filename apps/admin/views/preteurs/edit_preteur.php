@@ -36,21 +36,9 @@
         initAutocompleteCity($('#ville'), $('#cp'));
         initAutocompleteCity($('#ville2'), $('#cp2'));
         initAutocompleteCity($('#com-naissance'), $('#insee_birth'));
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>

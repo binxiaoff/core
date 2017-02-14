@@ -2,13 +2,11 @@
 
 class usersController extends bootstrap
 {
-    var $Command;
-
     public function initialize()
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->catchAll   = true;
         $this->menu_admin = 'admin';
 
         $this->users_zones       = $this->loadData('users_zones');

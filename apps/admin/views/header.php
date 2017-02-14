@@ -1,73 +1,7 @@
-<script type="text/javascript">
-    $(function() {
-        $(".searchBox").colorbox({
-            onComplete: function () {
-                $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
-                $("#datepik_from").datepicker({
-                    showOn: 'both',
-                    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                    buttonImageOnly: true,
-                    changeMonth: true,
-                    changeYear: true,
-                    yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
-                });
-                $("#datepik_to").datepicker({
-                    showOn: 'both',
-                    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                    buttonImageOnly: true,
-                    changeMonth: true,
-                    changeYear: true,
-                    yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
-                });
-            }
-        });
-
-        $('#quick_search').submit(function(event) {
-            var form = $(this),
-                siren = form.children('[name=siren]').val(),
-                projectName = form.children('[name=projectName]').val(),
-                projectId = form.children('[name=projectId]').val(),
-                lender = form.children('[name=lender]').val()
-
-            if ('' != projectName) {
-                form.attr('action', '/dossiers')
-                form.append('<input type="hidden" name="form_search_dossier" value="1" />')
-                form.append('<input type="hidden" name="raison-sociale" value="' + projectName + '" />')
-                return
-            }
-
-            if ('' != siren) {
-                form.attr('action', '/dossiers')
-                form.append('<input type="hidden" name="form_search_dossier" value="1" />')
-                form.append('<input type="hidden" name="siren" value="' + siren + '" />')
-                return
-            }
-
-            if ('' != projectId && projectId == parseInt(projectId)) {
-                event.preventDefault();
-                window.location.replace('/dossiers/edit/' + projectId)
-                return
-            }
-
-            if ('' != lender && lender == parseInt(lender)) {
-                form.attr('action', '/preteurs/gestion')
-                form.append('<input type="hidden" name="form_search_preteur" value="1" />')
-                form.append('<input type="hidden" name="id" value="' + lender + '" />')
-                return
-            }
-
-            event.preventDefault();
-        })
-    });
-</script>
-<style>
-    #quick_search {margin-top: 10px}
-</style>
 <div id="header">
     <div class="logo_header">
         <a href="<?= $this->lurl ?>"><img src="<?= $this->surl ?>/styles/default/images/logo.png" alt="Unilend"/></a>
     </div>
-    <div class="titre_header">Administration</div>
     <div class="bloc_info_header">
         <div>
             <a href="<?= $this->lurl ?>/users/edit_perso/<?= $_SESSION['user']['id_user'] ?>" class="thickbox">
@@ -191,3 +125,4 @@
         <?php endif; ?>
     </ul>
 </div>
+<div id="freeow-tr" class="freeow freeow-top-right"></div>

@@ -26,14 +26,6 @@
         $('#leclient2').click(function () {
             $('#recherche_client').hide();
         });
-
-        <?php if (isset($_SESSION['freeow'])) { ?>
-            var opts = {};
-            opts.classes = ['smokey'];
-
-            $('#freeow-tr').freeow("<?= $_SESSION['freeow']['title'] ?>", "<?= $_SESSION['freeow']['message'] ?>", opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php } ?>
     });
 
     function valid_create(id_project) {
@@ -42,8 +34,6 @@
         });
     }
 </script>
-
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Création Dossier</h1>
     <?php if (isset($this->params['0']) && $this->params['0'] == 'create') : ?>

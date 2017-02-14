@@ -200,19 +200,9 @@
                 size: <?= $this->nb_lignes ?>
             });
         <?php endif; ?>
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {classes: ['smokey']};
-
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (false === empty($this->projects->title)) : ?><h1><?= $this->projects->title ?></h1><?php endif; ?>
     <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">

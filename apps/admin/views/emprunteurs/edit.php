@@ -19,22 +19,11 @@
             $(".listeProjets").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
             $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
 <style>
     #infos_client{display:none; border:1px solid #2F86B2; padding:15px;}
 </style>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Detail emprunteur : <?= $this->clients->nom . ' ' . $this->clients->prenom ?></h1>
     <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>

@@ -10,16 +10,6 @@
             );
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
-
         $(".lightbox").colorbox({
             onComplete: function () {
                 $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
@@ -47,7 +37,6 @@
         <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Historique des emails</h1>
     <div class="btnDroite">

@@ -25,19 +25,8 @@
             changeYear: true,
             yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Statistiques des AutoLends</h1>
     <form method="post" name="recupCSV">
