@@ -117,6 +117,7 @@
             changeYear: true,
             yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
         });
+
         $("#date_pub").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -125,6 +126,7 @@
             changeYear: true,
             minDate: new Date(<?= date('Y') ?>, <?= (date('m') - 1) ?>, <?= date('d') ?>)
         });
+
         $("#date_de_retrait").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -133,6 +135,7 @@
             changeYear: true,
             minDate: new Date(<?= date('Y') ?>, <?= (date('m') - 1) ?>, <?= date('d') ?>)
         });
+
         $("#date_ps").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -140,6 +143,7 @@
             changeMonth: true,
             changeYear: true
         });
+
         $("#date_rj").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -147,6 +151,7 @@
             changeMonth: true,
             changeYear: true
         });
+
         $("#date_lj").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -154,6 +159,7 @@
             changeMonth: true,
             changeYear: true
         });
+
         $('#duree').change(function() {
             if (0 == $(this).val() && <?= \projects_status::PREP_FUNDING ?> == <?= $this->projects->status ?>) {
                 $("#status").css('display', 'none');
@@ -183,6 +189,10 @@
             return true
         });
 
+        if ($(location.hash) && $(location.hash).hasClass('tab_title')) {
+            $(location.hash).next('.tab_content').addClass('expand')
+        }
+
         <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({
                 container: $("#pager"),
@@ -194,9 +204,8 @@
         <?php if (isset($_SESSION['freeow'])) : ?>
             var title = "<?= $_SESSION['freeow']['title'] ?>",
                 message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
+                opts = {classes: ['smokey']};
 
-            opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
             <?php unset($_SESSION['freeow']); ?>
         <?php endif; ?>
@@ -205,7 +214,7 @@
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <?php if (false === empty($this->projects->title)) : ?> : <h1><?= $this->projects->title ?></h1><?php endif; ?>
+    <?php if (false === empty($this->projects->title)) : ?><h1><?= $this->projects->title ?></h1><?php endif; ?>
     <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="resume">
             <div class="gauche">
