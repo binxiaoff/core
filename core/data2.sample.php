@@ -29,7 +29,8 @@ class --classe-- extends --classe--_crud
             $where = ' WHERE ' . $where;
         }
 
-        $statement = $this->bdd->query('SELECT COUNT(*) FROM --table-- ' . $where);
+        $query     = 'SELECT COUNT(*) FROM --table-- ' . $where;
+        $statement = $this->bdd->query($query);
         return (int) $this->bdd->result($statement);
     }
 
@@ -40,7 +41,8 @@ class --classe-- extends --classe--_crud
             $list .= ' AND ' . $field . ' = "' . $value . '" ';
         }
 
-        $statement = $this->bdd->query('SELECT * FROM --table-- WHERE 1 = 1' . $list);
+        $query     = 'SELECT * FROM --table-- WHERE 1 = 1' . $list;
+        $statement = $this->bdd->query($query);
         return $this->bdd->fetch_assoc($statement) > 0;
     }
 }

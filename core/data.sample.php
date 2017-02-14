@@ -29,13 +29,15 @@ class --classe-- extends --classe--_crud
             $where = ' WHERE ' . $where;
         }
 
-        $statement = $this->bdd->query('SELECT COUNT(*) FROM --table-- ' . $where);
+        $query     = 'SELECT COUNT(*) FROM --table-- ' . $where;
+        $statement = $this->bdd->query($query);
         return (int) $this->bdd->result($statement);
     }
 
     public function exist($id, $field = '--id--')
     {
-        $statement = $this->bdd->query('SELECT * FROM --table-- WHERE ' . $field . ' = "' . $id . '"');
+        $query     = 'SELECT * FROM --table-- WHERE ' . $field . ' = "' . $id . '"';
+        $statement = $this->bdd->query($query);
         return $this->bdd->fetch_assoc($statement) > 0;
     }
 }
