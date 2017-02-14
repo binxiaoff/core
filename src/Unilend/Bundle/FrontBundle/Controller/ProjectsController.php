@@ -1184,7 +1184,7 @@ class ProjectsController extends Controller
             'slug'                => $project->slug,
             'duration'            => $project->period,
             'amount'              => $project->amount,
-            'net_amount'          => round($project->amount * bcsub(1, bcdiv($project->commission_rate_funds, 100, 2), 2)),
+            'net_amount'          => round($project->amount * bcsub(1, round(bcdiv($project->commission_rate_funds, 100, 4), 2), 2)),
             'minimum_rate'        => $minimumBidRate,
             'start_date'          => $startDate,
             'end_date'            => $endDate,

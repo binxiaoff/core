@@ -676,7 +676,7 @@ class ProjectManager
 
         $fAmount           = $oProject->amount;
         $iMonthNb          = $oProject->period;
-        $aCommission       = \repayment::getRepaymentCommission($fAmount, $iMonthNb, bcdiv($oProject->commission_rate_repayment, 100, 2), $fVAT);
+        $aCommission       = \repayment::getRepaymentCommission($fAmount, $iMonthNb, round(bcdiv($oProject->commission_rate_repayment, 100, 4), 2), $fVAT);
         $aPaymentList      = $oRepaymentSchedule->getMonthlyScheduleByProject($oProject->id_project);
         $iPaymentsNbTotal  = count($aPaymentList);
         $iTreatedPaymentNb = 0;

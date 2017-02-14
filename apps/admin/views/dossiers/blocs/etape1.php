@@ -38,9 +38,9 @@
                 </td>
                 <th><label for="partner_id">Partenaire :</label></th>
                 <td >
-                    <select id="partner_id" name="partner_id">
+                    <select id="partner_etape1" name="partner_etape1">
                         <?php foreach ($this->partnerList as $partner) : ?>
-                            <option value="<?= $partner['id_partner'] ?>"<?= $this->projects->id_partner === $partner['id_partner'] ? ' selected="selected"' : '' ?>><?= $partner['name'] ?></option>
+                            <option value="<?= $partner['id'] ?>"<?= $this->projects->id_partner === $partner['id'] ? ' selected="selected"' : '' ?>><?= $partner['name'] ?></option>
                         <?php endforeach; ?>
                     </select>
                 </td>

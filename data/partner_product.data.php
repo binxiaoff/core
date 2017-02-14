@@ -65,18 +65,4 @@ class partner_product extends partner_product_crud
     {
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `partner_product` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
-
-    /**
-     * @param int $partnerId
-     * @return mixed
-     */
-    public function getAvailableProducts($partnerId)
-    {
-        $query ='
-            SELECT id_product FROM unilend.partner_product
-            WHERE id_partner = :id_partner
-        ';
-
-        return $this->bdd->executeQuery($query, ['id_partner' => $partnerId], ['id_partner' => \PDO::PARAM_INT])->fetchAll(\PDO::FETCH_ASSOC);
-    }
 }

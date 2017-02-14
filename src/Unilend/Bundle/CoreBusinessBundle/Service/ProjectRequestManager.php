@@ -12,13 +12,17 @@ class ProjectRequestManager
     private $entityManager;
     /** @var  ProjectManager */
     private $projectManager;
+    /** @var SourceManager $sourceManager */
     private $sourceManager;
+    /** @var PartnerManager */
+    private $partnerManager;
 
-    public function __construct(EntityManager $entityManager, ProjectManager $projectManager, SourceManager $sourceManager)
+    public function __construct(EntityManager $entityManager, ProjectManager $projectManager, SourceManager $sourceManager, PartnerManager $partnerManager)
     {
         $this->entityManager  = $entityManager;
         $this->projectManager = $projectManager;
         $this->sourceManager  = $sourceManager;
+        $this->partnerManager = $partnerManager;
     }
 
     public function getMonthlyRateEstimate()
@@ -39,7 +43,7 @@ class ProjectRequestManager
         $taxType->get(\tax_type::TYPE_VAT);
         $fVATRate = $taxType->rate / 100;
 
-        $fCommission    = ($oFinancial->PMT(bcdiv(\projects::DEFAULT_COMMISSION_RATE_REPAYMENT, 100, 2) / 12, $period, - $amount) - $oFinancial->PMT(0, $period, - $amount)) * (1 + $fVATRate);
+        $fCommission    = ($oFinancial->PMT(round(bcdiv(\projects::DEFAULT_COMMISSION_RATE_REPAYMENT, 100, 4), 2) / 12, $period, - $amount) - $oFinancial->PMT(0, $period, - $amount)) * (1 + $fVATRate);
         $monthlyPayment = round($oFinancial->PMT($estimatedRate / 100 / 12, $period, - $amount) + $fCommission);
 
         return $monthlyPayment;
@@ -93,9 +97,6 @@ class ProjectRequestManager
         $company->email_dirigeant               = $aFormData['email'];
         $company->create();
 
-        /** @var \partner $partner */
-        $partner = $this->entityManager->getRepository('partner');
-
         $project->id_company                           = $company->id_company;
         $project->amount                               = $aFormData['amount'];
         $project->period                               = $aFormData['duration'];
@@ -104,7 +105,7 @@ class ProjectRequestManager
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;
         $project->status                               = \projects_status::DEMANDE_SIMULATEUR;
-        $project->id_partner                           = $project->getPartnerId($partner);
+        $project->id_partner                           = $this->partnerManager->getDefaultPartner()->id;
         $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->create();

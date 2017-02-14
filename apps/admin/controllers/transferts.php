@@ -725,8 +725,8 @@ class transfertsController extends bootstrap
                 $taxType->get(\tax_type::TYPE_VAT);
 
                 $commissionFundsRateVATIncluded = bcmul(
-                    bcadd(1, bcdiv($taxType, 100, 2), 2),
-                    bcdiv($project->commission_rate_funds, 100, 2),
+                    bcadd(1, round(bcdiv($taxType, 100, 4), 2), 2),
+                    round(bcdiv($project->commission_rate_funds, 100, 4), 2),
                     2
                 );
                 $projectLoanAmount              = $loans->sumPretsProjet($project->id_project);

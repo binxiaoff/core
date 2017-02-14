@@ -129,6 +129,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>
             <argument type="service" id="unilend.frontbundle.service.source_manager"/>
+            <argument type="service" id="unilend.service.partner_manager"/>
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
@@ -238,6 +239,10 @@
         </service>
 
         <service id="unilend.service.project_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
+
+        <service id="unilend.service.partner_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager">
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>
     </services>

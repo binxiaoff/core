@@ -45,7 +45,7 @@ class ProductManager
     {
         $eligibleProducts = [];
 
-        foreach ($this->getAvailablePartnerProducts($project->id_partner, $includeInactiveProduct) as $product) {
+        foreach ($this->getAvailableProducts($includeInactiveProduct, $project->id_partner) as $product) {
             if ($this->isProjectEligible($project, $product)) {
                 $eligibleProduct    = clone $product;
                 $eligibleProducts[] = $eligibleProduct;
@@ -183,29 +183,23 @@ class ProductManager
     }
 
     /**
-     * @param bool $includeInactiveProduct
-     *
+     * @param bool      $includeInactiveProduct
+     * @param null|int  $partnerId
      * @return \product[]
      */
-    public function getAvailableProducts($includeInactiveProduct = false)
+    public function getAvailableProducts($includeInactiveProduct = false, $partnerId = null)
     {
-        /** @var \product $product */
-        $product           = $this->entityManager->getRepository('product');
+        if (false === empty($partnerId)) {
+            /** @var \partner_product $partnerProduct */
+            $partnerProduct = $this->entityManager->getRepository('partner_product');
 
-        return $this->filterProductByStatus($product->select(), $includeInactiveProduct);
-    }
+            return $this->filterProductByStatus($partnerProduct->select('id_partner = ' . $partnerId), $includeInactiveProduct);
+        } else {
+            /** @var \product $product */
+            $product = $this->entityManager->getRepository('product');
 
-    /**
-     * @param      $partnerId
-     * @param bool $includeInactiveProduct
-     * @return array
-     */
-    public function getAvailablePartnerProducts($partnerId, $includeInactiveProduct = false)
-    {
-        /** @var \partner_product $partnerProduct */
-        $partnerProduct = $this->entityManager->getRepository('partner_product');
-
-        return $this->filterProductByStatus($partnerProduct->getAvailableProducts($partnerId), $includeInactiveProduct);
+            return $this->filterProductByStatus($product->select(), $includeInactiveProduct);
+        }
     }
 
     /**

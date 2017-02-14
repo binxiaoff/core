@@ -673,7 +673,7 @@ class pdfController extends bootstrap
         $taxRate = $taxType->getTaxRateByCountry('fr');
         $fVat    = $taxRate[\tax_type::TYPE_VAT] / 100;
 
-        $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, bcdiv($oProjects->commission_rate_repayment, 100, 2), $fVat);
+        $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, round(bcdiv($oProjects->commission_rate_repayment, 100, 4), 2), $fVat);
         $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
 
         /** @var \transactions $transaction */

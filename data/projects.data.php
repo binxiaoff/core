@@ -1282,19 +1282,4 @@ class projects extends projects_crud
 
         return $result;
     }
-
-    /**
-     * @param partner $partner
-     * @return int
-     */
-    public function getPartnerId(\partner $partner)
-    {
-        if (false === empty($this->id_partner)) {
-            return $this->id_partner;
-        } else {
-            $partner->get(\partner::PARTNER_UNILEND_LABEL, 'label');
-
-            return $partner->id_partner;
-        }
-    }
 }

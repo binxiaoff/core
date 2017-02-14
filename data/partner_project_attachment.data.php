@@ -65,18 +65,4 @@ class partner_project_attachment extends partner_project_attachment_crud
     {
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `partner_project_attachment` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
-
-    /**
-     * @param int $partnerId
-     * @return mixed
-     */
-    public function getAttachmentTypesByPartner($partnerId)
-    {
-        $query = '
-        SELECT id_attachment_type FROM partner_project_attachment
-        WHERE id_partner = :id_partner
-        ';
-
-        return $this->bdd->executeQuery($query, ['id_partner' => $partnerId], ['id_partner' => \PDO::PARAM_INT])->fetchAll(\PDO::FETCH_COLUMN);
-    }
 }

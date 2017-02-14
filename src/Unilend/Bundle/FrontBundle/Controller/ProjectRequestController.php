@@ -89,9 +89,9 @@ class ProjectRequestController extends Controller
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
 
-        $amount  = null;
-        $siren   = null;
-        $email   = null;
+        $amount = null;
+        $siren  = null;
+        $email  = null;
 
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
@@ -140,7 +140,7 @@ class ProjectRequestController extends Controller
 
         if ($this->get('session')->getFlashBag()->has('borrowerLandingPageErrors')) {
             $request->getSession()->set('projectRequest', [
-                'values'  => [
+                'values' => [
                     'amount' => $amount,
                     'siren'  => $siren,
                     'email'  => $email
@@ -182,17 +182,17 @@ class ProjectRequestController extends Controller
 
         if (empty($this->client->create())) {
             return $this->redirect($request->headers->get('referer'));
-        } else{
+        } else {
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $this->client->email);
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $this->client->id_client);
         }
 
         /** @var \clients_adresses $address */
-        $address = $entityManager->getRepository('clients_adresses');
+        $address            = $entityManager->getRepository('clients_adresses');
         $address->id_client = $this->client->id_client;
         $address->create();
 
-        $this->company = $entityManager->getRepository('companies');
+        $this->company                                = $entityManager->getRepository('companies');
         $this->company->id_client_owner               = $this->client->id_client;
         $this->company->siren                         = $siren;
         $this->company->siret                         = $sirenLength === 14 ? $siren : '';
@@ -201,7 +201,7 @@ class ProjectRequestController extends Controller
         $this->company->email_facture                 = $email;
         $this->company->create();
 
-        $this->project = $entityManager->getRepository('projects');
+        $this->project                                       = $entityManager->getRepository('projects');
         $this->project->id_company                           = $this->company->id_company;
         $this->project->amount                               = $amount;
         $this->project->ca_declara_client                    = 0;
@@ -352,8 +352,8 @@ class ProjectRequestController extends Controller
         $template['terms_of_sale_link'] = $this->generateUrl($tree->slug);
 
         /** @var \borrowing_motive $borrowingMotive */
-        $borrowingMotive = $entityManager->getRepository('borrowing_motive');
-        $template['borrowing_motives']  = $borrowingMotive->select();
+        $borrowingMotive               = $entityManager->getRepository('borrowing_motive');
+        $template['borrowing_motives'] = $borrowingMotive->select();
 
         $settings->get('Durée des prêts autorisées', 'type');
         $template['loan_periods'] = explode(',', $settings->value);
@@ -483,8 +483,8 @@ class ProjectRequestController extends Controller
 
         if (false === empty($errors)) {
             $request->getSession()->set('projectRequest', [
-                'values'  => $request->request->all(),
-                'errors'  => $errors
+                'values' => $request->request->all(),
+                'errors' => $errors
             ]);
 
             return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $this->project->hash]);
@@ -547,7 +547,7 @@ class ProjectRequestController extends Controller
                 $advisorClient->create();
 
                 /** @var \clients_adresses $advisorAddress */
-                $advisorAddress = $entityManager->getRepository('clients_adresses');
+                $advisorAddress            = $entityManager->getRepository('clients_adresses');
                 $advisorAddress->id_client = $advisorClient->id_client;
                 $advisorAddress->civilite  = $request->request->get('advisor')['civility'];
                 $advisorAddress->prenom    = $request->request->get('advisor')['firstname'];
@@ -596,7 +596,7 @@ class ProjectRequestController extends Controller
                 $this->project->update();
             }
 
-            if (empty($products)){
+            if (empty($products)) {
                 return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
             }
         } catch (\Exception $exception) {
@@ -629,13 +629,10 @@ class ProjectRequestController extends Controller
         $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
         /** @var \companies_bilans $annualAccountsEntity */
         $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
-        /** @var \partner_project_attachment $partnerProjectAttachment */
-        $partnerProjectAttachment = $entityManager->getRepository('partner_project_attachment');
-        /** @var \partner $partner */
-        $partner = $entityManager->getRepository('partner');
+        $partnerManager       = $this->get('unilend.service.partner_manager');
 
         $this->attachmentType         = $entityManager->getRepository('attachment_type');
-        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerProjectAttachment->getAttachmentTypesByPartner($this->project->getPartnerId($partner)));
+        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
         $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
 
         $altaresCapitalStock     = 0;
@@ -661,14 +658,14 @@ class ProjectRequestController extends Controller
             $template['form']['values'] = [
                 'ag_2035' => isset($values['ag_2035']) ? $values['ag_2035'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
             ];
-            $template['rcs'] = false;
+            $template['rcs']            = false;
         } else {
             $template['form']['values'] = [
                 'dl' => isset($values['dl']) ? $values['dl'] : (empty($this->project->fonds_propres_declara_client) ? (empty($altaresCapitalStock) ? '' : $altaresCapitalStock) : $this->project->fonds_propres_declara_client),
                 'fl' => isset($values['fl']) ? $values['fl'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
                 'gg' => isset($values['gg']) ? $values['gg'] : (empty($this->project->resultat_exploitation_declara_client) ? (empty($altaresOperationIncomes) ? '' : $altaresOperationIncomes) : $this->project->resultat_exploitation_declara_client)
             ];
-            $template['rcs'] = true;
+            $template['rcs']            = true;
         }
 
         $template['project'] = [
@@ -733,8 +730,8 @@ class ProjectRequestController extends Controller
 
         if (false === empty($errors)) {
             $request->getSession()->set('projectRequest', [
-                'values'  => $values,
-                'errors'  => $errors
+                'values' => $values,
+                'errors' => $errors
             ]);
 
             return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $this->project->hash]);
@@ -753,7 +750,7 @@ class ProjectRequestController extends Controller
 
         if (empty($this->company->rcs)) {
             $this->project->ca_declara_client = $values['ag_2035'];
-            $updateDeclaration = true;
+            $updateDeclaration                = true;
         } else {
             $updateDeclaration = false;
             $values['dl']      = $ficelle->cleanFormatedNumber($values['dl']);
@@ -780,26 +777,26 @@ class ProjectRequestController extends Controller
 
             if ($altaresCapitalStock != $values['dl']) {
                 $this->project->fonds_propres_declara_client = $values['dl'];
-                $updateDeclaration = true;
+                $updateDeclaration                           = true;
             } elseif (false === empty($this->project->fonds_propres_declara_client) && $altaresCapitalStock == $values['dl']) {
                 $this->project->fonds_propres_declara_client = 0;
-                $updateDeclaration = true;
+                $updateDeclaration                           = true;
             }
 
             if ($altaresRevenue != $values['fl']) {
                 $this->project->ca_declara_client = $values['fl'];
-                $updateDeclaration = true;
+                $updateDeclaration                = true;
             } elseif (false === empty($this->project->ca_declara_client) && $altaresRevenue == $values['fl']) {
                 $this->project->ca_declara_client = 0;
-                $updateDeclaration = true;
+                $updateDeclaration                = true;
             }
 
             if ($altaresOperationIncomes != $values['gg']) {
                 $this->project->resultat_exploitation_declara_client = $values['gg'];
-                $updateDeclaration = true;
+                $updateDeclaration                                   = true;
             } elseif (false === empty($this->project->resultat_exploitation_declara_client) && $altaresOperationIncomes == $values['gg']) {
                 $this->project->resultat_exploitation_declara_client = 0;
-                $updateDeclaration = true;
+                $updateDeclaration                                   = true;
             }
         }
 
@@ -815,11 +812,11 @@ class ProjectRequestController extends Controller
             return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
-        if (isset($values['gg']) &&$values['gg'] < 0) {
+        if (isset($values['gg']) && $values['gg'] < 0) {
             return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
         }
 
-        if (isset($values['ag_2035']) &&$values['ag_2035'] < \projects::MINIMUM_REVENUE) {
+        if (isset($values['ag_2035']) && $values['ag_2035'] < \projects::MINIMUM_REVENUE) {
             return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
@@ -855,14 +852,11 @@ class ProjectRequestController extends Controller
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        /** @var \partner_project_attachment $partnerProjectAttachment */
-        $partnerProjectAttachment = $entityManager->getRepository('partner_project_attachment');
-        /** @var \partner $partner */
-        $partner = $entityManager->getRepository('partner');
+        $settings       = $entityManager->getRepository('settings');
+        $partnerManager = $this->get('unilend.service.partner_manager');
 
         $this->attachmentType         = $entityManager->getRepository('attachment_type');
-        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerProjectAttachment->getAttachmentTypesByPartner($this->project->getPartnerId($partner)));
+        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
         $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
 
         $settings->get('Lien conditions generales depot dossier', 'type');
@@ -963,8 +957,8 @@ class ProjectRequestController extends Controller
 
         if (false === empty($errors)) {
             $request->getSession()->set('projectRequest', [
-                'values'  => $request->request->all(),
-                'errors'  => $errors
+                'values' => $request->request->all(),
+                'errors' => $errors
             ]);
 
             return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $this->project->hash]);
@@ -1007,7 +1001,7 @@ class ProjectRequestController extends Controller
         $this->project->period = $request->request->get('project')['duration'];
         $this->project->update();
 
-        $files  = $request->request->get('files', []);
+        $files = $request->request->get('files', []);
 
         foreach ($request->files->all() as $fileName => $file) {
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
@@ -1100,8 +1094,8 @@ class ProjectRequestController extends Controller
 
         if (false === empty($errors)) {
             $request->getSession()->set('projectRequest', [
-                'values'  => $request->request->all(),
-                'errors'  => $errors
+                'values' => $request->request->all(),
+                'errors' => $errors
             ]);
 
             return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
@@ -1156,19 +1150,15 @@ class ProjectRequestController extends Controller
                 'hash'                     => $this->project->hash
             ]
         ];
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \partner_project_attachment $partnerProjectAttachment */
-        $partnerProjectAttachment = $entityManager->getRepository('partner_project_attachment');
-        /** @var \partner $partner */
-        $partner = $entityManager->getRepository('partner');
         /** @var \attachment $attachment */
-        $attachment  = $entityManager->getRepository('attachment');
+        $attachment     = $entityManager->getRepository('attachment');
+        $partnerManager = $this->get('unilend.service.partner_manager');
 
         $attachments          = array_column($attachment->select('type_owner = "' . \attachment::PROJECT . '" AND id_owner = ' . $this->project->id_project), 'id_type');
         $this->attachmentType = $entityManager->getRepository('attachment_type');
-        $attachmentTypes      = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerProjectAttachment->getAttachmentTypesByPartner($this->project->getPartnerId($partner)));
+        $attachmentTypes      = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
 
         foreach ($attachmentTypes as $attachmentIndex => $attachmentType) {
             if (in_array($attachmentType['id'], $attachments)) {
@@ -1210,7 +1200,7 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        $files  = $request->request->get('files', []);
+        $files = $request->request->get('files', []);
 
         foreach ($request->files->all() as $fileName => $file) {
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
@@ -1289,19 +1279,19 @@ class ProjectRequestController extends Controller
                 // Display only one reason (priority defined in TST-51)
                 if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
                     $message = $translator->trans('project-request_end-page-collective-proceeding-message');
-                } else if (
+                } elseif (
                     in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
                     || in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
                 ) {
                     $message = $translator->trans('project-request_end-page-no-siren-message');
-                } else if (
+                } elseif (
                     in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
                     || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
                     || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
                     || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
                 ) {
                     $message = $translator->trans('project-request_end-page-negative-operating-result-message');
-                } else if (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
+                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
                     $message = $translator->trans('project-request_end-page-product-not-found-message');
                 } else {
                     $message = $translator->trans('project-request_end-page-external-rating-rejection-default-message');
@@ -1310,11 +1300,11 @@ class ProjectRequestController extends Controller
         }
 
         $template = [
-            'addMoreFiles'   => $addMoreFiles,
-            'message'        => $message,
-            'title'          => $title,
-            'subtitle'       => $subtitle,
-            'project'        => [
+            'addMoreFiles' => $addMoreFiles,
+            'message'      => $message,
+            'title'        => $title,
+            'subtitle'     => $subtitle,
+            'project'      => [
                 'hash' => $this->project->hash
             ]
         ];
@@ -1326,7 +1316,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/emails/{hash}", name="project_request_emails", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
-     * @param string $hash
+     * @param string  $hash
      * @param Request $request
      * @return Response
      */
@@ -1362,7 +1352,7 @@ class ProjectRequestController extends Controller
 
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $entityManager->getRepository('project_rate_settings');
-        $rateSettings = $projectRateSettings->getSettings(null, $projectPeriod->id_period);
+        $rateSettings        = $projectRateSettings->getSettings(null, $projectPeriod->id_period);
 
         $minimumRate = min(array_column($rateSettings, 'rate_min'));
         $maximumRate = max(array_column($rateSettings, 'rate_max'));
@@ -1373,15 +1363,15 @@ class ProjectRequestController extends Controller
         $vatRate = $taxType->rate / 100;
 
         if (false === empty($this->project->commission_rate_repayment)) {
-            $commissionRateRepayment = bcdiv(\projects::DEFAULT_COMMISSION_RATE_REPAYMENT, 100, 2);
+            $commissionRateRepayment = round(bcdiv(\projects::DEFAULT_COMMISSION_RATE_REPAYMENT, 100, 4), 2);
         } else {
-            $commissionRateRepayment = bcdiv($this->project->commission_rate_repayment, 100, 2);
+            $commissionRateRepayment = round(bcdiv($this->project->commission_rate_repayment, 100, 4), 2);
         }
-        $commission = ($financialCalculation->PMT($commissionRateRepayment / 12, $this->project->period, - $this->project->amount) - $financialCalculation->PMT(0, $this->project->period, - $this->project->amount)) * (1 + $vatRate);
+        $commission = ($financialCalculation->PMT($commissionRateRepayment / 12, $this->project->period, -$this->project->amount) - $financialCalculation->PMT(0, $this->project->period, -$this->project->amount)) * (1 + $vatRate);
 
         return [
-            'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $this->project->period, - $this->project->amount) + $commission),
-            'maximum' => round($financialCalculation->PMT($maximumRate / 100 / 12, $this->project->period, - $this->project->amount) + $commission)
+            'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $this->project->period, -$this->project->amount) + $commission),
+            'maximum' => round($financialCalculation->PMT($maximumRate / 100 / 12, $this->project->period, -$this->project->amount) + $commission)
         ];
     }
 

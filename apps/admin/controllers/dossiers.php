@@ -138,11 +138,30 @@ class dossiersController extends bootstrap
         $this->translator = $this->get('translator');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            $this->settings->get('Durée des prêts autorisées', 'type');
-            $this->dureePossible = explode(',', $this->settings->value);
-            $this->taxFormTypes =  $companyTaxFormType->select();
+            if ($this->projects->status <= \projects_status::PREP_FUNDING) {
+                if (false === empty($_POST['project_partner'])) {
+                    $this->projects->id_partner                = $_POST['project_partner'];
+                    $this->projects->id_product                = null;
+                    $this->projects->commission_rate_funds     = null;
+                    $this->projects->commission_rate_repayment = null;
+                }
+                /** @var \partner_product $partnerProduct */
+                $partnerProduct = $this->loadData('partner_product');
 
+                if (false === empty($_POST['assigned_product']) && $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' and id_product ')) {
+                    $this->projects->id_product                = $partnerProduct->id_product;
+                    $this->projects->commission_rate_funds     = $partnerProduct->commission_rate_funds;
+                    $this->projects->commission_rate_repayment = $partnerProduct->commission_rate_repayment;
+                } elseif (false === empty($_POST['assigned_product'])) {
+                    $_SESSION['freeow']['message'] .= 'Ce produit n\'est pas configuré pour le partenaire';
+                }
+                $this->projects->update();
+            }
+            $this->settings->get('Durée des prêts autorisées', 'type');
+            $this->dureePossible   = explode(',', $this->settings->value);
+            $this->taxFormTypes    = $companyTaxFormType->select();
             $this->allTaxFormTypes = [];
+
             foreach ($this->taxFormTypes as $formType) {
                 $this->allTaxFormTypes[$formType['label']] = $companyBalanceDetailsType->select('id_company_tax_form_type = '.$formType['id_type']);
             }
@@ -286,36 +305,14 @@ class dossiersController extends bootstrap
                     $this->bCanEditStatus = true;
                 }
             }
-            /** @var \partner $partner */
-            $partner = $this->loadData('partner');
-            $partner->get($this->projects->id_partner);
-            /** @var \partner_project_attachment $partnerProjectAttachment */
-            $partnerProjectAttachment = $this->loadData('partner_project_attachment');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
+            $partnerManager = $this->get('unilend.service.partner_manager');
 
-            $this->attachment_type          = $this->loadData('attachment_type');
-            $this->aAttachments             = $this->projects->getAttachments();
-            $this->aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language);
+            $this->attachment_type           = $this->loadData('attachment_type');
+            $this->aAttachments              = $this->projects->getAttachments();
+            $this->aAttachmentTypes          = $this->attachment_type->getAllTypesForProjects($this->language);
+            $this->aMandatoryAttachmentTypes = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner);
 
-            switch ($partner->label) {
-                case \partner::PARTNER_U_CAR_LABEL :
-                    $this->aMandatoyAttachmentTypes = $partnerProjectAttachment->getAttachmentTypesByPartner($partner->id_partner);
-                    break;
-                default :
-                    $this->aMandatoyAttachmentTypes = [
-                        \attachment_type::DERNIERE_LIASSE_FISCAL,
-                        \attachment_type::LIASSE_FISCAL_N_1,
-                        \attachment_type::LIASSE_FISCAL_N_2,
-                        \attachment_type::RELEVE_BANCAIRE_MOIS_N,
-                        \attachment_type::RELEVE_BANCAIRE_MOIS_N_1,
-                        \attachment_type::RELEVE_BANCAIRE_MOIS_N_2,
-                        \attachment_type::KBIS,
-                        \attachment_type::RIB,
-                        \attachment_type::CNI_PASSPORTE_DIRIGEANT,
-                        \attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS,
-                        \attachment_type::CGV
-                    ];
-                    break;
-            }
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
 
@@ -346,6 +343,8 @@ class dossiersController extends bootstrap
                     $this->rate_max = $rateRange['rate_max'];
                 }
             }
+            /** @var \partner $partner */
+            $partner = $this->loadData('partner');
             $this->partnerList = $partner->select('', 'name ASC');
 
             $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
@@ -635,15 +634,6 @@ class dossiersController extends bootstrap
                     if (false === $this->bReadonlyRiskNote) {
                         $this->projects->period     = $_POST['duree'];
                         $this->projects->amount     = str_replace([' ', ','], ['', '.'], $_POST['montant']);
-                    }
-
-                    if ($this->projects->status <= \projects_status::PREP_FUNDING) {
-                        if (false === empty($_POST['assigned_product'])) {
-                            $this->projects->id_product = $_POST['assigned_product'];
-                        }
-                        if (false === empty($_POST['project_partner'])) {
-                            $this->projects->id_partner = $_POST['project_partner'];
-                        }
                     }
 
                     if ($this->projects->status <= \projects_status::A_FUNDER) {
@@ -1456,9 +1446,10 @@ class dossiersController extends bootstrap
         $this->companies = $this->loadData('companies');
         /** @var projects projects */
         $this->projects = $this->loadData('projects');
-        /** @var \partner $partner */
-        $partner           = $this->loadData('partner');
-        $this->partnerList = $partner->select('', 'name ASC');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
+        $partnerManager    = $this->get('unilend.service.partner_manager');
+        $defaultPartner    = $partnerManager->getDefaultPartner();
+        $this->partnerList = $defaultPartner->select('', 'name ASC');
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
         $clientManager = $this->get('unilend.service.client_manager');
@@ -1501,7 +1492,7 @@ class dossiersController extends bootstrap
             $this->projects->id_company                = $this->companies->id_company;
             $this->projects->create_bo                 = 1; // on signale que le projet a été créé en Bo
             $this->projects->status                    = \projects_status::A_TRAITER;
-            $this->projects->id_partner                = $this->projects->getPartnerId($partner);
+            $this->projects->id_partner                = $defaultPartner->id;
             $this->projects->commission_rate_funds     = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
             $this->projects->commission_rate_repayment = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
 
@@ -2582,8 +2573,8 @@ class dossiersController extends bootstrap
             'lien_cgv_universign'  => $sCgvLink,
             'lien_tw'              => $twitterUrl,
             'lien_fb'              => $facebookUrl,
-            'commission_deblocage' => $this->ficelle->formatNumber($oProjects->commission_rate_funds, 0),
-            'commission_crd'       => $this->ficelle->formatNumber($oProjects->commission_rate_repayment, 0),
+            'commission_deblocage' => $this->ficelle->formatNumber($oProjects->commission_rate_funds, 1),
+            'commission_crd'       => $this->ficelle->formatNumber($oProjects->commission_rate_repayment, 1),
         );
 
         if (empty($oClients->email)) {
