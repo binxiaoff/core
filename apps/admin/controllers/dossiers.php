@@ -153,7 +153,7 @@ class dossiersController extends bootstrap
                     $this->projects->commission_rate_funds     = $partnerProduct->commission_rate_funds;
                     $this->projects->commission_rate_repayment = $partnerProduct->commission_rate_repayment;
                 } elseif (false === empty($_POST['assigned_product'])) {
-                    $_SESSION['freeow']['message'] .= 'Ce produit n\'est pas configuré pour le partenaire';
+                    $_SESSION['freeow']['message'] = 'Ce produit n\'est pas configuré pour le partenaire';
                 }
                 $this->projects->update();
             }

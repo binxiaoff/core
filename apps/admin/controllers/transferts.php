@@ -837,7 +837,7 @@ class transfertsController extends bootstrap
                     $invoice->id_project      = $project->id_project;
                     $invoice->ordre           = 0;
                     $invoice->type_commission = \factures::TYPE_COMMISSION_FINANCEMENT;
-                    $invoice->commission      = round(bcdiv($fVATFreeCommission, $project->amount, 3), 1);
+                    $invoice->commission      = $project->commission_rate_funds;
                     $invoice->montant_ttc     = $fCommission;
                     $invoice->montant_ht      = $fVATFreeCommission;
                     $invoice->tva             = $fCommission - $fVATFreeCommission;

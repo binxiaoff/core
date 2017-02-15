@@ -4,20 +4,20 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
-class ProductManager
+abstract class ProductManager
 {
     /** @var EntityManager */
-    private $entityManager;
+    protected $entityManager;
     /** @var ProjectValidator */
-    private $projectValidator;
+    protected $projectValidator;
     /** @var BidValidator */
-    private $bidValidator;
+    protected $bidValidator;
     /** @var LenderValidator */
-    private $lenderValidator;
+    protected $lenderValidator;
     /** @var ProductAttributeManager */
-    private $productAttributeManager;
+    protected $productAttributeManager;
     /** @var ContractManager */
-    private $contractManager;
+    protected $contractManager;
 
     public function __construct(
         EntityManager $entityManager,
@@ -183,48 +183,9 @@ class ProductManager
     }
 
     /**
-     * @param bool      $includeInactiveProduct
-     * @param null|int  $partnerId
-     * @return \product[]
+     * @return mixed
      */
-    public function getAvailableProducts($includeInactiveProduct = false, $partnerId = null)
-    {
-        if (false === empty($partnerId)) {
-            /** @var \partner_product $partnerProduct */
-            $partnerProduct = $this->entityManager->getRepository('partner_product');
-
-            return $this->filterProductByStatus($partnerProduct->select('id_partner = ' . $partnerId), $includeInactiveProduct);
-        } else {
-            /** @var \product $product */
-            $product = $this->entityManager->getRepository('product');
-
-            return $this->filterProductByStatus($product->select(), $includeInactiveProduct);
-        }
-    }
-
-    /**
-     * @param array $productList
-     * @param bool  $includeInactiveProduct
-     * @return array
-     */
-    private function filterProductByStatus(array $productList, $includeInactiveProduct = false) {
-        /** @var \product $product */
-        $product = $this->entityManager->getRepository('product');
-        $availableProducts        = [];
-
-        foreach ($productList as $oneProduct) {
-            $product->get($oneProduct['id_product']);
-            if (
-                $product->status != \product::STATUS_ARCHIVED
-                && ($includeInactiveProduct || $product->status == \product::STATUS_ONLINE)
-            ) {
-                $availableProduct    = clone $product;
-                $availableProducts[] = $availableProduct;
-            }
-        }
-
-        return $availableProducts;
-    }
+    abstract public function getAvailableProducts();
 
     /**
      * @param \product $product
