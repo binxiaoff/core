@@ -50,7 +50,7 @@ class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
                 while ($row = fgetcsv($inputHandler)) {
                     if ($project->get($row[0])) {
                         if ($company->get($project->id_company)) {
-                            $result = $projectRequestManager->checkProjectRisk($company, $project, \users::USER_ID_CRON);
+                            $result = $projectRequestManager->checkProjectRisk($project, \users::USER_ID_CRON);
                             fputcsv($outputHandler, [$project->id_project, (isset($result['motive'])) ? $result['motive'] : 'All checks ok']);
                         }
                     } else {

@@ -240,7 +240,7 @@ class ajaxController extends bootstrap
                 $this->clients->update();
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
-                $result = $projectRequestManager->checkProjectRisk($this->companies, $this->projects, $_SESSION['user']['id_user']);
+                $result = $projectRequestManager->checkProjectRisk($this->projects, $_SESSION['user']['id_user']);
 
                 if (true === is_array($result) && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
                     echo 'Siren inconu';
