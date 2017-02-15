@@ -212,8 +212,8 @@ class dashboardController extends bootstrap
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $projects = $project->getImpossibleEvaluationProjects();
 
-        foreach ($projects as $p) {
-            $project->get($p['id_project']);
+        foreach ($projects as $projectRow) {
+            $project->get($projectRow['id_project']);
             $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user']);
         }
         header('Location: ' . $this->lurl . '/dashboard');
