@@ -764,22 +764,13 @@ class dossiersController extends bootstrap
                         }
                     }
 
-                    $this->companies->siret           = $_POST['siret'];
+                    $this->projects->update();
+
                     $this->companies->name            = $_POST['societe'];
-                    $this->companies->id_client_owner = $_POST['id_client'];
-                    $this->companies->code_naf        = $_POST['code_naf'];
-                    $this->companies->libelle_naf     = $_POST['libelle_naf'];
                     $this->companies->tribunal_com    = $_POST['tribunal_com'];
                     $this->companies->activite        = $_POST['activite'];
                     $this->companies->lieu_exploi     = $_POST['lieu_exploi'];
-
-                    $this->clients->get($this->companies->id_client_owner, 'id_client');
-                    $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
-                    $this->clients->nom    = $this->ficelle->majNom($_POST['nom']);
-
-                    $this->projects->update();
                     $this->companies->update();
-                    $this->clients->update();
 
                     $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec succès';
 
@@ -846,50 +837,74 @@ class dossiersController extends bootstrap
                 }
             }
 
+            $this->ratings               = [];
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
             $this->iCompanyProjectsCount = count($this->aCompanyProjects);
             $this->fCompanyOwedCapital   = $this->companies->getOwedCapitalBySIREN();
             $this->bIsProblematicCompany = $this->companies->countProblemsBySIREN() > 0;
 
-            $this->aRatings = array();
             if (false === empty($this->projects->id_company_rating_history)) {
-                /** @var company_rating $oCompanyRating */
-                $oCompanyRating = $this->loadData('company_rating');
-                $this->aRatings = $oCompanyRating->getHistoryRatingsByType($this->projects->id_company_rating_history);
+                /** @var company_rating $companyRating */
+                $companyRating = $this->loadData('company_rating');
+                $ratings = $companyRating->getHistoryRatingsByType($this->projects->id_company_rating_history, true);
 
                 if (
-                    (false === isset($this->aRatings['xerfi']) || false === isset($this->aRatings['xerfi_unilend']))
+                    (false === isset($ratings['xerfi']) || false === isset($ratings['xerfi_unilend']))
                     && false === empty($this->companies->code_naf)
                 ) {
-                    /** @var xerfi $oXerfi */
-                    $oXerfi = $this->loadData('xerfi');
+                    /** @var xerfi $xerfi */
+                    $xerfi = $this->loadData('xerfi');
 
-                    if (false === $oXerfi->get($this->companies->code_naf)) {
-                        $sXerfiScore   = 'N/A';
-                        $sXerfiUnilend = 'PAS DE DONNEES';
-                    } elseif ('' === $oXerfi->score) {
-                        $sXerfiScore   = 'N/A';
-                        $sXerfiUnilend = $oXerfi->unilend_rating;
+                    if (false === $xerfi->get($this->companies->code_naf)) {
+                        $xerfiScore   = 'N/A';
+                        $xerfiUnilend = 'PAS DE DONNEES';
+                    } elseif ('' === $xerfi->score) {
+                        $xerfiScore   = 'N/A';
+                        $xerfiUnilend = $xerfi->unilend_rating;
                     } else {
-                        $sXerfiScore   = $oXerfi->score;
-                        $sXerfiUnilend = $oXerfi->unilend_rating;
+                        $xerfiScore   = $xerfi->score;
+                        $xerfiUnilend = $xerfi->unilend_rating;
                     }
 
-                    if (false === isset($this->aRatings['xerfi'])) {
-                        $oCompanyRating->id_company_rating_history = $this->projects->id_company_rating_history;
-                        $oCompanyRating->type                      = 'xerfi';
-                        $oCompanyRating->value                     = $sXerfiScore;
-                        $oCompanyRating->create();
+                    if (false === isset($ratings['xerfi'])) {
+                        $companyRating->id_company_rating_history = $this->projects->id_company_rating_history;
+                        $companyRating->type                      = 'xerfi';
+                        $companyRating->value                     = $xerfiScore;
+                        $companyRating->create();
                     }
 
-                    if (false === isset($this->aRatings['xerfi_unilend'])) {
-                        $oCompanyRating->id_company_rating_history = $this->projects->id_company_rating_history;
-                        $oCompanyRating->type                      = 'xerfi_unilend';
-                        $oCompanyRating->value                     = $sXerfiUnilend;
-                        $oCompanyRating->create();
+                    if (false === isset($ratings['xerfi_unilend'])) {
+                        $companyRating->id_company_rating_history = $this->projects->id_company_rating_history;
+                        $companyRating->type                      = 'xerfi_unilend';
+                        $companyRating->value                     = $xerfiUnilend;
+                        $companyRating->create();
                     }
 
-                    $this->aRatings = $oCompanyRating->getHistoryRatingsByType($this->projects->id_company_rating_history);
+                    $ratings = $companyRating->getHistoryRatingsByType($this->projects->id_company_rating_history, true);
+                }
+
+                foreach ($ratings as $ratingType => $rating) {
+                    switch ($rating['action']) {
+                        case \company_rating_history::ACTION_WS:
+                            $action = 'WS';
+                            $user   = '';
+                            break;
+                        case \company_rating_history::ACTION_XERFI:
+                            $action = 'Automatique';
+                            $user   = '';
+                            break;
+                        case \company_rating_history::ACTION_USER:
+                        default:
+                            $action = 'Manuel';
+                            $user   = $rating['user'];
+                            break;
+                    }
+                    $this->ratings[$ratingType] = [
+                        'value'  => $rating['value'],
+                        'date'   => $rating['added']->format('d/m/Y H:i'),
+                        'action' => $action,
+                        'user'   => $user
+                    ];
                 }
             }
 

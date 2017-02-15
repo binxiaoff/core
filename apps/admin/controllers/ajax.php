@@ -308,7 +308,7 @@ class ajaxController extends bootstrap
                 /** @var projects $oProject */
                 $oProject = $this->loadData('projects');
 
-                if ($oProject->get($_POST['id_project'], 'id_project')) {
+                if ($oProject->get($_POST['id_project'], 'id_project') && $oProject->status <= \projects_status::COMITY_REVIEW) {
                     /** @var company_rating $oCompanyRating */
                     $oCompanyRating = $this->loadData('company_rating');
                     $aRatings       = $oCompanyRating->getHistoryRatingsByType($oProject->id_company_rating_history);
@@ -327,9 +327,9 @@ class ajaxController extends bootstrap
                                 break;
                         }
 
-                        if (false === isset($aRatings[$sRating]) || $aRatings[$sRating] != $mValue) {
+                        if (false === isset($aRatings[$sRating]) || $aRatings[$sRating]['value'] != $mValue) {
                             $bAddHistory = true;
-                            $aRatings[$sRating] = $mValue;
+                            $aRatings[$sRating]['value'] = $mValue;
                         }
                     }
 
@@ -343,10 +343,10 @@ class ajaxController extends bootstrap
 
                         $oProject->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
 
-                        foreach ($aRatings as $sRating => $mValue) {
+                        foreach ($aRatings as $sRating => $aRating) {
                             $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
                             $oCompanyRating->type                      = $sRating;
-                            $oCompanyRating->value                     = $mValue;
+                            $oCompanyRating->value                     = $aRating['value'];
                             $oCompanyRating->create();
                         }
                     }

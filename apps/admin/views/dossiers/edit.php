@@ -8,6 +8,18 @@
         text-align: right;
     }
 
+    .project-identity {
+        width: 580px;
+    }
+
+    .project-identity th {
+        white-space: nowrap;
+    }
+
+    .project-actions .select {
+        width: 360px;
+    }
+
     .lanote {
         color: #5591EC;
         font-size: 17px;
@@ -88,7 +100,8 @@
         z-index: 999;
     }
 
-    .annual_accounts_dates {
+    .annual_accounts_dates,
+    .company_projects {
         cursor: pointer;
     }
 
@@ -209,7 +222,7 @@
         <div id="resume">
             <div class="gauche">
                 <h2>Identité</h2>
-                <table class="form" style="width: 580px;">
+                <table class="form project-identity">
                     <?php if ($this->projects->status >= \projects_status::A_FUNDER) : ?>
                     <tr>
                         <th>Lien projet</th>
@@ -246,52 +259,35 @@
                     </tr>
                     <tr>
                         <th><label for="title_bo">Titre du projet</label></th>
-                        <td>
-                            <input type="text" name="title_bo" id="title_bo" class="input_large" value="<?= $this->projects->title_bo ?>"/>
-                        </td>
+                        <td><input type="text" name="title_bo" id="title_bo" class="input_large" value="<?= $this->projects->title_bo ?>"></td>
                     </tr>
                     <tr>
                         <th><label for="societe">Nom société</label></th>
-                        <td>
-                            <input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"/>
-                        </td>
+                        <td><input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"></td>
                     </tr>
                     <tr>
                         <th><label for="title">Titre du projet FO</label></th>
-                        <td>
-                            <input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"/>
-                        </td>
+                        <td><input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"></td>
                     </tr>
                     <tr>
                         <th><label for="sector">Secteur de la société</label></th>
-                        <td>
-                            <?= $this->companies->sector > 0 ? $this->translator->trans('company-sector_sector-' . $this->companies->sector) : '-' ?>
-                        </td>
+                        <td><?= $this->companies->sector > 0 ? $this->translator->trans('company-sector_sector-' . $this->companies->sector) : '-' ?></td>
                     </tr>
                     <tr>
                         <th><label for="tribunal_com">Tribunal de commerce</label></th>
-                        <td>
-                            <input type="text" name="tribunal_com" id="tribunal_com" class="input_large" value="<?= $this->companies->tribunal_com ?>"/>
-                        </td>
+                        <td><input type="text" name="tribunal_com" id="tribunal_com" class="input_large" value="<?= $this->companies->tribunal_com ?>"></td>
                     </tr>
                     <tr>
                         <th><label for="activite">Activité</label></th>
-                        <td>
-                            <input type="text" name="activite" id="activite" class="input_large" value="<?= $this->companies->activite ?>"/>
-                        </td>
+                        <td><input type="text" name="activite" id="activite" class="input_large" value="<?= $this->companies->activite ?>"></td>
                     </tr>
                     <tr>
                         <th><label for="lieu_exploi">Lieu exploitation</label></th>
-                        <td>
-                            <input type="text" name="lieu_exploi" id="lieu_exploi" class="input_large" value="<?= $this->companies->lieu_exploi ?>"/>
-                        </td>
+                        <td><input type="text" name="lieu_exploi" id="lieu_exploi" class="input_large" value="<?= $this->companies->lieu_exploi ?>"></td>
                     </tr>
                     <tr>
                         <th><label for="nature_project">Nature du projet</label></th>
-
-                        <td>
-                            <textarea class="textarea_lng" name="nature_project" id="nature_project" style="height: 100px;width: 427px;"><?= $this->projects->nature_project ?></textarea>
-                        </td>
+                        <td><textarea class="textarea_lng" name="nature_project" id="nature_project" style="height: 100px;width: 435px;"><?= $this->projects->nature_project ?></textarea></td>
                     </tr>
                     <tr>
                         <th><label for="photo_projet">Photo projet</label></th>
@@ -479,10 +475,14 @@
                 <?php endif; ?>
 
                 <h2>Actions</h2>
-                <table class="form" style="width: 538px;">
+                <table class="form project-actions">
+                    <tr>
+                        <th>ID dossier</th>
+                        <td colspan="2"><?= $this->projects->id_project ?></td>
+                    </tr>
                     <tr>
                         <th>ID emprunteur</th>
-                        <td>
+                        <td colspan="2">
                             <?= $this->clients->id_client ?>
                             <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Éditer l'emprunteur" /></a>
                             <input id="id_client" type="hidden" value="<?= $this->clients->id_client ?>" name="id_client">
@@ -490,34 +490,26 @@
                     </tr>
                     <tr>
                         <th><label for="prenom">Prénom</label></th>
-                        <td>
-                            <input id="prenom" name="prenom" class="input_large" type="text" value="<?= $this->clients->prenom ?>">
-                        </td>
-                        <td class="align-right">
-                            <input id="search" class="input_moy" type="text" value="" name="search">
-                        </td>
+                        <td colspan="2"><?= $this->clients->prenom ?></td>
                     </tr>
                     <tr>
                         <th><label for="nom">Nom</label></th>
-                        <td><input id="nom" name="nom" class="input_large" type="text" value="<?= $this->clients->nom ?>"></td>
-                        <td class="align-right">
-                            <a id="link_search" class="btn_link thickbox" onclick="$(this).attr('href', '<?= $this->lurl ?>/dossiers/changeClient/' + $('#search').val());" href="<?= $this->lurl ?>/dossiers/changeClient/">Rechercher</a>
-                        </td>
+                        <td colspan="2"><?= $this->clients->nom ?></td>
                     </tr>
                     <tr>
                         <th><label for="commercial">Commercial</label></th>
-                        <td>
+                        <td colspan="2">
                             <select name="commercial" id="commercial" class="select">
                                 <option value="0">Choisir</option>
-                                <?php foreach ($this->aSalesPersons as $aSalesPerson) { ?>
+                                <?php foreach ($this->aSalesPersons as $aSalesPerson) : ?>
                                     <option <?= ($this->projects->id_commercial == $aSalesPerson['id_user'] ? 'selected' : '') ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
-                                <?php } ?>
+                                <?php endforeach; ?>
                             </select>
                         </td>
                     </tr>
                     <tr id="analysts-row"<?php if ($this->projects->status < \projects_status::PENDING_ANALYSIS && empty($this->projects->id_analyste)) { ?> style="display: none;"<?php } ?>>
                         <th><label for="analyste">Analyste</label></th>
-                        <td>
+                        <td colspan="2">
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Choisir</option>
                                 <?php foreach ($this->aAnalysts as $aAnalyst) { ?>
@@ -529,7 +521,9 @@
                     <tr>
                         <th><label for="status">Statut</label></th>
                         <td id="current_statut">
-                            <input type="hidden" name="current_status" value="<?= $this->projects->status ?>"/>
+                            <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
+                            <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
+                            <input type="hidden" name="current_status" value="<?= $this->projects->status ?>">
                             <?php
                                 $sDisplayPeriodHS           = 'none';
                                 $sDisplayMsgPeriodHs        = 'none';
@@ -571,7 +565,7 @@
                                     <option <?= ($this->projects->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
                                 <?php endforeach; ?>
                                 </select>
-                            <?php  else : ?>
+                            <?php else : ?>
                                 <input type="hidden" name="status" id="status" value="<?= $this->projects->status ?>" />
                                 <?= $this->projects_status->label ?>
                                 <?php if (false === empty($this->sRejectionReason)) : ?>
@@ -589,135 +583,103 @@
                             <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
                         </td>
                     </tr>
-                    <?php if (in_array($this->projects->status, [\projects_status::NOT_ELIGIBLE, \projects_status::IMPOSSIBLE_AUTO_EVALUATION]) && false === empty($this->projects_status_history->content)) { ?>
-                    <tr>
-                        <th><label for="status">Motif</label></th>
-                        <td><?= $this->rejectionReasonMessage ?></td>
-                    </tr>
-                    <?php } ?>
-                </table>
-
-                <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
-                <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
-
-                <table class="form" style="width: 538px;">
-                    <?php if (in_array($this->projects->status, array(\projects_status::PENDING_ANALYSIS, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING))) { ?>
+                    <?php if (in_array($this->projects->status, [\projects_status::NOT_ELIGIBLE, \projects_status::IMPOSSIBLE_AUTO_EVALUATION]) && false === empty($this->projects_status_history->content)) : ?>
+                        <tr>
+                            <th><label for="status">Motif</label></th>
+                            <td colspan="2"><?= $this->rejectionReasonMessage ?></td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php if (in_array($this->projects->status, [\projects_status::PENDING_ANALYSIS, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING])) : ?>
                         <tr class="change_statut" <?= ($this->projects->status == \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
-                            <td colspan="2">
+                            <td colspan="3">
                                 <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
                                 <span id="msgProjectPeriodHS" style="display:<?= $sDisplayMsgPeriodHs ?>;"><?= $blockingPuttingOnlineError ?></span>
                                 <div class="block_cache change_statut"></div>
                             </td>
                         </tr>
-                    <?php } ?>
+                    <?php endif; ?>
                     <tr class="content_date_publicaion" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
-                        <th><label for="date_publication">Date de publication*</label></th>
-                        <td id="date_publication">
-                            <?php
-                            if (in_array($this->projects->status, array(\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
-                                ?>
+                        <th><label for="date_publication">Date de publication&nbsp;*</label></th>
+                        <td id="date_publication" colspan="2">
+                            <?php if (in_array($this->projects->status, [\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER])) : ?>
                                 <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
                                 <?php
-                                $tab_date_publication_full  = explode(' ', $this->projects->date_publication);
-                                $tab_date_publication_full2 = explode(':', $tab_date_publication_full[1]);
-                                $heure_date_publication     = $tab_date_publication_full2[0];
-                                $minute_date_publication    = $tab_date_publication_full2[1];
-                                $seconde_date_publication   = $tab_date_publication_full2[2];
+                                    $tab_date_publication_full  = explode(' ', $this->projects->date_publication);
+                                    $tab_date_publication_full2 = explode(':', $tab_date_publication_full[1]);
+                                    $heure_date_publication     = $tab_date_publication_full2[0];
+                                    $minute_date_publication    = $tab_date_publication_full2[1];
+                                    $seconde_date_publication   = $tab_date_publication_full2[2];
                                 ?>
                                 &agrave;
                                 <select name="date_publication_heure" class="selectMini">
-                                    <?php
-                                    for ($h = 0; $h < 24; $h++) {
-                                        ?><option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option><?php
-                                    }
-                                    ?>
+                                    <?php for ($h = 0; $h < 24; $h++) : ?>
+                                        <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
+                                    <?php endfor; ?>
                                 </select>h
-
                                 <select name="date_publication_minute" class="selectMini">
-                                    <?php
-                                    for ($m = 0; $m < 60; $m+=5) {
-                                        ?>
+                                    <?php for ($m = 0; $m < 60; $m += 5) : ?>
                                         <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_publication == $m ? "selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
-                                        <?php
-                                    }
-                                    ?>
+                                    <?php endfor; ?>
                                 </select>
-                                <?php
-                            } else {
-                                echo $this->dates->formatDate($this->projects->date_publication, 'd/m/Y H:i');
-                            }
-                            ?>
+                            <?php else : ?>
+                                <?= $this->dates->formatDate($this->projects->date_publication, 'd/m/Y H:i') ?>
+                            <?php endif; ?>
                         </td>
                     </tr>
-                    <tr class="content_date_retrait" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
-                        <th><label for="date_retrait">Date de retrait*</label></th>
-                        <td id="date_retrait">
-                            <?php
-                            if (in_array($this->projects->status, array(\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
-                                ?>
+                    <tr class="content_date_retrait"<?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : ' style="display:none"') ?>>
+                        <th><label for="date_retrait">Date de retrait&nbsp;*</label></th>
+                        <td id="date_retrait" colspan="2">
+                            <?php if (in_array($this->projects->status, [\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER])) : ?>
                                 <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
                                 <?php
-                                $tab_date_retrait_full  = explode(' ', $this->projects->date_retrait);
-                                $tab_date_retrait_full2 = explode(':', $tab_date_retrait_full[1]);
-                                $heure_date_retrait     = $tab_date_retrait_full2[0];
-                                $minute_date_retrait    = $tab_date_retrait_full2[1];
-                                $seconde_date_retrait   = $tab_date_retrait_full2[2];
+                                    $tab_date_retrait_full  = explode(' ', $this->projects->date_retrait);
+                                    $tab_date_retrait_full2 = explode(':', $tab_date_retrait_full[1]);
+                                    $heure_date_retrait     = $tab_date_retrait_full2[0];
+                                    $minute_date_retrait    = $tab_date_retrait_full2[1];
+                                    $seconde_date_retrait   = $tab_date_retrait_full2[2];
                                 ?>
                                 &agrave;
                                 <select name="date_retrait_heure" class="selectMini">
-                                    <?php
-                                    for ($h = 0; $h < 24; $h++) {
-                                        ?>
+                                    <?php for ($h = 0; $h < 24; $h++) : ?>
                                         <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_retrait == $h ? "selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
-                                        <?php
-                                    }
-                                    ?>
+                                    <?php endfor; ?>
                                 </select>h
                                 <select name="date_retrait_minute" class="selectMini">
-                                    <?php
-                                    for ($m = 0; $m < 60; $m+=5) {
-                                        ?>
+                                    <?php for ($m = 0; $m < 60; $m += 5) : ?>
                                         <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_retrait == $m ? "selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
-                                        <?php
-                                    }
-                                    ?>
+                                    <?php endfor; ?>
                                 </select>
-                                <?php
-                            } else {
-                                echo $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y H:i');
-
-                                if ($this->projects->status < \projects_status::FUNDE) {
-                                    ?>
+                            <?php else : ?>
+                                <?= $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y H:i') ?>
+                                <?php if ($this->projects->status < \projects_status::FUNDE) : ?>
                                     &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
-                                    <?php
-                                }
-                            }
-                            ?>
+                                <?php endif; ?>
+                            <?php endif; ?>
                         </td>
                     </tr>
-                    <?php if (isset($this->retour_dates_valides) && $this->retour_dates_valides != "") { ?>
+                    <?php if (false === empty($this->retour_dates_valides)) : ?>
                         <tr class="content_date_retrait">
                             <th></th>
-                            <td style="color:red; font-weight:bold;"><?= $this->retour_dates_valides ?></td>
+                            <td colspan="2" style="color:red; font-weight:bold;"><?= $this->retour_dates_valides ?></td>
                         </tr>
-                    <?php } ?>
+                    <?php endif; ?>
                     <tr>
                         <td></td>
-                        <td id="status_dossier">
-                        <?php if ($this->projects->status == \projects_status::COMMERCIAL_REVIEW) { ?>
-                            <?php if (empty($this->projects->id_product)) : ?>
-                                Merci de séléctionner un produit avant de passer au prochain statut.
-                            <?php else : ?>
-                                <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
-                                <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#CC0000;border-color:#CC0000;font-size:10px;">Rejeter dossier</a>
-                            <?php endif;?>
-                            <?php } ?>
+                        <td id="status_dossier" colspan="2">
+                            <?php if ($this->projects->status == \projects_status::COMMERCIAL_REVIEW) : ?>
+                                <?php if (empty($this->projects->id_product)) : ?>
+                                    Merci de séléctionner un produit avant de passer au prochain statut.
+                                <?php else : ?>
+                                    <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
+                                    <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#CC0000;border-color:#CC0000;font-size:10px;">Rejeter dossier</a>
+                                <?php endif; ?>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) { ?>
                         <tr>
                             <th><label for="pouvoir">Pouvoir</label></th>
-                            <td>
+                            <td colspan="2">
                                 <div>
                                     <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
                                     <?php
@@ -731,14 +693,14 @@
                     <?php } elseif ($this->projects->status == \projects_status::FUNDE) { ?>
                         <tr>
                             <th><label for="upload_pouvoir">Pouvoir</label></th>
-                            <td><input type="file" name="upload_pouvoir" id="upload_pouvoir"/></td>
+                            <td colspan="2"><input type="file" name="upload_pouvoir" id="upload_pouvoir"/></td>
                         </tr>
                     <?php } ?>
 
                     <?php if ($this->projects->status == \projects_status::FUNDE) : ?>
                         <tr>
-                            <th>Prêt refusé</th>
-                            <td>
+                            <th><label for="pret_refuse">Prêt refusé</label></th>
+                            <td colspan="2">
                                 <select name="pret_refuse" id="pret_refuse" class="select">
                                     <option value="0">Non</option>
                                     <option value="1">Oui</option>
@@ -748,13 +710,13 @@
                         <?php if (empty($this->proxy) || $this->proxy['status'] != \projects_pouvoir::STATUS_VALIDATED) : ?>
                             <tr>
                                 <th>Pouvoir</th>
-                                <td><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                <td colspan="2"><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                             </tr>
                         <?php endif ?>
                         <?php if (empty($this->mandate) || $this->mandate['status'] != \clients_mandats::STATUS_SIGNED) : ?>
                             <tr>
                                 <th>Mandat</th>
-                                <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                <td colspan="2"><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                             </tr>
                         <?php endif ?>
                     <?php endif; ?>

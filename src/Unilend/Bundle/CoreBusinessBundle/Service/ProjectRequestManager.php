@@ -153,7 +153,7 @@ class ProjectRequestManager
         $companyRatingHistory->action     = \company_rating_history::ACTION_WS;
         $companyRatingHistory->create();
 
-    /** @var \company_rating $companyRating */
+        /** @var \company_rating $companyRating */
         $companyRating = $this->entityManager->getRepository('company_rating');
 
         if (false === empty($project->id_company_rating_history)) {
@@ -161,7 +161,7 @@ class ProjectRequestManager
                 if (false === in_array($rating, \company_rating::$ratingTypes)) {
                     $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
                     $companyRating->type                      = $rating;
-                    $companyRating->value                     = $value;
+                    $companyRating->value                     = $value['value'];
                     $companyRating->create();
                 }
             }
