@@ -6,6 +6,12 @@ use JMS\Serializer\Annotation as JMS;
 
 class CompanyRating
 {
+    const COLOR_BLACK  = 'Black';
+    const COLOR_RED    = 'Red';
+    const COLOR_YELLOW = 'Yellow';
+    const COLOR_GREEN  = 'Green';
+    const COLOR_WHITE  = 'White';
+
     /**
      * @JMS\Groups({"grade"})
      * @JMS\SerializedName("message")

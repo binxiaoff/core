@@ -9,6 +9,7 @@ class company_rating extends company_rating_crud
     const TYPE_XERFI_RISK_SCORE           = 'xerfi';
     const TYPE_UNILEND_XERFI_RISK         = 'xerfi_unilend';
     const TYPE_EULER_HERMES_GRADE         = 'grade_euler_hermes';
+    const TYPE_EULER_HERMES_TRAFFIC_LIGHT = 'get_traffic_light_euler';
 
     public static $ratingTypes = [
         self::TYPE_ALTARES_VALUE_DATE,
@@ -17,7 +18,8 @@ class company_rating extends company_rating_crud
         self::TYPE_INFOLEGALE_SCORE,
         self::TYPE_XERFI_RISK_SCORE,
         self::TYPE_UNILEND_XERFI_RISK,
-        self::TYPE_EULER_HERMES_GRADE
+        self::TYPE_EULER_HERMES_GRADE,
+        self::TYPE_EULER_HERMES_TRAFFIC_LIGHT
     ];
 
     public function __construct($bdd, $params = '')
@@ -69,16 +71,11 @@ class company_rating extends company_rating_crud
         $result  = [];
         $ratings = $this->select('id_company_rating_history = ' . $companyRatingHistoryId);
 
-        if ($authorDate) {
-            $ratingHistory = new \company_rating_history($this->bdd);
-            $ratingHistory->get($companyRatingHistoryId);
-        }
-
         foreach ($ratings as $rating) {
             $result[$rating['type']] = $rating;
 
             if ($authorDate) {
-                $result[$rating['type']] = $this->getAuthorDate($rating, $ratingHistory);
+                $result[$rating['type']] = $this->getAuthorDate($rating);
             }
         }
 
@@ -86,20 +83,20 @@ class company_rating extends company_rating_crud
     }
 
     /**
-     * @param array                   $rating
-     * @param \company_rating_history $ratingHistory
+     * @param array $rating
      * @return array
      */
-    private function getAuthorDate(array $rating, \company_rating_history $ratingHistory)
+    private function getAuthorDate(array $rating)
     {
         $statement = $this->bdd->createQueryBuilder()
             ->select('crh.id_user, IF(u.id_user IS NULL, "", CONCAT(u.firstname, " ", u.name)) AS user, crh.action, crh.added, cr.value')
-            ->from('company_rating_history', 'crh')
+            ->from('company_rating_history', 'origin')
+            ->innerJoin('origin', 'company_rating_history', 'crh', 'origin.id_company = crh.id_company AND crh.added <= origin.added')
             ->innerJoin('crh', 'company_rating', 'cr', 'crh.id_company_rating_history = cr.id_company_rating_history AND cr.type = :ratingType')
             ->leftJoin('crh', 'users', 'u', 'crh.id_user = u.id_user')
-            ->where('crh.id_company = :companyId')
+            ->where('origin.id_company_rating_history = :ratingHistoryId')
             ->setParameter('ratingType', $rating['type'])
-            ->setParameter('companyId', $ratingHistory->id_company)
+            ->setParameter('ratingHistoryId', $rating['id_company_rating_history'])
             ->orderBy('crh.added', 'DESC')
             ->execute();
 

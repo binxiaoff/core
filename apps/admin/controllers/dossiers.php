@@ -925,55 +925,55 @@ class dossiersController extends bootstrap
         $translator = $this->get('translator');
 
         switch ($projectStatusHistory->content) {
-            case \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT :
+            case \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-too-much-payment-incidents-message');
                 break;
-            case \projects_status::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT :
+            case \projects_status::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-unauthorized-payment-incident-message');
                 break;
-            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE :
+            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-elimination-xerfi-score-message');
                 break;
-            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE :
+            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-altares-score-message');
                 break;
-            case \projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE :
+            case \projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-low-altares-score-message');
                 break;
-            case \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE :
+            case \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-low-infolegal-score-message');
                 break;
-            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_EULER_GRADE :
+            case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-euler-grade-message');
                 break;
-            case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE :
+            case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-vs-altares-score-message');
                 break;
-            case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES :
+            case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges-message');
                 break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'altares_identity' :
+            case \projects_status::UNEXPECTED_RESPONSE . 'altares_identity':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-identity-error-message');
                 break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident' :
+            case \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-codinf-incident-error-message');
                 break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro' :
+            case \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-fpro-error-message');
                 break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'altares_ebe' :
+            case \projects_status::UNEXPECTED_RESPONSE . 'altares_ebe':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-ebe-error-message');
                 break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges' :
+            case \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges-error-message');
                 break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'altares_score' :
+            case \projects_status::UNEXPECTED_RESPONSE . 'altares_score':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-score-error-message');
                 break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'infolegal_score' :
+            case \projects_status::UNEXPECTED_RESPONSE . 'infolegal_score':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-score-error-message');
                 break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'euler_grade' :
+            case \projects_status::UNEXPECTED_RESPONSE . 'euler_grade':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-eurler-grade-error-message');
                 break;
             default:

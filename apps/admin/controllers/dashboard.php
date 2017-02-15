@@ -208,14 +208,20 @@ class dashboardController extends bootstrap
     {
         /** @var \projects $project */
         $project  = $this->loadData('projects');
+        $projects = $project->getImpossibleEvaluationProjects();
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $projects = $project->getImpossibleEvaluationProjects();
 
         foreach ($projects as $projectRow) {
             $project->get($projectRow['id_project']);
-            $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user']);
+
+            if (null === $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user'])) {
+                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::INCOMPLETE_REQUEST, $project);
+            }
         }
+
         header('Location: ' . $this->lurl . '/dashboard');
         die;
     }

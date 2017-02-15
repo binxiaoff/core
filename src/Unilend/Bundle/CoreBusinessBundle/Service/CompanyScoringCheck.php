@@ -5,7 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating as AltaresCompanyRating;
+use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager;
 use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
@@ -39,7 +40,16 @@ class CompanyScoringCheck
      * @param InfolegaleManager          $wsInfolegale
      * @param EulerHermesManager         $wsEuler
      */
-    public function __construct(EntityManager $entityManager, CompanyBalanceSheetManager $companyBalanceSheetManager, ProjectManager $projectManager, CacheItemPoolInterface $cacheItemPool, LoggerInterface $logger, AltaresManager $wsAltares, InfolegaleManager $wsInfolegale, EulerHermesManager $wsEuler)
+    public function __construct(
+        EntityManager $entityManager,
+        CompanyBalanceSheetManager $companyBalanceSheetManager,
+        ProjectManager $projectManager,
+        CacheItemPoolInterface $cacheItemPool,
+        LoggerInterface $logger,
+        AltaresManager $wsAltares,
+        InfolegaleManager $wsInfolegale,
+        EulerHermesManager $wsEuler
+    )
     {
         $this->entityManager              = $entityManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
@@ -53,28 +63,30 @@ class CompanyScoringCheck
 
     /**
      * @param string $siren
-     * @return null|CompanyRating
+     * @return null|AltaresCompanyRating
      */
     public function getAltaresScore($siren)
     {
         try {
             return $this->wsAltares->getScore($siren);
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get Altares score: AltaresManager::getScore(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
+            $this->logger->error(
+                'Could not get Altares score: AltaresManager::getScore(' . $siren . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]
+            );
         }
 
         return null;
     }
 
     /**
-     * @param CompanyRating           $altaresScore
-     * @param \company_rating_history $companyRatingHistory
-     * @param \company_rating         $companyRating
-     * @param string                  $rejectionReason
+     * @param null|AltaresCompanyRating $altaresScore
+     * @param \company_rating_history   $companyRatingHistory
+     * @param \company_rating           $companyRating
+     * @param string                    $rejectionReason
      * @return bool
      */
-    public function isAltaresScoreLow(CompanyRating $altaresScore, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
+    public function isAltaresScoreLow($altaresScore, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
     {
         if (null !== $altaresScore) {
             $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_ALTARES_SCORE_20, $altaresScore->getScore20());
@@ -85,10 +97,11 @@ class CompanyScoringCheck
                 $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE;
 
                 return true;
-            } else {
-                return false;
             }
+
+            return false;
         }
+
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_score';
 
         return true;
@@ -98,7 +111,7 @@ class CompanyScoringCheck
      * @param string                  $codeNaf
      * @param \company_rating_history $companyRatingHistory
      * @param \company_rating         $companyRating
-     * @param                         $rejectionReason
+     * @param string                  $rejectionReason
      * @return bool
      */
     public function isXerfiUnilendOk($codeNaf, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
@@ -130,12 +143,12 @@ class CompanyScoringCheck
     }
 
     /**
-     * @param null|CompanyRating $altaresScore
-     * @param string             $codeNaf
-     * @param string             $rejectionReason
+     * @param AltaresCompanyRating $altaresScore
+     * @param string               $codeNaf
+     * @param string               $rejectionReason
      * @return bool
      */
-    public function combineAltaresScoreAndUnilendXerfi($altaresScore, $codeNaf, &$rejectionReason)
+    public function combineAltaresScoreAndUnilendXerfi(AltaresCompanyRating $altaresScore, $codeNaf, &$rejectionReason)
     {
         /** @var \xerfi $xerfi */
         $xerfi = $this->entityManager->getRepository('xerfi');
@@ -147,6 +160,66 @@ class CompanyScoringCheck
         }
 
         return true;
+    }
+
+    /**
+     * @param AltaresCompanyRating    $altaresScore
+     * @param \companies              $company
+     * @param \company_rating_history $companyRatingHistory
+     * @param \company_rating         $companyRating
+     * @param string                  $rejectionReason
+     * @return bool
+     */
+    public function combineEulerTrafficLightXerfiAltaresScore(
+        AltaresCompanyRating $altaresScore,
+        \companies $company,
+        \company_rating_history $companyRatingHistory,
+        \company_rating $companyRating,
+        &$rejectionReason
+    )
+    {
+        try {
+            /** @var \pays_v2 $country */
+            $country = $this->entityManager->getRepository('pays_v2');
+            $country->get($company->id_pays);
+
+            if (null !== ($eulerTrafficLight = $this->wsEuler->getTrafficLight($company->siren, empty($country->iso) ? 'fr' : $country->iso))) {
+                $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_EULER_HERMES_TRAFFIC_LIGHT, $eulerTrafficLight->getColor());
+
+                if ($eulerTrafficLight->getColor() === EulerCompanyRating::COLOR_BLACK) {
+                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT;
+
+                    return false;
+                }
+
+                if ($eulerTrafficLight->getColor() === EulerCompanyRating::COLOR_RED && $altaresScore->getScore20() < 12) {
+                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE;
+
+                    return false;
+                }
+
+                /** @var \xerfi $xerfi */
+                $xerfi = $this->entityManager->getRepository('xerfi');
+                $xerfi->get($company->code_naf);
+
+                if ($eulerTrafficLight->getColor() === EulerCompanyRating::COLOR_RED && $xerfi->score > 75) {
+                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI;
+
+                    return false;
+                }
+
+                return true;
+            }
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Could not get Euler Traffic Light cross score: ' . $company->siren . '. Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]
+            );
+        }
+
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'euler_traffic_light_score';
+
+        return false;
     }
 
     /**
@@ -171,42 +244,52 @@ class CompanyScoringCheck
                 return false;
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get infolegale score: InfolegaleManager::getScore(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
+            $this->logger->error(
+                'Could not get infolegale score: InfolegaleManager::getScore(' . $siren . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]
+            );
         }
+
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infolegal_score';
 
         return true;
     }
 
     /**
-     * @param null|CompanyRating      $altaresScore
+     * @param AltaresCompanyRating    $altaresScore
      * @param \companies              $company
      * @param \company_rating_history $companyRatingHistory
      * @param \company_rating         $companyRating
      * @param string                  $rejectionReason
      * @return bool
      */
-    public function combineEulerGradeUnilendXerfiAltaresScore($altaresScore, \companies $company, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
+    public function combineEulerGradeUnilendXerfiAltaresScore(
+        AltaresCompanyRating $altaresScore,
+        \companies $company,
+        \company_rating_history $companyRatingHistory,
+        \company_rating $companyRating,
+        &$rejectionReason
+    )
     {
         try {
             /** @var \pays_v2 $country */
             $country = $this->entityManager->getRepository('pays_v2');
             $country->get($company->id_pays);
 
-            if (null !== ($eulerGrade = $this->wsEuler->getGrade($company->siren, (empty($country->iso)) ? 'fr' : $country->iso))) {
+            if (null !== ($eulerGrade = $this->wsEuler->getGrade($company->siren, empty($country->iso) ? 'fr' : $country->iso))) {
                 $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_EULER_HERMES_GRADE, $eulerGrade->getGrade());
+
                 /** @var \xerfi $xerfi */
                 $xerfi = $this->entityManager->getRepository('xerfi');
                 $xerfi->get($company->code_naf);
 
                 if ($eulerGrade->getGrade() >= 9 || ($eulerGrade->getGrade() == 8 && $xerfi->score > 75)) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_EULER_GRADE;
+                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI;
 
                     return false;
                 }
 
-                if (($eulerGrade->getGrade() >= 5 && $altaresScore->getScore20() == 4) || ($eulerGrade->getGrade() >= 7 && $altaresScore->getScore20() == 5)) {
+                if ($eulerGrade->getGrade() >= 5 && $altaresScore->getScore20() == 4 || $eulerGrade->getGrade() >= 7 && $altaresScore->getScore20() == 5) {
                     $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE;
 
                     return false;
@@ -215,9 +298,12 @@ class CompanyScoringCheck
                 return true;
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get Euler grade: EulerHermesManager::getGrade(' . $company->siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]);
+            $this->logger->error(
+                'Could not get Euler grade: EulerHermesManager::getGrade(' . $company->siren . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]
+            );
         }
+
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'euler_grade';
 
         return false;
@@ -235,7 +321,10 @@ class CompanyScoringCheck
         $companyRating->type                      = $ratingType;
         $companyRating->value                     = $ratingValue;
         $companyRating->create();
-        $this->logger->info('Company rating created: id=' . $companyRating->id_company_rating . ' type=' . $companyRating->type . ' value=' . $companyRating->value,
-            ['class' => __CLASS__, 'function' => __FUNCTION__, 'company_rating_history_id' => $companyRatingHistory->id_company_rating_history]);
+
+        $this->logger->info(
+            'Company rating created: id=' . $companyRating->id_company_rating . ' type=' . $companyRating->type . ' value=' . $companyRating->value,
+            ['class' => __CLASS__, 'function' => __FUNCTION__, 'company_rating_history_id' => $companyRatingHistory->id_company_rating_history]
+        );
     }
 }

@@ -261,7 +261,7 @@ class CompanyBalanceSheetManager
      */
     public function setCompanyBalance(\companies $company, \projects &$project, BalanceSheetList $balanceSheetList, $bRecalculate = true)
     {
-        $taxFormType   = $this->detectTaxFormType($company);
+        $taxFormType = $this->detectTaxFormType($company);
 
         if ($taxFormType) {
             /** @var \companies_actif_passif $companyAssetsDebts */
@@ -318,15 +318,11 @@ class CompanyBalanceSheetManager
                     $this->calculateDebtsAssetsFromBalance($companyAnnualAccounts->id_bilan);
                 }
             }
-            $lastBalanceSheet = $balanceSheetList->getLastBalanceSheet();
 
-            if (true === empty($lastBalanceSheet)) {
-                /** @var \companies_bilans $companyAccount */
-                $companyAccount = $this->entityManager->getRepository('companies_bilans');
-                $balanceId = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
-            } else {
-                $balanceId = $lastBalanceSheet->getBalanceSheetId();
-            }
+            /** @var \companies_bilans $companyAccount */
+            $companyAccount = $this->entityManager->getRepository('companies_bilans');
+            $balanceId      = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
+
             $project->id_dernier_bilan = $balanceId;
             $project->update();
         }

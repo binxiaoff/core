@@ -72,7 +72,7 @@
                         <td style="width: 30%;">
                             <?php if (false === empty($this->ratings['grade_euler_hermes']['value'])) : ?>
                                 <span class="rating-tooltip" title="grade_euler_hermes"><?= $this->ratings['grade_euler_hermes']['value'] ?></span>
-                            <?php else : ?>N/A<?php endif; ?>
+                            <?php else : ?>-<?php endif; ?>
                         </td>
                         <th style="width: 25%;"><label for="ca_declara_client">Chiffe d'affaires declaré par client</label></th>
                         <td style="width: 20%;"><input type="text" name="ca_declara_client" id="ca_declara_client" placeholder="€" class="input_moy numbers" value="<?= $this->ficelle->formatNumber($this->projects->ca_declara_client, 0) ?>"></td>
@@ -82,7 +82,7 @@
                         <td>
                             <?php if (false === empty($this->ratings['score_altares']['value'])) : ?>
                                 <span class="rating-tooltip" title="score_altares"><?= $this->ratings['score_altares']['value'] ?> / 20</span>
-                            <?php else : ?>N/A<?php endif; ?>
+                            <?php else : ?>-<?php endif; ?>
                         </td>
                         <th><label for="resultat_exploitation_declara_client">Résultat d'exploitation declaré par client</label></th>
                         <td><input type="text" name="resultat_exploitation_declara_client" id="resultat_exploitation_declara_client" placeholder="€" class="input_moy numbers" value="<?= $this->ficelle->formatNumber($this->projects->resultat_exploitation_declara_client, 0) ?>"></td>
@@ -92,7 +92,7 @@
                         <td>
                             <?php if (false === empty($this->ratings['score_sectoriel_altares']['value'])) : ?>
                                 <span class="rating-tooltip" title="score_sectoriel_altares"><?= round($this->ratings['score_sectoriel_altares']['value'] / 5) ?> / 20</span>
-                            <?php else : ?>N/A<?php endif; ?>
+                            <?php else : ?>-<?php endif; ?>
                         </td>
                         <th><label for="fonds_propres_declara_client">Fonds propres declarés par client</label></th>
                         <td colspan="3"><input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" placeholder="€" class="input_moy numbers" value="<?= $this->ficelle->formatNumber($this->projects->fonds_propres_declara_client, 0) ?>"></td>
@@ -102,7 +102,7 @@
                         <td colspan="3">
                             <?php if (false === empty($this->ratings['note_infolegale']['value'])) : ?>
                                 <span class="rating-tooltip" title="note_infolegale"><?= $this->ratings['note_infolegale']['value'] ?></span>
-                            <?php else : ?>N/A<?php endif; ?>
+                            <?php else : ?>-<?php endif; ?>
                         </td>
                     </tr>
                     <tr>
@@ -110,7 +110,7 @@
                         <td colspan="3">
                             <?php if (isset($this->ratings['xerfi']['value'], $this->ratings['xerfi_unilend']['value'])) : ?>
                                 <span class="rating-tooltip" title="xerfi"><?= $this->ratings['xerfi']['value'] ?></span> / <span class="rating-tooltip" title="xerfi_unilend"><?= $this->ratings['xerfi_unilend']['value'] ?></span>
-                            <?php else : ?>N/A<?php endif; ?>
+                            <?php else : ?>-<?php endif; ?>
                         </td>
                     </tr>
                     <tr>

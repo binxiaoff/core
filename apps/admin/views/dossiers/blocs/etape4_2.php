@@ -125,18 +125,13 @@
     <form id="dossier_etape4_2" action="/ajax/valid_etapes" method="post">
         <input type="hidden" name="id_project" value="<?= $this->projects->id_project ?>"/>
         <input type="hidden" name="etape" value="4.2"/>
-
-        <?php
-        if (in_array(company_tax_form_type::FORM_2033, array_column($this->aBalanceSheets, 'form_type'))) {
-            $this->fireView('blocs/balance_sheet/2033');
-        }
-        ?>
+        <?php if (in_array(company_tax_form_type::FORM_2033, array_column($this->aBalanceSheets, 'form_type'))) : ?>
+            <?php $this->fireView('blocs/balance_sheet/2033'); ?>
+        <?php endif; ?>
         <br>
-        <?php
-        if (in_array(company_tax_form_type::FORM_2035, array_column($this->aBalanceSheets, 'form_type'))) {
-            $this->fireView('blocs/balance_sheet/2035');
-        }
-        ?>
+        <?php if (in_array(company_tax_form_type::FORM_2035, array_column($this->aBalanceSheets, 'form_type'))) : ?>
+            <?php $this->fireView('blocs/balance_sheet/2035'); ?>
+        <?php endif; ?>
         <div class="btnDroite">
             <input type="submit" class="btn_link" value="Sauvegarder les bilans">
         </div>
