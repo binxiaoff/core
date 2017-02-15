@@ -139,12 +139,11 @@ class ProjectRequestManager
     }
 
     /**
-     * @param \companies $company
-     * @param \projects  $project
-     * @param int        $userId
+     * @param \projects $project
+     * @param int       $userId
      * @return null|array
      */
-    public function checkProjectRisk(\companies &$company, \projects &$project, $userId)
+    public function checkProjectRisk(\projects &$project, $userId)
     {
         /** @var \company_rating_history $companyRatingHistory */
         $companyRatingHistory             = $this->entityManager->getRepository('company_rating_history');
@@ -153,7 +152,7 @@ class ProjectRequestManager
         $companyRatingHistory->action     = \company_rating_history::ACTION_WS;
         $companyRatingHistory->create();
 
-    /** @var \company_rating $companyRating */
+        /** @var \company_rating $companyRating */
         $companyRating = $this->entityManager->getRepository('company_rating');
 
         if (false === empty($project->id_company_rating_history)) {
@@ -166,6 +165,9 @@ class ProjectRequestManager
                 }
             }
         }
+        /** @var \companies $company */
+        $company = $this->entityManager->getRepository('companies');
+        $company->get($project->id_company);
         $project->balance_count             = '0000-00-00' === $company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $company->date_creation)->diff(new \DateTime())->y;
         $project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
         $project->update();

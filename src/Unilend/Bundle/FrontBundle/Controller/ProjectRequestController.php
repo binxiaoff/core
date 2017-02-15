@@ -247,7 +247,7 @@ class ProjectRequestController extends Controller
     {
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        if (null === $projectRequestManager->checkProjectRisk($this->company, $this->project, \users::USER_ID_FRONT)) {
+        if (null === $projectRequestManager->checkProjectRisk($this->project, \users::USER_ID_FRONT)) {
             return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::INCOMPLETE_REQUEST);
         }
 
