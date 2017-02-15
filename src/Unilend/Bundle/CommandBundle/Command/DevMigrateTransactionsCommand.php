@@ -1144,6 +1144,8 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                         return bcmul(194.08, 100);
                     case '2016-12-09':
                         return bcmul(583.91, 100);
+                    case '2017-02-10':
+                        return bcmul(583.91, 100);
                     default:
                         $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
                         break;
