@@ -112,12 +112,11 @@ class BidManager
      * @param              $rate
      * @param Autobid|null $autobidSetting
      * @param bool         $bSendNotification
-     * @param bool         $bulk
      *
      * @return Bids
      * @throws \Exception
      */
-    public function bid(Wallet $wallet, $iLenderId, Projects $project, $amount, $rate, Autobid $autobidSetting = null, $bSendNotification = true, $bulk = false)
+    public function bid(Wallet $wallet, $iLenderId, Projects $project, $amount, $rate, Autobid $autobidSetting = null, $bSendNotification = true)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
@@ -238,9 +237,7 @@ class BidManager
         $iBidNb ++;
         $bid->setOrdre($iBidNb);
         $this->em->persist($bid);
-        if (false === $bulk) {
-            $this->em->flush($bid);
-        }
+        $this->em->flush($bid);
 
         $this->walletManager->engageBalance($wallet, $amount, $bid);
 
@@ -312,7 +309,7 @@ class BidManager
             ) {
                 $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $autoBid->getIdLender()]);
                 $wallet         = $walletMatching->getIdWallet();
-                return $this->bid($wallet, $autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification, true);
+                return $this->bid($wallet, $autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
             }
         }
 
@@ -322,9 +319,8 @@ class BidManager
     /**
      * @param Bids $bid
      * @param bool  $sendNotification
-     * @param bool  $bulk
      */
-    public function reject(Bids $bid, $sendNotification = true, $bulk = false)
+    public function reject(Bids $bid, $sendNotification = true)
     {
         if ($bid->getStatus() == Bids::STATUS_BID_PENDING || $bid->getStatus() == Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
             $oTransaction = $this->creditRejectedBid($bid, $bid->getAmount() / 100);
@@ -334,18 +330,15 @@ class BidManager
             }
 
             $bid->setStatus(Bids::STATUS_BID_REJECTED);
-            if (false === $bulk) {
-                $this->em->flush($bid);
-            }
+            $this->em->flush($bid);
         }
     }
 
     /**
      * @param Bids    $bid
      * @param float   $fRepaymentAmount
-     * @param boolean $bulk
      */
-    public function rejectPartially(Bids $bid, $fRepaymentAmount, $bulk = false)
+    public function rejectPartially(Bids $bid, $fRepaymentAmount)
     {
         if ($bid->getStatus() == \bids::STATUS_BID_PENDING || $bid->getStatus() == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
             $oTransaction = $this->creditRejectedBid($bid, $fRepaymentAmount);
@@ -354,9 +347,7 @@ class BidManager
             $amount = bcsub($bid->getAmount(), bcmul($fRepaymentAmount, 100));
             $bid->setAmount($amount)
                 ->setStatus(Bids::STATUS_BID_ACCEPTED);
-            if (false === $bulk) {
-                $this->em->flush($bid);
-            }
+            $this->em->flush($bid);
         }
     }
 
@@ -365,9 +356,8 @@ class BidManager
      * @param string $currentRate
      * @param int    $iMode
      * @param bool   $bSendNotification
-     * @param bool   $bulk
      */
-    public function reBidAutoBidOrReject(Bids $bid, $currentRate, $iMode, $bSendNotification = true, $bulk = false)
+    public function reBidAutoBidOrReject(Bids $bid, $currentRate, $iMode, $bSendNotification = true)
     {
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
@@ -394,18 +384,14 @@ class BidManager
                            ->setStatus(Bids::STATUS_BID_PENDING);
                     $this->em->persist($newBid);
                     $bid->setStatus(Bids::STATUS_BID_REJECTED);
-                    if (false === $bulk) {
-                        $this->em->flush($newBid);
-                    }
+                    $this->em->flush($newBid);
                 } else {
                     $bid->setRate($currentRate)
                         ->setStatus(Bids::STATUS_BID_PENDING);
                 }
-                if (false === $bulk) {
-                    $this->em->flush($bid);
-                }
+                $this->em->flush($bid);
             } else {
-                $this->reject($bid, $bSendNotification, $bulk);
+                $this->reject($bid, $bSendNotification);
             }
         }
     }

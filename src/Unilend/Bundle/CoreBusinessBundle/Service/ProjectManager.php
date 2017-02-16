@@ -3,6 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
@@ -162,31 +163,28 @@ class ProjectManager
         $iBidsAccumulated = 0;
         $iBorrowAmount    = $oProject->amount;
         $iBidTotal        = $legacyBid->getSoldeBid($oProject->id_project);
-        $bulkUpdateNb     = 50;
 
         $oBidLog->debut = date('Y-m-d H:i:s');
 
         if ($iBidTotal >= $iBorrowAmount) {
             $bids = $bidRepo->findBy(['idProject' => $oProject->id_project, 'status' => Bids::STATUS_BID_PENDING], ['rate' => 'ASC', 'ordre' => 'ASC']);
+            var_dump(__LINE__);
             foreach ($bids as $bid) {
+                var_dump(__LINE__);
                 if ($iBidsAccumulated < $iBorrowAmount) {
                     $iBidsAccumulated = bcadd($iBidsAccumulated, round(bcdiv($bid->getAmount(), 100, 4), 2), 2);
                 } else {
                     $bBidsLogs = true;
                     if (null === $bid->getAutobid()) { // non-auto-bid
-                        $this->oBidManager->reject($bid, $bSendNotification, true);
+                        $this->oBidManager->reject($bid, $bSendNotification);
                     } else {
                         // For a autobid, we don't send reject notification, we don't create payback transaction, either. So we just flag it here as reject temporarily
                         $bid->setStatus(Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY);
+                        $this->entityManager->flush($bid);
                     }
                     $iRejectedBids++;
                 }
-                if (0 === $iRejectedBids % $bulkUpdateNb) {
-                    $this->entityManager->flush();
-                }
             }
-            // Flush to apply the rest which is not in 50
-            $this->entityManager->flush();
 
             $aLogContext['Project ID']    = $oProject->id_project;
             $aLogContext['Balance']       = $iBidTotal;
@@ -234,26 +232,26 @@ class ProjectManager
 
             $iOffset      = 0;
             $iLimit       = 100;
-            $treatedBids  = 0;
-            $bulkNb       = 50;
             while ($aAutoBidList = $oAutoBid->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
-
-                foreach ($aAutoBidList as $aAutoBidSetting) {
-                    $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
-                    if ($autobid) {
-                        try {
-                            $bid = $this->oBidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
-                            if ($bid instanceof Bids) {
-                                $treatedBids ++;
+                $this->entityManager->getConnection()->beginTransaction();
+                try {
+                    foreach ($aAutoBidList as $aAutoBidSetting) {
+                        $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
+                        if ($autobid) {
+                            try {
+                                $this->oBidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
+                                $event = $stopWatch->stop('bid');
+                            } catch (\Exception $exception) {
+                                continue;
                             }
-                        } catch (\Exception $exception) {
-                            continue;
                         }
                     }
-                }
-                if (0 === $treatedBids % $bulkNb) {
                     $this->entityManager->flush();
+                    $this->entityManager->getConnection()->commit();
+                } catch (\Exception $e) {
+                    $this->entityManager->getConnection()->rollBack();
+                    throw $e;
                 }
             }
 
@@ -279,7 +277,7 @@ class ProjectManager
             foreach ($aAutoBidList as $aAutobid) {
                 $bid = $bidRepo->find($aAutobid['id_bid']);
                 if ($bid) {
-                    $this->oBidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification, true);
+                    $this->oBidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
                 }
             }
             $this->entityManager->flush();
@@ -288,6 +286,7 @@ class ProjectManager
 
     private function reBidAutoBidDeeply(\projects $oProject, $iMode, $bSendNotification)
     {
+        var_dump(__LINE__);
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
         $this->checkBids($oProject, $bSendNotification);
@@ -315,7 +314,6 @@ class ProjectManager
         $iBidNbTotal   = $bidRepo->countBy($criteria);
         $iBidBalance   = 0;
         $treatedBidNb = 0;
-        $bulkNb        = 50;
 
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info($iBidNbTotal . ' bids created (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
@@ -327,22 +325,20 @@ class ProjectManager
                     $iBidBalance = bcadd($iBidBalance, round(bcdiv($bid->getAmount(), 100, 4), 2), 2);
                     if ($iBidBalance > $oProject->amount) {
                         $fAmountToCredit = $iBidBalance - $oProject->amount;
-                        $this->oBidManager->rejectPartially($bid, $fAmountToCredit, true);
+                        $this->oBidManager->rejectPartially($bid, $fAmountToCredit);
                     } else {
                         $bid->setStatus(Bids::STATUS_BID_ACCEPTED);
+                        $this->entityManager->flush($bid);
                     }
 
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->info('The bid status has been updated to 1' . $bid->getIdBid() . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                     }
                 } else {
-                    $this->oBidManager->reject($bid, true, true);
+                    $this->oBidManager->reject($bid, true);
                 }
 
                 $treatedBidNb ++;
-                if (0 === $treatedBidNb % $bulkNb) {
-                    $this->entityManager->flush();
-                }
 
                 if ($this->oLogger instanceof LoggerInterface) {
                     $this->oLogger->info($treatedBidNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
