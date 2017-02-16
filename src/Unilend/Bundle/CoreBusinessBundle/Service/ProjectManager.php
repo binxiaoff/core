@@ -3,7 +3,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Stopwatch\Stopwatch;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
@@ -168,9 +167,7 @@ class ProjectManager
 
         if ($iBidTotal >= $iBorrowAmount) {
             $bids = $bidRepo->findBy(['idProject' => $oProject->id_project, 'status' => Bids::STATUS_BID_PENDING], ['rate' => 'ASC', 'ordre' => 'ASC']);
-            var_dump(__LINE__);
             foreach ($bids as $bid) {
-                var_dump(__LINE__);
                 if ($iBidsAccumulated < $iBorrowAmount) {
                     $iBidsAccumulated = bcadd($iBidsAccumulated, round(bcdiv($bid->getAmount(), 100, 4), 2), 2);
                 } else {
@@ -241,7 +238,6 @@ class ProjectManager
                         if ($autobid) {
                             try {
                                 $this->oBidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
-                                $event = $stopWatch->stop('bid');
                             } catch (\Exception $exception) {
                                 continue;
                             }
@@ -286,7 +282,6 @@ class ProjectManager
 
     private function reBidAutoBidDeeply(\projects $oProject, $iMode, $bSendNotification)
     {
-        var_dump(__LINE__);
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
         $this->checkBids($oProject, $bSendNotification);
@@ -345,8 +340,6 @@ class ProjectManager
                 }
             }
         }
-        // Flush to apply the rest which is not in 50
-        $this->entityManager->flush();
 
         /** @var \product $product */
         $product = $this->oEntityManager->getRepository('product');
