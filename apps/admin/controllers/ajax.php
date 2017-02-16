@@ -1247,21 +1247,6 @@ class ajaxController extends bootstrap
 
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
 
-                    $latitude  = (float) $this->companies->latitude;
-                    $longitude = (float) $this->companies->longitude;
-
-                    if (empty($latitude) && empty($longitude)) {
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $location */
-                        $location    = $this->get('unilend.service.location_manager');
-                        $coordinates = $location->getCompanyCoordinates($this->companies);
-
-                        if ($coordinates) {
-                            $this->companies->latitude  = $coordinates['latitude'];
-                            $this->companies->longitude = $coordinates['longitude'];
-                            $this->companies->update();
-                        }
-                    }
-
                     if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                         $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
                     }

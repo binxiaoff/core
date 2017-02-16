@@ -577,6 +577,20 @@ class dossiersController extends bootstrap
                         && $this->projects->status < \projects_status::COMMERCIAL_REVIEW
                     ) {
                         $_POST['status'] = \projects_status::COMMERCIAL_REVIEW;
+
+                        $latitude  = (float) $this->companies->latitude;
+                        $longitude = (float) $this->companies->longitude;
+
+                        if (empty($latitude) && empty($longitude)) {
+                            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $location */
+                            $location    = $this->get('unilend.service.location_manager');
+                            $coordinates = $location->getCompanyCoordinates($this->companies);
+
+                            if ($coordinates) {
+                                $this->companies->latitude  = $coordinates['latitude'];
+                                $this->companies->longitude = $coordinates['longitude'];
+                            }
+                        }
                     }
 
                     if (
