@@ -258,11 +258,14 @@
                     </tr>
                     <tr>
                         <th><label for="code_naf">Code NAF</label></th>
-                        <td><?= empty($this->companies->code_naf) ? '-' : $this->companies->code_naf ?></td>
-                    </tr>
-                    <tr>
-                        <th><label for="libelle_naf">Libellé NAF</label></th>
-                        <td><?= empty($this->companies->libelle_naf) ? '-' : $this->companies->libelle_naf ?></td>
+                        <td>
+                            <?php if (empty($this->companies->libelle_naf) && empty($this->companies->code_naf)) : ?>
+                                -
+                            <?php else : ?>
+                                <?= empty($this->companies->code_naf) ? '' : $this->companies->code_naf ?> -
+                                <?= empty($this->companies->libelle_naf) ? '' : $this->companies->libelle_naf ?>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="title_bo">Titre du projet</label></th>
