@@ -87,7 +87,7 @@ class PaylineManager
         $this->router           = $router;
         $this->sUrl             = $assetsPackages->getUrl('');
         $this->isProduction     = $environment === 'prod' ? true : false;
-        $this->merchantId       = $merchantId;
+        $this->merchantId       = (string) $merchantId; // PaylineSDK need string
         $this->accessKey        = $accessKey;
     }
 
