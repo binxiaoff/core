@@ -128,20 +128,22 @@ class Altares
         if ($oCompany instanceof Companies){
             $oEligibilityInfo = $this->getEligibility($oCompany->getSiren())->myInfo;
             $phone = isset($oEligibilityInfo->siege->telephone) ? str_replace(' ', '', $oEligibilityInfo->siege->telephone) : '';
-            $creationDate = new \DateTime(substr($oEligibilityInfo->identite->dateCreation, 0, 10));
-            $oCompany->setPhone($phone)
-                ->setName($oEligibilityInfo->identite->raisonSociale)
-                ->setForme($oEligibilityInfo->identite->formeJuridique)
-                ->setCapital($oEligibilityInfo->identite->capital)
-                ->setCodeNaf($oEligibilityInfo->identite->naf5EntreCode)
-                ->setLibelleNaf($oEligibilityInfo->identite->naf5EntreLibelle)
-                ->setAdresse1($oEligibilityInfo->identite->rue)
-                ->setCity($oEligibilityInfo->identite->ville)
-                ->setZip($oEligibilityInfo->identite->codePostal)
-                ->setSiret($oEligibilityInfo->identite->siret)
-                ->setDateCreation($creationDate)
-                ->setRcs($oEligibilityInfo->identite->rcs);
-            $this->em->flush($oCompany);
+            if (isset($oEligibilityInfo->identite) && is_object($oEligibilityInfo->identite)) {
+                $creationDate = new \DateTime(substr($oEligibilityInfo->identite->dateCreation, 0, 10));
+                $oCompany->setPhone($phone)
+                         ->setName($oEligibilityInfo->identite->raisonSociale)
+                         ->setForme($oEligibilityInfo->identite->formeJuridique)
+                         ->setCapital($oEligibilityInfo->identite->capital)
+                         ->setCodeNaf($oEligibilityInfo->identite->naf5EntreCode)
+                         ->setLibelleNaf($oEligibilityInfo->identite->naf5EntreLibelle)
+                         ->setAdresse1($oEligibilityInfo->identite->rue)
+                         ->setCity($oEligibilityInfo->identite->ville)
+                         ->setZip($oEligibilityInfo->identite->codePostal)
+                         ->setSiret($oEligibilityInfo->identite->siret)
+                         ->setDateCreation($creationDate)
+                         ->setRcs($oEligibilityInfo->identite->rcs);
+                $this->em->flush($oCompany);
+            }
         }
     }
 
@@ -364,12 +366,12 @@ class Altares
             $reason[] = \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
         }
 
-        if ($result->myInfo->codeRetour == self::RESPONSE_CODE_PROCEDURE || 'OUI' === $result->myInfo->identite->procedureCollective) {
+        if ($result->myInfo->codeRetour == self::RESPONSE_CODE_PROCEDURE || is_object($result->myInfo->identite) && 'OUI' === $result->myInfo->identite->procedureCollective) {
             $eligible = false;
             $reason[] = \projects_status::NON_ELIGIBLE_REASON_PROCEEDING;
         }
 
-        if (self::THRESHOLD_SCORE >= $result->myInfo->score->scoreVingt) {
+        if (is_object($result->myInfo->score) && self::THRESHOLD_SCORE >= $result->myInfo->score->scoreVingt) {
             $eligible = false;
             $reason[] = \projects_status::NON_ELIGIBLE_REASON_LOW_SCORE;
         }
