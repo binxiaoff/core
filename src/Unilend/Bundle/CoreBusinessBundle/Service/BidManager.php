@@ -112,11 +112,12 @@ class BidManager
      * @param              $rate
      * @param Autobid|null $autobidSetting
      * @param bool         $bSendNotification
+     * @param bool         $bulk
      *
-     * @return bool
+     * @return Bids
      * @throws \Exception
      */
-    public function bid(Wallet $wallet, $iLenderId, Projects $project, $amount, $rate, Autobid $autobidSetting = null, $bSendNotification = true)
+    public function bid(Wallet $wallet, $iLenderId, Projects $project, $amount, $rate, Autobid $autobidSetting = null, $bSendNotification = true, $bulk = false)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
@@ -237,7 +238,9 @@ class BidManager
         $iBidNb ++;
         $bid->setOrdre($iBidNb);
         $this->em->persist($bid);
-        $this->em->flush();
+        if (false === $bulk) {
+            $this->em->flush($bid);
+        }
 
         $this->walletManager->engageBalance($wallet, $amount, $bid);
 
@@ -287,7 +290,7 @@ class BidManager
             );
         }
 
-        return true;
+        return $bid;
     }
 
     /**
@@ -295,6 +298,7 @@ class BidManager
      * @param Projects $project
      * @param float    $rate
      * @param bool     $sendNotification
+     * @return Bids|false
      */
     public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, $rate, $sendNotification = true)
     {
@@ -308,16 +312,19 @@ class BidManager
             ) {
                 $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $autoBid->getIdLender()]);
                 $wallet         = $walletMatching->getIdWallet();
-                $this->bid($wallet, $autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
+                return $this->bid($wallet, $autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification, true);
             }
         }
+
+        return false;
     }
 
     /**
      * @param Bids $bid
      * @param bool  $sendNotification
+     * @param bool  $bulk
      */
-    public function reject(Bids $bid, $sendNotification = true)
+    public function reject(Bids $bid, $sendNotification = true, $bulk = false)
     {
         if ($bid->getStatus() == Bids::STATUS_BID_PENDING || $bid->getStatus() == Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
             $oTransaction = $this->creditRejectedBid($bid, $bid->getAmount() / 100);
@@ -327,15 +334,18 @@ class BidManager
             }
 
             $bid->setStatus(Bids::STATUS_BID_REJECTED);
-            $this->em->flush();
+            if (false === $bulk) {
+                $this->em->flush($bid);
+            }
         }
     }
 
     /**
-     * @param Bids  $bid
-     * @param float $fRepaymentAmount
+     * @param Bids    $bid
+     * @param float   $fRepaymentAmount
+     * @param boolean $bulk
      */
-    public function rejectPartially(Bids $bid, $fRepaymentAmount)
+    public function rejectPartially(Bids $bid, $fRepaymentAmount, $bulk = false)
     {
         if ($bid->getStatus() == \bids::STATUS_BID_PENDING || $bid->getStatus() == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
             $oTransaction = $this->creditRejectedBid($bid, $fRepaymentAmount);
@@ -344,7 +354,9 @@ class BidManager
             $amount = bcsub($bid->getAmount(), bcmul($fRepaymentAmount, 100));
             $bid->setAmount($amount)
                 ->setStatus(Bids::STATUS_BID_ACCEPTED);
-            $this->em->flush();
+            if (false === $bulk) {
+                $this->em->flush($bid);
+            }
         }
     }
 
@@ -353,8 +365,9 @@ class BidManager
      * @param string $currentRate
      * @param int    $iMode
      * @param bool   $bSendNotification
+     * @param bool   $bulk
      */
-    public function reBidAutoBidOrReject(Bids $bid, $currentRate, $iMode, $bSendNotification = true)
+    public function reBidAutoBidOrReject(Bids $bid, $currentRate, $iMode, $bSendNotification = true, $bulk = false)
     {
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
@@ -381,14 +394,18 @@ class BidManager
                            ->setStatus(Bids::STATUS_BID_PENDING);
                     $this->em->persist($newBid);
                     $bid->setStatus(Bids::STATUS_BID_REJECTED);
+                    if (false === $bulk) {
+                        $this->em->flush($newBid);
+                    }
                 } else {
                     $bid->setRate($currentRate)
                         ->setStatus(Bids::STATUS_BID_PENDING);
                 }
-
-                $this->em->flush();
+                if (false === $bulk) {
+                    $this->em->flush($bid);
+                }
             } else {
-                $this->reject($bid, $bSendNotification);
+                $this->reject($bid, $bSendNotification, $bulk);
             }
         }
     }

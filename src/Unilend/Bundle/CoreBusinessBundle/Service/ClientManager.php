@@ -162,7 +162,7 @@ class ClientManager
             $termsOfUse->setIdClient($client->getIdClient());
 
             $this->em->persist($termsOfUse);
-            $this->em->flush();
+            $this->em->flush($client);
 
             $session = $this->requestStack->getCurrentRequest()->getSession();
             $session->remove(self::SESSION_KEY_TOS_ACCEPTED);

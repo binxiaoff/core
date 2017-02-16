@@ -78,10 +78,8 @@ class WalletManager
             $committedBalance = bcadd($wallet->getCommittedBalance(), $amount, 2);
             $wallet->setAvailableBalance($availableBalance);
             $wallet->setCommittedBalance($committedBalance);
-
+            $this->entityManager->flush($wallet);
             $this->snap($wallet, $bid);
-
-            $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
@@ -114,10 +112,8 @@ class WalletManager
             $committedBalance = bcsub($wallet->getCommittedBalance(), $amount, 2);
             $wallet->setAvailableBalance($availableBalance);
             $wallet->setCommittedBalance($committedBalance);
-
+            $this->entityManager->flush($wallet);
             $this->snap($wallet, $origin);
-
-            $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
 
             return $transaction; //compatibility legacy
@@ -161,7 +157,6 @@ class WalletManager
         $walletLine->create();
 
         $bid->setIdLenderWalletLine($walletLine->id_wallet_line);
-        $this->entityManager->flush();
     }
 
     /**
@@ -291,6 +286,6 @@ class WalletManager
             $walletSnap->setProject($item->getProject());
         }
         $this->entityManager->persist($walletSnap);
-        $this->entityManager->flush();
+        $this->entityManager->flush($walletSnap);
     }
 }

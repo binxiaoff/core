@@ -141,7 +141,7 @@ class Altares
                 ->setSiret($oEligibilityInfo->identite->siret)
                 ->setDateCreation($creationDate)
                 ->setRcs($oEligibilityInfo->identite->rcs);
-            $this->em->flush();
+            $this->em->flush($oCompany);
         }
     }
 

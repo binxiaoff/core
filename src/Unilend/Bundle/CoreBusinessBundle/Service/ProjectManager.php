@@ -162,6 +162,7 @@ class ProjectManager
         $iBidsAccumulated = 0;
         $iBorrowAmount    = $oProject->amount;
         $iBidTotal        = $legacyBid->getSoldeBid($oProject->id_project);
+        $bulkUpdateNb     = 50;
 
         $oBidLog->debut = date('Y-m-d H:i:s');
 
@@ -173,16 +174,19 @@ class ProjectManager
                 } else {
                     $bBidsLogs = true;
                     if (null === $bid->getAutobid()) { // non-auto-bid
-                        $this->oBidManager->reject($bid, $bSendNotification);
+                        $this->oBidManager->reject($bid, $bSendNotification, true);
                     } else {
                         // For a autobid, we don't send reject notification, we don't create payback transaction, either. So we just flag it here as reject temporarily
                         $bid->setStatus(Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY);
-                        $this->entityManager->flush($bid);
-                        $this->entityManager->clear($bid);
                     }
                     $iRejectedBids++;
                 }
+                if (0 === $bulkUpdateNb % 50) {
+                    $this->entityManager->flush();
+                }
             }
+            // Flush to apply the rest which is not in 50
+            $this->entityManager->flush();
 
             $aLogContext['Project ID']    = $oProject->id_project;
             $aLogContext['Balance']       = $iBidTotal;
@@ -228,8 +232,8 @@ class ProjectManager
         if ($oProjectPeriods->getPeriod($oProject->period)) {
             $rateRange = $this->oBidManager->getProjectRateRange($oProject);
 
-            $iOffset = 0;
-            $iLimit  = 100;
+            $iOffset      = 0;
+            $iLimit       = 100;
             while ($aAutoBidList = $oAutoBid->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
 
@@ -243,6 +247,7 @@ class ProjectManager
                         }
                     }
                 }
+                $this->entityManager->flush();
             }
 
             /** @var \bids $oBid */
@@ -267,9 +272,10 @@ class ProjectManager
             foreach ($aAutoBidList as $aAutobid) {
                 $bid = $bidRepo->find($aAutobid['id_bid']);
                 if ($bid) {
-                    $this->oBidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
+                    $this->oBidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification, true);
                 }
             }
+            $this->entityManager->flush();
         }
     }
 
@@ -302,6 +308,7 @@ class ProjectManager
         $iBidNbTotal   = $bidRepo->countBy($criteria);
         $iBidBalance   = 0;
         $iTreatedBitNb = 0;
+        $bidTreated    = 50;
 
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info($iBidNbTotal . ' bids created (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
@@ -313,27 +320,31 @@ class ProjectManager
                     $iBidBalance = bcadd($iBidBalance, round(bcdiv($bid->getAmount(), 100, 4), 2), 2);
                     if ($iBidBalance > $oProject->amount) {
                         $fAmountToCredit = $iBidBalance - $oProject->amount;
-                        $this->oBidManager->rejectPartially($bid, $fAmountToCredit);
+                        $this->oBidManager->rejectPartially($bid, $fAmountToCredit, true);
                     } else {
                         $bid->setStatus(Bids::STATUS_BID_ACCEPTED);
-                        $this->entityManager->flush($bid);
-                        $this->entityManager->clear($bid);
                     }
 
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->info('The bid status has been updated to 1' . $bid->getIdBid() . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                     }
                 } else {
-                    $this->oBidManager->reject($bid, true);
+                    $this->oBidManager->reject($bid, true, true);
                 }
 
                 $iTreatedBitNb++;
+                if (0 === $bidTreated % $iTreatedBitNb) {
+                    $this->entityManager->flush();
+                }
 
                 if ($this->oLogger instanceof LoggerInterface) {
                     $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
             }
         }
+        // Flush to apply the rest which is not in 50
+        $this->entityManager->flush();
+
         /** @var \product $product */
         $product = $this->oEntityManager->getRepository('product');
         $product->get($oProject->id_product);

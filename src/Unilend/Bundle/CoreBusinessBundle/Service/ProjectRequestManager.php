@@ -135,7 +135,7 @@ class ProjectRequestManager
         $this->em->beginTransaction();
         try {
             $this->em->persist($client);
-            $this->em->flush();
+            $this->em->flush($client);
             $clientAddress = new ClientsAdresses();
             $clientAddress->setIdClient($client->getIdClient());
             $this->em->persist($clientAddress);

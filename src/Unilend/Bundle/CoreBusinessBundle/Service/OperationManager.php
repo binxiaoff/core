@@ -124,7 +124,7 @@ class OperationManager
 
             $this->walletManager->handle($operation);
 
-            $this->em->flush();
+            $this->em->flush($operation);
 
             $this->em->getConnection()->commit();
 
@@ -164,8 +164,6 @@ class OperationManager
             $this->newOperation($amount, $operationType, null, $wallet, $origin);
 
             $this->legacyProvisionLenderWallet($wallet, $origin);
-            $this->em->flush();
-
             return true;
         } else {
             return false;
@@ -295,7 +293,6 @@ class OperationManager
             $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
             $this->newOperation($amount, $operationType, $wallet, null, $wireTransferOut);
-            $this->em->flush();
             $this->legacyWithdrawLenderWallet($wallet, $wireTransferOut);
             $this->em->getConnection()->commit();
 
@@ -348,7 +345,7 @@ class OperationManager
 
         $wireTransferOut->setIdTransaction($transaction->id_transaction);
 
-        $this->em->flush();
+        $this->em->flush($wireTransferOut);
     }
 
     /**
@@ -367,7 +364,6 @@ class OperationManager
             $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
             $this->newOperation($amount, $operationType, $wallet, null, $wireTransferOut);
-            $this->em->flush();
             $this->legacyWithdrawUnilendWallet($wireTransferOut);
             $this->em->getConnection()->commit();
 
@@ -401,7 +397,7 @@ class OperationManager
         $transaction->create();
 
         $wireTransferOut->setIdTransaction($transaction->id_transaction);
-        $this->em->flush();
+        $this->em->flush($wireTransferOut);
 
         $bankUnilend->id_transaction         = $transaction->id_transaction;
         $bankUnilend->id_echeance_emprunteur = 0;
@@ -433,7 +429,6 @@ class OperationManager
             $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
             $this->newOperation($amount, $operationType, $wallet, null, $wireTransferOut);
-            $this->em->flush();
             $this->legacyWithdrawBorrowerWallet($wallet, $wireTransferOut, $partUnilend);
             $this->em->getConnection()->commit();
             return $wireTransferOut;
