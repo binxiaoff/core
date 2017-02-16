@@ -73,8 +73,8 @@ class dossiersController extends bootstrap
         $this->needs = $projectNeed->getTree();
 
         if (isset($_POST['form_search_dossier'])) {
-            $startDate          = empty($_POST['date1']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date1']);
-            $endDate            = empty($_POST['date2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date2']);
+            $startDate          = empty($_POST['date1']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date1'])->format('Y-m-d');
+            $endDate            = empty($_POST['date2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date2'])->format('Y-m-d');
             $projectNeed        = empty($_POST['projectNeed']) ? '' : $_POST['projectNeed'];
             $duration           = empty($_POST['duree']) ? '' : $_POST['duree'];
             $status             = empty($_POST['status']) ? '' : $_POST['status'];

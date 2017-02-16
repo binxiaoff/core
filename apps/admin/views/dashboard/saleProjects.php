@@ -36,10 +36,10 @@
                     <?php if ($this->templateProjects['assignee']) : ?>
                         <td><?= $project['assignee'] ?></td>
                     <?php endif; ?>
-                    <?php if (empty($project['memo'])) : ?>
+                    <?php if (empty($project['memo_content'])) : ?>
                         <td></td>
                     <?php else : ?>
-                        <td data-toggle="tooltip" class="tooltip" title="<?= nl2br(htmlentities($project['memo'], ENT_QUOTES)) ?>" style="text-align: center"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Mémo" /></td>
+                        <td data-toggle="tooltip" class="tooltip" title="<?= $project['memo_author'] . '<br>' . $project['memo_datetime']->format('d/m/Y - H\hi') . '<hr>' . nl2br(htmlentities($project['memo_content'], ENT_QUOTES)) ?>" style="text-align: center"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Mémo" /></td>
                     <?php endif; ?>
                     <td style="text-align: center"><?= 10 == $project['priority'] ? '' : $project['priority'] ?></td>
                 </tr>

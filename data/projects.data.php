@@ -1282,7 +1282,9 @@ class projects extends projects_crud
                 p.added AS creation,
                 (SELECT MAX(added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status WHERE psh.id_project = p.id_project AND ps.status = :waitingAnalystStatus) AS risk_status_datetime,
                 TIMESTAMPDIFF(HOUR, (SELECT MAX(added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status WHERE psh.id_project = p.id_project AND ps.status = :waitingAnalystStatus), NOW()) AS risk_status_duration,
-                IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo
+                IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_content,
+                IFNULL((SELECT added FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_datetime,
+                IFNULL((SELECT CONCAT(users.firstname, " ", users.name) FROM projects_comments INNER JOIN users ON projects_comments.id_user = users.id_user WHERE id_project = p.id_project ORDER BY projects_comments.added DESC, id_project_comment DESC LIMIT 1), "") AS memo_author
             ')
             ->from('projects', 'p')
             ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
@@ -1390,7 +1392,9 @@ class projects extends projects_crud
                 cl.telephone AS client_phone,
                 p.added AS creation,
                 IF(u.id_user IS NULL, "", CONCAT(u.firstname, " ", u.name)) AS assignee,
-                IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo,
+                IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_content,
+                IFNULL((SELECT added FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_datetime,
+                IFNULL((SELECT CONCAT(users.firstname, " ", users.name) FROM projects_comments INNER JOIN users ON projects_comments.id_user = users.id_user WHERE id_project = p.id_project ORDER BY projects_comments.added DESC, id_project_comment DESC LIMIT 1), "") AS memo_author,
                 IFNULL(scoring.note, 10) AS priority,
                 IFNULL(infolegale.value, 0) AS infolegale
             ')

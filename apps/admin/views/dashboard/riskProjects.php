@@ -31,10 +31,10 @@
                     <td><?= $project['client_phone'] ?></td>
                     <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
                     <td data-toggle="tooltip" class="tooltip<?php if ($project['risk_status_duration'] > 48) : ?> warning<?php endif; ?>" title="<?= $project['risk_status_datetime']->format('d/m/Y - H\hi') ?>"><?= $this->ficelle->formatNumber($project['risk_status_duration'], 0) ?> heures</td>
-                    <?php if (empty($project['memo'])) : ?>
+                    <?php if (empty($project['memo_content'])) : ?>
                         <td></td>
                     <?php else : ?>
-                        <td data-toggle="tooltip" class="tooltip" title="<?= nl2br(htmlentities($project['memo'], ENT_QUOTES)) ?>" style="text-align: center"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Mémo" /></td>
+                        <td data-toggle="tooltip" class="tooltip" title="<?= $project['memo_author'] . '<br>' . $project['memo_datetime']->format('d/m/Y - H\hi') . '<hr>' . nl2br(htmlentities($project['memo_content'], ENT_QUOTES)) ?>" style="text-align: center"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Mémo" /></td>
                     <?php endif; ?>
                 </tr>
                 <?php ++$i; ?>

@@ -197,6 +197,10 @@ class dashboardController extends bootstrap
                 $project['risk_status_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['risk_status_datetime']);
             }
 
+            if (isset($project['memo_datetime'])) {
+                $project['memo_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['memo_datetime']);
+            }
+
             $formattedProjects[$project['status']]['count']++;
             $formattedProjects[$project['status']]['projects'][] = $project;
         }
