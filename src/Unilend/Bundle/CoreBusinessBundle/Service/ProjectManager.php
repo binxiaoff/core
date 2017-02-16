@@ -234,6 +234,8 @@ class ProjectManager
 
             $iOffset      = 0;
             $iLimit       = 100;
+            $treatedBids  = 0;
+            $bulkNb       = 50;
             while ($aAutoBidList = $oAutoBid->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
 
@@ -241,13 +243,18 @@ class ProjectManager
                     $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
                     if ($autobid) {
                         try {
-                            $this->oBidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
+                            $bid = $this->oBidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
+                            if ($bid instanceof Bids) {
+                                $treatedBids ++;
+                            }
                         } catch (\Exception $exception) {
                             continue;
                         }
                     }
                 }
-                $this->entityManager->flush();
+                if (0 === $treatedBids % $bulkNb) {
+                    $this->entityManager->flush();
+                }
             }
 
             /** @var \bids $oBid */
@@ -307,8 +314,8 @@ class ProjectManager
         $bids          = $bidRepo->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
         $iBidNbTotal   = $bidRepo->countBy($criteria);
         $iBidBalance   = 0;
-        $iTreatedBitNb = 0;
-        $bidTreated    = 50;
+        $treatedBidNb = 0;
+        $bulkNb        = 50;
 
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info($iBidNbTotal . ' bids created (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
@@ -332,13 +339,13 @@ class ProjectManager
                     $this->oBidManager->reject($bid, true, true);
                 }
 
-                $iTreatedBitNb++;
-                if (0 === $bidTreated % $iTreatedBitNb) {
+                $treatedBidNb ++;
+                if (0 === $treatedBidNb % $bulkNb) {
                     $this->entityManager->flush();
                 }
 
                 if ($this->oLogger instanceof LoggerInterface) {
-                    $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                    $this->oLogger->info($treatedBidNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
             }
         }
@@ -548,7 +555,7 @@ class ProjectManager
         $criteria      = ['idProject' => $oProject->id_project];
         $bids          = $bidRepo->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
         $iBidNbTotal   = $bidRepo->countBy($criteria);
-        $iTreatedBitNb = 0;
+        $treatedBidNb = 0;
 
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info($iBidNbTotal . 'bids in total (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
@@ -557,9 +564,9 @@ class ProjectManager
         foreach ($bids as $bid) {
             if ($bid) {
                 $this->oBidManager->reject($bid, true);
-                $iTreatedBitNb++;
+                $treatedBidNb ++;
                 if ($this->oLogger instanceof LoggerInterface) {
-                    $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                    $this->oLogger->info($treatedBidNb . '/' . $iBidNbTotal . 'bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
             }
         }
