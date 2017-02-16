@@ -96,7 +96,7 @@
                         <td><?= $aProject['prenom'] ?></td>
                         <td><?= $aProject['email'] ?></td>
                         <td><?= $aProject['company'] ?></td>
-                        <td><?= $aProject['title_bo'] ?></td>
+                        <td><?= $aProject['title'] ?></td>
                         <td><?= $aProject['status_label'] ?></td>
                         <?php if (false === empty($prochainRemb[0])) : ?>
                             <td class="right" style="white-space:nowrap;"><?= $this->ficelle->formatNumber(($prochainRemb[0]['montant'] + $prochainRemb[0]['commission'] + $prochainRemb[0]['tva']) / 100) ?> €</td>

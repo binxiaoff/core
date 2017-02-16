@@ -303,7 +303,7 @@ class projects extends projects_crud
             $where .= ' AND c.prenom = "' . $prenom . '"';
         }
         if (false === empty($projet)) {
-            $where .= ' AND p.title_bo LIKE "%' . $projet . '%"';
+            $where .= ' AND p.title LIKE "%' . $projet . '%"';
         }
         if (false === empty($email)) {
             $where .= ' AND c.email = "' . $email . '"';
@@ -312,7 +312,7 @@ class projects extends projects_crud
         $result   = array();
         $resultat = $this->bdd->query('
             SELECT p.id_project,
-                p.title_bo,
+                p.title,
                 p.remb_auto,
                 c.nom,
                 c.prenom,

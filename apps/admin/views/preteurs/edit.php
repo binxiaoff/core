@@ -238,7 +238,7 @@
                         <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                             <td align="center"><?= $e['id_bid'] ?></td>
                             <td>
-                                <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title_bo ?></a>
+                                <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title ?></a>
                             </td>
                             <td><?= date('d/m/Y', strtotime($e['added'])) ?></td>
                             <td align="center"><?= number_format($e['amount'] / 100, 2, '.', ' ') ?></td>
@@ -307,7 +307,7 @@
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td align="center"><?= $year ?></td>
                         <td>
-                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title_bo ?></a>
+                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title ?></a>
                         </td>
                         <td align="center"><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?></td>
                         <td align="center"><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>

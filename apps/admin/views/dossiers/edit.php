@@ -268,16 +268,12 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="title_bo">Titre du projet</label></th>
-                        <td><input type="text" name="title_bo" id="title_bo" class="input_large" value="<?= $this->projects->title_bo ?>"></td>
+                        <th><label for="title">Titre du projet</label></th>
+                        <td><input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"></td>
                     </tr>
                     <tr>
                         <th><label for="societe">Nom société</label></th>
                         <td><input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"></td>
-                    </tr>
-                    <tr>
-                        <th><label for="title">Titre du projet FO</label></th>
-                        <td><input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"></td>
                     </tr>
                     <tr>
                         <th><label for="sector">Secteur de la société</label></th>

@@ -12,7 +12,7 @@
     });
 </script>
 <div id="contenu">
-    <h1>Remboursement <?= $this->companies->name ?> - <?= $this->projects->title_bo ?></h1>
+    <h1>Remboursement <?= $this->companies->name ?> - <?= $this->projects->title ?></h1>
     <div class="btnDroite">
         <a style="margin-right:10px;" target="_blank" href="<?= $this->lurl ?>/dossiers/echeancier_emprunteur/<?= $this->projects->id_project ?>" class="btn_link">Echeancier Emprunteur</a>
         <a target="_blank" href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>" class="btn_link">Voir le dossier</a>
@@ -28,7 +28,7 @@
             <td colspan="7"><h2>Informations projet</h2></td>
         </tr>
         <tr>
-            <td colspan="2"><b><?= $this->companies->name ?> - <?= $this->projects->title_bo ?></b></td>
+            <td colspan="2"><b><?= $this->companies->name ?> - <?= $this->projects->title ?></b></td>
             <td><?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>&nbsp;€ - <?= $this->projects->period ?> mois</td>
             <th>Risques :</th>
             <td><?= $this->companies->risk ?></td>

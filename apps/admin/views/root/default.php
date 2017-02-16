@@ -43,7 +43,7 @@
                     <?php foreach ($this->lProjectsNok as $p) : ?>
                         <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                             <td><?= $p['id_project'] ?></td>
-                            <td><?= $p['title_bo'] ?></td>
+                            <td><?= $p['title'] ?></td>
                             <td><?= $p['amount'] ?></td>
                             <td><?= $this->projects_status->getLabel($p['status']) ?></td>
                             <td align="center">

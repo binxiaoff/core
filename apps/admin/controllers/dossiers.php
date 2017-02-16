@@ -602,7 +602,6 @@ class dossiersController extends bootstrap
                     }
 
                     $this->projects->title               = $_POST['title'];
-                    $this->projects->title_bo            = $_POST['title_bo'];
                     $this->projects->nature_project      = $_POST['nature_project'];
                     $this->projects->id_analyste         = $_POST['analyste'];
                     $this->projects->id_commercial       = $_POST['commercial'];
@@ -688,9 +687,6 @@ class dossiersController extends bootstrap
 
                             if ($this->projects->title == '') {
                                 $mess .= '<li>Titre projet</li>';
-                            }
-                            if ($this->projects->title_bo == '') {
-                                $mess .= '<li>Titre projet BO</li>';
                             }
                             if ($this->projects->period == '0') {
                                 $mess .= '<li>Periode projet</li>';
