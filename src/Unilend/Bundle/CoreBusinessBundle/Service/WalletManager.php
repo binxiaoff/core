@@ -66,10 +66,9 @@ class WalletManager
      */
     public function engageBalance(Wallet $wallet, $amount, Bids $bid)
     {
-        $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $bid);
-
         $this->entityManager->getConnection()->beginTransaction();
         try {
+            $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $bid);
             if (-1 === bccomp($wallet->getAvailableBalance(), $amount)) {
                 //throw new \DomainException('The available balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }
@@ -97,13 +96,13 @@ class WalletManager
      */
     public function releaseBalance(Wallet $wallet, $amount, $origin)
     {
-        $transaction = null;
-        if ($origin instanceof Bids) {
-            $transaction = $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
-        }
-
         $this->entityManager->getConnection()->beginTransaction();
         try {
+            $transaction = null;
+            if ($origin instanceof Bids) {
+                $transaction = $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
+            }
+
             if (-1 === bccomp($wallet->getCommittedBalance(), $amount)) {
                 //throw new \DomainException('The committed balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }

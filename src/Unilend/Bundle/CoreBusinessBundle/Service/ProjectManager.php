@@ -181,7 +181,7 @@ class ProjectManager
                     }
                     $iRejectedBids++;
                 }
-                if (0 === $bulkUpdateNb % 50) {
+                if (0 === $iRejectedBids % $bulkUpdateNb) {
                     $this->entityManager->flush();
                 }
             }
