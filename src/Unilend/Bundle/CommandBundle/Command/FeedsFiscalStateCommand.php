@@ -90,6 +90,8 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $additionalContribution = array_sum(array_column($aResult, 'tax_' . \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS));
             $solidarityDeduction    = array_sum(array_column($aResult, 'tax_' . \tax_type::TYPE_SOLIDARITY_DEDUCTIONS));
             $crds                   = array_sum(array_column($aResult, 'tax_' . \tax_type::TYPE_CRDS));
+            $totalInterest          = bcadd(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $interestsMiniBon, 2), $exemptedInterests, 2);
+            $totalIncomeTax         = bcadd(bcadd(bcadd($incomeTaxBDC, $incomeTaxIFP, 2), $incomeTaxMiniBon, 2), $exemptedIncomeTax, 2);
 
             $table = '
                 <style>
@@ -148,8 +150,8 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Total</th>
-                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $interestsMiniBon, 2), $exemptedInterests, 2)) . '</td>
-                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd(bcadd($incomeTaxBDC, $incomeTaxIFP, 2), $incomeTaxMiniBon, 2), $exemptedIncomeTax, 2)) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalIncomeTax) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[\tax_type::TYPE_INCOME_TAX]) . '%</td>
                     </tr>
                     <tr>
@@ -172,31 +174,31 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">CSG</th>
-                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $exemptedInterests, 2)) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($csg) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[\tax_type::TYPE_CSG]) . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Pr&eacute;l&egrave;vement social</th>
-                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $exemptedInterests, 2)) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($socialDeduction) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[\tax_type::TYPE_SOCIAL_DEDUCTIONS]) . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Contribution additionnelle</th>
-                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $exemptedInterests, 2)) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($additionalContribution) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS]) . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Pr&eacute;l&egrave;vements de solidarit&eacute;</th>
-                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $exemptedInterests, 2)) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($solidarityDeduction) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[\tax_type::TYPE_SOLIDARITY_DEDUCTIONS]) . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">CRDS</th>
-                        <td class="right">' . $ficelle->formatNumber(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $exemptedInterests, 2)) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($crds) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[\tax_type::TYPE_CRDS]) . '%</td>
                     </tr>
