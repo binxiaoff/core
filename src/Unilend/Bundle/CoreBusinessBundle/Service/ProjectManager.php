@@ -270,13 +270,19 @@ class ProjectManager
         $currentRate = bcsub($legacyBid->getProjectMaxRate($oProject), $fStep, 1);
 
         while ($aAutoBidList = $legacyBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
-            foreach ($aAutoBidList as $aAutobid) {
-                $bid = $bidRepo->find($aAutobid['id_bid']);
-                if ($bid) {
-                    $this->oBidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
+            $this->entityManager->getConnection()->beginTransaction();
+            try {
+                foreach ($aAutoBidList as $aAutobid) {
+                    $bid = $bidRepo->find($aAutobid['id_bid']);
+                    if ($bid) {
+                        $this->oBidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
+                    }
                 }
+                $this->entityManager->getConnection()->commit();
+            } catch (\Exception $e) {
+                $this->entityManager->getConnection()->rollBack();
+                throw $e;
             }
-            $this->entityManager->flush();
         }
     }
 
