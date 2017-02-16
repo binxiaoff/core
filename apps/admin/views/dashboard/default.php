@@ -10,8 +10,7 @@
         $('[data-project]').click(function() {
             var projectId = $(this).data('project')
             if (projectId) {
-                $(this).children().css('background-color', '#b20066')
-                $(this).children().css('color', '#fff')
+                $(this).parent().children().css('background-color', '#b20066').css('color', '#fff')
                 $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/' + projectId)
             }
         })
@@ -41,7 +40,7 @@
     table.tablesorter thead tr th {
         font-size: 12px;
     }
-    .projects td {
+    .projects td[data-project] {
         cursor: pointer;
     }
     .projects .status-line td {

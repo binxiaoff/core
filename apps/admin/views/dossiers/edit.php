@@ -206,6 +206,13 @@
             $(location.hash).next('.tab_content').addClass('expand')
         }
 
+        window.onhashchange = function() {
+            if ($(location.hash) && $(location.hash).hasClass('tab_title')) {
+                $(location.hash).next('.tab_content').addClass('expand')
+                $(location.hash).scrollTop()
+            }
+        }
+
         <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({
                 container: $("#pager"),

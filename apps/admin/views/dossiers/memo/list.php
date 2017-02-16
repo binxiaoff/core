@@ -16,7 +16,7 @@
                     <?= $this->dates->formatDate($comment['added'], 'd/m/Y H:i') ?>
                     <?php if ($comment['added'] !== $comment['updated']) : ?>
                         <br/>
-                        <em style="font-size: 11px"><?= $this->dates->formatDate($comment['updated'], 'd/m/Y H:i') ?></em>
+                        <em style="font-size: 11px" title="Date de dernière modification"><?= $this->dates->formatDate($comment['updated'], 'd/m/Y H:i') ?></em>
                     <?php endif; ?>
                 </td>
                 <td>

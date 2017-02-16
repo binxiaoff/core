@@ -25,13 +25,13 @@
             </tr>
             <?php $i = 0; ?>
             <?php foreach ($statusProjects['projects'] as $project) : ?>
-                <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project['id_project'] ?>"<?php if (in_array($status, $this->collapsedStatus)) : ?> style="display: none;"<?php endif; ?>>
-                    <td><?= $project['id_project'] ?></td>
-                    <td><?= $project['company_name'] ?></td>
+                <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?><?php if (in_array($status, $this->collapsedStatus)) : ?> style="display: none;"<?php endif; ?>>
+                    <td data-project="<?= $project['id_project'] ?>"><?= $project['id_project'] ?></td>
+                    <td data-project="<?= $project['id_project'] ?>"><?= $project['company_name'] ?></td>
                     <td style="text-align:right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
                     <td><?= $project['duration'] ?> mois</td>
                     <td><?= $project['client_name'] ?></td>
-                    <td><?= $project['client_phone'] ?></td>
+                    <td><a href="tel:<?= $project['client_phone'] ?>"><?= $project['client_phone'] ?></a></td>
                     <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
                     <?php if ($this->templateProjects['assignee']) : ?>
                         <td><?= $project['assignee'] ?></td>

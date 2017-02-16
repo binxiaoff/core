@@ -474,7 +474,7 @@ function send_email_borrower_area(id_client, type) {
 }
 
 function check_status_dossier(status, id_project) {
-    if (status == 25) {
+    if (status == 30) {
         var isNotBalanced = false;
 
         if ($('#total_actif_0').data('total') != $('#total_passif_0').data('total')) {
@@ -497,14 +497,15 @@ function check_status_dossier(status, id_project) {
 
         if (isNotBalanced) {
             alert('Certains comptes ne sont pas équilibrés');
+            location.hash = '#title_etape4_2'
             $('#status option[value="' + previous_status + '"]').prop('selected', true);
             return;
         }
     }
 
-    if (status == 25) {
+    if (status == 30) {
         var message = 'passer en revue';
-    } else if (status == 30) {
+    } else if (status == 25) {
         var message = 'rejeter';
     } else {
         console.log('Valeur inconnue');
@@ -534,7 +535,6 @@ function check_status_dossier(status, id_project) {
     }
 }
 
-
 function nodizaines(val, id) {
     val = parseFloat(val.replace(',', '.'));
     var long = val.length;
@@ -561,8 +561,7 @@ function valid_rejete_etape6(status, id_project) {
             indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique').val().replace(',', '.')),
             avis                            = ckedAvis.getData(),
             rejection_reason                = $('#rejection_reason option:selected').val(),
-            form_ok = true;
-
+            form_ok                         = true;
 
         if (isNaN(structure) != false && structure || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
             form_ok = false;
@@ -774,7 +773,6 @@ function check_force_pass() {
     // Si la reponse est OK on balance l'ajax
     document.getElementById('indicateur_force').innerHTML = reponse;
 }
-
 
 /* Fonction qui check si une autre compagnie possede deja cet iban */
 function CheckIfIbanExistDeja(iban, bic, id_client) {
