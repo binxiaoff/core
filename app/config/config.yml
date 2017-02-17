@@ -31,7 +31,9 @@ framework:
         csrf_protection:
             field_name: _csrf
     serializer:
-      enabled: true
+        enabled: true
+    validation:
+        enabled: true
 
 cmf_routing:
     chain:
