@@ -93,7 +93,7 @@
 
 </div>
 
-<div class="tab_title" id="title_etape4_2">Etape 4.2 - Bilans</div>
+<div class="tab_title" id="title_etape4_2">4.2 - Bilans</div>
 <div class="tab_content" id="etape4_2">
     <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
         <input type="hidden" name="add_annual_accounts" value="1"/>

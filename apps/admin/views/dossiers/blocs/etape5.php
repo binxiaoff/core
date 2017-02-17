@@ -1,4 +1,4 @@
-<div class="tab_title" id="title_etape5">Etape 5 - Documents</div>
+<div class="tab_title" id="title_etape5">5 - Documents</div>
 <div class="tab_content" id="etape5">
     <script type="text/javascript">
         function formUploadCallback(result) {

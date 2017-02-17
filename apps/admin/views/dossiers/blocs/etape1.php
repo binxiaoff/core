@@ -1,4 +1,4 @@
-<div class="tab_title" id="title_etape1">Etape 1</div>
+<div class="tab_title" id="title_etape1">1 - Projet</div>
 <div class="tab_content" id="etape1">
     <form method="post" id="dossier_etape1" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" onsubmit="valid_etape1(<?= $this->projects->id_project ?>); return false;">
         <table class="form" style="width: 100%;">

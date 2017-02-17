@@ -1,4 +1,4 @@
-<div class="tab_title" id="title_etape3">Etape 3 - Présentation</div>
+<div class="tab_title" id="title_etape3">3 - Présentation</div>
 <div class="tab_content<?php if ($this->projects->status == \projects_status::PREP_FUNDING && \users_types::TYPE_COMMERCIAL == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape3">
     <form method="post" name="dossier_etape3" id="dossier_etape3" enctype="multipart/form-data"
           action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">

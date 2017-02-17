@@ -38,7 +38,7 @@
         });
     });
 </script>
-<div class="tab_title" id="title_etape2">Etape 2 - Coordonnées</div>
+<div class="tab_title" id="title_etape2">2 - Coordonnées</div>
 <div class="tab_content" id="etape2">
     <form method="post" id="dossier_etape2" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" onsubmit="valid_etape2(<?= $this->projects->id_project ?>); return false;">
         <table class="form" style="width: 100%;">
