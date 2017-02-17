@@ -44,6 +44,8 @@ class projects extends projects_crud
     const RISK_F = 2.5;
     const RISK_G = 2;
     const RISK_H = 1.5;
+    const RISK_I = 1;
+    const RISK_J = 0;
 
     const SORT_FIELD_SECTOR = 'sector';
     const SORT_FIELD_AMOUNT = 'amount';

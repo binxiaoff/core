@@ -918,12 +918,12 @@ class ProjectManager
             $rateSettings = $projectRateSettings->getSettings($project->risk, $projectPeriod->id_period);
 
             if (empty($rateSettings)) {
-                throw new \Exception('No settings found for the project.');
+                throw new \Exception('No rating settings found for the project.');
             }
             if (count($rateSettings) === 1) {
                 return $rateSettings[0]['id_rate'];
             } else {
-                throw new \Exception('More than one settings found for the project.');
+                throw new \Exception('More than one rating settings found for the project.');
             }
         } else {
             throw new \Exception('Period not found for the project.');
