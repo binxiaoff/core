@@ -311,7 +311,7 @@ class dossiersController extends bootstrap
             $this->attachment_type           = $this->loadData('attachment_type');
             $this->aAttachments              = $this->projects->getAttachments();
             $this->aAttachmentTypes          = $this->attachment_type->getAllTypesForProjects($this->language);
-            $this->aMandatoryAttachmentTypes = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner);
+            $this->aMandatoryAttachmentTypes = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
 
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);

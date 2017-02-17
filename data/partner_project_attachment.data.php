@@ -27,6 +27,9 @@
 // **************************************************************************************************** //
 class partner_project_attachment extends partner_project_attachment_crud
 {
+    const MANDATORY_ATTACHMENT = 1;
+    const NON_MANDATORY_ATTACHMENT = 0;
+
     public function __construct($bdd, $params = '')
     {
         parent::partner_project_attachment($bdd, $params);

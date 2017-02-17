@@ -8,20 +8,6 @@ class PartnerManager
     /** @var EntityManager */
     private $entityManager;
 
-    static $mandatoryAttachmentTypes = [
-        \attachment_type::DERNIERE_LIASSE_FISCAL,
-        \attachment_type::LIASSE_FISCAL_N_1,
-        \attachment_type::LIASSE_FISCAL_N_2,
-        \attachment_type::RELEVE_BANCAIRE_MOIS_N,
-        \attachment_type::RELEVE_BANCAIRE_MOIS_N_1,
-        \attachment_type::RELEVE_BANCAIRE_MOIS_N_2,
-        \attachment_type::KBIS,
-        \attachment_type::RIB,
-        \attachment_type::CNI_PASSPORTE_DIRIGEANT,
-        \attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS,
-        \attachment_type::CGV
-    ];
-
     /**
      * PartnerManager constructor.
      * @param EntityManager $entityManager
@@ -32,17 +18,25 @@ class PartnerManager
     }
 
     /**
-     * @param int $partnerId
+     * @param int  $partnerId
+     * @param bool $onlyMandatory
      * @return array
      */
-    public function getAttachmentTypesByPartner($partnerId)
+    public function getAttachmentTypesByPartner($partnerId, $onlyMandatory = false)
     {
         /** @var \partner_project_attachment $partnerProjectAttachment */
         $partnerProjectAttachment = $this->entityManager->getRepository('partner_project_attachment');
         $attachmentId             = [];
+        $where                    = '';
 
-        if (empty($partnerId) || empty($attachmentList = $partnerProjectAttachment->select('id_partner = ' . $partnerId))) {
-            return self::$mandatoryAttachmentTypes;
+        if ($onlyMandatory) {
+            $where = ' AND mandatory = ' . \partner_project_attachment::MANDATORY_ATTACHMENT;
+        }
+
+        $attachmentList = $partnerProjectAttachment->select('id_partner = ' . $partnerId . $where);
+
+        if (empty($attachmentList)) {
+            return [];
         } else {
             foreach ($attachmentList as $attachment) {
                 $attachmentId[] = $attachment['id_attachment_type'];
