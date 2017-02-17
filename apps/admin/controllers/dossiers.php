@@ -51,7 +51,7 @@ class dossiersController extends bootstrap
 
         $this->catchAll = true;
 
-        $this->users->checkAccess('dossiers');
+        $this->users->checkAccess('emprunteurs');
 
         $this->menu_admin = 'emprunteurs';
     }
