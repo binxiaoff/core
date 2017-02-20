@@ -19,15 +19,51 @@ class ClientsRepository extends EntityRepository
             $idClient = $idClient->getIdClient();
         }
 
-        $cb = $this->createQueryBuilder('c');
-        $cb->select('co')
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('co')
             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner')
             ->where('c.idClient = :idClient')
             ->setParameter('idClient', $idClient);
-        $query = $cb->getQuery();
+        $query = $qb->getQuery();
         $result = $query->getOneOrNullResult();
 
         return $result;
     }
 
+    /**
+     * @param $criteria
+     * @param $operator
+     * @return array
+     */
+    public function getClientsBy($criteria, $operator)
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('c');
+
+        foreach ($criteria as $field => $value) {
+            $qb->andWhere('c.' . $field . $operator[$field] . ':' . $field)
+                ->setParameter($field, $value);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param \DateTime $fromDate
+     * @return array
+     */
+    public function getClientsWithMultipleBankAccountsOnPeriod(\DateTime $fromDate)
+    {
+        $query  = '
+                SELECT *
+                FROM
+                  clients c INNER JOIN lenders_accounts la ON la.id_client_owner = c.id_client
+                WHERE
+                  (SELECT COUNT(ba.id) FROM bank_account ba WHERE ba.id_client = c.id_client AND ba.added >= :fromDate) >= 2
+                  ';
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, ['fromDate' => $fromDate->format('Y-m-d H:i:s')])->fetchAll();
+    }
 }

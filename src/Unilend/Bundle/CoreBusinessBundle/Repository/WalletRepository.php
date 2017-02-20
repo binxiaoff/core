@@ -22,13 +22,14 @@ class WalletRepository extends EntityRepository
             ->where('wt.label IN (:taxWallets)')
             ->setParameter(
                 'taxWallets', [
-                    WalletType::TAX_RETENUES_A_LA_SOURCE,
-                    WalletType::TAX_CONTRIBUTIONS_ADDITIONNELLES,
-                    WalletType::TAX_CRDS,
-                    WalletType::TAX_CSG,
-                    WalletType::TAX_PRELEVEMENTS_DE_SOLIDARITE,
-                    WalletType::TAX_PRELEVEMENTS_OBLIGATOIRES,
-                    WalletType::TAX_PRELEVEMENTS_SOCIAUX], Connection::PARAM_INT_ARRAY);
+                WalletType::TAX_RETENUES_A_LA_SOURCE,
+                WalletType::TAX_CONTRIBUTIONS_ADDITIONNELLES,
+                WalletType::TAX_CRDS,
+                WalletType::TAX_CSG,
+                WalletType::TAX_PRELEVEMENTS_DE_SOLIDARITE,
+                WalletType::TAX_PRELEVEMENTS_OBLIGATOIRES,
+                WalletType::TAX_PRELEVEMENTS_SOCIAUX
+            ], Connection::PARAM_INT_ARRAY);
         $query = $cb->getQuery();
 
         return $query->getResult();
@@ -56,10 +57,40 @@ class WalletRepository extends EntityRepository
             ->andWhere('wt.label = :walletType')
             ->setMaxResults(1)
             ->setParameters(['idClient' => $idClient, 'walletType' => $walletType]);
-        $query = $cb->getQuery();
+        $query  = $cb->getQuery();
         $result = $query->getOneOrNullResult();
 
         return $result;
     }
 
+    /**
+     * @param \DateTime  $inactiveSince
+     * @param null|float $minAvailableBalance
+     * @return array
+     */
+    public function getInactiveLenderWalletOnPeriod(\DateTime $inactiveSince, $minAvailableBalance = null)
+    {
+        $params = [
+            'inactive_since' => $inactiveSince->format('Y-m-d H:i:s'),
+            'wallet_label'   => WalletType::LENDER
+        ];
+        $query  = '
+                SELECT *
+                FROM
+                  wallet w INNER JOIN wallet_type wt ON w.id_type = wt.id
+                WHERE
+                  wt.label = :wallet_label
+                  AND w.added <= :inactive_since
+                  AND w.updated <= :inactive_since
+                  AND ( SELECT COUNT(id_bid) FROM bids WHERE bids.added <= :inactive_since AND bids.id_lender_account = ( SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = w.id_client)) = 0
+                  ';
+        if (null !== $minAvailableBalance) {
+            $query .= 'AND w.available_balance >= :available_balance';
+            $params['available_balance'] = $minAvailableBalance;
+        }
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, $params)->fetchAll();
+    }
 }
