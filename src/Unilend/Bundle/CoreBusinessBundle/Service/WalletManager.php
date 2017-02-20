@@ -235,19 +235,6 @@ class WalletManager
                     if (WalletType::DEBT_COLLECTOR !== $debtor->getIdType()->getLabel() && $balance < 0) {
                         //throw new \DomainException('The available balance for wallet id : ' . $debtor->getId() . '  must not be lower than zero');
                     }
-
-                    if (OperationType::LENDER_WITHDRAW === $operation->getType()->getLabel()) {
-                        $welcomeOffers          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy(['idClient' => $debtor->getIdClient()]);
-                        $promotionalAmountTotal = 0;
-                        foreach ($welcomeOffers as $offer) {
-                            $offerAmount            = round(bcdiv($offer->getMontant(), 100, 4), 2);
-                            $promotionalAmountTotal = bcadd($promotionalAmountTotal, $offerAmount, 2);
-                        }
-
-                        if (bcadd($operation->getAmount(), $promotionalAmountTotal, 2) > $debtor->getAvailableBalance()) {
-                            throw new \DomainException('The promotional offer for wallet id : ' . $debtor->getId() . '  cannot be withdraw');
-                        }
-                    }
                     $debtor->setAvailableBalance($balance);
                     break;
             }

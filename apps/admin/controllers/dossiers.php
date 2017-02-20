@@ -54,7 +54,7 @@ class dossiersController extends bootstrap
 
         $this->catchAll = true;
 
-        $this->users->checkAccess('dossiers');
+        $this->users->checkAccess('emprunteurs');
 
         $this->menu_admin = 'emprunteurs';
     }
@@ -608,7 +608,7 @@ class dossiersController extends bootstrap
                         $this->projects->amount     = str_replace([' ', ','], ['', '.'], $_POST['montant']);
                     }
 
-                    if ($this->projects->status <= \projects_status::PREP_FUNDING) {
+                    if ($this->projects->status <= \projects_status::PREP_FUNDING && isset($_POST['assigned_product'])) {
                         $this->projects->id_product = $_POST['assigned_product'];
                     }
 

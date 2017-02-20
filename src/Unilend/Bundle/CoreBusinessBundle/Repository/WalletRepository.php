@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class WalletRepository extends EntityRepository
@@ -38,7 +39,7 @@ class WalletRepository extends EntityRepository
      * @param integer|Clients   $idClient
      * @param string|WalletType $walletType
      *
-     * @return Clients|null
+     * @return Wallet|null
      */
     public function getWalletByType($idClient, $walletType)
     {
