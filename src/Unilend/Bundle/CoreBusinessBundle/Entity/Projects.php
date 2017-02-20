@@ -291,6 +291,30 @@ class Projects
     private $idRate;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Partner
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id")
+     * })
+     */
+    private $idPartner;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="commission_rate_funds", type="decimal", precision=4, scale=2, nullable=true)
+     */
+    private $commissionRateFunds;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="commission_rate_repayment", type="decimal", precision=4, scale=2, nullable=true)
+     */
+    private $commissionRateRepayment;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="id_product", type="integer", nullable=false)
@@ -1263,6 +1287,78 @@ class Projects
     public function getIdRate()
     {
         return $this->idRate;
+    }
+
+    /**
+     * Set idPartner
+     *
+     * @param Partner $idPartner
+     *
+     * @return Projects
+     */
+    public function setPartner($idPartner)
+    {
+        $this->idPartner = $idPartner;
+
+        return $this;
+    }
+
+    /**
+     * Get idPartner
+     *
+     * @return Partner
+     */
+    public function getPartner()
+    {
+        return $this->idPartner;
+    }
+
+    /**
+     * Set commissionRateFunds
+     *
+     * @param string $commissionRateFunds
+     *
+     * @return Projects
+     */
+    public function setCommissionRateFunds($commissionRateFunds)
+    {
+        $this->commissionRateFunds = $commissionRateFunds;
+
+        return $this;
+    }
+
+    /**
+     * Get commissionRateFunds
+     *
+     * @return string
+     */
+    public function getCommissionRateFunds()
+    {
+        return $this->commissionRateFunds;
+    }
+
+    /**
+     * Set commissionRateRepayment
+     *
+     * @param string $commissionRateRepayment
+     *
+     * @return Projects
+     */
+    public function setCommissionRateRepayment($commissionRateRepayment)
+    {
+        $this->commissionRateRepayment = $commissionRateRepayment;
+
+        return $this;
+    }
+
+    /**
+     * Get commissionRateRepayment
+     *
+     * @return string
+     */
+    public function getCommissionRateRepayment()
+    {
+        return $this->commissionRateRepayment;
     }
 
     /**
