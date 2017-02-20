@@ -58,7 +58,7 @@ class BankAccountManager
                 $bankAccount->setStatus(BankAccount::STATUS_PENDING);
                 $bankAccount->setDatePending(new \DateTime('NOW'));
                 $this->updateLegacyBankAccount($clientEntity, $bankAccount);
-                $this->em->flush();
+                $this->em->flush($bankAccount);
                 return $bankAccount;
             }
         }
@@ -69,7 +69,7 @@ class BankAccountManager
             $newBankAccount = $bankAccountRepository->saveBankAccount($clientEntity->getIdClient(), $bic, $iban);
             $this->updateLegacyBankAccount($clientEntity, $newBankAccount);
 
-            $this->em->flush();
+            $this->em->flush($newBankAccount);
             $this->em->getConnection()->commit();
             return $newBankAccount;
 

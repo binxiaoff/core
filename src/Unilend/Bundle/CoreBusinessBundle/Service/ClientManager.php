@@ -13,7 +13,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 /**
@@ -162,7 +161,7 @@ class ClientManager
             $termsOfUse->setIdClient($client->getIdClient());
 
             $this->em->persist($termsOfUse);
-            $this->em->flush();
+            $this->em->flush($termsOfUse);
 
             $session = $this->requestStack->getCurrentRequest()->getSession();
             $session->remove(self::SESSION_KEY_TOS_ACCEPTED);

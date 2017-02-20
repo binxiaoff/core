@@ -113,7 +113,7 @@ class BidManager
      * @param Autobid|null $autobidSetting
      * @param bool         $bSendNotification
      *
-     * @return bool
+     * @return Bids
      * @throws \Exception
      */
     public function bid(Wallet $wallet, $iLenderId, Projects $project, $amount, $rate, Autobid $autobidSetting = null, $bSendNotification = true)
@@ -237,7 +237,7 @@ class BidManager
         $iBidNb ++;
         $bid->setOrdre($iBidNb);
         $this->em->persist($bid);
-        $this->em->flush();
+        $this->em->flush($bid);
 
         $this->walletManager->engageBalance($wallet, $amount, $bid);
 
@@ -287,7 +287,7 @@ class BidManager
             );
         }
 
-        return true;
+        return $bid;
     }
 
     /**
@@ -295,6 +295,7 @@ class BidManager
      * @param Projects $project
      * @param float    $rate
      * @param bool     $sendNotification
+     * @return Bids|false
      */
     public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, $rate, $sendNotification = true)
     {
@@ -308,9 +309,11 @@ class BidManager
             ) {
                 $walletMatching = $this->em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $autoBid->getIdLender()]);
                 $wallet         = $walletMatching->getIdWallet();
-                $this->bid($wallet, $autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
+                return $this->bid($wallet, $autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
             }
         }
+
+        return false;
     }
 
     /**
@@ -327,13 +330,13 @@ class BidManager
             }
 
             $bid->setStatus(Bids::STATUS_BID_REJECTED);
-            $this->em->flush();
+            $this->em->flush($bid);
         }
     }
 
     /**
-     * @param Bids  $bid
-     * @param float $fRepaymentAmount
+     * @param Bids    $bid
+     * @param float   $fRepaymentAmount
      */
     public function rejectPartially(Bids $bid, $fRepaymentAmount)
     {
@@ -344,7 +347,7 @@ class BidManager
             $amount = bcsub($bid->getAmount(), bcmul($fRepaymentAmount, 100));
             $bid->setAmount($amount)
                 ->setStatus(Bids::STATUS_BID_ACCEPTED);
-            $this->em->flush();
+            $this->em->flush($bid);
         }
     }
 
@@ -381,12 +384,12 @@ class BidManager
                            ->setStatus(Bids::STATUS_BID_PENDING);
                     $this->em->persist($newBid);
                     $bid->setStatus(Bids::STATUS_BID_REJECTED);
+                    $this->em->flush($newBid);
                 } else {
                     $bid->setRate($currentRate)
                         ->setStatus(Bids::STATUS_BID_PENDING);
                 }
-
-                $this->em->flush();
+                $this->em->flush($bid);
             } else {
                 $this->reject($bid, $bSendNotification);
             }
@@ -419,13 +422,11 @@ class BidManager
         if ($iWelcomeOfferTotal > 0) {
             if ($bid->getAmount() === $fAmountX100) { //Totally credit
                 $oWelcomeOfferDetails->montant = min($iWelcomeOfferTotal, $fAmountX100);
-            } elseif (($bid->getAmount() - $fAmountX100) <= $iWelcomeOfferTotal
-            ) { //Partially credit
+            } elseif (($bid->getAmount() - $fAmountX100) <= $iWelcomeOfferTotal) { //Partially credit
                 $oWelcomeOfferDetails->montant = $iWelcomeOfferTotal - ($bid->getAmount() - $fAmountX100);
             }
 
             if (false === empty($oWelcomeOfferDetails->montant)) {
-                $oWelcomeOfferDetails->unsetData();
                 $oWelcomeOfferDetails->id_offre_bienvenue = 0;
                 $oWelcomeOfferDetails->id_client          = $oLenderAccount->id_client_owner;
                 $oWelcomeOfferDetails->id_bid             = 0;

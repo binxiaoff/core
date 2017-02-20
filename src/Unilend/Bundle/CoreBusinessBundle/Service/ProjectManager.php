@@ -178,7 +178,6 @@ class ProjectManager
                         // For a autobid, we don't send reject notification, we don't create payback transaction, either. So we just flag it here as reject temporarily
                         $bid->setStatus(Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY);
                         $this->entityManager->flush($bid);
-                        $this->entityManager->clear($bid);
                     }
                     $iRejectedBids++;
                 }
@@ -228,20 +227,27 @@ class ProjectManager
         if ($oProjectPeriods->getPeriod($oProject->period)) {
             $rateRange = $this->oBidManager->getProjectRateRange($oProject);
 
-            $iOffset = 0;
-            $iLimit  = 100;
+            $iOffset      = 0;
+            $iLimit       = 100;
             while ($aAutoBidList = $oAutoBid->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
-
-                foreach ($aAutoBidList as $aAutoBidSetting) {
-                    $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
-                    if ($autobid) {
-                        try {
-                            $this->oBidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
-                        } catch (\Exception $exception) {
-                            continue;
+                $this->entityManager->getConnection()->beginTransaction();
+                try {
+                    foreach ($aAutoBidList as $aAutoBidSetting) {
+                        $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
+                        if ($autobid) {
+                            try {
+                                $this->oBidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
+                            } catch (\Exception $exception) {
+                                continue;
+                            }
                         }
                     }
+                    $this->entityManager->flush();
+                    $this->entityManager->getConnection()->commit();
+                } catch (\Exception $e) {
+                    $this->entityManager->getConnection()->rollBack();
+                    throw $e;
                 }
             }
 
@@ -264,11 +270,18 @@ class ProjectManager
         $currentRate = bcsub($legacyBid->getProjectMaxRate($oProject), $fStep, 1);
 
         while ($aAutoBidList = $legacyBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
-            foreach ($aAutoBidList as $aAutobid) {
-                $bid = $bidRepo->find($aAutobid['id_bid']);
-                if ($bid) {
-                    $this->oBidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
+            $this->entityManager->getConnection()->beginTransaction();
+            try {
+                foreach ($aAutoBidList as $aAutobid) {
+                    $bid = $bidRepo->find($aAutobid['id_bid']);
+                    if ($bid) {
+                        $this->oBidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
+                    }
                 }
+                $this->entityManager->getConnection()->commit();
+            } catch (\Exception $e) {
+                $this->entityManager->getConnection()->rollBack();
+                throw $e;
             }
         }
     }
@@ -301,7 +314,7 @@ class ProjectManager
         $bids          = $bidRepo->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
         $iBidNbTotal   = $bidRepo->countBy($criteria);
         $iBidBalance   = 0;
-        $iTreatedBitNb = 0;
+        $treatedBidNb = 0;
 
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info($iBidNbTotal . ' bids created (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
@@ -317,7 +330,6 @@ class ProjectManager
                     } else {
                         $bid->setStatus(Bids::STATUS_BID_ACCEPTED);
                         $this->entityManager->flush($bid);
-                        $this->entityManager->clear($bid);
                     }
 
                     if ($this->oLogger instanceof LoggerInterface) {
@@ -327,13 +339,14 @@ class ProjectManager
                     $this->oBidManager->reject($bid, true);
                 }
 
-                $iTreatedBitNb++;
+                $treatedBidNb ++;
 
                 if ($this->oLogger instanceof LoggerInterface) {
-                    $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                    $this->oLogger->info($treatedBidNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
             }
         }
+
         /** @var \product $product */
         $product = $this->oEntityManager->getRepository('product');
         $product->get($oProject->id_product);
@@ -537,7 +550,7 @@ class ProjectManager
         $criteria      = ['idProject' => $oProject->id_project];
         $bids          = $bidRepo->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
         $iBidNbTotal   = $bidRepo->countBy($criteria);
-        $iTreatedBitNb = 0;
+        $treatedBidNb = 0;
 
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info($iBidNbTotal . 'bids in total (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
@@ -546,9 +559,9 @@ class ProjectManager
         foreach ($bids as $bid) {
             if ($bid) {
                 $this->oBidManager->reject($bid, true);
-                $iTreatedBitNb++;
+                $treatedBidNb ++;
                 if ($this->oLogger instanceof LoggerInterface) {
-                    $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                    $this->oLogger->info($treatedBidNb . '/' . $iBidNbTotal . 'bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
             }
         }
@@ -909,12 +922,12 @@ class ProjectManager
             $rateSettings = $projectRateSettings->getSettings($project->risk, $projectPeriod->id_period);
 
             if (empty($rateSettings)) {
-                throw new \Exception('No settings found for the project.');
+                throw new \Exception('No rating settings found for the project.');
             }
             if (count($rateSettings) === 1) {
                 return $rateSettings[0]['id_rate'];
             } else {
-                throw new \Exception('More than one settings found for the project.');
+                throw new \Exception('More than one rating settings found for the project.');
             }
         } else {
             throw new \Exception('Period not found for the project.');

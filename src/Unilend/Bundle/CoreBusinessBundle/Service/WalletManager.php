@@ -66,10 +66,9 @@ class WalletManager
      */
     public function engageBalance(Wallet $wallet, $amount, Bids $bid)
     {
-        $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $bid);
-
         $this->entityManager->getConnection()->beginTransaction();
         try {
+            $this->legacyCommitBalance($wallet->getIdClient()->getIdClient(), $amount, $bid);
             if (-1 === bccomp($wallet->getAvailableBalance(), $amount)) {
                 //throw new \DomainException('The available balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }
@@ -78,10 +77,8 @@ class WalletManager
             $committedBalance = bcadd($wallet->getCommittedBalance(), $amount, 2);
             $wallet->setAvailableBalance($availableBalance);
             $wallet->setCommittedBalance($committedBalance);
-
+            $this->entityManager->flush($wallet);
             $this->snap($wallet, $bid);
-
-            $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
@@ -99,13 +96,13 @@ class WalletManager
      */
     public function releaseBalance(Wallet $wallet, $amount, $origin)
     {
-        $transaction = null;
-        if ($origin instanceof Bids) {
-            $transaction = $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
-        }
-
         $this->entityManager->getConnection()->beginTransaction();
         try {
+            $transaction = null;
+            if ($origin instanceof Bids) {
+                $transaction = $this->legacyReleaseBalance($wallet->getIdClient()->getIdClient(), $amount, $origin);
+            }
+
             if (-1 === bccomp($wallet->getCommittedBalance(), $amount)) {
                 //throw new \DomainException('The committed balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }
@@ -114,10 +111,8 @@ class WalletManager
             $committedBalance = bcsub($wallet->getCommittedBalance(), $amount, 2);
             $wallet->setAvailableBalance($availableBalance);
             $wallet->setCommittedBalance($committedBalance);
-
+            $this->entityManager->flush($wallet);
             $this->snap($wallet, $origin);
-
-            $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
 
             return $transaction; //compatibility legacy
@@ -161,7 +156,6 @@ class WalletManager
         $walletLine->create();
 
         $bid->setIdLenderWalletLine($walletLine->id_wallet_line);
-        $this->entityManager->flush();
     }
 
     /**
@@ -291,6 +285,6 @@ class WalletManager
             $walletSnap->setProject($item->getProject());
         }
         $this->entityManager->persist($walletSnap);
-        $this->entityManager->flush();
+        $this->entityManager->flush($walletSnap);
     }
 }

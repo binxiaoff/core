@@ -92,9 +92,10 @@ class SearchService
     {
         $parameters = [
             'text'              => $query,
+            'locale'            => 'fr_fr',
             'sort_field'        => 'score',
             'sort_direction'    => 'desc',
-            // 'in_support_center' => true, Parameter exists in documentation but does not seem to work. Support request has been done to Desk. When this is working, parameter may be uncommented and condition deleted in above code.
+            'in_support_center' => true,
             'per_page'          => 10
         ];
 
@@ -116,12 +117,10 @@ class SearchService
                 $deskResult = [];
 
                 foreach ($response['_embedded']['entries'] as $entry) {
-                    if (true == $entry['in_support_center']) {
-                        $deskResult[] = [
-                            'title' => $entry['subject'],
-                            'url'   => $entry['public_url']
-                        ];
-                    }
+                    $deskResult[] = [
+                        'title' => $entry['subject'],
+                        'url'   => $entry['public_url']
+                    ];
                 }
 
                 return $deskResult;

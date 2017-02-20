@@ -87,7 +87,7 @@ class PaylineManager
         $this->router           = $router;
         $this->sUrl             = $assetsPackages->getUrl('');
         $this->isProduction     = $environment === 'prod' ? true : false;
-        $this->merchantId       = $merchantId;
+        $this->merchantId       = (string) $merchantId; // PaylineSDK need string
         $this->accessKey        = $accessKey;
     }
 
@@ -107,7 +107,7 @@ class PaylineManager
         $backPayline->setWallet($wallet);
         $backPayline->setAmount($amountInCent);
         $this->em->persist($backPayline);
-        $this->em->flush();
+        $this->em->flush($backPayline);
         /** @var \paylineSDK $payline */
         $payline                  = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
         $payline->returnURL       = $redirectUrl;
@@ -139,7 +139,7 @@ class PaylineManager
 
         $backPayline->setSerializeDoPayment(serialize($result));
 
-        $this->em->flush();
+        $this->em->flush($backPayline);
 
         if (false === isset($result['result']['code']) || $result['result']['code'] !== Backpayline::CODE_TRANSACTION_APPROVED) {
             $this->logger->error('alimentation preteur (wallet : ' . $wallet->getId() . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
@@ -179,7 +179,7 @@ class PaylineManager
             $backPayline->setSerialize(serialize($response));
             $backPayline->setCode($response['result']['code']);
 
-            $this->em->flush();
+            $this->em->flush($backPayline);
 
             if ($backPayline->getAmount() != $response['payment']['amount']) {
                 $errorMsg = 'Payline amount for wallet id : '

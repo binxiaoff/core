@@ -76,7 +76,7 @@ class WalletCreationManager
         $wallet->setIdType($walletType);
         $wallet->setAvailableBalance(0);
         $this->em->persist($wallet);
-        $this->em->flush();
+        $this->em->flush($wallet);
 
         return $wallet;
     }
@@ -104,6 +104,6 @@ class WalletCreationManager
         $accountMatching->setIdLenderAccount($lendersAccountEntity);
         $accountMatching->setIdWallet($wallet);
         $this->em->persist($accountMatching);
-        $this->em->flush();
+        $this->em->flush($accountMatching);
     }
 }

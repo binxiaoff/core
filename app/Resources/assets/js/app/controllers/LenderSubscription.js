@@ -155,6 +155,16 @@ function hideAutocompleteErrors() {
   $('.autocomplete-error').hide()
 }
 
+function removeBlankFileField() {
+  var form = document.getElementById('form-lender-step-2');
+  var childNodes = form.querySelectorAll('input[type=file]');
+  for (var i = 0; i < childNodes.length; i++) {
+    if (childNodes[i].files.length === 0) {
+      childNodes[i].parentElement.removeChild(childNodes[i]);
+    }
+  }
+}
+
 $doc.on('ready', function () {
   /*
    * Step 1
@@ -324,6 +334,10 @@ $doc.on('ready', function () {
           event.preventDefault()
           return false
       }
+  })
+
+  $doc.on('submit', '#form-lender-step-2', function () {
+    removeBlankFileField();
   })
 
   $doc.on('keydown', '#form-lender-person-birth-city', function() {

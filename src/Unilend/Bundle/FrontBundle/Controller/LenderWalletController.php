@@ -238,8 +238,6 @@ class LenderWalletController extends Controller
                     $this->sendClientWithdrawalNotification($client, $amount);
                 }
 
-                $this->sendInternalWithdrawalNotification($client, $transaction, $lender, $amount);
-
                 $this->addFlash('withdrawalSuccess', $translator->trans('lender-wallet_withdrawal-success-message'));
             }
         }
@@ -392,45 +390,6 @@ class LenderWalletController extends Controller
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $varMail);
         $message->setTo($client->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
-    }
-
-    /**
-     * @param \clients $client
-     * @param \transactions $transaction
-     * @param \lenders_accounts $lender
-     * @param $amount
-     */
-    private function sendInternalWithdrawalNotification(\clients $client, \transactions $transaction, \lenders_accounts $lender, $amount)
-    {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Adresse notification controle fond', 'type');
-        $destinataire = $settings->value;
-        /** @var \loans $loans */
-        $loans = $this->get('unilend.service.entity_manager')->getRepository('loans');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
-        $transaction->get($client->id_client, 'type_transaction = ' . \transactions_types::TYPE_LENDER_SUBSCRIPTION . ' AND status = ' . \transactions::STATUS_VALID . ' AND id_client');
-
-        $varMail = array(
-            '$surl'                          => $this->get('assets.packages')->getUrl(''),
-            '$url'                           => $this->get('assets.packages')->getUrl(''),
-            '$idPreteur'                     => $client->id_client,
-            '$nom'                           => $client->nom,
-            '$prenom'                        => $client->prenom,
-            '$email'                         => $client->email,
-            '$dateinscription'               => date('d/m/Y', strtotime($client->added)),
-            '$montantInscription'            => (false === is_null($transaction->montant)) ? $ficelle->formatNumber($transaction->montant / 100) : $ficelle->formatNumber(0),
-            '$montantPreteDepuisInscription' => $ficelle->formatNumber($loans->sumPrets($lender->id_lender_account)),
-            '$montantRetirePlateforme'       => $ficelle->formatNumber($amount),
-            '$solde'                         => $ficelle->formatNumber($this->getUser()->getBalance())
-        );
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-retrait-de-fonds', $varMail, false);
-        $message->setTo($destinataire);
         $mailer = $this->get('mailer');
         $mailer->send($message);
     }
