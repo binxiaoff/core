@@ -173,7 +173,7 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            $this->aBorrowingMotives = $borrowingMotive->select();
+            $this->aBorrowingMotives = $borrowingMotive->select('rank');
 
             $this->settings->get('Cabinet de recouvrement', 'type');
             $this->cab = $this->settings->value;
@@ -193,7 +193,7 @@ class dossiersController extends bootstrap
             $this->projects_status->get($this->projects->status, 'status');
             $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
-            if ($this->projects->status <= \projects_status::COMMERCIAL_REVIEW && empty($this->projects->id_commercial) && empty($this->companies->phone)) {
+            if ($this->projects->status <= \projects_status::COMMERCIAL_REVIEW && empty($this->projects->id_commercial) && empty($this->companies->phone) && false === empty($this->companies->siren)) {
                 $establishmentIdentity  = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
                 $this->companies->phone = $establishmentIdentity->getPhoneNumber();
                 $this->companies->update();
@@ -1623,30 +1623,26 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
         } elseif (isset($this->params[0])) {
-            $this->prescripteurs           = $this->loadData('prescripteurs');
-            $this->clients_prescripteurs   = $this->loadData('clients');
-            $this->companies_prescripteurs = $this->loadData('companies');
+            if ($this->projects->get($this->params[0]) && $this->projects->create_bo) {
+                $this->companies->get($this->projects->id_company, 'id_company');
+                $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            $this->projects->get($this->params[0]);
-            $this->companies->get($this->projects->id_company, 'id_company');
-            $this->clients->get($this->companies->id_client_owner, 'id_client');
+                // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
+                if ($clientManager->isLender($this->clients)) {
+                    $this->clients->email = '';
+                }
+            } elseif (0 == $this->projects->create_bo) {
+                $_SESSION['freeow']['title']   = 'Création de dossier';
+                $_SESSION['freeow']['message'] = 'Ce dossier n\'a pas été créé dans le back office';
 
-            // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
-            if ($clientManager->isLender($this->clients)) {
-                $this->clients->email = '';
-            }
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
+            } else {
+                $_SESSION['freeow']['title']   = 'Création de dossier';
+                $_SESSION['freeow']['message'] = 'Dossier inconnu';
 
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            $this->bHasAdvisor = false;
-
-            if (
-                $this->projects->id_prescripteur > 0
-                && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')
-            ) {
-                $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
-                $this->companies_prescripteurs->get($this->prescripteurs->id_entite, 'id_company');
-                $this->bHasAdvisor = true;
+                header('Location: ' . $this->lurl . '/emprunteurs');
+                die;
             }
         }
 

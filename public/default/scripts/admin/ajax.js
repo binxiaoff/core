@@ -519,14 +519,7 @@ function check_status_dossier(status, id_project) {
             rejection_reason: $('#rejection_reason option:selected').val()
         }).done(function (data) {
             if (data != 'nok') {
-                var obj = jQuery.parseJSON(data),
-                    liste = obj.liste,
-                    etape_6 = obj.etape_6;
-
-                $('#analysts-row').show();
-                $('#current_statut').html(liste);
-                $('#status_dossier').remove();
-                $('#content_etape6').html(etape_6);
+                $(location).attr('href', '/dossiers/edit/' + id_project)
             } else if (data == 'nok') {
                 alert('Tous les critères obligatoires n\'ont pas été rentrés');
             }

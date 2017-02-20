@@ -66,23 +66,17 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 .input_login { width: 200px; height: 25px; background: #FFF; border: 1px solid #b20066; margin: 0; padding: 0 4px; font: 12px Arial, Helvetica, sans-serif; color: #b20066; }
 
-.btn { background: #b20066; border: 1px solid #b20066; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; }
+.btn { display: inline-block; background: #b20066; border: 1px solid #b20066; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; }
 
 .btn.btnDisabled { background: #fff; color: #b20066; }
 
-.btnRouge { background: #FF0000; border: 1px solid #FF0000; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; }
+.btnRouge { background: #FF0000; border: 1px solid #FF0000; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; }
 
-.btnRouge { background: #FF0000; border: 1px solid #FF0000; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; }
+.btn_link { background: #b20066; border: 1px solid #b20066; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; text-decoration:none; }
 
-.btnRouge2 { background: #FF0000; border: 1px solid #FF0000; color: #FFF; padding: 3px; text-align: center; font: bold 12px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; float:left; margin: -5px 0 0 10px; }
+.btn_link:hover, .btn_link:focus, .btn_link:visited, .btnRouge:hover, .btnRouge:focus, .btnRouge:visited { color: #FFF; text-decoration:none; }
 
-.btnVert2 { background: #81AE3A; border: 1px solid #81AE3A; color: #FFF; padding: 3px; text-align: center; font: bold 12px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; float:left; margin: -5px 0 0 10px; }
-
-.btn_link:hover, .btn_link:focus,.btnRouge:hover, .btnRouge:focus,.btnRouge2:hover, .btnRouge2:focus,.btnVert2:hover, .btnVert2:focus  { color: #FFF; text-decoration:none; }
-
-.btn_link { background: #b20066; border: 1px solid #b20066; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; text-decoration:none; }
-
-.btn_link:visited { color: #FFF; text-decoration:none; }
+.btn.btnDisabled:hover, .btn.btnDisabled:focus, .btn.btnDisabled:visited { color: #b20066; }
 
 .btnDroite { text-align: right; margin: -30px 0 20px 0; }
 
@@ -134,7 +128,7 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 #pager .pagesize,#pager1 .pagesize,#pager2 .pagesize,#pager3 .pagesize,#pager4 .pagesize,#pager5 .pagesize { display:none; }
 
-table.form_periode { width: 300px; margin: 0 auto 20px; background-color:#b20066; -moz-border-radius: 10px; -webkit-border-radius: 10px; -khtml-border-radius: 10px; border-radius: 10px; }
+table.form_periode { width: 300px; margin: 0 auto 20px; background-color:#b20066; -moz-border-radius: 10px; -webkit-border-radius: 10px; border-radius: 10px; }
 
 table.form_periode td { text-align: center; vertical-align: middle; padding: 5px 5px 10px; }
 
@@ -150,7 +144,7 @@ table.form_periode td { text-align: center; vertical-align: middle; }
 
 #onglets { margin: 15px auto; padding: 0 0 5px 0; width: 1160px; border-bottom: 5px solid #E3E4E5; }
 
-#onglets a { background-color: #b20066; color: white; text-decoration: none; margin: 0; padding: 5px 8px 5px 8px; text-align: center; font-size:12px; font-weight:bold; cursor: pointer; -moz-border-radius: 5px 5px 0 0; -webkit-border-radius: 5px 5px 0 0;  -khtml-border-radius: 5px 5px 0 0;  border-radius: 5px 5px 0 0; }
+#onglets a { background-color: #b20066; color: white; text-decoration: none; margin: 0; padding: 5px 8px 5px 8px; text-align: center; font-size:12px; font-weight:bold; cursor: pointer; -moz-border-radius: 5px 5px 0 0; -webkit-border-radius: 5px 5px 0 0; border-radius: 5px 5px 0 0; }
 
 #onglets a.active { background-color: #E3E4E5; color: #FFF; }
 
@@ -158,7 +152,7 @@ table.form_periode td { text-align: center; vertical-align: middle; }
 /* COLORBOX */
 /************/
 
-#popup { background-color: #FFF; padding: 20px; border: 2px solid #E3E4E5; -moz-border-radius: 10px; -webkit-border-radius: 10px; -khtml-border-radius: 10px; border-radius: 10px; }
+#popup { background-color: #FFF; padding: 20px; border: 2px solid #E3E4E5; -moz-border-radius: 10px; -webkit-border-radius: 10px; border-radius: 10px; }
 
 .closeBtn { position:absolute; top: 8px; right: 8px; }
 

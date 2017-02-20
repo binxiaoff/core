@@ -295,7 +295,7 @@ class ProjectRequestController extends Controller
 
         /** @var \borrowing_motive $borrowingMotive */
         $borrowingMotive               = $entityManager->getRepository('borrowing_motive');
-        $template['borrowing_motives'] = $borrowingMotive->select();
+        $template['borrowing_motives'] = $borrowingMotive->select('rank');
 
         $settings->get('Durée des prêts autorisées', 'type');
         $template['loan_periods'] = explode(',', $settings->value);

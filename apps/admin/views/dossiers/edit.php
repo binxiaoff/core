@@ -136,6 +136,11 @@
     .btn-small {
         border-color: transparent;
         font-size: 11px;
+        margin: 2px;
+    }
+
+    .btn-small.btnDisabled {
+        border-color: #b20066;
     }
 
     .btn-validate {
@@ -147,7 +152,7 @@
     }
 </style>
 <script type="text/javascript">
-    $(function () {
+    $(function() {
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
         $("#date").datepicker({
@@ -500,7 +505,7 @@
                         </tr>
                         <tr>
                             <th><label for="photo_projet">Photo projet</label></th>
-                            <td><input type="file" name="photo_projet" id="photo_projet" /><br /><a target="_blank" href="<?= $this->surl ?>/images/dyn/projets/source/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a></td>
+                            <td><input type="file" name="photo_projet" id="photo_projet"><br><a target="_blank" href="<?= $this->surl ?>/images/dyn/projets/source/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a></td>
                         </tr>
                     </table>
                 </td>
@@ -522,7 +527,7 @@
                         <?php endif; ?>
                         <tr>
                             <th><label for="montant">Montant du prêt&nbsp;*</label></th>
-                            <td><input type="text" name="montant" id="montant" class="input_moy" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> value="<?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>"/> €</td>
+                            <td><input type="text" name="montant" id="montant" class="input_moy" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €</td>
                         </tr>
                         <tr>
                             <th><label for="duree">Durée du prêt&nbsp;*</label></th>
@@ -541,7 +546,7 @@
                                 <select name="motive" id="motive" class="select">
                                     <option<?= (is_null($this->projects->id_borrowing_motive) ? ' selected' : '') ?> value="0"></option>
                                     <?php foreach ($this->aBorrowingMotives as $motive) : ?>
-                                        <option<?= ($this->projects->id_borrowing_motive == $motive['id_motive'] ? ' selected' : '') ?> value="<?= $motive['id_motive'] ?>"><?= $this->translator->trans('borrowing-motive_motive-' . $motive['id_motive']) ?> </option>
+                                        <option<?= ($this->projects->id_borrowing_motive == $motive['id_motive'] ? ' selected' : '') ?> value="<?= $motive['id_motive'] ?>"><?= $this->translator->trans('borrowing-motive_motive-' . $motive['id_motive']) ?></option>
                                     <?php endforeach ?>
                                 </select>
                             </td>
@@ -622,11 +627,11 @@
                                 <th>DIRS</th>
                                 <td>
                                     <a href="<?= $this->furl ?>/var/dirs/<?= $this->projects->slug ?>.pdf">
-                                        <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF"/>
+                                        <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
                                     </a>
                                     <?php if ($this->projects->status >= \projects_status::EN_FUNDING) : ?>
                                         <a href="<?= $this->url ?>/dossiers/regenerate_dirs/<?= $this->projects->id_project ?>" class="regenerate-dirs thickbox">
-                                            <img src="<?= $this->surl ?>/images/admin/reload.png" alt="Regenerate" title="Régénérer le DIRS"/>
+                                            <img src="<?= $this->surl ?>/images/admin/reload.png" alt="Regenerate" title="Régénérer le DIRS">
                                         </a>
                                     <?php endif; ?>
                                 </td>
@@ -675,9 +680,9 @@
                                 </tr>
                             <?php endif; ?>
                         </table>
-                        <?php if (! $this->virement_recu && ! $this->remb_anticipe_effectue && isset($this->date_next_echeance)) { ?>
+                        <?php if (! $this->virement_recu && ! $this->remb_anticipe_effectue && isset($this->date_next_echeance)) : ?>
                             * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
-                        <?php } ?>
+                        <?php endif; ?>
                         <br><br><br><br>
                     <?php endif; ?>
                     <h2>Actions</h2>
@@ -690,16 +695,16 @@
                             <th>ID emprunteur</th>
                             <td colspan="2">
                                 <?= $this->clients->id_client ?>
-                                <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Éditer l'emprunteur" /></a>
+                                <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Éditer l'emprunteur"></a>
                                 <input id="id_client" type="hidden" value="<?= $this->clients->id_client ?>" name="id_client">
                             </td>
                         </tr>
                         <tr>
-                            <th><label for="prenom">Prénom</label></th>
+                            <th>Prénom</th>
                             <td colspan="2"><?= $this->clients->prenom ?></td>
                         </tr>
                         <tr>
-                            <th><label for="nom">Nom</label></th>
+                            <th>Nom</th>
                             <td colspan="2"><?= $this->clients->nom ?></td>
                         </tr>
                         <tr>
@@ -713,14 +718,14 @@
                                 </select>
                             </td>
                         </tr>
-                        <tr id="analysts-row"<?php if ($this->projects->status < \projects_status::PENDING_ANALYSIS && empty($this->projects->id_analyste)) { ?> style="display: none;"<?php } ?>>
+                        <tr id="analysts-row"<?php if ($this->projects->status < \projects_status::PENDING_ANALYSIS && empty($this->projects->id_analyste)) : ?> style="display: none;"<?php endif; ?>>
                             <th><label for="analyste">Analyste</label></th>
                             <td colspan="2">
                                 <select name="analyste" id="analyste" class="select">
                                     <option value="0">Choisir</option>
-                                    <?php foreach ($this->aAnalysts as $aAnalyst) { ?>
+                                    <?php foreach ($this->aAnalysts as $aAnalyst) : ?>
                                         <option <?= ($this->projects->id_analyste == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
-                                    <?php } ?>
+                                    <?php endforeach; ?>
                                 </select>
                             </td>
                         </tr>
@@ -772,7 +777,7 @@
                                     <?php endforeach; ?>
                                     </select>
                                 <?php else : ?>
-                                    <input type="hidden" name="status" id="status" value="<?= $this->projects->status ?>" />
+                                    <input type="hidden" name="status" id="status" value="<?= $this->projects->status ?>">
                                     <?= $this->projects_status->label ?>
                                     <?php if (false === empty($this->sRejectionReason)) : ?>
                                         (<?= $this->sRejectionReason ?>)
@@ -784,9 +789,9 @@
                                     in_array($this->users->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_RISK])
                                     && in_array($this->projects->status, [\projects_status::COMMERCIAL_REJECTION, \projects_status::ANALYSIS_REJECTION, \projects_status::COMITY_REJECTION])
                                 ) : ?>
-                                    <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"/></a>
+                                    <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"></a>
                                 <?php endif; ?>
-                                <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
+                                <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information"></a>
                             </td>
                         </tr>
                         <?php if (in_array($this->projects->status, [\projects_status::NOT_ELIGIBLE, \projects_status::IMPOSSIBLE_AUTO_EVALUATION]) && false === empty($this->projects_status_history->content)) : ?>
@@ -808,7 +813,7 @@
                             <th><label for="date_publication">Date de publication&nbsp;*</label></th>
                             <td id="date_publication" colspan="2">
                                 <?php if (in_array($this->projects->status, [\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER])) : ?>
-                                    <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
+                                    <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>">
                                     <?php
                                         $tab_date_publication_full  = explode(' ', $this->projects->date_publication);
                                         $tab_date_publication_full2 = explode(':', $tab_date_publication_full[1]);
@@ -836,7 +841,7 @@
                             <th><label for="date_retrait">Date de retrait&nbsp;*</label></th>
                             <td id="date_retrait" colspan="2">
                                 <?php if (in_array($this->projects->status, [\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER])) : ?>
-                                    <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
+                                    <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>">
                                     <?php
                                         $tab_date_retrait_full  = explode(' ', $this->projects->date_retrait);
                                         $tab_date_retrait_full2 = explode(':', $tab_date_retrait_full[1]);
@@ -883,26 +888,24 @@
                                 <?php endif; ?>
                             </td>
                         </tr>
-                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) { ?>
+                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) : ?>
                             <tr>
                                 <th><label for="pouvoir">Pouvoir</label></th>
                                 <td colspan="2">
                                     <div>
                                         <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
-                                        <?php
-                                        if ($this->projects_pouvoir->status_remb == '1') {
-                                            ?><span style="color:green;">&nbsp;Validé</span><?
-                                        }
-                                        ?>
+                                        <?php if ($this->projects_pouvoir->status_remb == '1') : ?>
+                                            <span style="color:green;">&nbsp;Validé</span>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
-                        <?php } elseif ($this->projects->status == \projects_status::FUNDE) { ?>
+                        <?php elseif ($this->projects->status == \projects_status::FUNDE) : ?>
                             <tr>
                                 <th><label for="upload_pouvoir">Pouvoir</label></th>
-                                <td colspan="2"><input type="file" name="upload_pouvoir" id="upload_pouvoir"/></td>
+                                <td colspan="2"><input type="file" name="upload_pouvoir" id="upload_pouvoir"></td>
                             </tr>
-                        <?php } ?>
+                        <?php endif; ?>
 
                         <?php if ($this->projects->status == \projects_status::FUNDE) : ?>
                             <tr>
@@ -942,7 +945,7 @@
     </form>
     <hr style="border: 2px solid #B10366;">
 
-    <br/><br/>
+    <br><br>
 
     <?php $this->fireView('blocs/memos'); ?>
     <?php $this->fireView('blocs/email'); ?>

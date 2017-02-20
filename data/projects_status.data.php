@@ -8,6 +8,7 @@ class projects_status extends projects_status_crud
     const COMPLETE_REQUEST           = 10;
     const ABANDONED                  = 15;
     const COMMERCIAL_REVIEW          = 20;
+    const POSTPONED                  = 21;
     const COMMERCIAL_REJECTION       = 25;
     const PENDING_ANALYSIS           = 30;
     const ANALYSIS_REVIEW            = 31;
