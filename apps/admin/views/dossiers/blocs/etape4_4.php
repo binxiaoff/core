@@ -1,4 +1,4 @@
-<div class="tab_title" id="title_etape4_4">4.4 - Synthèse financière</div>
+<a class="tab_title" id="section-financial-summary" href="#section-financial-summary">4.4 - Synthèse financière</a>
 <div class="tab_content" id="etape4_4">
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/dossiers/export/<?= $this->projects->id_project ?>" class="btn_link">CSV données financières</a>

@@ -68,14 +68,23 @@
     }
 
     .tab_title {
-        cursor: pointer;
-        text-align: center;
+        display: block;
         background-color: #B10366;
-        color: white;
-        padding: 5px;
+        color: #fff;
         font-size: 16px;
         font-weight: bold;
+        text-align: center;
+        text-decoration: none;
+        padding: 5px;
         margin-top: 15px;
+    }
+
+    .tab_title:active,
+    .tab_title:focus,
+    .tab_title:hover,
+    .tab_title:visited {
+        color: #fff;
+        text-decoration: none;
     }
 
     table.form .section-title th {
@@ -221,17 +230,17 @@
         });
 
         <?php if ($this->nb_lignes != '') : ?>
-        $(".tablesorter").tablesorterPager({
-            container: $("#pager"),
-            positionFixed: false,
-            size: <?= $this->nb_lignes ?>
-        });
+            $('.tablesorter').tablesorterPager({
+                container: $('#pager'),
+                positionFixed: false,
+                size: <?= $this->nb_lignes ?>
+            })
         <?php endif; ?>
 
         $(document).click(function(event) {
-            var $clicked = $(event.target);
+            var $clicked = $(event.target)
             if ($clicked.hasClass('tab_title')) {
-                $clicked.next().slideToggle();
+                $clicked.next().slideToggle()
             }
         });
 
@@ -467,11 +476,13 @@
                         <tr>
                             <th><label for="code_naf">Code NAF</label></th>
                             <td>
-                                <?php if (empty($this->companies->libelle_naf) && empty($this->companies->code_naf)) : ?>
+                                <?php if (empty($this->companies->code_naf)) : ?>
                                     -
                                 <?php else : ?>
-                                    <?= empty($this->companies->code_naf) ? '' : $this->companies->code_naf ?> -
-                                    <?= empty($this->companies->libelle_naf) ? '' : $this->companies->libelle_naf ?>
+                                    <?= $this->companies->code_naf ?>
+                                    <?php if (false === empty($this->xerfi->naf)) : ?>
+                                        <?= ' - ' . $this->xerfi->label ?>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -480,7 +491,7 @@
                             <td><input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"></td>
                         </tr>
                         <tr>
-                            <th><label for="societe">Nom société</label></th>
+                            <th><label for="societe">Raison sociale</label></th>
                             <td><input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"></td>
                         </tr>
                         <tr>
@@ -493,11 +504,7 @@
                         </tr>
                         <tr>
                             <th><label for="activite">Activité</label></th>
-                            <td><input type="text" name="activite" id="activite" class="input_large" value="<?= $this->companies->activite ?>"></td>
-                        </tr>
-                        <tr>
-                            <th><label for="lieu_exploi">Lieu exploitation</label></th>
-                            <td><input type="text" name="lieu_exploi" id="lieu_exploi" class="input_large" value="<?= $this->companies->lieu_exploi ?>"></td>
+                            <td><input type="text" name="activite" id="activite" class="input_large" value="<?= empty($this->companies->activite) ? (empty($this->xerfi->naf) ? '' : $this->xerfi->label) : $this->companies->activite ?>"></td>
                         </tr>
                         <tr>
                             <th><label for="nature_project">Nature du projet</label></th>
@@ -640,11 +647,10 @@
                     </table>
                     <br><br>
                     <?php if ($this->projects->status == \projects_status::REMBOURSEMENT) : ?>
-                        <h2>Remboursement anticipé / Information</h2>
-                        <table class="form" style="border: 1px solid #B10366;">
+                        <h2>Remboursement anticipé</h2>
+                        <table class="form" style="border: 1px solid #B10366">
                             <tr>
-                                <th>Statut</th>
-                                <td><strong><?= $this->phrase_resultat ?></strong></td>
+                                <td colspan="2" style="text-align: center"><strong><?= $this->phrase_resultat ?></strong></td>
                             </tr>
                             <?php if ($this->virement_recu) : ?>
                                 <tr>

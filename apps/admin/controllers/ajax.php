@@ -296,14 +296,14 @@ class ajaxController extends bootstrap
                 $this->clients->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
                 $this->clients->update();
             } elseif ($_POST['etape'] == 3) {
-                /** @var projects $oProject */
-                $oProject = $this->loadData('projects');
-                $oProject->get($_POST['id_project'], 'id_project');
-                $oProject->objectif_loan        = $_POST['objectif_etape3'];
-                $oProject->presentation_company = $_POST['presentation_etape3'];
-                $oProject->means_repayment      = $_POST['moyen_etape3'];
-                $oProject->comments             = $_POST['comments_etape3'];
-                $oProject->update();
+                /** @var projects $project */
+                $project = $this->loadData('projects');
+                $project->get($_POST['id_project'], 'id_project');
+                $project->objectif_loan        = $_POST['objectif_etape3'];
+                $project->presentation_company = $_POST['presentation_etape3'];
+                $project->means_repayment      = $_POST['moyen_etape3'];
+                $project->comments             = $project->create_bo ? $_POST['comments_etape3'] : '';
+                $project->update();
             } elseif ($_POST['etape'] == 4.1) {
                 /** @var projects $oProject */
                 $oProject = $this->loadData('projects');

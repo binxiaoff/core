@@ -81,7 +81,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
     }
     ?>
-    <div class="tab_title" id="title_etape4_3">4.3 - Ratios et analyses</div>
+    <a class="tab_title" id="section-risk-indicators" href="#section-risk-indicators">4.3 - Ratios et analyses</a>
     <div class="tab_content" id="etape4_3">
         <table class="tablesorter annual-accounts">
             <thead style="text-align:center;">

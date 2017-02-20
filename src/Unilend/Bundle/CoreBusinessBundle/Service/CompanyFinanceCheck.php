@@ -68,7 +68,6 @@ class CompanyFinanceCheck
                 $company->forme         = $companyData->getCompanyForm();
                 $company->capital       = $companyData->getCapital();
                 $company->code_naf      = $companyData->getNAFCode();
-                $company->libelle_naf   = $companyData->getNAFLabel();
                 $company->adresse1      = $companyData->getAddress();
                 $company->city          = $companyData->getCity();
                 $company->zip           = $companyData->getPostCode();

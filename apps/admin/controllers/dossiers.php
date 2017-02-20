@@ -123,12 +123,12 @@ class dossiersController extends bootstrap
         $this->clients_prescripteurs         = $this->loadData('clients');
         $this->companies_prescripteurs       = $this->loadData('companies');
         $this->settings                      = $this->loadData('settings');
-        /** @var borrowing_motive $borrowingMotive */
-        $borrowingMotive                     = $this->loadData('borrowing_motive');
-        $companyTaxFormType                  = $this->loadData('company_tax_form_type');
+        /** @var \borrowing_motive $borrowingMotive */
+        $borrowingMotive = $this->loadData('borrowing_motive');
+        /** @var \company_tax_form_type $companyTaxFormType */
+        $companyTaxFormType = $this->loadData('company_tax_form_type');
         /** @var \company_balance_type $companyBalanceDetailsType */
-        $companyBalanceDetailsType           = $this->loadData('company_balance_type');
-
+        $companyBalanceDetailsType = $this->loadData('company_balance_type');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
@@ -674,101 +674,6 @@ class dossiersController extends bootstrap
                             }
 
                             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
-
-                            $companies = $this->loadData('companies');
-                            $clients   = $this->loadData('clients');
-                            $address   = $this->loadData('clients_adresses');
-
-                            $companies->get($this->projects->id_company, 'id_company');
-                            $clients->get($companies->id_client_owner, 'id_client');
-                            $address->get($companies->id_client_owner, 'id_client');
-
-                            $mess = '<ul>';
-
-                            if ($this->projects->title == '') {
-                                $mess .= '<li>Titre projet</li>';
-                            }
-                            if ($this->projects->period == '0') {
-                                $mess .= '<li>Periode projet</li>';
-                            }
-                            if ($this->projects->amount == '0') {
-                                $mess .= '<li>Montant projet</li>';
-                            }
-                            if ($companies->name == '') {
-                                $mess .= '<li>Nom entreprise</li>';
-                            }
-                            if ($companies->forme == '') {
-                                $mess .= '<li>Forme juridique</li>';
-                            }
-                            if ($companies->siren == '') {
-                                $mess .= '<li>SIREN entreprise</li>';
-                            }
-                            if ($companies->siret == '') {
-                                $mess .= '<li>SIRET entreprise</li>';
-                            }
-                            if ($companies->iban == '') {
-                                $mess .= '<li>IBAN entreprise</li>';
-                            }
-                            if ($companies->bic == '') {
-                                $mess .= '<li>BIC entreprise</li>';
-                            }
-                            if ($companies->tribunal_com == '') {
-                                $mess .= '<li>Tribunal de commerce entreprise</li>';
-                            }
-                            if ($companies->capital == '0') {
-                                $mess .= '<li>Capital entreprise</li>';
-                            }
-                            if ($companies->date_creation == '0000-00-00') {
-                                $mess .= '<li>Date creation entreprise</li>';
-                            }
-                            if ($clients->nom == '') {
-                                $mess .= '<li>Nom emprunteur</li>';
-                            }
-                            if ($clients->prenom == '') {
-                                $mess .= '<li>Prenom emprunteur</li>';
-                            }
-                            if ($clients->fonction == '') {
-                                $mess .= '<li>Fonction emprunteur</li>';
-                            }
-                            if ($clients->telephone == '') {
-                                $mess .= '<li>Telephone emprunteur</li>';
-                            }
-                            if ($clients->email == '') {
-                                $mess .= '<li>Email emprunteur</li>';
-                            }
-                            if ($address->adresse1 == '') {
-                                $mess .= '<li>Adresse emprunteur</li>';
-                            }
-                            if ($address->cp == '') {
-                                $mess .= '<li>CP emprunteur</li>';
-                            }
-                            if ($address->ville == '') {
-                                $mess .= '<li>Ville emprunteur</li>';
-                            }
-
-                            $mess .= '</ul>';
-
-                            if (strlen($mess) > 9) {
-                                $this->settings->get('DebugAlertesBusiness', 'type');
-                                $to = $this->settings->value;
-                                $subject = '[Rappel] Donnees projet manquantes';
-                                $message = '
-                                <html>
-                                <head>
-                                  <title>[Rappel] Donnees projet manquantes</title>
-                                </head>
-                                <body>
-                                    <p>Un projet qui vient d\'etre publie ne dispose pas de toutes les donnees necessaires</p>
-                                    <p>Listes des informations manquantes sur le projet ' . $this->projects->id_project . ' : </p>
-                                    ' . $mess . '
-                                </body>
-                                </html>';
-
-                                $headers = 'MIME-Version: 1.0' . "\r\n";
-                                $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                                $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
-                                mail($to, $subject, $message, $headers);
-                            }
                         } else {
                             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
                         }
@@ -776,10 +681,9 @@ class dossiersController extends bootstrap
 
                     $this->projects->update();
 
-                    $this->companies->name            = $_POST['societe'];
-                    $this->companies->tribunal_com    = $_POST['tribunal_com'];
-                    $this->companies->activite        = $_POST['activite'];
-                    $this->companies->lieu_exploi     = $_POST['lieu_exploi'];
+                    $this->companies->name         = $_POST['societe'];
+                    $this->companies->tribunal_com = $_POST['tribunal_com'];
+                    $this->companies->activite     = $_POST['activite'];
                     $this->companies->update();
 
                     $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec succès';
@@ -789,7 +693,6 @@ class dossiersController extends bootstrap
                 }
             }
 
-            // Modification de la date de retrait
             if (isset($_POST['send_form_date_retrait'])) {
                 $form_ok = true;
 
@@ -848,32 +751,34 @@ class dossiersController extends bootstrap
             }
 
             $this->ratings               = [];
+            $this->xerfi                 = $this->loadData('xerfi');
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
             $this->iCompanyProjectsCount = count($this->aCompanyProjects);
             $this->fCompanyOwedCapital   = $this->companies->getOwedCapitalBySIREN();
             $this->bIsProblematicCompany = $this->companies->countProblemsBySIREN() > 0;
 
+            if (false === empty($this->companies->code_naf)) {
+                $this->xerfi->get($this->companies->code_naf, 'naf');
+            }
+
             if (false === empty($this->projects->id_company_rating_history)) {
                 /** @var company_rating $companyRating */
                 $companyRating = $this->loadData('company_rating');
-                $ratings = $companyRating->getHistoryRatingsByType($this->projects->id_company_rating_history, true);
+                $ratings       = $companyRating->getHistoryRatingsByType($this->projects->id_company_rating_history, true);
 
                 if (
                     (false === isset($ratings['xerfi']) || false === isset($ratings['xerfi_unilend']))
                     && false === empty($this->companies->code_naf)
                 ) {
-                    /** @var xerfi $xerfi */
-                    $xerfi = $this->loadData('xerfi');
-
-                    if (false === $xerfi->get($this->companies->code_naf)) {
+                    if (empty($this->xerfi->naf)) {
                         $xerfiScore   = 'N/A';
                         $xerfiUnilend = 'PAS DE DONNEES';
-                    } elseif ('' === $xerfi->score) {
+                    } elseif ('' === $this->xerfi->score) {
                         $xerfiScore   = 'N/A';
-                        $xerfiUnilend = $xerfi->unilend_rating;
+                        $xerfiUnilend = $this->xerfi->unilend_rating;
                     } else {
-                        $xerfiScore   = $xerfi->score;
-                        $xerfiUnilend = $xerfi->unilend_rating;
+                        $xerfiScore   = $this->xerfi->score;
+                        $xerfiUnilend = $this->xerfi->unilend_rating;
                     }
 
                     if (false === isset($ratings['xerfi'])) {
@@ -896,7 +801,7 @@ class dossiersController extends bootstrap
                 foreach ($ratings as $ratingType => $rating) {
                     switch ($rating['action']) {
                         case \company_rating_history::ACTION_WS:
-                            $action = 'WS';
+                            $action = 'Webservice';
                             $user   = '';
                             break;
                         case \company_rating_history::ACTION_XERFI:

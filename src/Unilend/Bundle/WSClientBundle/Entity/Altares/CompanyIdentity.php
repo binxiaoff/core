@@ -30,12 +30,6 @@ class CompanyIdentity
     private $NAFCode;
 
     /**
-     * @JMS\SerializedName("naf5EntreLibelle")
-     * @JMS\Type("string")
-     */
-    private $NAFLabel;
-
-    /**
      * @JMS\SerializedName("rue")
      * @JMS\Type("string")
      */
@@ -92,7 +86,6 @@ class CompanyIdentity
      * @param string $companyForm
      * @param string $capital
      * @param string $NAFCode
-     * @param string $NAFLabel
      * @param string $address
      * @param string $postCode
      * @param string $city
@@ -102,13 +95,12 @@ class CompanyIdentity
      * @param string $companyStatus
      * @param string $collectiveProcedure
      */
-    public function __construct($corporateName, $companyForm, $capital, $NAFCode, $NAFLabel, $address, $postCode, $city, $siret, $creationDate, $rcs, $commercialCourt, $companyStatus, $collectiveProcedure)
+    public function __construct($corporateName, $companyForm, $capital, $NAFCode, $address, $postCode, $city, $siret, $creationDate, $rcs, $commercialCourt, $companyStatus, $collectiveProcedure)
     {
         $this->corporateName       = $corporateName;
         $this->companyForm         = $companyForm;
         $this->capital             = $capital;
         $this->NAFCode             = $NAFCode;
-        $this->NAFLabel            = $NAFLabel;
         $this->address             = $address;
         $this->postCode            = $postCode;
         $this->city                = $city;
@@ -150,14 +142,6 @@ class CompanyIdentity
     public function getNAFCode()
     {
         return $this->NAFCode;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getNAFLabel()
-    {
-        return $this->NAFLabel;
     }
 
     /**

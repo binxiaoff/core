@@ -1,4 +1,4 @@
-<div class="tab_title" id="title_tab_email">Email</div>
+<a class="tab_title" id="section-email" href="#section-email">Email</a>
 <div class="tab_content" id="tab_email">
     <div class="div-2-columns">
         <div class="div-left-pos">

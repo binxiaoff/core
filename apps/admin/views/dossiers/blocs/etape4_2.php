@@ -90,10 +90,9 @@
             <input type="hidden" name="id_annual_accounts_remove"/>
         </div>
     </form>
-
 </div>
 
-<div class="tab_title" id="title_etape4_2">4.2 - Bilans</div>
+<a class="tab_title" id="section-balance-sheets" href="#section-balance-sheets">4.2 - Bilans</a>
 <div class="tab_content" id="etape4_2">
     <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
         <input type="hidden" name="add_annual_accounts" value="1"/>
