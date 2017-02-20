@@ -4,6 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
 use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -58,6 +60,7 @@ class WelcomeOfferManager
             \transactions_types::TYPE_WELCOME_OFFER,
             \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION
         );
+        $return                          = [];
 
         if ($welcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue')) {
             /** @var \offres_bienvenues_details $welcomeOfferDetail */
@@ -115,4 +118,24 @@ class WelcomeOfferManager
         return $return;
     }
 
+    /**
+     * @param Clients $client
+     *
+     * @return float
+     */
+    public function getCurrentWelcomeOfferAmount(Clients $client)
+    {
+        $welcomeOffers = $this->em->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy([
+            'idClient' => $client->getIdClient(),
+            'status'   => OffresBienvenuesDetails::STATUS_NEW
+        ]);
+
+        $promotionalAmountTotal = 0;
+        foreach ($welcomeOffers as $offer) {
+            $offerAmount            = round(bcdiv($offer->getMontant(), 100, 4), 2);
+            $promotionalAmountTotal = bcadd($promotionalAmountTotal, $offerAmount, 2);
+        }
+
+        return (float) $promotionalAmountTotal;
+    }
 }
