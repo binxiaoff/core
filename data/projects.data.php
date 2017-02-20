@@ -56,6 +56,9 @@ class projects extends projects_crud
     const SORT_DIRECTION_ASC  = 'ASC';
     const SORT_DIRECTION_DESC = 'DESC';
 
+    const DEFAULT_COMMISSION_RATE_FUNDS     = 4;
+    const DEFAULT_COMMISSION_RATE_REPAYMENT = 1;
+
     public function __construct($bdd, $params = '')
     {
         parent::projects($bdd, $params);
@@ -1281,5 +1284,4 @@ class projects extends projects_crud
 
         return $result;
     }
-
 }

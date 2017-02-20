@@ -657,12 +657,18 @@ class transfertsController extends bootstrap
 
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $project);
 
-                    $this->settings->get('Part unilend', 'type');
-                    $PourcentageUnilend = $this->settings->value;
-                    $montant            = $loans->sumPretsProjet($project->id_project);
-                    $partUnilend        = round($montant * $PourcentageUnilend, 2);
+                    /** @var \tax_type $taxType */
+                    $taxType = $this->loadData('tax_type');
+                    $taxType->get(\tax_type::TYPE_VAT);
 
-                    $montant -= $partUnilend;
+                    $commissionFundsRateVATIncluded = bcmul(
+                        bcadd(1, round(bcdiv($taxType, 100, 4), 2), 2),
+                        round(bcdiv($project->commission_rate_funds, 100, 4), 2),
+                        2
+                    );
+                    $projectLoanAmount              = $loans->sumPretsProjet($project->id_project);
+                    $unilendShareAmount             = round($projectLoanAmount * $commissionFundsRateVATIncluded, 2);
+                    $projectLoanAmount              -= $unilendShareAmount;
 
                     if (false === $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
@@ -754,7 +760,7 @@ class transfertsController extends bootstrap
 
                         $taxRate            = $taxType->getTaxRateByCountry('fr');
                         $sDateFirstPayment  = $aRepaymentHistory[0]['added'];
-                        $fCommission        = bcmul($partUnilend, 100);
+                        $fCommission        = bcmul($unilendShareAmount, 100);
                         $fVATFreeCommission = round($fCommission / (1 + $taxRate[\tax_type::TYPE_VAT] / 100));
 
                         $invoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($invoiceCounter->compteurJournalier($project->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
@@ -763,7 +769,7 @@ class transfertsController extends bootstrap
                         $invoice->id_project      = $project->id_project;
                         $invoice->ordre           = 0;
                         $invoice->type_commission = \factures::TYPE_COMMISSION_FINANCEMENT;
-                        $invoice->commission      = round(bcdiv($fVATFreeCommission, $project->amount, 3), 1);
+                        $invoice->commission      = $project->commission_rate_funds;
                         $invoice->montant_ttc     = $fCommission;
                         $invoice->montant_ht      = $fVATFreeCommission;
                         $invoice->tva             = $fCommission - $fVATFreeCommission;
