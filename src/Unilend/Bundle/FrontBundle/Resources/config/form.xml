@@ -21,5 +21,31 @@
         <service id="unilend.form.lender_withdrawal" class="Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType">
             <tag name="form.type" />
         </service>
+
+        <service id="unilend.form.company_identity" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityType">
+            <tag name="form.type" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.component.gender_type" class="Unilend\Bundle\FrontBundle\Form\Components\GenderType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.component.countries_type" class="Unilend\Bundle\FrontBundle\Form\Components\CountriesType">
+            <tag name="form.type" />
+            <argument type="service" id="unilend.service.location_manager" />
+        </service>
+
+        <service id="unilend.form.component.nationalities_type" class="Unilend\Bundle\FrontBundle\Form\Components\NationalitiesType">
+            <tag name="form.type" />
+            <argument type="service" id="unilend.service.location_manager" />
+        </service>
+
+        <service id="unilend.form.postal_address_type" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PostalAddressType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
     </services>
 </container>

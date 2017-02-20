@@ -1,9 +1,12 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,10 +19,19 @@ use Symfony\Component\Validator\Constraints\Bic;
 use Symfony\Component\Validator\Constraints\Iban;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonIdentityFilesType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonPhoneType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonProfileType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PostalAddressType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyAddressType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonFiscalAddressType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -33,23 +45,487 @@ class LenderProfileController extends Controller
      */
     public function personalInformationAction(Request $request)
     {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        /** @var \clients $client */
         $client = $this->getClient();
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->getLenderAccount();
+        /** @var EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
+
+        $clientEntity          = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        $dbClientEntity        = clone $clientEntity;
+        $clientAddressEntity   = $em->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $clientEntity->getIdClient()]);
+        $dbClientAddressEntity = clone $clientAddressEntity;
+
+        $postalAddressFb = $this->createFormBuilder()->add('postal_address', PostalAddressType::class, ['data' => $clientAddressEntity]);
+        $phoneFb = $this->createFormBuilder()->add('clientPhone', PersonPhoneType::class, ['data' => $clientEntity]);
+
+        if (in_array($clientEntity->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            $companyEntity   = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
+            $dbCompanyEntity = clone $companyEntity;
+
+            $identityFb      = $this->createFormBuilder()
+                ->add('client', LegalEntityType::class, ['data' => $clientEntity])
+                ->add('company', CompanyIdentityType::class, ['data' => $companyEntity]);
+            $fiscalAddressFb = $this->createFormBuilder()->add('company', CompanyAddressType::class, ['data' => $companyEntity]);
+        } else {
+            $identityFb      = $this->createFormBuilder()
+                ->add('client', PersonProfileType::class, ['data' => $clientEntity]);
+            $fiscalAddressFb = $this->createFormBuilder()->add('person_fiscal_address', PersonFiscalAddressType::class, ['data' => $clientAddressEntity]);
+        }
+
+        $identityForm      = $identityFb->getForm();
+        $fiscalAddressForm = $fiscalAddressFb->getForm();
+        $postalAddressForm = $postalAddressFb->getForm();
+        $phoneForm         = $phoneFb->getForm();
+
+        if ($request->isMethod('POST')) {
+            if (isset($request->request->get('form')['client'])) {
+                $identityForm->handleRequest($request);
+
+                if ($identityForm->isSubmitted()) {
+                    //$this->saveClientActionHistory($client, serialize(['id_client' => $clientEntity->getIdClient(), 'post' => $identityForm->getData(), 'files' => $_FILES]));
+                    // if we serialize post we can do it on the top of the if, instead of each form
+                    if ($identityForm->isValid()) {
+                        if (isset($request->request->get('form')['company'])) {
+                            $this->handleCompanyIdentity($dbClientEntity, $clientEntity, $dbCompanyEntity, $companyEntity, $identityForm);
+                        }
+
+                        $this->handlePersonIdentity($dbClientEntity, $clientEntity, $identityForm);
+                    }
+                }
+            }
+
+            if (isset($request->request->get('form')['person_fiscal_address'])) {
+                $fiscalAddressForm->handleRequest($request);
+
+                if ($fiscalAddressForm->isSubmitted()) {
+                    //$this->saveClientActionHistory($client, serialize(['id_client' => $clientEntity->getIdClient(), 'post' => $fiscalAddressForm, 'files' => $_FILES]));
+
+                    if ($fiscalAddressForm->isValid()) {
+                        $this->handlePersonFiscalAddress($dbClientAddressEntity, $clientAddressEntity, $fiscalAddressForm);
+                    }
+                }
+            }
+            if (isset($request->request->get('form')['company']) && false === isset($request->request->get('form')['client'])) {
+                $fiscalAddressForm->handleRequest($request);
+
+                if ($fiscalAddressForm->isSubmitted()) {
+                    //$this->saveClientActionHistory($client, serialize(['id_client' => $clientEntity->getIdClient(), 'post' => $fiscalAddressForm, 'files' => $_FILES]));
+
+                    if ($fiscalAddressForm->isValid()) {
+                        $this->handleCompanyFiscalAddress($dbCompanyEntity, $companyEntity, $fiscalAddressForm);
+                    }
+                }
+            }
+
+            if (isset($request->request->get('form')['postal_address'])) {
+                $postalAddressForm->handleRequest($request);
+
+                if ($postalAddressForm->isSubmitted()) {
+                    //$this->saveClientActionHistory($client, serialize(['id_client' => $clientEntity->getIdClient(), 'post' => $postalAddressForm, 'files' => $_FILES]));
+
+                    if ($postalAddressForm->isValid()) {
+                        $this->handlePostalAddressForm($clientAddressEntity);
+                    }
+                }
+            }
+
+            if (isset($request->request->get('form')['phone'])) {
+                $phoneForm->handleRequest($request);
+
+                if ($phoneForm->isValid()) {
+                    $this->handlePhoneForm($clientEntity);
+                }
+            }
+        }
+
+        $templateData                        = [];
+        $lenderAccount                       = $this->getLenderAccount();
+        $setting                             = $em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
+        $templateData['externalCounselList'] = json_decode($setting->getValue(), true);
+
+        if (false === empty($companyEntity)) {
+            $templateData['companyIdAttachments']    = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+                \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+                \attachment_type::CNI_PASSPORTE_VERSO
+            ]);
+            $templateData['companyOtherAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+                \attachment_type::KBIS,
+                \attachment_type::DELEGATION_POUVOIR
+            ]);
+        } else {
+            $templateData['identityAttachments']  = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+                \attachment_type::CNI_PASSPORTE,
+                \attachment_type::CNI_PASSPORTE_VERSO
+            ]);
+            $templateData['residenceAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+                \attachment_type::JUSTIFICATIF_DOMICILE,
+                \attachment_type::ATTESTATION_HEBERGEMENT_TIERS,
+                \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT,
+                \attachment_type::JUSTIFICATIF_FISCAL
+            ]);
+        }
 
         $templateData = [
-            'client'        => $client->select('id_client = ' . $client->id_client)[0],
-            'lenderAccount' => $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0],
-            'isCIPActive'   => $this->isCIPActive()
-        ];
+            'client'          => $clientEntity,
+            'clientsAdresses' => $clientAddressEntity,
+            'company'         => isset($companyEntity) ? $companyEntity : null,
+            'isCIPActive'     => $this->isCIPActive(),
+            'forms'           => [
+                'identity'      => $identityForm->createView(),
+                'fiscalAddress' => $fiscalAddressForm->createView(),
+                'postalAddress' => $postalAddressForm->createView(),
+                'phone'         => $phoneForm->createView()
+            ],
 
-        $this->addPersonalInformationDataToTemplate($templateData, $request, $client, $lenderAccount, $settings);
+            'isLivingAbroad' => ($clientAddressEntity->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE)
+        ];
 
         return $this->render('pages/lender_profile/personal_information.html.twig', $templateData);
     }
+
+    /**
+     * @param Clients       $dbClientEntity
+     * @param Clients       $clientEntity
+     * @param FormInterface $form
+     */
+    private function handlePersonIdentity(Clients $dbClientEntity, Clients $clientEntity, FormInterface $form)
+    {
+        /** @var TranslatorInterface $translator */
+        $translator    = $this->get('translator');
+        $lenderAccount = $this->getLenderAccount();
+        $modifications = [];
+
+        if ($dbClientEntity->getIdNationalite() !== $clientEntity->getIdNationalite()) {
+            $modifications[] = $translator->trans('common_nationality');
+        }
+
+        if ($dbClientEntity->getCivilite() !== $clientEntity->getCivilite()) {
+            $modifications[] = $translator->trans('common_title');
+        }
+
+        if (isset($_FILES['id_recto'])  && false === empty($_FILES['id_recto']['name'])) {
+            $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE, 'id_recto');
+            if (false === is_numeric($attachmentIdRecto)) {
+                $form->get('client')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+            } else {
+                 $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE);
+            }
+        }
+        if (isset($_FILES['id_verso']) && false === empty($_FILES['id_verso']['name'])) {
+            $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
+            if (false === is_numeric($attachmentIdVerso)) {
+                $form->get('client')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+            } else {
+                $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE_VERSO);
+            }
+        }
+
+        if (false === isset($attachmentIdRecto)
+            &&  ($dbClientEntity->getIdNationalite() !== $clientEntity->getIdNationalite()
+                || $dbClientEntity->getCivilite() !== $clientEntity->getCivilite())
+        ) {
+            $form->get('client')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message')));
+        }
+
+        if ($form->isValid()) {
+            $this->addFlash('identitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
+
+            /** @var EntityManager $em */
+            $em = $this->get('doctrine.orm.entity_manager');
+
+            $modifiedData = array_merge($modifications, $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($dbClientEntity, $clientEntity));
+            if (false === empty($modifiedData)) {
+                $this->updateClientStatusAndNotifyClient($this->getClient(), $modifiedData);
+            }
+
+            $em->persist($clientEntity);
+            $em->flush();
+
+            $this->redirectToRoute('lender_profile_personal_information');
+        }
+    }
+
+    /**
+     * @param Clients       $dbClientEntity
+     * @param Clients       $clientEntity
+     * @param Companies     $dbCompanyEntity
+     * @param Companies     $companyEntity
+     * @param FormInterface $form
+     */
+    private function handleCompanyIdentity(Clients $dbClientEntity, Clients $clientEntity, Companies $dbCompanyEntity, Companies $companyEntity, FormInterface $form)
+    {
+        /** @var TranslatorInterface $translator */
+        $translator    = $this->get('translator');
+        $lenderAccount = $this->getLenderAccount();
+        $modifications = [];
+
+        if ($companyEntity->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
+            if (empty($companyEntity->getStatusConseilExterneEntreprise())) {
+                $form->get('company')->get('statusConseilExterneEntreprise')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
+            }
+            if (
+                Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER == $companyEntity->getStatusConseilExterneEntreprise()
+                && empty($companyEntity->getPreciserConseilExterneEntreprise())
+            ) {
+                $form->get('company')->get('preciserConseilExterneEntreprise')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
+            }
+
+            if (empty($companyEntity->getCiviliteDirigeant())) {
+                $form->get('company')->get('civiliteDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-form-of-address-missing')));
+            }
+
+            if (empty($companyEntity->getNomDirigeant())) {
+                $form->get('company')->get('nomDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-name-missing')));
+            }
+
+            if (empty($companyEntity->getPrenomDirigeant())) {
+                $form->get('company')->get('prenomDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-first-name-missing')));
+            }
+
+            if (empty($companyEntity->getFonctionDirigeant())) {
+                $form->get('company')->get('fonctionDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-position-missing')));
+            }
+
+            if (empty($companyEntity->getPhoneDirigeant())) {
+                $form->get('company')->get('phoneDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-phone-missing')));
+            }
+
+            if (empty($companyEntity->getEmailDirigeant())) {
+                $form->get('company')->get('emailDirigeant')->addError(new FormError($translator->trans('common-validator_email-address-invalid')));
+            }
+        }
+
+        if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
+            $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'id_recto');
+            if (false === is_numeric($attachmentIdRecto)) {
+                $form->get('company')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+            } else {
+                $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE_DIRIGEANT);
+            }
+        }
+
+        if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
+            $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
+            if (false === is_numeric($attachmentIdVerso)) {
+                $form->get('company')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+            } else {
+                $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE_VERSO);
+            }
+        }
+
+        if (isset($_FILES['company-registration']) && $_FILES['company-registration']['name'] != '') {
+            $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::KBIS, 'company-registration');
+            if (false === is_numeric($attachmentIdVerso)) {
+                $form->get('company')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+            } else {
+                $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::KBIS);
+            }
+        }
+
+        if ($form['company_client_status'] > \companies::CLIENT_STATUS_MANAGER) {
+            if (isset($_FILES['delegation-of-authority']) && $_FILES['delegation-of-authority']['name'] != '') {
+                $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
+                if (false === is_numeric($attachmentIdVerso)) {
+                    $form->get('company')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+                } else {
+                    $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::DELEGATION_POUVOIR);
+                }
+            }
+        }
+
+        if ($form->isValid()) {
+            $this->addFlash('identitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
+
+            $formManager         = $this->get('unilend.frontbundle.service.form_manager');
+            $modifiedDataClient  = $formManager->getModifiedContent($dbClientEntity, $clientEntity);
+            $modifiedDataCompany = $formManager->getModifiedContent($dbCompanyEntity, $companyEntity);
+            $modifiedData        = array_merge($modifiedDataClient, $modifiedDataCompany, $modifications);
+            if (false === empty($modifiedData)) {
+                $this->updateClientStatusAndNotifyClient($this->getClient(), $modifiedData);
+            }
+
+            /** @var EntityManager $em */
+            $em = $this->get('doctrine.orm.entity_manager');
+            $this->addFiscalAddressToCompany($companyEntity);
+            $em->persist($clientEntity);
+            $em->persist($companyEntity);
+            $em->flush();
+
+            $this->redirectToRoute('lender_profile_personal_information');
+        }
+    }
+
+
+    /**
+     * @param ClientsAdresses $dbClientAddressEntity
+     * @param ClientsAdresses $clientAddressEntity
+     * @param FormInterface   $form
+     */
+    private function handlePersonFiscalAddress(ClientsAdresses $dbClientAddressEntity, ClientsAdresses $clientAddressEntity, FormInterface $form)
+    {
+        /** @var EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var TranslatorInterface $translator */
+        $translator    = $this->get('translator');
+        $lenderAccount = $this->getLenderAccount();
+        $modifications = [];
+
+        if (
+            $dbClientAddressEntity->getCpFiscal() !== $clientAddressEntity->getCpFiscal()
+            && \pays_v2::COUNTRY_FRANCE == $clientAddressEntity->getIdPaysFiscal()
+            && null === $em->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddressEntity->getCpFiscal()])
+        ) {
+            $form->get('person_fiscal_address')->get('cpFiscal')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
+        }
+
+        if ($form->get('person_fiscal_address')->get('noUsPerson')->getData()) {
+            $modifications[]= ['noUsPerson'];
+        }
+
+        if (ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddressEntity->getMemeAdresseFiscal()) {
+            $this->updateFiscalAndPostalAddress($clientAddressEntity);
+        }
+
+        if ($clientAddressEntity->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE) {
+            if (isset($_FILES['tax-certificate']) && $_FILES['tax-certificate']['name'] != '') {
+                if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_FISCAL, 'tax-certificate'))) {
+                    $form->get('person_fiscal_address')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message')));
+                } else {
+                    $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::JUSTIFICATIF_FISCAL);
+                }
+            } else {
+                $form->get('person_fiscal_address')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-missing-tax-certificate')));
+            }
+        }
+
+        if (isset($_FILES['housing-certificate']) && $_FILES['housing-certificate']['name'] != '') {
+            if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_DOMICILE, 'housing-certificate'))) {
+                $form->get('person_fiscal_address')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message')));
+            } else {
+                $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::JUSTIFICATIF_DOMICILE);
+            }
+        }
+
+        if (false === empty($form->get('person_fiscal_address')->get('housedByThirdPerson'))) {
+            if (isset($_FILES['housed-by-third-person-declaration']) && $_FILES['housed-by-third-person-declaration']['name'] != '') {
+                if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::ATTESTATION_HEBERGEMENT_TIERS, 'housed-by-third-person-declaration'))) {
+                    $form->get('person_fiscal_address')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message')));
+                } else {
+                    $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
+                }
+            } else {
+                $form->get('person_fiscal_address')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-missing-housed-by-third-person-declaration')));
+            }
+
+            if (isset($_FILES['id-third-person-housing']) && $_FILES['housed-by-third-person-declaration']['name'] != '') {
+                if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT, 'id-third-person-housing'))) {
+                    $form->get('person_fiscal_address')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message')));
+                } else {
+                    $modifications[] = $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+                }
+            } else {
+                $form->get('person_fiscal_address')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-missing-id-third-person-housing')));
+            }
+        }
+
+        if ($form->isValid()) {
+            $modifiedData = array_merge($modifications, $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($dbClientAddressEntity, $clientAddressEntity));
+            if (false === empty($modifiedData)) {
+                $this->updateClientStatusAndNotifyClient($this->getClient(), array_merge($modifiedData, $modifications));
+            }
+
+            if (ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddressEntity->getMemeAdresseFiscal()) {
+                $this->updateFiscalAndPostalAddress($clientAddressEntity);
+            }
+
+            $em->persist($clientAddressEntity);
+            $em->flush();
+
+            $this->addFlash('fiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
+            $this->redirectToRoute('lender_profile_personal_information');
+        }
+    }
+
+    /**
+     * @param Companies $dbCompanyEntity
+     * @param Companies $companyEntity
+     */
+    private function handleCompanyFiscalAddress(Companies $dbCompanyEntity, Companies $companyEntity, FormInterface $form)
+    {
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        /** @var EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
+
+        if (
+            $dbCompanyEntity->getZip() !== $companyEntity->getZip()
+            && \pays_v2::COUNTRY_FRANCE == $companyEntity->getIdPays()
+            && null === $em->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $companyEntity->getZip()])
+        ) {
+            $form->get('company_fiscal_address')->get('zip')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
+        }
+
+        if ($form->isValid()) {
+            $modifiedData = $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($dbCompanyEntity, $companyEntity);
+            if (false === empty($modifiedData)) {
+                $this->updateClientStatusAndNotifyClient($this->getClient(), $modifiedData);
+            }
+
+            $this->addFiscalAddressToCompany($companyEntity);
+            if (Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $companyEntity->getStatusAdresseCorrespondance()) {
+                $this->updateFiscalAndPostalAddress($companyEntity);
+            }
+
+            $em->persist($companyEntity);
+            $em->flush();
+
+            $this->addFlash('fiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
+            $this->redirectToRoute('lender_profile_personal_information');
+        }
+    }
+
+    /**
+     * @param ClientsAdresses $clientAddressEntity
+     */
+    private function handlePostalAddressForm(ClientsAdresses $clientAddressEntity)
+    {
+        /** @var EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+
+        if (in_array($em->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientAddressEntity->getIdClient())->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            $company = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientAddressEntity->getIdClient()]);
+            $company->setStatusAdresseCorrespondance($clientAddressEntity->getMemeAdresseFiscal());
+            $em->persist($company);
+        }
+
+        if (ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddressEntity->getMemeAdresseFiscal()) {
+            $this->updateFiscalAndPostalAddress($clientAddressEntity);
+        }
+        $em->persist($clientAddressEntity);
+        $em->flush();
+
+        $this->addFlash('postalAddressSuccess', $translator->trans('lender-profile_information-tab-postal-address-form-success-message'));
+        $this->redirectToRoute('lender_profile_personal_information');
+    }
+
+    /**
+     * @param Clients $clientEntity
+     */
+    private function handlePhoneForm(Clients $clientEntity)
+    {
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        $this->addFlash('phoneSuccess', $translator->trans('lender-profile_information-tab-phone-form-success-message'));
+
+        /** @var EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
+        $em->persist($clientEntity);
+        $em->flush();
+
+        $this->redirectToRoute('lender_profile_personal_information');
+    }
+
 
     /**
      * @Route("/profile/info-fiscal", name="lender_profile_fiscal_information")
@@ -257,161 +733,6 @@ class LenderProfileController extends Controller
 
     /**
      * @param array             $templateData
-     * @param Request           $request
-     * @param \clients          $client
-     * @param \lenders_accounts $lenderAccount
-     * @param \settings         $settings
-     */
-    private function addPersonalInformationDataToTemplate(&$templateData, Request $request, \clients $client, \lenders_accounts $lenderAccount, \settings $settings)
-    {
-        $form = $this->getSessionFormDataForPersonalInformation($request);
-
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-        $clientAddress->get($client->id_client, 'id_client');
-        $templateData['clientAddresses'] = $clientAddress->select('id_client = ' . $client->id_client)[0];
-
-        /** @var LocationManager $locationManager */
-        $locationManager               = $this->get('unilend.service.location_manager');
-        $templateData['countries']     = $locationManager->getCountries();
-        $templateData['nationalities'] = $locationManager->getNationalities();
-
-        $this->addFormDataPostalAddress($templateData, $form, $clientAddress);
-
-        if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            /** @var \companies $company */
-            $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-            $company->get($client->id_client, 'id_client_owner');
-            $this->addTemplateDataLegalEntity($templateData, $client, $lenderAccount, $company, $settings);
-            $this->addFormDataLegalEntity($templateData, $form, $client, $company, $clientAddress);
-        } else {
-            $this->addTemplateDataPerson($templateData, $lenderAccount, $clientAddress);
-            $this->addFormDataPerson($templateData, $form, $client, $clientAddress);
-
-        }
-    }
-
-    /**
-     * @param array             $templateData
-     * @param                   $form
-     * @param \clients          $client
-     * @param \companies        $company
-     * @param \clients_adresses $clientAddress
-     */
-    private function addFormDataLegalEntity(&$templateData, $form, \clients $client, \companies $company, \clients_adresses $clientAddress)
-    {
-        $templateData['formData']['legalEntity'] = [
-            'company_name'                     => isset($form['legalEntity']['company_name']) ? $form['legalEntity']['company_name'] : $company->name,
-            'company_legal_form'               => isset($form['legalEntity']['company_legal_form']) ? $form['legalEntity']['company_legal_form'] : $company->forme,
-            'company_social_capital'           => isset($form['legalEntity']['company_social_capital']) ? $form['legalEntity']['company_social_capital'] : $company->capital,
-            'company_phone'                    => isset($form['legalEntity']['company_phone']) ? $form['legalEntity']['company_phone'] : $company->phone,
-            'company_client_status'            => isset($form['legalEntity']['company_client_status']) ? $form['legalEntity']['company_client_status'] : $company->status_client,
-            'company_external_counsel'         => isset($form['legalEntity']['company_external_counsel']) ? $form['legalEntity']['company_external_counsel'] : $company->status_conseil_externe_entreprise,
-            'company_external_counsel_other'   => isset($form['legalEntity']['company_external_counsel_other']) ? $form['legalEntity']['company_external_counsel_other'] : $company->preciser_conseil_externe_entreprise,
-            'company_director_form_of_address' => isset($form['legalEntity']['company_director_form_of_address']) ? $form['legalEntity']['company_director_form_of_address'] : $company->civilite_dirigeant,
-            'company_director_name'            => isset($form['legalEntity']['company_director_name']) ? $form['legalEntity']['company_director_name'] : $company->nom_dirigeant,
-            'company_director_first_name'      => isset($form['legalEntity']['company_director_first_name']) ? $form['legalEntity']['company_director_first_name'] : $company->prenom_dirigeant,
-            'company_director_phone'           => isset($form['legalEntity']['company_director_phone']) ? $form['legalEntity']['company_director_phone'] : $company->phone_dirigeant,
-            'company_director_email'           => isset($form['legalEntity']['company_director_email']) ? $form['legalEntity']['company_director_email'] : $company->email_dirigeant,
-            'company_director_position'        => isset($form['legalEntity']['company_director_position']) ? $form['legalEntity']['company_director_position'] : $company->fonction_dirigeant,
-            'client_form_of_address'           => isset($form['legalEntity']['client_form_of_address']) ? $form['legalEntity']['client_form_of_address'] : $client->civilite,
-            'client_name'                      => isset($form['legalEntity']['client_name']) ? $form['legalEntity']['client_name'] : $client->nom_usage,
-            'client_first_name'                => isset($form['legalEntity']['client_first_name']) ? $form['legalEntity']['client_first_name'] : $client->prenom,
-            'client_phone'                     => isset($form['legalEntity']['client_phone']) ? $form['legalEntity']['client_phone'] : $client->telephone,
-            'client_email'                     => isset($form['legalEntity']['client_email']) ? $form['legalEntity']['client_email'] : $client->email,
-            'client_position'                  => isset($form['legalEntity']['client_position']) ? $form['legalEntity']['client_position'] : $client->fonction,
-            'fiscal_address_street'            => isset($form['legalEntityFiscal']['fiscal_address_street']) ? $form['legalEntityFiscal']['fiscal_address_street'] : $company->adresse1,
-            'fiscal_address_zip'               => isset($form['legalEntityFiscal']['fiscal_address_zip']) ? $form['legalEntityFiscal']['fiscal_address_zip'] : $company->zip,
-            'fiscal_address_city'              => isset($form['legalEntityFiscal']['fiscal_address_city']) ? $form['legalEntityFiscal']['fiscal_address_city'] : $company->city,
-            'fiscal_address_country'           => isset($form['legalEntityFiscal']['fiscal_address_country']) ? $form['legalEntityFiscal']['fiscal_address_country'] : $company->id_pays,
-            'same_postal_address'              => isset($form['legalEntityFiscal']['same_postal_address']) ? $form['legalEntityFiscal']['same_postal_address'] : $clientAddress->meme_adresse_fiscal,
-        ];
-    }
-
-    /**
-     * @param array             $templateData
-     * @param \clients          $client
-     * @param \lenders_accounts $lenderAccount
-     * @param \companies        $company
-     * @param \settings         $settings
-     */
-    private function addTemplateDataLegalEntity(&$templateData, \clients $client, \lenders_accounts $lenderAccount, \companies $company, \settings $settings)
-    {
-        $templateData['company']                 = $company->select('id_client_owner = ' . $client->id_client)[0];
-        $templateData['companyIdAttachments']    = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
-            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
-            \attachment_type::CNI_PASSPORTE_VERSO
-        ]);
-        $templateData['companyOtherAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
-            \attachment_type::KBIS,
-            \attachment_type::DELEGATION_POUVOIR
-        ]);
-        $settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
-        $templateData['externalCounselList'] = json_decode($settings->value, true);
-    }
-
-    /**
-     * @param array             $templateData
-     * @param \lenders_accounts $lenderAccount
-     * @param \clients_adresses $clientAddress
-     */
-    private function addTemplateDataPerson(&$templateData, \lenders_accounts $lenderAccount, \clients_adresses $clientAddress)
-    {
-        $templateData['identityAttachments']  = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
-            \attachment_type::CNI_PASSPORTE,
-            \attachment_type::CNI_PASSPORTE_VERSO
-        ]);
-        $templateData['residenceAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
-            \attachment_type::JUSTIFICATIF_DOMICILE,
-            \attachment_type::ATTESTATION_HEBERGEMENT_TIERS,
-            \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT,
-            \attachment_type::JUSTIFICATIF_FISCAL
-        ]);
-        $templateData['isLivingAbroad']       = ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE);
-
-    }
-
-    /**
-     * @param array             $templateData
-     * @param array             $form
-     * @param \clients          $client
-     * @param \clients_adresses $clientAddress
-     */
-    private function addFormDataPerson(&$templateData, $form, \clients $client, \clients_adresses $clientAddress)
-    {
-        $templateData['formData']['person'] = [
-            'form_of_address'        => isset($form['person']['form_of_address']) ? $form['person']['form_of_address'] : $client->civilite,
-            'used_name'              => isset($form['person']['used_name']) ? $form['person']['used_name'] : $client->nom_usage,
-            'nationality'            => isset($form['person']['nationality']) ? $form['person']['nationality'] : $client->id_nationalite,
-            'first_name'             => isset($form['person']['first_name']) ? $form['person']['first_name'] : $client->prenom,
-            'fiscal_address_street'  => isset($form['personFiscal']['fiscal_address_street']) ? $form['personFiscal']['fiscal_address_street'] : $clientAddress->adresse_fiscal,
-            'fiscal_address_zip'     => isset($form['personFiscal']['fiscal_address_zip']) ? $form['personFiscal']['fiscal_address_zip'] : $clientAddress->cp_fiscal,
-            'fiscal_address_city'    => isset($form['personFiscal']['fiscal_address_city']) ? $form['personFiscal']['fiscal_address_city'] : $clientAddress->ville_fiscal,
-            'fiscal_address_country' => isset($form['personFiscal']['fiscal_address_country']) ? $form['personFiscal']['fiscal_address_country'] : $clientAddress->id_pays_fiscal,
-            'client_mobile'          => isset($form['personFiscal']['client_mobile']) ? $form['personFiscal']['client_mobile'] : $client->mobile,
-            'no_us_person'           => isset($form['personFiscal']['no_us_person']) ? $form['personFiscal']['no_us_person'] : true,
-            'housed_by_third_person' => isset($form['personFiscal']['housed_by_third_person']) ? $form['personFiscal']['housed_by_third_person'] : false
-        ];
-    }
-
-    /**
-     * @param array             $templateData
-     * @param array             $form
-     * @param \clients_adresses $clientAddress
-     */
-    private function addFormDataPostalAddress(&$templateData, $form, \clients_adresses $clientAddress)
-    {
-        $templateData['formData']['postal'] = [
-            'postal_address_street'  => isset($form['postal']['postal_address_street']) ? $form['postal']['postal_address_street'] : $clientAddress->adresse1,
-            'postal_address_zip'     => isset($form['postal']['postal_address_zip']) ? $form['postal']['postal_address_zip'] : $clientAddress->cp,
-            'postal_address_city'    => isset($form['postal']['postal_address_city']) ? $form['postal']['postal_address_city'] : $clientAddress->ville,
-            'postal_address_country' => isset($form['postal']['postal_address_country']) ? $form['postal']['postal_address_country'] : $clientAddress->id_pays,
-            'same_postal_address'    => isset($form['postal']['same_postal_address']) ? $form['postal']['same_postal_address'] : $clientAddress->meme_adresse_fiscal
-        ];
-    }
-
-    /**
-     * @param array             $templateData
      * @param \clients          $client
      * @param \lenders_accounts $lenderAccount
      */
@@ -452,541 +773,6 @@ class LenderProfileController extends Controller
         }
     }
 
-    /**
-     * @Route("/profile/person/identity-update", name="profile_person_identity_update")
-     * @Method("POST")
-     * @Security("has_role('ROLE_LENDER')")
-     *
-     * @param Request $request
-     * @return RedirectResponse
-     */
-    public function personFormAction(Request $request)
-    {
-        /** @var \clients $client */
-        $client = $this->getClient();
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->getLenderAccount();
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-
-        if ($request->request->get('person_identity_form')) {
-            /** @var array $post */
-            $post = $request->request->all();
-            /** @var string $historyContent */
-            $historyContent = '<ul>';
-
-            if ($client->prenom != $post['first_name']) {
-                $client->prenom = $post['first_name'];
-                $historyContent .= '<li>' . $translator->trans('common_firstname') . '</li>'; //TODO
-            }
-
-            if ($client->nom_usage != $post['used_name']) {
-                $client->nom_usage = $ficelle->majNom($post['used_name']);
-            }
-
-            if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
-                $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE, 'id_recto');
-                if (false === is_numeric($attachmentIdRecto)) {
-                    $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
-                } else {
-                    $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE) . '</li>';
-                }
-            }
-
-            if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
-                $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
-                if (false === is_numeric($attachmentIdVerso)) {
-                    $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
-                } else {
-                    $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE_VERSO) . '</li>';
-                }
-            }
-
-            if ($client->id_nationalite != $post['nationality'] || $client->civilite != $post['form_of_address']) {
-                if (isset($attachmentIdRecto)) {
-                    $client->id_nationalite = $post['nationality'];
-                    $historyContent .= '<li>' . $translator->trans('common_nationality') . '</li>';
-                } else {
-                    $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message'));
-                }
-            }
-
-            if ($client->civilite != $post['form_of_address']) {
-                if (isset($attachmentIdRecto)) {
-                    $client->civilite = $post['form_of_address'];
-                    $historyContent .= '<li>' . $translator->trans('common_form-of-address') . '</li>';
-                } else {
-                    $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message'));
-                }
-            }
-
-            $historyContent .= '</ul>';
-
-            if ($this->get('session')->getFlashBag()->has('personIdentityErrors')) {
-                $request->getSession()->set('personIdentityData', $post);
-            } else {
-                $client->update();
-                $this->addFlash('personIdentitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
-
-                if (false !== strpos($historyContent, '<li>')) {
-                    $this->updateClientStatusAndNotifyClient($client, $historyContent);
-                }
-            }
-        }
-
-        $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
-        return $this->redirectToRoute('lender_profile_personal_information');
-    }
-
-    /**
-     * @Route("/profile/legal-entity/identity-update", name="profile_legal_entity_identity_update")
-     * @Method("POST")
-     * @Security("has_role('ROLE_LENDER')")
-     */
-    public function legalEntityFormAction(Request $request)
-    {
-        /** @var \clients $client */
-        $client = $this->getClient();
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->getLenderAccount();
-        /** @var \companies $company */
-        $company = $this->getCompany();
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
-        if ($request->request->get('legal_entity_info_form')) {
-            /** @var array $form */
-            $form = $request->request->all();
-            /** @var string $historyContent */
-            $historyContent = '<ul>';
-
-            if ($company->name != $form['company_name']) {
-                $company->name = $form['company_name'];
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-identity-section-company-name-label') . '</li>';
-            }
-
-            if ($company->forme != $form['company_legal_form']) {
-                $company->forme = $form['company_legal_form'];
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-identity-section-company-legal-form-label') . '</li>';
-            }
-
-            if ($company->capital != $form['company_social_capital']) {
-                $company->capital = str_replace(' ', '', $form['company_social_capital']);
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-identity-section-company-social-capital-label') . '</li>';
-            }
-
-            if ($company->phone != $form['company_phone'] && strlen($form['company_phone']) > 9 && strlen($form['company_phone']) < 14) {
-                $company->phone = str_replace(' ', '', $form['company_phone']);
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-identity-section-company-phone-label') . '</li>';
-            }
-
-            if ($company->status_client != $form['company_client_status']) {
-                $company->status_client = $form['company_client_status'];
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-identity-section-company-client-status-label') . '</li>';
-            }
-
-            if ($form['company_client_status'] > \companies::CLIENT_STATUS_MANAGER) {
-                $directorSection = $translator->trans('lender-profile_information-tab-identity-section-company-director-title');
-
-                if (empty($form['company_external_counsel']) || (3 == $form['company_external_counsel'] && empty($form['company_client_status_other']))) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message'));
-                } else {
-                    $company->status_client                       = $form['company_client_status'];
-                    $company->status_conseil_externe_entreprise   = $form['company_external_counsel'];
-                    $company->preciser_conseil_externe_entreprise = $form['company_client_status_other'];
-                    $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-identity-section-company-client-status-label') . '</li>';
-                }
-
-                if (empty($form['company_director_form_of_address'])) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-form-of-address-missing'));
-                } else {
-                    $company->civilite_dirigeant = $form['company_director_form_of_address'];
-                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_form-of-address') . '</li>';
-                }
-
-                if (empty($form['company_director_name'])) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-name-missing'));
-                } else {
-                    $company->nom_dirigeant = $ficelle->majNom($form['company_director_name']);
-                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_birth-name') . '</li>';
-                }
-
-                if (empty($form['company_director_first_name'])) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-first-name-missing'));
-                } else {
-                    $company->prenom_dirigeant = $ficelle->majNom($form['company_director_first_name']);
-                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_firstname') . '</li>';
-                }
-
-                if (empty($form['company_director_position'])) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-position-missing'));
-                } else {
-                    $company->fonction_dirigeant = $form['company_director_position'];
-                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_position') . '</li>';
-                }
-
-                if (empty($form['company_director_phone']) || false === is_numeric($form['company_director_phone']) || strlen($form['company_director_phone']) < 9 || strlen($form['company_director_phone']) > 14) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-phone-missing'));
-                } else {
-                    $company->phone_dirigeant = $form['company_director_phone'];
-                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_phone') . '</li>';
-                }
-
-                if (empty($form['company_director_email']) || false === filter_var($form['company_director_email'], FILTER_VALIDATE_EMAIL)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('common-validator_email-address-invalid'));
-                } else {
-                    $company->email_dirigeant = $form['company_director_email'];
-                    $historyContent .= '<li>' . $directorSection . ': ' . $translator->trans('common_email') . '</li>';
-                }
-            } else {
-                $company->status_client                       = $form['company_client_status'];
-                $company->status_conseil_externe_entreprise   = '';
-                $company->preciser_conseil_externe_entreprise = '';
-                $company->civilite_dirigeant                  = '';
-                $company->nom_dirigeant                       = '';
-                $company->prenom_dirigeant                    = '';
-                $company->fonction_dirigeant                  = '';
-                $company->phone_dirigeant                     = '';
-                $company->email_dirigeant                     = '';
-            }
-
-            $representativeSection = $translator->trans('lender-profile_information-tab-identity-section-company-representative-title');
-
-            if ($client->civilite != $form['client_form_of_address']) {
-                $client->civilite = $form['client_form_of_address'];
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('common_form-of-address') . '</li>';
-            }
-
-            if ($client->nom != $form['client_name']) {
-                $client->nom = $ficelle->majNom($form['client_name']);
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('common_birth-name') . '</li>';
-            }
-
-            if ($client->prenom != $form['client_first_name']) {
-                $client->prenom = $ficelle->majNom($form['client_first_name']);
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('common_firstname') . '</li>';
-            }
-
-            if ($client->fonction != $form['client_position']) {
-                $client->fonction = $form['client_position'];
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('common_position') . '</li>';
-            }
-
-            $historyContent .= '</ul>';
-
-            if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
-                $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'id_recto');
-                if (false === is_numeric($attachmentIdRecto)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
-                } else {
-                    $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE_DIRIGEANT) . '</li>';
-                }
-            }
-
-            if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
-                $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
-                if (false === is_numeric($attachmentIdVerso)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
-                } else {
-                    $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE_VERSO) . '</li>';
-                }
-            }
-
-            if (isset($_FILES['company-registration']) && $_FILES['company-registration']['name'] != '') {
-                $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::KBIS, 'company-registration');
-                if (false === is_numeric($attachmentIdVerso)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
-                } else {
-                    $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::KBIS) . '</li>';
-                }
-            }
-
-            if ($form['company_client_status'] > \companies::CLIENT_STATUS_MANAGER) {
-                if (isset($_FILES['delegation-of-authority']) && $_FILES['delegation-of-authority']['name'] != '') {
-                    $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
-                    if (false === is_numeric($attachmentIdVerso)) {
-                        $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
-                    } else {
-                        $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::DELEGATION_POUVOIR) . '</li>';
-                    }
-                }
-            }
-
-            if ($this->get('session')->getFlashBag()->has('legalEntityIdentityErrors')) {
-                $request->getSession()->set('profileLegalEntityData', $form);
-            } else {
-                $company->update();
-                $client->update();
-                $this->addFlash('legalEntityIdentitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
-
-                if (false != strpos($historyContent, '<li>')) {
-                    $this->updateClientStatusAndNotifyClient($client, $historyContent);
-                }
-            }
-        }
-
-        $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
-        return $this->redirectToRoute('lender_profile_personal_information');
-    }
-
-    /**
-     * @Route("/profile/person/fiscal-address-update", name="profile_person_fiscal_address_update")
-     * @Method("POST")
-     * @Security("has_role('ROLE_LENDER')")
-     */
-    public function personFiscalAddressFormAction(Request $request)
-    {
-        /** @var \clients $client */
-        $client = $this->getClient();
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->getLenderAccount();
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->getClientAddress();
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var string $historyContent */
-        $historyContent = '<ul>';
-
-        if ($request->request->get('person_fiscal_address_form')) {
-            $post = $request->request->all();
-
-            if ($client->mobile != $post['client_mobile']) {
-                $client->mobile = str_replace(' ', '', $post['client_mobile']);
-                $client->update();
-            }
-
-            if ($clientAddress->adresse_fiscal != $post['fiscal_address_street']) {
-                $clientAddress->adresse_fiscal = $post['fiscal_address_street'];
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-address-label') . '</li>';
-            }
-
-            if ($clientAddress->cp_fiscal != $post['fiscal_address_zip']) {
-                if (\pays_v2::COUNTRY_FRANCE == $post['fiscal_address_country']) {
-                    /** @var \villes $cities */
-                    $cities = $this->get('unilend.service.entity_manager')->getRepository('villes');
-                    if ($cities->exist($post['fiscal_address_zip'], 'cp')) {
-                        $clientAddress->cp_fiscal = $post['fiscal_address_zip'];
-                        $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-zip-label') . '</li>';
-                        unset($cities);
-                    } else {
-                        $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message'));
-                    }
-                } else {
-                    $clientAddress->cp_fiscal = $post['fiscal_address_zip'];
-                    $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-zip-label') . '</li>';
-                }
-            }
-
-            if ($clientAddress->ville_fiscal != $post['fiscal_address_city']) {
-                $clientAddress->ville_fiscal = $post['fiscal_address_city'];
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-city-label') . '</li>';
-            }
-
-            if ($clientAddress->id_pays_fiscal != $post['fiscal_address_country']) {
-                $clientAddress->id_pays_fiscal = $post['fiscal_address_country'];
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-country-label') . '</li>';
-            }
-
-            if ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
-                if (isset($post['no_us_person']) && false == $post['no_us_person']) {
-                    $historyContent .= '<li>' . $translator->trans('common_no-us-person-declaration') . '</li>';
-                }
-            }
-
-            if ($post['fiscal_address_country'] > \pays_v2::COUNTRY_FRANCE) {
-                if (isset($_FILES['tax-certificate']) && $_FILES['tax-certificate']['name'] != '') {
-                    if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_FISCAL, 'tax-certificate'))) {
-                        $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message'));
-                    } else {
-                        $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::JUSTIFICATIF_FISCAL) . '</li>';
-                    }
-                } else {
-                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-missing-tax-certificate'));
-                }
-            }
-
-            if (isset($_FILES['housing-certificate']) && $_FILES['housing-certificate']['name'] != '') {
-                if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_DOMICILE, 'housing-certificate'))) {
-                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message'));
-                } else {
-                    $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::JUSTIFICATIF_DOMICILE) . '</li>';
-                }
-            }
-
-            if (isset($post['housed_by_third_person']) && true == $post['housed_by_third_person']) {
-                if (isset($_FILES['housed-by-third-person-declaration']) && $_FILES['housed-by-third-person-declaration']['name'] != '') {
-                    if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::ATTESTATION_HEBERGEMENT_TIERS, 'housed-by-third-person-declaration'))) {
-                        $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message'));
-                    } else {
-                        $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::ATTESTATION_HEBERGEMENT_TIERS) . '</li>';
-                    }
-                } else {
-                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-missing-housed-by-third-person-declaration'));
-                }
-
-                if (isset($_FILES['id-third-person-housing']) && $_FILES['housed-by-third-person-declaration']['name'] != '') {
-                    if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT, 'id-third-person-housing'))) {
-                        $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message'));
-                    } else {
-                        $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT) . '</li>';
-                    }
-                } else {
-                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-missing-id-third-person-housing'));
-                }
-            }
-
-            $historyContent .= '</ul>';
-
-            if ($this->get('session')->getFlashBag()->has('personFiscalAddressErrors')) {
-                $request->getSession()->set('personFiscalAddressData', $post);
-            } else {
-                switch ($clientAddress->meme_adresse_fiscal) {
-                    case 1:
-                        $this->updateFiscalAndPostalAddress($clientAddress);
-                        break;
-                    default:
-                        $clientAddress->update();
-                        break;
-                }
-                $this->addFlash('personFiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
-
-                if (false !== strpos($historyContent, '<li>')) {
-                    $this->updateClientStatusAndNotifyClient($client, $historyContent);
-                }
-            }
-        }
-
-        $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
-        return $this->redirectToRoute('lender_profile_personal_information');
-    }
-
-    /**
-     * @Route("/profile/legal-entity/fiscal-address-update", name="profile_legal_entity_fiscal_address_update")
-     * @Method("POST")
-     * @Security("has_role('ROLE_LENDER')")
-     */
-    public function legalEntityFiscalAddressFormAction(Request $request)
-    {
-        /** @var \clients $client */
-        $client = $this->getClient();
-        /** @var \companies $company */
-        $company = $this->getCompany();
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var string $historyContent */
-        $historyContent = '<ul>';
-
-        if ($request->request->get('fiscal_address_company_form')) {
-            $post = $request->request->all();
-
-            if ($company->adresse1 != $post['fiscal_address_street']) {
-                $company->adresse1 = $post['fiscal_address_street'];
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-address-label') . '</li>';
-            }
-
-            if ($company->zip != $post['fiscal_address_zip']) {
-                if (\pays_v2::COUNTRY_FRANCE == $post['fiscal_address_country']) {
-                    /** @var \villes $cities */
-                    $cities = $this->get('unilend.service.entity_manager')->getRepository('villes');
-                    if ($cities->exist($post['fiscal_address_zip'], 'cp')) {
-                        $company->zip = $post['fiscal_address_zip'];
-                        $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-zip-label') . '</li>';
-                        unset($cities);
-                    } else {
-                        $this->addFlash('legalEntityFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message'));
-                    }
-                } else {
-                    $company->zip = $post['fiscal_address_zip'];
-                    $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-zip-label') . '</li>';
-                }
-            }
-
-            if ($company->city != $post['fiscal_address_city']) {
-                $company->city = $post['fiscal_address_city'];
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-city-label') . '</li>';
-            }
-
-            if ($company->id_pays != $post['fiscal_address_country']) {
-                $company->id_pays = $post['fiscal_address_country'];
-                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-country-label') . '</li>';
-            }
-
-            if (isset($post['same_postal_address']) && (bool)$company->status_adresse_correspondance != $post['same_postal_address']) {
-                if (false == $post['same_postal_address'] && empty($form['postal'])) {
-                    $this->addFlash('legalEntityFiscalAddressErrors', $translator->trans('lender-profile_information-tab-postal-address-missing-data'));
-                } else {
-                    $company->status_adresse_correspondance->meme_adresse_fiscal = ($post['same_postal_address'] == true) ? 1 : 0;
-                    $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-postal-checkbox') . '</li>';
-                }
-            }
-
-            if ($this->get('session')->getFlashBag()->has('legalEntityFiscalAddressErrors')) {
-                $request->getSession()->set('legalEntityFiscalAddressData', $post);
-            } else {
-                $company->update();
-                $this->addFlash('legalEntityFiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
-
-                if (false != strpos($historyContent, '<li>')) {
-                    $this->updateClientStatusAndNotifyClient($client, $historyContent);
-                }
-            }
-        }
-        $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
-        return $this->redirectToRoute('lender_profile_personal_information');
-    }
-
-    /**
-     * @Route("/profile/postal-address-update", name="profile_postal_address_update")
-     * @Method("POST")
-     * @Security("has_role('ROLE_LENDER')")
-     *
-     * @param Request $request
-     * @return RedirectResponse
-     */
-    public function postalAddressFormAction(Request $request)
-    {
-        /** @var \clients $client */
-        $client = $this->getClient();
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->getClientAddress();
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-
-        if ($request->request->get('postal_address_form')) {
-            $formPostalAddress = $request->request->all();
-
-            if (isset($formPostalAddress['same_postal_address']) && true == $formPostalAddress['same_postal_address']) {
-                $this->updateFiscalAndPostalAddress($clientAddress);
-            } else {
-                $clientAddress->meme_adresse_fiscal = 0;
-
-                if ($clientAddress->adresse1 != $formPostalAddress['postal_address_street']) {
-                    $clientAddress->adresse1 = $formPostalAddress['postal_address_street'];
-                }
-
-                if ($clientAddress->cp != $formPostalAddress['postal_address_zip']) {
-                    $clientAddress->cp = $formPostalAddress['postal_address_zip'];
-                }
-
-                if ($clientAddress->ville != $formPostalAddress['postal_address_city']) {
-                    $clientAddress->ville = $formPostalAddress['postal_address_city'];
-                }
-
-                if ($clientAddress->id_pays != $formPostalAddress['postal_address_country']) {
-                    $clientAddress->id_pays = $formPostalAddress['postal_address_country'];
-                }
-                $clientAddress->update();
-            }
-            $this->addFlash('postalAddressSuccess', $translator->trans('lender-profile_information-tab-postal-address-form-success-message'));
-        }
-
-        $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
-        return $this->redirectToRoute('lender_profile_personal_information');
-    }
 
     /**
      * @Route("/profile/documents", name="lender_completeness")
@@ -1103,6 +889,8 @@ class LenderProfileController extends Controller
      */
     private function saveClientActionHistory(\clients $client, $serialize)
     {
+     //TODO find solution for saving form data after discussion of need
+
         /** @var \clients_history_actions $clientHistoryActions */
         $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
         $clientHistoryActions->histo(4, 'info perso profile', $client->id_client, $serialize);
@@ -1110,36 +898,16 @@ class LenderProfileController extends Controller
 
     /**
      * @param \clients $client
-     * @param string   $historyContent
+     * @param array    $historyContent
      */
-    private function updateClientStatusAndNotifyClient(\clients $client, $historyContent)
+    private function updateClientStatusAndNotifyClient(\clients $client, $modifiedData)
     {
+        $historyContent = $this->formatArrayToUnorderedList($modifiedData);
+
         /** @var ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
         $clientStatusManager->changeClientStatusTriggeredByClientAction($client, $historyContent);
         $this->sendAccountModificationEmail($client);
-    }
-
-    /**
-     * @param Request $request
-     *
-     * @return mixed
-     */
-    private function getSessionFormDataForPersonalInformation(Request $request)
-    {
-        $form['person']            = $request->getSession()->get('personIdentityData', '');
-        $form['legalEntity']       = $request->getSession()->get('legalEntityIdentityData', '');
-        $form['personFiscal']      = $request->getSession()->get('personFiscalAddressData', '');
-        $form['legalEntityFiscal'] = $request->getSession()->get('legalEntityFiscalAddressData', '');
-        $form['postal']            = $request->getSession()->get('postalAddressData', '');
-
-        $request->getSession()->remove('personFiscalAddressData');
-        $request->getSession()->remove('legalEntityFiscalAddressData');
-        $request->getSession()->remove('postalAddressData');
-        $request->getSession()->remove('personIdentityData');
-        $request->getSession()->remove('legalEntityIdentityData');
-
-        return $form;
     }
 
     /**
@@ -1522,7 +1290,7 @@ class LenderProfileController extends Controller
         $mailer->send($message);
     }
 
-    private function getCommonEmailVariables()
+    private function getCommonEmailVariables() //TODO replace asset paths
     {
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
@@ -1575,18 +1343,6 @@ class LenderProfileController extends Controller
         $clientAddress->get($clientId, 'id_client');
 
         return $clientAddress;
-    }
-
-    private function getCompany()
-    {
-        /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-        /** @var \companies $company */
-        $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        $company->get($clientId, 'id_client_owner');
-
-        return $company;
     }
 
     /**
@@ -1732,16 +1488,30 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param \clients_adresses $clientAddress
+     * @param object $address
      */
-    private function updateFiscalAndPostalAddress(\clients_adresses $clientAddress)
+    private function updateFiscalAndPostalAddress($address)
     {
-        $clientAddress->meme_adresse_fiscal = 1;
-        $clientAddress->adresse1            = $clientAddress->adresse_fiscal;
-        $clientAddress->cp                  = $clientAddress->cp_fiscal;
-        $clientAddress->ville               = $clientAddress->ville_fiscal;
-        $clientAddress->id_pays             = $clientAddress->id_pays_fiscal;
-        $clientAddress->update();
+        if ($address instanceof ClientsAdresses) {
+            $address->setMemeAdresseFiscal(ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL);
+            $address->setAdresse1($address->getAdresseFiscal());
+            $address->setCp($address->getCpFiscal());
+            $address->setVille($address->getVilleFiscal());
+            $address->setIdPays($address->getIdPaysFiscal());
+        }
+
+        if ($address instanceof Companies) {
+            $em            = $this->get('doctrine.orm.entity_manager');
+            $clientAddress = $em->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $address->getIdClientOwner()]);
+
+            $clientAddress->setMemeAdresseFiscal(ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL);
+            $clientAddress->setAdresse1($address->getAdresse1());
+            $clientAddress->setCp($address->getZip());
+            $clientAddress->setVille($address->getCity());
+            $clientAddress->setIdPays($address->getIdPays());
+
+            $em->persist($clientAddress);
+        }
     }
 
     /**
@@ -1755,6 +1525,41 @@ class LenderProfileController extends Controller
         $dateRange['taxExemptionRequestLimitDate'] = \DateTime::createFromFormat('Y-m-d H:i:s', date('Y') . '-' . $settings->value . ' 23:59:59');
         $settings->get('taxExemptionRequestStartDate', 'type');
         $dateRange['taxExemptionRequestStartDate'] = \DateTime::createFromFormat('Y-m-d H:i:s', date('Y') . '-' . $settings->value . ' 00:00:00');
+
         return $dateRange;
+    }
+
+    /**
+     * @param array $modifications
+     *
+     * @return string
+     */
+    private function formatArrayToUnorderedList(array $modifications)
+    {
+        $list = '<ul>';
+
+        foreach($modifications as $modification) {
+            $list .= '<li>' . $modification . '</li>';
+        }
+
+        $list .= '</ul>';
+
+        return $list;
+    }
+
+    /**
+     * @param Companies $companyEntity
+     */
+    private function addFiscalAddressToCompany(Companies $companyEntity)
+    {
+        $em = $this->get('doctrine.orm.entity_manager');
+
+        $clientAddress = $em->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $companyEntity->getIdClientOwner()]);
+        $clientAddress->setAdresseFiscal($companyEntity->getAdresse1());
+        $clientAddress->setCpFiscal($companyEntity->getZip());
+        $clientAddress->setVilleFiscal($companyEntity->getCity());
+        $clientAddress->setIdPaysFiscal($companyEntity->getIdPays());
+
+        $em->persist($clientAddress);
     }
 }

@@ -22,19 +22,19 @@
 
     <h5>{% trans %} lender-profile_information-tab-identity-section-company-representative-title {% endtrans %}</h5>
     <dl class="list-2col">
-        <dt>{% trans %} common_form-of-address {% endtrans %}</dt>
+        <dt>{% trans %} common_title {% endtrans %}</dt>
         {% if client.civilite == 'M.' %}
-            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-male {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_title-male {% endtrans %}</dd>
         {% else %}
-            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-female {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_title-female {% endtrans %}</dd>
         {% endif %}
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}</dt>
-        <dd><span>{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.status_client }" | trans }} </span>
-            {% if company.status_client == 3 %}
-                {% if company.status_conseil_externe_entreprise == 3 %}
-                    <span>{{ company.preciser_conseil_externe_entreprise }} </span>
+        <dd><span>{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.statusClient }" | trans }} </span>
+            {% if company.statusClient == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %}
+                {% if company.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}
+                    <span>{{ company.preciserConseilExterneEntreprise }} </span>
                 {% else %}
-                    <span>{{ externalCounselList[company.status_conseil_externe_entreprise] }} </span>
+                    <span>{{ externalCounselList[company.statusConseilExterneEntreprise]|default() }} </span>
                 {% endif %}
             {% endif %}
         </dd>
@@ -69,25 +69,25 @@
         </dd>
     </dl>
 
-    {% if company.status_client > 1 %}
+    {% if company.statusClient > constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}
     <h5>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h5>
     <dl class="list-2col">
-        <dt>{% trans %} common_form-of-address {% endtrans %}</dt>
-        {% if company.civilite_dirigeant == 'M.' %}
-            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-male {% endtrans %}</dd>
+        <dt>{% trans %} common_title {% endtrans %}</dt>
+        {% if company.civiliteDirigeant == 'M.' %}
+            <dd id="profile-info-civilite-output">{% trans %} common_title-male {% endtrans %}</dd>
         {% else %}
-            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-female {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_title-female {% endtrans %}</dd>
         {% endif %}
         <dt>{% trans %} common_name {% endtrans %}</dt>
-        <dd id="profile-info-nom-output">{{ company.nom_dirigeant }}</dd>
+        <dd id="profile-info-nom-output">{{ company.nomDirigeant }}</dd>
         <dt>{% trans %} common_firstname {% endtrans %}</dt>
-        <dd id="profile-info-prenom-output">{{ company.prenom_dirigeant }}</dd>
+        <dd id="profile-info-prenom-output">{{ company.prenomDirigeant }}</dd>
         <dt>{% trans %} common_function {% endtrans %}</dt>
-        <dd id="profile-info-dob-output">{{ company.fonction_dirigeant }}</dd>
+        <dd id="profile-info-dob-output">{{ company.fonctionDirigeant }}</dd>
         <dt>{% trans %} common_phone {% endtrans %}</dt>
-        <dd id="profile-info-dob-output">{{ company.phone_dirigeant }}</dd>
+        <dd id="profile-info-dob-output">{{ company.phoneDirigeant }}</dd>
         <dt>{% trans %} common_email {% endtrans %}</dt>
-        <dd id="profile-info-dob-output">{{ company.email_dirigeant }}</dd>
+        <dd id="profile-info-dob-output">{{ company.emailDirigeant }}</dd>
     </dl>
     {% endif %}
 

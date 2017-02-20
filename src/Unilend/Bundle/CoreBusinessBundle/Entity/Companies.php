@@ -3,6 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 /**
  * Companies
@@ -13,6 +15,20 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Companies
 {
+
+    const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
+    const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
+
+    const CLIENT_STATUS_MANAGER             = 1;
+    const CLIENT_STATUS_DELEGATION_OF_POWER = 2;
+    const CLIENT_STATUS_EXTERNAL_CONSULTANT = 3;
+
+    /** Attention, these constants are also setting , but added as constants for more clarity in the code*/
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_ACCOUNTANT    = 1;
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_CREDIT_BROKER = 2;
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
+
     /**
      * @var integer
      *
@@ -36,6 +52,8 @@ class Companies
 
     /**
      * @var string
+     *
+     * @Assert\Email
      *
      * @ORM\Column(name="email_facture", type="string", length=191, nullable=true)
      */
@@ -72,12 +90,16 @@ class Companies
     /**
      * @var string
      *
+     * @Assert\Iban
+     *
      * @ORM\Column(name="iban", type="string", length=28, nullable=true)
      */
     private $iban;
 
     /**
      * @var string
+     *
+     * @Assert\Bic
      *
      * @ORM\Column(name="bic", type="string", length=100, nullable=true)
      */
@@ -246,6 +268,8 @@ class Companies
 
     /**
      * @var string
+     *
+     * @Assert\Email
      *
      * @ORM\Column(name="email_dirigeant", type="string", length=191, nullable=true)
      */

@@ -71,24 +71,26 @@ classNames: 'user-preter-profile'
                 </section><!-- /.ui-toggle-group -->
             </article><!-- /.panel -->
 
-            <article id="panel-phone" class="panel">
-                <header class="panel-header">
-                    <h3>{% trans %} lender-profile_information-tab-phone-section-title {% endtrans %}</h3>
-                    <div id="form-profile-phone-notifications">
-                        {{ form_errors(forms.phone) }}
-                        {% if app.session.flashBag.has('phoneSuccess') %}
-                            <div class="message-success">
-                                {% for message in app.session.flashBag.get('phoneSuccess') %}
-                                    <span>{{ message }}</span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </header>
-                <section id="profile-phone-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    {{ include('pages/lender_profile/partials/phone_details.html.twig') }}
-                </section><!-- /.ui-toggle-group -->
-            </article><!-- /.panel -->
+            {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+                <article id="panel-phone" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-profile_information-tab-phone-section-title {% endtrans %}</h3>
+                        <div id="form-profile-phone-notifications">
+                            {{ form_errors(forms.phone) }}
+                            {% if app.session.flashBag.has('phoneSuccess') %}
+                                <div class="message-success">
+                                    {% for message in app.session.flashBag.get('phoneSuccess') %}
+                                        <span>{{ message }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </header>
+                    <section id="profile-phone-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {{ include('pages/lender_profile/partials/phone_details.html.twig') }}
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            {% endif %}
 
             <article id="panel-address" class="panel">
                 <header class="panel-header">

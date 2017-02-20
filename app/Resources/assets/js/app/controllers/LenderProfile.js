@@ -178,7 +178,7 @@ $doc.on('ready', function () {
         var legalEntityStatus
 
         // Get the value from the various radio buttons
-        $('input[name="company_client_status"]').each(function (i, input) {
+        $('input[name="form[company][statusClient]"]').each(function (i, input) {
             if ($(input).prop('checked')) {
                 legalEntityStatus = $(input).val()
                 return true
@@ -199,7 +199,7 @@ $doc.on('ready', function () {
     }
 
     checkLegalEntityStatus()
-    $doc.on('change', 'input[name="company_client_status"]', function () {
+    $doc.on('change', 'input[name="form[company][statusClient]"]', function () {
         checkLegalEntityStatus()
     })
 
