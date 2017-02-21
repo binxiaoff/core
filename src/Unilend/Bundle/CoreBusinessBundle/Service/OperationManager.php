@@ -929,17 +929,13 @@ class OperationManager
 
     /**
      * @param Projects $project
-     *
-     * @throws \Exception
+     * @param          $commission
      */
-    public function projectCommission(Projects $project)
+    public function projectCommission(Projects $project, $commission)
     {
         $borrowerWallet    = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $unilendWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
         $unilendWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
-        $amountProject     = $project->getAmount();
-        $commissionRate    = $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Part unilend']);
-        $commission        = round(bcmul($amountProject, $commissionRate->getValue(), 4), 2);
         $operationType     = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
         $this->newOperation($commission, $operationType, $borrowerWallet, $unilendWallet, $project);
     }
