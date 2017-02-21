@@ -46,6 +46,11 @@ class rootController extends bootstrap
                 die;
             }
         }
+
+        if (isset($_SESSION['auth'], $_SESSION['token']) && $_SESSION['auth'] && false === empty(trim($_SESSION['token']))) {
+            header('Location: ' . $this->lurl);
+            die;
+        }
     }
 
     public function _logout()

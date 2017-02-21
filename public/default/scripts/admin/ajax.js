@@ -269,11 +269,12 @@ function deleteMemo(id_project_comment, id_project) {
 }
 
 function valid_etape1(id_project) {
-
     var val = {
         montant_etape1: $("#montant_etape1").val(),
         duree_etape1: $("#duree_etape1").val(),
         siren_etape1: $("#siren_etape1").val(),
+        source_etape1: $("#source_etape1").val(),
+        partner_etape1: $("#partner_etape1").val(),
         id_project: id_project,
         etape: 1
     };

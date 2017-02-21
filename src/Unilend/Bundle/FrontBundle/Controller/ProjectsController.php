@@ -1155,16 +1155,6 @@ class ProjectsController extends Controller
         $company = $entityManager->getRepository('companies');
         $company->get($project->id_company);
 
-        /** @var \tax_type $taxType */
-        $taxType = $entityManager->getRepository('tax_type');
-        $taxRate = $taxType->getTaxRateByCountry('fr');
-        $vatRate = $taxRate[\tax_type::TYPE_VAT] / 100;
-
-        /** @var \settings $setting */
-        $setting = $entityManager->getRepository('settings');
-        $setting->get('Part Unilend', 'type');
-        $unilendCommission = $setting->value / (1 + $vatRate);
-
         /** @var \attachment $attachment */
         $attachment = $entityManager->getRepository('attachment');
         /** @var \attachment_type $attachmentType */
@@ -1194,7 +1184,7 @@ class ProjectsController extends Controller
             'slug'                => $project->slug,
             'duration'            => $project->period,
             'amount'              => $project->amount,
-            'net_amount'          => round($project->amount * (1 - $unilendCommission)),
+            'net_amount'          => round($project->amount * bcsub(1, round(bcdiv($project->commission_rate_funds, 100, 4), 2), 2)),
             'minimum_rate'        => $minimumBidRate,
             'start_date'          => $startDate,
             'end_date'            => $endDate,

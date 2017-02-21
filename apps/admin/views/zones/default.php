@@ -1,13 +1,5 @@
 <script type="text/javascript">
-    $(function(){
-        $(".tablesorter").tablesorter({headers: {
-            <?php $i = 0; ?>
-            <?php foreach ($this->lZones as $z) : ?>
-                <?= $i + 2 ?>: {sorter: false}<?= ($i == count($this->lZones) ? '' : ',') ?>
-                <?php $i++; ?>
-            <?php endforeach; ?>
-        });
-
+    $(function() {
         <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>

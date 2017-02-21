@@ -3,9 +3,6 @@
 //
 
 #user-preter-balance.dashboard {
-  .nav.nav-dashboard-tabs > li {
-    width: 50%;
-  }
 
   @include devices('tablet-l') {
     #balance-deposit,

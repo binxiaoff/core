@@ -8,10 +8,7 @@ class thickboxController extends bootstrap
 
         $this->catchAll = true;
 
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->url;
     }

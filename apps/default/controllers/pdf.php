@@ -54,10 +54,7 @@ class pdfController extends bootstrap
 
         $this->catchAll = true;
 
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $this->oSnapPdf = new Pdf('/usr/local/bin/wkhtmltopdf');
         $this->oLogger  = $this->get('logger');
@@ -606,7 +603,12 @@ class pdfController extends bootstrap
         $this->ReadPdf($filePath, $namePdfClient);
     }
 
-    private function GenerateContractHtml($oClients, $oLoans, $oProjects)
+    /**
+     * @param clients $oClients
+     * @param $oLoans
+     * @param projects $oProjects
+     */
+    private function GenerateContractHtml(\ clients $oClients, \loans $oLoans, \projects $oProjects)
     {
         $this->emprunteur              = $this->loadData('clients');
         $this->companiesEmprunteur     = $this->loadData('companies');
@@ -665,16 +667,13 @@ class pdfController extends bootstrap
 
         $this->dateContrat = $this->dateRemb;
 
-        $this->settings->get('Commission remboursement', 'type');
-        $fCommissionRate = $this->settings->value;
-
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
 
         $taxRate = $taxType->getTaxRateByCountry('fr');
         $fVat    = $taxRate[\tax_type::TYPE_VAT] / 100;
 
-        $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, $fCommissionRate, $fVat);
+        $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, round(bcdiv($oProjects->commission_rate_repayment, 100, 4), 2), $fVat);
         $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
 
         /** @var \transactions $transaction */

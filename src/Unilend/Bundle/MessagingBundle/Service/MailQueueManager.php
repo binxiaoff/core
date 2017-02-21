@@ -112,13 +112,9 @@ class MailQueueManager
         if (false === $mailTemplate->get($email->id_mail_template)) {
             return false;
         }
-        $serializedVariables = json_decode($email->serialized_variables, true);
-        if (false === is_array($serializedVariables)) {
-            $this->logger->warning('TMA-1209 - Argument is not an array : ' . $email->serialized_variables, ['class' => __CLASS__, 'function' => __FUNCTION__]);
-            return false;
-        }
+
         /** @var TemplateMessage $message */
-        $message = $this->templateMessage->newMessage($mailTemplate->type, $serializedVariables, false);
+        $message = $this->templateMessage->newMessage($mailTemplate->type, json_decode($email->serialized_variables, true), false);
         $message
             ->setTo($email->recipient)
             ->setMessageId($email->id_queue);
