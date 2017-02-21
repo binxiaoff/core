@@ -6,6 +6,18 @@ classNames: 'user-preter-profile'
 } %}
 
 
+{% form_theme bankForm '/frontbundle/forms/fields.html.twig' %}
+{% if bankForm.vars.valid == false %}
+    {% set bankFormCollapse = 'in' %}
+    {% set bankViewCollapse = '' %}
+    {% set bankFormErrors = true %}
+{% else %}
+    {% set bankFormCollapse = '' %}
+    {% set bankViewCollapse = 'in' %}
+    {% set bankFormErrors = false %}
+{% endif %}
+
+
 {% block dashboardContent %}
     <div class="dashboard-tabs tabs">
 
@@ -18,13 +30,7 @@ classNames: 'user-preter-profile'
                     <header class="panel-header">
                         <h3>{% trans %} lender-profile_fiscal-tab-title {% endtrans %}</h3>
                         <div id="form-profile-fiscal-notifications">
-                            {% if app.session.flashBag.has('bankInfoUpdateError') %}
-                                <div class="message-error">
-                                    {% for error in app.session.flashBag.get('bankInfoUpdateError') %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            {{ form_errors(bankForm) }}
                             {% if app.session.flashBag.has('bankInfoUpdateSuccess') %}
                                 <div class="message-success">
                                     {% for message in app.session.flashBag.get('bankInfoUpdateSuccess') %}
@@ -36,14 +42,14 @@ classNames: 'user-preter-profile'
                     </header><!-- .panel-header -->
 
                     <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                        <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
+                        <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse {{ bankViewCollapse }}">
                             <a href="javascript:;" data-target="#profile-fiscalite-bank-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-bank-section" class="btn-edit" aria-controls="#profile-fiscalite-bank-edit" aria-expanded="false">
                                 <span class="icon fa-pencil-u32"></span>
                                 <span class="label">{% trans %} lender-profile_fiscal-tab-modification-button {% endtrans %}</span>
                             </a>
                             <dl class="list-2col">
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}</dt>
-                                <dd id="profile-fiscalite-bank-origin-output">{% if lenderAccount.fiscal_info.fundsOrigin[client.funds_origin] is defined %}{{ lenderAccount.fiscal_info.fundsOrigin[client.funds_origin] }}{% else %}-{% endif %}</dd>
+                                <dd id="profile-fiscalite-bank-origin-output">{% if lenderAccount.fiscal_info.fundsOrigin[client.fundsOrigin] is defined %}{{ lenderAccount.fiscal_info.fundsOrigin[client.fundsOrigin] }}{% else %}-{% endif %}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-bic {% endtrans %}</dt>
                                 <dd id="profile-fiscalite-bank-bic-output">{{ bankAccount.bic }}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-iban {% endtrans %}</dt>
@@ -58,12 +64,19 @@ classNames: 'user-preter-profile'
                             </dl>
                         </section>
 
-                        <section id="profile-fiscalite-bank-edit" role="tabpanel" class="profile-fiscalite-bank-view collapse">
-                            <form id="form-profile-fiscalite-bank-edit" action="{{ path('update_bank_details') }}" method="post" class="form-fiscalite form-profile-fiscalite-bank-edit" enctype="multipart/form-data" data-formvalidation data-formvalidation-notificationselem="#form-profile-fiscalite-bank-notifications">
+                        <section id="profile-fiscalite-bank-edit" role="tabpanel" class="profile-fiscalite-bank-view collapse {{ bankFormCollapse }}">
+                            {{ form_start(bankForm, {
+                                'multipart' : true,
+                                'id' : 'form-profile-fiscalite-bank-edit',
+                                'attr' : {
+                                    'class' : 'form-fiscalite form-profile-fiscalite-bank-edit',
+                                    'data-formvalidation data-formvalidation-notificationselem' : '#form-profile-fiscalite-bank-notifications'
+                                }
+                            }) }}
                                 <div id="form-profile-fiscalite-bank-notifications"></div>
 
                                 <div class="row">
-                                    <div class="form-field form-field-iban">
+                                    <div class="form-field form-field-iban {% if form_errors(bankForm.bankAccount.iban)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <div id="form-profile-fiscalite-iban-add" data-toggle-group="iban" class="ui-toggle iban-add">
                                             <label for="form-profile-fiscalite-iban" class="form-field-label">{% trans %} lender-profile_fiscal-tab-bank-info-section-iban {% endtrans %}
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -71,7 +84,14 @@ classNames: 'user-preter-profile'
 
                                             <div class="input-group">
                                                 <div class="custom-input-iban">
-                                                    <input id="form-profile-fiscalite-iban" type="text" name="iban" value="{{ bankAccount.iban }}" class="iban-input input-field" data-formvalidation-input data-formvalidation-type="iban"/>
+                                                    {{ form_widget(bankForm.bankAccount.iban, {
+                                                        'id' : 'form-profile-fiscalite-iban',
+                                                        'attr' : {
+                                                            'class' : 'iban-input input-field',
+                                                            'data-formvalidation-input data-formvalidation-type' : 'iban'
+                                                        }
+                                                    }) }}
+                                                    {{ form_errors(bankForm.bankAccount.iban) }}
                                                 </div>
                                             </div><!-- /.input-group -->
 
@@ -80,28 +100,35 @@ classNames: 'user-preter-profile'
                                     </div><!-- /.form-field -->
                                 </div>
                                 <div class="row row-multi-col">
-                                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2">
+                                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2 {% if form_errors(bankForm.bankAccount.bic)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <div class="field-label">
                                             <label>{% trans %} lender-profile_fiscal-tab-bank-info-section-bic {% endtrans %}
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             </label>
                                         </div><!-- /.field-label -->
                                         <div class="custom-input-bic">
-                                            <input id="form-profile-fiscalite-bic" type="text" name="bic" value="{{ bankAccount.bic }}" class="bic-input input-field" data-formvalidation-input data-formvalidation-type="bic"/>
+                                            {{ form_widget(bankForm.bankAccount.bic, {
+                                                'id' : 'form-profile-fiscalite-bic',
+                                                'attr' :  {
+                                                    'class' : 'bic-input input-field',
+                                                    'data-formvalidation-input data-formvalidation-type' : 'bic'
+                                                }
+                                            }) }}
+                                            {{ form_errors(bankForm.bankAccount.bic) }}
                                         </div>
                                     </div>
-                                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2">
+                                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2 {% if form_errors(bankForm.client.fundsOrigin)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <div class="field-label">
                                             <label>{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             </label>
                                         </div>
-                                        <select id="funds-origin" name="funds_origin" class="input-field">
-                                            <option value=""> {% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %} </option>
-                                            {% for id, label in lenderAccount.fiscal_info.fundsOrigin %}
-                                                <option value="{{ id }}" {% if client.funds_origin is defined and id == client.funds_origin %} selected="selected"{% endif %} > {{ label }} </option>
-                                            {% endfor %}
-                                        </select>
+                                        {{ form_widget(bankForm.client.fundsOrigin, {
+                                            'id' : 'funds-origin',
+                                            'attr' : {
+                                                'class' : 'input-field'
+                                            }
+                                        }) }}
                                     </div>
                                 </div>
 
@@ -127,7 +154,7 @@ classNames: 'user-preter-profile'
                                     <button class="btn-primary" id="save-bank-details" data-spinnerbutton>{% trans %} lender-profile_fiscal-tab-save-iban-changes {% endtrans %}</button>
                                     <button type="reset" role="button" data-toggle="collapse" data-target="#profile-fiscalite-bank-view" data-parent="#profile-fiscalite-bank-section" class="btn-default" aria-controls="#profile-fiscalite-bank-view" aria-expanded="true">{% trans %} lender-profile_fiscal-tab-cancel-iban-cahanges {% endtrans %}</button>
                                 </div><!-- /.btn-controls -->
-                            </form><!-- /.form-bank-edit -->
+                            {{ form_end(bankForm) }}
                         </section><!-- /#profile-fiscalite-bank-edit -->
                     </section><!-- /.ui-toggle-group -->
                 </article><!-- /.panel -->
