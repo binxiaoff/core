@@ -188,7 +188,7 @@ class Altares
             $oCompanyRating->create();
         }
 
-        $oProject->balance_count             = '0000-00-00' === $oCompany->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $oCompany->date_creation)->diff(new \DateTime())->y;
+        $oProject->balance_count             = (empty($oCompany->date_creation) || '0000-00-00' === $oCompany->date_creation) ? 0 : \DateTime::createFromFormat('Y-m-d', $oCompany->date_creation)->diff(new \DateTime())->y;
         $oProject->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
         $oProject->update();
     }

@@ -201,6 +201,8 @@ class ProjectRequestController extends Controller
         $this->company->email_facture                 = $email;
         $this->company->create();
 
+        $partnerManager = $this->get('unilend.service.partner_manager');
+
         $this->project                                       = $entityManager->getRepository('projects');
         $this->project->id_company                           = $this->company->id_company;
         $this->project->amount                               = $amount;
@@ -208,6 +210,9 @@ class ProjectRequestController extends Controller
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
         $this->project->status                               = \projects_status::DEMANDE_SIMULATEUR;
+        $this->project->id_partner                           = $partnerManager->getDefaultPartner()->id;
+        $this->project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
+        $this->project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $this->project->create();
 
         return $this->start();
