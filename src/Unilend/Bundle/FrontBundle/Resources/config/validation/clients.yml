@@ -59,9 +59,13 @@ Unilend\Bundle\CoreBusinessBundle\Entity\Clients:
             - NotBlank: ~
             - Email:
         secreteQuestion:
-            - NotBlank: ~
+            - Type :
+                type: string
+            - Regex:
+                pattern: '/[^\w\-\,\s]/'
+                match: false
         secreteReponse:
-            - NotBlank: ~
+            - Type : string
         fundsOrigin:
             - NotNull: ~
             - Length:
@@ -77,8 +81,3 @@ Unilend\Bundle\CoreBusinessBundle\Entity\Clients:
             - Length:
                 min: 2
                 groups: [lender_legal_entity]
-
-
-
-
-

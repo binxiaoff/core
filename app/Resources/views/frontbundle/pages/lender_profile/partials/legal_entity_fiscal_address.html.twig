@@ -19,7 +19,7 @@
 </section><!-- /.profile-address-view -->
 
 <section id="profile-address-edit" role="tabpanel" class="profile-address-edit collapse">
-    {{ form_start(forms.fiscalAddress.company, {
+    {{ form_start(forms.fiscalAddress, {
         'multipart' : true,
         'id' : 'form-profile-address-edit',
         'attr' :  {
@@ -28,27 +28,27 @@
         }
     }) }}
         <div class="row">
-            <div class="form-field">
+            <div class="form-field {% if form_errors(forms.fiscalAddress.adresse1)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                    {{ form_widget(forms.fiscalAddress.company.adresse1, {
+                    {{ form_widget(forms.fiscalAddress.adresse1, {
                         'id' : 'form-profile-address-street',
                         'attr' : {
                             'class' : 'input-field',
                             'data-formvalidation-input data-formvalidation-required' : 'true'
                         }
                     }) }}
-                {{ form_errors(forms.fiscalAddress.company.adresse1) }}
+                {{ form_errors(forms.fiscalAddress.adresse1) }}
             </div><!-- /.form-field -->
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.zip)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    {{ form_widget(forms.fiscalAddress.company.zip, {
+                    {{ form_widget(forms.fiscalAddress.zip, {
                         'id' : 'form-profile-address-code',
                         'attr' : {
                             'class' : 'input-field',
@@ -60,17 +60,17 @@
                             'data-has-spinner' : '#spinner-profile-address-code'
                         }})
                     }}
-                    {{ form_errors(forms.fiscalAddress.company.zip) }}
+                    {{ form_errors(forms.fiscalAddress.zip) }}
                     <div class="btn-group">
                         <span id="spinner-profile-address-code" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.city)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <div class="input-group set-right">
-                    {{ form_widget(forms.fiscalAddress.company.city, {
+                    {{ form_widget(forms.fiscalAddress.city, {
                         'id' : 'form-profile-address-ville',
                         'attr' : {
                             'class' : 'input-field',
@@ -82,7 +82,7 @@
                             'data-has-spinner' : '#spinner-profile-address-city'
                         }})
                     }}
-                    {{ form_errors(forms.fiscalAddress.company.city) }}
+                    {{ form_errors(forms.fiscalAddress.city) }}
                     <div class="btn-group">
                         <span id="spinner-profile-address-city" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
                     </div>
@@ -91,24 +91,21 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.idPays)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                {{ form_widget(forms.fiscalAddress.company.idPays, {
+                {{ form_widget(forms.fiscalAddress.idPays, {
                     'id' : 'form-profile-address-pays',
                     'attr' : {
                         'class' : 'input-field',
                         'data-formvalidation-input data-formvalidation-required' : 'true'
                     }
                 }) }}
-                {{ form_errors(forms.fiscalAddress.company.idPays) }}
+                {{ form_errors(forms.fiscalAddress.idPays) }}
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
             </div><!-- /.form-field -->
         </div>
-
-        <input type="hidden" name="fiscal_address_company_form" value="true" />
-
         <div class="btn-controls">
             <button class="btn-primary" data-spinnerbutton>{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
             <button type="reset" role="button" data-toggle="collapse" data-target="#profile-address-view" data-parent="#profile-address-section" class="btn-default">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>

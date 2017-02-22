@@ -49,28 +49,28 @@
         }})
     }}
         <div class="row">
-            <div class="form-field {% if form_errors(forms.fiscalAddress.person_fiscal_address.adresseFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field {% if form_errors(forms.fiscalAddress.adresseFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                {{ form_widget(forms.fiscalAddress.person_fiscal_address.adresseFiscal, {
+                {{ form_widget(forms.fiscalAddress.adresseFiscal, {
                     'attr' : {
                         'class' : 'input-field',
                         'data-formvalidation-input' : true,
                         'data-formvalidation-required' : true
                     }})
                 }}
-                {{ form_errors(forms.fiscalAddress.person_fiscal_address.adresseFiscal) }}
+                {{ form_errors(forms.fiscalAddress.adresseFiscal) }}
             </div><!-- /.form-field -->
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.person_fiscal_address.cpFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.cpFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    {{ form_widget(forms.fiscalAddress.person_fiscal_address.cpFiscal, {
+                    {{ form_widget(forms.fiscalAddress.cpFiscal, {
                         'id' : 'form-profile-address-code',
                         'attr' : {
                             'class' : 'input-field',
@@ -82,17 +82,17 @@
                             'data-has-spinner' : '#spinner-profile-address-code'
                         }})
                     }}
-                    {{ form_errors(forms.fiscalAddress.person_fiscal_address.cpFiscal) }}
+                    {{ form_errors(forms.fiscalAddress.cpFiscal) }}
                     <div class="btn-group">
                         <span id="spinner-profile-address-code" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.person_fiscal_address.villeFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.villeFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <div class="input-group set-right">
-                    {{ form_widget(forms.fiscalAddress.person_fiscal_address.villeFiscal, {
+                    {{ form_widget(forms.fiscalAddress.villeFiscal, {
                         'id' : 'form-profile-address-ville',
                         'attr' : {
                             'class' : 'input-field',
@@ -104,7 +104,7 @@
                             'data-has-spinner' : '#spinner-profile-address-city'
                         }})
                     }}
-                    {{ form_errors(forms.fiscalAddress.person_fiscal_address.villeFiscal) }}
+                    {{ form_errors(forms.fiscalAddress.villeFiscal) }}
                     <div class="btn-group">
                         <span id="spinner-profile-address-city" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
                     </div>
@@ -113,10 +113,10 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.person_fiscal_address.idPaysFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.idPaysFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                {{ form_widget(forms.fiscalAddress.person_fiscal_address.idPaysFiscal, {
+                {{ form_widget(forms.fiscalAddress.idPaysFiscal, {
                     'id' : 'form-profile-address-pays',
                     'attr' : {
                         'class' : 'input-field',
@@ -124,6 +124,7 @@
                         'data-formvalidation-required' : true
                     }})
                 }}
+                {{ form_errors(forms.fiscalAddress.idPaysFiscal) }}
             </div><!-- /.form-field -->
         </div>
 
@@ -131,7 +132,7 @@
         <div id="us-person" class="row collapse {% if isLivingAbroad == true %} in {% endif %}">
             <div class="form-field form-field-single-checkbox">
                 <label>
-                    {{ form_widget(forms.fiscalAddress.person_fiscal_address.noUsPerson, {
+                    {{ form_widget(forms.fiscalAddress.noUsPerson, {
                         'id' : 'form-profile-no-us-person'
                     }) }}
                     <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>
@@ -151,7 +152,6 @@
                      data-fileattach
                      data-fileattach-inputname="tax-certificate"
                      data-fileattach-maxfiles="1"
-                     {# data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}" #}
                      data-fileattach-fileremove="false">
                     {% if residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_FISCAL')]['path'] is defined %}
                         <input type="file" name="tax-certificate" value="{{ residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_FISCAL')]['path'] }}" />
@@ -189,7 +189,7 @@
         {# Housed by Third Person #}
         <div class="row">
             <div class="form-field form-field-single-checkbox">
-                {{ form_widget(forms.fiscalAddress.person_fiscal_address.housedByThirdPerson, {'id' : 'housed-by-third-person' }) }}
+                {{ form_widget(forms.fiscalAddress.housedByThirdPerson, {'id' : 'housed-by-third-person' }) }}
                 <label>
                     <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-housed-by-third-person-checkbox {% endtrans %}</span>
                 </label>
@@ -208,7 +208,6 @@
                      data-fileattach
                      data-fileattach-inputname="housed-by-third-person-declaration"
                      data-fileattach-maxfiles="1"
-                     {# data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-housed-by-third-person-declaration {% endtrans %}" #}
                      data-fileattach-fileremove="false">
                     {% if residenceAttachments[constant('\\attachment_type::ATTESTATION_HEBERGEMENT_TIERS')]['path'] is defined %}
                         <input type="file" name="housed-by-third-person-declaration" value="{{ residenceAttachments[constant('\\attachment_type::ATTESTATION_HEBERGEMENT_TIERS')]['path'] }}" />
@@ -227,7 +226,6 @@
                          data-fileattach
                          data-fileattach-inputname="id-third-person-housing"
                          data-fileattach-maxfiles="1"
-                         {# data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-id-third-person-housing {% endtrans %}" #}
                          data-fileattach-fileremove="false">
                         {% if residenceAttachments[constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT')]['path'] is defined %}
                             <input type="file" name="id-third-person-housing" value="{{ residenceAttachments[constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT')]['path'] }}" />
