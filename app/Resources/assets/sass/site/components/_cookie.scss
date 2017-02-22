@@ -1,54 +1,45 @@
 .cookie-box {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 10px 30px;
   display: none;
-
-  position: fixed;
-  bottom: 0;
+  width: 100%;
   z-index: $depth-site-header - 1;
-
   background-color: fade-out($c-bg3, .1);
   color: $c-t1;
-
-  p {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.3em;
-    text-align: center;
-  }
-  .fleft, .fright {
-    width: 100%;
-  }
-  .fright {
-    padding-top: 10px;
-  }
   .inner {
-    max-width: 990px;
+    display: table;
+    padding: 5px 0 5px 10px;
+    max-width: 920px;
+    min-height: 32px;
     margin: 0 auto;
   }
-  @media (min-width: 768px) {
-    padding: 10px 50px;
-    p {
-      text-align: left;
+  p, .icon {
+    display: table-cell;
+    vertical-align: middle;
+  }
+  p {
+    font-size: 12px;
+    line-height: 1;
+    margin: 0;
+    padding-right: 5px;
+  }
+  .icon {
+    cursor: pointer;
+    padding: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: none;
+    color: $c-t3;
+    &:hover {
+      color: $c-bg3;
+      background: $c-p1;
     }
-    .fleft {
-      width: 70%;
-    }
-    .fright {
-      padding: 0;
-      width: 30%;
-      p {
-        text-align: right;
-      }
+    &:active {
+      color: $c-p1;
+      background: transparent;
     }
   }
-  @media (min-width: 1024px) {
-    .fleft {
-      width: 80%;
-    }
-    .fright {
-      width: 20%;
+  @media (min-width: 768px) {
+    .inner {
+      padding: 0;
     }
   }
 }
