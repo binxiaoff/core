@@ -406,26 +406,6 @@ function valid_etape2(id_project) {
     });
 }
 
-function valid_etape3(id_project) {
-    var val = {
-        objectif_etape3:     $("#objectif_etape3").val(),
-        presentation_etape3: $("#presentation_etape3").val(),
-        moyen_etape3:        $("#moyen_etape3").val(),
-        comments_etape3:     $("#comments_etape3").val(),
-        id_project:          id_project,
-        etape:               3
-    };
-
-    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
-        $("#valid_etape3").slideDown();
-
-        setTimeout(function () {
-            $("#valid_etape3").slideUp();
-        }, 3000);
-
-    });
-}
-
 function valid_etape4_1(id_project) {
     var val = 'id_project=' + id_project + '&etape=4.1&' + $('#dossier_etape4_1').serialize();
 
@@ -495,8 +475,7 @@ function check_status_dossier(status, id_project) {
 
         if (isNotBalanced) {
             alert('Certains comptes ne sont pas équilibrés');
-            location.hash = '#title_etape4_2'
-            $('#status option[value="' + previous_status + '"]').prop('selected', true);
+            location.hash = '#section-balance-sheets'
             return;
         }
     }
@@ -506,23 +485,23 @@ function check_status_dossier(status, id_project) {
     } else if (status == 25) {
         var message = 'rejeter';
     } else {
-        console.log('Valeur inconnue');
+        console.log('Valeur inconnue', status);
         return;
     }
 
-    if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
+    if (confirm('Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
         $.post(add_url + '/ajax/check_status_dossier', {
             status: status,
             id_project: id_project,
             rejection_reason: $('#rejection_reason option:selected').val()
         }).done(function (data) {
             if (data != 'nok') {
-                $(location).attr('href', '/dossiers/edit/' + id_project)
+                location.reload()
             } else if (data == 'nok') {
-                alert('Tous les critères obligatoires n\'ont pas été rentrés');
+                alert('Tous les critères obligatoires n\'ont pas été rentrés')
             }
-            parent.$.fn.colorbox.close();
-        });
+            parent.$.fn.colorbox.close()
+        })
     }
 }
 
@@ -540,7 +519,7 @@ function valid_rejete_etape6(status, id_project) {
     else if (status == 2) var message = 'rejeter';
     else if (status == 3) var message = 'sauvegarder';
 
-    if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
+    if (confirm('Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
         var structure                       = parseFloat($('#structure').val().replace(',', '.')),
             rentabilite                     = parseFloat($('#rentabilite').val().replace(',', '.')),
             tresorerie                      = parseFloat($('#tresorerie').val().replace(',', '.')),
@@ -588,44 +567,23 @@ function valid_rejete_etape6(status, id_project) {
                 indicateur_risque_dynamique: indicateur_risque_dynamique,
                 avis: avis,
                 rejection_reason: rejection_reason
-            }).done(function (data) {
-                if (data != 'nok') {
-                    $('#structure').val(Math.round(structure * 10) / 10);
-                    $('#rentabilite').val(Math.round(rentabilite * 10) / 10);
-                    $('#tresorerie').val(Math.round(tresorerie * 10) / 10);
-                    $('#global').val(Math.round(global * 10) / 10);
-                    $('#individuel').val(Math.round(individuel * 10) / 10);
-                    $('#performance_fianciere').html(Math.round(performance_fianciere * 10) / 10);
-                    $('#marche_opere').html(Math.round(marche_opere * 10) / 10);
-                    $('#dirigeance').val(Math.round(dirigeance * 10) / 10);
-                    $('#indicateur_risque_dynamique').val(Math.round(indicateur_risque_dynamique * 10) / 10);
+            }).done(function(data) {
+                var response = jQuery.parseJSON(data)
 
-                    var obj     = jQuery.parseJSON(data),
-                        liste   = obj.liste,
-                        etape_7 = obj.etape_7;
+                if (response.success) {
+                    if (status == 3) {
+                        $('#valid_etape6').slideDown()
 
-                    $('#valid_etape6').slideDown();
-
-                    setTimeout(function () {
-                        $("#valid_etape6").slideUp();
-                    }, 3000);
-
-                    $('#current_statut').html(liste);
-
-                    if (status != 3) {
-                        $('.btnValid_rejet_etape6').remove();
-
-                        if (status == 1) {
-                            if ($('#content_etape7').html() == '') {
-                                $('#content_etape7').html(etape_7);
-                            } else {
-                                $('#content_etape7').show();
-                                $('.btnValid_rejet_etape7').show();
-                            }
-                        } else if (status == 2) {
-                            parent.$.fn.colorbox.close();
-                        }
+                        setTimeout(function() {
+                            $('#valid_etape6').slideUp()
+                        }, 3000)
+                    } else {
+                        location.reload()
                     }
+                } else if (response.error) {
+                    alert(response.error)
+                } else {
+                    alert('Une erreur est survenue')
                 }
             });
         }
@@ -650,7 +608,7 @@ function valid_rejete_etape7(status, id_project) {
     else if (status == 3) var message = 'sauvegarder';
     else if (status == 4) var message = 'vouloir plus d\'informations sur';
 
-    if (confirm(validation_message + 'Etes vous sur de ' + message + ' le dossier ?') == true) {
+    if (confirm(validation_message + 'Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
         var structure                       = parseFloat($('#structure_comite').val().replace(',', '.')),
             rentabilite                     = parseFloat($('#rentabilite_comite').val().replace(',', '.')),
             tresorerie                      = parseFloat($('#tresorerie_comite').val().replace(',', '.')),
@@ -708,42 +666,25 @@ function valid_rejete_etape7(status, id_project) {
                 dirigeance_comite: dirigeance,
                 indicateur_risque_dynamique_comite: indicateur_risque_dynamique,
                 rejection_reason: rejection_reason
-            }).done(function (data) {
-                if (data != 'nok') {
-                    var obj        = jQuery.parseJSON(data),
-                        liste      = obj.liste,
-                        btn_etape6 = obj.btn_etape6,
-                        risk        = obj.content_risk;
-                    if (typeof obj.error != 'undefined') {
-                        alert(obj.error);
-                        return;
-                    }
-                    $('#valid_etape7').slideDown();
+            }).done(function(data) {
+                var response = jQuery.parseJSON(data)
 
-                    setTimeout(function () {
-                        $("#valid_etape7").slideUp();
-                    }, 3000);
+                if (response.success) {
+                    if (status == 3) {
+                        $('#valid_etape7').slideDown()
 
-                    $('#current_statut').html(liste);
-
-                    if (status != 3) {
-                        if (status == 4)$('.btnValid_rejet_etape7').hide();
-                        else $('.btnValid_rejet_etape7').remove();
-
-                        $('.btnValid_rejet_etape6').remove();
+                        setTimeout(function() {
+                            $('#valid_etape7').slideUp()
+                        }, 3000)
+                    } else {
+                        location.reload()
                     }
-                    if (status == 4) {
-                        $('#content_etape7').hide();
-                        $('.listBtn_etape6').html(btn_etape6);
-                    }
-                    else if (status == 1) {
-                        location.reload();
-                    }
-                    else if (status == 2) {
-                        parent.$.colorbox.close();
-                    }
+                } else if (response.error) {
+                    alert(response.error)
+                } else {
+                    alert('Une erreur est survenue')
                 }
-            });
+            })
         }
     }
 }

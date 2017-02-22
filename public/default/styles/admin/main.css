@@ -285,8 +285,6 @@ table.lng label { cursor: pointer; font-weight: bold; }
 .ui-widget-content a { color: #a1a5a7; font-size: 14px; font-style: italic; line-height: 1.2; }
 .ui-datepicker-trigger { vertical-align: middle; }
 
-table.hidden_table{display: none;}
-
 /*Autobid table locked version */
 .autobid-param-advanced-locked .table-container {
     margin: 0 auto;

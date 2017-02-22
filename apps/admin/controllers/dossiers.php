@@ -194,6 +194,7 @@ class dossiersController extends bootstrap
             $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
             if ($this->projects->status <= \projects_status::COMMERCIAL_REVIEW && empty($this->projects->id_commercial) && empty($this->companies->phone) && false === empty($this->companies->siren)) {
+                /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
                 $establishmentIdentity  = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
                 $this->companies->phone = $establishmentIdentity->getPhoneNumber();
                 $this->companies->update();
@@ -509,188 +510,161 @@ class dossiersController extends bootstrap
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
             } elseif (isset($_POST['send_form_dossier_resume'])) {
-                // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
-                /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
-                $dates_valide = false;
                 if (false === empty($_POST['date_publication'])) {
-                    $oPublicationDate                = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
-                    $oEndOfPublicationDate           = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
-                    $oPublicationLimitationDate      = new \DateTime('NOW + 5 minutes');
-                    $oEndOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
+                    $publicationDate                = \DateTime::createFromFormat('d/m/YHi', $_POST['date_publication'] . $_POST['date_publication_heure'] . $_POST['date_publication_minute']);
+                    $endOfPublicationDate           = \DateTime::createFromFormat('d/m/YHi', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
+                    $publicationLimitationDate      = new \DateTime('NOW + 5 minutes');
+                    $endOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
 
-                    if ($oPublicationDate > $oPublicationLimitationDate && $oEndOfPublicationDate > $oEndOfPublicationLimitationDate) {
-                        $dates_valide = true;
+                    if ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate) {
+                        $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
+
+                        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                        die;
                     }
                 }
 
-                if (false === $dates_valide && in_array(\projects_status::A_FUNDER, array($_POST['status'], $this->projects->status))) {
-                    $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus d\'1h';
-                } else {
-                    $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
-                    $_SESSION['freeow']['message'] = '';
+                $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
+                $_SESSION['freeow']['message'] = '';
 
-                    $serialize = serialize(array('id_project' => $this->projects->id_project, 'post' => $_POST));
-                    $this->users_history->histo(10, 'dossier edit Resume & actions', $_SESSION['user']['id_user'], $serialize);
+                $serialize = serialize(array('id_project' => $this->projects->id_project, 'post' => $_POST));
+                $this->users_history->histo(10, 'dossier edit Resume & actions', $_SESSION['user']['id_user'], $serialize);
 
-                    if (isset($_FILES['photo_projet']) && $_FILES['photo_projet']['name'] != '') {
-                        $this->upload->setUploadDir($this->path, 'public/default/images/dyn/projets/source/');
-                        $this->upload->setExtValide(array('jpeg', 'JPEG', 'jpg', 'JPG'));
-
-                        $oImagick = new \Imagick($_FILES['photo_projet']['tmp_name']);
-                        $imageConfig = $this->getParameter('image_resize');
-                        if (
-                            $oImagick->getImageWidth() > $imageConfig['projets']['width']
-                            || $oImagick->getImageHeight() > $imageConfig['projets']['height']
-                        ) {
-                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $imageConfig['projets']['width'] . 'x' . $imageConfig['projets']['height'] . ')<br>';
-                        } elseif ($this->upload->doUpload('photo_projet', '', true)) {
-                            // Delete previous image of the name was different from the new one
-                            if (! empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
-                                @unlink($this->path . 'public/default/images/dyn/projets/source/' . $this->projects->photo_projet);
-                            }
-                            $this->projects->photo_projet = $this->upload->getName();
-                        } else {
-                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : ' . $this->upload->getErrorType() . '<br>';
+                if (isset($_FILES['upload_pouvoir']) && $_FILES['upload_pouvoir']['name'] != '') {
+                    $this->upload->setUploadDir($this->path, 'protected/pdf/pouvoir/');
+                    if ($this->upload->doUpload('upload_pouvoir')) {
+                        if ($this->projects_pouvoir->name != '') {
+                            @unlink($this->path . 'protected/pdf/pouvoir/' . $this->projects->photo_projet);
                         }
+                        $this->projects_pouvoir->name          = $this->upload->getName();
+                        $this->projects_pouvoir->id_project    = $this->projects->id_project;
+                        $this->projects_pouvoir->id_universign = 'no_universign';
+                        $this->projects_pouvoir->url_pdf       = '/pdf/pouvoir/' . $this->clients->hash . '/' . $this->projects->id_project;
+                        $this->projects_pouvoir->status        = 1;
+                        $this->projects_pouvoir->create();
+                    } else {
+                        $_SESSION['freeow']['message'] .= 'Erreur upload pouvoir : ' . $this->upload->getErrorType() . '<br>';
                     }
-
-                    if (isset($_FILES['upload_pouvoir']) && $_FILES['upload_pouvoir']['name'] != '') {
-                        $this->upload->setUploadDir($this->path, 'protected/pdf/pouvoir/');
-                        if ($this->upload->doUpload('upload_pouvoir')) {
-                            if ($this->projects_pouvoir->name != '') {
-                                @unlink($this->path . 'protected/pdf/pouvoir/' . $this->projects->photo_projet);
-                            }
-                            $this->projects_pouvoir->name          = $this->upload->getName();
-                            $this->projects_pouvoir->id_project    = $this->projects->id_project;
-                            $this->projects_pouvoir->id_universign = 'no_universign';
-                            $this->projects_pouvoir->url_pdf       = '/pdf/pouvoir/' . $this->clients->hash . '/' . $this->projects->id_project;
-                            $this->projects_pouvoir->status        = 1;
-                            $this->projects_pouvoir->create();
-                        } else {
-                            $_SESSION['freeow']['message'] .= 'Erreur upload pouvoir : ' . $this->upload->getErrorType() . '<br>';
-                        }
-                    }
-
-                    if (
-                        $_POST['commercial'] > 0
-                        && $_POST['commercial'] != $this->projects->id_commercial
-                        && $this->projects->status < \projects_status::COMMERCIAL_REVIEW
-                    ) {
-                        $_POST['status'] = \projects_status::COMMERCIAL_REVIEW;
-
-                        $latitude  = (float) $this->companies->latitude;
-                        $longitude = (float) $this->companies->longitude;
-
-                        if (empty($latitude) && empty($longitude)) {
-                            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $location */
-                            $location    = $this->get('unilend.service.location_manager');
-                            $coordinates = $location->getCompanyCoordinates($this->companies);
-
-                            if ($coordinates) {
-                                $this->companies->latitude  = $coordinates['latitude'];
-                                $this->companies->longitude = $coordinates['longitude'];
-                            }
-                        }
-                    }
-
-                    if (
-                        $_POST['analyste'] > 0
-                        && $_POST['analyste'] != $this->projects->id_analyste
-                        && $this->projects->status < \projects_status::ANALYSIS_REVIEW
-                    ) {
-                        $_POST['status'] = \projects_status::ANALYSIS_REVIEW;
-                    }
-
-                    $this->projects->title               = $_POST['title'];
-                    $this->projects->nature_project      = $_POST['nature_project'];
-                    $this->projects->id_analyste         = $_POST['analyste'];
-                    $this->projects->id_commercial       = $_POST['commercial'];
-                    $this->projects->id_project_need     = $_POST['need'];
-                    $this->projects->id_borrowing_motive = $_POST['motive'];
-
-                    if (false === $this->bReadonlyRiskNote) {
-                        $this->projects->period     = $_POST['duree'];
-                        $this->projects->amount     = str_replace([' ', ','], ['', '.'], $_POST['montant']);
-                    }
-
-                    if ($this->projects->status <= \projects_status::PREP_FUNDING && isset($_POST['assigned_product'])) {
-                        $this->projects->id_product = $_POST['assigned_product'];
-                    }
-
-                    if ($this->projects->status <= \projects_status::A_FUNDER) {
-                        $sector = $this->translator->trans('company-sector_sector-' . $this->companies->sector);
-                        $this->settings->get('Prefixe URL pages projet', 'type');
-                        $this->projects->slug = $this->ficelle->generateSlug($this->settings->value . '-' . $sector . '-' . $this->companies->city . '-' . substr(md5($this->projects->title . $this->projects->id_project), 0, 7));
-                    }
-
-                    if ($this->projects->status >= \projects_status::PREP_FUNDING) {
-                        if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
-                            $publicationDate                  = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
-                            $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
-                        }
-
-                        if (isset($_POST['date_retrait']) && ! empty($_POST['date_retrait'])) {
-                            $endOfPublicationDate         = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
-                            $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
-                        }
-
-                        if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
-                            try {
-                                $this->projects->id_rate = $oProjectManager->getProjectRateRange($this->projects);
-                            } catch (\Exception $exception) {
-                                $_SESSION['freeow']['message'] .= $exception->getMessage();
-                            }
-                        }
-                    }
-
-                    $this->projects->update();
-
-                    if (isset($_POST['current_status']) && $_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
-                        if ($_POST['status'] == \projects_status::PREP_FUNDING) {
-                            $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
-                            $aExistingStatus = array();
-
-                            foreach ($aProjects as $aProject) {
-                                $aStatusHistory = $this->projects_status_history->getHistoryDetails($aProject['id_project']);
-
-                                foreach ($aStatusHistory as $aStatus) {
-                                    $aExistingStatus[] = $aStatus['status'];
-                                }
-                            }
-
-                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
-
-                            if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
-                                $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
-                            }
-                        } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
-                            if ($_POST['status'] == \projects_status::A_FUNDER) {
-                                $slackManager    = $this->container->get('unilend.service.slack_manager');
-                                $publicationDate = new DateTime($this->projects->date_publication);
-                                $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
-                                $message         = $slackManager->getProjectName($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - :calendar: ' . $this->projects->period . ' mois / ' . $star . ' :star:';
-
-                                $slackManager->sendMessage($message);
-                            }
-
-                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
-                        } else {
-                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
-                        }
-                    }
-
-                    $this->projects->update();
-
-                    $this->companies->name         = $_POST['societe'];
-                    $this->companies->tribunal_com = $_POST['tribunal_com'];
-                    $this->companies->activite     = $_POST['activite'];
-                    $this->companies->update();
-
-                    $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec succès';
-
-                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                    die;
                 }
+
+                if (
+                    false === empty($_POST['commercial'])
+                    && $_POST['commercial'] != $this->projects->id_commercial
+                    && $this->projects->status < \projects_status::COMMERCIAL_REVIEW
+                ) {
+                    $_POST['status'] = \projects_status::COMMERCIAL_REVIEW;
+
+                    $latitude  = (float) $this->companies->latitude;
+                    $longitude = (float) $this->companies->longitude;
+
+                    if (empty($latitude) && empty($longitude)) {
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $location */
+                        $location    = $this->get('unilend.service.location_manager');
+                        $coordinates = $location->getCompanyCoordinates($this->companies);
+
+                        if ($coordinates) {
+                            $this->companies->latitude  = $coordinates['latitude'];
+                            $this->companies->longitude = $coordinates['longitude'];
+                        }
+                    }
+                }
+
+                if (
+                    false === empty($_POST['analyste'])
+                    && $_POST['analyste'] != $this->projects->id_analyste
+                    && $this->projects->status < \projects_status::ANALYSIS_REVIEW
+                ) {
+                    $_POST['status'] = \projects_status::ANALYSIS_REVIEW;
+                }
+
+                $this->projects->title               = $_POST['title'];
+                $this->projects->id_analyste         = isset($_POST['analyste']) ? $_POST['analyste'] : $this->projects->id_analyste;
+                $this->projects->id_commercial       = isset($_POST['commercial']) ? $_POST['commercial'] : $this->projects->id_commercial;
+                $this->projects->id_project_need     = $_POST['need'];
+                $this->projects->id_borrowing_motive = $_POST['motive'];
+
+                if (false === $this->bReadonlyRiskNote) {
+                    $this->projects->period     = $_POST['duree'];
+                    $this->projects->amount     = str_replace([' ', ','], ['', '.'], $_POST['montant']);
+                }
+
+                if ($this->projects->status <= \projects_status::PREP_FUNDING && isset($_POST['assigned_product'])) {
+                    $this->projects->id_product = $_POST['assigned_product'];
+                }
+
+                if ($this->projects->status <= \projects_status::A_FUNDER) {
+                    $sector = $this->translator->trans('company-sector_sector-' . $this->companies->sector);
+                    $this->settings->get('Prefixe URL pages projet', 'type');
+                    $this->projects->slug = $this->ficelle->generateSlug($this->settings->value . '-' . $sector . '-' . $this->companies->city . '-' . substr(md5($this->projects->title . $this->projects->id_project), 0, 7));
+                }
+
+                if ($this->projects->status >= \projects_status::PREP_FUNDING) {
+                    if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
+                        $publicationDate                  = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
+                        $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
+                    }
+
+                    if (isset($_POST['date_retrait']) && ! empty($_POST['date_retrait'])) {
+                        $endOfPublicationDate         = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
+                        $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
+                    }
+
+                    if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
+                        try {
+                            $this->projects->id_rate = $oProjectManager->getProjectRateRange($this->projects);
+                        } catch (\Exception $exception) {
+                            $_SESSION['freeow']['message'] .= $exception->getMessage();
+                        }
+                    }
+                }
+
+                $this->projects->update();
+
+                if (isset($_POST['current_status']) && $_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
+                    if ($_POST['status'] == \projects_status::PREP_FUNDING) {
+                        $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
+                        $aExistingStatus = array();
+
+                        foreach ($aProjects as $aProject) {
+                            $aStatusHistory = $this->projects_status_history->getHistoryDetails($aProject['id_project']);
+
+                            foreach ($aStatusHistory as $aStatus) {
+                                $aExistingStatus[] = $aStatus['status'];
+                            }
+                        }
+
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
+
+                        if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
+                            $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
+                        }
+                    } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
+                        if ($_POST['status'] == \projects_status::A_FUNDER) {
+                            $slackManager    = $this->container->get('unilend.service.slack_manager');
+                            $publicationDate = new DateTime($this->projects->date_publication);
+                            $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
+                            $message         = $slackManager->getProjectName($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - :calendar: ' . $this->projects->period . ' mois / ' . $star . ' :star:';
+
+                            $slackManager->sendMessage($message);
+                        }
+
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
+                    } else {
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
+                    }
+                }
+
+                $this->projects->update();
+
+                $this->companies->name         = $_POST['societe'];
+                $this->companies->tribunal_com = $_POST['tribunal_com'];
+                $this->companies->activite     = $_POST['activite'];
+                $this->companies->update();
+
+                $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec succès';
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
             }
 
             if (isset($_POST['send_form_date_retrait'])) {
@@ -840,6 +814,9 @@ class dossiersController extends bootstrap
         $translator = $this->get('translator');
 
         switch ($projectStatusHistory->content) {
+            case '':
+                $message = '';
+                break;
             case \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-too-much-payment-incidents-message');
                 break;
@@ -3004,6 +2981,130 @@ class dossiersController extends bootstrap
             $status['avg_days'] = round($status['total_days'] / $status['count'], 1);
             return $status;
         }, $status);
+    }
+
+    public function _postpone()
+    {
+        $this->hideDecoration();
+
+        $this->projects = $this->loadData('projects');
+
+        if (
+            false === isset($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || false === $this->projects->get($this->params[0])
+        ) {
+            echo 'Projet inconnu';
+            $this->autoFireView = false;
+            return;
+        }
+
+        if (false === empty($_POST['comment'])) {
+            /** @var \projects_comments $projectComment */
+            $projectComment             = $this->loadData('projects_comments');
+            $projectComment->id_project = $this->projects->id_project;
+            $projectComment->id_user    = $_SESSION['user']['id_user'];
+            $projectComment->content    = "Projet reporté\n--\n" . filter_var($_POST['comment'], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+            $projectComment->create();
+
+            if ($this->projects->status != \projects_status::POSTPONED) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                $projectManager = $this->get('unilend.service.project_manager');
+                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::POSTPONED, $this->projects);
+            }
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
+        }
+    }
+
+    public function _abandon()
+    {
+        $this->hideDecoration();
+
+        $this->projects = $this->loadData('projects');
+
+        if (
+            false === isset($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || false === $this->projects->get($this->params[0])
+        ) {
+            echo 'Projet inconnu';
+            $this->autoFireView = false;
+            return;
+        }
+
+        if (false === empty($_POST['reason']) && filter_var($_POST['reason'], FILTER_VALIDATE_INT)) {
+            if (false === empty($_POST['comment'])) {
+                /** @var \projects_comments $projectComment */
+                $projectComment             = $this->loadData('projects_comments');
+                $projectComment->id_project = $this->projects->id_project;
+                $projectComment->id_user    = $_SESSION['user']['id_user'];
+                $projectComment->content    = "Abandon projet\n--\n" . filter_var($_POST['comment'], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+                $projectComment->create();
+            }
+
+            /** @var \project_abandon_reason $abandonReason */
+            $abandonReason = $this->loadData('project_abandon_reason');
+            $abandonReason->get($_POST['reason']);
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::ABANDONED, $this->projects, 0, $abandonReason->label);
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
+        }
+    }
+
+    public function _publish()
+    {
+        $this->hideDecoration();
+
+        $this->projects = $this->loadData('projects');
+
+        if (
+            false === isset($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || false === $this->projects->get($this->params[0])
+        ) {
+            echo 'Projet inconnu';
+            $this->autoFireView = false;
+            return;
+        }
+
+        if (
+            isset($_POST['date_publication'], $_POST['date_publication_heure'], $_POST['date_publication_minute'])
+            && isset($_POST['date_retrait'], $_POST['date_retrait_heure'], $_POST['date_retrait_minute'])
+            && 1 === preg_match('#[0-9]{2}/[0-9]{2}/[0-9]{8}#', $_POST['date_publication'] . $_POST['date_publication_heure'] . $_POST['date_publication_minute'])
+            && 1 === preg_match('#[0-9]{2}/[0-9]{2}/[0-9]{8}#', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute'])
+        ) {
+            $publicationDate                = \DateTime::createFromFormat('d/m/YHi', $_POST['date_publication'] . $_POST['date_publication_heure'] . $_POST['date_publication_minute']);
+            $endOfPublicationDate           = \DateTime::createFromFormat('d/m/YHi', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
+            $publicationLimitationDate      = new \DateTime('NOW + 5 minutes');
+            $endOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
+
+            if ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate) {
+                $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
+            }
+
+            $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
+            $this->projects->date_retrait     = $endOfPublicationDate->format('Y-m-d H:i:s');
+            $this->projects->update();
+
+            $_SESSION['freeow']['title']   = 'Mise en ligne';
+            $_SESSION['freeow']['message'] = 'Mise en ligne programmée avec succès';
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::A_FUNDER, $this->projects);
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
+        }
     }
 
     public function _autocompleteCompanyName()

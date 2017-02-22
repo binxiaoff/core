@@ -7,7 +7,7 @@
         <?php endif; ?>
 
         $("#Reset").click(function() {
-            $("#siret").val('');
+            $("#siren").val('');
             $("#nom").val('');
             $("#societe").val('');
             $("#prenom").val('');
@@ -42,7 +42,7 @@
             <fieldset>
                 <table class="formColor">
                     <tr>
-                        <th><label for="siret">SIREN :</label></th>
+                        <th><label for="siren">SIREN :</label></th>
                         <td>
                             <input type="text" name="siren" id="siren" class="input_large" value="<?= isset($_POST['siren']) ? $_POST['siren'] : '' ?>"/>
                         </td>

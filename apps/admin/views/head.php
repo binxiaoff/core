@@ -12,6 +12,15 @@
     <?php $this->callJs(); ?>
     <script type="text/javascript">
         $(function() {
+            $('body').keydown('textarea', function(event) {
+                if (event.ctrlKey && event.keyCode == 13) {
+                    var $form = $(event.target).parents('form')
+                    if ($form.is('form')) {
+                        $form.submit()
+                    }
+                }
+            })
+
             $('.searchBox').colorbox({
                 onComplete: function () {
                     $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']))

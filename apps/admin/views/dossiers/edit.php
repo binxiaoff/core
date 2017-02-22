@@ -8,22 +8,18 @@
         text-align: right;
     }
 
-    table.project-main > tbody > tr > td {
+    .project-main {
+        width: 100%;
+    }
+
+    .project-main > tbody > tr > td {
         padding: 10px 20px;
+        width: 50%;
     }
 
     .project-main .project-identity {
         border-right: 5px solid #b20066;
         padding-left: 0;
-        width: 600px;
-    }
-
-    .project-main td .form {
-        width: 530px;
-    }
-
-    .project-main td.project-identity .form {
-        width: 580px;
     }
 
     .project-main .form th {
@@ -105,6 +101,7 @@
         font-weight: bold;
     }
 
+    .error_etape,
     .valid_etape {
         display: none;
         text-align: center;
@@ -113,15 +110,8 @@
         color: #009933;
     }
 
-    .block_cache {
-        background-color: black;
-        height: 80px;
-        left: 0;
-        margin-top: 4px;
-        opacity: 0.50;
-        position: absolute;
-        width: 550px;
-        z-index: 999;
+    .error_etape {
+        color: #f00;
     }
 
     .annual_accounts_dates,
@@ -157,7 +147,13 @@
     }
 
     .btn-reject {
-        background: #CC0000;
+        background: #cc0000;
+    }
+
+    .abandon-popup,
+    .postpone-popup,
+    .publish-popup {
+        width: 600px;
     }
 </style>
 <script type="text/javascript">
@@ -173,22 +169,22 @@
             yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
         });
 
-        $("#date_pub").datepicker({
+        $("#date_publication").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
-            minDate: new Date(<?= date('Y') ?>, <?= (date('m') - 1) ?>, <?= date('d') ?>)
+            minDate: 0
         });
 
-        $("#date_de_retrait").datepicker({
+        $("#date_retrait").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
-            minDate: new Date(<?= date('Y') ?>, <?= (date('m') - 1) ?>, <?= date('d') ?>)
+            minDate: 0
         });
 
         $("#date_ps").datepicker({
@@ -213,20 +209,6 @@
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true
-        });
-
-        $('#duree').change(function() {
-            if (0 == $(this).val() && <?= \projects_status::PREP_FUNDING ?> == <?= $this->projects->status ?>) {
-                $("#status").css('display', 'none');
-                $("#msgProject").css('display', 'none');
-                $("#displayPeriodHS").css('display', 'block');
-                $("#msgProjectPeriodHS").css('display', 'block');
-            } else if('' != $(".statut_fichier2").html()) {
-                $("#status").css('display', 'block');
-                $("#msgProject").css('display', 'block');
-                $("#displayPeriodHS").css('display', 'none');
-                $("#msgProjectPeriodHS").css('display', 'none');
-            }
         });
 
         <?php if ($this->nb_lignes != '') : ?>
@@ -263,52 +245,10 @@
             return true
         });
 
-        var previous_status;
+        $('#status').change(function() {
+            var status = $(this).val();
 
-        $('#status').on('focus', function() {
-            previous_status = this.value;
-        }).change(function() {
-            var status = $('#status').val();
-
-            if (status == <?= \projects_status::PENDING_ANALYSIS ?>) {
-                var isNotBalanced = false;
-
-                if ($('#total_actif_0').data('total') != $('#total_passif_0').data('total')) {
-                    $('#total_actif_0').css('background-color', '#f00');
-                    $('#total_passif_0').css('background-color', '#f00');
-                    isNotBalanced = true;
-                }
-
-                if ($('#total_actif_1').data('total') != $('#total_passif_1').data('total')) {
-                    $('#total_actif_1').css('background-color', '#f00');
-                    $('#total_passif_1').css('background-color', '#f00');
-                    isNotBalanced = true;
-                }
-
-                if ($('#total_actif_2').data('total') != $('#total_passif_2').data('total')) {
-                    $('#total_actif_2').css('background-color', '#f00');
-                    $('#total_passif_2').css('background-color', '#f00');
-                    isNotBalanced = true;
-                }
-
-                if (isNotBalanced) {
-                    alert('Certains comptes ne sont pas équilibrés');
-                    $('#status option[value="' + previous_status + '"]').prop('selected', true);
-                    return;
-                }
-
-                if ($('#assigned_product').val().length < 1) {
-                    alert('Merci de séléctionner un produit avant de passer au prochain statut.');
-                    $('#status option[value="' + previous_status + '"]').prop('selected', true);
-                    return;
-                }
-            }
-
-            $('.hidden_table').hide();
-
-            if (status == <?= \projects_status::A_FUNDER ?>) {
-                $(".change_statut").hide();
-            } else if (
+            if (
                 status == <?= \projects_status::PROBLEME ?>
                 || status == <?= \projects_status::PROBLEME_J_X ?>
                 || status == <?= \projects_status::RECOUVREMENT ?>
@@ -318,11 +258,6 @@
                 || status == <?= \projects_status::DEFAUT ?>
             ) {
                 $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_update/<?= $this->projects->id_project ?>/" + status});
-            } else if (
-                status != <?= \projects_status::REMBOURSEMENT ?>
-                && status != <?= \projects_status::ABANDONED ?>
-            ) {
-                $(".change_statut").show();
             }
         });
 
@@ -435,6 +370,18 @@
                 }
             });
         });
+
+        $('#commercial').change(function() {
+            if ($(this).val() > 0 && $('#current_commercial').val() == 0) {
+                $(this).parents('form').submit()
+            }
+        })
+
+        $('#analyste').change(function() {
+            if ($(this).val() > 0 && $('#current_analyst').val() == 0) {
+                $(this).parents('form').submit()
+            }
+        })
     });
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
@@ -444,7 +391,7 @@
         <table class="project-main">
             <tbody>
             <tr>
-                <td class="project-identity column">
+                <td class="project-identity">
                     <h2>Identité</h2>
                     <table class="form">
                         <?php if ($this->projects->status >= \projects_status::A_FUNDER) : ?>
@@ -468,10 +415,6 @@
                         <tr>
                             <th><label for="siren">SIREN</label></th>
                             <td><?= $this->companies->siren ?></td>
-                        </tr>
-                        <tr>
-                            <th><label for="siret">SIRET</label></th>
-                            <td><?= empty($this->companies->siret) ? '-' : $this->companies->siret ?></td>
                         </tr>
                         <tr>
                             <th><label for="code_naf">Code NAF</label></th>
@@ -506,32 +449,10 @@
                             <th><label for="activite">Activité</label></th>
                             <td><input type="text" name="activite" id="activite" class="input_large" value="<?= empty($this->companies->activite) ? (empty($this->xerfi->naf) ? '' : $this->xerfi->label) : $this->companies->activite ?>"></td>
                         </tr>
-                        <tr>
-                            <th><label for="nature_project">Nature du projet</label></th>
-                            <td><textarea class="textarea_lng" name="nature_project" id="nature_project" style="height: 100px;width: 435px;"><?= $this->projects->nature_project ?></textarea></td>
-                        </tr>
-                        <tr>
-                            <th><label for="photo_projet">Photo projet</label></th>
-                            <td><input type="file" name="photo_projet" id="photo_projet"><br><a target="_blank" href="<?= $this->surl ?>/images/dyn/projets/source/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a></td>
-                        </tr>
                     </table>
-                </td>
-                <td class="column">
+                    <br><br>
                     <h2>Projet</h2>
                     <table class="form project-attributes">
-                        <?php if (isset($this->fPredictAutoBid) && false === empty($this->fPredictAutoBid)) : ?>
-                        <tr>
-                            <th><label for="autobid_statistic"> AutoLend funding statistic</label></th>
-                            <td><?= $this->fPredictAutoBid ?> % </td>
-                        </tr>
-                        <?php endif; ?>
-                        <?php if (isset($this->rate_min, $this->rate_max)) : ?>
-                            <tr>
-                                <th><label for="project_rate"> Taux min / max</label></th>
-                                <td><?= $this->rate_min ?> % - <?= $this->rate_max ?> %</td>
-                            </tr>
-
-                        <?php endif; ?>
                         <tr>
                             <th><label for="montant">Montant du prêt&nbsp;*</label></th>
                             <td><input type="text" name="montant" id="montant" class="input_moy" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €</td>
@@ -565,49 +486,38 @@
                                     <option value="0"></option>
                                     <?php foreach ($this->aNeeds as $aNeed) : ?>
                                         <optgroup label="<?= $aNeed['label'] ?>">
-                                        <?php foreach ($aNeed['children'] as $aNeedChild) : ?>
-                                            <option value="<?= $aNeedChild['id_project_need'] ?>"<?= ($this->projects->id_project_need == $aNeedChild['id_project_need'] ? ' selected' : '') ?>><?= $aNeedChild['label'] ?></option>
-                                        <?php endforeach; ?>
+                                            <?php foreach ($aNeed['children'] as $aNeedChild) : ?>
+                                                <option value="<?= $aNeedChild['id_project_need'] ?>"<?= ($this->projects->id_project_need == $aNeedChild['id_project_need'] ? ' selected' : '') ?>><?= $aNeedChild['label'] ?></option>
+                                            <?php endforeach; ?>
                                         </optgroup>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
                         </tr>
-                        <tr class="content_risk" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
-                            <th><label for="risk">Niveau de risque&nbsp;*</label></th>
-                            <td>
-                                <?php
-                                    switch ($this->projects->risk) {
-                                        case 'A' :
-                                            echo '5 étoiles';
-                                            break;
-                                        case 'B' :
-                                            echo '4,5 étoiles';
-                                            break;
-                                        case 'C' :
-                                            echo '4 étoiles';
-                                            break;
-                                        case 'D' :
-                                            echo '3,5 étoiles';
-                                            break;
-                                        case 'E' :
-                                            echo '3 étoiles';
-                                            break;
-                                        case 'F' :
-                                            echo '2,5 étoiles';
-                                            break;
-                                        case 'G' :
-                                            echo '2 étoiles';
-                                            break;
-                                        case 'H' :
-                                            echo '1,5 étoiles';
-                                            break;
-                                    }
-                                ?>
-                            </td>
-                        </tr>
+                        <?php if ($this->projects->status >= \projects_status::PREP_FUNDING) : ?>
+                            <tr class="content_risk">
+                                <th><label for="risk">Niveau de risque</label></th>
+                                <td>
+                                    <?php $stars = ['A' => '5', 'B' => '4,5', 'C' => '4', 'D' => '3,5', 'E' => '3', 'F' => '2,5', 'G' => '2', 'H' => '1,5']; ?>
+                                    <?= $stars[$this->projects->risk] ?> étoiles
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php if (isset($this->rate_min, $this->rate_max)) : ?>
+                            <tr>
+                                <th><label for="project_rate"> Taux min / max</label></th>
+                                <td><?= $this->rate_min ?> % - <?= $this->rate_max ?> %</td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php if (false === empty($this->fPredictAutoBid) && $this->projects->status < \projects_status::FUNDE) : ?>
+                            <tr>
+                                <th><label for="autobid_statistic">Financement Autolend</label></th>
+                                <td><?= $this->ficelle->formatNumber($this->fPredictAutoBid, 0) ?> % </td>
+                            </tr>
+                        <?php endif; ?>
                     </table>
-                    <br><br>
+                </td>
+                <td>
                     <h2>Produit</h2>
                     <table class="form project-product">
                         <tr>
@@ -695,11 +605,11 @@
                     <table class="form project-actions">
                         <tr>
                             <th>ID dossier</th>
-                            <td colspan="2"><?= $this->projects->id_project ?></td>
+                            <td><?= $this->projects->id_project ?></td>
                         </tr>
                         <tr>
                             <th>ID emprunteur</th>
-                            <td colspan="2">
+                            <td>
                                 <?= $this->clients->id_client ?>
                                 <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Éditer l'emprunteur"></a>
                                 <input id="id_client" type="hidden" value="<?= $this->clients->id_client ?>" name="id_client">
@@ -707,197 +617,161 @@
                         </tr>
                         <tr>
                             <th>Prénom</th>
-                            <td colspan="2"><?= $this->clients->prenom ?></td>
+                            <td><?= $this->clients->prenom ?></td>
                         </tr>
                         <tr>
                             <th>Nom</th>
-                            <td colspan="2"><?= $this->clients->nom ?></td>
+                            <td><?= $this->clients->nom ?></td>
                         </tr>
-                        <tr>
-                            <th><label for="commercial">Commercial</label></th>
-                            <td colspan="2">
-                                <select name="commercial" id="commercial" class="select">
-                                    <option value="0">Choisir</option>
-                                    <?php foreach ($this->aSalesPersons as $aSalesPerson) : ?>
-                                        <option <?= ($this->projects->id_commercial == $aSalesPerson['id_user'] ? 'selected' : '') ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr id="analysts-row"<?php if ($this->projects->status < \projects_status::PENDING_ANALYSIS && empty($this->projects->id_analyste)) : ?> style="display: none;"<?php endif; ?>>
-                            <th><label for="analyste">Analyste</label></th>
-                            <td colspan="2">
-                                <select name="analyste" id="analyste" class="select">
-                                    <option value="0">Choisir</option>
-                                    <?php foreach ($this->aAnalysts as $aAnalyst) : ?>
-                                        <option <?= ($this->projects->id_analyste == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                        </tr>
+                        <?php if (false === empty($this->projects->id_commercial) || false === in_array($this->projects->status, [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::NOT_ELIGIBLE, \projects_status::ABANDONED])) : ?>
+                            <tr>
+                                <th><label for="commercial">Commercial</label></th>
+                                <td>
+                                    <input type="hidden" id="current_commercial" value="<?= $this->projects->id_commercial ?>">
+                                    <select name="commercial" id="commercial" class="select">
+                                        <option value="0">Choisir</option>
+                                        <?php foreach ($this->aSalesPersons as $salesperson) : ?>
+                                            <option value="<?= $salesperson['id_user'] ?>"<?= ($this->projects->id_commercial == $salesperson['id_user'] ? ' selected' : '') ?>><?= $salesperson['firstname'] ?> <?= $salesperson['name'] ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php if ($this->projects->status >= \projects_status::PENDING_ANALYSIS || false === empty($this->projects->id_analyste)) : ?>
+                            <tr>
+                                <th><label for="analyste">Analyste</label></th>
+                                <td>
+                                    <input type="hidden" id="current_analyst" value="<?= $this->projects->id_analyste ?>">
+                                    <select name="analyste" id="analyste" class="select">
+                                        <option value="0">Choisir</option>
+                                        <?php foreach ($this->aAnalysts as $analyst) : ?>
+                                            <option value="<?= $analyst['id_user'] ?>"<?= ($this->projects->id_analyste == $analyst['id_user'] ? ' selected' : '') ?>><?= $analyst['firstname'] ?> <?= $analyst['name'] ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                         <tr>
                             <th><label for="status">Statut</label></th>
                             <td id="current_statut">
-                                <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
-                                <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
                                 <input type="hidden" name="current_status" value="<?= $this->projects->status ?>">
-                                <?php
-                                    $sDisplayPeriodHS           = 'none';
-                                    $sDisplayMsgPeriodHs        = 'none';
-                                    $sDisplayStatus             = 'block';
-                                    $sDisplayMsgProject         = 'block';
-                                    $blockingPuttingOnlineError = '';
-                                ?>
-                                <?php if (count($this->lProjects_status) > 0) : ?>
-                                    <?php
-                                        if ($this->projects->status == \projects_status::PREP_FUNDING) {
-                                            if (in_array($this->projects->period, [0, 1000000])) {
-                                                $blockingPuttingOnlineError = 'Veuillez sélectionner une durée de prêt';
-                                            }
-
-                                            if (
-                                                in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)
-                                                && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
-                                            ) {
-                                                $blockingPuttingOnlineError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
-                                            }
-
-                                            if (false === $this->isProductUsable) {
-                                                $blockingPuttingOnlineError = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
-                                            }
-
-                                            if (false === empty($blockingPuttingOnlineError)) {
-                                                $sDisplayPeriodHS    = 'block';
-                                                $sDisplayStatus      = 'none';
-                                                $sDisplayMsgPeriodHs = 'block';
-                                                $sDisplayMsgProject  = 'none';
-                                            }
-                                        }
-                                    ?>
-                                    <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
-                                        <?= $this->projects_status->label ?>
-                                    </span>
-                                    <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->projects->status == \projects_status::REMBOURSEMENT_ANTICIPE ? '"disabled"' : "") ?>>
-                                    <?php foreach ($this->lProjects_status as $s) : ?>
-                                        <option <?= ($this->projects->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
-                                    <?php endforeach; ?>
-                                    </select>
-                                <?php else : ?>
-                                    <input type="hidden" name="status" id="status" value="<?= $this->projects->status ?>">
+                                <?php if ($this->projects->status <= \projects_status::EN_FUNDING || 0 === count($this->lProjects_status)) : // All statuses should be handled this way, i.e. by only using buttons to transition status ?>
+                                    <!-- Useful for backward compatibility purpose. Should not be useful -->
+                                    <input type="hidden" name="status" value="<?= $this->projects->status ?>">
                                     <?= $this->projects_status->label ?>
-                                    <?php if (false === empty($this->sRejectionReason)) : ?>
-                                        (<?= $this->sRejectionReason ?>)
+                                    <?php if (
+                                        in_array($this->users->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_RISK])
+                                        && in_array($this->projects->status, [\projects_status::COMMERCIAL_REJECTION, \projects_status::ANALYSIS_REJECTION, \projects_status::COMITY_REJECTION])
+                                    ) : ?>
+                                        <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"></a>
                                     <?php endif; ?>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if (
-                                    in_array($this->users->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_RISK])
-                                    && in_array($this->projects->status, [\projects_status::COMMERCIAL_REJECTION, \projects_status::ANALYSIS_REJECTION, \projects_status::COMITY_REJECTION])
-                                ) : ?>
-                                    <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"></a>
+                                <?php else : ?>
+                                    <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
+                                    <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
+                                    <select name="status" id="status" class="select">
+                                        <?php foreach ($this->lProjects_status as $s) : ?>
+                                            <option <?= ($this->projects->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 <?php endif; ?>
                                 <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information"></a>
                             </td>
                         </tr>
-                        <?php if (in_array($this->projects->status, [\projects_status::NOT_ELIGIBLE, \projects_status::IMPOSSIBLE_AUTO_EVALUATION]) && false === empty($this->projects_status_history->content)) : ?>
+                        <!-- Rejection/abandon reason -->
+                        <?php if (false === empty($this->sRejectionReason) || in_array($this->projects->status, [\projects_status::NOT_ELIGIBLE, \projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::ABANDONED]) && false === empty($this->projects_status_history->content)) : ?>
                             <tr>
                                 <th><label for="status">Motif</label></th>
-                                <td colspan="2"><?= $this->rejectionReasonMessage ?></td>
-                            </tr>
-                        <?php endif; ?>
-                        <?php if (in_array($this->projects->status, [\projects_status::PENDING_ANALYSIS, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING])) : ?>
-                            <tr class="change_statut" <?= ($this->projects->status == \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
-                                <td colspan="3">
-                                    <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
-                                    <span id="msgProjectPeriodHS" style="display:<?= $sDisplayMsgPeriodHs ?>;"><?= $blockingPuttingOnlineError ?></span>
-                                    <div class="block_cache change_statut"></div>
+                                <td>
+                                    <?php if (false === empty($this->sRejectionReason)) : ?>
+                                        <?= $this->sRejectionReason ?>
+                                    <?php elseif ($this->projects->status == \projects_status::ABANDONED) : ?>
+                                        <?= $this->projects_status_history->content ?>
+                                    <?php else : ?>
+                                        <?= $this->rejectionReasonMessage ?>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endif; ?>
-                        <tr class="content_date_publicaion" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
-                            <th><label for="date_publication">Date de publication&nbsp;*</label></th>
-                            <td id="date_publication" colspan="2">
-                                <?php if (in_array($this->projects->status, [\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER])) : ?>
-                                    <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>">
-                                    <?php
-                                        $tab_date_publication_full  = explode(' ', $this->projects->date_publication);
-                                        $tab_date_publication_full2 = explode(':', $tab_date_publication_full[1]);
-                                        $heure_date_publication     = $tab_date_publication_full2[0];
-                                        $minute_date_publication    = $tab_date_publication_full2[1];
-                                        $seconde_date_publication   = $tab_date_publication_full2[2];
-                                    ?>
-                                    &agrave;
-                                    <select name="date_publication_heure" class="selectMini">
-                                        <?php for ($h = 0; $h < 24; $h++) : ?>
-                                            <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
-                                        <?php endfor; ?>
-                                    </select>h
-                                    <select name="date_publication_minute" class="selectMini">
-                                        <?php for ($m = 0; $m < 60; $m += 5) : ?>
-                                            <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_publication == $m ? "selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
-                                        <?php endfor; ?>
-                                    </select>
-                                <?php else : ?>
-                                    <?= $this->dates->formatDate($this->projects->date_publication, 'd/m/Y H:i') ?>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr class="content_date_retrait"<?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : ' style="display:none"') ?>>
-                            <th><label for="date_retrait">Date de retrait&nbsp;*</label></th>
-                            <td id="date_retrait" colspan="2">
-                                <?php if (in_array($this->projects->status, [\projects_status::COMMERCIAL_REVIEW, \projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER])) : ?>
-                                    <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>">
-                                    <?php
-                                        $tab_date_retrait_full  = explode(' ', $this->projects->date_retrait);
-                                        $tab_date_retrait_full2 = explode(':', $tab_date_retrait_full[1]);
-                                        $heure_date_retrait     = $tab_date_retrait_full2[0];
-                                        $minute_date_retrait    = $tab_date_retrait_full2[1];
-                                        $seconde_date_retrait   = $tab_date_retrait_full2[2];
-                                    ?>
-                                    &agrave;
-                                    <select name="date_retrait_heure" class="selectMini">
-                                        <?php for ($h = 0; $h < 24; $h++) : ?>
-                                            <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_retrait == $h ? "selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
-                                        <?php endfor; ?>
-                                    </select>h
-                                    <select name="date_retrait_minute" class="selectMini">
-                                        <?php for ($m = 0; $m < 60; $m += 5) : ?>
-                                            <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_retrait == $m ? "selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
-                                        <?php endfor; ?>
-                                    </select>
-                                <?php else : ?>
-                                    <?= $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y H:i') ?>
-                                    <?php if ($this->projects->status < \projects_status::FUNDE) : ?>
-                                        &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
+                        <?php if ($this->projects->status == \projects_status::PREP_FUNDING) : ?>
+                            <?php
+                                $blockingPublishingError = '';
+
+                                if (in_array($this->projects->period, [0, 1000000])) {
+                                    $blockingPublishingError = 'Veuillez sélectionner une durée de prêt';
+                                }
+
+                                if (
+                                    in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)
+                                    && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
+                                ) {
+                                    $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                }
+
+                                if (false === $this->isProductUsable) {
+                                    $blockingPublishingError = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
+                                }
+                            ?>
+                            <?php if (false === empty($blockingPublishingError)) : ?>
+                                <tr>
+                                    <td colspan="2"><?= $blockingPublishingError ?></td>
+                                </tr>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        <?php if ($this->projects->status >= \projects_status::A_FUNDER) : ?>
+                            <tr>
+                                <th><label for="date_publication">Date de publication&nbsp;*</label></th>
+                                <td>
+                                    <?php if ($this->projects->status == \projects_status::A_FUNDER) : ?>
+                                        <input type="text" name="date_publication" id="date_publication" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>">
+                                        <select name="date_publication_heure" class="selectMini" title="Heure">
+                                            <?php for ($hour = 0; $hour < 24; $hour++) : ?>
+                                                <option value="<?= sprintf('%02d', $hour) ?>"<?= (substr($this->projects->date_publication, 11, 2) == $hour ? ' selected' : '') ?>><?= sprintf('%02d', $hour) ?></option>
+                                            <?php endfor; ?>
+                                        </select>&nbsp;h
+                                        <select name="date_publication_minute" class="selectMini" title="Minute">
+                                            <?php for ($minute = 0; $minute < 60; $minute += 5) : ?>
+                                                <option value="<?= sprintf('%02d', $minute) ?>"<?= (substr($this->projects->date_publication, 14, 2) == $minute ? ' selected' : '') ?>><?= sprintf('%02d', $minute) ?></option>
+                                            <?php endfor; ?>
+                                        </select>&nbsp;m
+                                    <?php else : ?>
+                                        <?= $this->dates->formatDate($this->projects->date_publication, 'd/m/Y H:i') ?>
                                     <?php endif; ?>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php if (false === empty($this->retour_dates_valides)) : ?>
-                            <tr class="content_date_retrait">
-                                <th></th>
-                                <td colspan="2" style="color:red; font-weight:bold;"><?= $this->retour_dates_valides ?></td>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="date_retrait">Date de retrait&nbsp;*</label></th>
+                                <td>
+                                    <?php if ($this->projects->status == \projects_status::A_FUNDER) : ?>
+                                        <input type="text" name="date_retrait" id="date_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>">
+                                        <select name="date_retrait_heure" class="selectMini" title="Heure">
+                                            <?php for ($hour = 0; $hour < 24; $hour++) : ?>
+                                                <option value="<?= sprintf('%02d', $hour) ?>"<?= (substr($this->projects->date_retrait, 11, 2) == $hour ? ' selected' : '') ?>><?= sprintf('%02d', $hour) ?></option>
+                                            <?php endfor; ?>
+                                        </select>&nbsp;h
+                                        <select name="date_retrait_minute" class="selectMini" title="Minute">
+                                            <?php for ($minute = 0; $minute < 60; $minute += 5) : ?>
+                                                <option value="<?= sprintf('%02d', $minute) ?>"<?= (substr($this->projects->date_retrait, 14, 2) == $minute ? ' selected' : '') ?>><?= sprintf('%02d', $minute) ?></option>
+                                            <?php endfor; ?>
+                                        </select>&nbsp;m
+                                    <?php else : ?>
+                                        <?= $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y H:i') ?>
+                                        <?php if ($this->projects->status < \projects_status::FUNDE) : ?>
+                                            &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                         <?php endif; ?>
-                        <tr>
-                            <td id="status_dossier" colspan="3">
-                                <?php if ($this->projects->status == \projects_status::COMMERCIAL_REVIEW) : ?>
-                                    <?php if (empty($this->projects->id_product)) : ?>
-                                        Merci de séléctionner un produit avant de passer au prochain statut.
-                                    <?php else : ?>
-                                        <div style="float: right">
-                                            <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
-                                            <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" value="Valider">
-                                        </div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
+                        <?php if (false === empty($_SESSION['public_dates_error'])) : ?>
+                            <tr>
+                                <td colspan="2" style="color:red; font-weight:bold;"><?= $_SESSION['public_dates_error'] ?></td>
+                            </tr>
+                            <?php unset($_SESSION['public_dates_error']); ?>
+                        <?php endif; ?>
                         <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) : ?>
                             <tr>
                                 <th><label for="pouvoir">Pouvoir</label></th>
-                                <td colspan="2">
+                                <td>
                                     <div>
                                         <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
                                         <?php if ($this->projects_pouvoir->status_remb == '1') : ?>
@@ -909,33 +783,70 @@
                         <?php elseif ($this->projects->status == \projects_status::FUNDE) : ?>
                             <tr>
                                 <th><label for="upload_pouvoir">Pouvoir</label></th>
-                                <td colspan="2"><input type="file" name="upload_pouvoir" id="upload_pouvoir"></td>
+                                <td><input type="file" name="upload_pouvoir" id="upload_pouvoir"></td>
                             </tr>
                         <?php endif; ?>
-
                         <?php if ($this->projects->status == \projects_status::FUNDE) : ?>
                             <tr>
                                 <th><label for="pret_refuse">Prêt refusé</label></th>
-                                <td colspan="2">
+                                <td>
                                     <select name="pret_refuse" id="pret_refuse" class="select">
                                         <option value="0">Non</option>
-                                        <option value="1">Oui</option>
                                     </select>
                                 </td>
                             </tr>
                             <?php if (empty($this->proxy) || $this->proxy['status'] != \projects_pouvoir::STATUS_VALIDATED) : ?>
                                 <tr>
                                     <th>Pouvoir</th>
-                                    <td colspan="2"><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <td><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                                 </tr>
                             <?php endif ?>
                             <?php if (empty($this->mandate) || $this->mandate['status'] != \clients_mandats::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Mandat</th>
-                                    <td colspan="2"><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                                 </tr>
                             <?php endif ?>
                         <?php endif; ?>
+                        <tr>
+                            <td colspan="2">
+                                <?php switch ($this->projects->status) :
+                                    case \projects_status::COMMERCIAL_REVIEW: ?>
+                                        <?php if (empty($this->projects->id_product)) : ?>
+                                            Merci de séléctionner un produit avant de passer au prochain statut.
+                                        <?php else : ?>
+                                            <div style="text-align: right">
+                                                <a href="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Reporter</a>
+                                                <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
+                                                <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
+                                                <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php break;
+                                    case \projects_status::POSTPONED: ?>
+                                        <div style="text-align: right">
+                                            <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
+                                            <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
+                                            <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
+                                        </div>
+                                        <?php break;
+                                    case \projects_status::ANALYSIS_REVIEW:
+                                    case \projects_status::COMITY_REVIEW: ?>
+                                        <div style="text-align: right">
+                                            <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
+                                        </div>
+                                        <?php break;
+                                    case \projects_status::PREP_FUNDING: ?>
+                                        <div style="text-align: right">
+                                            <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
+                                            <?php if (empty($blockingPublishingError)) : ?>
+                                                <a href="<?= $this->lurl ?>/dossiers/publish/<?= $this->projects->id_project ?>" class="btn btn-small btn_link thickbox">Programmer la mise en ligne</a>
+                                            <?php endif; ?>
+                                        </div>
+                                        <?php break; ?>
+                                <?php endswitch; ?>
+                            </td>
+                        </tr>
                     </table>
                 </td>
             </tr>

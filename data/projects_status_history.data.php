@@ -71,29 +71,6 @@ class projects_status_history extends projects_status_history_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    /**
-     * @param $projectId
-     *
-     * @return bool|string
-     */
-    public function getBeforeLastStatus($projectId)
-    {
-        $queryBuilder = $this->bdd->createQueryBuilder();
-        $queryBuilder->select('status')
-            ->from('projects_status_history', 'psh')
-            ->innerJoin('psh', 'projects_status', 'ps', 'psh.id_project_status = ps.id_project_status')
-            ->where('id_project = :projectId')
-            ->orderBy('added', 'DESC')
-            ->addOrderBy('id_project_status_history', 'DESC')
-            ->setFirstResult(1)
-            ->setMaxResults(1)
-            ->setParameter('projectId', $projectId);
-
-        $statement = $queryBuilder->execute();
-
-        return $statement->fetchColumn();
-    }
-
     public function getHistoryDetails($id_project)
     {
         $sql = '

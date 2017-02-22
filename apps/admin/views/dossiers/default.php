@@ -142,7 +142,7 @@
                         </td>
                         <td style="padding-top:23px;">
                             <select name="status" id="status" class="select" style="width:80px;">
-                                <option value="">Status</option>
+                                <option value="">Statut</option>
                                 <?php foreach ($this->lProjects_status as $s) : ?>
                                     <option <?= (isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>">
                                         <?= $s['label'] ?>

@@ -192,9 +192,4 @@ class projects_status extends projects_status_crud
 
         return parent::get($id_project_statut, 'id_project_status');
     }
-
-    public function getNextStatus($iStatus)
-    {
-        return (int) $this->bdd->result($this->bdd->query('SELECT status FROM projects_status WHERE status > ' . $iStatus . ' ORDER BY status ASC LIMIT 1'));
-    }
 }
