@@ -17,7 +17,7 @@
         color: #fff;
         text-decoration: none;
     }
-    .tab_content {border: 2px solid #b10366; padding: 10px;}
+    .tab_content {border: 2px solid #b20066; padding: 10px;}
     .valid_etape {display: none; text-align: center; font-size: 16px; font-weight: bold; color: #009933;}
     .choose-client {font-weight: bold; text-align: center;}
     #search_result {display: none;}

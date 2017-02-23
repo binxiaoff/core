@@ -288,7 +288,7 @@
             if (check_bic($('#' + id).val()) == false) {
                 $('#' + id).css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
             } else {
-                $('#' + id).css('border', '1px solid #A1A5A7').css('color', '#B10366').css('background-color', '#ECECEC');
+                $('#' + id).css('border', '1px solid #A1A5A7').css('color', '#b20066').css('background-color', '#ECECEC');
             }
         }
 
@@ -299,7 +299,7 @@
             if (validateIban($('#' + id).val()) == false) {
                 $('#' + id).css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
             } else {
-                $('#' + id).css('border', '1px solid #A1A5A7').css('color', '#B10366').css('background-color', '#ECECEC');
+                $('#' + id).css('border', '1px solid #A1A5A7').css('color', '#b20066').css('background-color', '#ECECEC');
             }
         }
     }

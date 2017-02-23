@@ -16,7 +16,7 @@
     <h1>Liste des <?= count($this->lRemb) ?> derniers remboursements</h1>
     <br />
     <style>
-        table.recap{border:2px solid #B10366;}
+        table.recap{border:2px solid #b20066;}
         table.recap td,table.recap th{padding:10px;border: 2px solid;}
     </style>
     <table class="recap">

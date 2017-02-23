@@ -134,7 +134,7 @@
         <?php endif; ?>
     </table>
     <br/><br/>
-    <div style="border: 1px solid #b10366; height: 60px; padding: 5px; width: 280px;">
+    <div style="border: 1px solid #b20066; height: 60px; padding: 5px; width: 280px;">
         <form action="" method="post">
             <b>Remboursement automatique : </b>
             <input type="radio" name="remb_auto" value="0"<?= ($this->projects->remb_auto == 0 ? ' checked' : '') ?>>Oui
@@ -156,7 +156,7 @@
     </div>
     <br/><br/>
     <h2>Remboursement anticipé / Information</h2>
-    <table class="form" style="width: 538px; border: 1px solid #B10366;">
+    <table class="form" style="width: 538px; border: 1px solid #b20066;">
         <tr>
             <th>Statut :</th>
             <td>
