@@ -203,6 +203,8 @@ class ProjectRequestController extends Controller
         $this->company->email_facture                 = $email;
         $this->company->create();
 
+        $partnerManager = $this->get('unilend.service.partner_manager');
+
         $this->project                                       = $entityManager->getRepository('projects');
         $this->project->id_company                           = $this->company->id_company;
         $this->project->amount                               = $amount;
@@ -210,6 +212,9 @@ class ProjectRequestController extends Controller
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
         $this->project->status                               = \projects_status::INCOMPLETE_REQUEST;
+        $this->project->id_partner                           = $partnerManager->getDefaultPartner()->id;
+        $this->project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
+        $this->project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $this->project->create();
 
         $projectManager = $this->get('unilend.service.project_manager');
@@ -571,35 +576,10 @@ class ProjectRequestController extends Controller
         $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
         /** @var \companies_bilans $annualAccountsEntity */
         $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
+        $partnerManager       = $this->get('unilend.service.partner_manager');
 
         $this->attachmentType         = $entityManager->getRepository('attachment_type');
-        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, [
-            \attachment_type::PRESENTATION_ENTRERPISE,
-            \attachment_type::RIB,
-            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
-            \attachment_type::CNI_PASSPORTE_VERSO,
-            \attachment_type::DERNIERE_LIASSE_FISCAL,
-            \attachment_type::LIASSE_FISCAL_N_1,
-            \attachment_type::LIASSE_FISCAL_N_2,
-            \attachment_type::RAPPORT_CAC,
-            \attachment_type::PREVISIONNEL,
-            \attachment_type::BALANCE_CLIENT,
-            \attachment_type::BALANCE_FOURNISSEUR,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
-            \attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE,
-            \attachment_type::DERNIERS_COMPTES_CONSOLIDES,
-            \attachment_type::STATUTS,
-            \attachment_type::PRESENTATION_PROJET,
-            \attachment_type::DERNIERE_LIASSE_FISCAL_HOLDING,
-            \attachment_type::KBIS_HOLDING,
-            \attachment_type::AUTRE1,
-            \attachment_type::AUTRE2
-        ]);
+        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
         $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
 
         $altaresCapitalStock     = 0;
@@ -816,36 +796,11 @@ class ProjectRequestController extends Controller
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
+        $settings       = $entityManager->getRepository('settings');
+        $partnerManager = $this->get('unilend.service.partner_manager');
 
         $this->attachmentType         = $entityManager->getRepository('attachment_type');
-        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, [
-            \attachment_type::PRESENTATION_ENTRERPISE,
-            \attachment_type::RIB,
-            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
-            \attachment_type::CNI_PASSPORTE_VERSO,
-            \attachment_type::DERNIERE_LIASSE_FISCAL,
-            \attachment_type::LIASSE_FISCAL_N_1,
-            \attachment_type::LIASSE_FISCAL_N_2,
-            \attachment_type::RAPPORT_CAC,
-            \attachment_type::PREVISIONNEL,
-            \attachment_type::BALANCE_CLIENT,
-            \attachment_type::BALANCE_FOURNISSEUR,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
-            \attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE,
-            \attachment_type::DERNIERS_COMPTES_CONSOLIDES,
-            \attachment_type::STATUTS,
-            \attachment_type::PRESENTATION_PROJET,
-            \attachment_type::DERNIERE_LIASSE_FISCAL_HOLDING,
-            \attachment_type::KBIS_HOLDING,
-            \attachment_type::AUTRE1,
-            \attachment_type::AUTRE2
-        ]);
+        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
         $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
 
         $settings->get('Lien conditions generales depot dossier', 'type');
@@ -1144,37 +1099,12 @@ class ProjectRequestController extends Controller
         $entityManager = $this->get('unilend.service.entity_manager');
 
         /** @var \attachment $attachment */
-        $attachment  = $entityManager->getRepository('attachment');
-        $attachments = array_column($attachment->select('type_owner = "' . \attachment::PROJECT . '" AND id_owner = ' . $this->project->id_project), 'id_type');
+        $attachment     = $entityManager->getRepository('attachment');
+        $partnerManager = $this->get('unilend.service.partner_manager');
 
+        $attachments          = array_column($attachment->select('type_owner = "' . \attachment::PROJECT . '" AND id_owner = ' . $this->project->id_project), 'id_type');
         $this->attachmentType = $entityManager->getRepository('attachment_type');
-        $attachmentTypes      = $this->attachmentType->getAllTypesForProjects('fr', true, [
-            \attachment_type::PRESENTATION_ENTRERPISE,
-            \attachment_type::RIB,
-            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
-            \attachment_type::CNI_PASSPORTE_VERSO,
-            \attachment_type::DERNIERE_LIASSE_FISCAL,
-            \attachment_type::LIASSE_FISCAL_N_1,
-            \attachment_type::LIASSE_FISCAL_N_2,
-            \attachment_type::RAPPORT_CAC,
-            \attachment_type::PREVISIONNEL,
-            \attachment_type::BALANCE_CLIENT,
-            \attachment_type::BALANCE_FOURNISSEUR,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3,
-            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
-            \attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE,
-            \attachment_type::DERNIERS_COMPTES_CONSOLIDES,
-            \attachment_type::STATUTS,
-            \attachment_type::PRESENTATION_PROJET,
-            \attachment_type::DERNIERE_LIASSE_FISCAL_HOLDING,
-            \attachment_type::KBIS_HOLDING,
-            \attachment_type::AUTRE1,
-            \attachment_type::AUTRE2
-        ]);
+        $attachmentTypes      = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
 
         foreach ($attachmentTypes as $attachmentIndex => $attachmentType) {
             if (in_array($attachmentType['id'], $attachments)) {
@@ -1348,8 +1278,6 @@ class ProjectRequestController extends Controller
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
 
         /** @var \project_period $projectPeriod */
         $projectPeriod = $entityManager->getRepository('project_period');
@@ -1367,8 +1295,12 @@ class ProjectRequestController extends Controller
         $taxType->get(\tax_type::TYPE_VAT);
         $vatRate = $taxType->rate / 100;
 
-        $settings->get('Commission remboursement', 'type');
-        $commission = ($financialCalculation->PMT($settings->value / 12, $this->project->period, -$this->project->amount) - $financialCalculation->PMT(0, $this->project->period, -$this->project->amount)) * (1 + $vatRate);
+        if (false === empty($this->project->commission_rate_repayment)) {
+            $commissionRateRepayment = round(bcdiv(\projects::DEFAULT_COMMISSION_RATE_REPAYMENT, 100, 4), 2);
+        } else {
+            $commissionRateRepayment = round(bcdiv($this->project->commission_rate_repayment, 100, 4), 2);
+        }
+        $commission = ($financialCalculation->PMT($commissionRateRepayment / 12, $this->project->period, -$this->project->amount) - $financialCalculation->PMT(0, $this->project->period, -$this->project->amount)) * (1 + $vatRate);
 
         return [
             'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $this->project->period, -$this->project->amount) + $commission),

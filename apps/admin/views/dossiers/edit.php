@@ -518,6 +518,28 @@
                     </table>
                 </td>
                 <td>
+                    <h2>Partenaire</h2>
+                    <table class="form project-partner">
+                        <tr>
+                            <th><label for="project_partner">Partenaire</label></th>
+                            <td>
+                                <select name="project_partner" id="project_partner" class="select"<?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                    <option value=""></option>
+                                    <?php foreach ($this->partnerList as $partner) : ?>
+                                        <option value="<?= $partner['id'] ?>"<?= $this->projects->id_partner == $partner['id'] ? ' selected' : '' ?>><?= $partner['name'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Commission de déblocage des fonds:</th>
+                            <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) ?> %</td>
+                        </tr>
+                        <tr>
+                            <th>Commission de remboursement:</th>
+                            <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_repayment, 1) ?> %</td>
+                        </tr>
+                    </table>
                     <h2>Produit</h2>
                     <table class="form project-product">
                         <tr>

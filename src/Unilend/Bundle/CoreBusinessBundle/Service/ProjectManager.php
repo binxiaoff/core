@@ -646,6 +646,9 @@ class ProjectManager
         }
     }
 
+    /**
+     * @param \projects $oProject
+     */
     public function createAmortizationPaymentSchedule(\projects $oProject)
     {
         ini_set('memory_limit', '512M');
@@ -654,12 +657,6 @@ class ProjectManager
         $oPaymentSchedule = $this->entityManager->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $oRepaymentSchedule */
         $oRepaymentSchedule = $this->entityManager->getRepository('echeanciers');
-        /** @var \settings $oSettings */
-        $oSettings = $this->entityManager->getRepository('settings');
-
-        $oSettings->get('Commission remboursement', 'type');
-        $fCommissionRate = $oSettings->value;
-
         /** @var \tax_type $taxType */
         $taxType = $this->entityManager->getRepository('tax_type');
 
@@ -668,7 +665,7 @@ class ProjectManager
 
         $fAmount           = $oProject->amount;
         $iMonthNb          = $oProject->period;
-        $aCommission       = \repayment::getRepaymentCommission($fAmount, $iMonthNb, $fCommissionRate, $fVAT);
+        $aCommission       = \repayment::getRepaymentCommission($fAmount, $iMonthNb, round(bcdiv($oProject->commission_rate_repayment, 100, 4), 2), $fVAT);
         $aPaymentList      = $oRepaymentSchedule->getMonthlyScheduleByProject($oProject->id_project);
         $iPaymentsNbTotal  = count($aPaymentList);
         $iTreatedPaymentNb = 0;
@@ -933,12 +930,12 @@ class ProjectManager
             $rateSettings = $projectRateSettings->getSettings($project->risk, $projectPeriod->id_period);
 
             if (empty($rateSettings)) {
-                throw new \Exception('No settings found for the project.');
+                throw new \Exception('No rate settings found for the project.');
             }
             if (count($rateSettings) === 1) {
                 return $rateSettings[0]['id_rate'];
             } else {
-                throw new \Exception('More than one settings found for the project.');
+                throw new \Exception('More than one rate settings found for the project.');
             }
         } else {
             throw new \Exception('Period not found for the project.');

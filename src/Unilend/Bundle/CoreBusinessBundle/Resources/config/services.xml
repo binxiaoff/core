@@ -129,6 +129,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>
             <argument type="service" id="unilend.frontbundle.service.source_manager"/>
+            <argument type="service" id="unilend.service.partner_manager"/>
             <argument type="service" id="unilend.service.company_finance_check"/>
             <argument type="service" id="unilend.service.company_scoring_check"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
@@ -153,7 +154,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 
-        <service id="unilend.service_product.product_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager">
+        <service id="unilend.service_product.base_product_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager" public="false" abstract="true">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service_product.project_validator"/>
             <argument type="service" id="unilend.service_product.bid_validator"/>
@@ -161,6 +162,8 @@
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
         </service>
+
+        <service id="unilend.service_product.product_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PartnerProductManager" parent="unilend.service_product.base_product_manager"/>
 
         <service id="unilend.service_product.contract_attribute_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager" public="false">
             <argument type="service" id="unilend.service.entity_manager"/>
@@ -235,6 +238,10 @@
         </service>
 
         <service id="unilend.service.project_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
+
+        <service id="unilend.service.partner_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager">
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 

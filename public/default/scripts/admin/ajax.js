@@ -299,6 +299,7 @@ function valid_etape1(id_project) {
         duree_etape1: $("#duree_etape1").val(),
         siren_etape1: $("#siren_etape1").val(),
         source_etape1: $("#source_etape1").val(),
+        partner_etape1: $("#partner_etape1").val(),
         id_project: id_project,
         etape: 1
     };

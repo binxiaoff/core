@@ -719,24 +719,26 @@ class transfertsController extends bootstrap
 
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $project);
 
-                /** @var \clients_adresses $clientsAddresses */
-                $clientsAddresses = $this->loadData('clients_adresses');
-                $clientsAddresses->get($companies->id_client_owner, 'id_client');
+                /** @var \tax_type $taxType */
+                $taxType = $this->loadData('tax_type');
+                $taxType->get(\tax_type::TYPE_VAT);
 
-                $this->settings->get('Part unilend', 'type');
-                $PourcentageUnilend = $this->settings->value;
-                $montant            = $loans->sumPretsProjet($project->id_project);
-                $partUnilend        = round($montant * $PourcentageUnilend, 2);
-
-                $montant -= $partUnilend;
+                $commissionFundsRateVATIncluded = bcmul(
+                    bcadd(1, round(bcdiv($taxType, 100, 4), 2), 2),
+                    round(bcdiv($project->commission_rate_funds, 100, 4), 2),
+                    2
+                );
+                $projectLoanAmount              = $loans->sumPretsProjet($project->id_project);
+                $unilendShareAmount             = round($projectLoanAmount * $commissionFundsRateVATIncluded, 2);
+                $projectLoanAmount              -= $unilendShareAmount;
 
                 if (false === $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
                     $aMandate = $mandate->select('id_project = ' . $project->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1);
                     $aMandate = array_shift($aMandate);
 
                     $transactions->id_client        = $clients->id_client;
-                    $transactions->montant          = bcmul($montant, -100);
-                    $transactions->montant_unilend  = bcmul($partUnilend, 100);
+                    $transactions->montant          = bcmul($projectLoanAmount, -100);
+                    $transactions->montant_unilend  = bcmul($unilendShareAmount, 100);
                     $transactions->id_langue        = 'fr';
                     $transactions->id_project       = $project->id_project;
                     $transactions->date_transaction = date('Y-m-d H:i:s');
@@ -747,7 +749,7 @@ class transfertsController extends bootstrap
 
                     $bank_unilend->id_transaction = $transactions->id_transaction;
                     $bank_unilend->id_project     = $project->id_project;
-                    $bank_unilend->montant        = bcmul($partUnilend, 100);
+                    $bank_unilend->montant        = bcmul($unilendShareAmount, 100);
                     $bank_unilend->create();
 
                     /** @var \platform_account_unilend $oAccountUnilend */
@@ -755,14 +757,14 @@ class transfertsController extends bootstrap
 
                     $oAccountUnilend->id_transaction = $transactions->id_transaction;
                     $oAccountUnilend->id_project     = $project->id_project;
-                    $oAccountUnilend->amount         = bcmul($partUnilend, 100);
+                    $oAccountUnilend->amount         = bcmul($unilendShareAmount, 100);
                     $oAccountUnilend->type           = \platform_account_unilend::TYPE_COMMISSION_PROJECT;
                     $oAccountUnilend->create();
 
                     $virements->id_client      = $clients->id_client;
                     $virements->id_project     = $project->id_project;
                     $virements->id_transaction = $transactions->id_transaction;
-                    $virements->montant        = bcmul($montant, 100);
+                    $virements->montant        = bcmul($projectLoanAmount, 100);
                     $virements->motif          = $oProjectManager->getBorrowerBankTransferLabel($project);
                     $virements->type           = 2;
                     $virements->create();
@@ -825,7 +827,7 @@ class transfertsController extends bootstrap
 
                     $taxRate            = $taxType->getTaxRateByCountry('fr');
                     $sDateFirstPayment  = $aRepaymentHistory[0]['added'];
-                    $fCommission        = bcmul($partUnilend, 100);
+                    $fCommission        = bcmul($unilendShareAmount, 100);
                     $fVATFreeCommission = round($fCommission / (1 + $taxRate[\tax_type::TYPE_VAT] / 100));
 
                     $invoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($invoiceCounter->compteurJournalier($project->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
@@ -834,7 +836,7 @@ class transfertsController extends bootstrap
                     $invoice->id_project      = $project->id_project;
                     $invoice->ordre           = 0;
                     $invoice->type_commission = \factures::TYPE_COMMISSION_FINANCEMENT;
-                    $invoice->commission      = round(bcdiv($fVATFreeCommission, $project->amount, 3), 1);
+                    $invoice->commission      = $project->commission_rate_funds;
                     $invoice->montant_ttc     = $fCommission;
                     $invoice->montant_ht      = $fVATFreeCommission;
                     $invoice->tva             = $fCommission - $fVATFreeCommission;

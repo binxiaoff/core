@@ -39,7 +39,7 @@
             </thead>
             <tbody>
                 <?php foreach ($this->aAttachmentTypes as $attachmentType) : ?>
-                    <tr<?php if (in_array($attachmentType['id'], $this->aMandatoyAttachmentTypes)) : ?> class="highlighted"<?php endif; ?>>
+                    <tr<?php if (in_array($attachmentType['id'], $this->aMandatoryAttachmentTypes)) : ?> class="highlighted"<?php endif; ?>>
                         <td class="remove_col">
                             <?php if (isset($this->aAttachments[$attachmentType['id']]['path'])) : ?>
                                 <a href="#" data-id="<?= $this->aAttachments[$attachmentType['id']]['id'] ?>" data-label="<?= $attachmentType['label'] ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
