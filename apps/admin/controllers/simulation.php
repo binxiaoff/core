@@ -33,6 +33,7 @@ class simulationController extends bootstrap
     public function _default()
     {
         header('Location: ' . $this->lurl);
+        die;
     }
 
     public function _wsProvider()
@@ -40,7 +41,7 @@ class simulationController extends bootstrap
         $this->hideDecoration();
         /** @var \ws_external_resource $wsResource */
         $wsResource      = $this->loadData('ws_external_resource');
-        $this->resources = $wsResource->select();
+        $this->resources = $wsResource->select('', 'provider_name ASC, resource_name ASC');
         $this->result    = [];
 
         try {
@@ -70,7 +71,7 @@ class simulationController extends bootstrap
                             break;
                     }
                 } else {
-                    $this->result = 'Please select a web service to call';
+                    $this->result = 'Veuillez sélectionner un webservice';
                 }
             }
         } catch (\Exception $exception) {
