@@ -773,18 +773,6 @@ class transfertsController extends bootstrap
 
                         $logger->info('Check refund status done (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
-                        $ekomi = $this->get('unilend.service.ekomi');
-                        $ekomi->sendProjectEmail($project);
-
-                        $payload = new ChatPostMessagePayload();
-                        $payload->setChannel('#general');
-                        $payload->setText('Fonds débloqués pour *<' . $this->furl . '/projects/detail/' . $project->slug . '|' . $project->title . '>*');
-                        $payload->setUsername('Unilend');
-                        $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/unilend.png');
-                        $payload->setAsUser(false);
-
-                        $this->get('cl_slack.api_client')->send($payload);
-
                         $_SESSION['freeow']['title']   = 'Déblocage des fonds';
                         $_SESSION['freeow']['message'] = 'Le déblocage a été faite avec succès';
                     }
@@ -797,7 +785,20 @@ class transfertsController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                     $_SESSION['freeow']['message'] = 'Une erreur s\'élève. Les fonds ne sont pas débloqués';
                 }
+                if ($this->getParameter('kernel.environment') === 'prod') {
+                    $ekomi = $this->get('unilend.service.ekomi');
+                    $ekomi->sendProjectEmail($project);
 
+
+                    $payload = new ChatPostMessagePayload();
+                    $payload->setChannel('#general');
+                    $payload->setText('Fonds débloqués pour *<' . $this->furl . '/projects/detail/' . $project->slug . '|' . $project->title . '>*');
+                    $payload->setUsername('Unilend');
+                    $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/unilend.png');
+                    $payload->setAsUser(false);
+
+                    $this->get('cl_slack.api_client')->send($payload);
+                }
             } else {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Un remboursement est déjà en cours';
