@@ -52,7 +52,7 @@ class ProjectRequestManager
         $this->entityManager              = $entityManager;
         $this->projectManager             = $projectManager;
         $this->sourceManager              = $sourceManager;
-        $this->partnerManager             = $partnerManager
+        $this->partnerManager             = $partnerManager;
         $this->companyFinanceCheck        = $companyFinanceCheck;
         $this->companyScoringCheck        = $companyScoringCheck;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
