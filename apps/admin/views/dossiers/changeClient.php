@@ -6,7 +6,7 @@
 
 <div id="popup">
     <a onclick="parent.$.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
-    <h1>Recherche : <?= $this->params['0'] ?></h1>
+    <h1>Recherche : <?= $this->params[0] ?></h1>
     <?php if ($this->lClients != false) : ?>
         <table style="margin-bottom:15px;">
             <?php foreach ($this->lClients as $c) : ?>

@@ -7,17 +7,9 @@
                 $.each(aStatus, function(fileType, value){
                     if ('ok' == value) {
                         $(".statut_" + fileType).html('Enregistré');
-
-                        <?php if (in_array($this->projects->period, array(0, 1000000)) && $this->projects->status == \projects_status::PREP_FUNDING) { ?>
-                        if (fileType == 'fichier_3' && $('#displayPeriodHS').css('display') == 'block') { // RIB
-                            $("#status").css('display', 'block');
-                            $("#msgProject").css('display', 'block');
-                            $('#displayPeriodHS').css('display', 'none');
-                            $("#msgProjectPeriodHS").css('display', 'none');
-                        }
-                        <?php } ?>
                     }
                 });
+
                 $("#valid_etape5").slideDown();
 
                 setTimeout(function () {

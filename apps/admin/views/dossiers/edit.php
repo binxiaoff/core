@@ -17,13 +17,17 @@
         width: 50%;
     }
 
-    .project-main .project-identity {
+    .project-main td.left-column {
         border-right: 5px solid #b20066;
         padding-left: 0;
     }
 
+    .project-main td.right-column {
+        padding-right: 0;
+    }
+
     .project-main .form th {
-        width: 130px;
+        width: 170px;
         white-space: nowrap;
     }
 
@@ -50,7 +54,7 @@
     }
 
     .tab_content {
-        border: 2px solid #B10366;
+        border: 2px solid #b20066;
         display: none;
         padding: 10px;
     }
@@ -65,7 +69,7 @@
 
     .tab_title {
         display: block;
-        background-color: #B10366;
+        background-color: #b20066;
         color: #fff;
         font-size: 16px;
         font-weight: bold;
@@ -391,9 +395,9 @@
         <table class="project-main">
             <tbody>
             <tr>
-                <td class="project-identity">
+                <td class="left-column">
                     <h2>Identité</h2>
-                    <table class="form">
+                    <table class="form project-identity">
                         <?php if ($this->projects->status >= \projects_status::A_FUNDER) : ?>
                         <tr>
                             <th>Lien projet</th>
@@ -517,14 +521,13 @@
                         <?php endif; ?>
                     </table>
                 </td>
-                <td>
+                <td class="right-column">
                     <h2>Partenaire</h2>
                     <table class="form project-partner">
                         <tr>
-                            <th><label for="project_partner">Partenaire</label></th>
+                            <th><label for="project_partner">Partenaire *</label></th>
                             <td>
                                 <select name="project_partner" id="project_partner" class="select"<?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?>>
-                                    <option value=""></option>
                                     <?php foreach ($this->partnerList as $partner) : ?>
                                         <option value="<?= $partner['id'] ?>"<?= $this->projects->id_partner == $partner['id'] ? ' selected' : '' ?>><?= $partner['name'] ?></option>
                                     <?php endforeach; ?>
@@ -532,14 +535,15 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Commission de déblocage des fonds:</th>
+                            <th>Commission déblocage</th>
                             <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) ?> %</td>
                         </tr>
                         <tr>
-                            <th>Commission de remboursement:</th>
+                            <th>Commission remboursement</th>
                             <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_repayment, 1) ?> %</td>
                         </tr>
                     </table>
+                    <br><br>
                     <h2>Produit</h2>
                     <table class="form project-product">
                         <tr>
@@ -558,7 +562,7 @@
                                         </option>
 
                                     <?php endforeach; ?>
-                                    </select>
+                                </select>
                             </td>
                         </tr>
                         <?php if (isset($this->availableContracts) && in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)) : ?>
@@ -580,7 +584,7 @@
                     <br><br>
                     <?php if ($this->projects->status == \projects_status::REMBOURSEMENT) : ?>
                         <h2>Remboursement anticipé</h2>
-                        <table class="form" style="border: 1px solid #B10366">
+                        <table class="form" style="border: 1px solid #b20066">
                             <tr>
                                 <td colspan="2" style="text-align: center"><strong><?= $this->phrase_resultat ?></strong></td>
                             </tr>
@@ -882,7 +886,7 @@
             </tbody>
         </table>
     </form>
-    <hr style="border: 2px solid #B10366;">
+    <hr style="border: 2px solid #b20066;">
 
     <br><br>
 

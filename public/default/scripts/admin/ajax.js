@@ -292,44 +292,36 @@ function deleteMemo(projectId, commentId) {
 }
 
 function valid_etape1(id_project) {
-    $("#dossier_etape1").find(".btn_link").hide();
+    $('#dossier_etape1').find('.btn_link').hide();
 
     var val = {
-        montant_etape1: $("#montant_etape1").val(),
-        duree_etape1: $("#duree_etape1").val(),
-        siren_etape1: $("#siren_etape1").val(),
-        source_etape1: $("#source_etape1").val(),
-        partner_etape1: $("#partner_etape1").val(),
-        id_project: id_project,
-        etape: 1
+        montant_etape1: $('#montant_etape1').val(),
+        duree_etape1:   $('#duree_etape1').val(),
+        siren_etape1:   $('#siren_etape1').val(),
+        source_etape1:  $('#source_etape1').val(),
+        partner_etape1: $('#partner_etape1').val(),
+        id_project:     id_project,
+        etape:          1
     };
 
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
-        if ('OK' == data) {
+        var response = jQuery.parseJSON(data);
+
+        if (response.success) {
             $(location).attr('href', add_url + '/dossiers/edit/' + id_project);
             return;
         }
-        $("#siren").val($("#siren_etape1").val());
-        $("#montant").val($("#montant_etape1").val());
-        $('#duree option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
 
-        $("#dossier_etape1").find(".btn_link").show();
-        $("#valid_etape1").html(data);
-        $("#valid_etape1").slideDown();
+        $('#siren').val($('#siren_etape1').val());
+        $('#montant').val($('#montant_etape1').val());
+        $('#duree option[value=' + $('#duree_etape1').val() + ']').prop('selected', true);
 
-        if (0 == $("#duree_etape1").val()) {
-            $("#status").css('display', 'none');
-            $("#msgProject").css('display', 'none');
-            $("#displayPeriodHS").css('display', 'block');
-            $("#msgProjectPeriodHS").css('display', 'block');
-        } else {
-            $("#status").css('display', 'block');
-            $("#msgProject").css('display', 'block');
-            $("#displayPeriodHS").css('display', 'none');
-            $("#msgProjectPeriodHS").css('display', 'none');
-        }
+        $('#dossier_etape1').find('.btn_link').show();
+        $('#valid_etape1').html(data);
+        $('#valid_etape1').slideDown();
+
         setTimeout(function () {
-            $("#valid_etape1").slideUp();
+            $('#valid_etape1').slideUp();
         }, 3000);
 
     });

@@ -7,8 +7,8 @@ class projects_status extends projects_status_crud
     const INCOMPLETE_REQUEST         = 5;
     const COMPLETE_REQUEST           = 10;
     const ABANDONED                  = 15;
+    const POSTPONED                  = 19;
     const COMMERCIAL_REVIEW          = 20;
-    const POSTPONED                  = 21;
     const COMMERCIAL_REJECTION       = 25;
     const PENDING_ANALYSIS           = 30;
     const ANALYSIS_REVIEW            = 31;
@@ -60,7 +60,7 @@ class projects_status extends projects_status_crud
      * List of projects with pending repayments
      * @var array $runningRepayment
      */
-    public static $runningRepayment = array(
+    public static $runningRepayment = [
         self::REMBOURSEMENT,
         self::PROBLEME,
         self::PROBLEME_J_X,
@@ -68,13 +68,13 @@ class projects_status extends projects_status_crud
         self::PROCEDURE_SAUVEGARDE,
         self::REDRESSEMENT_JUDICIAIRE,
         self::LIQUIDATION_JUDICIAIRE
-    );
+    ];
 
     /**
      * List of project status after repayment
      * @var array
      */
-    public static $afterRepayment = array(
+    public static $afterRepayment = [
         self::REMBOURSEMENT,
         self::REMBOURSE,
         self::REMBOURSEMENT_ANTICIPE,
@@ -85,13 +85,14 @@ class projects_status extends projects_status_crud
         self::REDRESSEMENT_JUDICIAIRE,
         self::LIQUIDATION_JUDICIAIRE,
         self::DEFAUT
-    );
+    ];
 
     /**
      * List of project status when project should be assigned to a commercial
      * @var array
      */
     public static $saleTeam = [
+        self::POSTPONED,
         self::COMMERCIAL_REVIEW,
         self::PENDING_ANALYSIS,
         self::ANALYSIS_REVIEW,
@@ -152,7 +153,7 @@ class projects_status extends projects_status_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `projects_status` ' . $where;
+        $sql = 'SELECT COUNT(*) FROM `projects_status` ' . $where;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0));

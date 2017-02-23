@@ -632,40 +632,8 @@ class dossiersController extends bootstrap
                 $this->projects->update();
 
                 if (isset($_POST['current_status']) && $_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
-                    if ($_POST['status'] == \projects_status::PREP_FUNDING) {
-                        $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
-                        $aExistingStatus = array();
-
-                        foreach ($aProjects as $aProject) {
-                            $aStatusHistory = $this->projects_status_history->getHistoryDetails($aProject['id_project']);
-
-                            foreach ($aStatusHistory as $aStatus) {
-                                $aExistingStatus[] = $aStatus['status'];
-                            }
-                        }
-
-                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
-
-                        if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
-                            $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
-                        }
-                    } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
-                        if ($_POST['status'] == \projects_status::A_FUNDER) {
-                            $slackManager    = $this->container->get('unilend.service.slack_manager');
-                            $publicationDate = new DateTime($this->projects->date_publication);
-                            $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
-                            $message         = $slackManager->getProjectName($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - :calendar: ' . $this->projects->period . ' mois / ' . $star . ' :star:';
-
-                            $slackManager->sendMessage($message);
-                        }
-
-                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
-                    } else {
-                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
-                    }
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
                 }
-
-                $this->projects->update();
 
                 $this->companies->name         = $_POST['societe'];
                 $this->companies->tribunal_com = $_POST['tribunal_com'];
@@ -1527,26 +1495,22 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
         } elseif (isset($this->params[0])) {
-            if ($this->projects->get($this->params[0]) && $this->projects->create_bo) {
-                $this->companies->get($this->projects->id_company, 'id_company');
-                $this->clients->get($this->companies->id_client_owner, 'id_client');
+            if ($this->projects->get($this->params[0])) {
+                if ($this->projects->create_bo) {
+                    $this->companies->get($this->projects->id_company, 'id_company');
+                    $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-                // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
-                if ($clientManager->isLender($this->clients)) {
-                    $this->clients->email = '';
+                    // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
+                    if ($clientManager->isLender($this->clients)) {
+                        $this->clients->email = '';
+                    }
+                } elseif (0 == $this->projects->create_bo) {
+                    $_SESSION['freeow']['title']   = 'Création de dossier';
+                    $_SESSION['freeow']['message'] = 'Ce dossier n\'a pas été créé dans le back office';
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
                 }
-            } elseif (0 == $this->projects->create_bo) {
-                $_SESSION['freeow']['title']   = 'Création de dossier';
-                $_SESSION['freeow']['message'] = 'Ce dossier n\'a pas été créé dans le back office';
-
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                die;
-            } else {
-                $_SESSION['freeow']['title']   = 'Création de dossier';
-                $_SESSION['freeow']['message'] = 'Dossier inconnu';
-
-                header('Location: ' . $this->lurl . '/emprunteurs');
-                die;
             }
         }
 
@@ -3116,6 +3080,13 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
             $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::A_FUNDER, $this->projects);
+
+            $slackManager    = $this->container->get('unilend.service.slack_manager');
+            $publicationDate = new \DateTime($this->projects->date_publication);
+            $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
+            $message         = $slackManager->getProjectName($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - ' . $this->projects->period . ' mois :calendar: / ' . $this->ficelle->formatNumber($this->projects->amount, 0) . ' € :moneybag: / ' . $star . ' :star:';
+
+            $slackManager->sendMessage($message);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;

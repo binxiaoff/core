@@ -216,83 +216,98 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        if (isset($_POST['id_project']) && isset($_POST['etape'])) {
-            $this->projects         = $this->loadData('projects');
-            $this->companies        = $this->loadData('companies');
-            $this->clients          = $this->loadData('clients');
-            $this->clients_adresses = $this->loadData('clients_adresses');
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
+
+        if (isset($_POST['id_project'], $_POST['etape']) && filter_var($_POST['id_project'], FILTER_VALIDATE_INT) && $project->get($_POST['id_project'])) {
+            /** @var \companies $company */
+            $company = $this->loadData('companies');
+            /** @var \clients $client */
+            $client = $this->loadData('clients');
 
             $serialize = serialize($_POST);
             $this->users_history->histo(8, 'dossier edit etapes', $_SESSION['user']['id_user'], $serialize);
 
             if ($_POST['etape'] == 1) {
-                $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->amount     = $this->ficelle->cleanFormatedNumber($_POST['montant_etape1']);
-                $this->projects->period     = (0 < (int) $_POST['duree_etape1']) ? (int) $_POST['duree_etape1'] : $this->projects->period;
-
-                if ($_POST['partner_etape1'] != $this->projects->id_partner) {
-                    $this->projects->commission_rate_funds     = null;
-                    $this->projects->commission_rate_repayment = null;
+                if ($_POST['partner_etape1'] != $project->id_partner) {
+                    $project->commission_rate_funds     = null;
+                    $project->commission_rate_repayment = null;
                 }
-                $this->projects->id_partner = $_POST['partner_etape1'];
-                $this->projects->update();
 
-                $this->companies->get($this->projects->id_company, 'id_company');
-                $this->companies->siren = $_POST['siren_etape1'];
-                $this->companies->update();
+                $project->amount     = $this->ficelle->cleanFormatedNumber($_POST['montant_etape1']);
+                $project->period     = (0 < (int) $_POST['duree_etape1']) ? (int) $_POST['duree_etape1'] : $project->period;
+                $project->id_partner = $_POST['partner_etape1'];
+                $project->update();
 
-                $this->clients->get($this->companies->id_client_owner);
-                $this->clients->source = $_POST['source_etape1'];
-                $this->clients->update();
+                $company->get($project->id_company, 'id_company');
+                $company->siren = $_POST['siren_etape1'];
+                $company->update();
+
+                $client->get($company->id_client_owner);
+                $client->source = $_POST['source_etape1'];
+                $client->update();
+
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
-                $result = $projectRequestManager->checkProjectRisk($this->projects, $_SESSION['user']['id_user']);
+                $result                = $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user']);
 
                 if (true === is_array($result) && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
-                    echo 'Siren inconu';
+                    echo json_encode([
+                        'success' => false,
+                        'error'   => 'Siren inconu'
+                    ]);
                     return;
-                } elseif (empty($this->companies->code_naf)) {
-                    echo 'Problème lors de la récupération des données de la société';
+                } elseif (empty($company->code_naf)) {
+                    echo json_encode([
+                        'success' => false,
+                        'error'   => 'Problème lors de la récupération des données de la société'
+                    ]);
                     return;
                 }
-                echo 'OK';
+                echo json_encode([
+                    'success' => true
+                ]);
                 return;
             } elseif ($_POST['etape'] == 2) {
-                $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
-                $this->projects->balance_count   = empty($this->projects->balance_count) && false === empty($_POST['creation_date_etape2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $this->projects->balance_count;
-                $this->projects->update();
+                $project->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
+                $project->balance_count   = empty($project->balance_count) && false === empty($_POST['creation_date_etape2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $project->balance_count;
+                $project->update();
 
-                $this->companies->get($this->projects->id_company, 'id_company');
-                $this->companies->name                          = $_POST['raison_sociale_etape2'];
-                $this->companies->forme                         = $_POST['forme_juridique_etape2'];
-                $this->companies->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
-                $this->companies->date_creation                 = empty($_POST['creation_date_etape2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->format('Y-m-d');
-                $this->companies->adresse1                      = $_POST['address_etape2'];
-                $this->companies->city                          = $_POST['ville_etape2'];
-                $this->companies->zip                           = $_POST['postal_etape2'];
-                $this->companies->phone                         = $_POST['phone_etape2'];
-                $this->companies->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
-                $this->companies->status_client                 = $_POST['enterprise_etape2'];
-                $this->companies->latitude                      = (float) str_replace(',', '.', $_POST['latitude']);
-                $this->companies->longitude                     = (float) str_replace(',', '.', $_POST['longitude']);
-                $this->companies->update();
+                /** @var \companies $company */
+                $company = $this->loadData('companies');
+                $company->get($project->id_company, 'id_company');
+                $company->name                          = $_POST['raison_sociale_etape2'];
+                $company->forme                         = $_POST['forme_juridique_etape2'];
+                $company->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
+                $company->date_creation                 = empty($_POST['creation_date_etape2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->format('Y-m-d');
+                $company->adresse1                      = $_POST['address_etape2'];
+                $company->city                          = $_POST['ville_etape2'];
+                $company->zip                           = $_POST['postal_etape2'];
+                $company->phone                         = $_POST['phone_etape2'];
+                $company->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
+                $company->status_client                 = $_POST['enterprise_etape2'];
+                $company->latitude                      = (float) str_replace(',', '.', $_POST['latitude']);
+                $company->longitude                     = (float) str_replace(',', '.', $_POST['longitude']);
+                $company->update();
 
-                $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
-                if ($this->companies->status_adresse_correspondance == 0) {
-                    $this->clients_adresses->adresse1  = $_POST['adresse_correspondance_etape2'];
-                    $this->clients_adresses->ville     = $_POST['city_correspondance_etape2'];
-                    $this->clients_adresses->cp        = $_POST['zip_correspondance_etape2'];
-                    $this->clients_adresses->telephone = $_POST['phone_correspondance_etape2'];
+                /** @var \clients_adresses $address */
+                $address = $this->loadData('clients_adresses');
+                $address->get($company->id_client_owner, 'id_client');
+
+                if ($company->status_adresse_correspondance == 0) {
+                    $address->adresse1  = $_POST['adresse_correspondance_etape2'];
+                    $address->ville     = $_POST['city_correspondance_etape2'];
+                    $address->cp        = $_POST['zip_correspondance_etape2'];
+                    $address->telephone = $_POST['phone_correspondance_etape2'];
                 } else {
-                    $this->clients_adresses->adresse1  = $_POST['address_etape2'];
-                    $this->clients_adresses->ville     = $_POST['ville_etape2'];
-                    $this->clients_adresses->cp        = $_POST['postal_etape2'];
-                    $this->clients_adresses->telephone = $_POST['phone_etape2'];
+                    $address->adresse1  = $_POST['address_etape2'];
+                    $address->ville     = $_POST['ville_etape2'];
+                    $address->cp        = $_POST['postal_etape2'];
+                    $address->telephone = $_POST['phone_etape2'];
                 }
-                $this->clients_adresses->update();
+                $address->update();
 
-                $this->clients->get($this->companies->id_client_owner, 'id_client');
+                $this->clients->get($company->id_client_owner, 'id_client');
                 $this->clients->email     = $_POST['email_etape2'];
                 $this->clients->civilite  = $_POST['civilite_etape2'];
                 $this->clients->nom       = $this->ficelle->majNom($_POST['nom_etape2']);
@@ -302,10 +317,6 @@ class ajaxController extends bootstrap
                 $this->clients->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
                 $this->clients->update();
             } elseif ($_POST['etape'] == 3) {
-                /** @var projects $project */
-                $project = $this->loadData('projects');
-                $project->get($_POST['id_project'], 'id_project');
-
                 if (isset($_FILES['photo_projet']) && false === empty($_FILES['photo_projet']['name'])) {
                     $this->upload->setUploadDir($this->path, 'public/default/images/dyn/projets/source/');
                     $this->upload->setExtValide(array('jpeg', 'JPEG', 'jpg', 'JPG'));
@@ -317,8 +328,8 @@ class ajaxController extends bootstrap
                         $error = 'Erreur upload photo : taille max dépassée (' . $imageConfig['projets']['width'] . 'x' . $imageConfig['projets']['height'] . ')';
                     } elseif ($this->upload->doUpload('photo_projet', '', true)) {
                         // Delete previous image of the name was different from the new one
-                        if (false === empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
-                            @unlink($this->path . 'public/default/images/dyn/projets/source/' . $this->projects->photo_projet);
+                        if (false === empty($project->photo_projet) && $project->photo_projet != $this->upload->getName()) {
+                            @unlink($this->path . 'public/default/images/dyn/projets/source/' . $project->photo_projet);
                         }
                         $project->photo_projet = $this->upload->getName();
                     } else {
@@ -343,78 +354,71 @@ class ajaxController extends bootstrap
                         'success' => true
                     ]);
                 }
-            } elseif ($_POST['etape'] == 4.1) {
-                /** @var projects $oProject */
-                $oProject = $this->loadData('projects');
+            } elseif ($_POST['etape'] == 4.1 && $project->status <= \projects_status::COMITY_REVIEW) {
+                /** @var company_rating $companyRating */
+                $companyRating = $this->loadData('company_rating');
+                $ratings       = $companyRating->getHistoryRatingsByType($project->id_company_rating_history);
+                $addHistory    = false;
 
-                if ($oProject->get($_POST['id_project'], 'id_project') && $oProject->status <= \projects_status::COMITY_REVIEW) {
-                    /** @var company_rating $oCompanyRating */
-                    $oCompanyRating = $this->loadData('company_rating');
-                    $aRatings       = $oCompanyRating->getHistoryRatingsByType($oProject->id_company_rating_history);
-                    $bAddHistory    = false;
-
-                    foreach ($_POST['ratings'] as $sRating => $mValue) {
-                        switch ($sRating) {
-                            case 'date_dernier_privilege':
-                            case 'date_tresorerie':
-                                if (false === empty($mValue)) {
-                                    $mValue = date('Y-m-d', strtotime(str_replace('/', '-', $mValue)));
-                                }
-                                break;
-                            case 'montant_tresorerie':
-                                $mValue = $this->ficelle->cleanFormatedNumber($mValue);
-                                break;
-                        }
-
-                        if (false === isset($aRatings[$sRating]) || $aRatings[$sRating]['value'] != $mValue) {
-                            $bAddHistory = true;
-                            $aRatings[$sRating]['value'] = $mValue;
-                        }
+                foreach ($_POST['ratings'] as $rating => $value) {
+                    switch ($rating) {
+                        case 'date_dernier_privilege':
+                        case 'date_tresorerie':
+                            if (false === empty($value)) {
+                                $value = date('Y-m-d', strtotime(str_replace('/', '-', $value)));
+                            }
+                            break;
+                        case 'montant_tresorerie':
+                            $value = $this->ficelle->cleanFormatedNumber($value);
+                            break;
                     }
 
-                    if ($bAddHistory) {
-                        /** @var company_rating_history $oCompanyRatingHistory */
-                        $oCompanyRatingHistory = $this->loadData('company_rating_history');
-                        $oCompanyRatingHistory->id_company = $oProject->id_company;
-                        $oCompanyRatingHistory->id_user    = $_SESSION['user']['id_user'];
-                        $oCompanyRatingHistory->action     = \company_rating_history::ACTION_USER;
-                        $oCompanyRatingHistory->create();
-
-                        $oProject->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
-
-                        foreach ($aRatings as $sRating => $aRating) {
-                            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
-                            $oCompanyRating->type                      = $sRating;
-                            $oCompanyRating->value                     = $aRating['value'];
-                            $oCompanyRating->create();
-                        }
+                    if (false === isset($ratings[$rating]) || $ratings[$rating]['value'] != $value) {
+                        $addHistory = true;
+                        $ratings[$rating]['value'] = $value;
                     }
-
-                    $oProject->ca_declara_client                    = $this->ficelle->cleanFormatedNumber($_POST['ca_declara_client']);
-                    $oProject->resultat_exploitation_declara_client = $this->ficelle->cleanFormatedNumber($_POST['resultat_exploitation_declara_client']);
-                    $oProject->fonds_propres_declara_client         = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres_declara_client']);
-                    $oProject->update();
                 }
-            } elseif ($_POST['etape'] == 4.2) {
-                /** @var projects $oProject */
-                $oProject = $this->loadData('projects');
-                /** @var companies_bilans $oCompanyAnnualAccounts */
-                $oCompanyAnnualAccounts = $this->loadData('companies_bilans');
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
-                $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
 
-                if (isset($_POST['box'], $_POST['id_project']) && $oProject->get($_POST['id_project'], 'id_project')) {
+                if ($addHistory) {
+                    /** @var company_rating_history $companyRatingHistory */
+                    $companyRatingHistory = $this->loadData('company_rating_history');
+                    $companyRatingHistory->id_company = $project->id_company;
+                    $companyRatingHistory->id_user    = $_SESSION['user']['id_user'];
+                    $companyRatingHistory->action     = \company_rating_history::ACTION_USER;
+                    $companyRatingHistory->create();
+
+                    $project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
+
+                    foreach ($ratings as $rating => $value) {
+                        $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
+                        $companyRating->type                      = $rating;
+                        $companyRating->value                     = $value['value'];
+                        $companyRating->create();
+                    }
+                }
+
+                $project->ca_declara_client                    = $this->ficelle->cleanFormatedNumber($_POST['ca_declara_client']);
+                $project->resultat_exploitation_declara_client = $this->ficelle->cleanFormatedNumber($_POST['resultat_exploitation_declara_client']);
+                $project->fonds_propres_declara_client         = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres_declara_client']);
+                $project->update();
+            } elseif ($_POST['etape'] == 4.2) {
+                if (isset($_POST['box'])) {
+                    /** @var companies_bilans $companyAnnualAccounts */
+                    $companyAnnualAccounts = $this->loadData('companies_bilans');
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+                    $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+
                     foreach ($_POST['box'] as $balanceSheetId => $boxes){
-                        $oCompanyAnnualAccounts->get($balanceSheetId);
+                        $companyAnnualAccounts->get($balanceSheetId);
                         foreach($boxes as $box => $value) {
                             $value = $this->ficelle->cleanFormatedNumber($value);
-                            $companyBalanceSheetManager->saveBalanceSheetDetails($oCompanyAnnualAccounts, $box, $value);
+                            $companyBalanceSheetManager->saveBalanceSheetDetails($companyAnnualAccounts, $box, $value);
                         }
-                        $companyBalanceSheetManager->calculateDebtsAssetsFromBalance($oCompanyAnnualAccounts->id_bilan);
-                        $companyBalanceSheetManager->getIncomeStatement($oCompanyAnnualAccounts);
+                        $companyBalanceSheetManager->calculateDebtsAssetsFromBalance($companyAnnualAccounts->id_bilan);
+                        $companyBalanceSheetManager->getIncomeStatement($companyAnnualAccounts);
                     }
                 }
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $oProject->id_project);
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->id_project);
                 die;
             }
         }

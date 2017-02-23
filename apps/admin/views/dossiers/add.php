@@ -1,5 +1,22 @@
 <style type="text/css">
-    .tab_title {cursor: pointer; text-align: center; background-color: #b10366; color: white; padding: 5px; font-size: 16px; font-weight: bold; margin-top: 15px;}
+    .tab_title {
+        display: block;
+        background-color: #b20066;
+        color: #fff;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        text-decoration: none;
+        padding: 5px;
+        margin-top: 15px;
+    }
+    .tab_title:active,
+    .tab_title:focus,
+    .tab_title:hover,
+    .tab_title:visited {
+        color: #fff;
+        text-decoration: none;
+    }
     .tab_content {border: 2px solid #b10366; padding: 10px;}
     .valid_etape {display: none; text-align: center; font-size: 16px; font-weight: bold; color: #009933;}
     .choose-client {font-weight: bold; text-align: center;}
