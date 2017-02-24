@@ -90,7 +90,7 @@
                             <?= $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() ?><br/>
                             <?= $reception->getAssignmentDate()->format('d/m/Y à H:i:s') ?>
                         <?php else: ?>
-                            <?= $reception->getStatusBo() ?>
+                            <?= $this->statusOperations[$reception->getStatusBo()] ?>
                         <?php endif; ?>
                     </td>
                     <td class="num_project_<?= $reception->getIdReception() ?>"><a href="/dossiers/edit/<?= $reception->getIdProject()->getIdProject() ?>"><?= $reception->getIdProject()->getIdProject() ?></a></td>
