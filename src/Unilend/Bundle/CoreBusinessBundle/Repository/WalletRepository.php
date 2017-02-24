@@ -76,7 +76,7 @@ class WalletRepository extends EntityRepository
             'wallet_label'   => WalletType::LENDER
         ];
         $query  = '
-                SELECT *
+                SELECT w.id_client, w.available_balance, w.id
                 FROM
                   wallet w INNER JOIN wallet_type wt ON w.id_type = wt.id
                 WHERE

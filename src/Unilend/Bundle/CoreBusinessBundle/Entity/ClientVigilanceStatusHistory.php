@@ -22,7 +22,7 @@ class ClientVigilanceStatusHistory
     /**
      * @var string
      *
-     * @ORM\Column(name="user_comment", type="text", length=65535, nullable=false)
+     * @ORM\Column(name="user_comment", type="text", length=65535, nullable=true)
      */
     private $userComment;
 
@@ -59,6 +59,7 @@ class ClientVigilanceStatusHistory
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation
      *
+     * @ORM\Column(name="id_atypical_operation", type="integer", nullable=true)
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_atypical_operation", referencedColumnName="id")
@@ -234,5 +235,23 @@ class ClientVigilanceStatusHistory
         $this->client = $client;
 
         return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

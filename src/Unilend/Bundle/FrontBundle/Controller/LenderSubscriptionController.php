@@ -20,6 +20,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
@@ -734,7 +735,7 @@ class LenderSubscriptionController extends Controller
             $iban               = trim(strtoupper(str_replace(' ', '', $post['iban'])));
             $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban);
 
-            $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
+            $clientStatusManager->addClientStatus($client, Users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($clientEntity, $post);
             $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client);
             $this->sendFinalizedSubscriptionConfirmationEmail($client);

@@ -8,10 +8,14 @@ use Doctrine\ORM\Mapping as ORM;
  * VigilanceRule
  *
  * @ORM\Table(name="vigilance_rule", uniqueConstraints={@ORM\UniqueConstraint(name="label", columns={"label"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\VigilanceRuleRepository")
  */
 class VigilanceRule
 {
+    const VIGILANCE_STATUS_LOW    = 0;
+    const VIGILANCE_STATUS_MEDIUM = 0;
+    const VIGILANCE_STATUS_HIGH   = 0;
+
     /**
      * @var string
      *

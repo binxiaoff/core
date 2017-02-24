@@ -12,6 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class PaysV2
 {
+    const VIGILANCE_STATUS_LOW_RISK    = 0;
+    const VIGILANCE_STATUS_MEDIUM_RISK = 1;
+    const VIGILANCE_STATUS_HIGH_RISK   = 2;
+
     /**
      * @var string
      *

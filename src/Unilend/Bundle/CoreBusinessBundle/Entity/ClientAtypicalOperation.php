@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ClientAtypicalOperation
 {
+    const STATUS_PENDING = 0;
+    const STATUS_TREATED = 1;
+
     /**
      * @var int
      *
@@ -261,5 +264,23 @@ class ClientAtypicalOperation
         $this->client = $client;
 
         return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }
