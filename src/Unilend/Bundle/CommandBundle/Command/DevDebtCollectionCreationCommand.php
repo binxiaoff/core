@@ -142,7 +142,7 @@ EOF
                 if (false === filter_var($commission, FILTER_VALIDATE_INT) || $commission <= 0) {
                     throw new \Exception('Invalid commission');
                 }
-                $operationManager->payCollectionCommissionByBorrower($borrower, $collector, $commission);
+                $operationManager->payCollectionCommissionByBorrower($borrower, $collector, $commission, $project);
             }
 
             //Encode: UTF-8, new line : LF
@@ -162,7 +162,7 @@ EOF
                     $operationManager->repaymentCollection($lender, $project, $amount);
                     if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
                         $commissionLender = str_replace(',', '.', $aRow[2]);
-                        $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender);
+                        $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender, $project);
                     }
                 }
             }
