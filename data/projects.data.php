@@ -1421,6 +1421,7 @@ class projects extends projects_crud
             ->addOrderBy('priority', 'ASC')
             ->addOrderBy('infolegale', 'DESC')
             ->addOrderBy('amount', 'DESC')
-            ->addOrderBy('duration', 'DESC');
+            ->addOrderBy('duration', 'DESC')
+            ->addOrderBy('creation', 'ASC');
     }
 }

@@ -37,25 +37,25 @@
                     <th style="vertical-align:top;"><label for="marche_opere_comite">Marché opéré</label></th>
                     <td style="vertical-align:top;"><span id="marche_opere_comite"><?= $this->projects_notes->marche_opere_comite ?></span> / 10</td>
                     <th><label for="dirigeance_comite">Dirigeance</label></th>
-                    <td><input tabindex="14" id="dirigeance_comite" name="dirigeance_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->dirigeance_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                    <td><input tabindex="14" id="dirigeance_comite" name="dirigeance_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->dirigeance_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> / 10</td>
                     <th><label for="indicateur_risque_dynamique_comite">Indicateur de risque dynamique</label></th>
-                    <td><input tabindex="15" id="indicateur_risque_dynamique_comite" name="indicateur_risque_dynamique_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->indicateur_risque_dynamique_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                    <td><input tabindex="15" id="indicateur_risque_dynamique_comite" name="indicateur_risque_dynamique_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->indicateur_risque_dynamique_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> / 10</td>
                 </tr>
                 <tr>
                     <td colspan="2" style="vertical-align:top;">
                         <table>
                             <tr>
                                 <th><label for="structure2">Structure</label></th>
-                                <td><input tabindex="9" id="structure_comite" name="structure_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                                <td><input tabindex="9" id="structure_comite" name="structure_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> / 10</td>
                             </tr>
                             <tr>
                                 <th><label for="rentabilite2">Rentabilité</label></th>
-                                <td><input tabindex="10" id="rentabilite_comite" name="rentabilite_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                                <td><input tabindex="10" id="rentabilite_comite" name="rentabilite_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> / 10</td>
                             </tr>
                             <tr>
                                 <th><label for="tresorerie2">Trésorerie</label></th>
                                 <td>
-                                    <input tabindex="11" id="tresorerie_comite" name="tresorerie_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10
+                                    <input tabindex="11" id="tresorerie_comite" name="tresorerie_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> / 10
                                 </td>
                             </tr>
                         </table>
@@ -64,11 +64,11 @@
                         <table>
                             <tr>
                                 <th><label for="global2">Global</label></th>
-                                <td><input tabindex="12" id="global_comite" name="global_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                                <td><input tabindex="12" id="global_comite" name="global_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> / 10</td>
                             </tr>
                             <tr>
                                 <th><label for="individuel2">Individuel</label></th>
-                                <td><input tabindex="13" id="individuel_comite" name="individuel_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                                <td><input tabindex="13" id="individuel_comite" name="individuel_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> / 10</td>
                             </tr>
                         </table>
                     </td>
@@ -80,7 +80,7 @@
                 <tr>
                     <td colspan="8" style="text-align:center;">
                         <?php if ($this->projects->status == \projects_status::COMITY_REVIEW) : ?>
-                            <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
+                            <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br>
                             <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite ?></textarea>
                             <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
                         <?php else : ?>
@@ -89,7 +89,7 @@
                     </td>
                 </tr>
             </table>
-            <br/><br/>
+            <br><br>
             <div id="valid_etape7" class="valid_etape">Données sauvegardées</div>
             <div class="btnDroite">
                 <?php if ($this->projects->status == \projects_status::COMITY_REVIEW) : ?>

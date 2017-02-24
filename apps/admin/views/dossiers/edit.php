@@ -413,10 +413,6 @@
                             <td><?= $this->clients->source ?></td>
                         </tr>
                         <tr>
-                            <th>Slug origine</th>
-                            <td><?= $this->clients->slug_origine ?></td>
-                        </tr>
-                        <tr>
                             <th><label for="siren">SIREN</label></th>
                             <td><?= $this->companies->siren ?></td>
                         </tr>
@@ -459,13 +455,13 @@
                     <table class="form project-attributes">
                         <tr>
                             <th><label for="montant">Montant du prêt&nbsp;*</label></th>
-                            <td><input type="text" name="montant" id="montant" class="input_moy" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €</td>
+                            <td><input type="text" name="montant" id="montant" class="input_moy"<?php if ($this->projects->status >= \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €</td>
                         </tr>
                         <tr>
                             <th><label for="duree">Durée du prêt&nbsp;*</label></th>
                             <td>
-                                <select name="duree" id="duree" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?>>
-                                    <option<?= (in_array($this->projects->period, array(0, 1000000)) ? ' selected' : '') ?> value="0"></option>
+                                <select name="duree" id="duree" class="select"<?php if ($this->projects->status >= \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                    <option<?= (in_array($this->projects->period, [0, 1000000]) ? ' selected' : '') ?> value="0"></option>
                                     <?php foreach ($this->dureePossible as $duree) : ?>
                                         <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                                     <?php endforeach ?>
@@ -486,7 +482,7 @@
                         <tr>
                             <th><label for="need">Type de besoin</label></th>
                             <td>
-                                <select name="need" id="need" class="select">
+                                <select name="need" id="need" class="select"<?php if ($this->projects->status >= \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?>>
                                     <option value="0"></option>
                                     <?php foreach ($this->aNeeds as $aNeed) : ?>
                                         <optgroup label="<?= $aNeed['label'] ?>">
@@ -536,11 +532,11 @@
                         </tr>
                         <tr>
                             <th>Commission déblocage</th>
-                            <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) ?> %</td>
+                            <td><?= empty($this->projects->id_product) ? '-' : $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) . '&nbsp;%' ?></td>
                         </tr>
                         <tr>
                             <th>Commission remboursement</th>
-                            <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_repayment, 1) ?> %</td>
+                            <td><?= empty($this->projects->id_product) ? '-' : $this->ficelle->formatNumber($this->projects->commission_rate_repayment, 1) . '&nbsp;%' ?></td>
                         </tr>
                     </table>
                     <br><br>

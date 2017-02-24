@@ -26,7 +26,7 @@
                     <td data-project="<?= $project['id_project'] ?>"><?= $project['id_project'] ?></td>
                     <td data-project="<?= $project['id_project'] ?>"><?= $project['company_name'] ?></td>
                     <td style="text-align:right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
-                    <td><?= $project['duration'] ?> mois</td>
+                    <td><?php if (false === empty($project['duration'])) : ?><?= $project['duration'] ?> mois<?php endif; ?></td>
                     <td><?= $project['client_name'] ?></td>
                     <td><a href="tel:<?= $project['client_phone'] ?>"><?= $project['client_phone'] ?></a></td>
                     <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>

@@ -40,8 +40,6 @@ class dossiersController extends bootstrap
     protected $companies_prescripteurs;
     /** @var int Count project in searchDossiers */
     public $iCountProjects;
-    /** @var bool block risk note and comments */
-    public $bReadonlyRiskNote;
 
     public function initialize()
     {
@@ -92,7 +90,7 @@ class dossiersController extends bootstrap
 
         $this->iCountProjects = (isset($this->lProjects) && is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
 
-        if (1 === $this->iCountProjects) {
+        if (1 === $this->iCountProjects && (false === empty($projectId) || false === empty($companyName))) {
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);
             die;
         }
@@ -141,25 +139,6 @@ class dossiersController extends bootstrap
         $this->translator = $this->get('translator');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            if ($this->projects->status <= \projects_status::PREP_FUNDING) {
-                if (false === empty($_POST['project_partner'])) {
-                    $this->projects->id_partner                = $_POST['project_partner'];
-                    $this->projects->id_product                = null;
-                    $this->projects->commission_rate_funds     = null;
-                    $this->projects->commission_rate_repayment = null;
-                }
-                /** @var \partner_product $partnerProduct */
-                $partnerProduct = $this->loadData('partner_product');
-
-                if (false === empty($_POST['assigned_product']) && $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' and id_product ')) {
-                    $this->projects->id_product                = $partnerProduct->id_product;
-                    $this->projects->commission_rate_funds     = $partnerProduct->commission_rate_funds;
-                    $this->projects->commission_rate_repayment = $partnerProduct->commission_rate_repayment;
-                } elseif (false === empty($_POST['assigned_product'])) {
-                    $_SESSION['freeow']['message'] = 'Ce produit n\'est pas configuré pour le partenaire';
-                }
-                $this->projects->update();
-            }
             $this->settings->get('Durée des prêts autorisées', 'type');
             $this->dureePossible   = explode(',', $this->settings->value);
             $this->taxFormTypes    = $companyTaxFormType->select();
@@ -169,7 +148,7 @@ class dossiersController extends bootstrap
                 $this->allTaxFormTypes[$formType['label']] = $companyBalanceDetailsType->select('id_company_tax_form_type = ' . $formType['id_type']);
             }
 
-            /** @var product $product */
+            /** @var \product $product */
             $product = $this->loadData('product');
             $this->availableContracts = [];
             if (false === empty($this->projects->id_product) && $product->get($this->projects->id_product)) {
@@ -177,7 +156,8 @@ class dossiersController extends bootstrap
                 $durationMin = $productManager->getMinEligibleDuration($product);
 
                 foreach ($this->dureePossible as $index => $duration) {
-                    if (is_numeric($durationMax) && $duration > $durationMax
+                    if (
+                        is_numeric($durationMax) && $duration > $durationMax
                         || is_numeric($durationMin) && $duration < $durationMin
                     ) {
                         unset($this->dureePossible[$index]);
@@ -187,7 +167,7 @@ class dossiersController extends bootstrap
                 $this->availableContracts = array_column($productManager->getAvailableContracts($product), 'label');
             }
 
-            if (false === in_array($this->projects->period, array(0, 1000000)) && false === in_array($this->projects->period, $this->dureePossible)) {
+            if (false === in_array($this->projects->period, [0, 1000000]) && false === in_array($this->projects->period, $this->dureePossible)) {
                 array_push($this->dureePossible, $this->projects->period);
                 sort($this->dureePossible);
             }
@@ -215,13 +195,15 @@ class dossiersController extends bootstrap
             if ($this->projects->status <= \projects_status::COMMERCIAL_REVIEW && empty($this->projects->id_commercial) && empty($this->companies->phone) && false === empty($this->companies->siren)) {
                 /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
                 $establishmentIdentity  = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
-                $this->companies->phone = $establishmentIdentity->getPhoneNumber();
-                $this->companies->update();
+
+                if ($establishmentIdentity instanceof \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity && false === empty($establishmentIdentity->getPhoneNumber())) {
+                    $this->companies->phone = $establishmentIdentity->getPhoneNumber();
+                    $this->companies->update();
+                }
             }
 
             $this->rejectionReasonMessage = $this->getRejectionMotiveTranslation($this->projects_status_history);
             $this->bHasAdvisor            = false;
-            $this->bReadonlyRiskNote      = $this->projects->status >= \projects_status::PREP_FUNDING;
 
             if ($this->projects->status == \projects_status::FUNDE) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
@@ -279,8 +261,8 @@ class dossiersController extends bootstrap
                     foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
                         if ($this->aBalanceSheets[$iAnnualAccountsId]['form_type'] == \company_tax_form_type::FORM_2033) {
                             /** @var companies_actif_passif $oAssetsDebts */
-                            $oAssetsDebts                                     = $this->loadData('companies_actif_passif');
-                            $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
+                            $oAssetsDebts           = $this->loadData('companies_actif_passif');
+                            $oAssetsDebts->id_bilan = $iAnnualAccountsId;
                             $oAssetsDebts->create();
                         }
                     }
@@ -295,14 +277,6 @@ class dossiersController extends bootstrap
                         'start' => $oStartDate,
                         'end'   => $oEndDate
                     );
-                }
-            }
-
-            $this->bCanEditStatus = false;
-            if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
-                $this->loadData('users_types');
-                if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL))) {
-                    $this->bCanEditStatus = true;
                 }
             }
 
@@ -332,7 +306,7 @@ class dossiersController extends bootstrap
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
-            if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= projects_status::PREP_FUNDING) {
+            if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= \projects_status::PREP_FUNDING) {
                 $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
                 $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
 
@@ -354,7 +328,7 @@ class dossiersController extends bootstrap
             $this->selectedProduct = $product;
             $this->isProductUsable = false;
 
-            if (projects_status::PREP_FUNDING == $this->projects->status) {
+            if (\projects_status::PREP_FUNDING == $this->projects->status) {
                 if ($productManager->isProjectEligible($this->projects, $this->selectedProduct)) {
                     $this->isProductUsable = true;
                 }
@@ -595,12 +569,35 @@ class dossiersController extends bootstrap
                 $this->projects->title               = $_POST['title'];
                 $this->projects->id_analyste         = isset($_POST['analyste']) ? $_POST['analyste'] : $this->projects->id_analyste;
                 $this->projects->id_commercial       = isset($_POST['commercial']) ? $_POST['commercial'] : $this->projects->id_commercial;
-                $this->projects->id_project_need     = $_POST['need'];
                 $this->projects->id_borrowing_motive = $_POST['motive'];
 
-                if (false === $this->bReadonlyRiskNote) {
-                    $this->projects->period     = $_POST['duree'];
-                    $this->projects->amount     = str_replace([' ', ','], ['', '.'], $_POST['montant']);
+                if ($this->projects->status <= \projects_status::COMITY_REVIEW) {
+                    $this->projects->id_project_need = $_POST['need'];
+                    $this->projects->period          = $_POST['duree'];
+                    $this->projects->amount          = $this->ficelle->cleanFormatedNumber($_POST['montant']);
+                }
+
+                if ($this->projects->status <= \projects_status::PREP_FUNDING) {
+                    if (false === empty($_POST['project_partner'])) {
+                        $this->projects->id_partner                = $_POST['project_partner'];
+                        $this->projects->id_product                = null;
+                        $this->projects->commission_rate_funds     = null;
+                        $this->projects->commission_rate_repayment = null;
+                    }
+
+                    /** @var \partner_product $partnerProduct */
+                    $partnerProduct = $this->loadData('partner_product');
+
+                    if (
+                        false === empty($_POST['assigned_product'])
+                        && $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' AND id_product')
+                    ) {
+                        $this->projects->id_product                = $partnerProduct->id_product;
+                        $this->projects->commission_rate_funds     = $partnerProduct->commission_rate_funds;
+                        $this->projects->commission_rate_repayment = $partnerProduct->commission_rate_repayment;
+                    } elseif (false === empty($_POST['assigned_product'])) {
+                        $_SESSION['freeow']['message'] .= 'Ce produit n\'est pas configuré pour le partenaire<br>';
+                    }
                 }
 
                 if ($this->projects->status <= \projects_status::A_FUNDER) {
@@ -609,7 +606,7 @@ class dossiersController extends bootstrap
                     $this->projects->slug = $this->ficelle->generateSlug($this->settings->value . '-' . $sector . '-' . $this->companies->city . '-' . substr(md5($this->projects->title . $this->projects->id_project), 0, 7));
                 }
 
-                if ($this->projects->status >= \projects_status::PREP_FUNDING) {
+                if ($this->projects->status == \projects_status::A_FUNDER) {
                     if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
                         $publicationDate                  = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
                         $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
@@ -619,7 +616,9 @@ class dossiersController extends bootstrap
                         $endOfPublicationDate         = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
                     }
+                }
 
+                if ($this->projects->status >= \projects_status::PREP_FUNDING) {
                     if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                         try {
                             $this->projects->id_rate = $oProjectManager->getProjectRateRange($this->projects);

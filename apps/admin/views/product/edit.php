@@ -2,11 +2,11 @@
     <h1>Consulter des produits</h1>
     <table class="form">
         <tr>
-            <th>Nom :</th>
+            <th>Nom</th>
             <td><?= $this->translator->trans('product_label_' . $this->product->label) ?></td>
         </tr>
         <tr>
-            <th>Status :</th>
+            <th>Statut</th>
             <?php
             switch ( $this->product->status) {
                 case \product::STATUS_OFFLINE:
@@ -23,11 +23,11 @@
             <td><?= $status ?></td>
         </tr>
         <tr>
-            <th>Type d'échéancier : </th>
+            <th>Type d'échéancier</th>
             <td><?= $this->translator->trans('repayment-type-label_' . $this->repaymentType->label) ?></td>
         </tr>
         <tr>
-            <th>Contrat(s) sous-jacent : </th>
+            <th>Contrat(s) sous-jacent</th>
             <td>
                 <ul>
                     <?php foreach ($this->contracts as $contract) : ?>
@@ -41,18 +41,18 @@
             </td>
         </tr>
         <tr>
-            <th>Durée min (mois) :</th>
-            <td><?= isset($this->duration['min'][0]) ? $this->duration['min'][0] : 'pas de contrôle' ?></td>
+            <th>Durée min (mois)</th>
+            <td><?= isset($this->duration['min'][0]) ? $this->duration['min'][0] : 'Pas de contrôle' ?></td>
         </tr>
         <tr>
-            <th>Durée max (mois) :</th>
-            <td><?= isset($this->duration['max'][0]) ? $this->duration['max'][0] : 'pas de contrôle' ?></td>
+            <th>Durée max (mois)</th>
+            <td><?= isset($this->duration['max'][0]) ? $this->duration['max'][0] : 'Pas de contrôle' ?></td>
         </tr>
         <tr>
-            <th>Motive d'emprunteur éligible</th>
+            <th>Motif de l'emprunt</th>
             <td>
                 <?php if (empty($this->borrowerMotives)) : ?>
-                    pas de contrôle
+                    Pas de contrôle
                 <?php else : ?>
                     <ul>
                         <?php foreach ($this->borrowerMotives as $motive) : ?>
@@ -63,19 +63,19 @@
             </td>
         </tr>
         <tr>
-            <th>Jours de creation min :</th>
-            <td><?= isset($this->creationDaysMin[0]) ? $this->creationDaysMin[0] : 'pas de contrôle' ?></td>
+            <th>Jours de création min</th>
+            <td><?= isset($this->creationDaysMin[0]) ? $this->creationDaysMin[0] : 'Pas de contrôle' ?></td>
         </tr>
 
         <tr>
-            <th>RCS :</th>
-            <td><?= isset($this->rcs[0]) ? ($this->rcs[0] == 1 ? 'La société doit être RCS.' : 'La société doit être non RCS.') : 'pas de contrôle' ?></td>
+            <th>RCS</th>
+            <td><?= isset($this->rcs[0]) ? ($this->rcs[0] == 1 ? 'La société doit être RCS.' : 'La société doit être non RCS.') : 'Pas de contrôle' ?></td>
         </tr>
         <tr>
-            <th>Codes NAF éligible :</th>
+            <th>Codes NAF éligible</th>
             <td>
                 <?php if (empty($this->nafcodes)) : ?>
-                    pas de contrôle
+                    Pas de contrôle
                 <?php else : ?>
                     <?php foreach ($this->nafcodes as $code) : ?>
                         <?= $code ?>
