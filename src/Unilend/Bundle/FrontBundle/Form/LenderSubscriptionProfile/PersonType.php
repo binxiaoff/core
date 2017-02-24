@@ -4,10 +4,12 @@ namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -23,21 +25,23 @@ class PersonType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $startBdayRange = new \DateTime('NOW-18 years');
+
         $builder
             ->add('civilite', GenderType::class)
-            ->add('nom', TextType::class, ['required' => false])
-            ->add('nomUsage', TextType::class, ['required' => false])
-            ->add('prenom', TextType::class, ['required' => false])
-            ->add('naissance', DateType::class, ['required' => false])
-            ->add('idPaysNaissance', CountriesType::class, ['required' => false]) //use custom country Type
-            ->add('villeNaissance', TextType::class, ['required' => false])
+            ->add('nom', TextType::class)
+            ->add('nomUsage', TextType::class)
+            ->add('prenom', TextType::class)
+            ->add('naissance', BirthdayType::class, ['years' => range($startBdayRange->format('Y'), 1910)])
+            ->add('idPaysNaissance', CountriesType::class)
+            ->add('villeNaissance', TextType::class)
             ->add('inseeBirth', HiddenType::class, ['required' => false])
-            ->add('idNationalite',NationalitiesType::class, ['required' => false])
-            ->add('telephone', TextType::class, ['required' => false])
-            ->add('mobile', TextType::class, ['required' => false])
-            ->add('email', EmailType::class, ['required' => false])
-            ->add('fundsOrigin')
-            ->add('fundsOriginDetail')
+            ->add('idNationalite',NationalitiesType::class)
+            ->add('email', EmailType::class)
+            ->add('emailConfirmation', EmailType::class, ['mapped' => false])
+            ->add('password', PasswordType::class)
+            ->add('passwordConfirmation', PasswordType::class, ['mapped' => false])
+            ->add('mobile', TextType::class)
         ;
     }
 

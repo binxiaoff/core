@@ -33,10 +33,10 @@ class PostalAddressType extends AbstractType
                 'label' => $this->translator->trans('lender-address-form_same-address-checkbox'),
                 'required' => false
             ])
-            ->add('adresse1', TextType::class)
-            ->add('cp', TextType::class)
-            ->add('ville', TextType::class)
-            ->add('idPays', CountriesType::class)
+            ->add('adresse1', TextType::class, ['required' => false])
+            ->add('cp', TextType::class, ['required' => false])
+            ->add('ville', TextType::class, ['required' => false])
+            ->add('idPays', CountriesType::class, ['required' => false])
         ;
     }
 
