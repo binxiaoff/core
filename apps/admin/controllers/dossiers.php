@@ -280,61 +280,9 @@ class dossiersController extends bootstrap
                 }
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-            $partnerManager = $this->get('unilend.service.partner_manager');
-
-            $this->attachment_type           = $this->loadData('attachment_type');
-            $this->aAttachments              = $this->projects->getAttachments();
-            $this->aAttachmentTypes          = $this->attachment_type->getAllTypesForProjects($this->language);
-            $this->aMandatoryAttachmentTypes = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
-
-            $this->completude_wording = array();
-            $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
-
-            foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
-                if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
-                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
-                } else {
-                    $this->completude_wording[] = $aAttachment['label'];
-                }
-            }
-            $this->completude_wording[] = $this->translator->trans('projet_completude-charge-affaires');
-
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
-                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
-
-                $this->updateProblematicStatus($_POST['problematic_status']);
-            }
-
-            if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= \projects_status::PREP_FUNDING) {
-                $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
-                $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
-
-                if (false === empty($this->projects->id_rate)) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManager */
-                    $bidManager     = $this->get('unilend.service.bid_manager');
-                    $rateRange      = $bidManager->getProjectRateRange($this->projects);
-                    $this->rate_min = $rateRange['rate_min'];
-                    $this->rate_max = $rateRange['rate_max'];
-                }
-            }
-
-            /** @var \partner $partner */
-            $partner = $this->loadData('partner');
-            $this->partnerList = $partner->select('', 'name ASC');
-
-            $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
-            /** @var \product selectedProduct */
-            $this->selectedProduct = $product;
-            $this->isProductUsable = false;
-
-            if (\projects_status::PREP_FUNDING == $this->projects->status) {
-                if ($productManager->isProjectEligible($this->projects, $this->selectedProduct)) {
-                    $this->isProductUsable = true;
-                }
-            }
-
-            if (isset($_POST['last_annual_accounts'])) {
+                $this->problematicStatusForm($_POST['problematic_status']);
+            } elseif (isset($_POST['last_annual_accounts'])) {
                 $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];
                 $this->projects->update();
 
@@ -380,9 +328,7 @@ class dossiersController extends bootstrap
                 $companyBalanceSheetManager->removeBalanceSheet($this->companies_bilans, $this->projects);
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
-            }
-
-            if (isset($_POST['rejection_reason'])) {
+            } elseif (isset($_POST['rejection_reason'])) {
                 /** @var \projects_status_history $oProjectStatusHistory */
                 $oProjectStatusHistory = $this->loadData('projects_status_history');
 
@@ -411,9 +357,7 @@ class dossiersController extends bootstrap
                         $oProjectsStatusHistoryDetails->update();
                     }
                 }
-            }
-
-            if (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
+            } elseif (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
                 if ($this->projects->status < \projects_status::PRET_REFUSE) {
                     /** @var \loans $loans */
                     $loans = $this->loadData('loans');
@@ -643,9 +587,7 @@ class dossiersController extends bootstrap
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
-            }
-
-            if (isset($_POST['send_form_date_retrait'])) {
+            } elseif (isset($_POST['send_form_date_retrait'])) {
                 $form_ok = true;
 
                 if (! isset($_POST['date_de_retrait'])) {
@@ -674,6 +616,54 @@ class dossiersController extends bootstrap
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
                         $this->projects->update();
                     }
+                }
+            }
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
+            $partnerManager = $this->get('unilend.service.partner_manager');
+
+            $this->attachment_type           = $this->loadData('attachment_type');
+            $this->aAttachments              = $this->projects->getAttachments();
+            $this->aAttachmentTypes          = $this->attachment_type->getAllTypesForProjects($this->language);
+            $this->aMandatoryAttachmentTypes = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
+
+            $this->completude_wording = array();
+            $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
+
+            foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
+                if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
+                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
+                } else {
+                    $this->completude_wording[] = $aAttachment['label'];
+                }
+            }
+            $this->completude_wording[] = $this->translator->trans('projet_completude-charge-affaires');
+
+            if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= \projects_status::PREP_FUNDING) {
+                $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
+                $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
+
+                if (false === empty($this->projects->id_rate)) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManager */
+                    $bidManager     = $this->get('unilend.service.bid_manager');
+                    $rateRange      = $bidManager->getProjectRateRange($this->projects);
+                    $this->rate_min = $rateRange['rate_min'];
+                    $this->rate_max = $rateRange['rate_max'];
+                }
+            }
+
+            /** @var \partner $partner */
+            $partner = $this->loadData('partner');
+            $this->partnerList = $partner->select('', 'name ASC');
+
+            $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
+            /** @var \product selectedProduct */
+            $this->selectedProduct = $product;
+            $this->isProductUsable = false;
+
+            if (\projects_status::PREP_FUNDING == $this->projects->status) {
+                if ($productManager->isProjectEligible($this->projects, $this->selectedProduct)) {
+                    $this->isProductUsable = true;
                 }
             }
 
@@ -885,8 +875,12 @@ class dossiersController extends bootstrap
         return $fTotal;
     }
 
-    private function updateProblematicStatus($iStatus)
+    private function problematicStatusForm($iStatus)
     {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
+
         $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
         /** @var \projects_status_history_details $projectStatusHistoryDetails */
