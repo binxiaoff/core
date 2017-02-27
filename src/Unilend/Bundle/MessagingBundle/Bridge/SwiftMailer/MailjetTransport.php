@@ -95,8 +95,8 @@ class MailjetTransport implements \Swift_Transport
             'Recipients'  => array_map(function($recipient) { return ['Email' => $recipient]; }, $recipients)
         ];
 
-        if (method_exists($message, 'getMessageId') && null !== $message->getMessageId()) {
-            $body['Mj-CustomID'] = $message->getMessageId();
+        if (method_exists($message, 'getQueueId') && null !== $message->getQueueId()) {
+            $body['Mj-CustomID'] = $message->getQueueId();
         }
 
         if (is_array($replyTo)) {

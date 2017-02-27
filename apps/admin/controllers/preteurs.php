@@ -1281,13 +1281,12 @@ class preteursController extends bootstrap
 
         /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
         $mailQueueManager = $this->get('unilend.service.mail_queue');
-        /** @var mail_queue $mailQueue */
-        $mailQueue = $this->loadData('mail_queue');
-        $mailQueue->get($this->params[0]);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue $mailQueue */
+        $mailQueue = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($this->params[0]);
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $email */
         $email = $mailQueueManager->getMessage($mailQueue);
         /** @var \DateTime $sentAt */
-        $sentAt = new \DateTime($mailQueue->sent_at);
+        $sentAt = $mailQueue->getSentAt();
 
         $from = $email->getFrom();
         $to   = $email->getTo();
