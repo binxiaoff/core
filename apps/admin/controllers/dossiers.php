@@ -2096,6 +2096,10 @@ class dossiersController extends bootstrap
                 }
 
                 if (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0')) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                    $projectManager = $this->get('unilend.service.project_manager');
+                    $projectManager->addProjectStatus(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::REMBOURSE, $_SESSION['user']['id_user'], $this->projects);
+
                     /** @var MailerManager $mailerManager */
                     $mailerManager = $this->get('unilend.service.email_manager');
                     $mailerManager->setLogger($oLogger);
