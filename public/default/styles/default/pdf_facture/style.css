@@ -9,16 +9,6 @@
     font-style: normal;
 }
 
-@font-face {
-    font-family: 'Calibri-Bold';
-    src: url('fonts/calibri-bold.eot');
-    src: url('fonts/calibri-bold.eot?#iefix') format('embedded-opentype'),
-         url('fonts/calibri-bold.svg#Calibri-Bold') format('svg'),
-         url('fonts/calibri-bold.woff') format('woff'),
-         url('fonts/calibri-bold.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
 * { margin: 0; padding: 0; outline: 0; }
 
 body, html { height: 100%; }
@@ -33,9 +23,8 @@ body {
 }
 
 .container {
-	/*width:692px;*/ 
-	width:892px;
-	margin:0 auto;
+    width:892px;
+    margin:0 auto;
 }
 
 a { color: #b20066; text-decoration: none; cursor: pointer; }
@@ -54,9 +43,9 @@ textarea { overflow: auto; }
 .clearfix:after { clear: both; }
 .clearfix { *zoom: 1 }
 
-strong { font-weight:bold; font-family: 'Calibri-Bold', arial; }
+strong { font-weight:bold; font-family: 'Calibri-Regular', arial, sans-serif; }
 
-h2, h3, h4 { font-weight:normal; font-family: 'Calibri-Bold', arial; color:#b20066; }
+h2, h3, h4 { font-weight:normal; font-family: 'Calibri-Regular', arial, sans-serif; color:#b20066; }
 h2 { font-size:24px; line-height:28px; }
 h3 { font-size:21px; line-height:25px; }
 h4 { font-size:18px; line-height:22px; }
@@ -77,7 +66,7 @@ h4 { font-size:18px; line-height:22px; }
 .block { padding-bottom:204px; }
 .block h4 { padding-bottom:45px; }
 .block li { list-style:none outside none; width:100%; float:left; }
-.block li.total { color:#b20066; font-family: 'Calibri-Bold', arial; }
+.block li.total { color:#b20066; font-family: 'Calibri-Regular', arial, sans-serif; }
 .block li span { width:320px; float:left; }
 .block li span + span { float:right; text-align:right; }
 
@@ -87,4 +76,4 @@ h4 { font-size:18px; line-height:22px; }
 .info-body { font-size:17px; line-height:21px; }
 
 /* Footer */
-.footer { color:#b20066; font-size:9px; line-height:15px; font-family: 'Calibri-Bold', arial; padding-bottom:58px; }
+.footer { color:#b20066; font-size:9px; line-height:15px; font-family: 'Calibri-Regular', arial, sans-serif; padding-bottom:58px; }
