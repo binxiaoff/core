@@ -312,16 +312,12 @@ function valid_etape1(id_project) {
             return;
         }
 
-        $('#siren').val($('#siren_etape1').val());
-        $('#montant').val($('#montant_etape1').val());
-        $('#duree option[value=' + $('#duree_etape1').val() + ']').prop('selected', true);
-
         $('#dossier_etape1').find('.btn_link').show();
-        $('#valid_etape1').html(data);
-        $('#valid_etape1').slideDown();
+        $('#error_etape1').html(response.error ? response.error : 'Erreur inconnue');
+        $('#error_etape1').slideDown();
 
         setTimeout(function () {
-            $('#valid_etape1').slideUp();
+            $('#error_etape1').slideUp();
         }, 3000);
 
     });

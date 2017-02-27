@@ -185,44 +185,56 @@ class ProjectRequestManager
         $project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
         $project->update();
 
-        if (
-            false === $this->companyFinanceCheck->isCompanySafe($company, $rejectionReason)
-            || true === $this->companyFinanceCheck->hasCodinfPaymentIncident($company->siren, $rejectionReason)
-        ) {
+        if (false === $this->companyFinanceCheck->isCompanySafe($company, $rejectionReason)) {
             return $this->addRejectionProjectStatus($rejectionReason, $project, $userId);
         }
 
-        $altaresScore = $this->companyScoringCheck->getAltaresScore($company->siren);
+        if ($company->code_naf === \companies::NAF_CODE_NO_ACTIVITY) {
+            $altaresScore = $this->companyScoringCheck->getAltaresScore($company->siren);
 
-        if (true === $this->companyScoringCheck->isAltaresScoreLow($altaresScore, $companyRatingHistory, $companyRating, $rejectionReason)) {
-            return $this->addRejectionProjectStatus($rejectionReason, $project, $userId);
-        }
-
-        /** @var BalanceSheetList $balanceSheetList */
-        $balanceSheetList = $this->companyFinanceCheck->getBalanceSheets($company->siren);
-
-        if (null !== $balanceSheetList) {
-            $this->companyBalanceSheetManager->setCompanyBalance($company, $project, $balanceSheetList);
-        }
-
-        if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
             if (
-                true === $this->companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $company->siren, $rejectionReason)
-                || true === $this->companyFinanceCheck->hasNegativeRawOperatingIncomes($balanceSheetList, $company->siren, $rejectionReason)
+                true === $this->companyScoringCheck->isAltaresScoreLow($altaresScore, $companyRatingHistory, $companyRating, $rejectionReason)
+                || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $companyRatingHistory, $companyRating, $rejectionReason)
             ) {
                 return $this->addRejectionProjectStatus($rejectionReason, $project, $userId);
             }
-        }
+        } else {
+            if (true === $this->companyFinanceCheck->hasCodinfPaymentIncident($company->siren, $rejectionReason)) {
+                return $this->addRejectionProjectStatus($rejectionReason, $project, $userId);
+            }
 
-        if (
-            false === $this->companyScoringCheck->isXerfiUnilendOk($company->code_naf, $companyRatingHistory, $companyRating, $rejectionReason)
-            || false === $this->companyScoringCheck->combineAltaresScoreAndUnilendXerfi($altaresScore, $company->code_naf, $rejectionReason)
-            || false === $this->companyScoringCheck->combineEulerTrafficLightXerfiAltaresScore($altaresScore, $company, $companyRatingHistory, $companyRating, $rejectionReason)
-            || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $companyRatingHistory, $companyRating, $rejectionReason)
-            || false === $this->companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $companyRatingHistory, $companyRating, $rejectionReason)
-            || true === $this->companyFinanceCheck->hasInfogreffePrivileges($company->siren, $rejectionReason)
-        ) {
-            return $this->addRejectionProjectStatus($rejectionReason, $project, $userId);
+            $altaresScore = $this->companyScoringCheck->getAltaresScore($company->siren);
+
+            if (true === $this->companyScoringCheck->isAltaresScoreLow($altaresScore, $companyRatingHistory, $companyRating, $rejectionReason)) {
+                return $this->addRejectionProjectStatus($rejectionReason, $project, $userId);
+            }
+
+            /** @var BalanceSheetList $balanceSheetList */
+            $balanceSheetList = $this->companyFinanceCheck->getBalanceSheets($company->siren);
+
+            if (null !== $balanceSheetList) {
+                $this->companyBalanceSheetManager->setCompanyBalance($company, $project, $balanceSheetList);
+            }
+
+            if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
+                if (
+                    true === $this->companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $company->siren, $rejectionReason)
+                    || true === $this->companyFinanceCheck->hasNegativeRawOperatingIncomes($balanceSheetList, $company->siren, $rejectionReason)
+                ) {
+                    return $this->addRejectionProjectStatus($rejectionReason, $project, $userId);
+                }
+            }
+
+            if (
+                false === $this->companyScoringCheck->isXerfiUnilendOk($company->code_naf, $companyRatingHistory, $companyRating, $rejectionReason)
+                || false === $this->companyScoringCheck->combineAltaresScoreAndUnilendXerfi($altaresScore, $company->code_naf, $rejectionReason)
+                || false === $this->companyScoringCheck->combineEulerTrafficLightXerfiAltaresScore($altaresScore, $company, $companyRatingHistory, $companyRating, $rejectionReason)
+                || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $companyRatingHistory, $companyRating, $rejectionReason)
+                || false === $this->companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $companyRatingHistory, $companyRating, $rejectionReason)
+                || true === $this->companyFinanceCheck->hasInfogreffePrivileges($company->siren, $rejectionReason)
+            ) {
+                return $this->addRejectionProjectStatus($rejectionReason, $project, $userId);
+            }
         }
 
         return null;

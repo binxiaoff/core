@@ -250,7 +250,7 @@ class CompanyScoringCheck
             );
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infolegal_score';
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infolegale_score';
 
         return true;
     }

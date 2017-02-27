@@ -18,7 +18,7 @@
     }
 
     .project-main td.left-column {
-        border-right: 5px solid #b20066;
+        border-right: 4px solid #b20066;
         padding-left: 0;
     }
 
@@ -159,9 +159,15 @@
     .publish-popup {
         width: 600px;
     }
+
+    .takeover-popup {
+        width: 400px;
+    }
 </style>
-<script type="text/javascript">
-    $(function() {
+<script>
+    $(function () {
+        $('.tooltip').tooltip();
+
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
         $("#date").datepicker({
@@ -399,10 +405,10 @@
                     <h2>Identité</h2>
                     <table class="form project-identity">
                         <?php if ($this->projects->status >= \projects_status::A_FUNDER) : ?>
-                        <tr>
-                            <th>Lien projet</th>
-                            <td><a href="<?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?>" target="_blank"><?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?></a></td>
-                        </tr>
+                            <tr>
+                                <th>Lien projet</th>
+                                <td><a href="<?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?>" target="_blank"><?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?></a></td>
+                            </tr>
                         <?php endif; ?>
                         <tr>
                             <th>Date de la demande</th>
@@ -416,6 +422,23 @@
                             <th><label for="siren">SIREN</label></th>
                             <td><?= $this->companies->siren ?></td>
                         </tr>
+                        <?php if ($this->isTakeover) : ?>
+                            <tr>
+                                <th>
+                                    <label for="target_siren" class="tooltip" title="SIREN de la société reprise/rachetée">SIREN cible</label>
+                                </th>
+                                <td style="position: relative;">
+                                    <?php if (false === empty($this->targetCompany->id_company)) : ?>
+                                        <?= $this->targetCompany->siren ?>
+                                        <a href="<?= $this->lurl ?>/dossiers/takeover/<?= $this->projects->id_project ?>/swap" style="position: absolute; top: -15px; left: 75px;">
+                                            <img src="<?= $this->surl ?>/images/admin/swap.png" alt="Inverser" height="19">
+                                        </a>
+                                    <?php else : ?>
+                                        <a href="<?= $this->lurl ?>/dossiers/takeover/<?= $this->projects->id_project ?>" class="btn btn-small btn_link thickbox" title="Définir la cible">Définir</a>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                         <tr>
                             <th><label for="code_naf">Code NAF</label></th>
                             <td>
@@ -484,10 +507,10 @@
                             <td>
                                 <select name="need" id="need" class="select"<?php if ($this->projects->status >= \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?>>
                                     <option value="0"></option>
-                                    <?php foreach ($this->aNeeds as $aNeed) : ?>
-                                        <optgroup label="<?= $aNeed['label'] ?>">
-                                            <?php foreach ($aNeed['children'] as $aNeedChild) : ?>
-                                                <option value="<?= $aNeedChild['id_project_need'] ?>"<?= ($this->projects->id_project_need == $aNeedChild['id_project_need'] ? ' selected' : '') ?>><?= $aNeedChild['label'] ?></option>
+                                    <?php foreach ($this->needs as $need) : ?>
+                                        <optgroup label="<?= $need['label'] ?>">
+                                            <?php foreach ($need['children'] as $needChild) : ?>
+                                                <option value="<?= $needChild['id_project_need'] ?>"<?= ($this->projects->id_project_need == $needChild['id_project_need'] ? ' selected' : '') ?>><?= $needChild['label'] ?></option>
                                             <?php endforeach; ?>
                                         </optgroup>
                                     <?php endforeach; ?>
@@ -883,9 +906,6 @@
         </table>
     </form>
     <hr style="border: 2px solid #b20066;">
-
-    <br><br>
-
     <?php $this->fireView('blocs/memos'); ?>
     <?php $this->fireView('blocs/email'); ?>
     <?php $this->fireView('blocs/etape2'); ?>

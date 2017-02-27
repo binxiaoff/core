@@ -32,6 +32,8 @@ class companies extends companies_crud
     const CLIENT_STATUS_DELEGATION_OF_POWER = 2;
     const CLIENT_STATUS_EXTERNAL_CONSULTANT = 3;
 
+    const NAF_CODE_NO_ACTIVITY = '0000Z';
+
     public function __construct($bdd, $params = '')
     {
         parent::companies($bdd, $params);
@@ -169,10 +171,10 @@ class companies extends companies_crud
     public function getProjectsBySIREN()
     {
         if (empty($this->id_company)) {
-            return array();
+            return [];
         }
-        $aProjects = array();
-        $rResult   = $this->bdd->query('
+        $projects = [];
+        $result   = $this->bdd->query('
             SELECT 1 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
             FROM companies current_company
             INNER JOIN companies c ON current_company.siren = c.siren
@@ -205,10 +207,10 @@ class companies extends companies_crud
             WHERE p.status < ' . \projects_status::COMMERCIAL_REVIEW . ' AND current_company.id_company = ' . $this->id_company . '
             ORDER BY rank ASC, added DESC'
         );
-        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
-            $aProjects[] = $aRecord;
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $projects[] = $record;
         }
-        return $aProjects;
+        return $projects;
     }
 
     /**
@@ -419,5 +421,27 @@ class companies extends companies_crud
 
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param int $siren
+     * @return array
+     */
+    public function searchCompanyBySIREN($siren)
+    {
+        $statement = $this->bdd->createQueryBuilder()
+            ->select('c.*')
+            ->from('companies', 'c')
+            ->innerJoin('c', 'projects', 'p', 'c.id_company = p.id_company')
+            ->where('c.siren = :siren')
+            ->setParameter('siren', $siren)
+            ->orderBy('p.status', 'DESC')
+            ->orderBy('c.added', 'ASC')
+            ->execute();
+
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $result;
     }
 }

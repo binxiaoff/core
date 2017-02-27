@@ -1,5 +1,5 @@
 <div id="popup" class="postpone-popup">
-    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
     <form method="post" id="postpone_form" action="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>">
         <h1>Reporter un dossier</h1>
         <fieldset>

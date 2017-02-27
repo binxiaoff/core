@@ -251,6 +251,8 @@ class ajaxController extends bootstrap
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
                 $result                = $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user']);
 
+                $company->get($project->id_company, 'id_company');
+
                 if (true === is_array($result) && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
                     echo json_encode([
                         'success' => false,

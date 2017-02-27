@@ -1,5 +1,5 @@
 <div id="popup" class="publish-popup">
-    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
     <form method="post" id="publish_form" action="<?= $this->lurl ?>/dossiers/publish/<?= $this->projects->id_project ?>">
         <h1>Publier un dossier</h1>
         <fieldset>

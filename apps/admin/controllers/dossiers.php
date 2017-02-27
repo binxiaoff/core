@@ -14,6 +14,8 @@ class dossiersController extends bootstrap
     protected $projects_notes;
     /** @var \project_cgv */
     protected $project_cgv;
+    /** @var \companies */
+    protected $targetCompany;
     /** @var \companies_actif_passif */
     protected $companies_actif_passif;
     /** @var \company_balance */
@@ -104,6 +106,7 @@ class dossiersController extends bootstrap
         $this->projects_notes                = $this->loadData('projects_notes');
         $this->project_cgv                   = $this->loadData('project_cgv');
         $this->companies                     = $this->loadData('companies');
+        $this->targetCompany                 = $this->loadData('companies');
         $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
         $this->company_balance               = $this->loadData('company_balance');
         $this->company_balance_type          = $this->loadData('company_balance_type');
@@ -280,6 +283,12 @@ class dossiersController extends bootstrap
                 }
             }
 
+            /** @var \project_need $projectNeed */
+            $projectNeed      = $this->loadData('project_need');
+            $needs            = $projectNeed->getTree();
+            $this->needs      = $needs;
+            $this->isTakeover = $this->isTakeover($needs);
+
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $this->problematicStatusForm($_POST['problematic_status']);
             } elseif (isset($_POST['last_annual_accounts'])) {
@@ -443,6 +452,12 @@ class dossiersController extends bootstrap
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
             } elseif (isset($_POST['send_form_dossier_resume'])) {
+                $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
+                $_SESSION['freeow']['message'] = '';
+
+                $serialize = serialize(array('id_project' => $this->projects->id_project, 'post' => $_POST));
+                $this->users_history->histo(10, 'dossier edit Resume & actions', $_SESSION['user']['id_user'], $serialize);
+
                 if (false === empty($_POST['date_publication'])) {
                     $publicationDate                = \DateTime::createFromFormat('d/m/YHi', $_POST['date_publication'] . $_POST['date_publication_heure'] . $_POST['date_publication_minute']);
                     $endOfPublicationDate           = \DateTime::createFromFormat('d/m/YHi', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
@@ -456,12 +471,6 @@ class dossiersController extends bootstrap
                         die;
                     }
                 }
-
-                $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
-                $_SESSION['freeow']['message'] = '';
-
-                $serialize = serialize(array('id_project' => $this->projects->id_project, 'post' => $_POST));
-                $this->users_history->histo(10, 'dossier edit Resume & actions', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_FILES['upload_pouvoir']) && $_FILES['upload_pouvoir']['name'] != '') {
                     $this->upload->setUploadDir($this->path, 'protected/pdf/pouvoir/');
@@ -519,6 +528,10 @@ class dossiersController extends bootstrap
                     $this->projects->id_project_need = $_POST['need'];
                     $this->projects->period          = $_POST['duree'];
                     $this->projects->amount          = $this->ficelle->cleanFormatedNumber($_POST['montant']);
+
+                    if (false === $this->isTakeover() && false === empty($this->projects->id_target_company)) {
+                        $this->projects->id_target_company = 0;
+                    }
                 }
 
                 if ($this->projects->status <= \projects_status::PREP_FUNDING) {
@@ -588,35 +601,21 @@ class dossiersController extends bootstrap
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
             } elseif (isset($_POST['send_form_date_retrait'])) {
-                $form_ok = true;
-
-                if (! isset($_POST['date_de_retrait'])) {
-                    $form_ok = false;
-                }
-                if (! isset($_POST['date_retrait_heure'])) {
-                    $form_ok = false;
-                } elseif ($_POST['date_retrait_heure'] < 0) {
-                    $form_ok = false;
-                }
-
-                if (! isset($_POST['date_retrait_minute'])) {
-                    $form_ok = false;
-                } elseif ($_POST['date_retrait_minute'] < 0) {
-                    $form_ok = false;
-                }
-
-                if ($this->projects->status > \projects_status::EN_FUNDING) {
-                    $form_ok = false;
-                }
-
-                if ($form_ok == true) {
-                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_de_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
+                if (
+                    isset($_POST['date_retrait'], $_POST['date_retrait_heure'], $_POST['date_retrait_minute'])
+                    && 1 === preg_match('#[0-9]{2}/[0-9]{2}/[0-9]{8}#', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute'])
+                    && $this->projects->status <= \projects_status::EN_FUNDING
+                ) {
+                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_de_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
 
                     if ($endOfPublicationDate > new \DateTime()) {
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
                         $this->projects->update();
                     }
                 }
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
             }
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
@@ -666,11 +665,6 @@ class dossiersController extends bootstrap
                     $this->isProductUsable = true;
                 }
             }
-
-            /** @var \project_need $oProjectNeed */
-            $oProjectNeed = $this->loadData('project_need');
-            $needs        = $oProjectNeed->getTree();
-            $this->aNeeds = $needs;
 
             if (in_array($this->projects->status, [\projects_status::COMMERCIAL_REJECTION, \projects_status::ANALYSIS_REJECTION, \projects_status::COMITY_REJECTION])) {
                 /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
@@ -765,6 +759,10 @@ class dossiersController extends bootstrap
                 }
             }
 
+            if ($this->isTakeover) {
+                $this->loadTargetCompany();
+            }
+
             $this->recup_info_remboursement_anticipe();
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
@@ -801,7 +799,7 @@ class dossiersController extends bootstrap
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-low-altares-score-message');
                 break;
             case \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-low-infolegal-score-message');
+                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-low-infolegale-score-message');
                 break;
             case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-euler-grade-message');
@@ -830,7 +828,7 @@ class dossiersController extends bootstrap
             case \projects_status::UNEXPECTED_RESPONSE . 'altares_score':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-score-error-message');
                 break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'infolegal_score':
+            case \projects_status::UNEXPECTED_RESPONSE . 'infolegale_score':
                 $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-score-error-message');
                 break;
             case \projects_status::UNEXPECTED_RESPONSE . 'euler_grade':
@@ -3084,6 +3082,128 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;
         }
+    }
+
+    public function _takeover()
+    {
+        $this->hideDecoration();
+
+        $this->projects = $this->loadData('projects');
+
+        if (
+            false === isset($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || false === $this->projects->get($this->params[0])
+        ) {
+            echo 'Projet inconnu';
+            $this->autoFireView = false;
+            return;
+        }
+
+        if (isset($this->params[1])) {
+            switch ($this->params[1]) {
+                case 'search':
+                    if (isset($this->params[2])) {
+                        /** @var \companies $company */
+                        $company         = $this->loadData('companies');
+                        $siren           = filter_var($this->params[2], FILTER_SANITIZE_NUMBER_INT);
+                        $this->companies = $company->searchCompanyBySIREN($siren);
+                        $this->siren     = $siren;
+                    }
+                    break;
+                case 'create':
+                    /** @var \clients $client */
+                    $client            = $this->loadData('clients');
+                    $client->id_langue = 'fr';
+                    $client->status    = \clients::STATUS_ONLINE;
+                    $client->create();
+
+                    /** @var \clients_adresses $clientAddress */
+                    $clientAddress            = $this->loadData('clients_adresses');
+                    $clientAddress->id_client = $client->id_client;
+                    $clientAddress->create();
+
+                    /** @var \companies $company */
+                    $company                                = $this->loadData('companies');
+                    $company->id_client_owner               = $client->id_client;
+                    $company->siren                         = filter_var($_POST['siren'], FILTER_SANITIZE_NUMBER_INT);
+                    $company->status_adresse_correspondance = 1;
+                    $company->create();
+
+                    $this->projects->id_target_company = $company->id_company;
+
+                    $this->checkTargetCompanyRisk();
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
+                case 'select':
+                    $this->projects->id_target_company = $_POST['id_target_company'];
+
+                    $this->checkTargetCompanyRisk();
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
+                case 'swap':
+                    if ($this->isTakeover() && false === empty($this->projects->id_target_company)) {
+                        $targetCompanyId                   = $this->projects->id_company;
+                        $this->projects->id_company        = $this->projects->id_target_company;
+                        $this->projects->id_target_company = $targetCompanyId;
+                        $this->projects->update();
+                    }
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
+                default:
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
+            }
+        }
+    }
+
+    /**
+     * @param array|null $needs
+     * @return bool
+     */
+    private function isTakeover(array $needs = null)
+    {
+        if (null === $needs && false === empty($this->needs)) {
+            $needs = $this->needs;
+        } elseif (null === $needs) {
+            /** @var \project_need $projectNeed */
+            $projectNeed = $this->loadData('project_need');
+            $needs       = $projectNeed->getTree();
+        }
+
+        return in_array(
+            $this->projects->id_project_need,
+            array_column($needs[\project_need::PARENT_TYPE_TRANSACTION]['children'], 'id_project_need')
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    private function loadTargetCompany()
+    {
+        return (
+            false === empty($this->projects->id_target_company)
+            && $this->targetCompany->get($this->projects->id_target_company)
+        );
+    }
+
+    private function checkTargetCompanyRisk()
+    {
+        $targetCompanyId                   = $this->projects->id_target_company;
+        $this->projects->id_target_company = $this->projects->id_company;
+        $this->projects->id_company        = $targetCompanyId;
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $projectRequestManager->checkProjectRisk($this->projects, $_SESSION['user']['id_user']);
+
+        $this->projects->id_company        = $this->projects->id_target_company;
+        $this->projects->id_target_company = $targetCompanyId;
+        $this->projects->update();
     }
 
     public function _autocompleteCompanyName()

@@ -39,7 +39,7 @@
                 </td>
             </tr>
         </table>
-        <div id="valid_etape1" class="valid_etape">Données sauvegardées</div>
+        <div id="error_etape1" class="error_etape"></div>
         <div class="btnDroite">
             <input type="submit" class="btn_link" value="Sauvegarder">
         </div>
