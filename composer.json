@@ -42,6 +42,8 @@
     "sonata-project/cache-bundle": "^2.3",
     "knplabs/knp-mailjet-bundle": "^1.1",
     "cleentfaar/slack-bundle": "^0.20.1",
+    "ramsey/uuid": "^3.5",
+    "jbroadway/urlify": "^1.0",
     "doctrine/mongodb-odm-bundle": "^3.2"
   },
   "require-dev": {

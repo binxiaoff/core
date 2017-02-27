@@ -19,8 +19,6 @@ class ProjectsPrePublishCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        ini_set('memory_limit', '1G');
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var LoggerInterface $logger */

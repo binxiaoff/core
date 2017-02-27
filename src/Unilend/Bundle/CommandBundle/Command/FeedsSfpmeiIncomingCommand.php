@@ -7,6 +7,9 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -37,8 +40,6 @@ EOF
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \receptions $receptions */
-        $receptions = $this->oEntityManager->getRepository('receptions');
         /** @var \clients $clients */
         $clients = $this->oEntityManager->getRepository('clients');
         /** @var \transactions $transactions */
@@ -49,6 +50,7 @@ EOF
         $companies = $this->oEntityManager->getRepository('companies');
         /** @var \bank_unilend $bank_unilend */
         $bank_unilend = $this->oEntityManager->getRepository('bank_unilend');
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
         /** @var \settings $settings */
         $settings = $this->oEntityManager->getRepository('settings');
@@ -73,7 +75,7 @@ EOF
             }
             default : {
                 $aReceivedData = $this->parseReceptionFile($sReceptionPath . self::FILE_ROOT_NAME . date('Ymd') . '.txt', $aEmittedLeviesStatus);
-                $aReception    = $receptions->select('DATE(added) = "' . date('Y-m-d') . '"');
+                $aReception    = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->getByDate(new \DateTime());
 
                 if (false === empty($aReceivedData) && (empty($aReception) || $input->getOption('force-replay'))) {
                     $settings->get('Facebook', 'type');
@@ -119,41 +121,44 @@ EOF
                         }
 
                         if (isset($aRow['unilend_bienvenue'])) {
-                            $this->processWelcomeOffer($aRow, $transactions, $bank_unilend);
+                            $this->processWelcomeOffer($aRow);
                         } else {
-                            $receptions->id_client          = 0;
-                            $receptions->id_project         = 0;
-                            $receptions->status_bo          = 0;
-                            $receptions->remb               = 0;
-                            $receptions->motif              = $motif;
-                            $receptions->montant            = $aRow['montant'];
-                            $receptions->type               = $type;
-                            $receptions->status_virement    = $iBankTransferStatus;
-                            $receptions->status_prelevement = $iBankDebitStatus;
-                            $receptions->ligne              = $aRow['ligne1'];
-                            $receptions->create();
+                            $reception = new Receptions();
+                            $reception->setRemb(0)
+                            ->setStatusBo(Receptions::STATUS_PENDING)
+                            ->setMotif($motif)
+                            ->setMontant($aRow['montant'])
+                            ->setType($type)
+                            ->setStatusVirement($iBankTransferStatus)
+                            ->setStatusPrelevement($iBankDebitStatus)
+                            ->setLigne($aRow['ligne1'])
+                            ->setTypeRemb(0)
+                            ->setIdUser(null);
+
+                            $entityManager->persist($reception);
+                            $entityManager->flush();
 
                             if ($type === 1 && $iBankDebitStatus === 2) {
-                                $this->processDirectDebit($motif, $transactions, $projects, $companies, $clients, $receptions, $bank_unilend);
+                                $this->processDirectDebit($motif, $transactions, $reception, $bank_unilend);
                             } elseif ($type === 2 && $iBankTransferStatus === 1) { // Received bank transfer
                                 if (
                                     isset($aRow['libelleOpe3'])
                                     && 1 === preg_match('/RA-?([0-9]+)/', $aRow['libelleOpe3'], $aMatches)
                                     && $projects->get((int) $aMatches[1])
-                                    && false === $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
+                                    && false === $transactions->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
                                 ) {
-                                    $this->processBorrowerAnticipatedRepayment($receptions, $transactions, $bank_unilend, $projects);
+                                    $this->processBorrowerAnticipatedRepayment($reception, $transactions, $bank_unilend, $projects);
                                 } elseif (
                                     isset($aRow['libelleOpe3'])
                                     && preg_match('/([0-9]+) REGULARISATION/', $aRow['libelleOpe3'], $matches)
                                     && $projects->get($matches[1])
                                 ) {
-                                    $this->processRegulation($motif, $receptions, $projects, $companies, $transactions, $bank_unilend);
+                                    $this->processRegulation($motif, $reception, $projects, $transactions, $bank_unilend);
                                 } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
-                                    $this->processLenderBankTransfer($motif, $receptions, $clients, $transactions, $sFacebookLink, $sTwitterLink);
+                                    $this->processLenderBankTransfer($motif, $reception, $clients, $transactions, $sFacebookLink, $sTwitterLink);
                                 }
                             } elseif ($type === 1 && $iBankDebitStatus === 3) {
-                                $this->processBorrowerRepaymentRejection($aRow, $projects, $companies, $transactions, $receptions, $bank_unilend);
+                                $this->processBorrowerRepaymentRejection($aRow, $projects, $companies, $transactions);
                             }
                         }
                     }
@@ -318,40 +323,22 @@ EOF
 
     /**
      * @param array $aRow
-     * @param \transactions $transactions
-     * @param \bank_unilend $bank_unilend
      */
-    private function processWelcomeOffer(array $aRow, \transactions $transactions, \bank_unilend $bank_unilend)
+    private function processWelcomeOffer(array $aRow)
     {
         $this->oLogger->info('Bank transfer welcome offer: ' . json_encode($aRow['unilend_bienvenue']), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
-        $transactions->id_prelevement   = 0;
-        $transactions->id_client        = 0;
-        $transactions->montant          = $aRow['montant'];
-        $transactions->id_langue        = 'fr';
-        $transactions->date_transaction = date('Y-m-d H:i:s');
-        $transactions->status           = \transactions::STATUS_VALID;
-        $transactions->type_transaction = \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER;
-        $transactions->ip_client        = '';
-        $transactions->create();
-
-        $bank_unilend->id_transaction = $transactions->id_transaction;
-        $bank_unilend->id_project     = 0;
-        $bank_unilend->montant        = $aRow['montant'];
-        $bank_unilend->type           = 4; // Unilend welcome offer
-        $bank_unilend->create();
+        $amount = round(bcdiv($aRow['montant'], 100, 4), 2);
+        $this->getContainer()->get('unilend.service.operation_manager')->provisionUnilendPromotionalWallet($amount);
     }
 
     /**
      * @param string $motif
      * @param \transactions $transactions
-     * @param \projects $projects
-     * @param \companies $companies
-     * @param \clients $clients
-     * @param \receptions $receptions
+     * @param Receptions $reception
      * @param \bank_unilend $bank_unilend
      */
-    private function processDirectDebit($motif, \transactions $transactions, \projects $projects, \companies $companies, \clients $clients, \receptions &$receptions, \bank_unilend $bank_unilend)
+    private function processDirectDebit($motif, \transactions $transactions, Receptions $reception, \bank_unilend $bank_unilend)
     {
         preg_match('#[0-9]+#', $motif, $extract);
         $iProjectId = (int) $extract[0];
@@ -366,54 +353,69 @@ EOF
             count($aNextRepayment) > 0
             && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
             && false !== strpos($motif, $oBankDirectDebit->motif)
-            && false === $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
+            && false === $transactions->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
         ) {
-            $projects->get($iProjectId, 'id_project');
-            $companies->get($projects->id_company, 'id_company');
-            $clients->get($companies->id_client_owner, 'id_client');
+            $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
+            $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+            $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($iProjectId);
+            $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
-            $receptions->id_client  = $clients->id_client;
-            $receptions->id_project = $projects->id_project;
-            $receptions->status_bo  = 2;
-            $receptions->remb       = 1;
-            $receptions->update();
+            if ($project instanceof Projects) {
+                $reception->setIdProject($project)
+                          ->setIdClient($client)
+                          ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                          ->setAssignmentDate(new \DateTime())
+                          ->setRemb(1);
+                $em->flush();
 
-            $transactions->id_prelevement   = $receptions->id_reception;
-            $transactions->id_client        = $clients->id_client;
-            $transactions->montant          = $receptions->montant;
-            $transactions->id_langue        = 'fr';
-            $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = \transactions::STATUS_VALID;
-            $transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT;
-            $transactions->ip_client        = '';
-            $transactions->create();
+                $operationManager->provisionBorrowerWallet($reception);
 
-            $bank_unilend->id_transaction = $transactions->id_transaction;
-            $bank_unilend->id_project     = $projects->id_project;
-            $bank_unilend->montant        = $receptions->montant;
-            $bank_unilend->type           = 1;
-            $bank_unilend->create();
+                $transactions->id_prelevement   = $reception->getIdReception();
+                $transactions->id_client        = $project->getIdCompany()->getIdClientOwner();
+                $transactions->montant          = $reception->getMontant();
+                $transactions->id_langue        = 'fr';
+                $transactions->date_transaction = date('Y-m-d H:i:s');
+                $transactions->status           = \transactions::STATUS_VALID;
+                $transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT;
+                $transactions->ip_client        = '';
+                $transactions->create();
 
-            $this->updateRepayment($projects->id_project, bcdiv($receptions->montant, 100, 2));
+                $bank_unilend->id_transaction = $transactions->id_transaction;
+                $bank_unilend->id_project     = $project->getIdProject();
+                $bank_unilend->montant        = $reception->getMontant();
+                $bank_unilend->type           = 1;
+                $bank_unilend->create();
+
+                $this->updateRepayment($project->getIdProject(), bcdiv($reception->getMontant(), 100, 2));
+            }
         }
     }
 
     /**
-     * @param \receptions $receptions
+     * @param Receptions $reception
      * @param \transactions $transactions
      * @param \bank_unilend $bank_unilend
      * @param \projects $projects
      */
-    private function processBorrowerAnticipatedRepayment(\receptions &$receptions, \transactions $transactions, \bank_unilend $bank_unilend, \projects $projects)
+    private function processBorrowerAnticipatedRepayment(Receptions $reception, \transactions $transactions, \bank_unilend $bank_unilend, \projects $projects)
     {
-        $receptions->id_project = $projects->id_project;
-        $receptions->type_remb  = \receptions::REPAYMENT_TYPE_EARLY;
-        $receptions->status_bo  = 2;
-        $receptions->update();
+        $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+        $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($projects->id_project);
+        $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $reception->setIdProject($project)
+                  ->setIdClient($client)
+                  ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                  ->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY)
+                  ->setAssignmentDate(new \DateTime())
+                  ->setRemb(1);
+        $em->flush();
 
-        $transactions->id_virement      = $receptions->id_reception;
-        $transactions->id_project       = $projects->id_project;
-        $transactions->montant          = $receptions->montant;
+        $operationManager->provisionBorrowerWallet($reception);
+
+        $transactions->id_virement      = $reception->getIdReception();
+        $transactions->id_project       = $project->getIdProject();
+        $transactions->montant          = $reception->getMontant();
         $transactions->id_langue        = 'fr';
         $transactions->date_transaction = date('Y-m-d H:i:s');
         $transactions->status           = \transactions::STATUS_VALID;
@@ -422,8 +424,8 @@ EOF
         $transactions->create();
 
         $bank_unilend->id_transaction = $transactions->id_transaction;
-        $bank_unilend->id_project     = $projects->id_project;
-        $bank_unilend->montant        = $receptions->montant;
+        $bank_unilend->id_project     = $project->getIdProject();
+        $bank_unilend->montant        = $reception->getMontant();
         $bank_unilend->type           = 1; // remb emprunteur
         $bank_unilend->status         = 0; // chez unilend
         $bank_unilend->create();
@@ -438,9 +440,9 @@ EOF
         $varMail = array(
             '$surl'       => $sStaticUrl,
             '$url'        => $sUrl,
-            '$id_projet'  => $projects->id_project,
-            '$montant'    => bcdiv($transactions->montant, 100, 2),
-            '$nom_projet' => $projects->title
+            '$id_projet'  => $project->getIdProject(),
+            '$montant'    => bcdiv($reception->getMontant(), 100, 2),
+            '$nom_projet' => $project->getTitle()
         );
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -452,26 +454,30 @@ EOF
 
     /**
      * @param string $sMotif
-     * @param \receptions $receptions
+     * @param Receptions $reception
      * @param \projects $projects
-     * @param \companies $companies
      * @param \transactions $transactions
      * @param \bank_unilend $bankUnilend
      */
-    private function processRegulation($sMotif, \receptions &$receptions, \projects $projects, \companies $companies, \transactions $transactions, \bank_unilend $bankUnilend)
+    private function processRegulation($sMotif, Receptions $reception, \projects $projects, \transactions $transactions, \bank_unilend $bankUnilend)
     {
-        $companies->get($projects->id_company, 'id_company');
+        $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+        $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($projects->id_project);
+        $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $reception->setIdProject($project)
+                  ->setIdClient($client)
+                  ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                  ->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION)
+                  ->setRemb(1)
+                  ->setAssignmentDate(new \DateTime())
+                  ->setMotif($sMotif);
+        $em->flush();
 
-        $receptions->motif      = $sMotif;
-        $receptions->id_client  = $companies->id_client_owner;
-        $receptions->id_project = $projects->id_project;
-        $receptions->status_bo  = 2;
-        $receptions->type_remb  = 2;
-        $receptions->remb       = 1;
-        $receptions->update();
+        $operationManager->provisionBorrowerWallet($reception);
 
-        $transactions->id_virement      = $receptions->id_reception;
-        $transactions->montant          = $receptions->montant;
+        $transactions->id_virement      = $reception->getIdReception();
+        $transactions->montant          = $reception->getMontant();
         $transactions->id_langue        = 'fr';
         $transactions->date_transaction = date('Y-m-d H:i:s');
         $transactions->status           = \transactions::STATUS_VALID;
@@ -480,23 +486,23 @@ EOF
         $transactions->create();
 
         $bankUnilend->id_transaction = $transactions->id_transaction;
-        $bankUnilend->id_project     = $projects->id_project;
-        $bankUnilend->montant        = $receptions->montant;
+        $bankUnilend->id_project     = $project->getIdProject();
+        $bankUnilend->montant        = $reception->getMontant();
         $bankUnilend->type           = 1;
         $bankUnilend->create();
 
-        $this->updateRepayment($projects->id_project, bcdiv($receptions->montant, 100, 2));
+        $this->updateRepayment($project->getIdProject(), bcdiv($reception->getMontant(), 100, 2));
     }
 
     /**
      * @param string $motif
-     * @param \receptions $receptions
+     * @param Receptions $reception
      * @param \clients $clients
      * @param \transactions $transactions
      * @param string $sFacebookLink
      * @param string $sTwitterLink
      */
-    private function processLenderBankTransfer($motif, \receptions &$receptions, \clients &$clients, \transactions $transactions, $sFacebookLink, $sTwitterLink)
+    private function processLenderBankTransfer($motif, Receptions $reception, \clients &$clients, \transactions $transactions, $sFacebookLink, $sTwitterLink)
     {
         /** @var \ficelle $oFicelle */
         $oFicelle = Loader::loadLib('ficelle');
@@ -508,52 +514,28 @@ EOF
         $clients_gestion_notifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
         $clients_gestion_mails_notif = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
-        /** @var \wallets_lines $wallets */
-        $wallets = $this->oEntityManager->getRepository('wallets_lines');
-        /** @var \bank_lines $bank */
-        $bank = $this->oEntityManager->getRepository('bank_lines');
 
         if (
             preg_match('/([0-9]{6}) ?[A-Z]+/', $motif, $matches)
             && $clients->get((int) $matches[1], 'id_client')
             && $clients->isLenderPattern($clients->id_client, $motif)
             && $lenders->get($clients->id_client, 'id_client_owner')
-            && false === $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
+            && false === $transactions->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
         ) {
-            $receptions->get($receptions->id_reception, 'id_reception');
-            $receptions->id_client = $clients->id_client;
-            $receptions->status_bo = 2;
-            $receptions->remb      = 1;
-            $receptions->update();
-
             if (1 != $lenders->status) {
                 $lenders->status = 1;
                 $lenders->update();
             }
 
-            $transactions->id_virement      = $receptions->id_reception;
-            $transactions->id_client        = $lenders->id_client_owner;
-            $transactions->montant          = $receptions->montant;
-            $transactions->id_langue        = 'fr';
-            $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = \transactions::STATUS_VALID;
-            $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
-            $transactions->ip_client        = '';
-            $transactions->create();
+            $em        = $this->getContainer()->get('doctrine.orm.entity_manager');
+            $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clients->id_client, WalletType::LENDER);
 
-            $wallets->id_lender                = $lenders->id_lender_account;
-            $wallets->id_transaction           = $transactions->id_transaction;
-            $wallets->amount                   = $receptions->montant;
-            $wallets->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-            $wallets->type                     = \wallets_lines::PHYSICAL;
-            $wallets->status                   = \wallets_lines::STATUS_VALID;
-            $wallets->create();
+            $reception->setIdClient($wallet->getIdClient())
+                      ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                      ->setRemb(1); // todo: delete the field
+            $em->flush();
 
-            $bank->id_wallet_line    = $wallets->id_wallet_line;
-            $bank->id_lender_account = $lenders->id_lender_account;
-            $bank->status            = 1;
-            $bank->amount            = $receptions->montant;
-            $bank->create();
+            $this->getContainer()->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
 
             if ($clients->etape_inscription_preteur < 3) {
                 $clients->etape_inscription_preteur = 3;
@@ -561,9 +543,11 @@ EOF
             }
 
             if ($clients->status == 1) {
+                $transactions->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND id_virement');
+
                 $notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
                 $notifications->id_lender = $lenders->id_lender_account;
-                $notifications->amount    = $receptions->montant;
+                $notifications->amount    = $reception->getMontant();
                 $notifications->create();
 
                 $clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
@@ -585,8 +569,8 @@ EOF
                         'surl'            => $sStaticUrl,
                         'url'             => $sUrl,
                         'prenom_p'        => $clients->prenom,
-                        'fonds_depot'     => $oFicelle->formatNumber(bcdiv($receptions->montant, 100, 2)),
-                        'solde_p'         => $oFicelle->formatNumber($transactions->getSolde($receptions->id_client)),
+                        'fonds_depot'     => $oFicelle->formatNumber(bcdiv($reception->getMontant(), 100, 2)),
+                        'solde_p'         => $oFicelle->formatNumber($transactions->getSolde($reception->getIdClient()->getIdClient())),
                         'motif_virement'  => $clients->getLenderPattern($clients->id_client),
                         'projets'         => $sUrl . '/projets-a-financer',
                         'gestion_alertes' => $sUrl . '/profile',
@@ -609,10 +593,8 @@ EOF
      * @param \projects $projects
      * @param \companies $companies
      * @param \transactions $transactions
-     * @param \receptions $receptions
-     * @param \bank_unilend $bank_unilend
      */
-    private function processBorrowerRepaymentRejection(array $aRow, \projects $projects, \companies $companies, \transactions $transactions, \receptions &$receptions, \bank_unilend $bank_unilend)
+    private function processBorrowerRepaymentRejection(array $aRow, \projects $projects, \companies $companies, \transactions $transactions)
     {
         /** @var \echeanciers $oEcheanciers */
         $oEcheanciers = $this->oEntityManager->getRepository('echeanciers');
@@ -638,51 +620,44 @@ EOF
             $projects->remb_auto = 1;
             $projects->update();
 
-            $oTransactions->id_prelevement   = $transactions->id_prelevement;
-            $oTransactions->id_client        = $companies->id_client_owner;
-            $oTransactions->montant          = -$receptions->montant;
-            $oTransactions->id_langue        = 'fr';
-            $oTransactions->date_transaction = date('Y-m-d H:i:s');
-            $oTransactions->status           = \transactions::STATUS_VALID;
-            $oTransactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
-            $oTransactions->ip_client        = '';
-            $oTransactions->create();
+            $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
+            $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+            $reception        = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($transactions->id_prelevement);
+            $wallet           = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
+            if ($wallet) {
+                $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
+                $operationManager->rejectProvisionBorrowerWallet($wallet, $amount, $reception); //todo: replace it by cancelProvisionBorrowerWallet
 
-            $bank_unilend->id_transaction = $oTransactions->id_transaction;
-            $bank_unilend->id_project     = $projects->id_project;
-            $bank_unilend->montant        = -$receptions->montant;
-            $bank_unilend->type           = 1;
-            $bank_unilend->create();
+                $reception->setStatusBo(Receptions::STATUS_REJECTED);
+                $reception->setRemb(0);
+                $em->flush();
 
-            $receptions->get($transactions->id_prelevement);
-            $receptions->status_bo = 3; // rejeté
-            $receptions->remb      = 0;
-            $receptions->update();
+                $fNewAmount = bcdiv($reception->getMontant(), 100, 2);
 
-            $fNewAmount = bcdiv($receptions->montant, 100, 2);
+                foreach ($oEcheanciersEmprunteur->select('id_project = ' . $projects->id_project . ' AND status_emprunteur = 1', 'ordre DESC') as $e) {
+                    $fMonthlyAmount = round(bcdiv($e['montant'], 100, 2) + bcdiv($e['commission'], 100, 2) + bcdiv($e['tva'], 100, 2), 2);
 
-            foreach ($oEcheanciersEmprunteur->select('id_project = ' . $projects->id_project . ' AND status_emprunteur = 1', 'ordre DESC') as $e) {
-                $fMonthlyAmount = round(bcdiv($e['montant'], 100, 2) + bcdiv($e['commission'], 100, 2) + bcdiv($e['tva'], 100, 2), 2);
+                    if ($fMonthlyAmount <= $fNewAmount) {
+                        $oEcheanciers->updateStatusEmprunteur($projects->id_project, $e['ordre'], 'annuler');
 
-                if ($fMonthlyAmount <= $fNewAmount) {
-                    $oEcheanciers->updateStatusEmprunteur($projects->id_project, $e['ordre'], 'annuler');
+                        $oEcheanciersEmprunteur->get($projects->id_project, 'ordre = ' . $e['ordre'] . ' AND id_project');
+                        $oEcheanciersEmprunteur->status_emprunteur             = 0;
+                        $oEcheanciersEmprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
+                        $oEcheanciersEmprunteur->update();
 
-                    $oEcheanciersEmprunteur->get($projects->id_project, 'ordre = ' . $e['ordre'] . ' AND id_project');
-                    $oEcheanciersEmprunteur->status_emprunteur             = 0;
-                    $oEcheanciersEmprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
-                    $oEcheanciersEmprunteur->update();
+                        $fNewAmount = $fNewAmount - $fMonthlyAmount;
 
-                    $fNewAmount = $fNewAmount - $fMonthlyAmount;
-
-                    if ($oProjectsRemb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
-                        $oProjectsRemb->get($e['ordre'], 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
-                        $oProjectsRemb->status = \projects_remb::STATUS_REJECTED;
-                        $oProjectsRemb->update();
+                        if ($oProjectsRemb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
+                            $oProjectsRemb->get($e['ordre'], 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
+                            $oProjectsRemb->status = \projects_remb::STATUS_REJECTED;
+                            $oProjectsRemb->update();
+                        }
+                    } else {
+                        break;
                     }
-                } else {
-                    break;
                 }
             }
+
         }
     }
 }

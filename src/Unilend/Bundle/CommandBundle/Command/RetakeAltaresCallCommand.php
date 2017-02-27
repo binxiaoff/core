@@ -3,10 +3,9 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use CL\Slack\Payload\ChatPostMessagePayload;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 
 class RetakeAltaresCallCommand extends ContainerAwareCommand
 {
@@ -18,7 +17,7 @@ class RetakeAltaresCallCommand extends ContainerAwareCommand
         $this
             ->setName('unilend:dev_tools:altares:retake')
             ->setDescription('Retake the Altares result for the given projects')
-            ->addArgument('projects', InputArgument::REQUIRED, 'A project list separated by virgule.')
+            ->addOption('projects', null, InputOption::VALUE_REQUIRED, 'A project list separated by virgule.')
             ->setHelp(<<<EOF
 The <info>unilend:dev_tools:altares:retake</info> command call Altares to get the information for all projects in argument.
 <info>php bin/console unilend:dev_tools:altares:retake project_id1,project_id2,project_id3</info>
@@ -43,7 +42,7 @@ EOF
         /** @var \companies_bilans $companyAccount */
         $companyAccount = $entityManager->getRepository('companies_bilans');
 
-        $projects = explode(',', $input->getArgument('projects'));
+        $projects = explode(',', $input->getOption('projects'));
 
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
@@ -95,7 +94,7 @@ EOF
                         $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
                         $payload->setAsUser(false);
 
-                        $this->get('cl_slack.api_client')->send($payload);
+                        $this->getContainer()->get('cl_slack.api_client')->send($payload);
                     }
                 }
 

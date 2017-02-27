@@ -1,7 +1,9 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
  * Class LenderManager
@@ -9,15 +11,19 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
  */
 class LenderManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerSimulator */
     private $oEntityManager;
-    /** @var  ClientManager */
-    private $clientManager;
+    /** @var EntityManager */
+    private $em;
 
-    public function __construct(EntityManager $oEntityManager, ClientManager $clientManager)
+    public function __construct
+    (
+        EntityManagerSimulator $oEntityManager,
+        EntityManager $em
+    )
     {
         $this->oEntityManager = $oEntityManager;
-        $this->clientManager = $clientManager;
+        $this->em             = $em;
     }
 
     /**
@@ -31,7 +37,7 @@ class LenderManager
         $oClient = $this->oEntityManager->getRepository('clients');
 
         if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE
-            && $this->clientManager->isValidated($oClient)
+            && $this->isValidated($oClient)
         ) {
             return true;
         }
@@ -136,6 +142,10 @@ class LenderManager
     }
 
 
+    /**
+     * @param \lenders_accounts $lender
+     * @return bool
+     */
     public function hasTransferredLoans(\lenders_accounts $lender)
     {
         /** @var \transfer $transfer */
@@ -151,4 +161,34 @@ class LenderManager
         }
         return false;
     }
+
+    /**
+     * Retrieve pattern that lender must use in bank transfer label
+     * @param Clients $client
+     * @return string
+     */
+    public function getLenderPattern(Clients $client)
+    {
+        $oToolkit = new \ficelle();
+
+        return mb_strtoupper(
+            str_pad($client->getIdClient(), 6, 0, STR_PAD_LEFT) .
+            substr($oToolkit->stripAccents($client->getPrenom()), 0, 1) .
+            $oToolkit->stripAccents($client->getNom())
+        );
+    }
+
+    /**
+     * @param \clients $client
+     * @return bool
+     */
+    public function isValidated(\clients $client)
+    {
+        /** @var \clients_status $lastClientStatus */
+        $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
+        $lastClientStatus->getLastStatut($client->id_client);
+        return $lastClientStatus->status == \clients_status::VALIDATED;
+    }
+
+
 }

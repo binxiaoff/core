@@ -23,7 +23,6 @@ class UnilendCommandExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('commands.xml');
         $loader->load('events.xml');
         $loader->load('services.xml');
     }

@@ -55,421 +55,422 @@
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>
     <?php else : ?>
-        <div><?= $this->sClientStatusMessage ?></div>
-        <h1>Informations prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
-        <div class="btnDroite">
-            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
-            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
-            <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
-            <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Portefeuille & Performances</a>
-        </div>
-        <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>
-            <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
-            <?php unset($_SESSION['error_email_exist']); ?>
-        <?php endif; ?>
-        <form action="" method="post" enctype="multipart/form-data" id="form_etape1">
-            <h2>Etape 1</h2>
-            <table class="form" style="margin: auto;">
-                <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
-                    <tr class="particulier">
-                        <th>ID Client :</th>
-                        <td>
-                            <span><?= $this->clients->id_client ?></span>
-                        </td>
-                        <td><h3>Exonération fiscale</h3></td>
-                        <td><h3>Informations MRZ</h3></td>
-                    </tr>
-                    <tr class="particulier">
-                        <th>Civilite :</th>
-                        <td>
-                            <input type="radio" name="civilite" id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> value="Mme"><label for="civilite1">Madame</label>
-                            <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."><label for="civilite2">Monsieur</label>
-                        </td>
-                        <td rowspan="6" style="vertical-align: top">
-                            <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
-                                <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $this->iNextYear ?>/check" class="thickbox cboxElement">
-                                    <input type="checkbox" id="tax_exemption_<?= $this->iNextYear ?>" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
-                                </a>
-                                <label for="tax_exemption_<?= $this->iNextYear ?>"><?= $this->iNextYear ?></label>
-                                <br>
+    <div><?= $this->sClientStatusMessage ?></div>
+    <h1>Informations prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
+    <div class="btnDroite">
+        <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
+        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
+        <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
+        <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Portefeuille & Performances</a>
+    </div>
+    <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>
+        <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
+        <?php unset($_SESSION['error_email_exist']); ?>
+    <?php endif; ?>
+    <form action="" method="post" enctype="multipart/form-data" id="form_etape1">
+        <h2>Etape 1</h2>
+        <table class="form" style="margin: auto;">
+            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+                <tr class="particulier">
+                    <th>ID Client :</th>
+                    <td>
+                        <span><?= $this->clients->id_client ?></span>
+                    </td>
+                    <td><h3>Exonération fiscale</h3></td>
+                    <td><h3>Informations MRZ</h3></td>
+                </tr>
+                <tr class="particulier">
+                    <th>Civilite :</th>
+                    <td>
+                        <input type="radio" name="civilite" id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> value="Mme"><label for="civilite1">Madame</label>
+                        <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."><label for="civilite2">Monsieur</label>
+                    </td>
+                    <td rowspan="6" style="vertical-align: top">
+                        <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
+                            <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $this->iNextYear ?>/check" class="thickbox cboxElement">
+                                <input type="checkbox" id="tax_exemption_<?= $this->iNextYear ?>" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
+                            </a>
+                            <label for="tax_exemption_<?= $this->iNextYear ?>"><?= $this->iNextYear ?></label>
+                            <br>
+                        <?php endif; ?>
+                        <?php foreach ($this->aExemptionYears as $iExemptionYear) : ?>
+                            <?php if ($this->iNextYear == $iExemptionYear) : ?>
+                            <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $iExemptionYear ?>/uncheck" class="thickbox cboxElement">
+                                <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked>
+                            </a>
+                            <?php else: ?>
+                                <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked disabled>
                             <?php endif; ?>
-                            <?php foreach ($this->aExemptionYears as $iExemptionYear) : ?>
-                                <?php if ($this->iNextYear == $iExemptionYear) : ?>
-                                <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $iExemptionYear ?>/uncheck" class="thickbox cboxElement">
-                                    <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked>
-                                </a>
-                                <?php else: ?>
-                                    <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked disabled>
-                                <?php endif; ?>
-                                <label for="tax_exemption_<?= $iExemptionYear ?>"><?= $iExemptionYear ?></label>
-                                <br>
-                            <?php endforeach; ?>
-                        </td>
-                        <td rowspan="6" style="vertical-align: top">
-                            <table style="border-left: 1px solid;">
+                            <label for="tax_exemption_<?= $iExemptionYear ?>"><?= $iExemptionYear ?></label>
+                            <br>
+                        <?php endforeach; ?>
+                    </td>
+                    <td rowspan="6" style="vertical-align: top">
+                        <table style="border-left: 1px solid;">
+                            <tr>
+                                <th colspan="2" style="text-align: center;">Prêteur</th>
+                            </tr>
+                            <tr class="particulier">
+                                <th>Nationalité :</th>
+                                <td><?= isset($this->lenderIdentityMRZData['identity_nationality']) ? $this->lenderIdentityMRZData['identity_nationality'] : '' ?></td>
+                            </tr>
+                            <tr class="particulier">
+                                <th>Pays émetteur :</th>
+                                <td><?= isset($this->lenderIdentityMRZData['identity_issuing_country']) ? $this->lenderIdentityMRZData['identity_issuing_country'] : '' ?></td>
+                            </tr>
+                            <tr class="particulier">
+                                <th>Autorité émettrice :</th>
+                                <td><?= isset($this->lenderIdentityMRZData['identity_issuing_authority']) ? $this->lenderIdentityMRZData['identity_issuing_authority'] : '' ?></td>
+                            </tr>
+                            <tr class="particulier">
+                                <th>N°. de la pièce :</th>
+                                <td><?= isset($this->lenderIdentityMRZData['identity_document_number']) ? $this->lenderIdentityMRZData['identity_document_number'] : '' ?></td>
+                            </tr>
+                            <?php if (false === empty($this->hostIdentityMRZData)) : ?>
                                 <tr>
-                                    <th colspan="2" style="text-align: center;">Prêteur</th>
+                                    <th colspan="2" style="text-align: center;">Hébergeur</th>
                                 </tr>
                                 <tr class="particulier">
                                     <th>Nationalité :</th>
-                                    <td><?= isset($this->lenderIdentityMRZData['identity_nationality']) ? $this->lenderIdentityMRZData['identity_nationality'] : '' ?></td>
+                                    <td><?= isset($this->hostIdentityMRZData['identity_nationality']) ? $this->hostIdentityMRZData['identity_nationality'] : '' ?></td>
                                 </tr>
                                 <tr class="particulier">
                                     <th>Pays émetteur :</th>
-                                    <td><?= isset($this->lenderIdentityMRZData['identity_issuing_country']) ? $this->lenderIdentityMRZData['identity_issuing_country'] : '' ?></td>
+                                    <td><?= isset($this->hostIdentityMRZData['identity_issuing_country']) ? $this->hostIdentityMRZData['identity_issuing_country'] : '' ?></td>
                                 </tr>
                                 <tr class="particulier">
                                     <th>Autorité émettrice :</th>
-                                    <td><?= isset($this->lenderIdentityMRZData['identity_issuing_authority']) ? $this->lenderIdentityMRZData['identity_issuing_authority'] : '' ?></td>
+                                    <td><?= isset($this->hostIdentityMRZData['identity_issuing_authority']) ? $this->hostIdentityMRZData['identity_issuing_authority'] : '' ?></td>
                                 </tr>
                                 <tr class="particulier">
                                     <th>N°. de la pièce :</th>
-                                    <td><?= isset($this->lenderIdentityMRZData['identity_document_number']) ? $this->lenderIdentityMRZData['identity_document_number'] : '' ?></td>
+                                    <td><?= isset($this->hostIdentityMRZData['identity_document_number']) ? $this->hostIdentityMRZData['identity_document_number'] : '' ?></td>
                                 </tr>
-                                <?php if (false === empty($this->hostIdentityMRZData)) : ?>
-                                    <tr>
-                                        <th colspan="2" style="text-align: center;">Hébergeur</th>
-                                    </tr>
-                                    <tr class="particulier">
-                                        <th>Nationalité :</th>
-                                        <td><?= isset($this->hostIdentityMRZData['identity_nationality']) ? $this->hostIdentityMRZData['identity_nationality'] : '' ?></td>
-                                    </tr>
-                                    <tr class="particulier">
-                                        <th>Pays émetteur :</th>
-                                        <td><?= isset($this->hostIdentityMRZData['identity_issuing_country']) ? $this->hostIdentityMRZData['identity_issuing_country'] : '' ?></td>
-                                    </tr>
-                                    <tr class="particulier">
-                                        <th>Autorité émettrice :</th>
-                                        <td><?= isset($this->hostIdentityMRZData['identity_issuing_authority']) ? $this->hostIdentityMRZData['identity_issuing_authority'] : '' ?></td>
-                                    </tr>
-                                    <tr class="particulier">
-                                        <th>N°. de la pièce :</th>
-                                        <td><?= isset($this->hostIdentityMRZData['identity_document_number']) ? $this->hostIdentityMRZData['identity_document_number'] : '' ?></td>
-                                    </tr>
-                                <?php endif; ?>
-                            </table>
-                        </td>
-                    </tr>
-                    <tr class="particulier">
-                        <th><label for="nom-famille">Nom de famille :</label></th>
-                        <td><input type="text" class="input_large" name="nom-famille" id="nom-famille" value="<?= $this->clients->nom ?>"></td>
-                    </tr>
-                    <tr class="particulier">
-                        <th><label for="nom-usage">Nom d'usage :</label></th>
-                        <td><input type="text" class="input_large" name="nom-usage" id="nom-usage" value="<?= $this->clients->nom_usage ?>"></td>
-                    </tr>
-                    <tr class="particulier">
-                        <th><label for="prenom">Prénom :</label></th>
-                        <td><input type="text" class="input_large" name="prenom" id="prenom" value="<?= $this->clients->prenom ?>"></td>
-                    </tr>
-                    <tr class="particulier">
-                        <th><label for="email">Email :</label></th>
-                        <td><input type="text" class="input_large" name="email" id="email" value="<?= $this->clients->email ?>"></td>
-                    </tr>
-                    <tr class="particulier">
-                        <th></th>
-                        <td>
-                            <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
-                            <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
-                        </td>
-                    </tr>
-                <?php else : ?>
-                    <tr class="societe">
-                        <th>ID Client :</th>
-                        <td colspan="3">
-                            <span><?= $this->clients->id_client ?></span>
-                        </td>
-                    </tr>
-                    <tr class="societe">
-                        <th><label for="raison-sociale">Raison sociale :</label></th>
-                        <td><input type="text" class="input_large" name="raison-sociale" id="raison-sociale" value="<?= $this->companies->name ?>"></td>
-                        <th><label for="nom-usage">Forme juridique :</label></th>
-                        <td><input type="text" class="input_large" name="form-juridique" id="form-juridique" value="<?= $this->companies->forme ?>"></td>
-                    </tr>
-                    <tr class="societe">
-                        <th><label for="capital-social">Capital social :</label></th>
-                        <td><input type="text" class="input_large" name="capital-sociale" id="capital-sociale" value="<?= $this->companies->capital ?>"></td>
-                        <th><label for="siren">SIREN :</label></th>
-                        <td><input type="text" class="input_large" name="siren" id="siren" value="<?= $this->companies->siren ?>"></td>
-                    </tr>
-                    <tr class="societe">
-                        <th><label for="phone-societe">Téléphone :</label></th>
-                        <td><input type="text" class="input_large" name="phone-societe" id="phone-societe" value="<?= $this->companies->phone ?>"></td>
-                        <th><label for="siret">SIRET :</label></th>
-                        <td><input type="text" class="input_large" name="siret" id="siret" value="<?= $this->companies->siret ?>"></td>
-                    </tr>
-                    <tr class="societe">
-                        <th><label for="phone-societe">Tribunal de commerce :</label></th>
-                        <td><input type="text" class="input_large" name="tribunal_com" id="tribunal_com" value="<?= $this->companies->tribunal_com ?>"></td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-                    <tr class="societe">
-                        <th></th>
-                        <td></td>
-                        <th></th>
-                        <td>
-                            <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
-                            <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
-                        </td>
-                    </tr>
-                <?php endif; ?>
-                <tr>
-                    <th><h3>Adresse fiscale</h3></th>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <th><label for="adresse">Adresse :</label></th>
-                    <td colspan="3"><input type="text" class="input_big" name="adresse" id="adresse" style="width:836px;" value="<?= $this->adresse_fiscal ?>"></td>
-                </tr>
-                <tr>
-                    <th><label for="ville">Ville :</label></th>
-                    <td><input type="text" class="input_large" name="ville" id="ville" value="<?= $this->city_fiscal ?>" data-autocomplete="city"></td>
-                    <th><label for="cp">Code postal :</label></th>
-                    <td><input type="text" class="input_large" name="cp" id="cp" value="<?= $this->zip_fiscal ?>" data-autocomplete="post_code"></td>
-                </tr>
-                <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
-                    <tr>
-                        <th><label for="id_pays_fiscal">Pays fiscal :</label></th>
-                        <td>
-                            <select name="id_pays_fiscal" id="id_pays_fiscal" class="select">
-                                <?php foreach ($this->lPays as $p) : ?>
-                                    <option <?= ($this->clients_adresses->id_pays_fiscal == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <td><input type="submit" value="Valider ce pays et appliquer aux échéanciers" class="btn" id="valider_pays" name="valider_pays"></td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-                <?php endif; ?>
-                <tr>
-                    <td colspan="4">
-                        <input type="checkbox" name="meme-adresse" id="meme-adresse" <?= ($this->meme_adresse_fiscal == 1 ? 'checked' : '') ?>>
-                        <label for="meme-adresse">Mon adresse de correspondance est identique à mon adresse fiscale </label>
-                    </td>
-                </tr>
-                <tr class="meme-adresse" style="display:none;">
-                    <th><label for="adresse2">Adresse :</label></th>
-                    <td colspan="3"><input type="text" class="input_big" name="adresse2" id="adresse2" style="width:836px;" value="<?= $this->clients_adresses->adresse1 ?>"></td>
-                </tr>
-                <tr class="meme-adresse" style="display:none;">
-                    <th><label for="ville2">Ville :</label></th>
-                    <td><input type="text" class="input_large" name="ville2" id="ville2" value="<?= $this->clients_adresses->ville ?>" data-autocomplete="city"></td>
-                    <th><label for="cp2">Code postal :</label></th>
-                    <td><input type="text" class="input_large" name="cp2" id="cp2" value="<?= $this->clients_adresses->cp ?>" data-autocomplete="post_code"></td>
-                </tr>
-                <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
-                    <tr class="meme-adresse" style="display:none;">
-                        <th><label for="id_pays">Pays :</label></th>
-                        <td>
-                            <select name="id_pays" id="id_pays" class="select">
-                                <?php foreach ($this->lPays as $p) : ?>
-                                    <option <?= ($this->clients_adresses->id_pays == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-                <?php endif; ?>
-                <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
-                    <tr class="particulier">
-                        <th><label for="phone">Téléphone :</label></th>
-                        <td><input type="text" class="input_large" name="phone" id="phone" value="<?= $this->clients->telephone ?>"></td>
-                        <th><label for="mobile">Mobile :</label></th>
-                        <td><input type="text" class="input_large" name="mobile" id="mobile" value="<?= $this->clients->mobile ?>"></td>
-                    </tr>
-                    <tr class="particulier">
-                        <th><label for="naissance">Naissance :</label></th>
-                        <td><input type="text" name="naissance" id="datepik" class="input_dp" value="<?= $this->naissance ?>"/></td>
-                        <th><label for="com-naissance">Commune de naissance :</label></th>
-                        <td>
-                            <input type="text" class="input_large" name="com-naissance" id="com-naissance" value="<?= $this->clients->ville_naissance ?>" data-autocomplete="birth_city">
-                            <input type="hidden" id="insee_birth" name="insee_birth" value="<?= $this->clients->insee_birth ?>">
-                        </td>
-                    </tr>
-                    <tr class="particulier">
-                        <th><label for="id_pays_naissance">Pays de naissance :</label></th>
-                        <td>
-                            <select name="id_pays_naissance" id="id_pays_naissance" class="select">
-                                <?php foreach ($this->lPays as $p) : ?>
-                                    <option <?= ($this->clients->id_pays_naissance == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <th><label for="nationalite">Nationalité :</label></th>
-                        <td>
-                            <select name="nationalite" id="nationalite" class="select">
-                                <?php foreach ($this->lNatio as $p) : ?>
-                                    <option <?= ($this->clients->id_nationalite == $p['id_nationalite'] ? 'selected' : '') ?> value="<?= $p['id_nationalite'] ?>"><?= $p['fr_f'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                <?php else : ?>
-                    <!-- societe -->
-                    <tr class="societe">
-                        <th colspan="4" style="text-align:left;"><br/>Vous êtes :</th>
-                    </tr>
-                    <tr class="societe">
-                        <td colspan="4"><input <?= ($this->companies->status_client == 1 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise1" value="1"/>
-                            <label for="enterprise1"> Je suis le dirigeant de l'entreprise </label>
-                        </td>
-                    </tr>
-                    <tr class="societe">
-                        <td colspan="4"><input <?= ($this->companies->status_client == 2 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise2" value="2"/>
-                            <label for="enterprise2"> Je ne suis pas le dirigeant de l'entreprise mais je bénéficie d'une délégation de pouvoir </label>
-                        </td>
-                    </tr>
-                    <tr class="societe">
-                        <td colspan="4"><input <?= ($this->companies->status_client == 3 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise3" value="3"/>
-                            <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label>
-                        </td>
-                    </tr>
-                    <tr <?= ($this->companies->status_client == 3 ? '' : 'style="display:none;"') ?> class="statut_dirigeant_e3 societe">
-                        <th><label for="status_conseil_externe_entreprise">Expert comptable :</label></th>
-                        <td>
-                            <select name="status_conseil_externe_entreprise" id="status_conseil_externe_entreprise" class="select">
-                                <option value="0">Choisir</option>
-                                <?php foreach ($this->conseil_externe as $k => $conseil_externe) : ?>
-                                    <option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <th><label for="preciser_conseil_externe_entreprise">Autre (préciser) :</label></th>
-                        <td><input type="text" name="preciser_conseil_externe_entreprise" id="preciser_conseil_externe_entreprise" class="input_large" value="<?= $this->companies->preciser_conseil_externe_entreprise ?>"/></td>
-                    </tr>
-                    <tr class="societe">
-                        <th colspan="4" style="text-align:left;"><br/>Vos coordonnées :</th>
-                    </tr>
-                    <tr class="societe">
-                        <th>Civilité :</th>
-                        <td>
-                            <input <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e1" value="Mme"/>
-                            <label for="civilite_e1">Madame</label>
-                            <input <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e2" value="M."/>
-                            <label for="civilite_e2">Monsieur</label>
-                        </td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-                    <tr class="societe">
-                        <th><label for="nom_e">Nom :</label></th>
-                        <td><input type="text" name="nom_e" id="nom_e" class="input_large" value="<?= $this->clients->nom ?>"/></td>
-                        <th><label for="prenom_e">Prénom :</label></th>
-                        <td><input type="text" name="prenom_e" id="prenom_e" class="input_large" value="<?= $this->clients->prenom ?>"/></td>
-                    </tr>
-                    <tr class="societe">
-                        <th><label for="fonction_e">Fonction :</label></th>
-                        <td><input type="text" name="fonction_e" id="fonction_e" class="input_large" value="<?= $this->clients->fonction ?>"/></td>
-                        <th><label for="email_e">Email :</label></th>
-                        <td><input type="text" name="email_e" id="email_e" class="input_large" value="<?= $this->clients->email ?>"/></td>
-                    </tr>
-                    <tr class="societe">
-                        <th><label for="phone_e">Téléphone :</label></th>
-                        <td><input type="text" name="phone_e" id="phone_e" class="input_moy" value="<?= $this->clients->telephone ?>"/></td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
-                        <th colspan="4" style="text-align:left;"><br/>Identification du dirigeant :</th>
-                    </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
-                        <th>Civilité :</th>
-                        <td>
-                            <input <?= ($this->companies->civilite_dirigeant == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite2_e" id="civilite21_e" value="Mme"/>
-                            <label for="civilite21_e">Madame</label>
-                            <input <?= ($this->companies->civilite_dirigeant == 'M.' ? 'checked' : '') ?> type="radio" name="civilite2_e" id="civilite22_e" value="M."/>
-                            <label for="civilite22_e">Monsieur</label>
-                        </td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
-                        <th><label for="nom2_e">Nom :</label></th>
-                        <td><input type="text" name="nom2_e" id="nom2_e" class="input_large" value="<?= $this->companies->nom_dirigeant ?>"/></td>
-                        <th><label for="prenom2_e">Prénom :</label></th>
-                        <td><input type="text" name="prenom2_e" id="prenom2_e" class="input_large" value="<?= $this->companies->prenom_dirigeant ?>"/></td>
-                    </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
-                        <th><label for="fonction2_e">Fonction :</label></th>
-                        <td><input type="text" name="fonction2_e" id="fonction2_e" class="input_large" value="<?= $this->companies->fonction_dirigeant ?>"/></td>
-                        <th><label for="email2_e">Email :</label></th>
-                        <td><input type="text" name="email2_e" id="email2_e" class="input_large" value="<?= $this->companies->email_dirigeant ?>"/></td>
-                    </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
-                        <th><label for="phone2_e">Téléphone :</label></th>
-                        <td><input type="text" name="phone2_e" id="phone2_e" class="input_moy" value="<?= $this->companies->phone_dirigeant ?>"/></td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-                <?php endif; ?>
-            </table>
-            <h2>Etape 2</h2>
-            <table class="form" style="margin: auto;">
-                <tr>
-                    <th><label for="bic">BIC :</label></th>
-                    <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->lenders_accounts->bic ?>"/></td>
-                </tr>
-                <tr>
-                    <th style="text-align: right; vertical-align: top; padding: 5px 0px 10px 5px;><label for="iban1">IBAN :</label></th>
-                    <td style="padding: 0 0 10px 0;">
-                        <table>
-                            <tr>
-                                <td><input type="text" name="iban1" id="iban1" class="input_court" value="<?= (false === empty($this->iban1)) ? $this->iban1 : '' ?>"/></td>
-                                <td><input type="text" name="iban2" id="iban2" class="input_court" value="<?= (false === empty($this->iban2)) ? $this->iban2 : '' ?>"/></td>
-                                <td><input type="text" name="iban3" id="iban3" class="input_court" value="<?= (false === empty($this->iban3)) ? $this->iban3 : '' ?>"/></td>
-                                <td><input type="text" name="iban4" id="iban4" class="input_court" value="<?= (false === empty($this->iban4)) ? $this->iban4 : '' ?>"/></td>
-                                <td><input type="text" name="iban5" id="iban5" class="input_court" value="<?= (false === empty($this->iban5)) ? $this->iban5 : '' ?>"/></td>
-                                <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= (false === empty($this->iban6)) ? $this->iban6 : '' ?>"/></td>
-                                <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= (false === empty($this->iban7)) ? $this->iban7 : '' ?>"/></td>
-                            </tr>
-                            <tr>
-                                <td colspan="5">
-                                    <span class="btn" id="change_bank_account_btn">Valider les modifications sur le RIB</span>
-                                </td>
-                                <td colspan="2" valign="middle">
-                                    <p id="iban_ok" style="margin:0px;"></p>
-                                </td>
-                            </tr>
+                            <?php endif; ?>
                         </table>
                     </td>
                 </tr>
-                <?php if ($this->origine_fonds[0] != false) : ?>
-                    <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) : ?>
-                        <tr class="particulier">
-                            <th colspan="2" style="text-align:left;"><label for="origines">Quelle est l'origine des fonds que vous déposer sur Unilend ?</label></th>
+                <tr class="particulier">
+                    <th><label for="nom-famille">Nom de famille :</label></th>
+                    <td><input type="text" class="input_large" name="nom-famille" id="nom-famille" value="<?= $this->clients->nom ?>"></td>
+                </tr>
+                <tr class="particulier">
+                    <th><label for="nom-usage">Nom d'usage :</label></th>
+                    <td><input type="text" class="input_large" name="nom-usage" id="nom-usage" value="<?= $this->clients->nom_usage ?>"></td>
+                </tr>
+                <tr class="particulier">
+                    <th><label for="prenom">Prénom :</label></th>
+                    <td><input type="text" class="input_large" name="prenom" id="prenom" value="<?= $this->clients->prenom ?>"></td>
+                </tr>
+                <tr class="particulier">
+                    <th><label for="email">Email :</label></th>
+                    <td><input type="text" class="input_large" name="email" id="email" value="<?= $this->clients->email ?>"></td>
+                </tr>
+                <tr class="particulier">
+                    <th></th>
+                    <td>
+                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
+                        <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
+                    </td>
+                </tr>
+            <?php else : ?>
+                <tr class="societe">
+                    <th>ID Client :</th>
+                    <td colspan="3">
+                        <span><?= $this->clients->id_client ?></span>
+                    </td>
+                </tr>
+                <tr class="societe">
+                    <th><label for="raison-sociale">Raison sociale :</label></th>
+                    <td><input type="text" class="input_large" name="raison-sociale" id="raison-sociale" value="<?= $this->companies->name ?>"></td>
+                    <th><label for="nom-usage">Forme juridique :</label></th>
+                    <td><input type="text" class="input_large" name="form-juridique" id="form-juridique" value="<?= $this->companies->forme ?>"></td>
+                </tr>
+                <tr class="societe">
+                    <th><label for="capital-social">Capital social :</label></th>
+                    <td><input type="text" class="input_large" name="capital-sociale" id="capital-sociale" value="<?= $this->companies->capital ?>"></td>
+                    <th><label for="siren">SIREN :</label></th>
+                    <td><input type="text" class="input_large" name="siren" id="siren" value="<?= $this->companies->siren ?>"></td>
+                </tr>
+                <tr class="societe">
+                    <th><label for="phone-societe">Téléphone :</label></th>
+                    <td><input type="text" class="input_large" name="phone-societe" id="phone-societe" value="<?= $this->companies->phone ?>"></td>
+                    <th><label for="siret">SIRET :</label></th>
+                    <td><input type="text" class="input_large" name="siret" id="siret" value="<?= $this->companies->siret ?>"></td>
+                </tr>
+                <tr class="societe">
+                    <th><label for="phone-societe">Tribunal de commerce :</label></th>
+                    <td><input type="text" class="input_large" name="tribunal_com" id="tribunal_com" value="<?= $this->companies->tribunal_com ?>"></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+                <tr class="societe">
+                    <th></th>
+                    <td></td>
+                    <th></th>
+                    <td>
+                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
+                        <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
+                    </td>
+                </tr>
+            <?php endif; ?>
+            <tr>
+                <th><h3>Adresse fiscale</h3></th>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label for="adresse">Adresse :</label></th>
+                <td colspan="3"><input type="text" class="input_big" name="adresse" id="adresse" style="width:836px;" value="<?= $this->adresse_fiscal ?>"></td>
+            </tr>
+            <tr>
+                <th><label for="ville">Ville :</label></th>
+                <td><input type="text" class="input_large" name="ville" id="ville" value="<?= $this->city_fiscal ?>" data-autocomplete="city"></td>
+                <th><label for="cp">Code postal :</label></th>
+                <td><input type="text" class="input_large" name="cp" id="cp" value="<?= $this->zip_fiscal ?>" data-autocomplete="post_code"></td>
+            </tr>
+            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+                <tr>
+                    <th><label for="id_pays_fiscal">Pays fiscal :</label></th>
+                    <td>
+                        <select name="id_pays_fiscal" id="id_pays_fiscal" class="select">
+                            <?php foreach ($this->lPays as $p) : ?>
+                                <option <?= ($this->clients_adresses->id_pays_fiscal == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <th></th>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <td><input type="submit" value="Valider ce pays et appliquer aux échéanciers" class="btn" id="valider_pays" name="valider_pays"></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+            <?php endif; ?>
+            <tr>
+                <td colspan="4">
+                    <input type="checkbox" name="meme-adresse" id="meme-adresse" <?= ($this->meme_adresse_fiscal == 1 ? 'checked' : '') ?>>
+                    <label for="meme-adresse">Mon adresse de correspondance est identique à mon adresse fiscale </label>
+                </td>
+            </tr>
+            <tr class="meme-adresse" style="display:none;">
+                <th><label for="adresse2">Adresse :</label></th>
+                <td colspan="3"><input type="text" class="input_big" name="adresse2" id="adresse2" style="width:836px;" value="<?= $this->clients_adresses->adresse1 ?>"></td>
+            </tr>
+            <tr class="meme-adresse" style="display:none;">
+                <th><label for="ville2">Ville :</label></th>
+                <td><input type="text" class="input_large" name="ville2" id="ville2" value="<?= $this->clients_adresses->ville ?>" data-autocomplete="city"></td>
+                <th><label for="cp2">Code postal :</label></th>
+                <td><input type="text" class="input_large" name="cp2" id="cp2" value="<?= $this->clients_adresses->cp ?>" data-autocomplete="post_code"></td>
+            </tr>
+            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+                <tr class="meme-adresse" style="display:none;">
+                    <th><label for="id_pays">Pays :</label></th>
+                    <td>
+                        <select name="id_pays" id="id_pays" class="select">
+                            <?php foreach ($this->lPays as $p) : ?>
+                                <option <?= ($this->clients_adresses->id_pays == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <th></th>
+                    <td></td>
+                </tr>
+            <?php endif; ?>
+            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+                <tr class="particulier">
+                    <th><label for="phone">Téléphone :</label></th>
+                    <td><input type="text" class="input_large" name="phone" id="phone" value="<?= $this->clients->telephone ?>"></td>
+                    <th><label for="mobile">Mobile :</label></th>
+                    <td><input type="text" class="input_large" name="mobile" id="mobile" value="<?= $this->clients->mobile ?>"></td>
+                </tr>
+                <tr class="particulier">
+                    <th><label for="naissance">Naissance :</label></th>
+                    <td><input type="text" name="naissance" id="datepik" class="input_dp" value="<?= $this->naissance ?>"/></td>
+                    <th><label for="com-naissance">Commune de naissance :</label></th>
+                    <td>
+                        <input type="text" class="input_large" name="com-naissance" id="com-naissance" value="<?= $this->clients->ville_naissance ?>" data-autocomplete="birth_city">
+                        <input type="hidden" id="insee_birth" name="insee_birth" value="<?= $this->clients->insee_birth ?>">
+                    </td>
+                </tr>
+                <tr class="particulier">
+                    <th><label for="id_pays_naissance">Pays de naissance :</label></th>
+                    <td>
+                        <select name="id_pays_naissance" id="id_pays_naissance" class="select">
+                            <?php foreach ($this->lPays as $p) : ?>
+                                <option <?= ($this->clients->id_pays_naissance == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <th><label for="nationalite">Nationalité :</label></th>
+                    <td>
+                        <select name="nationalite" id="nationalite" class="select">
+                            <?php foreach ($this->lNatio as $p) : ?>
+                                <option <?= ($this->clients->id_nationalite == $p['id_nationalite'] ? 'selected' : '') ?> value="<?= $p['id_nationalite'] ?>"><?= $p['fr_f'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+            <?php else : ?>
+                <!-- societe -->
+                <tr class="societe">
+                    <th colspan="4" style="text-align:left;"><br/>Vous êtes :</th>
+                </tr>
+                <tr class="societe">
+                    <td colspan="4"><input <?= ($this->companies->status_client == 1 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise1" value="1"/>
+                        <label for="enterprise1"> Je suis le dirigeant de l'entreprise </label>
+                    </td>
+                </tr>
+                <tr class="societe">
+                    <td colspan="4"><input <?= ($this->companies->status_client == 2 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise2" value="2"/>
+                        <label for="enterprise2"> Je ne suis pas le dirigeant de l'entreprise mais je bénéficie d'une délégation de pouvoir </label>
+                    </td>
+                </tr>
+                <tr class="societe">
+                    <td colspan="4"><input <?= ($this->companies->status_client == 3 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise3" value="3"/>
+                        <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label>
+                    </td>
+                </tr>
+                <tr <?= ($this->companies->status_client == 3 ? '' : 'style="display:none;"') ?> class="statut_dirigeant_e3 societe">
+                    <th><label for="status_conseil_externe_entreprise">Expert comptable :</label></th>
+                    <td>
+                        <select name="status_conseil_externe_entreprise" id="status_conseil_externe_entreprise" class="select">
+                            <option value="0">Choisir</option>
+                            <?php foreach ($this->conseil_externe as $k => $conseil_externe) : ?>
+                                <option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <th><label for="preciser_conseil_externe_entreprise">Autre (préciser) :</label></th>
+                    <td><input type="text" name="preciser_conseil_externe_entreprise" id="preciser_conseil_externe_entreprise" class="input_large" value="<?= $this->companies->preciser_conseil_externe_entreprise ?>"/></td>
+                </tr>
+                <tr class="societe">
+                    <th colspan="4" style="text-align:left;"><br/>Vos coordonnées :</th>
+                </tr>
+                <tr class="societe">
+                    <th>Civilité :</th>
+                    <td>
+                        <input <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e1" value="Mme"/>
+                        <label for="civilite_e1">Madame</label>
+                        <input <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e2" value="M."/>
+                        <label for="civilite_e2">Monsieur</label>
+                    </td>
+                    <th></th>
+                    <td></td>
+                </tr>
+                <tr class="societe">
+                    <th><label for="nom_e">Nom :</label></th>
+                    <td><input type="text" name="nom_e" id="nom_e" class="input_large" value="<?= $this->clients->nom ?>"/></td>
+                    <th><label for="prenom_e">Prénom :</label></th>
+                    <td><input type="text" name="prenom_e" id="prenom_e" class="input_large" value="<?= $this->clients->prenom ?>"/></td>
+                </tr>
+                <tr class="societe">
+                    <th><label for="fonction_e">Fonction :</label></th>
+                    <td><input type="text" name="fonction_e" id="fonction_e" class="input_large" value="<?= $this->clients->fonction ?>"/></td>
+                    <th><label for="email_e">Email :</label></th>
+                    <td><input type="text" name="email_e" id="email_e" class="input_large" value="<?= $this->clients->email ?>"/></td>
+                </tr>
+                <tr class="societe">
+                    <th><label for="phone_e">Téléphone :</label></th>
+                    <td><input type="text" name="phone_e" id="phone_e" class="input_moy" value="<?= $this->clients->telephone ?>"/></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                    <th colspan="4" style="text-align:left;"><br/>Identification du dirigeant :</th>
+                </tr>
+                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                    <th>Civilité :</th>
+                    <td>
+                        <input <?= ($this->companies->civilite_dirigeant == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite2_e" id="civilite21_e" value="Mme"/>
+                        <label for="civilite21_e">Madame</label>
+                        <input <?= ($this->companies->civilite_dirigeant == 'M.' ? 'checked' : '') ?> type="radio" name="civilite2_e" id="civilite22_e" value="M."/>
+                        <label for="civilite22_e">Monsieur</label>
+                    </td>
+                    <th></th>
+                    <td></td>
+                </tr>
+                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                    <th><label for="nom2_e">Nom :</label></th>
+                    <td><input type="text" name="nom2_e" id="nom2_e" class="input_large" value="<?= $this->companies->nom_dirigeant ?>"/></td>
+                    <th><label for="prenom2_e">Prénom :</label></th>
+                    <td><input type="text" name="prenom2_e" id="prenom2_e" class="input_large" value="<?= $this->companies->prenom_dirigeant ?>"/></td>
+                </tr>
+                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                    <th><label for="fonction2_e">Fonction :</label></th>
+                    <td><input type="text" name="fonction2_e" id="fonction2_e" class="input_large" value="<?= $this->companies->fonction_dirigeant ?>"/></td>
+                    <th><label for="email2_e">Email :</label></th>
+                    <td><input type="text" name="email2_e" id="email2_e" class="input_large" value="<?= $this->companies->email_dirigeant ?>"/></td>
+                </tr>
+                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                    <th><label for="phone2_e">Téléphone :</label></th>
+                    <td><input type="text" name="phone2_e" id="phone2_e" class="input_moy" value="<?= $this->companies->phone_dirigeant ?>"/></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+            <?php endif; ?>
+        </table>
+        <h2>Etape 2</h2>
+        <table class="form" style="margin: auto;">
+            <input type="hidden" value="<?= $this->currentBankAccount->getId() ?>" name="id_bank_account" id="id_bank_account">
+            <tr>
+                <th><label for="bic">BIC :</label></th>
+                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->currentBankAccount->getBic() ?>"/></td>
+            </tr>
+            <tr>
+                <th style="text-align: right; vertical-align: top; padding: 5px 0px 10px 5px;"><label for="iban1">IBAN :</label></th>
+                <td style="padding: 0 0 10px 0;">
+                    <table>
+                        <tr>
+                            <td><input type="text" name="iban1" id="iban1" class="input_court" value="<?= (false === empty($this->iban1)) ? $this->iban1 : '' ?>"/></td>
+                            <td><input type="text" name="iban2" id="iban2" class="input_court" value="<?= (false === empty($this->iban2)) ? $this->iban2 : '' ?>"/></td>
+                            <td><input type="text" name="iban3" id="iban3" class="input_court" value="<?= (false === empty($this->iban3)) ? $this->iban3 : '' ?>"/></td>
+                            <td><input type="text" name="iban4" id="iban4" class="input_court" value="<?= (false === empty($this->iban4)) ? $this->iban4 : '' ?>"/></td>
+                            <td><input type="text" name="iban5" id="iban5" class="input_court" value="<?= (false === empty($this->iban5)) ? $this->iban5 : '' ?>"/></td>
+                            <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= (false === empty($this->iban6)) ? $this->iban6 : '' ?>"/></td>
+                            <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= (false === empty($this->iban7)) ? $this->iban7 : '' ?>"/></td>
                         </tr>
-                        <tr class="particulier">
-                            <td colspan="2">
-                                <select name="origine_des_fonds" id="origine_des_fonds" class="select">
-                                    <option value="0">Choisir</option>
-                                    <?php foreach ($this->origine_fonds as $k => $origine_fonds) : ?>
-                                        <option <?= ($this->lenders_accounts->origine_des_fonds == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>" ><?= $origine_fonds ?></option>
-                                    <?php endforeach; ?>
-                                    <option <?= ($this->lenders_accounts->origine_des_fonds == 1000000 ? 'selected' : '') ?> value="1000000">Autre</option>
-                                </select>
+                        <tr>
+                            <td colspan="5">
+                                <span class="btn" id="change_bank_account_btn">Valider les modifications sur le RIB</span>
+                            </td>
+                            <td colspan="2" valign="middle">
+                                <p><span id="iban_ok" style="margin:0px;"></span>  <span id="bic_ok" style="margin:0px;"></span></p>
                             </td>
                         </tr>
-                        <tr class="particulier">
-                            <td colspan="2">
-                                <div id="row_precision" style="display:none;">
-                                    <input type="text" id="preciser" name="preciser" value="<?= ($this->lenders_accounts->precision != '' ? $this->lenders_accounts->precision : '') ?>" class="input_large">
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endif; ?>
+                    </table>
+                </td>
+            </tr>
+            <?php if ($this->origine_fonds[0] != false) : ?>
+                <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) : ?>
+                    <tr class="particulier">
+                        <th colspan="2" style="text-align:left;"><label for="origines">Quelle est l'origine des fonds que vous déposez sur Unilend ?</label></th>
+                    </tr>
+                    <tr class="particulier">
+                        <td colspan="2">
+                            <select name="origine_des_fonds" id="origine_des_fonds" class="select">
+                                <option value="0">Choisir</option>
+                                <?php foreach ($this->origine_fonds as $k => $origine_fonds) : ?>
+                                    <option <?= ($this->clients->funds_origin == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>" ><?= $origine_fonds ?></option>
+                                <?php endforeach; ?>
+                                <option <?= ($this->clients->funds_origin == 1000000 ? 'selected' : '') ?> value="1000000">Autre</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr class="particulier">
+                        <td colspan="2">
+                            <div id="row_precision" style="display:none;">
+                                <input type="text" id="preciser" name="preciser" value="<?= ($this->clients->funds_origin_detail != '' ? $this->clients->funds_origin_detail : '') ?>" class="input_large">
+                            </div>
+                        </td>
+                    </tr>
                 <?php endif; ?>
-            </table>
-            <br/><br/>
+            <?php endif; ?>
+        </table>
+        <br/><br/>
 
             <style type="text/css">
                 .form-style-10{
@@ -1105,29 +1106,48 @@
             iban5: $('#iban5').val(),
             iban6: $('#iban6').val(),
             iban7: $('#iban7').val(),
+            id_bank_account: $('#id_bank_account').val(),
             id_client: "<?= $this->clients->id_client ?>"
         };
 
         $.post(add_url + "/preteurs/change_bank_account", rib).done(function (data) {
             oJson = JSON.parse(data);
             var color = 'red';
-            if (typeof oJson.text !== 'undefined' && typeof oJson.severity !== 'undefined') {
-                switch (oJson.severity) {
-                    case 'valid':
-                        color = 'green';
-                        break;
-                    case 'warning':
-                        color = 'orange';
-                        break;
-                    case 'error':
-                        color = 'red';
-                        break;
-                }
-                $('#iban_ok').text(oJson.text);
-                $('#iban_ok').css("color", color);
-            } else {
+
+            if (typeof oJson.text == 'undefined' && typeof oJson.severity == 'undefined') {
                 $('#iban_ok').text('Une erreur est survenue');
                 $('#iban_ok').css("color", color);
+            } else {
+                if (typeof oJson.text.bic !== 'undefined' && typeof oJson.severity.bic !== 'undefined') {
+                    switch (oJson.severity.bic) {
+                        case 'valid':
+                            color = 'green';
+                            break;
+                        case 'warning':
+                            color = 'orange';
+                            break;
+                        case 'error':
+                            color = 'red';
+                            break;
+                    }
+                    $('#bic_ok').text(oJson.text.bic);
+                    $('#bic_ok').css("color", color);
+                }
+                if (typeof oJson.text.iban !== 'undefined' && typeof oJson.severity.iban !== 'undefined') {
+                    switch (oJson.severity.iban) {
+                        case 'valid':
+                            color = 'green';
+                            break;
+                        case 'warning':
+                            color = 'orange';
+                            break;
+                        case 'error':
+                            color = 'red';
+                            break;
+                    }
+                    $('#iban_ok').text(oJson.text.iban);
+                    $('#iban_ok').css("color", color);
+                }
             }
         });
     });
@@ -1140,7 +1160,7 @@
         }
     });
 
-    <?php if ($this->lenders_accounts->origine_des_fonds == 1000000) : ?>
+    <?php if ($this->clients->funds_origin == 1000000) : ?>
         $("#row_precision").show();
     <?php endif; ?>
 </script>

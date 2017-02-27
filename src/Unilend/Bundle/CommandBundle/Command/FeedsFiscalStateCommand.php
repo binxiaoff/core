@@ -5,12 +5,19 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class FeedsFiscalStateCommand extends ContainerAwareCommand
 {
+    /**
+     * @var \DateTime
+     */
+    private $dischargeMonth;
+
     /**
      * @see Command
      */
@@ -38,6 +45,8 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $taxRate = $taxType->getTaxRateByCountry('fr', [1]);
         /** @var \underlying_contract $contract */
         $contract = $entityManager->getRepository('underlying_contract');
+
+        $this->dischargeMonth = new \DateTime('last month');
 
         $aResult = $this->getData('fr');
 
@@ -241,7 +250,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $tax_type = $entityManager->getRepository('tax_type');
 
         try {
-            return $echeanciers->getFiscalState(new \DateTime('first day of last month'), new \DateTime('last day of last month'), $tax_type->getTaxDetailsByCountry($country, [\tax_type::TYPE_VAT]));
+            return $echeanciers->getFiscalState($this->dischargeMonth->modify('first day of this month'), $this->dischargeMonth->modify('last day of this month'), $tax_type->getTaxDetailsByCountry($country, [\tax_type::TYPE_VAT]));
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getContainer()->get('monolog.logger.console');
@@ -293,5 +302,33 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $bank_unilend->retrait_fiscale        = 1;
             $bank_unilend->create();
         }
+
+        $totalTaxAmount = bcmul($this->doTaxWalletsWithdrawals(), 100);
+        if (0 !== (bccomp($totalTaxAmount, $etatRemb, 2))) {
+            $this->getContainer()->get('logger')->error('Tax balance does not match in fiscal state. stateWallets = ' . $totalTaxAmount . ' fiscal state value : ' . $etatRemb);
+        }
+    }
+
+    private function doTaxWalletsWithdrawals()
+    {
+        $operationsManager = $this->getContainer()->get('unilend.service.operation_manager');
+        $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $logger            = $this->getContainer()->get('monolog.logger.console');
+        $totalTaxAmount    = 0;
+
+        /** @var Wallet[] $taxWallets */
+        $taxWallets = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getTaxWallets();
+        foreach ($taxWallets as $wallet) {
+            /** @var WalletBalanceHistory $lastMonthWalletHistory */
+            $lastMonthWalletHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getBalanceOfTheDay($wallet, $this->dischargeMonth->modify('last day of this month'));
+            if (null === $lastMonthWalletHistory) {
+                $logger->error('Could not get the wallet balance for ' . $wallet->getIdType()->getLabel(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                continue;
+            }
+            $totalTaxAmount = bcadd($lastMonthWalletHistory->getAvailableBalance(), $totalTaxAmount, 2);
+            $operationsManager->withdrawTaxWallet($wallet, $lastMonthWalletHistory->getAvailableBalance());
+        }
+
+        return $totalTaxAmount;
     }
 }

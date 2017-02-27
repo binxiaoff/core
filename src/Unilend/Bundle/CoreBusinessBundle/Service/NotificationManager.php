@@ -147,6 +147,9 @@ class NotificationManager
         $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
 
         foreach ($notificationTypes as $notification) {
+            if ($clientNotificationSettings->exist(['id_client' => $client->id_client, 'id_notif'  => $notification['id_client_gestion_type_notif']])) {
+                continue;
+            }
             $clientNotificationSettings->id_client = $client->id_client;
             $clientNotificationSettings->id_notif  = $notification['id_client_gestion_type_notif'];
 
