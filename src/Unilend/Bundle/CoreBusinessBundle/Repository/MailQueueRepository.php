@@ -13,7 +13,7 @@ class MailQueueRepository extends EntityRepository
      */
     public function getPendingMails($limit)
     {
-        $qb = $this->createQueryBuilder("mq");
+        $qb = $this->createQueryBuilder('mq');
         $qb->where('mq.status = :pending')
            ->setParameter('pending', MailQueue::STATUS_PENDING)
            ->andWhere('mq.toSendAt <= :now')

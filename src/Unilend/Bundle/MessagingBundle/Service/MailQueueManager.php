@@ -20,17 +20,17 @@ class MailQueueManager
     private $sharedTemporaryPath;
     /** @var LoggerInterface */
     private $logger;
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $em;
 
     /**
      * MailQueueManager constructor.
      *
-     * @param EntityManagerSimulator $entityManager
-     * @param EntityManager $em
+     * @param EntityManagerSimulator  $entityManager
+     * @param EntityManager           $em
      * @param TemplateMessageProvider $templateMessage
-     * @param LoggerInterface $logger
-     * @param $sharedTemporaryPath
+     * @param LoggerInterface         $logger
+     * @param                         $sharedTemporaryPath
      */
     public function __construct(EntityManagerSimulator $entityManager, EntityManager $em, TemplateMessageProvider $templateMessage, LoggerInterface $logger, $sharedTemporaryPath)
     {
@@ -208,7 +208,7 @@ class MailQueueManager
             $body = $response->getBody();
             if (false === empty($body['Sent'])) {
                 foreach ($body['Sent'] as $sent) {
-                    if($sent['Email'] === $firstRecipient) {
+                    if ($sent['Email'] === $firstRecipient) {
                         $messageId = $sent['MessageID'];
                         break;
                     }
