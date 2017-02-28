@@ -182,7 +182,7 @@ class ProjectDisplayManager
         } else {
             $projectData['costFunded']    = $alreadyFunded;
             $projectData['percentFunded'] = round($alreadyFunded / $project->amount * 100, 1);
-            $projectData['maxValidRate']  = $projectRateSettings['rate_min'];
+            $projectData['maxValidRate']  = $projectRateSettings['rate_max'];
         }
 
         $projectData['navigation'] = $project->positionProject($project->id_project, self::$projectsStatus, [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]);
