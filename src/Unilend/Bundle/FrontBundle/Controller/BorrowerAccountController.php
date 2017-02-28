@@ -116,7 +116,8 @@ class BorrowerAccountController extends Controller
                 $this->addFlash('error', $translator->trans('borrower-demand_message-error'));
             }
             if (false === $error) {
-                $company = $this->getCompany();
+                $company        = $this->getCompany();
+                $partnerManager = $this->get('unilend.service.partner_manager');
 
                 /** @var \projects $project */
                 $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
@@ -128,6 +129,9 @@ class BorrowerAccountController extends Controller
                 $project->comments                             = $formData['message'];
                 $project->period                               = $formData['duration'];
                 $project->status                               = \projects_status::A_TRAITER;
+                $project->id_partner                           = $partnerManager->getDefaultPartner()->id;
+                $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
+                $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
                 $project->create();
 
                 $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::A_TRAITER, $project);

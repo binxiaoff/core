@@ -665,7 +665,7 @@ class transfertsController extends bootstrap
                         $commissionFundsRateVATIncluded = bcmul(
                             bcadd(1, round(bcdiv($vatTax->getRate(), 100, 4), 2), 2),
                             round(bcdiv($projectEntity->getCommissionRateFunds(), 100, 4), 2),
-                            2
+                            4
                         );
                         $commission                     = round(bcmul($projectLoanAmount, $commissionFundsRateVATIncluded, 4), 2);
                         $operationManager->projectCommission($projectEntity, $commission);
@@ -747,13 +747,10 @@ class transfertsController extends bootstrap
                             $invoiceCounter = $this->loadData('compteur_factures');
                             /** @var \factures $invoice */
                             $invoice = $this->loadData('factures');
-                            /** @var \tax_type $taxType */
-                            $taxType = $this->loadData('tax_type');
 
-                            $taxRate            = $taxType->getTaxRateByCountry('fr');
                             $sDateFirstPayment  = $aRepaymentHistory[0]['added'];
                             $fCommission        = bcmul($commission, 100);
-                            $fVATFreeCommission = round($fCommission / (1 + $taxRate[\tax_type::TYPE_VAT] / 100));
+                            $fVATFreeCommission = round($fCommission / (1 + $vatTax->getRate() / 100));
 
                             $invoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($invoiceCounter->compteurJournalier($project->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
                             $invoice->date            = $sDateFirstPayment;

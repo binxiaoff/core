@@ -6,7 +6,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +17,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -213,7 +211,7 @@ class ProjectRequestController extends Controller
             $em->flush();
             $this->get('unilend.service.wallet_creation_manager')->createWallet($this->client, WalletType::BORROWER);
             $em->commit();
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $em->getConnection()->rollBack();
             $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
@@ -225,6 +223,8 @@ class ProjectRequestController extends Controller
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $this->client->getIdClient());
         }
 
+        $partnerManager = $this->get('unilend.service.partner_manager');
+
         $this->project                                       = $entityManager->getRepository('projects');
         $this->project->id_company                           = $this->company->getIdCompany();
         $this->project->amount                               = $amount;
@@ -232,6 +232,9 @@ class ProjectRequestController extends Controller
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
         $this->project->status                               = \projects_status::DEMANDE_SIMULATEUR;
+        $this->project->id_partner                           = $partnerManager->getDefaultPartner()->id;
+        $this->project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
+        $this->project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $this->project->create();
 
         return $this->start();

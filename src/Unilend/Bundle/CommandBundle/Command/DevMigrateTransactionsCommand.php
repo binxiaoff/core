@@ -39,58 +39,6 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         try {
             foreach ($transactionsToMigrate as $transaction) {
 
-                if ($transaction['id_transaction'] == 1460178) {
-                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
-                    continue;
-                }
-
-                if ($transaction['id_transaction'] == 2771937){
-                    $transaction['montant'] = '88880';
-                }
-
-                if ($transaction['id_transaction'] == 16952103) {
-                    $amount =  $this->calculateOperationAmount($transaction['montant']);
-                    $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
-
-                    $lenderWallet = $this->getClientWallet($transaction['id_client']);
-
-                    /** @var \bids $bidEntity */
-                    $bidEntity = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('bids');
-                    $bid       = $bidEntity->select('id_lender_wallet_line = 8277690')[0];
-                    $amount    = $this->calculateOperationAmount($transaction['montant']);
-
-                    $availableBalance = bcsub($lenderWallet['available_balance'], $amount, 2);
-                    $committedBalance = bcadd($lenderWallet['committed_balance'], $amount, 2);
-
-                    $lenderWallet['available_balance'] = $availableBalance;
-                    $lenderWallet['committed_balance'] = $committedBalance;
-
-                    $this->updateWalletBalance($lenderWallet, $bid);
-                    $this->saveWalletBalanceHistory($lenderWallet, null, $bid);
-
-                    $this->migrateBid($transaction);
-                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
-                    continue;
-                }
-
-                if ($transaction['id_transaction'] == 364887) {
-                    $amount =  $this->calculateOperationAmount($transaction['montant']);
-                    $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
-                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
-                    continue;
-                }
-
-                if (in_array($transaction['id_transaction'], [1667967, 1667964])){
-                    $amount =  $this->calculateOperationAmount($transaction['montant']);
-                    $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
-                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
-                    continue;
-                }
-
-                if ($transaction['id_transaction'] == 2264291) {
-                    $this->lenderRegulation($transaction['id_client'], '39.63', $transaction['date_transaction']);
-                }
-
                 switch($transaction['type_transaction']) {
                     case \transactions_types::TYPE_LENDER_SUBSCRIPTION:
                     case \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT:
@@ -678,13 +626,14 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             return;
         }
 
-        $operation['id_type']            = $this->getOperationType('borrower_commission');
-        $operation['amount']             = $this->calculateOperationAmount(bcadd($borrowerRepaymentSchedule->commission, $borrowerRepaymentSchedule->tva, 2));
-        $operation['id_project']         = $borrowerRepaymentSchedule->id_project;
-        $operation['id_wallet_creditor'] = $unilendWallet['id'];
-        $operation['id_wallet_debtor']   = $borrowerWallet['id'];
-        $operation['added']              = $transaction['date_transaction'];
-        $operation['id']                 = $this->newOperation($operation);
+        $operation['id_type']             = $this->getOperationType('borrower_commission');
+        $operation['amount']              = $this->calculateOperationAmount(bcadd($borrowerRepaymentSchedule->commission, $borrowerRepaymentSchedule->tva, 2));
+        $operation['id_project']          = $borrowerRepaymentSchedule->id_project;
+        $operation['id_payment_schedule'] = $transaction['id_echeancier_emprunteur'];
+        $operation['id_wallet_creditor']  = $unilendWallet['id'];
+        $operation['id_wallet_debtor']    = $borrowerWallet['id'];
+        $operation['added']               = $transaction['date_transaction'];
+        $operation['id']                  = $this->newOperation($operation);
 
         $this->debitAvailableBalance($borrowerWallet, $operation);
         $this->saveWalletBalanceHistory($borrowerWallet, $operation);
@@ -1173,7 +1122,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
     private function insertIntoNonTreatedTransactions(array $transaction, $message, $status = 0)
     {
         $this->dataBaseConnection->executeQuery('INSERT INTO non_migrated_transactions (id_transaction, status, message) VALUE (:transactionId, :status, :message)',
-          ['transactionId' => $transaction['id_transaction'], 'status' => $status, 'message' => $message]);
+            ['transactionId' => $transaction['id_transaction'], 'status' => $status, 'message' => $message]);
     }
 
     private function checkIfCommissionHasAlreadyBeenMigrated(array $transaction)
@@ -1188,23 +1137,4 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         return $statement->fetchColumn();
     }
-
-    private function lenderRegulation($clientId, $amount, $date)
-    {
-        $unilendWallet = $this->getWalletByLabel('unilend');
-        $lenderWallet  = $this->getClientWallet($clientId);
-
-        $operation['id_type']            = $this->getOperationType('unilend_lender_regularization');
-        $operation['id_wallet_debtor']   = $unilendWallet['id'];
-        $operation['id_wallet_creditor'] = $lenderWallet['id'];
-        $operation['amount']             = $amount;
-        $operation['added']              = $date;
-        $operation['id']                 = $this->newOperation($operation);
-
-        $this->debitAvailableBalance($unilendWallet, $operation);
-        $this->saveWalletBalanceHistory($unilendWallet, $operation);
-        $this->creditAvailableBalance($lenderWallet, $operation);
-        $this->saveWalletBalanceHistory($lenderWallet, $operation);
-    }
-
 }
