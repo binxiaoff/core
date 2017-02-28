@@ -32,7 +32,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
         $this->dataBaseConnection = $this->getContainer()->get('database_connection');
         /** @var \transactions $transactions */
         $transactions          = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('transactions');
-        $transactionsToMigrate = $transactions->select('status = 1 date_transaction > \'2017-02-28 10:59:00\'', 'date_transaction ASC, id_transaction ASC', null, $limit);
+        $transactionsToMigrate = $transactions->select('status = 1 AND NOT EXISTS(SELECT id_transaction FROM transaction_treated WHERE transaction_treated.id_transaction = transactions.id_transaction)', 'date_transaction ASC, id_transaction ASC', null, $limit);
         $transactionCount      = 0;
 
         $this->dataBaseConnection->beginTransaction();
@@ -113,6 +113,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                         break;
                 }
 
+                $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
                 $transactionCount += 1;
             }
 
