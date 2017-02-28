@@ -105,15 +105,15 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $lenderRepayment->amount     = $e['montant'];
                             $lenderRepayment->create();
 
+                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
+                            $operationManager->repayment($repaymentSchedule);
+
                             $echeanciers->get($e['id_echeancier'], 'id_echeancier');
                             $echeanciers->capital_rembourse   = $echeanciers->capital;
                             $echeanciers->interets_rembourses = $echeanciers->interets;
                             $echeanciers->status              = \echeanciers::STATUS_REPAID;
                             $echeanciers->date_echeance_reel  = $repaymentDate;
                             $echeanciers->update();
-
-                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
-                            $operationManager->repayment($repaymentSchedule);
 
                             $transactions->id_client        = $lenders->id_client_owner;
                             $transactions->montant          = $e['capital'];
