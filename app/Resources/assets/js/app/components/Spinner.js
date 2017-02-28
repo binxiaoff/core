@@ -97,6 +97,13 @@ $doc
     if ($activeElement.attr('data-has-spinner') && Utility.elemExists($activeElement.attr('data-has-spinner'))) {
       $spinnerTarget = $($activeElement.attr('data-has-spinner'))
     }
+    // If spinner is fired on single project page
+    if ($spinnerTarget.find('#alloffers-table').length) {
+      var pixelFromLeftSide = $('#alloffers-table').width() / 2
+      pixelFromLeftSide += $('#alloffers-table').offset().left
+      posX = (pixelFromLeftSide / window.innerWidth) * 100
+      $spinnerTarget = $('.modal-spinner')
+    }
 
     // Show spinner
     $spinnerTarget.addClass('ui-is-loading')
@@ -108,12 +115,6 @@ $doc
     // console.log('spinner ajaxStart', event, event.target.activeElement)
     // console.log('spinnerTarget', $spinnerTarget)
 
-    // If spinner is fired on single project page
-    if ($spinnerTarget.find('#alloffers-table').length) {
-      var pixelFromLeftSide = $('#alloffers-table').width() / 2
-      pixelFromLeftSide += $('#alloffers-table').offset().left
-      posX = (pixelFromLeftSide / window.innerWidth) * 100
-    }
 
     // Position the main body spinner
     if ($spinnerTarget.is('body') || $spinnerTarget.is('.modal-spinner')) {
@@ -132,6 +133,10 @@ $doc
     // Get the specific spinner element
     if ($activeElement.attr('data-has-spinner') && Utility.elemExists($activeElement.attr('data-has-spinner'))) {
       $spinnerTarget = $($activeElement.attr('data-has-spinner'))
+    }
+    // If spinner is fired on single project page
+    if ($spinnerTarget.find('#alloffers-table').length) {
+      $spinnerTarget = $('.modal-spinner')
     }
 
     // @debug
