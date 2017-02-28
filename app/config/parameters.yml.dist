@@ -23,6 +23,8 @@ parameters:
 
     sonata_cache.servers:
         - { domain: www.local.unilend.fr, ip: 192.168.110.12, port: 443 }
+    payline.merchant_id:            '16828263878877'
+    payline.access_key:             'vtPtmVrGFhFx6OPeg7No'
     # End of parameters managed also by Ansible
 
     dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection

@@ -33,8 +33,7 @@ class virements extends virements_crud
     const TYPE_UNILEND  = 4;
 
     const STATUS_PENDING   = 0;
-    const STATUS_SEND      = 1;
-    const STATUS_VALIDATED = 2;
+    const STATUS_SEND      = 30;
 
     public function __construct($bdd, $params = '')
     {

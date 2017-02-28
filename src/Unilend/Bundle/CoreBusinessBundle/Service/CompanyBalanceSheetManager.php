@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CompanyBalanceSheetManager
@@ -136,14 +137,24 @@ class CompanyBalanceSheetManager
     }
 
     /**
-     * @param \companies $company
+     * @param \companies | Companies $company
      *
      * @return \company_tax_form_type|null
      */
-    public function detectTaxFormType(\companies $company)
+    public function detectTaxFormType($company)
     {
         $taxFormType = $this->entityManager->getRepository('company_tax_form_type');
-        if (false === empty($company->rcs)) { // We are only capable of managing the fiscal form for a "RCS"( which is 2033)
+        $companyRcs = '';
+
+        if ($company instanceof \companies) {
+            $companyRcs = $company->rcs;
+        }
+
+        if ($company instanceof Companies) {
+            $companyRcs = $company->getRcs();
+        }
+
+        if (false === empty($companyRcs)) { // We are only capable of managing the fiscal form for a "RCS"( which is 2033)
             $taxFormType->get(\company_tax_form_type::FORM_2033, 'label');
 
             return $taxFormType;

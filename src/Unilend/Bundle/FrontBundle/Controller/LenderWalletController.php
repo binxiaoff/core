@@ -8,13 +8,19 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\FrontBundle\Service\PaylineManager;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\core\Loader;
 
@@ -126,16 +132,8 @@ class LenderWalletController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
         /** @var \transactions $transaction */
         $transaction = $entityManager->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $entityManager->getRepository('wallets_lines');
-        /** @var \bank_lines $bankLine */
-        $bankLine = $entityManager->getRepository('bank_lines');
-        /** @var \virements $bankTransfer */
-        $bankTransfer = $entityManager->getRepository('virements');
         /** @var \lenders_accounts $lender */
         $lender = $entityManager->getRepository('lenders_accounts');
         /** @var \offres_bienvenues_details $welcomeOfferDetails */
@@ -152,18 +150,21 @@ class LenderWalletController extends Controller
         $translator = $this->get('translator');
         /** @var ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
+        $em                  = $this->get('doctrine.orm.entity_manager');
 
-        if ($client->get($this->getUser()->getClientId(), 'id_client')) {
+        $client = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+
+        if ($client) {
             /** @var \clients_history_actions $clientActionHistory */
             $clientActionHistory = $entityManager->getRepository('clients_history_actions');
-            $serialize           = serialize(array('id_client' => $client->id_client, 'montant' => $post['amount'], 'mdp' => md5($post['password'])));
-            $clientActionHistory->histo(3, 'retrait argent', $client->id_client, $serialize);
+            $serialize           = serialize(array('id_client' => $client->getIdClient(), 'montant' => $post['amount'], 'mdp' => md5($post['password'])));
+            $clientActionHistory->histo(3, 'retrait argent', $client->getIdClient(), $serialize);
 
             if ($clientStatusManager->getLastClientStatus($client) < \clients_status::VALIDATED) {
                 $this->redirectToRoute('lender_wallet_withdrawal');
             }
 
-            $lender->get($client->id_client, 'id_client_owner');
+            $lender->get($client->getIdClient(), 'id_client_owner');
 
             $amount = $post['amount'];
 
@@ -171,7 +172,7 @@ class LenderWalletController extends Controller
             $securityPasswordEncoder = $this->get('security.password_encoder');
 
             if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $post['password'])) {
-                $logger->info('Wrong password id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                $logger->info('Wrong password id_client=' . $client->getIdClient(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
                 $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
             } else {
                 if (false === is_numeric($amount)) {
@@ -179,70 +180,54 @@ class LenderWalletController extends Controller
                 } elseif (empty($lender->bic) || empty($lender->iban)) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 } else {
-                    $sumOffres = $welcomeOfferDetails->sum('id_client = ' . $client->id_client . ' AND status = 0', 'montant');
-
-                    if ($sumOffres > 0) {
-                        $sumOffres = ($sumOffres / 100);
-                    } else {
-                        $sumOffres = 0;
-                    }
+                    $sumOffres = $this->get('unilend.service.welcome_offer_manager')->getCurrentWelcomeOfferAmount($client);
 
                     if (($amount + $sumOffres) > $this->getUser()->getBalance() || $amount <= 0) {
                         $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                     }
                 }
-                $logger->info('Wrong parameters submitted, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                $logger->info('Wrong parameters submitted, id_client=' . $client->getIdClient(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
             }
 
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
-                $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                $logger->error('Wrong parameters submitted, id_client=' . $client->getIdClient() . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
             } else {
-                $transaction->id_client        = $client->id_client;
-                $transaction->montant          = '-' . ($amount * 100);
-                $transaction->id_langue        = 'fr';
-                $transaction->date_transaction = date('Y-m-d H:i:s');
-                $transaction->status           = \transactions::STATUS_VALID; // on met en mode reglé pour ne plus avoir la somme sur le compte
-                $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
-                $transaction->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL; // on signal que c'est un retrait
-                $transaction->create();
+                $em          = $this->get('doctrine.orm.entity_manager');
+                /** @var WalletRepository $walletRepo */
+                $walletRepo  = $em->getRepository('UnilendCoreBusinessBundle:Wallet');
+                $wallet      = $walletRepo->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy([
+                    'idClient' => $wallet->getIdClient(),
+                    'status'   => BankAccount::STATUS_VALIDATED
+                ]);
 
-                $walletLine->id_lender                = $lender->id_lender_account;
-                $walletLine->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-                $walletLine->id_transaction           = $transaction->id_transaction;
-                $walletLine->status                   = \wallets_lines::STATUS_VALID;
-                $walletLine->type                     = 1;
-                $walletLine->amount                   = '-' . ($amount * 100);
-                $walletLine->create();
+                $wireTransferOut = new Virements();
+                $wireTransferOut->setClient($wallet->getIdClient());
+                $wireTransferOut->setMontant(bcmul($amount, 100));
+                $wireTransferOut->setMotif($wallet->getWireTransferPattern());
+                $wireTransferOut->setType(Virements::TYPE_LENDER);
+                $wireTransferOut->setStatus(Virements::STATUS_PENDING);
+                $wireTransferOut->setBankAccount($bankAccount);
+                $em->persist($wireTransferOut);
 
-                $bankLine->id_wallet_line    = $walletLine->id_wallet_line;
-                $bankLine->id_lender_account = $lender->id_lender_account;
-                $bankLine->status            = 1;
-                $bankLine->amount            = '-' . ($amount * 100);
-                $bankLine->create();
-
-                $bankTransfer->id_client      = $client->id_client;
-                $bankTransfer->id_transaction = $transaction->id_transaction;
-                $bankTransfer->montant        = $amount * 100;
-                $bankTransfer->motif          = $client->getLenderPattern($client->id_client);
-                $bankTransfer->type           = 1;
-                $bankTransfer->status         = 0;
-                $bankTransfer->create();
+                $this->get('unilend.service.operation_manager')->withdrawLenderWallet($wallet, $wireTransferOut);
+                $transaction->get($wireTransferOut->getIdTransaction());
 
                 $notification->type      = \notifications::TYPE_DEBIT;
                 $notification->id_lender = $lender->id_lender_account;
                 $notification->amount    = $amount * 100;
                 $notification->create();
 
-                $this->getUser()->setBalance($transaction->getSolde($client->id_client));
+                $this->getUser()->setBalance($transaction->getSolde($client->getIdClient()));
 
-                $clientMailNotification->id_client       = $client->id_client;
+                $clientMailNotification->id_client       = $client->getIdClient();
                 $clientMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_DEBIT;
                 $clientMailNotification->date_notif      = date('Y-m-d H:i:s');
                 $clientMailNotification->id_notification = $notification->id_notification;
                 $clientMailNotification->id_transaction  = $transaction->id_transaction;
                 $clientMailNotification->create();
 
-                if ($clientNotification->getNotif($client->id_client, 8, 'immediatement') == true) {
+                if ($clientNotification->getNotif($client->getIdClient(), 8, 'immediatement') == true) {
                     $clientMailNotification->get($clientMailNotification->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                     $clientMailNotification->immediatement = 1;
                     $clientMailNotification->update();
@@ -259,7 +244,7 @@ class LenderWalletController extends Controller
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
-     * @return Response
+     * @return JsonResponse|Response
      */
     public function depositMoneyAction(Request $request)
     {
@@ -271,12 +256,8 @@ class LenderWalletController extends Controller
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
-        /** @var \transactions $transaction */
-        $transaction = $entityManager->getRepository('transactions');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
         /** @var CsrfTokenManagerInterface $csrfTokenManager */
         $csrfTokenManager = $this->get('security.csrf.token_manager');
 
@@ -294,58 +275,21 @@ class LenderWalletController extends Controller
             $token = $this->get('security.csrf.token_manager');
             $token->refreshToken('deposit');
 
-            $amount = (number_format($amount, 2, '.', '') * 100);
-
             /** @var \clients_history_actions $clientActionHistory */
             $clientActionHistory = $entityManager->getRepository('clients_history_actions');
             $clientActionHistory->histo(2, 'alim cb', $client->id_client, serialize(array('id_client' => $client->id_client, 'post' => $request->request->all())));
 
-            $transaction->id_client        = $client->id_client;
-            $transaction->montant          = $amount;
-            $transaction->id_langue        = 'fr';
-            $transaction->date_transaction = date('Y-m-d H:i:s');
-            $transaction->status           = \transactions::STATUS_PENDING;
-            $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
-            $transaction->type_transaction = \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT;
-            $transaction->create();
+            $em = $this->get('doctrine.orm.entity_manager');
+            $walletType = $em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::LENDER]);
+            $wallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->id_client, 'idType' => $walletType]);
 
-            $paylineParameter = [];
-            require_once $this->getParameter('path.payline') . 'include.php';
-            /** @var \paylineSDK $payline */
-            $payline                  = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
-            $payline->returnURL       = $this->get('assets.packages')->getUrl('') . $this->generateUrl('wallet_payment', ['hash' => $client->hash]);
-            $payline->cancelURL       = $payline->returnURL;
-            $payline->notificationURL = NOTIFICATION_URL;
+            $successUrl = $this->generateUrl('wallet_payment', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
+            $cancelUrl = $this->generateUrl('wallet_payment', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-            $paylineParameter['payment']['amount']   = $amount;
-            $paylineParameter['payment']['currency'] = ORDER_CURRENCY;
-            $paylineParameter['payment']['action']   = PAYMENT_ACTION;
-            $paylineParameter['payment']['mode']     = PAYMENT_MODE;
+            $redirectUrl = $this->get('unilend.service.payline_manager')->pay($amount, $wallet, $successUrl, $cancelUrl);
 
-            $paylineParameter['order']['ref']      = $transaction->id_transaction;
-            $paylineParameter['order']['amount']   = $amount;
-            $paylineParameter['order']['currency'] = ORDER_CURRENCY;
-
-            $paylineParameter['payment']['contractNumber'] = CONTRACT_NUMBER;
-            $contracts                                     = explode(";", CONTRACT_NUMBER_LIST);
-            $paylineParameter['contracts']                 = $contracts;
-            $secondContracts                               = explode(";", SECOND_CONTRACT_NUMBER_LIST);
-            $paylineParameter['secondContracts']           = $secondContracts;
-
-            $logger->info('Calling Payline::doWebPayment: return URL=' . $payline->returnURL . ' Transmitted data: ' . json_encode($paylineParameter), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-
-            $result = $payline->doWebPayment($paylineParameter);
-            $logger->info('Payline response : ' . json_encode($result), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-
-            $transaction->get($transaction->id_transaction, 'id_transaction');
-            $transaction->serialize_payline = serialize($result);
-            $transaction->update();
-
-            if (isset($result) && $result['result']['code'] == '00000') {
-                return $this->json(
-                    ['url' =>$result['redirectURL']],
-                    Response::HTTP_OK
-                );
+            if (false !== $redirectUrl) {
+                return $this->json(['url' => $redirectUrl], Response::HTTP_OK);
             }
         }
         return $this->json(['message' => $this->render('pages/lender_wallet/deposit_money_result.html.twig', ['code' => 0])->getContent()], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -374,34 +318,24 @@ class LenderWalletController extends Controller
             'token' => $request->request->get('token', $request->query->get('token'))
         ];
 
-        if (true === $client->get($hash, 'hash') && false === empty($paylineParameter['token'])) {
-            /** @var \paylineSDK $payline */
-            $payline = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
-
-            $paylineParameter['version'] = $request->request->get('version', '3');
-            $response                    = $payline->getWebPaymentDetails($paylineParameter);
-            $partnerId                   = $request->getSession()->get('id_partenaire', '');
-
-            if (false === empty($response)) {
-                /** @var PaylineManager $paylineManager */
-                $paylineManager = $this->get('unilend.frontbundle.service.payline_manager');
-                $paylineManager->setLogger($logger);
-
-                if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_WALLET)) {
-                    return $this->redirectToRoute('lender_wallet_deposit', [
-                        'depositResult' => true,
-                        'depositCode'   => Response::HTTP_OK,
-                        'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)
-                    ]);
-                } else {
-                    $logger->warning('The payment was canceled or an error code was returned by payline. Client ID: ' . $client->id_client . ' - Payline response: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-                }
-            } else {
-                $logger->error('Empty response from Payline, Client ID: ' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+        if ($client->get($hash, 'hash')) {
+            $token = $request->query->get('token');
+            $version = $request->query->get('version', Backpayline::WS_DEFAULT_VERSION);
+            if (true === empty($token)) {
+                $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
             }
-        } else {
-            $clientId = $this->getUser()->getClientId();
-            $logger->error('Payline has returned wrong parameters: token or hash not found, hash: ' . $hash . ' - ' . json_encode($paylineParameter) . ' - Client ID: ' . $clientId, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientId]);
+
+            $paylineManager = $this->get('unilend.service.payline_manager');
+            $paidAmountInCent = $paylineManager->handlePaylineReturn($token, $version);
+
+            if (false !== $paidAmountInCent) {
+                return $this->redirectToRoute('lender_wallet_deposit', [
+                    'depositResult' => true,
+                    'depositCode' => Response::HTTP_OK,
+                    'depositAmount' => bcdiv($paidAmountInCent, 100, 2)
+                ]);
+            }
         }
         return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
     }
@@ -420,10 +354,10 @@ class LenderWalletController extends Controller
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
      * @param $amount
      */
-    private function sendClientWithdrawalNotification(\clients $client, $amount)
+    private function sendClientWithdrawalNotification(Clients $client, $amount)
     {
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
@@ -435,14 +369,16 @@ class LenderWalletController extends Controller
         $settings->get('Twitter', 'type');
         $lien_tw = $settings->value;
 
+        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+
         $varMail = [
             'surl'            => $this->get('assets.packages')->getUrl(''),
             'url'             => $this->get('assets.packages')->getUrl(''),
-            'prenom_p'        => $client->prenom,
+            'prenom_p'        => $client->getPrenom(),
             'fonds_retrait'   => $ficelle->formatNumber($amount),
             'solde_p'         => $ficelle->formatNumber($this->getUser()->getBalance()),
             'link_mandat'     => $this->get('assets.packages')->getUrl('') . '/images/default/mandat.jpg',
-            'motif_virement'  => $client->getLenderPattern($client->id_client),
+            'motif_virement'  => $wallet->getWireTransferPattern(),
             'projets'         => $this->get('assets.packages')->getUrl('') . $this->generateUrl('home', ['type' => 'projets-a-financer']),
             'gestion_alertes' => $this->get('assets.packages')->getUrl('') . $this->generateUrl('lender_profile'),
             'lien_fb'         => $lien_fb,
@@ -451,7 +387,7 @@ class LenderWalletController extends Controller
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $varMail);
-        $message->setTo($client->email);
+        $message->setTo($client->getEmail());
         $mailer = $this->get('mailer');
         $mailer->send($message);
     }

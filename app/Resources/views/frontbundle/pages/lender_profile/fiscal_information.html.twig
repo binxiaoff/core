@@ -43,11 +43,11 @@ classNames: 'user-preter-profile'
                             </a>
                             <dl class="list-2col">
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}</dt>
-                                <dd id="profile-fiscalite-bank-origin-output">{% if lenderAccount.fiscal_info.fundsOrigin[lenderAccount.origine_des_fonds] is defined %}{{ lenderAccount.fiscal_info.fundsOrigin[lenderAccount.origine_des_fonds] }}{% else %}-{% endif %}</dd>
+                                <dd id="profile-fiscalite-bank-origin-output">{% if lenderAccount.fiscal_info.fundsOrigin[client.funds_origin] is defined %}{{ lenderAccount.fiscal_info.fundsOrigin[client.funds_origin] }}{% else %}-{% endif %}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-bic {% endtrans %}</dt>
-                                <dd id="profile-fiscalite-bank-bic-output">{{ lenderAccount.bic }}</dd>
+                                <dd id="profile-fiscalite-bank-bic-output">{{ bankAccount.bic }}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-iban {% endtrans %}</dt>
-                                <dd id="profile-fiscalite-bank-iban-output">{{ lenderAccount.iban }}</dd>
+                                <dd id="profile-fiscalite-bank-iban-output">{{ bankAccount.iban }}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-documents {% endtrans %}</dt>
                                 <dd id="profile-fiscalite-bank-fichier-rib-output">
                                     {% set ribDate = lenderAccount.fiscal_info.rib.updated|default(lenderAccount.fiscal_info.rib.added)|localizeddate('short', 'none', app.request.locale) %}
@@ -71,7 +71,7 @@ classNames: 'user-preter-profile'
 
                                             <div class="input-group">
                                                 <div class="custom-input-iban">
-                                                    <input id="form-profile-fiscalite-iban" type="text" name="iban" value="{{ lenderAccount.iban }}" class="iban-input input-field" data-formvalidation-input data-formvalidation-type="iban"/>
+                                                    <input id="form-profile-fiscalite-iban" type="text" name="iban" value="{{ bankAccount.iban }}" class="iban-input input-field" data-formvalidation-input data-formvalidation-type="iban"/>
                                                 </div>
                                             </div><!-- /.input-group -->
 
@@ -87,7 +87,7 @@ classNames: 'user-preter-profile'
                                             </label>
                                         </div><!-- /.field-label -->
                                         <div class="custom-input-bic">
-                                            <input id="form-profile-fiscalite-bic" type="text" name="bic" value="{{ lenderAccount.bic }}" class="bic-input input-field" data-formvalidation-input data-formvalidation-type="bic"/>
+                                            <input id="form-profile-fiscalite-bic" type="text" name="bic" value="{{ bankAccount.bic }}" class="bic-input input-field" data-formvalidation-input data-formvalidation-type="bic"/>
                                         </div>
                                     </div>
                                     <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2">
@@ -99,7 +99,7 @@ classNames: 'user-preter-profile'
                                         <select id="funds-origin" name="funds_origin" class="input-field">
                                             <option value=""> {% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %} </option>
                                             {% for id, label in lenderAccount.fiscal_info.fundsOrigin %}
-                                                <option value="{{ id }}" {% if lenderAccount.origine_des_fonds is defined and id == lenderAccount.origine_des_fonds %} selected="selected"{% endif %} > {{ label }} </option>
+                                                <option value="{{ id }}" {% if client.funds_origin is defined and id == client.funds_origin %} selected="selected"{% endif %} > {{ label }} </option>
                                             {% endfor %}
                                         </select>
                                     </div>

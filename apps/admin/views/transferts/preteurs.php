@@ -62,28 +62,31 @@
         </thead>
         <tbody>
             <?php $i = 1; ?>
-            <?php foreach ($this->aOperations as $aOperation) : ?>
+            <?php
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
+            foreach ($this->receptions as $reception) :
+            ?>
                 <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><?= $aOperation['id_reception'] ?></td>
-                    <td><?= $aOperation['motif'] ?></td>
-                    <td style="text-align:right"><?= $this->ficelle->formatNumber($aOperation['montant'] / 100) ?> €</td>
-                    <td class="statut_operation_<?= $aOperation['id_reception'] ?>">
-                        <?php if (1 == $aOperation['status_bo'] && isset($this->aUsers[$aOperation['id_user']])) : ?>
-                            <?= $this->aUsers[$aOperation['id_user']]['firstname'] . ' ' . $this->aUsers[$aOperation['id_user']]['name'] ?><br/>
-                            <?= date('d/m/Y à H:i:s', strtotime($aOperation['assignment_date'])) ?>
-                        <?php else : ?>
-                            <?= $this->statusOperations[$aOperation['status_bo']] ?>
+                    <td><?= $reception->getIdReception() ?></td>
+                    <td><?= $reception->getMotif() ?></td>
+                    <td style="text-align:right"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
+                    <td class="statut_operation_<?= $reception->getIdReception() ?>">
+                        <?php if (1 == $reception->getstatusBo() && $reception->getIdUser()): ?>
+                            <?= $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() ?><br/>
+                            <?= $reception->getAssignmentDate()->format('d/m/Y à H:i:s') ?>
+                        <?php else: ?>
+                            <?= $this->statusOperations[$reception->getstatusBo()] ?>
                         <?php endif; ?>
                     </td>
-                    <td class="num_client_<?= $aOperation['id_reception'] ?>"><?= $aOperation['id_client'] ?></td>
-                    <td><?= date('d/m/Y', strtotime($aOperation['added'])) ?></td>
+                    <td class="num_client_<?= $reception->getIdReception() ?>"><?= $reception->getIdClient()->getIdClient() ?></td>
+                    <td><?= $reception->getAdded()->format('d/m/Y') ?></td>
                     <td align="center">
-                        <img class="annuler_<?= $aOperation['id_reception'] ?>" style="cursor:pointer;" onclick="annulerAttribution(<?= $aOperation['id_client'] ?>, <?= $aOperation['id_reception'] ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Annuler"/>
-                        <a class="inline" href="#inline_content_<?= $aOperation['id_reception'] ?>">
+                        <img class="annuler_<?= $reception->getIdReception() ?>" style="cursor:pointer;" onclick="annulerAttribution(<?= $reception->getIdClient()->getIdClient() ?>, <?= $reception->getIdReception() ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Annuler"/>
+                        <a class="inline" href="#inline_content_<?= $reception->getIdReception() ?>">
                             <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher la ligne de réception"/>
                         </a>
                         <div style="display:none;">
-                            <div id="inline_content_<?= $aOperation['id_reception'] ?>" style="white-space:nowrap; padding:10px; background:#fff;"><?= $aOperation['ligne'] ?></div>
+                            <div id="inline_content_<?= $reception->getIdReception() ?>" style="white-space:nowrap; padding:10px; background:#fff;"><?= $reception->getLigne() ?></div>
                         </div>
                     </td>
                 </tr>

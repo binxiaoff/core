@@ -46,7 +46,7 @@
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Création Dossier</h1>
-    <?php if (isset($this->params['0']) && $this->params['0'] == 'create') { ?>
+    <?php if (isset($this->params['0']) && $this->params['0'] == 'create') : ?>
         <form action="<?= $this->lurl ?>/dossiers/add" method="post" onsubmit="$('#link_search').trigger('click'); return false;">
             <div class="choose-client">
                 Client existant ?
@@ -94,7 +94,7 @@
             <input type="hidden" id="send_create_etape1" name="send_create_etape1">
             <div class="btnDroite" style="text-align:center;"><input type="submit" class="btn" value="Valider"></div>
         </form>
-    <?php } elseif (false === empty($this->projects->id_project)) { ?>
+    <?php  elseif (false === empty($this->projects->id_project)) : ?>
         <div id="lesEtapes">
             <?php $this->fireView('blocs/etape1'); ?>
             <?php $this->fireView('blocs/etape2'); ?>
@@ -104,5 +104,5 @@
             <a href="<?= $this->lurl ?>/dossiers/add/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a>
             <a href="#" id="end_create" class="btn_link" onclick="valid_create(<?= $this->projects->id_project ?>); return false;">Terminer</a>
         </div>
-    <?php } ?>
+    <?php endif; ?>
 </div>

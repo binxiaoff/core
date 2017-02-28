@@ -1,47 +1,54 @@
 <?php
 
-
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ClientStatusManager
 {
-    /** @var  EntityManager */
+    /** @var  EntityManagerSimulator */
     private $entityManager;
     /** @var  NotificationManager */
     private $notificationManager;
     /** @var  AutoBidSettingsManager */
     private $autoBidSettingsManager;
+    /** @var  EntityManager */
+    private $em;
 
     /**
      * ClientStatusManager constructor.
-     * @param EntityManager          $entityManager
+     * @param EntityManagerSimulator $entityManager
      * @param NotificationManager    $notificationManager
      * @param AutoBidSettingsManager $autoBidSettingsManager
+     * @param EntityManager          $em
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerSimulator $entityManager,
         NotificationManager $notificationManager,
-        AutoBidSettingsManager $autoBidSettingsManager
+        AutoBidSettingsManager $autoBidSettingsManager,
+        EntityManager $em
     ) {
         $this->entityManager          = $entityManager;
         $this->notificationManager    = $notificationManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
+        $this->em                     = $em;
     }
 
     /**
      * @param \clients $client
      * @param int      $userId
      * @param string   $comment
+     *
      * @throws \Exception
      */
     public function closeAccount(\clients $client, $userId, $comment)
     {
         /** @var \transactions $transactions */
         $transactions = $this->entityManager->getRepository('transactions');
-        if ($transactions->getSolde($client->id_client) > 0 ) {
+        if ($transactions->getSolde($client->id_client) > 0) {
             throw new \Exception('The client still has money in his account');
         }
 
@@ -62,10 +69,31 @@ class ClientStatusManager
     }
 
     /**
-     * @param \clients $client
+     * @param \clients|Clients $client
+     *
      * @return mixed
      */
-    public function getLastClientStatus(\clients $client)
+    public function getLastClientStatus($client)
+    {
+        if ($client instanceof \clients) {
+            return $this->getLastClientStatusLegacy($client);
+        }
+
+        /** @var ClientsStatus $clientStatusEntity */
+        $clientStatusEntity = $this->em->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client->getIdClient());
+        if (null !== $clientStatusEntity) {
+            return $clientStatusEntity->getLabel();
+        }
+
+        return null;
+    }
+
+    /**
+     * @param \clients $client
+     *
+     * @return mixed
+     */
+    private function getLastClientStatusLegacy(\clients $client)
     {
         /** @var \clients_status $clientsStatus */
         $clientsStatus        = $this->entityManager->getRepository('clients_status');

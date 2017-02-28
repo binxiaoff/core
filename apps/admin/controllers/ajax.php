@@ -1363,7 +1363,7 @@ class ajaxController extends bootstrap
                 if (false === empty($this->projects->risk) && false === empty($this->projects->period)
                     && false === in_array($this->projects->status, [projects_status::REJETE, projects_status::REJET_ANALYSTE, projects_status::REJET_COMITE] )) {
                     try {
-                        $this->projects->id_rate = $oProjectManager->getProjectRateRange($this->projects);
+                        $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projects);
                         $this->projects->update();
                     } catch (\Exception $exception) {
                         echo json_encode(array('liste' => '', 'btn_etape6' => '', 'content_risk' => '', 'error' => $exception->getMessage()));

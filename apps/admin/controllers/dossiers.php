@@ -1,8 +1,11 @@
 <?php
 
 use \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
-use \Psr\Log\LoggerInterface;
 use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class dossiersController extends bootstrap
 {
@@ -120,7 +123,7 @@ class dossiersController extends bootstrap
         $this->clients_prescripteurs         = $this->loadData('clients');
         $this->companies_prescripteurs       = $this->loadData('companies');
         $this->settings                      = $this->loadData('settings');
-        /** @var borrowing_motive $borrowingMotive */
+        /** @var \borrowing_motive $borrowingMotive */
         $borrowingMotive                     = $this->loadData('borrowing_motive');
         $companyTaxFormType                  = $this->loadData('company_tax_form_type');
         /** @var \company_balance_type $companyBalanceDetailsType */
@@ -165,7 +168,7 @@ class dossiersController extends bootstrap
             foreach ($this->taxFormTypes as $formType) {
                 $this->allTaxFormTypes[$formType['label']] = $companyBalanceDetailsType->select('id_company_tax_form_type = '.$formType['id_type']);
             }
-            /** @var product $product */
+            /** @var \product $product */
             $product = $this->loadData('product');
             $this->availableContracts = [];
             if (false === empty($this->projects->id_product) && $product->get($this->projects->id_product)) {
@@ -468,8 +471,6 @@ class dossiersController extends bootstrap
                     $lenders = $this->loadData('lenders_accounts');
                     /** @var \clients $clients */
                     $clients = $this->loadData('clients');
-                    /** @var \wallets_lines $wallets_lines */
-                    $wallets_lines = $this->loadData('wallets_lines');
                     /** @var \echeanciers $echeanciers */
                     $echeanciers = $this->loadData('echeanciers');
 
@@ -495,24 +496,8 @@ class dossiersController extends bootstrap
                             $loans->status = \loans::STATUS_REJECTED;
                             $loans->update();
 
-                            // On redonne l'argent aux preteurs
-                            $transactions->id_client        = $clients->id_client;
-                            $transactions->montant          = $l['amount'];
-                            $transactions->id_langue        = 'fr';
-                            $transactions->id_loan_remb     = $l['id_loan'];
-                            $transactions->date_transaction = date('Y-m-d H:i:s');
-                            $transactions->status           = \transactions::STATUS_VALID;
-                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                            $transactions->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
-                            $transactions->create();
-
-                            $wallets_lines->id_lender                = $l['id_lender'];
-                            $wallets_lines->type_financial_operation = 20;
-                            $wallets_lines->id_transaction           = $transactions->id_transaction;
-                            $wallets_lines->status                   = 1;
-                            $wallets_lines->type                     = 2;
-                            $wallets_lines->amount                   = $l['amount'];
-                            $wallets_lines->create();
+                            $loan = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans')->find($loans->id_loan);
+                            $this->get('unilend.service.operation_manager')->refuseLoan($loan);
 
                             $varMail = [
                                 'surl'              => $this->surl,
@@ -655,7 +640,7 @@ class dossiersController extends bootstrap
 
                         if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                             try {
-                                $this->projects->id_rate = $oProjectManager->getProjectRateRange($this->projects);
+                                $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projects);
                             } catch (\Exception $exception) {
                                 $_SESSION['freeow']['message'] .= $exception->getMessage();
                             }
@@ -905,7 +890,7 @@ class dossiersController extends bootstrap
 
             $this->aRatings = array();
             if (false === empty($this->projects->id_company_rating_history)) {
-                /** @var company_rating $oCompanyRating */
+                /** @var \company_rating $oCompanyRating */
                 $oCompanyRating = $this->loadData('company_rating');
                 $this->aRatings = $oCompanyRating->getHistoryRatingsByType($this->projects->id_company_rating_history);
 
@@ -913,7 +898,7 @@ class dossiersController extends bootstrap
                     (false === isset($this->aRatings['xerfi']) || false === isset($this->aRatings['xerfi_unilend']))
                     && false === empty($this->companies->code_naf)
                 ) {
-                    /** @var xerfi $oXerfi */
+                    /** @var \xerfi $oXerfi */
                     $oXerfi = $this->loadData('xerfi');
 
                     if (false === $oXerfi->get($this->companies->code_naf)) {
@@ -1297,9 +1282,6 @@ class dossiersController extends bootstrap
         /** @var \companies_bilans $oAnnualAccounts */
         $oAnnualAccounts = $this->loadData('companies_bilans');
 
-        /** @var \company_balance $oCompanyBalance */
-        $oCompanyBalance = $this->loadData('company_balance');
-
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
 
@@ -1464,55 +1446,71 @@ class dossiersController extends bootstrap
             }
         }
 
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
+
         if (isset($this->params[0]) && $this->params[0] == 'create_etape2') {
-            if (
-                false === isset($this->params[1])
-                || false === $this->clients->get($this->params[1], 'id_client')
-                || $clientManager->isLender($this->clients)
-            ) {
-                $this->clients_adresses = $this->loadData('clients_adresses');
+            if (isset($this->params[1]) && is_numeric($this->params[1])) {
+                /** @var Clients $clientEntity */
+                $clientEntity = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
+                if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)){
+                    $companyEntity = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
+                } else {
+                    $_SESSION['freeow']['title']   = 'La création n\' pas abouti';
+                    $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
+                    header('Location: ' . $this->lurl . '/dossiers/add/create');
+                    die;
+                }
+            } else {
+                $clientEntity        = new Clients();
+                $companyEntity       = new Companies();
+                $clientAddressEntity = new ClientsAdresses();
 
-                $this->clients->etape_inscription_preteur  = 0;
-                $this->clients->status_inscription_preteur = 0;
-                $this->clients->type                       = 0;
-                $this->clients->source                     = '';
-                $this->clients->source2                    = '';
-                $this->clients->source3                    = '';
-                $this->clients->slug_origine               = '';
-                $this->clients->create();
-
-                $this->clients_adresses->id_client = $this->clients->id_client;
-                $this->clients_adresses->create();
+                $em->beginTransaction();
+                try {
+                    $em->persist($clientEntity);
+                    $em->flush();
+                    $clientAddressEntity->setIdClient($clientEntity->getIdClient());
+                    $em->persist($clientAddressEntity);
+                    $companyEntity->setIdClientOwner($clientEntity->getIdClient());
+                    $em->persist($companyEntity);
+                    $em->flush();
+                    $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
+                    $em->commit();
+                } catch (Exception $exception) {
+                    $em->getConnection()->rollBack();
+                    $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+                }
             }
 
-            if (false === $this->companies->get($this->clients->id_client, 'id_client_owner')) {
-                $this->companies->id_client_owner = $this->clients->id_client;
-                $this->companies->create();
-            }
-            $this->projects->id_company                = $this->companies->id_company;
-            $this->projects->create_bo                 = 1; // on signale que le projet a été créé en Bo
+            $this->projects->id_company                = $companyEntity->getIdCompany();
+            $this->projects->create_bo                 = 1;
             $this->projects->status                    = \projects_status::A_TRAITER;
             $this->projects->id_partner                = $defaultPartner->id;
             $this->projects->commission_rate_funds     = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
             $this->projects->commission_rate_repayment = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
-
             $this->projects->create();
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('unilend.service.project_manager');
             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects);
 
-            $serialize = serialize(array('id_project' => $this->projects->id_project));
+            $serialize = serialize(['id_project' => $this->projects->id_project]);
             $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], $serialize);
 
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
-        } elseif (isset($this->params[0])) {
+        }
+
+        if (
+            isset($this->params[0])
+            && is_numeric($this->params[0])
+            && $this->projects->get($this->params[0])
+        ) {
             $this->prescripteurs           = $this->loadData('prescripteurs');
             $this->clients_prescripteurs   = $this->loadData('clients');
             $this->companies_prescripteurs = $this->loadData('companies');
 
-            $this->projects->get($this->params[0]);
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
@@ -1533,7 +1531,6 @@ class dossiersController extends bootstrap
                 } catch (\Exception $exception) {
 
                 }
-
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                 die;
             }
@@ -1616,6 +1613,9 @@ class dossiersController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->settings                      = $this->loadData('settings');
+        $operationManager                    = $this->get('unilend.service.operation_manager');
+        $repaymentScheduleRepo               = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $paymentScheduleRepo                 = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
@@ -1759,6 +1759,9 @@ class dossiersController extends bootstrap
                             $this->echeanciers->status_email_remb   = 1;
                             $this->echeanciers->date_echeance_reel  = $repaymentDate;
                             $this->echeanciers->update();
+
+                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
+                            $operationManager->repayment($repaymentSchedule);
 
                             $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
                             $this->transactions->montant          = $e['capital'];
@@ -1990,9 +1993,12 @@ class dossiersController extends bootstrap
                     $this->bank_unilend->status                 = 1;
                     $this->bank_unilend->create();
 
-                    /** @var platform_account_unilend $oAccountUnilend */
+                    /** @var \platform_account_unilend $oAccountUnilend */
                     $oAccountUnilend = $this->loadData('platform_account_unilend');
                     $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
+
+                    $paymentSchedule = $paymentScheduleRepo->find($RembEmpr['id_echeancier_emprunteur']);
+                    $operationManager->repaymentCommission($paymentSchedule);
 
                     // MAIL FACTURE REMBOURSEMENT EMPRUNTEUR //
                     /** @var \projects $projects */
@@ -2131,7 +2137,8 @@ class dossiersController extends bootstrap
                 $this->mail_template                 = $this->loadData('mail_templates');
                 $this->companies                     = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-                $oProjectManager= $this->get('unilend.service.project_manager');
+                $oProjectManager = $this->get('unilend.service.project_manager');
+                $loanRepo        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
@@ -2170,34 +2177,10 @@ class dossiersController extends bootstrap
 
                     $montant_total = 0;
 
-                    foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $preteur) {
-                        $reste_a_payer_pour_preteur = $this->echeanciers->getOwedCapital(array('id_loan' => $preteur['id_loan']));
-
-                        $this->lenders_accounts->get($preteur['id_lender'], 'id_lender_account');
-                        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-
-                        $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                        $this->transactions->montant          = bcmul($reste_a_payer_pour_preteur, 100);
-                        $this->transactions->id_echeancier    = 0; // pas d'id_echeance car multiple
-                        $this->transactions->id_loan_remb     = $preteur['id_loan'];
-                        $this->transactions->id_project       = $this->projects->id_project;
-                        $this->transactions->id_langue        = 'fr';
-                        $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                        $this->transactions->status           = \transactions::STATUS_VALID;
-                        $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                        $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT;
-                        $this->transactions->create();
-
-                        $this->wallets_lines->id_lender                = $preteur['id_lender'];
-                        $this->wallets_lines->type_financial_operation = 40;
-                        $this->wallets_lines->id_loan                  = $preteur['id_loan'];
-                        $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                        $this->wallets_lines->status                   = 1; // non utilisé
-                        $this->wallets_lines->type                     = 2; // transaction virtuelle
-                        $this->wallets_lines->amount                   = bcmul($reste_a_payer_pour_preteur, 100);
-                        $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
-
-                        $montant_total += $reste_a_payer_pour_preteur;
+                    foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $item) {
+                        $loan = $loanRepo->find($item['id_loan']);
+                        $outstandingCapital = $operationManager->earlyRepayment($loan);
+                        $montant_total += $outstandingCapital;
                     }
 
                     $this->bdd->query('
@@ -2595,16 +2578,16 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        /** @var projects $oProjects */
+        /** @var \projects $oProjects */
         $oProjects = $this->loadData('projects');
-        /** @var clients $oClients */
+        /** @var \clients $oClients */
         $oClients = $this->loadData('clients');
 
         if (false === isset($this->params[0]) || false === $oProjects->get($this->params[0])) {
             $this->error = 'no projects found';
             return;
         }
-        /** @var companies $oCompanies */
+        /** @var \companies $oCompanies */
         $oCompanies = $this->loadData('companies');
         if (false === $oCompanies->get($oProjects->id_company)) {
             $this->error = 'no company found';
@@ -2613,7 +2596,7 @@ class dossiersController extends bootstrap
 
         $iClientId = null;
         if ($oProjects->id_prescripteur) {
-            /** @var prescripteurs $oPrescripteurs */
+            /** @var \prescripteurs $oPrescripteurs */
             $oPrescripteurs = $this->loadData('prescripteurs');
             if ($oPrescripteurs->get($oProjects->id_prescripteur)) {
                 $iClientId = $oPrescripteurs->id_client;
@@ -2639,11 +2622,11 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        /** @var projects $oProjects */
+        /** @var \projects $oProjects */
         $oProjects = $this->loadData('projects');
-        /** @var clients $oClients */
+        /** @var \clients $oClients */
         $oClients = $this->loadData('clients');
-        /** @var companies $oCompanies */
+        /** @var \companies $oCompanies */
         $oCompanies = $this->loadData('companies');
         /** @var \mail_templates $oMailTemplate */
         $oMailTemplate = $this->loadData('mail_templates');
@@ -2685,11 +2668,11 @@ class dossiersController extends bootstrap
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
         if ($_POST['send_completude']) {
-            /** @var projects $oProjects */
+            /** @var \projects $oProjects */
             $oProjects = $this->loadData('projects');
-            /** @var clients $oClients */
+            /** @var \clients $oClients */
             $oClients = $this->loadData('clients');
-            /** @var companies $oCompanies */
+            /** @var \companies $oCompanies */
             $oCompanies = $this->loadData('companies');
             /** @var \mail_templates $oMailTemplate */
             $oMailTemplate = $this->loadData('mail_templates');

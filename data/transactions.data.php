@@ -500,4 +500,23 @@ class transactions extends transactions_crud
         $statement = $queryBuilder->execute();
         return (float) $statement->fetchColumn();
     }
+
+    /**
+     * @param DateTime $date
+     * @return mixed
+     */
+    public function getLenderWithTransactionsSinceDate(\DateTime $date)
+    {
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('DISTINCT id_client')
+            ->from('transactions', 't')
+            ->innerJoin('t', 'lenders_accounts', 'la', 't.id_client = la.id_client_owner')
+            ->andWhere('t.status = ' . self::STATUS_VALID)
+            ->andWhere('date_transaction >= :date')
+            ->setParameter('date', $date->format('Y-m-d h:i:s'));
+
+        $data = $queryBuilder->execute()->fetchAll(\PDO::FETCH_ASSOC);
+        return $data;
+    }
 }

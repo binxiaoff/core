@@ -6,7 +6,7 @@ body {
     font-size: 11px;
     line-height: 16px;
     letter-spacing: 1.5px;
-    font-family: 'Calibri', 'Arial', 'Sans-Serif';
+    font-family: 'Calibri', 'Arial', sans-serif;
     color: black;
     background: #fff;
     min-width: 960px;
@@ -16,7 +16,7 @@ a { color: #0252aa; text-decoration: none; cursor: pointer; }
 a:hover { text-decoration: underline; }
 a img { border: 0; }
 
-.cgu-wrapper { line-height:1.43; font-family:'Arial', 'Sans-Serif'; color:#727272; background:#fff; }
+.cgu-wrapper { line-height:1.43; font-family: 'Arial', sans-serif; color:#727272; background:#fff; }
 .cgu-wrapper a { font-size:18px; color:#b10366; text-decoration:none; cursor:pointer; font-weight:bold;}
 .cgu-wrapper .main { padding-bottom:510px; }
 .cgu-wrapper h1 { padding: 0 0 20px 0; }

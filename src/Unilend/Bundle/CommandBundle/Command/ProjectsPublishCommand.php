@@ -179,14 +179,18 @@ EOF
         $clients_gestion_mails_notif = $oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \companies $companies */
         $companies = $oEntityManager->getRepository('companies');
-        $oEntityManager->getRepository('clients_status');//For class constants
-
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $oEntityManager->getRepository('lenders_accounts');
         /** @var \transactions $oTransaction */
         $oTransaction = $oEntityManager->getRepository('transactions');
-        /** @var AutoBidSettingsManager $oAutobidSettingsManager */
+
         $oAutobidSettingsManager = $this->getContainer()->get('unilend.service.autobid_settings_manager');
+        $translator              = $this->getContainer()->get('translator');
+        $messageProvider         = $this->getContainer()->get('unilend.swiftmailer.message_provider');
+        $mailer                  = $this->getContainer()->get('mailer');
+        $productManager          = $this->getContainer()->get('unilend.service_product.product_manager');
+
+        $insufficientBalance = $translator->trans('email-nouveau-projet_solde-insuffisant-nouveau-projet');
 
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
@@ -218,11 +222,6 @@ EOF
             'lien_tw'         => $sTwitterLink,
             'annee'           => date('Y')
         );
-
-        /** @var \translations $translations */
-        $translations                          = $oEntityManager->getRepository('translations');
-        $aTranslations['email-nouveau-projet'] = $translations->selectFront('email-nouveau-projet', 'fr');
-
         /** @var \project_period $oProjectPeriods */
         $oProjectPeriods = $oEntityManager->getRepository('project_period');
         $oProjectPeriods->getPeriod($project->period);
@@ -247,8 +246,6 @@ EOF
 
             foreach ($aLenders as $aLender) {
                 $oLenderAccount->get($aLender['id_lender']);
-                $productManager = $this->getContainer()->get('unilend.service_product.product_manager');
-
                 if ($productManager->getLenderEligibility($oLenderAccount, $project)) {
                     $notifications->type       = \notifications::TYPE_NEW_PROJECT;
                     $notifications->id_lender  = $aLender['id_lender'];
@@ -275,17 +272,16 @@ EOF
                                 $sAutobidInsufficientBalance = '
                                     <table width=\'100%\' border=\'1\' cellspacing=\'0\' cellpadding=\'5\' bgcolor="d8b5ce" bordercolor="b20066">
                                         <tr>
-                                            <td align="center" style="color: #b20066">' . $aTranslations['email-nouveau-projet']['solde-insuffisant-nouveau-projet'] . '</td>
+                                            <td align="center" style="color: #b20066">' . $insufficientBalance . '</td>
                                         </tr>
                                     </table>';
                             }
                             $varMail['autobid_insufficient_balance'] = $sAutobidInsufficientBalance;
                             $varMail['prenom_p']                     = $aLender['prenom'];
                             $varMail['motif_virement']               = $clients->getLenderPattern($aLender['id_client']);
-                            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $varMail);
+
+                            $message = $messageProvider->newMessage('nouveau-projet', $varMail);
                             $message->setTo($aLender['email']);
-                            $mailer = $this->getContainer()->get('mailer');
                             $mailer->send($message);
                             ++$iEmails;
                         }

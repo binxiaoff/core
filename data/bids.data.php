@@ -410,7 +410,6 @@ class bids extends bids_crud
                 rate,
                 ordre,
                 status,
-                checked,
                 added,
                 updated,
                 ROUND(amount / 100) AS amount_euro

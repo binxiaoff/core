@@ -460,19 +460,13 @@ class ProjectsController extends Controller
             }
 
             $request->getSession()->remove('bidToken');
-
-            /** @var \bids $bids */
-            $bids = $entityManager->getRepository('bids');
-            $bids->unsetData();
-            $bids->id_lender_account = $lenderAccount->id_lender_account;
-            $bids->id_project        = $project->id_project;
-            $bids->amount            = $bidAmount * 100;
-            $bids->rate              = $rate;
-
             /** @var BidManager $bidManager */
             $bidManager = $this->get('unilend.service.bid_manager');
             try {
-                $bidManager->bid($bids);
+                $walletMatching = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $lenderAccount->id_lender_account]);
+                $wallet         = $walletMatching->getIdWallet();
+                $projectEntity  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+                $bids           = $bidManager->bid($wallet, $lenderAccount->id_lender_account, $projectEntity, $bidAmount, $rate);
                 /** @var MemcacheCachePool $oCachePool */
                 $oCachePool = $this->get('memcache.default');
                 $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
