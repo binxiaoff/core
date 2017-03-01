@@ -343,22 +343,24 @@ class preteursController extends bootstrap
                 $this->naissance = '';
             }
 
-        /** @var ClientsRepository $clientRepository */
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+            /** @var ClientsRepository $clientRepository */
+            $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
             /** @var Clients $clientEntity */
-        $clientEntity = $clientRepository->find($this->clients->id_client);
-        /** @var BankAccount $currentBankAccount */
-        $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
+            $clientEntity = $clientRepository->find($this->clients->id_client);
+            /** @var BankAccount $currentBankAccount */
+            $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
 
-        if ($this->currentBankAccount->getIban() != '') {
-            $this->iban1 = substr($this->currentBankAccount->getIban(), 0, 4);
-            $this->iban2 = substr($this->currentBankAccount->getIban(), 4, 4);
-            $this->iban3 = substr($this->currentBankAccount->getIban(), 8, 4);
-            $this->iban4 = substr($this->currentBankAccount->getIban(), 12, 4);
-            $this->iban5 = substr($this->currentBankAccount->getIban(), 16, 4);
-            $this->iban6 = substr($this->currentBankAccount->getIban(), 20, 4);
-            $this->iban7 = substr($this->currentBankAccount->getIban(), 24, 3);
-        }
+            if (null === $this->currentBankAccount) {
+                $this->currentBankAccount = new BankAccount();
+            } else {
+                $this->iban1 = substr($this->currentBankAccount->getIban(), 0, 4);
+                $this->iban2 = substr($this->currentBankAccount->getIban(), 4, 4);
+                $this->iban3 = substr($this->currentBankAccount->getIban(), 8, 4);
+                $this->iban4 = substr($this->currentBankAccount->getIban(), 12, 4);
+                $this->iban5 = substr($this->currentBankAccount->getIban(), 16, 4);
+                $this->iban6 = substr($this->currentBankAccount->getIban(), 20, 4);
+                $this->iban7 = substr($this->currentBankAccount->getIban(), 24, 3);
+            }
 
             if ($this->clients->telephone != '') {
                 trim(chunk_split($this->clients->telephone, 2, ' '));
