@@ -102,7 +102,6 @@ $doc
       var pixelFromLeftSide = $('#alloffers-table').width() / 2
       pixelFromLeftSide += $('#alloffers-table').offset().left
       posX = (pixelFromLeftSide / window.innerWidth) * 100
-      $spinnerTarget = $('.modal-spinner')
     }
 
     // Show spinner
@@ -122,6 +121,9 @@ $doc
         top: posY + '%',
         left: posX + '%'
       })
+      if ($('.ui-is-spinner').length) {
+        $('.ui-is-spinner').attr('style', 'display: none!important');
+      }
     }
   })
 
@@ -134,10 +136,6 @@ $doc
     if ($activeElement.attr('data-has-spinner') && Utility.elemExists($activeElement.attr('data-has-spinner'))) {
       $spinnerTarget = $($activeElement.attr('data-has-spinner'))
     }
-    // If spinner is fired on single project page
-    if ($spinnerTarget.find('#alloffers-table').length) {
-      $spinnerTarget = $('.modal-spinner')
-    }
 
     // @debug
     // console.log('spinner ajaxStop', event, event.target.activeElement)
@@ -148,4 +146,11 @@ $doc
 
     // @trigger target `Spinner:loading:start` [jQueryEvent]
     $spinnerTarget.trigger('Spinner:loading:ended', [event])
+
+    // Position the main body spinner
+    if ($spinnerTarget.is('body') || $spinnerTarget.is('.modal-spinner')) {
+      if ($('.ui-is-spinner').length) {
+        $('.ui-is-spinner').removeAttr('style');
+      }
+    }
   })
