@@ -953,7 +953,6 @@ class LenderSubscriptionController extends Controller
                 $clientHistory->create();
 
                 $paidAmount = bcdiv($paidAmountInCent, 100, 2);
-                $this->sendInternalMoneyTransferNotification($client, $paidAmount); //todo: can be deleted after being confirmed by internal control team.
                 $this->addFlash(
                     'moneyTransferSuccess',
                     $translator->trans('lender-subscription_money-transfer-success-message', ['%depositAmount%' => $ficelle->formatNumber($paidAmount, 2)])
@@ -1263,29 +1262,6 @@ class LenderSubscriptionController extends Controller
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $varMail);
         $message->setTo($client->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
-    }
-
-    private function sendInternalMoneyTransferNotification(\clients $client, $amount)
-    {
-        /** @var \settings $settings */
-        $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Adresse notification nouveau versement preteur', 'type');
-        $destinataire = $settings->value;
-
-        $varMail = array(
-            'surl'        => $this->get('assets.packages')->getUrl(''),
-            'url'         => $this->get('assets.packages')->getUrl(''),
-            '$id_preteur' => $client->id_client,
-            '$nom'        => $client->nom,
-            '$prenom'     => $client->prenom,
-            '$montant'    => $amount
-        );
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-versement-dun-preteur', $varMail, false);
-        $message->setTo($destinataire);
         $mailer = $this->get('mailer');
         $mailer->send($message);
     }

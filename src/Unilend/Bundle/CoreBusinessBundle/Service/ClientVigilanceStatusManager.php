@@ -7,6 +7,8 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientVigilanceStatusHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 
 
 class ClientVigilanceStatusManager
@@ -39,8 +41,8 @@ class ClientVigilanceStatusManager
 
         if (null === $currentClientVigilanceStatus ||
             $currentClientVigilanceStatus instanceof ClientVigilanceStatusHistory &&
-            $currentClientVigilanceStatus->getVigilanceStatus() < $vigilanceStatus)
-        {
+            $currentClientVigilanceStatus->getVigilanceStatus() < $vigilanceStatus
+        ) {
             $vigilanceStatusHistory = new ClientVigilanceStatusHistory();
             $vigilanceStatusHistory->setClient($client)
                 ->setVigilanceStatus($vigilanceStatus)
@@ -70,8 +72,8 @@ class ClientVigilanceStatusManager
 
         if (null === $currentClientVigilanceStatus ||
             $currentClientVigilanceStatus instanceof ClientVigilanceStatusHistory
-            && $currentClientVigilanceStatus->getVigilanceStatus() >= $vigilanceStatus)
-        {
+            && $currentClientVigilanceStatus->getVigilanceStatus() >= $vigilanceStatus
+        ) {
             $vigilanceStatusHistory = new ClientVigilanceStatusHistory();
             $vigilanceStatusHistory->setClient($client)
                 ->setVigilanceStatus($vigilanceStatus)
@@ -85,5 +87,38 @@ class ClientVigilanceStatusManager
         }
 
         return $currentClientVigilanceStatus;
+    }
+
+    /**
+     * @param VigilanceRule $vigilanceRule
+     * @param Clients       $client
+     * @param null|string   $atypicalValue
+     * @param null|string   $operationLog
+     * @param boolean       $checkPendingDuplicate
+     * @return ClientAtypicalOperation
+     */
+    public function addClientAtypicalOperation(VigilanceRule $vigilanceRule, Clients $client, $atypicalValue = null, $operationLog = null, $checkPendingDuplicate = false)
+    {
+        if (true === $checkPendingDuplicate) {
+            $pendingAtypicalOperation = $this->em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
+                ->findOneBy(['client' => $client, 'rule' => $vigilanceRule, 'detectionStatus' => ClientAtypicalOperation::STATUS_PENDING, 'atypicalValue' => $atypicalValue, 'operationLog' => $operationLog]);
+
+            if ($pendingAtypicalOperation instanceof ClientAtypicalOperation and $pendingAtypicalOperation->getId() > 0) {
+                return $pendingAtypicalOperation;
+            }
+        }
+
+        $atypicalOperation = new ClientAtypicalOperation();
+        $atypicalOperation->setClient($client)
+            ->setRule($vigilanceRule)
+            ->setDetectionStatus(ClientAtypicalOperation::STATUS_PENDING)
+            ->setAtypicalValue($atypicalValue)
+            ->setOperationLog($operationLog)
+            ->setIdUser(Users::USER_ID_CRON);
+
+        $this->em->persist($atypicalOperation);
+        $this->em->flush($atypicalOperation);
+
+        return $atypicalOperation;
     }
 }

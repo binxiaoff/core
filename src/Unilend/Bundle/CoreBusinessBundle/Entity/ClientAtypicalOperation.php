@@ -9,18 +9,12 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="client_atypical_operation", indexes={@ORM\Index(name="idx_client_atypical_operation_id_client", columns={"id_client"}), @ORM\Index(name="idx_client_atypical_operation_status", columns={"status"}), @ORM\Index(name="fk_vigilance_rule_client_atypical_operation_id_rule", columns={"id_rule"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ClientAtypicalOperation
 {
     const STATUS_PENDING = 0;
     const STATUS_TREATED = 1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="status", type="int", nullable=false)
-     */
-    private $status;
 
     /**
      * @var string
@@ -85,26 +79,6 @@ class ClientAtypicalOperation
      * })
      */
     private $client;
-
-    /**
-     * @return int
-     */
-    public function getStatus()
-    {
-        return $this->status;
-    }
-
-    /**
-     * @param int $status
-     *
-     * @return ClientAtypicalOperation
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
 
     /**
      * @return string
@@ -215,18 +189,6 @@ class ClientAtypicalOperation
     }
 
     /**
-     * @param $id
-     *
-     * @return ClientAtypicalOperation
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    /**
      * @return VigilanceRule
      */
     public function getRule()
@@ -271,7 +233,7 @@ class ClientAtypicalOperation
      */
     public function setAddedValue()
     {
-        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
@@ -282,5 +244,36 @@ class ClientAtypicalOperation
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="detection_status", type="integer", nullable=false)
+     */
+    private $detectionStatus;
+
+    /**
+     * Set detectionStatus
+     *
+     * @param integer $detectionStatus
+     *
+     * @return ClientAtypicalOperation
+     */
+    public function setDetectionStatus($detectionStatus)
+    {
+        $this->detectionStatus = $detectionStatus;
+
+        return $this;
+    }
+
+    /**
+     * Get detectionStatus
+     *
+     * @return boolean
+     */
+    public function getDetectionStatus()
+    {
+        return $this->detectionStatus;
     }
 }

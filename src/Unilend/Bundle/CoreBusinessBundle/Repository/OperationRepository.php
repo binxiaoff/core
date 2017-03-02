@@ -17,9 +17,10 @@ class OperationRepository extends EntityRepository
         $qb->select('op');
 
         foreach ($criteria as $field => $value) {
-            $qb->andWhere('op.' . $field . $operator[$field] . ':' .$field)
+            $qb->andWhere('op.' . $field . $operator[$field] . ':' . $field)
                 ->setParameter($field, $value);
         }
+        $qb->orderBy('op.added', 'ASC');
 
         return $qb->getQuery()->getResult();
     }
@@ -35,7 +36,7 @@ class OperationRepository extends EntityRepository
         $qb->select('SUM(op.amount)');
 
         foreach ($criteria as $field => $value) {
-            $qb->andWhere('op.' . $field . $operator[$field] . ':' .$field)
+            $qb->andWhere('op.' . $field . $operator[$field] . ':' . $field)
                 ->setParameter($field, $value);
         }
 

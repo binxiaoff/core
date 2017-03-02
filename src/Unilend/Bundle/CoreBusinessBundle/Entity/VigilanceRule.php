@@ -31,9 +31,9 @@ class VigilanceRule
     private $label;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="vigilance_status", type="boolean", nullable=false)
+     * @ORM\Column(name="vigilance_status", type="integer", nullable=false)
      */
     private $vigilanceStatus;
 

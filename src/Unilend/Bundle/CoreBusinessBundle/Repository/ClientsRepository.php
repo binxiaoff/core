@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -59,24 +60,27 @@ class ClientsRepository extends EntityRepository
     public function getClientsByDepositAmountAndDate(\DateTime $operationDateSince, $amount, $sum = false)
     {
         if (true === $sum) {
-            $select = 'c.idClient, GROUP_CONCAT(o.id) as operation SUM(o.amount) as depositAmount';
+            $select = 'c.idClient, o.id as operation, SUM(o.amount) as depositAmount'; // @todo find a solution to get concatenation of operation IDs
         } else {
             $select = 'c.idClient, o.id as operation, o.amount as depositAmount';
         }
         $operationType = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType');
-        $qb            = $this->createQueryBuilder('c');
-        $qb->select($select)
+        $qb            = $this->createQueryBuilder('c')
+            ->select($select)
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = c.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWallet = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWalletCreditor = w.id')
             ->where('o.idType = :operation_type')
             ->setParameter('operation_type', $operationType->findOneBy(['label' => OperationType::LENDER_PROVISION]))
             ->andWhere('o.added >= :operation_date')
             ->setParameter('operation_date', $operationDateSince)
-            ->andWhere('o.amount >= :operation_amount')
-            ->setParameter('operation_amount', $amount)
-            ->groupBy('c.idClient');
+            ->having('depositAmount >= :operation_amount')
+            ->setParameter('operation_amount', $amount);
 
-        return $qb->getQuery()->getResult();
+        if (true === $sum) {
+            $qb->groupBy('o.idWalletCreditor');
+        }
+
+        return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
 
     /**
@@ -87,33 +91,46 @@ class ClientsRepository extends EntityRepository
     public function getClientsWithMultipleBankAccountsOnPeriod(\DateTime $fromDate, $maxRibChange)
     {
         $query = '
-        SELECT *
+        SELECT c.id_client,
+          w.id,
+          (SELECT COUNT(*) FROM bank_account ba WHERE ba.id_client = c.id_client AND ba.added >= :from_date) AS nb_rib_change
         FROM
           clients c
           INNER JOIN wallet w ON w.id_client = c.id_client
           INNER JOIN wallet_type wt ON wt.id = w.id_type
         WHERE
           wt.label = :wallet_type_label
-          AND (SELECT COUNT(ba.id) FROM bank_account ba WHERE ba.id_client = c.id_client AND ba.added >= :from_date) >= :max_rib_change
+        HAVING nb_rib_change >= :max_rib_change
         ';
 
         return $this->getEntityManager()
             ->getConnection()
-            ->executeQuery($query, ['from_date' => $fromDate->format('Y-m-d H:i:s'), 'max_rib_change' => $maxRibChange, 'wallet_type_label' => WalletType::LENDER])->fetchAll();
+            ->executeQuery(
+                $query,
+                [
+                    'from_date' => $fromDate->format('Y-m-d H:i:s'),
+                    'max_rib_change' => $maxRibChange,
+                    'wallet_type_label' => WalletType::LENDER
+                ]
+            )->fetchAll();
     }
 
     /**
-     * @param int $vigilanceStatus
+     * @param int       $vigilanceStatus
+     * @param \DateTime $addedDate
      * @return array
      */
-    public function getClientsByFiscalCountryStatus($vigilanceStatus)
+    public function getClientsByFiscalCountryStatus($vigilanceStatus, \DateTime $addedDate)
     {
         $qb = $this->createQueryBuilder('c');
-        $qb->innerJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'c.idClient = ca.idClient')
+        $qb->select('c.idClient, ca.idPaysFiscal, p.fr as countryLabel')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'c.idClient = ca.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:PaysV2', 'p', Join::WITH, 'p.idPays= ca.idPaysFiscal')
             ->where('p.vigilanceStatus = :vigilance_status')
-            ->setParameter('vigilance_status', $vigilanceStatus);
+            ->setParameter('vigilance_status', $vigilanceStatus)
+            ->andWhere('c.added >= :added_date')
+            ->setParameter('added_date', $addedDate);
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
 }

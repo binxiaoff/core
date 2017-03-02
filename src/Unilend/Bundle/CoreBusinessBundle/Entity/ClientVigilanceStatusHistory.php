@@ -8,14 +8,15 @@ use Doctrine\ORM\Mapping as ORM;
  * ClientVigilanceStatusHistory
  *
  * @ORM\Table(name="client_vigilance_status_history", indexes={@ORM\Index(name="idx_client_atypical_operation_id_client", columns={"id_client"}), @ORM\Index(name="fk_client_atypical_operation_client_vigilance_status_history", columns={"id_atypical_operation"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientVigilanceStatusHistoryRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class ClientVigilanceStatusHistory
 {
     /**
      * @var int
      *
-     * @ORM\Column(name="vigilance_status", type="int", nullable=false)
+     * @ORM\Column(name="vigilance_status", type="integer", nullable=false)
      */
     private $vigilanceStatus = '1';
 
@@ -59,7 +60,6 @@ class ClientVigilanceStatusHistory
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation
      *
-     * @ORM\Column(name="id_atypical_operation", type="integer", nullable=true)
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_atypical_operation", referencedColumnName="id")
@@ -210,7 +210,7 @@ class ClientVigilanceStatusHistory
      *
      * @return ClientVigilanceStatusHistory
      */
-    public function setAtypicalOperation($atypicalOperation)
+    public function setAtypicalOperation(ClientAtypicalOperation $atypicalOperation)
     {
         $this->atypicalOperation = $atypicalOperation;
 
@@ -230,7 +230,7 @@ class ClientVigilanceStatusHistory
      *
      * @return ClientVigilanceStatusHistory
      */
-    public function setClient($client)
+    public function setClient(Clients $client)
     {
         $this->client = $client;
 
@@ -242,7 +242,7 @@ class ClientVigilanceStatusHistory
      */
     public function setAddedValue()
     {
-        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
