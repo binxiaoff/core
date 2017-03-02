@@ -343,22 +343,24 @@ class preteursController extends bootstrap
                 $this->naissance = '';
             }
 
-        /** @var ClientsRepository $clientRepository */
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+            /** @var ClientsRepository $clientRepository */
+            $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
             /** @var Clients $clientEntity */
-        $clientEntity = $clientRepository->find($this->clients->id_client);
-        /** @var BankAccount $currentBankAccount */
-        $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
+            $clientEntity = $clientRepository->find($this->clients->id_client);
+            /** @var BankAccount $currentBankAccount */
+            $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
 
-        if ($this->currentBankAccount->getIban() != '') {
-            $this->iban1 = substr($this->currentBankAccount->getIban(), 0, 4);
-            $this->iban2 = substr($this->currentBankAccount->getIban(), 4, 4);
-            $this->iban3 = substr($this->currentBankAccount->getIban(), 8, 4);
-            $this->iban4 = substr($this->currentBankAccount->getIban(), 12, 4);
-            $this->iban5 = substr($this->currentBankAccount->getIban(), 16, 4);
-            $this->iban6 = substr($this->currentBankAccount->getIban(), 20, 4);
-            $this->iban7 = substr($this->currentBankAccount->getIban(), 24, 3);
-        }
+            if (null === $this->currentBankAccount) {
+                $this->currentBankAccount = new BankAccount();
+            } else {
+                $this->iban1 = substr($this->currentBankAccount->getIban(), 0, 4);
+                $this->iban2 = substr($this->currentBankAccount->getIban(), 4, 4);
+                $this->iban3 = substr($this->currentBankAccount->getIban(), 8, 4);
+                $this->iban4 = substr($this->currentBankAccount->getIban(), 12, 4);
+                $this->iban5 = substr($this->currentBankAccount->getIban(), 16, 4);
+                $this->iban6 = substr($this->currentBankAccount->getIban(), 20, 4);
+                $this->iban7 = substr($this->currentBankAccount->getIban(), 24, 3);
+            }
 
             if ($this->clients->telephone != '') {
                 trim(chunk_split($this->clients->telephone, 2, ' '));
@@ -1281,13 +1283,12 @@ class preteursController extends bootstrap
 
         /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
         $mailQueueManager = $this->get('unilend.service.mail_queue');
-        /** @var mail_queue $mailQueue */
-        $mailQueue = $this->loadData('mail_queue');
-        $mailQueue->get($this->params[0]);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue $mailQueue */
+        $mailQueue = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($this->params[0]);
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $email */
         $email = $mailQueueManager->getMessage($mailQueue);
         /** @var \DateTime $sentAt */
-        $sentAt = new \DateTime($mailQueue->sent_at);
+        $sentAt = $mailQueue->getSentAt();
 
         $from = $email->getFrom();
         $to   = $email->getTo();

@@ -10,7 +10,7 @@ class TemplateMessage extends \Swift_Message
     /** @var int */
     private $templateId;
     /** @var int */
-    private $messageId;
+    private $queueId;
     /** @var array */
     private $variables;
     /** @var \DateTime */
@@ -70,12 +70,12 @@ class TemplateMessage extends \Swift_Message
     }
 
     /**
-     * @param int $messageId
+     * @param int $queueId
      * @return $this
      */
-    public function setMessageId($messageId)
+    public function setQueueId($queueId)
     {
-        $this->messageId = $messageId;
+        $this->queueId = $queueId;
         return $this;
     }
 
@@ -134,9 +134,9 @@ class TemplateMessage extends \Swift_Message
     /**
      * @return null|int
      */
-    public function getMessageId()
+    public function getQueueId()
     {
-        return $this->messageId;
+        return $this->queueId;
     }
 
     /**
