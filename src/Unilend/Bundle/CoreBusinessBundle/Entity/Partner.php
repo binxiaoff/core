@@ -34,9 +34,9 @@ class Partner
     private $logo;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -150,7 +150,7 @@ class Partner
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Partner
      */
@@ -164,7 +164,7 @@ class Partner
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
