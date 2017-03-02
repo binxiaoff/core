@@ -4,10 +4,9 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
-use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use PhpXmlRpc\Client;
 use PhpXmlRpc\Request;
@@ -15,7 +14,7 @@ use PhpXmlRpc\Value;
 
 class UniversignManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerSimulator */
     private $entityManager;
     /** @var Router */
     private $router;
@@ -31,7 +30,7 @@ class UniversignManager
     private $mailerManager;
 
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerSimulator $entityManager,
         MailerManager $mailerManager,
         RouterInterface $router,
         LoggerInterface $logger,
@@ -168,6 +167,10 @@ class UniversignManager
             file_put_contents($this->rootDir . '/../protected/pdf/mandat/' . $documentName, $documentContent);
             $mandate->status = \clients_mandats::STATUS_SIGNED;
             $mandate->update();
+
+            if ($mandate->exist($mandate->id_client, 'id_project = ' . $mandate->id_project . ' AND status = ' . \clients_mandats::STATUS_ARCHIVED . ' AND id_client')) {
+                $this->updateDirectDebit($mandate);
+            }
 
             /** @var \projects_pouvoir $proxy */
             $proxy = $this->entityManager->getRepository('projects_pouvoir');
@@ -347,5 +350,26 @@ class UniversignManager
         $this->mailer->send($message);
 
         $this->logger->error('Return Universign ' . $documentType . ' NOK (project ' . $projectId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectId]);
+    }
+
+    /**
+     * @param \clients_mandats $activeMandate
+     */
+    private function updateDirectDebit(\clients_mandats $activeMandate)
+    {
+        /** @var \receptions $directDebit */
+        $directDebit = $this->entityManager->getRepository('prelevements');
+
+        $futureDirectDebits = $directDebit->select('id_client = ' . $activeMandate->id_client . ' AND id_project = ' . $activeMandate->id_project . ' AND status = ' . \prelevements::STATUS_PENDING);
+
+        if (false === empty($futureDirectDebits)) {
+            foreach ($futureDirectDebits as $futureDebit) {
+                $directDebit->get($futureDebit['id_prelevement']);
+                $directDebit->iban = $activeMandate->iban;
+                $directDebit->bic  = $activeMandate->bic;
+                $directDebit->update();
+                $directDebit->unsetData();
+            }
+        }
     }
 }
