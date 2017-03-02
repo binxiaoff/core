@@ -11,6 +11,7 @@
 
         <service id="unilend.service.mail_queue" class="Unilend\Bundle\MessagingBundle\Service\MailQueueManager">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="logger" />
             <argument>%path.shared_tmp%</argument>
@@ -33,6 +34,7 @@
 
         <service id="unilend.swiftmailer.db_spool" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\DatabaseSpool">
             <argument type="service" id="unilend.service.mail_queue"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
         <service id="swiftmailer.mailer.transport.mailjet" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\MailjetTransport">

@@ -7,11 +7,18 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * MailQueue
  *
- * @ORM\Table(name="mail_queue", indexes={@ORM\Index(name="status", columns={"status"}), @ORM\Index(name="recipient", columns={"recipient", "id_mail_template"}), @ORM\Index(name="id_client", columns={"id_client"})})
+ * @ORM\Table(name="mail_queue", indexes={@ORM\Index(name="status", columns={"status"}), @ORM\Index(name="recipient", columns={"recipient", "id_mail_template"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_message_mailjet", columns={"id_message_mailjet"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\MailQueueRepository")
  */
 class MailQueue
 {
+    const STATUS_PENDING    = 0;
+    const STATUS_PROCESSING = 1;
+    const STATUS_SENT       = 2;
+    const STATUS_ERROR      = -1;
+
     /**
      * @var integer
      *
@@ -57,9 +64,16 @@ class MailQueue
     /**
      * @var string
      *
-     * @ORM\Column(name="serialized_reponse", type="text", length=65535, nullable=true)
+     * @ORM\Column(name="id_message_mailjet", type="integer", nullable=true)
      */
-    private $serializedReponse;
+    private $idMessageMailjet;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="error_mailjet", type="string", length=256, nullable=true)
+     */
+    private $errorMailjet;
 
     /**
      * @var integer
@@ -252,27 +266,51 @@ class MailQueue
     }
 
     /**
-     * Set serializedReponse
+     * Set idMessageMailjet
      *
-     * @param string $serializedReponse
+     * @param integer $idMessageMailjet
      *
      * @return MailQueue
      */
-    public function setSerializedReponse($serializedReponse)
+    public function setIdMessageMailjet($idMessageMailjet)
     {
-        $this->serializedReponse = $serializedReponse;
+        $this->idMessageMailjet = $idMessageMailjet;
 
         return $this;
     }
 
     /**
-     * Get serializedReponse
+     * Get idMessageMailjet
+     *
+     * @return integer
+     */
+    public function getIdMessageMailjet()
+    {
+        return $this->idMessageMailjet;
+    }
+
+    /**
+     * Set errorMailjet
+     *
+     * @param string $errorMailjet
+     *
+     * @return MailQueue
+     */
+    public function setErrorMailjet($errorMailjet)
+    {
+        $this->errorMailjet = $errorMailjet;
+
+        return $this;
+    }
+
+    /**
+     * Get errorMailjet
      *
      * @return string
      */
-    public function getSerializedReponse()
+    public function getErrorMailjet()
     {
-        return $this->serializedReponse;
+        return $this->errorMailjet;
     }
 
     /**
@@ -403,5 +441,23 @@ class MailQueue
     public function getIdQueue()
     {
         return $this->idQueue;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

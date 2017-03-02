@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * WalletBalanceHistory
  *
- * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"}), @ORM\Index(name="fk_id_bid_idx", columns={"id_bid"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_autobid", columns={"id_autobid"}), @ORM\Index(name="id_loan", columns={"id_loan"})})
+ * @ORM\Table(name="wallet_balance_history", indexes={@ORM\Index(name="fk_id_wallet_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_operation_idx", columns={"id_operation"}), @ORM\Index(name="fk_id_bid_idx", columns={"id_bid"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_autobid", columns={"id_autobid"}), @ORM\Index(name="id_loan", columns={"id_loan"}), @ORM\Index(name="idx_wallet_balance_history_added", columns={"added"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WalletBalanceHistoryRepository")

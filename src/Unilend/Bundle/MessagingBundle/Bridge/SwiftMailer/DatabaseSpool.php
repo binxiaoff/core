@@ -2,7 +2,9 @@
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
+use Doctrine\ORM\EntityManager;
 use Mailjet\Response;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
 use Unilend\Bundle\MessagingBundle\Service\MailQueueManager;
 
 class DatabaseSpool extends \Swift_ConfigurableSpool
@@ -12,15 +14,21 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
      * @var MailQueueManager
      */
     protected $mailQueueManager;
+    /**
+     * @var EntityManager
+     */
+    protected $entityManager;
 
     /**
      * @param MailQueueManager $mailQueueManager
+     * @param EntityManager    $entityManager
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct(MailQueueManager $mailQueueManager)
+    public function __construct(MailQueueManager $mailQueueManager, EntityManager $entityManager)
     {
         $this->mailQueueManager = $mailQueueManager;
+        $this->entityManager    = $entityManager;
     }
 
     /**
@@ -75,7 +83,6 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
 
         $limit = $this->getMessageLimit();
         $limit = $limit > 0 ? $limit : null;
-        /** @var \mail_queue[] $emailsToSend */
         $emailsToSend = $this->mailQueueManager->getMailsToSend($limit);
 
         if (! count($emailsToSend)) {
@@ -86,8 +93,7 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
         $count            = 0;
 
         foreach ($emailsToSend as $email) {
-            $email->status = \mail_queue::STATUS_PROCESSING;
-            $email->update();
+            $email->setStatus(MailQueue::STATUS_PROCESSING);
 
             $message  = $this->mailQueueManager->getMessage($email);
             $response = $transport->send($message, $failedRecipients);
@@ -95,13 +101,10 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
             if (! ($transport instanceof MailjetTransport)) {
                 if ($response) {
                     $count++;
-                    $email->status             = \mail_queue::STATUS_SENT;
-                    $email->sent_at            = date('Y-m-d H:i:s');
-                    $email->serialized_reponse = 'email sent by the transport other than Mailjet.';
-                    $email->update();
+                    $email->setStatus(MailQueue::STATUS_SENT);
+                    $email->setSentAt(new \DateTime());
                 } else {
-                    $email->status = \mail_queue::STATUS_ERROR;
-                    $email->update();
+                    $email->setStatus(MailQueue::STATUS_ERROR);
                 }
             }
         }
@@ -112,27 +115,25 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
 
             if ($response instanceof Response) {
                 if ($response->success()) {
-                    $count        = count($emailsToSend);
-                    $responseBody = $response->getBody();
-
+                    $count = count($emailsToSend);
                     foreach ($emailsToSend as $email) {
-                        $email->status             = \mail_queue::STATUS_SENT;
-                        $email->sent_at            = date('Y-m-d H:i:s');
-                        $email->serialized_reponse = json_encode($responseBody);
-                        $email->update();
+                        $email->setStatus(MailQueue::STATUS_SENT);
+                        $email->setSentAt(new \DateTime());
+                        $messageId = $this->mailQueueManager->findMessageId($email, $response);
+                        $email->setIdMessageMailjet($messageId);
                     }
                 } else {
                     $reasonPhrase = json_encode($response->getReasonPhrase());
 
                     foreach ($emailsToSend as $email) {
-                        $email->status             = \mail_queue::STATUS_ERROR;
-                        $email->serialized_reponse = $reasonPhrase;
-                        $email->update();
+                        $email->setStatus(MailQueue::STATUS_ERROR);
+                        $email->setErrorMailjet($reasonPhrase);
                     }
                 }
             }
         }
 
+        $this->entityManager->flush();
         return $count;
     }
 }
