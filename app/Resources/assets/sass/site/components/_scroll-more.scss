@@ -1,0 +1,142 @@
+//
+// Unilend Scroll More
+//
+
+$size : 50px;
+$sm : $size/1.5;
+
+.scroll-more {
+  display: none;
+  position: absolute;
+  z-index: 1000;
+  top: 100%;
+  left: 0;
+  right: 0;
+  @include devices('md', 'lg') {
+    display: block;
+  }
+  a {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    text-align: center;
+    width: $size;
+    height: $size*2;
+    text-decoration: none!important;
+    &:hover {
+      .icon {
+        color: darken($c-bg2, 15%);
+      }
+    }
+  }
+  .icon {
+    display: block;
+    transform: translateY(-($sm));
+    color: darken($c-bg2, 15%); 
+    font-size: $size;
+    &:before {
+      display: block;
+      line-height: $size/5;
+    }
+  }
+  .fa-3, .fa-4 {
+    display: none;
+  }
+  &.scroll-more-animate {
+    .fa-1 {
+      animation: scroll-more-animation 2s linear infinite;
+    }
+    .fa-2 {
+      animation: scroll-more-animation-2 2s linear infinite;
+    }
+    &.end {
+      .fa-3 {
+        animation: scroll-more-animation-3 2s linear infinite;
+      }
+      .fa-4 {
+        animation: scroll-more-animation-4 2s linear infinite;
+      }
+    }
+  }
+  &.end {
+    .fa-1, .fa-2 {
+      display: none;
+    }
+    .fa-3, .fa-4 {
+      display: block;
+    }
+  }
+}
+
+@keyframes scroll-more-animation {
+  0% {
+    transform: translateY(-($sm));
+    opacity: 0;
+  }
+  25% {
+    transform: translateY($size/3);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY($size/2);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY($size+$sm);
+    opacity: 0;
+  }
+}
+@keyframes scroll-more-animation-2 {
+  0% {
+    transform: translateY(-($sm));
+    opacity: 0;
+  }
+  23% {
+    transform: translateY($size/3);
+    opacity: 1;
+  }
+  48% {
+    transform: translateY($size/2);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY($size+$sm);
+    opacity: 0;
+  }
+}
+@keyframes scroll-more-animation-3 {
+  0% {
+    transform: translateY($size + $sm);
+    opacity: 0;
+  }
+  23% {
+    transform: translateY($size/3);
+    opacity: 1;
+  }
+  48% {
+    transform: translateY(- $size/2);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY((-$sm));
+    opacity: 0;
+  }
+}
+@keyframes scroll-more-animation-4 {
+  0% {
+    transform: translateY($size + $sm);
+    opacity: 0;
+  }
+  25% {
+    transform: translateY($size/3);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY((-$sm));
+    opacity: 0;
+  }
+  100% {
+    transform: translateY((-$sm));
+    opacity: 0;
+  }
+}
