@@ -358,8 +358,7 @@ class UniversignManager
     private function updateDirectDebit(\clients_mandats $activeMandate)
     {
         /** @var \receptions $directDebit */
-        $directDebit = $this->entityManager->getRepository('prelevements');
-
+        $directDebit        = $this->entityManager->getRepository('prelevements');
         $futureDirectDebits = $directDebit->select('id_client = ' . $activeMandate->id_client . ' AND id_project = ' . $activeMandate->id_project . ' AND status = ' . \prelevements::STATUS_PENDING);
 
         if (false === empty($futureDirectDebits)) {
