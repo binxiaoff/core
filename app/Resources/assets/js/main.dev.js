@@ -763,55 +763,54 @@ $doc.ready(function ($) {
    * @note Slightly more complex than normal sticky because of its position at the bottom and added class when End is reached
    * @todo Combine with Sticky Instance from Projects.js controller into a separate component (StickyAlt.js)
    */
-
   var $scrollMore = $('#scroll-more')
-  var watchWindow = new WatchScroll.Watcher(window)
+  if ($scrollMore.length === 1 && /md|lg/.test(currentBreakpoint)) {
+    var watchWindow = new WatchScroll.Watcher(window)
 
-  // Position at the bottom of the window
-  $scrollMore.css('top', $win.height())
-  // Start animating
-  if ($html.is('.has-csstransforms')) {
+    // Position at the bottom of the window
+    $scrollMore.css('top', $win.height())
+    // Start animating
+    if ($html.is('.has-csstransforms')) {
       $scrollMore.addClass('scroll-more-animate')
-  }
+    }
 
-  // Scroll down the page
-  $doc.on(Utility.clickEvent, '#scroll-more', function (event) {
-    if (!$(this).hasClass('end')) {
+    // Scroll down the page
+    $doc.on(Utility.clickEvent, '#scroll-more', function (event) {
+      if (!$(this).hasClass('end')) {
         var winScrollTop = $win.scrollTop()
-        $('html, body').animate({ scrollTop: winScrollTop + $win.height()/2 }, 400)
-    }
-  })
-  // Scroll to top
-  $doc.on(Utility.clickEvent, '#scroll-more.end', function (event) {
-    $('html, body').animate({ scrollTop: 0 }, 400)
-  })
+        $('html, body').animate({scrollTop: winScrollTop + $win.height() / 2}, 400)
+      }
+    })
+    // Scroll to top
+    $doc.on(Utility.clickEvent, '#scroll-more.end', function (event) {
+      $('html, body').animate({scrollTop: 0}, 400)
+    })
 
-  // Offset sticky by marginTop
-  var doStickyOffset = function ($elem, amount) {
-    if (amount !== false) {
+    // Offset sticky by marginTop
+    var doStickyOffset = function ($elem, amount) {
+      if (amount !== false) {
         $elem.css('marginTop', amount + 'px')
-    } else {
+      } else {
         $elem.css('marginTop', '')
+      }
     }
-  }
 
-  // Offset sticky by CSS transform
-  if ($html.is('.has-csstransforms')) {
-    doStickyOffset = function ($elem, amount) {
+    // Offset sticky by CSS transform
+    if ($html.is('.has-csstransforms')) {
+      doStickyOffset = function ($elem, amount) {
         if (amount !== false) {
-            $elem.css('transform', 'translateY(' + amount + 'px)')
+          $elem.css('transform', 'translateY(' + amount + 'px)')
         } else {
-            $elem.css('transform', '')
+          $elem.css('transform', '')
         }
+      }
     }
-  }
 
-  // Handle scroll state
-  function offsetScrollMore () {
-    if ($scrollMore.length === 1 && /md|lg/.test(currentBreakpoint)) {
+    // Handle scroll state
+    function offsetScrollMore() {
       var winScrollTop = $win.scrollTop()
       var startScrollFixed = 0
-      var endScrollFixed =  $('footer').offset().top - $win.height()
+      var endScrollFixed = $('footer').offset().top - $win.height()
       var translateAmount = winScrollTop - startScrollFixed
       var offsetInfo = 0
 
@@ -828,16 +827,13 @@ $doc.ready(function ($) {
 
       // Apply offset
       doStickyOffset($scrollMore, offsetInfo)
+    }
 
-      // Reset
-    } else {
-      doStickyOffset($scrollMore, false)
+    // Debounce update of sticky within the watchWindow to reduce jank
+    if ($scrollMore.length > 0) {
+      watchWindow.watch(window, offsetScrollMore)
+      offsetScrollMore()
     }
   }
 
-  // Debounce update of sticky within the watchWindow to reduce jank
-  if ($scrollMore.length > 0) {
-    watchWindow.watch(window, offsetScrollMore)
-    offsetScrollMore()
-  }
 })
