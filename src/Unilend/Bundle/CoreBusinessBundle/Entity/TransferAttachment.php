@@ -123,7 +123,7 @@ class TransferAttachment
      *
      * @return TransferAttachment
      */
-    public function setIdTransfer(\Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $idTransfer = null)
+    public function setTransfer(Transfer $idTransfer = null)
     {
         $this->idTransfer = $idTransfer;
 
@@ -135,7 +135,7 @@ class TransferAttachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Transfer
      */
-    public function getIdTransfer()
+    public function getTransfer()
     {
         return $this->idTransfer;
     }
@@ -147,7 +147,7 @@ class TransferAttachment
      *
      * @return TransferAttachment
      */
-    public function setIdAttachment(\Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $idAttachment = null)
+    public function setAttachment(Attachment $idAttachment = null)
     {
         $this->idAttachment = $idAttachment;
 
@@ -159,7 +159,7 @@ class TransferAttachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment
      */
-    public function getIdAttachment()
+    public function getAttachment()
     {
         return $this->idAttachment;
     }

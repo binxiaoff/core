@@ -185,7 +185,7 @@ class Attachment
      *
      * @return Attachment
      */
-    public function setIdType(\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $idType = null)
+    public function setType(AttachmentType $idType = null)
     {
         $this->idType = $idType;
 
@@ -197,7 +197,7 @@ class Attachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType
      */
-    public function getIdType()
+    public function getType()
     {
         return $this->idType;
     }
@@ -209,7 +209,7 @@ class Attachment
      *
      * @return Attachment
      */
-    public function setIdClient(\Unilend\Bundle\CoreBusinessBundle\Entity\Clients $idClient = null)
+    public function setClient(Clients $idClient = null)
     {
         $this->idClient = $idClient;
 
@@ -221,7 +221,7 @@ class Attachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      */
-    public function getIdClient()
+    public function getClient()
     {
         return $this->idClient;
     }

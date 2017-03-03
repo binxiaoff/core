@@ -123,7 +123,7 @@ class ProjectAttachment
      *
      * @return ProjectAttachment
      */
-    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
+    public function setProject(Projects $idProject = null)
     {
         $this->idProject = $idProject;
 
@@ -135,7 +135,7 @@ class ProjectAttachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      */
-    public function getIdProject()
+    public function getProject()
     {
         return $this->idProject;
     }
@@ -147,7 +147,7 @@ class ProjectAttachment
      *
      * @return ProjectAttachment
      */
-    public function setIdAttachment(\Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $idAttachment = null)
+    public function setAttachment(Attachment $idAttachment = null)
     {
         $this->idAttachment = $idAttachment;
 
@@ -159,7 +159,7 @@ class ProjectAttachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment
      */
-    public function getIdAttachment()
+    public function getAttachment()
     {
         return $this->idAttachment;
     }
