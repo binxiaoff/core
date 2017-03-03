@@ -758,15 +758,6 @@ $doc.ready(function ($) {
     Utility.debounceUpdateWindow()
   }, 1000)
 
-  // Temporary function for current page class in Main Site Navigation
-  var url = window.location.href;
-  $('.site-nav-menu a').each(function () {
-    var href = $(this).attr('href')
-    if (url.indexOf(href) > -1) {
-      $(this).parent().addClass('active')
-    }
-  })
-
   /*
    * Sticky Scroll More
    * @note Slightly more complex than normal sticky because of its position at the bottom and added class when End is reached
