@@ -686,78 +686,12 @@ class dossiersController extends bootstrap
                 }
             }
 
-            $this->ratings               = [];
             $this->xerfi                 = $this->loadData('xerfi');
+            $this->ratings               = $this->loadRatings($this->companies, $this->projects->id_company_rating_history, $this->xerfi);
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
             $this->iCompanyProjectsCount = count($this->aCompanyProjects);
             $this->fCompanyOwedCapital   = $this->companies->getOwedCapitalBySIREN();
             $this->bIsProblematicCompany = $this->companies->countProblemsBySIREN() > 0;
-
-            if (false === empty($this->companies->code_naf)) {
-                $this->xerfi->get($this->companies->code_naf, 'naf');
-            }
-
-            if (false === empty($this->projects->id_company_rating_history)) {
-                /** @var company_rating $companyRating */
-                $companyRating = $this->loadData('company_rating');
-                $ratings       = $companyRating->getHistoryRatingsByType($this->projects->id_company_rating_history, true);
-
-                if (
-                    (false === isset($ratings['xerfi']) || false === isset($ratings['xerfi_unilend']))
-                    && false === empty($this->companies->code_naf)
-                ) {
-                    if (empty($this->xerfi->naf)) {
-                        $xerfiScore   = 'N/A';
-                        $xerfiUnilend = 'PAS DE DONNEES';
-                    } elseif ('' === $this->xerfi->score) {
-                        $xerfiScore   = 'N/A';
-                        $xerfiUnilend = $this->xerfi->unilend_rating;
-                    } else {
-                        $xerfiScore   = $this->xerfi->score;
-                        $xerfiUnilend = $this->xerfi->unilend_rating;
-                    }
-
-                    if (false === isset($ratings['xerfi'])) {
-                        $companyRating->id_company_rating_history = $this->projects->id_company_rating_history;
-                        $companyRating->type                      = 'xerfi';
-                        $companyRating->value                     = $xerfiScore;
-                        $companyRating->create();
-                    }
-
-                    if (false === isset($ratings['xerfi_unilend'])) {
-                        $companyRating->id_company_rating_history = $this->projects->id_company_rating_history;
-                        $companyRating->type                      = 'xerfi_unilend';
-                        $companyRating->value                     = $xerfiUnilend;
-                        $companyRating->create();
-                    }
-
-                    $ratings = $companyRating->getHistoryRatingsByType($this->projects->id_company_rating_history, true);
-                }
-
-                foreach ($ratings as $ratingType => $rating) {
-                    switch ($rating['action']) {
-                        case \company_rating_history::ACTION_WS:
-                            $action = 'Webservice';
-                            $user   = '';
-                            break;
-                        case \company_rating_history::ACTION_XERFI:
-                            $action = 'Automatique';
-                            $user   = '';
-                            break;
-                        case \company_rating_history::ACTION_USER:
-                        default:
-                            $action = 'Manuel';
-                            $user   = $rating['user'];
-                            break;
-                    }
-                    $this->ratings[$ratingType] = [
-                        'value'  => $rating['value'],
-                        'date'   => $rating['added']->format('d/m/Y H:i'),
-                        'action' => $action,
-                        'user'   => $user
-                    ];
-                }
-            }
 
             if ($this->isTakeover) {
                 $this->loadTargetCompany();
@@ -1161,15 +1095,15 @@ class dossiersController extends bootstrap
                     $this->clients_gestion_mails_notif->immediatement   = 1;
                     $this->clients_gestion_mails_notif->create();
 
-                    $aReplacements = $aCommonReplacements + array(
-                            'prenom_p'                    => $this->clients->prenom,
-                            'entreprise'                  => $this->companies->name,
-                            'montant_pret'                => $this->ficelle->formatNumber($fLoansAmount / 100, 0),
-                            'montant_rembourse'           => '<span style=\'color:#b20066;\'>' . $this->ficelle->formatNumber($fTotalPayedBack / 100) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
-                            'nombre_prets'                => $iLoansCount . ' ' . (($iLoansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
-                            'date_prochain_remboursement' => $this->dates->formatDate($aNextRepayment[0]['date_echeance'], 'd/m/Y'), // @todo intl
-                            'CRD'                         => $this->ficelle->formatNumber(($fLoansAmount - $fTotalPayedBack) / 100)
-                        );
+                    $aReplacements = $aCommonReplacements + [
+                        'prenom_p'                    => $this->clients->prenom,
+                        'entreprise'                  => $this->companies->name,
+                        'montant_pret'                => $this->ficelle->formatNumber($fLoansAmount / 100, 0),
+                        'montant_rembourse'           => '<span style=\'color:#b20066;\'>' . $this->ficelle->formatNumber($fTotalPayedBack / 100) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
+                        'nombre_prets'                => $iLoansCount . ' ' . (($iLoansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
+                        'date_prochain_remboursement' => $this->dates->formatDate($aNextRepayment[0]['date_echeance'], 'd/m/Y'), // @todo intl
+                        'CRD'                         => $this->ficelle->formatNumber(($fLoansAmount - $fTotalPayedBack) / 100)
+                    ];
 
                     $sMailType = (in_array($this->clients->type, array(1, 3))) ? $sEmailTypePerson : $sEmailTypeSociety;
                     $locale  = $this->getParameter('locale');
@@ -1188,6 +1122,103 @@ class dossiersController extends bootstrap
                 }
             }
         }
+    }
+
+    /**
+     * @param \companies  $company
+     * @param int|null    $companyRatingHistoryId
+     * @param \xerfi|null $xerfi
+     * @return array
+     */
+    private function loadRatings(\companies &$company, $companyRatingHistoryId = null, \xerfi &$xerfi = null)
+    {
+        $return = [];
+
+        if (null === $companyRatingHistoryId) {
+            /** @var \company_rating_history $companyRatingHistory */
+            $companyRatingHistory = $this->loadData('company_rating_history');
+            $companyRatingHistory = $companyRatingHistory->select('id_company = ' . $company->id_company, 'added DESC', 0, 1);
+
+            if (isset($companyRatingHistory[0]['id_company_rating_history'])) {
+                $companyRatingHistoryId = $companyRatingHistory[0]['id_company_rating_history'];
+            }
+        }
+
+        if (null === $xerfi) {
+            /** @var \xerfi $xerfi */
+            $xerfi = $this->loadData('xerfi');
+        }
+
+        if (false === empty($company->code_naf)) {
+            $xerfi->get($company->code_naf, 'naf');
+        }
+
+        if (false === empty($companyRatingHistoryId)) {
+            $return['id_company_rating_history'] = $companyRatingHistoryId;
+
+            /** @var company_rating $companyRating */
+            $companyRating = $this->loadData('company_rating');
+            $ratings       = $companyRating->getHistoryRatingsByType($companyRatingHistoryId, true);
+
+            if (
+                (false === isset($ratings['xerfi']) || false === isset($ratings['xerfi_unilend']))
+                && false === empty($company->code_naf)
+            ) {
+                if (empty($xerfi->naf)) {
+                    $xerfiScore   = 'N/A';
+                    $xerfiUnilend = 'PAS DE DONNEES';
+                } elseif ('' === $xerfi->score) {
+                    $xerfiScore   = 'N/A';
+                    $xerfiUnilend = $xerfi->unilend_rating;
+                } else {
+                    $xerfiScore   = $xerfi->score;
+                    $xerfiUnilend = $xerfi->unilend_rating;
+                }
+
+                if (false === isset($ratings['xerfi'])) {
+                    $companyRating->id_company_rating_history = $companyRatingHistoryId;
+                    $companyRating->type                      = 'xerfi';
+                    $companyRating->value                     = $xerfiScore;
+                    $companyRating->create();
+                }
+
+                if (false === isset($ratings['xerfi_unilend'])) {
+                    $companyRating->id_company_rating_history = $companyRatingHistoryId;
+                    $companyRating->type                      = 'xerfi_unilend';
+                    $companyRating->value                     = $xerfiUnilend;
+                    $companyRating->create();
+                }
+
+                $ratings = $companyRating->getHistoryRatingsByType($companyRatingHistoryId, true);
+            }
+
+            foreach ($ratings as $ratingType => $rating) {
+                switch ($rating['action']) {
+                    case \company_rating_history::ACTION_WS:
+                        $action = 'Webservice';
+                        $user   = '';
+                        break;
+                    case \company_rating_history::ACTION_XERFI:
+                        $action = 'Automatique';
+                        $user   = '';
+                        break;
+                    case \company_rating_history::ACTION_USER:
+                    default:
+                        $action = 'Manuel';
+                        $user   = $rating['user'];
+                        break;
+                }
+
+                $return[$ratingType] = [
+                    'value'  => $rating['value'],
+                    'date'   => $rating['added']->format('d/m/Y H:i'),
+                    'action' => $action,
+                    'user'   => $user
+                ];
+            }
+        }
+
+        return $return;
     }
 
     public function _export()
@@ -3145,9 +3176,20 @@ class dossiersController extends bootstrap
                     die;
                 case 'swap':
                     if ($this->isTakeover() && false === empty($this->projects->id_target_company)) {
-                        $targetCompanyId                   = $this->projects->id_company;
-                        $this->projects->id_company        = $this->projects->id_target_company;
-                        $this->projects->id_target_company = $targetCompanyId;
+                        /** @var \company_rating_history $companyRatingHistory */
+                        $companyRatingHistory   = $this->loadData('company_rating_history');
+                        $companyRatingHistory   = $companyRatingHistory->select('id_company = ' . $this->projects->id_target_company, 'added DESC', 0, 1);
+                        $companyRatingHistoryId = 0;
+
+                        if (isset($companyRatingHistory[0]['id_company_rating_history'])) {
+                            $companyRatingHistoryId = $companyRatingHistory[0]['id_company_rating_history'];
+                        }
+
+                        $targetCompanyId                           = $this->projects->id_company;
+                        $this->projects->id_company                = $this->projects->id_target_company;
+                        $this->projects->id_target_company         = $targetCompanyId;
+                        $this->projects->id_company_rating_history = $companyRatingHistoryId;
+                        $this->projects->id_dernier_bilan          = 0;
                         $this->projects->update();
                     }
 
@@ -3185,10 +3227,16 @@ class dossiersController extends bootstrap
      */
     private function loadTargetCompany()
     {
-        return (
-            false === empty($this->projects->id_target_company)
-            && $this->targetCompany->get($this->projects->id_target_company)
-        );
+        if (
+            empty($this->projects->id_target_company)
+            || false === $this->targetCompany->get($this->projects->id_target_company)
+        ) {
+            return false;
+        }
+
+        $this->targetRatings = $this->loadRatings($this->targetCompany);
+
+        return true;
     }
 
     private function checkTargetCompanyRisk()

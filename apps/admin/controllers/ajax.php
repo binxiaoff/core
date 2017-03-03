@@ -357,49 +357,25 @@ class ajaxController extends bootstrap
                     ]);
                 }
             } elseif ($_POST['etape'] == 4.1 && $project->status <= \projects_status::COMITY_REVIEW) {
-                /** @var company_rating $companyRating */
-                $companyRating = $this->loadData('company_rating');
-                $ratings       = $companyRating->getHistoryRatingsByType($project->id_company_rating_history);
-                $addHistory    = false;
+                if (false === empty($_POST['target_ratings']) && false === empty($project->id_target_company)) {
+                    /** @var \company_rating_history $targetCompanyRatingHistory */
+                    $targetCompanyRatingHistory   = $this->loadData('company_rating_history');
+                    $targetCompanyRatingHistory   = $targetCompanyRatingHistory->select('id_company = ' . $project->id_target_company, 'added DESC', 0, 1);
+                    $targetCompanyRatingHistoryId = null;
 
-                foreach ($_POST['ratings'] as $rating => $value) {
-                    switch ($rating) {
-                        case 'date_dernier_privilege':
-                        case 'date_tresorerie':
-                            if (false === empty($value)) {
-                                $value = date('Y-m-d', strtotime(str_replace('/', '-', $value)));
-                            }
-                            break;
-                        case 'montant_tresorerie':
-                            $value = $this->ficelle->cleanFormatedNumber($value);
-                            break;
+                    if (isset($targetCompanyRatingHistory[0]['id_company_rating_history'])) {
+                        $targetCompanyRatingHistoryId = $targetCompanyRatingHistory[0]['id_company_rating_history'];
                     }
 
-                    if (false === isset($ratings[$rating]) || $ratings[$rating]['value'] != $value) {
-                        $addHistory = true;
-                        $ratings[$rating]['value'] = $value;
-                    }
+                    $this->saveCompanyRatings($_POST['target_ratings'], $project->id_target_company, $targetCompanyRatingHistoryId);
                 }
 
-                if ($addHistory) {
-                    /** @var company_rating_history $companyRatingHistory */
-                    $companyRatingHistory = $this->loadData('company_rating_history');
-                    $companyRatingHistory->id_company = $project->id_company;
-                    $companyRatingHistory->id_user    = $_SESSION['user']['id_user'];
-                    $companyRatingHistory->action     = \company_rating_history::ACTION_USER;
-                    $companyRatingHistory->create();
+                $companyRatingHistoryId = $this->saveCompanyRatings($_POST['ratings'], $project->id_company, $project->id_company_rating_history);
 
-                    $project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
-
-                    foreach ($ratings as $rating => $value) {
-                        $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
-                        $companyRating->type                      = $rating;
-                        $companyRating->value                     = $value['value'];
-                        $companyRating->create();
-                    }
+                if ($project->id_company_rating_history != $companyRatingHistoryId) {
+                    $project->id_company_rating_history = $companyRatingHistoryId;
+                    $project->update();
                 }
-
-                $project->update();
             } elseif ($_POST['etape'] == 4.2) {
                 if (isset($_POST['box'])) {
                     /** @var companies_bilans $companyAnnualAccounts */
@@ -421,6 +397,62 @@ class ajaxController extends bootstrap
                 die;
             }
         }
+    }
+
+    /**
+     * @param array $form
+     * @param int   $companyId
+     * @param int   $companyRatingHistoryId
+     * @return int
+     */
+    private function saveCompanyRatings(array $form, $companyId, $companyRatingHistoryId = null)
+    {
+        /** @var \company_rating $companyRating */
+        $companyRating = $this->loadData('company_rating');
+        $ratings       = $companyRatingHistoryId ? $companyRating->getHistoryRatingsByType($companyRatingHistoryId) : [];
+        $addHistory    = false;
+
+        foreach ($form as $rating => $value) {
+            switch ($rating) {
+                case 'date_dernier_privilege':
+                case 'date_tresorerie':
+                    if (false === empty($value)) {
+                        $value = date('Y-m-d', strtotime(str_replace('/', '-', $value)));
+                    }
+                    break;
+                case 'montant_tresorerie':
+                    if ('' === $value) {
+                        continue;
+                    }
+                    $value = $this->ficelle->cleanFormatedNumber($value);
+                    break;
+            }
+
+            if (false === isset($ratings[$rating]) || $ratings[$rating]['value'] != $value) {
+                $addHistory = true;
+                $ratings[$rating]['value'] = $value;
+            }
+        }
+
+        if ($addHistory) {
+            /** @var \company_rating_history $companyRatingHistory */
+            $companyRatingHistory             = $this->loadData('company_rating_history');
+            $companyRatingHistory->id_company = $companyId;
+            $companyRatingHistory->id_user    = $_SESSION['user']['id_user'];
+            $companyRatingHistory->action     = \company_rating_history::ACTION_USER;
+            $companyRatingHistory->create();
+
+            $companyRatingHistoryId = $companyRatingHistory->id_company_rating_history;
+
+            foreach ($ratings as $rating => $value) {
+                $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
+                $companyRating->type                      = $rating;
+                $companyRating->value                     = $value['value'];
+                $companyRating->create();
+            }
+        }
+
+        return $companyRatingHistoryId;
     }
 
     public function _create_client()
