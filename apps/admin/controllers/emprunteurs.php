@@ -131,26 +131,6 @@ class emprunteursController extends bootstrap
                 $this->clients_adresses->ville    = $_POST['ville'];
                 $this->clients_adresses->cp       = $_POST['cp'];
 
-                // cni/passeport
-                if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
-                    $this->upload->setUploadDir($this->path, 'protected/clients/cni_passeport/');
-                    if ($this->upload->doUpload('cni_passeport')) {
-                        if ($this->clients->cni_passeport != '') {
-                            @unlink($this->path . 'protected/clients/cni_passeport/' . $this->clients->cni_passeport);
-                        }
-                        $this->clients->cni_passeport = $this->upload->getName();
-                    }
-                }
-                // fichier_rib
-                if (isset($_FILES['signature']) && $_FILES['signature']['name'] != '') {
-                    $this->upload->setUploadDir($this->path, 'protected/clients/signature/');
-                    if ($this->upload->doUpload('signature')) {
-                        if ($this->clients->signature != '') {
-                            @unlink($this->path . 'protected/clients/signature/' . $this->clients->signature);
-                        }
-                        $this->clients->signature = $this->upload->getName();
-                    }
-                }
                 $this->companies->update();
                 $this->clients->update();
                 $this->clients_adresses->update();

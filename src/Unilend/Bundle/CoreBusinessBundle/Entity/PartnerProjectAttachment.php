@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * PartnerProjectAttachment
  *
  * @ORM\Table(name="partner_project_attachment", uniqueConstraints={@ORM\UniqueConstraint(name="uc_id_partner_id_attachment_type", columns={"id_partner", "id_attachment_type"})}, indexes={@ORM\Index(name="fk_partner_project_attachment_attachment_type", columns={"id_attachment_type"}), @ORM\Index(name="IDX_E130D16DEFB69766", columns={"id_partner"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PartnerProjectAttachmentRepository")
  */
 class PartnerProjectAttachment
 {

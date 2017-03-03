@@ -246,20 +246,6 @@ class Clients
     /**
      * @var string
      *
-     * @ORM\Column(name="cni_passeport", type="string", length=191, nullable=true)
-     */
-    private $cniPasseport;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="signature", type="string", length=191, nullable=true)
-     */
-    private $signature;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="source", type="string", length=191, nullable=true)
      */
     private $source;
@@ -1043,54 +1029,6 @@ class Clients
     public function getStatusPreEmp()
     {
         return $this->statusPreEmp;
-    }
-
-    /**
-     * Set cniPasseport
-     *
-     * @param string $cniPasseport
-     *
-     * @return Clients
-     */
-    public function setCniPasseport($cniPasseport)
-    {
-        $this->cniPasseport = $cniPasseport;
-
-        return $this;
-    }
-
-    /**
-     * Get cniPasseport
-     *
-     * @return string
-     */
-    public function getCniPasseport()
-    {
-        return $this->cniPasseport;
-    }
-
-    /**
-     * Set signature
-     *
-     * @param string $signature
-     *
-     * @return Clients
-     */
-    public function setSignature($signature)
-    {
-        $this->signature = $signature;
-
-        return $this;
-    }
-
-    /**
-     * Get signature
-     *
-     * @return string
-     */
-    public function getSignature()
-    {
-        return $this->signature;
     }
 
     /**

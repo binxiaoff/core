@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -351,7 +352,16 @@ class Projects
      */
     private $status;
 
+    /**
+     * @var
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment", mappedBy="idProject")
+     */
+    private $attachments;
 
+    public function __construct() {
+        $this->attachments = new ArrayCollection();
+    }
 
     /**
      * Set hash
@@ -1465,5 +1475,10 @@ class Projects
     public function getStatus()
     {
         return $this->status;
+    }
+
+    public function getAttachments()
+    {
+        return $this->attachments;
     }
 }

@@ -108,18 +108,6 @@
                <td><span style="margin-left:5px;color:green; display:none;" class="reponse_email" >Email Envoyé</span></td>
             </tr>
             <tr>
-                <th><label for="cni_passeport">CNI/Passeport :</label></th>
-                <td>
-                    <?= $this->clients->cni_passeport ?><br>
-                    <input type="file" name="cni_passeport" id="cni_passeport" value="<?= $this->clients->cni_passeport ?>"/>
-                </td>
-                <th><label for="signature">Signature :</label></th>
-                <td>
-                    <?= $this->clients->signature ?><br>
-                    <input type="file" name="signature" id="signature" value="<?= $this->clients->signature ?>"/>
-                </td>
-            </tr>
-            <tr>
                 <th colspan="4">
                     <input type="hidden" name="form_edit_emprunteur" id="form_edit_emprunteur" />
                     <input type="submit" value="Valider" title="Valider" name="send_edit_emprunteur" onclick="return RIBediting();" id="send_edit_emprunteur" class="btn" />
