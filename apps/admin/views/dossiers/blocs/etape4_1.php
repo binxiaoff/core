@@ -72,7 +72,10 @@
         })
 
         var ratingsHistory = $.parseJSON('<?= json_encode($this->ratings) ?>')
-        var targetRatingsHistory = $.parseJSON('<?= json_encode($this->targetRatings) ?>')
+
+        <?php if (isset($this->targetRatings)) : ?>
+            var targetRatingsHistory = $.parseJSON('<?= json_encode($this->targetRatings) ?>')
+        <?php endif; ?>
     });
 </script>
 <a class="tab_title" id="section-external-ratings" href="#section-external-ratings">4.1 - Notation externe</a>
