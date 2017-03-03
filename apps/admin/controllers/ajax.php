@@ -399,9 +399,6 @@ class ajaxController extends bootstrap
                     }
                 }
 
-                $project->ca_declara_client                    = $this->ficelle->cleanFormatedNumber($_POST['ca_declara_client']);
-                $project->resultat_exploitation_declara_client = $this->ficelle->cleanFormatedNumber($_POST['resultat_exploitation_declara_client']);
-                $project->fonds_propres_declara_client         = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres_declara_client']);
                 $project->update();
             } elseif ($_POST['etape'] == 4.2) {
                 if (isset($_POST['box'])) {

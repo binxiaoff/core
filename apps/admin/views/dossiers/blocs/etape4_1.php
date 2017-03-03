@@ -65,7 +65,6 @@
                 <tbody>
                     <tr>
                         <td colspan="2"><h2>Notes externes</h2></td>
-                        <td colspan="2"><h2>Déclaration client</h2></td>
                     </tr>
                     <tr>
                         <th style="width: 25%;"><label>Grade Euler-Hermes</label></th>
@@ -74,8 +73,6 @@
                                 <span class="rating-tooltip" title="grade_euler_hermes"><?= $this->ratings['grade_euler_hermes']['value'] ?></span>
                             <?php else : ?>-<?php endif; ?>
                         </td>
-                        <th style="width: 25%;"><label for="ca_declara_client">Chiffe d'affaires declaré par client</label></th>
-                        <td style="width: 20%;"><input type="text" name="ca_declara_client" id="ca_declara_client" placeholder="€" class="input_moy numbers" value="<?= $this->ficelle->formatNumber($this->projects->ca_declara_client, 0) ?>"></td>
                     </tr>
                     <tr>
                         <th><label>Score Altares</label></th>
@@ -84,8 +81,6 @@
                                 <span class="rating-tooltip" title="score_altares"><?= $this->ratings['score_altares']['value'] ?> / 20</span>
                             <?php else : ?>-<?php endif; ?>
                         </td>
-                        <th><label for="resultat_exploitation_declara_client">Résultat d'exploitation declaré par client</label></th>
-                        <td><input type="text" name="resultat_exploitation_declara_client" id="resultat_exploitation_declara_client" placeholder="€" class="input_moy numbers" value="<?= $this->ficelle->formatNumber($this->projects->resultat_exploitation_declara_client, 0) ?>"></td>
                     </tr>
                     <tr>
                         <th><label>Score sectoriel Altares</label></th>
@@ -94,12 +89,10 @@
                                 <span class="rating-tooltip" title="score_sectoriel_altares"><?= round($this->ratings['score_sectoriel_altares']['value'] / 5) ?> / 20</span>
                             <?php else : ?>-<?php endif; ?>
                         </td>
-                        <th><label for="fonds_propres_declara_client">Fonds propres declarés par client</label></th>
-                        <td colspan="3"><input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" placeholder="€" class="input_moy numbers" value="<?= $this->ficelle->formatNumber($this->projects->fonds_propres_declara_client, 0) ?>"></td>
                     </tr>
                     <tr>
                         <th><label>Note Infolegale</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (false === empty($this->ratings['note_infolegale']['value'])) : ?>
                                 <span class="rating-tooltip" title="note_infolegale"><?= $this->ratings['note_infolegale']['value'] ?></span>
                             <?php else : ?>-<?php endif; ?>
@@ -107,7 +100,7 @@
                     </tr>
                     <tr>
                         <th><label>Score sectoriel Xerfi</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (isset($this->ratings['xerfi']['value'], $this->ratings['xerfi_unilend']['value'])) : ?>
                                 <span class="rating-tooltip" title="xerfi"><?= $this->ratings['xerfi']['value'] ?></span> / <span class="rating-tooltip" title="xerfi_unilend"><?= $this->ratings['xerfi_unilend']['value'] ?></span>
                             <?php else : ?>-<?php endif; ?>
@@ -115,7 +108,7 @@
                     </tr>
                     <tr>
                         <th><label>Présence de RPC < 6 mois</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (isset($this->ratings['rpc_6mois']['value']) && in_array($this->ratings['rpc_6mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="rpc_6mois"><?php endif; ?>
                                 <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                     <label><input type="radio" name="ratings[rpc_6mois]" value="1"<?php if (isset($this->ratings['rpc_6mois']['value']) && '1' === $this->ratings['rpc_6mois']['value']) : ?> checked="checked"<?php endif; ?>> Oui</label>
@@ -130,7 +123,7 @@
                     </tr>
                     <tr>
                         <th><label>Présence de RPC > 12 mois</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (isset($this->ratings['rpc_12mois']['value']) && in_array($this->ratings['rpc_12mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="rpc_12mois"><?php endif; ?>
                                 <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                     <label><input type="radio" name="ratings[rpc_12mois]" value="1"<?php if (isset($this->ratings['rpc_12mois']['value']) && '1' === $this->ratings['rpc_12mois']['value']) : ?> checked="checked"<?php endif; ?>> Oui</label>
@@ -145,7 +138,7 @@
                     </tr>
                     <tr>
                         <th><label for="cotation_fiben">Cotation FIBEN</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (false === empty($this->ratings['cotation_fiben']['value'])) : ?><span class="rating-tooltip" title="cotation_fiben"><?php endif; ?>
                                 <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                     <input type="text" name="ratings[cotation_fiben]" id="cotation_fiben" value="<?php if (false === empty($this->ratings['cotation_fiben']['value'])) : ?><?= $this->ratings['cotation_fiben']['value'] ?><?php endif; ?>" placeholder="Cotation FIBEN" class="input_moy">
@@ -157,7 +150,7 @@
                     </tr>
                     <tr>
                         <th><label for="cotation_dirigeant_fiben">Cotation dirigeant FIBEN</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?><span class="rating-tooltip" title="cotation_dirigeant_fiben"><?php endif; ?>
                                 <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                     <input type="text" name="ratings[cotation_dirigeant_fiben]" id="cotation_dirigeant_fiben" value="<?php if (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?><?= $this->ratings['cotation_dirigeant_fiben']['value'] ?><?php endif; ?>" placeholder="Cotation dirigeant FIBEN" class="input_moy">
@@ -169,7 +162,7 @@
                     </tr>
                     <tr>
                         <th><label for="note_interne_banque">Note interne banque</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                 <?php if (false === empty($this->ratings['note_interne_banque']['value'])) : ?><span class="rating-tooltip" title="note_interne_banque"><?php endif; ?>
                                     <input type="text" name="ratings[note_interne_banque]" id="note_interne_banque" value="<?php if (false === empty($this->ratings['note_interne_banque']['value'])) : ?><?= $this->ratings['note_interne_banque']['value'] ?><?php endif; ?>" placeholder="Note interne banque" class="input_moy">
@@ -185,7 +178,7 @@
                     </tr>
                     <tr>
                         <th><label for="date_dernier_privilege">Date du privilège le plus récent</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><span class="rating-tooltip" title="date_dernier_privilege"><?php endif; ?>
                                 <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                     <input type="text" name="ratings[date_dernier_privilege]" id="date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->dates->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" placeholder="Privilège le plus récent" class="input_moy">
@@ -197,7 +190,7 @@
                     </tr>
                     <tr>
                         <th><label for="date_tresorerie">Dernière situation de trésorerie connue</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                 <?php if (false === empty($this->ratings['date_tresorerie']['value'])) : ?><span class="rating-tooltip" title="date_tresorerie"><?php endif; ?>
                                     <input type="text" name="ratings[date_tresorerie]" id="date_tresorerie" value="<?php if (false === empty($this->ratings['date_tresorerie']['value'])) : ?><?= $this->dates->formatDate($this->ratings['date_tresorerie']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly="readonly">
@@ -219,7 +212,7 @@
                     </tr>
                     <tr>
                         <th><label for="delais_paiement_altares">Délais de paiement Altares (à date)</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (false === empty($this->ratings['delais_paiement_altares']['value'])) : ?><span class="rating-tooltip" title="delais_paiement_altares"><?php endif; ?>
                                 <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                     <input type="text" name="ratings[delais_paiement_altares]" id="delais_paiement_altares" value="<?php if (false === empty($this->ratings['delais_paiement_altares']['value'])) : ?><?= $this->ratings['delais_paiement_altares']['value'] ?><?php endif; ?>" placeholder="Délais de paiement Altares" class="input_moy">
@@ -231,7 +224,7 @@
                     </tr>
                     <tr>
                         <th><label for="delais_paiement_secteur">Délais de paiement du secteur</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (false === empty($this->ratings['delais_paiement_secteur']['value'])) : ?><span class="rating-tooltip" title="delais_paiement_secteur"><?php endif; ?>
                                 <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                     <input type="text" name="ratings[delais_paiement_secteur]" id="delais_paiement_secteur" value="<?php if (false === empty($this->ratings['delais_paiement_secteur']['value'])) : ?><?= $this->ratings['delais_paiement_secteur']['value'] ?><?php endif; ?>" placeholder="Délais de paiement du secteur" class="input_moy">
@@ -243,7 +236,7 @@
                     </tr>
                     <tr>
                         <th><label>Dailly</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (isset($this->ratings['dailly']['value']) && in_array($this->ratings['dailly']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="dailly"><?php endif; ?>
                                 <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                     <label><input type="radio" name="ratings[dailly]" value="1"<?php if (isset($this->ratings['dailly']) && '1' === $this->ratings['dailly']['value']) : ?> checked="checked"<?php endif; ?>> Oui</label>
@@ -258,7 +251,7 @@
                     </tr>
                     <tr>
                         <th><label>Affacturage</label></th>
-                        <td colspan="3">
+                        <td>
                             <?php if (isset($this->ratings['affacturage']['value']) && in_array($this->ratings['affacturage']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="affacturage"><?php endif; ?>
                                 <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                     <label><input type="radio" name="ratings[affacturage]" value="1"<?php if (isset($this->ratings['affacturage']) && '1' === $this->ratings['affacturage']['value']) : ?> checked="checked"<?php endif; ?>> Oui</label>
@@ -273,11 +266,13 @@
                     </tr>
                 </tbody>
             </table>
-            <div id="valid_etape4_1" class="valid_etape"><br>Données sauvegardées</div>
-            <div class="btnDroite">
-                <input type="submit" class="btn_link" value="Sauvegarder">
-            </div>
-            <br>
+            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                <div id="valid_etape4_1" class="valid_etape"><br>Données sauvegardées</div>
+                <div class="btnDroite">
+                    <input type="submit" class="btn_link" value="Sauvegarder">
+                </div>
+                <br>
+            <?php endif; ?>
             <h2>Capital restant dû à date : <?= $this->ficelle->formatNumber($this->fCompanyOwedCapital) ?> €</h2>
             <br>
             <?php if (empty($this->aCompanyProjects)) : ?>
