@@ -51,8 +51,12 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
         /** @var LoggerInterface $logger */
-        $logger    = $this->getContainer()->get('monolog.logger.console');
-        $stopWatch = $this->getContainer()->get('debug.stopwatch');
+        $logger                = $this->getContainer()->get('monolog.logger.console');
+        $stopWatch             = $this->getContainer()->get('debug.stopwatch');
+        $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
+
+        $repaymentScheduleRepo = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $paymentScheduleRepo   = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
         $url       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
@@ -99,6 +103,9 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $lenderRepayment->id_company = $projects->id_company;
                             $lenderRepayment->amount     = $e['montant'];
                             $lenderRepayment->create();
+
+                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
+                            $operationManager->repayment($repaymentSchedule);
 
                             $echeanciers->get($e['id_echeancier'], 'id_echeancier');
                             $echeanciers->capital_rembourse   = $echeanciers->capital;
@@ -205,6 +212,9 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $bank_unilend->create();
 
                 $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
+
+                $paymentSchedule = $paymentScheduleRepo->find($echeanciers_emprunteur->id_echeancier_emprunteur);
+                $operationManager->repaymentCommission($paymentSchedule);
 
                 /** @var \settings $settings */
                 $settings = $entityManager->getRepository('settings');

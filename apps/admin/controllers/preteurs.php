@@ -1,5 +1,10 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+
 class preteursController extends bootstrap
 {
     /**
@@ -136,7 +141,7 @@ class preteursController extends bootstrap
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             $this->companies = $this->loadData('companies');
-            if (in_array($this->clients->type, [clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
             }
 
@@ -302,7 +307,7 @@ class preteursController extends bootstrap
 
             $this->companies = $this->loadData('companies');
 
-            if (in_array($this->clients->type, [clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
 
                 $this->meme_adresse_fiscal = $this->companies->status_adresse_correspondance;
@@ -338,14 +343,23 @@ class preteursController extends bootstrap
                 $this->naissance = '';
             }
 
-            if ($this->lenders_accounts->iban != '') {
-                $this->iban1 = substr($this->lenders_accounts->iban, 0, 4);
-                $this->iban2 = substr($this->lenders_accounts->iban, 4, 4);
-                $this->iban3 = substr($this->lenders_accounts->iban, 8, 4);
-                $this->iban4 = substr($this->lenders_accounts->iban, 12, 4);
-                $this->iban5 = substr($this->lenders_accounts->iban, 16, 4);
-                $this->iban6 = substr($this->lenders_accounts->iban, 20, 4);
-                $this->iban7 = substr($this->lenders_accounts->iban, 24, 3);
+            /** @var ClientsRepository $clientRepository */
+            $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+            /** @var Clients $clientEntity */
+            $clientEntity = $clientRepository->find($this->clients->id_client);
+            /** @var BankAccount $currentBankAccount */
+            $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
+
+            if (null === $this->currentBankAccount) {
+                $this->currentBankAccount = new BankAccount();
+            } else {
+                $this->iban1 = substr($this->currentBankAccount->getIban(), 0, 4);
+                $this->iban2 = substr($this->currentBankAccount->getIban(), 4, 4);
+                $this->iban3 = substr($this->currentBankAccount->getIban(), 8, 4);
+                $this->iban4 = substr($this->currentBankAccount->getIban(), 12, 4);
+                $this->iban5 = substr($this->currentBankAccount->getIban(), 16, 4);
+                $this->iban6 = substr($this->currentBankAccount->getIban(), 20, 4);
+                $this->iban7 = substr($this->currentBankAccount->getIban(), 24, 3);
             }
 
             if ($this->clients->telephone != '') {
@@ -440,34 +454,29 @@ class preteursController extends bootstrap
 
                     $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
 
-                    $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
-                    $this->clients->mobile            = str_replace(' ', '', $_POST['mobile']);
-                    $this->clients->ville_naissance   = $_POST['com-naissance'];
-                    $this->clients->insee_birth       = $_POST['insee_birth'];
-                    $this->clients->naissance         = $oBirthday->format('Y-m-d');
-                    $this->clients->id_pays_naissance = $_POST['id_pays_naissance'];
-                    $this->clients->id_nationalite    = $_POST['nationalite'];
-                    $this->clients->id_langue         = 'fr';
-                    $this->clients->type              = 1;
-                    $this->clients->fonction          = '';
-                    $this->clients->update();
+                $this->clients->telephone           = str_replace(' ', '', $_POST['phone']);
+                $this->clients->mobile              = str_replace(' ', '', $_POST['mobile']);
+                $this->clients->ville_naissance     = $_POST['com-naissance'];
+                $this->clients->insee_birth         = $_POST['insee_birth'];
+                $this->clients->naissance           = $oBirthday->format('Y-m-d');
+                $this->clients->id_pays_naissance   = $_POST['id_pays_naissance'];
+                $this->clients->id_nationalite      = $_POST['nationalite'];
+                $this->clients->id_langue           = 'fr';
+                $this->clients->type                = 1;
+                $this->clients->fonction            = '';
+                $this->clients->funds_origin        = $_POST['origine_des_fonds'];
+                $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
+                $this->clients->update();
 
-                    $this->lenders_accounts->id_company_owner = 0;
+                $this->lenders_accounts->id_company_owner = 0;
 
-                    $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
-                    if ($this->lenders_accounts->origine_des_fonds == '1000000') {
-                        $this->lenders_accounts->precision = $_POST['preciser'];
-                    } else {
-                        $this->lenders_accounts->precision = '';
+                foreach ($_FILES as $field => $file) {
+                    // Field name = attachment type id
+                    $iAttachmentType = $field;
+                    if ('' !== $file['name']) {
+                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
                     }
-
-                    foreach ($_FILES as $field => $file) {
-                        // Field name = attachment type id
-                        $iAttachmentType = $field;
-                        if ('' !== $file['name']) {
-                            $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
-                        }
-                    }
+                }
 
                     if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
                         if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
@@ -550,12 +559,8 @@ class preteursController extends bootstrap
                             $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or the origine != 1.', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
                         }
 
+                        $this->validateBankAccount($_POST['id_bank_account']);
                         $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
-
-                        /** @var \clients_gestion_notifications clients_gestion_notifications */
-                        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-
-                        $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
                         if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
                             $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
@@ -663,12 +668,9 @@ class preteursController extends bootstrap
                         $this->companies->create();
                     }
 
-                    $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
-                    if ($this->lenders_accounts->origine_des_fonds == '1000000') {
-                        $this->lenders_accounts->precision = $_POST['preciser'];
-                    } else {
-                        $this->lenders_accounts->precision = '';
-                    }
+                $this->clients->funds_origin        = $_POST['origine_des_fonds'];
+                $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
+                $this->clients->update();
 
                     foreach ($_FILES as $field => $file) {
                         $iAttachmentType = $field;
@@ -720,35 +722,15 @@ class preteursController extends bootstrap
                     $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
+                        $this->validateBankAccount($_POST['id_bank_account']);
                         $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
 
                         if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
-                            $sTypeMail = 'preteur-validation-modification-compte';
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
                         } else {
                             $welcomeOfferManager->createWelcomeOffer($this->clients);;
-                            $sTypeMail = 'preteur-confirmation-activation';
+                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
                         }
-
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
-
-                        $varMail = [
-                            'surl'    => $this->surl,
-                            'url'     => $this->furl,
-                            'prenom'  => $this->clients->prenom,
-                            'projets' => $this->furl . '/projets-a-financer',
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw
-                        ];
-
-                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $varMail);
-                        $message->setTo($this->clients->email);
-                        $mailer = $this->get('mailer');
-                        $mailer->send($message);
 
                         $_SESSION['compte_valide'] = true;
                     }
@@ -1301,13 +1283,12 @@ class preteursController extends bootstrap
 
         /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
         $mailQueueManager = $this->get('unilend.service.mail_queue');
-        /** @var mail_queue $mailQueue */
-        $mailQueue = $this->loadData('mail_queue');
-        $mailQueue->get($this->params[0]);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue $mailQueue */
+        $mailQueue = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($this->params[0]);
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $email */
         $email = $mailQueueManager->getMessage($mailQueue);
         /** @var \DateTime $sentAt */
-        $sentAt = new \DateTime($mailQueue->sent_at);
+        $sentAt = $mailQueue->getSentAt();
 
         $from = $email->getFrom();
         $to   = $email->getTo();
@@ -1475,94 +1456,89 @@ class preteursController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-        $iClientId          = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
+        $clientId           = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
+        $idBankAccount      = filter_var($_POST['id_bank_account'], FILTER_VALIDATE_INT);
 
-        if (false === $iClientId) {
+        if (false === $clientId) {
             echo json_encode(['text' => 'Une erreur est survenue', 'severity' => 'error']);
             return;
         }
-        /** @var \lenders_accounts $oLendersAccounts */
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oLendersAccounts->get($iClientId, 'id_client_owner');
 
-        $sCurrrentBic = $oLendersAccounts->bic;
-        $sNewBic      = str_replace(' ', '', strtoupper($_POST['bic']));
-        $sIban        = '';
+        /** @var BankAccountManager $bankAccountManager */
+        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        /** @var Clients $clientEntity */
+        $clientEntity = $clientRepository->find($clientId);
+        /** @var BankAccount $currentBankAccount */
+        $currentBankAccount =  $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
+        if (null !== $currentBankAccount) {
+            $currentBic  = $currentBankAccount->getBic();
+            $currentIban = $currentBankAccount->getIban();
+        } else {
+            $currentBic  = '';
+            $currentIban = '';
+        }
+        $newBic      = str_replace(' ', '', strtoupper($_POST['bic']));
+        $iban        = '';
 
         for ($i = 1; $i <= 7; $i++) {
             if (empty($_POST['iban' . $i])) {
                 echo json_encode(['text' => 'IBAN incorrect', 'severity' => 'error']);
                 return;
             }
-            $sIban .= strtoupper($_POST['iban' . $i]);
+            $iban .= strtoupper($_POST['iban' . $i]);
         }
-        $sCurrentIban = $oLendersAccounts->iban;
-        $sNewIban     = str_replace(' ', '', $sIban);
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
-        $oMailerManager = $this->get('unilend.service.email_manager');
+        $newIban     = str_replace(' ', '', $iban);
 
-        if ($sCurrrentBic !== $sNewBic && $sCurrentIban !== $sNewIban) {
-            if ($this->validateBic($sNewBic, $oLendersAccounts) && $this->validateIban($sNewIban, $oLendersAccounts)) {
-                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
-                $sMessage = 'Bic et IBAN modifiés';
-                $sSeverity   = 'valid';
-                $oLendersAccounts->update();
+        $message  = [];
+        $severity = [];
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager*/
+        $mailerManager= $this->get('unilend.service.email_manager');
+
+        $validator      = $this->get('validator');
+        $ibanViolations = null;
+        $bicVoilations  = null;
+        if ($currentIban !== $newIban) {
+            $ibanViolations = $validator->validate($newIban, new \Symfony\Component\Validator\Constraints\Iban());
+
+            if (0 === $ibanViolations->count()) {
+                $message['iban']  = 'IBAN modifié ';
+                $severity['iban'] = 'valid';
             } else {
-                $sMessage = 'BIC / IBAN incorrect';
-                $sSeverity   = 'error';
+                $message['iban']  = 'IBAN incorrect';
+                $severity['iban'] = 'error ';
             }
-        } elseif ($sCurrrentBic !== $sNewBic) {
-            if ($this->validateBic($sNewBic, $oLendersAccounts)) {
-                $sMessage = 'BIC modifié';
-                $sSeverity   = 'valid';
-                $oLendersAccounts->update();
+        }
+
+        if ($currentBic !== $newBic) {
+            $bicVoilations = $validator->validate($newBic, new \Symfony\Component\Validator\Constraints\Bic());
+
+            if (0 === $bicVoilations->count()) {
+                $message['bic']  = 'BIC modifié';
+                $severity['bic'] = 'valid';
             } else {
-                $sMessage = 'BIC incorrect';
-                $sSeverity   = 'error';
+                $message['bic']  = 'BIC incorrect';
+                $severity['bic'] = 'error';
             }
-        } elseif ($sCurrentIban !== $sNewIban) {
-            if ($this->validateIban($sNewIban, $oLendersAccounts)) {
-                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
-                $sMessage = 'IBAN modifié';
-                $sSeverity   = 'valid';
-                $oLendersAccounts->update();
-            } else {
-                $sMessage = 'IBAN incorrect';
-                $sSeverity   = 'error';
+        }
+        if (0 === count($ibanViolations) && 0 === count($bicVoilations)) {
+            /** @var BankAccount $bankAccount */
+            $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban);
+            $this->validateBankAccount($bankAccount->getId());
+            if ($currentIban !== $newIban) {
+                $mailerManager->sendIbanUpdateToStaff($clientId, $currentIban, $newIban);
             }
-        } else {
-            echo json_encode(['text' => 'Aucune modification', 'severity' => 'warning']);
+        }
+
+        if ($currentIban == $newIban && $currentBic == $newBic) {
+            $message = ['text' => 'Aucune modification', 'severity' => 'warning'];
+            echo json_encode(['bic' => $message, 'iban' => $message]);
             return;
         }
-        echo json_encode(['text' => $sMessage, 'severity' => $sSeverity]);
-    }
 
-    /**
-     * @param string $sNewBic
-     * @param \lenders_accounts $oLendersAccounts
-     * @return bool
-     */
-    private function validateBic($sNewBic, \lenders_accounts &$oLendersAccounts)
-    {
-        if ($this->ficelle->swift_validate($sNewBic)) {
-            $oLendersAccounts->bic = $sNewBic;
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param string $sNewIban
-     * @param \lenders_accounts $oLendersAccounts
-     * @return bool
-     */
-    private function validateIban($sNewIban, \lenders_accounts &$oLendersAccounts)
-    {
-        if ($this->ficelle->isIBAN($sNewIban)) {
-            $oLendersAccounts->iban = $sNewIban;
-            return true;
-        }
-        return false;
+        echo json_encode(['text' => $message, 'severity' => $severity]);
     }
 
     public function _lenderOnlineOffline()
@@ -1730,6 +1706,27 @@ class preteursController extends bootstrap
                 ];
             }
         }
+
         return $data;
+    }
+
+    /**
+     * @param string $idBankAccount
+     *
+     * @throws Exception
+     */
+    private function validateBankAccount($idBankAccount)
+    {
+        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var BankAccount $currentBankAccount */
+        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
+
+        if (null === $bankAccount) {
+            throw new Exception('BankAccount could not be found with id : ' . $idBankAccount );
+        }
+
+        /** @var BankAccountManager $bankAccountManager */
+        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+        $bankAccountManager->validateBankAccount($bankAccount);
     }
 }

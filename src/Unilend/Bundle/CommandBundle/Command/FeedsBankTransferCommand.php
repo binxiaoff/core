@@ -4,7 +4,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 
 class FeedsBankTransferCommand extends ContainerAwareCommand
 {
@@ -23,19 +24,14 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        $em            = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $logger        = $this->getContainer()->get('monolog.logger.console');
 
-        /** @var \virements $bankTransfer */
-        $bankTransfer = $entityManager->getRepository('virements');
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManager->getRepository('lenders_accounts');
         /** @var \compteur_transferts $counter */
         $counter = $entityManager->getRepository('compteur_transferts');
-        /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
         /** @var \transactions $transaction */
@@ -59,8 +55,8 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $settings->get('Retrait Unilend - Titulaire du compte', 'type');
         $unilendAccountHolder = utf8_decode($settings->value);
 
-        $pendingBankTransfers      = $bankTransfer->select('status = 0 AND added_xml = "0000-00-00 00:00:00"');
-        $pendingBankTransfersCount = count($pendingBankTransfers);
+        $pendingBankTransfers      = $em->getRepository('UnilendCoreBusinessBundle:Virements')->findBy(['status' => Virements::STATUS_PENDING, 'addedXml' => null]);
+        $pendingBankTransfersCount = 0;
         $totalAmount               = 0;
         $counterId                 = $counter->counter('type = 1') + 1;
         $date                      = date('Ymd');
@@ -72,46 +68,54 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $counter->create();
 
         foreach ($pendingBankTransfers as $pendingBankTransfer) {
-            $client->get($pendingBankTransfer['id_client'], 'id_client');
-            $transaction->get($pendingBankTransfer['id_transaction'], 'id_transaction');
+            $transaction->get($pendingBankTransfer->getIdTransaction(), 'id_transaction');
 
             if (\DateTime::createFromFormat('Y-m-d H:i:s', $transaction->date_transaction) < new \DateTime('today')) {
-                if ($pendingBankTransfer['type'] == 4) {
+                $bankAccount = $pendingBankTransfer->getBankAccount();
+                if ($pendingBankTransfer->getClient()) {
+                    $client->get($pendingBankTransfer->getClient()->getIdClient(), 'id_client');
+                    if (null === $bankAccount) {
+                        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy([
+                            'idClient' => $pendingBankTransfer->getClient(),
+                            'status'   => BankAccount::STATUS_VALIDATED
+                        ]);
+                    }
+                } elseif ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
+                    $logger->error('The client is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
+                    continue;
+                }
+
+                if ($pendingBankTransfer->getType() == Virements::TYPE_UNILEND) {
                     $recipientIban = $unilendIban;
                     $recipientBic  = $unilendBic;
                     $recipientName = $unilendAccountHolder;
                 } elseif ($client->isBorrower()) {
-                    $company->get($pendingBankTransfer['id_client'], 'id_client_owner');
-
-                    $recipientIban = $company->iban;
-                    $recipientBic  = $company->bic;
-                    $recipientName = $company->name;
+                    $company       = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
+                    // Todo: use BankAccount when multiRIB is done.
+                    $recipientIban = $company->getIban();
+                    $recipientBic  = $company->getBic();
+                    $recipientName = $company->getName();
                 } else {
-                    $balance = $transaction->getSolde($pendingBankTransfer['id_client']);
+                    $balance = $transaction->getSolde($pendingBankTransfer->getClient()->getIdClient());
                     if ($balance < 0) {
-                        $pendingBankTransfersCount--;
-                        $negativeBalanceError[] = ['id_client' => $pendingBankTransfer['id_client'], 'balance' => $balance];
+                        $negativeBalanceError[] = ['id_client' => $pendingBankTransfer->getClient()->getIdClient(), 'balance' => $balance];
                         continue;
                     }
-                    $lender->get($pendingBankTransfer['id_client'], 'id_client_owner');
-
-                    $recipientIban = $lender->iban;
-                    $recipientBic  = $lender->bic;
-
+                    $recipientIban = $bankAccount->getIban();
+                    $recipientBic  = $bankAccount->getBic();
                     if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                        $company->get($pendingBankTransfer['id_client'], 'id_client_owner');
-                        $recipientName = $company->name;
+                        $company       = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
+                        $recipientName = $company->getName();
                     } else {
                         $recipientName = $client->nom . ' ' . $client->prenom;
                     }
                 }
 
-                $totalAmount = bcadd($pendingBankTransfer['montant'], $totalAmount);
+                $totalAmount = bcadd($pendingBankTransfer->getMontant(), $totalAmount);
 
-                $bankTransfer->get($pendingBankTransfer['id_virement'], 'id_virement');
-                $bankTransfer->status    = 1;
-                $bankTransfer->added_xml = date('Y-m-d H:i') . ':00';
-                $bankTransfer->update();
+                $pendingBankTransfer->setStatus(Virements::STATUS_SENT);
+                $pendingBankTransfer->setAddedXml(new \DateTime());
+                $em->flush($pendingBankTransfer);
 
                 if (strncmp('FR', strtoupper(str_replace(' ', '', $recipientIban)), 2) === 0) {
                     $frenchBic = '';
@@ -127,10 +131,10 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 $xmlBody .= '
             <CdtTrfTxInf>
                 <PmtId>
-                    <EndToEndId>' . $accountHolder . '/' . $date . '/' . $pendingBankTransfer['id_virement'] . '</EndToEndId>
+                    <EndToEndId>' . $accountHolder . '/' . $date . '/' . $pendingBankTransfer->getIdVirement() . '</EndToEndId>
                 </PmtId>
                 <Amt>
-                    <InstdAmt Ccy="EUR">' . bcdiv($pendingBankTransfer['montant'], 100, 2) . '</InstdAmt>
+                    <InstdAmt Ccy="EUR">' . bcdiv($pendingBankTransfer->getMontant(), 100, 2) . '</InstdAmt>
                 </Amt>' . $frenchBic . '
                 <Cdtr>
                      <Nm>' . str_replace(['"', '\'', '\\', '>', '<', '&'], '', $recipientName) . '</Nm>
@@ -144,9 +148,11 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                         </Id>
                 </CdtrAcct>
                 <RmtInf>
-                     <Ustrd>' . str_replace(' ', '', $pendingBankTransfer['motif']) . '</Ustrd>
+                     <Ustrd>' . str_replace(' ', '', $pendingBankTransfer->getMotif()) . '</Ustrd>
                 </RmtInf>
             </CdtTrfTxInf>';
+
+                $pendingBankTransfersCount ++;
             }
         }
 

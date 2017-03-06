@@ -879,10 +879,12 @@ class paylineSDK{
 			return $response;
 		}catch ( Exception $e ) {
 			$this->writeTrace("Exception : ".$e->getMessage());
-			$ERROR = new pl_result();
-			$ERROR->code = 'XXXXX';
-			$ERROR->longMessage = $e->getMessage();
-			$ERROR->shortMessage = $e->getMessage();
+            $ERROR = array();
+            $ERROR['result']['code'] = 'XXXXX';
+            $ERROR['result']['longMessage'] = $e->getMessage();
+            $ERROR['result']['shortMessage'] = $e->getMessage();
+            $ERROR['result']['partnerCode'] = null;
+            $ERROR['result']['partnerCodeLabel'] = null;
 			return $ERROR;
 		}
 	}

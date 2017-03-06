@@ -7,9 +7,10 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
@@ -131,8 +132,19 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         }
         $lenderAccount->get($client->id_client, 'id_client_owner');
         $clientAddress->get($client->id_client, 'id_client');
-        $clientStatusManager->addClientStatus($client, \users::USER_ID_CRON, \clients_status::VALIDATED, 'Validation automatique basée sur Green Point');
 
+        /** @var BankAccountRepository $bankAccountRepository */
+        $bankAccountRepository  = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount');
+        $gpValidatedBankAccount = $bankAccountRepository->getGreenPointValidatedBankAccount($client->id_client);
+
+        if (null === $gpValidatedBankAccount) {
+            throw new \Exception('Lender has no validated bank account and could not be validated');
+        }
+        /** @var BankAccountManager $bankAccountManager */
+        $bankAccountManager = $this->getContainer()->get('unilend.service.bank_account_manager');
+        $bankAccountManager->validateBankAccount($gpValidatedBankAccount);
+
+        $clientStatusManager->addClientStatus($client, \users::USER_ID_CRON, \clients_status::VALIDATED, 'Validation automatique basée sur Green Point');
         $serialize = serialize(array('id_client' => $client->id_client, 'attachment_data' => $attachment));
         $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
 

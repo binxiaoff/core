@@ -222,6 +222,12 @@
     }
     .dashboard-tabs-nav {
       background-color: $c-bg1;
+      .nav {
+        // Fix for Safari - misuse of clearfix when children aren't floated
+        &:before, &:after {
+          display: none;
+        }
+      }
     }
   }
 

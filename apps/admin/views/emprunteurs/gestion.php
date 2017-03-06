@@ -34,9 +34,6 @@
     <?php else : ?>
         <h1>Liste des <?= (isset($this->lClients)) ? count($this->lClients) : 0 ?> derniers emprunteurs</h1>
     <?php endif; ?>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/emprunteurs/add_client" class="btn_link thickbox">Ajouter un emprunteur</a>
-    </div>
     <div class="form-container">
         <form method="post" name="search_emprunteurs" id="search_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/gestion" target="_parent">
             <fieldset>

@@ -3,12 +3,16 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\FrontBundle\Security\ClientRole;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 /**
@@ -19,7 +23,7 @@ class ClientManager
 {
     const SESSION_KEY_TOS_ACCEPTED = 'user_legal_doc_accepted';
 
-    /** @var EntityManager  */
+    /** @var EntityManagerSimulator */
     private $entityManager;
     /** @var ClientSettingsManager */
     private $clientSettingsManager;
@@ -29,37 +33,48 @@ class ClientManager
     private $requestStack;
     /** @var  RouterInterface */
     private $router;
-    /** @var  ClientRole */
-    private $clientRole;
+    /** @var WalletCreationManager */
+    private $walletCreationManager;
+    /** @var EntityManager*/
+    private $em;
+    /** @var  LoggerInterface */
+    private $logger;
 
     /**
      * ClientManager constructor.
-     * @param EntityManager         $entityManager
-     * @param ClientSettingsManager $clientSettingsManager
-     * @param TokenStorageInterface $tokenStorage
-     * @param RequestStack          $requestStack
-     * @param RouterInterface       $router
-     * @param ClientRole            $clientRole
+     *
+     * @param EntityManagerSimulator $entityManager
+     * @param ClientSettingsManager  $clientSettingsManager
+     * @param TokenStorageInterface  $tokenStorage
+     * @param RequestStack           $requestStack
+     * @param WalletCreationManager  $walletCreationManager
+     * @param EntityManager          $em
+     * @param LoggerInterface        $logger
+     * @param RouterInterface        $router
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerSimulator $entityManager,
         ClientSettingsManager $clientSettingsManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
-        RouterInterface $router,
-        ClientRole $clientRole
+        WalletCreationManager $walletCreationManager,
+        EntityManager $em,
+        LoggerInterface $logger,
+        RouterInterface $router
     ) {
-        $this->entityManager        = $entityManager;
-        $this->clientSettingsManager = $clientSettingsManager;
-        $this->tokenStorage          = $tokenStorage;
-        $this->requestStack          = $requestStack;
-        $this->router                = $router;
-        $this->clientRole            = $clientRole;
+        $this->entityManager          = $entityManager;
+        $this->clientSettingsManager  = $clientSettingsManager;
+        $this->tokenStorage           = $tokenStorage;
+        $this->requestStack           = $requestStack;
+        $this->walletCreationManager  = $walletCreationManager;
+        $this->em                     = $em;
+        $this->logger                 = $logger;
+        $this->router                 = $router;
     }
 
 
     /**
-     * @param \clients $oClient
+     * @param \clients $client
      *
      * @return bool
      */
@@ -109,28 +124,44 @@ class ClientManager
         }
     }
 
-    public function getLastTosId(\clients $client)
+    /**
+     * @param \clients|Clients $client
+     *
+     * @return string
+     */
+    public function getLastTosId($client)
     {
-        /** @var \settings $settings */
-        $settings = $this->entityManager->getRepository('settings');
-        if (in_array($client->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
-            $settingsType = 'Lien conditions generales inscription preteur societe';
-        } else {
-            $settingsType = 'Lien conditions generales inscription preteur particulier';
+        if ($client instanceof \clients) {
+            $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
-        $settings->get($settingsType, 'type');
 
-        return $settings->value;
+        if (in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+            $type = 'Lien conditions generales inscription preteur particulier';
+        } else {
+            $type = 'Lien conditions generales inscription preteur societe';
+        }
+
+        /** @var Settings $settingsEntity */
+        $settingsEntity =  $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $type]);
+        return $settingsEntity->getValue();
     }
 
-    public function acceptLastTos(\clients $client)
+    /**
+     * @param \clients|Clients $client
+     */
+    public function acceptLastTos($client)
     {
-        if (false === empty($client->id_client)) {
-            /** @var \acceptations_legal_docs $tosAccepted */
-            $tosAccepted               = $this->entityManager->getRepository('acceptations_legal_docs');
-            $tosAccepted->id_client    = $client->id_client;
-            $tosAccepted->id_legal_doc = $this->getLastTosId($client);
-            $tosAccepted->create();
+        if ($client instanceof \clients) {
+            $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
+        if (false === empty($client)) {
+            $termsOfUse = new AcceptationsLegalDocs();
+            $termsOfUse->setIdLegalDoc($this->getLastTosId($client));
+            $termsOfUse->setIdClient($client->getIdClient());
+
+            $this->em->persist($termsOfUse);
+            $this->em->flush($termsOfUse);
 
             $session = $this->requestStack->getCurrentRequest()->getSession();
             $session->remove(self::SESSION_KEY_TOS_ACCEPTED);
@@ -138,30 +169,47 @@ class ClientManager
     }
 
     /**
-     * @param \clients $client
+     * @param \clients | Clients $client
      *
      * @return bool
      */
-    public function isLender(\clients $client)
+    public function isLender($client)
     {
-        if (empty($client->id_client)) {
-            return false;
-        } else {
+        if ($client instanceof Clients) {
+            $lenderWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+            return null !== $lenderWallet;
+        }
+
+        if ($client instanceof \clients) {
+            if (empty($client->id_client)) {
+                return false;
+            }
             return $client->isLender();
         }
+
+        return false;
     }
 
     /**
-     * @param \clients $client
+     * @param \clients | Clients $client
      *
      * @return bool
      */
-    public function isBorrower(\clients $client)
+    public function isBorrower($client)
     {
-        if (empty($client->id_client)) {
-            return false;
+        if ($client instanceof Clients) {
+            $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::BORROWER);
+            return null !== $borrowerWallet;
         }
-        return $client->isBorrower();
+
+        if ($client instanceof \clients) {
+            if (empty($client->id_client)) {
+                return false;
+            }
+            return $client->isBorrower();
+        }
+
+        return false;
     }
 
     /**
@@ -242,20 +290,13 @@ class ClientManager
      */
     public function checkProgressAndRedirect(Request $request)
     {
-        /** @var \clients $client */
-        $client      = $this->entityManager->getRepository('clients');
         $currentPath = $request->getPathInfo();
         $token       = $this->tokenStorage->getToken();
 
-        if ($token) {
-            /** @var BaseUser $user */
-            $user = $token->getUser();
-
-            if ($user instanceof UserLender
-                && $this->clientRole->isGranted('ROLE_LENDER', $user)
-                && $client->get($user->getClientId())
-                && empty($user->getClientStatus())
-            ) {
+        if ($token && $token->getUser() instanceof UserLender) {
+            $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($token->getUser()->getClientId());
+            if (
+                $client && $this->isLender($client) && $client->getEtapeInscriptionPreteur() < Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
                 $redirectPath = $this->getSubscriptionStepRedirectRoute($client);
 
                 if ($redirectPath != $currentPath) {
@@ -268,18 +309,17 @@ class ClientManager
     }
 
     /**
-     * @param \clients $client
-     *
+     * @param Clients $client
      * @return string
      */
-    public function getSubscriptionStepRedirectRoute(\clients $client)
+    public function getSubscriptionStepRedirectRoute(Clients $client)
     {
-        switch ($client->etape_inscription_preteur) {
-            case \clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
-                return $this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]);
-            case \clients::SUBSCRIPTION_STEP_DOCUMENTS:
-            case \clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT:
-                return $this->router->generate('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
+        switch ($client->getEtapeInscriptionPreteur()) {
+            case Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
+                return $this->router->generate('lender_subscription_documents', ['clientHash' => $client->getHash()]);
+            case Clients::SUBSCRIPTION_STEP_DOCUMENTS:
+            case Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT:
+                return $this->router->generate('lender_subscription_money_deposit', ['clientHash' => $client->getHash()]);
             default:
                 return $this->router->generate('projects_list');
         }

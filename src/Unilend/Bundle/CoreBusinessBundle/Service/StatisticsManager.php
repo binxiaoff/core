@@ -53,7 +53,7 @@ class StatisticsManager
 
     /**
      * @param \DateTime $date
-     * @return mixed|null|void
+     * @return mixed|null
      */
     public function getStatisticsAtDate(\DateTime $date)
     {

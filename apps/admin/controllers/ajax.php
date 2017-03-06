@@ -977,7 +977,7 @@ class ajaxController extends bootstrap
             && false === in_array($project->status, [\projects_status::COMMERCIAL_REJECTION, \projects_status::ANALYSIS_REJECTION, \projects_status::COMITY_REJECTION])
         ) {
             try {
-                $project->id_rate = $projectManager->getProjectRateRange($project);
+                $project->id_rate = $projectManager->getProjectRateRangeId($project);
                 $project->update();
             } catch (\Exception $exception) {
                 echo json_encode(['success' => false, 'error' => $exception->getMessage()]);

@@ -2,7 +2,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
  * Class LoanManager
@@ -10,14 +10,18 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
  */
 class LoanManager
 {
-    /** @var LoggerInterface */
+    /**
+     * @var LoggerInterface
+     */
     private $oLogger;
-    /** @var EntityManager  */
+    /**
+     * @var EntityManagerSimulator
+     */
     private $oEntityManager;
 
-    public function __construct(EntityManager $oEntityManager)
+    public function __construct(EntityManagerSimulator $oEntityManager)
     {
-        $this->oEntityManager = $oEntityManager;
+        $this->oEntityManager   = $oEntityManager;
     }
     /**
      * @param LoggerInterface $oLogger
@@ -54,6 +58,8 @@ class LoanManager
                 );
             }
         }
+
+        return true;
     }
 
     /**

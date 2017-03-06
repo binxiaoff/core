@@ -295,8 +295,8 @@ class MailerManager
 
     public function sendFundedToStaff(\projects $project)
     {
-        /** @var \loans $loan */
-        $loan = $this->oEntityManager->getRepository('loans');
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
 
         $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->date_retrait);
 
@@ -316,7 +316,7 @@ class MailerManager
             '$surl'         => $this->sSUrl,
             '$id_projet'    => $project->id_project,
             '$title_projet' => $project->title,
-            '$nbPeteurs'    => $loan->getNbPreteurs($project->id_project),
+            '$nbPeteurs'    => $bid->countLendersOnProject($project->id_project),
             '$tx'           => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
             '$periode'      => $remainingDuration
         );
