@@ -123,8 +123,9 @@ class VigilanceRuleManager
     {
         foreach ($clients as $client) {
             try {
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $client->getNaissance()->diff($client->getAdded())->y);
-                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, 'Le client avait ' . $client->getNaissance()->diff($client->getAdded())->y . ' ans à son inscription');
+                $comment           = 'Le client avait ' . $client->getNaissance()->diff($client->getAdded())->y . ' ans à son inscription';
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $client->getNaissance()->diff($client->getAdded())->y, null, $comment);
+                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
                 $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $client->getIdClient() .
                     ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
@@ -142,8 +143,9 @@ class VigilanceRuleManager
         foreach ($clientOperations as $operation) {
             try {
                 $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($operation['idClient']);
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $operation['depositAmount'], $operation['operation'], $checkPendingDuplicate);
-                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, 'Le client a déposé une somme de ' . number_format($operation['depositAmount'], 2, ',', ' ') . ' €');
+                $comment           = 'Le client a déposé une somme de ' . number_format($operation['depositAmount'], 2, ',', ' ') . ' €';
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $operation['depositAmount'], $operation['operation'], $comment, $checkPendingDuplicate);
+                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
                 $this->logger->error('Could not process the detected operation: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $operation['idClient'] .
                     ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $operation['idClient']]);
@@ -182,12 +184,14 @@ class VigilanceRuleManager
             foreach ($withdrawOperations as $withdrawOperation) {
 
                 if (0 == $bidRepository->countByClientInPeriod($depositOperation->getAdded(), $withdrawOperation->getAdded(), $wallet->getIdClient()->getIdClient())) {
-
+                    $comment           = 'le client a déposé ' . number_format($depositOperation->getAmount(), 2, ',', ' ') . ' € suivi d\'un retrait de ' . number_format($withdrawOperation->getAmount(), 2, ',', ' ') . ' € sans bid entre ' .
+                        'le ' . $depositOperation->getAdded()->format('d/m/y H:i') . ' et le ' . $withdrawOperation->getAdded()->format('d/m/y H:i');
                     $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation(
                         $vigilanceRule,
                         $wallet->getIdClient(),
                         $depositOperation->getAmount() . '€/' . $withdrawOperation->getAmount() . '€',
                         $depositOperation->getId() . ',' . $withdrawOperation->getId(),
+                        $comment,
                         true
                     );
                     $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory(
@@ -195,8 +199,7 @@ class VigilanceRuleManager
                         $vigilanceRule->getVigilanceStatus(),
                         Users::USER_ID_CRON,
                         $atypicalOperation,
-                        'le client a déposé ' . number_format($depositOperation->getAmount(), 2, ',', ' ') . ' € suivi d\'un retrait de ' . number_format($withdrawOperation->getAmount(), 2, ',', ' ') . ' € sans bid entre ' .
-                        'le ' . $depositOperation->getAdded()->format('d/m/y H:i') . ' et le ' . $withdrawOperation->getAdded()->format('d/m/y H:i')
+                        $comment
                     );
                 }
             }
@@ -212,8 +215,9 @@ class VigilanceRuleManager
         foreach ($inactiveWallets as $wallet) {
             try {
                 $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($wallet['id_client']);
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $wallet['available_balance'], null, true);
-                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, 'Le client a un solde inactif d\'un montant de ' . number_format($wallet['available_balance'], 2, ',', ' ') . ' €');
+                $comment           = 'Le client a un solde inactif d\'un montant de ' . number_format($wallet['available_balance'], 2, ',', ' ') . ' €';
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $wallet['available_balance'], null, $comment, true);
+                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
                 $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $wallet['id_client'] .
                     ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $wallet['id_client']]);
@@ -230,8 +234,9 @@ class VigilanceRuleManager
         foreach ($clients as $clientRow) {
             try {
                 $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientRow['id_client']);
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['nb_rib_change'], null, true);
-                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, 'Le client a modifié son RIB ' . $clientRow['nb_rib_change'] . ' fois sur une année');
+                $comment           = 'Le client a modifié son RIB ' . $clientRow['nb_rib_change'] . ' fois sur une année';
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['nb_rib_change'], null, $comment, true);
+                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
                 $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $clientRow['id_client'] .
                     ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['id_client']]);
@@ -244,8 +249,9 @@ class VigilanceRuleManager
         foreach ($clientDeposit as $deposit) {
             try {
                 $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($deposit['id_client']);
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, 'nombre d\'opérations: ' . $deposit['nb_transactions'] . ' | nombre de CB: ' . $deposit['nb_cards'], $deposit['idTransactionList']);
-                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, 'Le client a effectué ' . $deposit['nb_transactions'] . ' alimentations échouées avec ' . $deposit['nb_cards'] . ' CB différentes');
+                $comment           = 'Le client a effectué ' . $deposit['nb_transactions'] . ' alimentations échouées avec ' . $deposit['nb_cards'] . ' CB différentes';
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, 'nombre d\'opérations: ' . $deposit['nb_transactions'] . ' | nombre de CB: ' . $deposit['nb_cards'], $deposit['idTransactionList'], $comment);
+                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
                 $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $deposit['id_client'] .
                     ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $deposit['id_client']]);
@@ -258,8 +264,9 @@ class VigilanceRuleManager
         foreach ($clients as $clientRow) {
             try {
                 $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientRow['idClient']);
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['countryLabel']);
-                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, 'Le client a indiqué ' . trim($clientRow['countryLabel']) . ' comme pays fiscal');
+                $comment           = 'Le client a indiqué ' . trim($clientRow['countryLabel']) . ' comme pays fiscal';
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['countryLabel'], null, $comment);
+                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
                 $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $clientRow['idClient'] .
                     ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['idClient']]);
