@@ -13,8 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ClientAtypicalOperation
 {
-    const STATUS_PENDING = 0;
-    const STATUS_TREATED = 1;
+    const STATUS_PENDING        = 0;
+    const STATUS_WAITING_ACK    = 1;
+    const STATUS_TREATED        = 2;
 
     /**
      * @var string
@@ -36,6 +37,13 @@ class ClientAtypicalOperation
      * @ORM\Column(name="id_user", type="integer", nullable=false)
      */
     private $idUser;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="user_comment", type="text", length=65535, nullable=true)
+     */
+    private $userComment;
 
     /**
      * @var \DateTime
@@ -136,6 +144,26 @@ class ClientAtypicalOperation
     public function setIdUser($idUser)
     {
         $this->idUser = $idUser;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUserComment()
+    {
+        return $this->userComment;
+    }
+
+    /**
+     * @param string $userComment
+     *
+     * @return ClientAtypicalOperation
+     */
+    public function setUserComment($userComment)
+    {
+        $this->userComment = $userComment;
 
         return $this;
     }

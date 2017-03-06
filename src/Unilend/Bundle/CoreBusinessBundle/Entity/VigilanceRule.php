@@ -13,8 +13,14 @@ use Doctrine\ORM\Mapping as ORM;
 class VigilanceRule
 {
     const VIGILANCE_STATUS_LOW    = 0;
-    const VIGILANCE_STATUS_MEDIUM = 0;
-    const VIGILANCE_STATUS_HIGH   = 0;
+    const VIGILANCE_STATUS_MEDIUM = 1;
+    const VIGILANCE_STATUS_HIGH   = 2;
+
+    public static $vigilanceStatusLabel = [
+        VigilanceRule::VIGILANCE_STATUS_LOW    => 'Standard',
+        VigilanceRule::VIGILANCE_STATUS_MEDIUM => 'Intermédiaire',
+        VigilanceRule::VIGILANCE_STATUS_HIGH   => 'Renforcée',
+    ];
 
     /**
      * @var string

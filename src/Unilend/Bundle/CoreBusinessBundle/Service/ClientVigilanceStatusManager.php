@@ -50,7 +50,7 @@ class ClientVigilanceStatusManager
                 ->setIdUser($userId)
                 ->setUserComment($comment);
             $this->em->persist($vigilanceStatusHistory);
-            $this->em->flush();
+            $this->em->flush($vigilanceStatusHistory);
 
             return $vigilanceStatusHistory;
         }
@@ -81,7 +81,7 @@ class ClientVigilanceStatusManager
                 ->setIdUser($userId)
                 ->setUserComment($comment);
             $this->em->persist($vigilanceStatusHistory);
-            $this->em->flush();
+            $this->em->flush($vigilanceStatusHistory);
 
             return $vigilanceStatusHistory;
         }
