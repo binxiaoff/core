@@ -60,6 +60,11 @@ hr {
   border-top: solid 1px $c-bg1;
 }
 
+::selection {
+  color: #fff;
+  background-color: $c-p1;
+}
+
 // Wait until JS kicks in for this to be visible
 .no-js {
   [role="tab"][data-toggle],

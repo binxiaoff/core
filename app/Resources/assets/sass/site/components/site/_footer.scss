@@ -95,15 +95,63 @@ footer > .disclaimer {
 
   .list-awards {
     @include inline-block-list;
-    display: none;
-    margin-bottom: 10px;
+    margin: 0 auto;
     text-align: center;
-
     > li {
-      margin-right: 10px;
-
+      margin: 0 5px 10px 0;
       &:last-child {
         margin-right: 0;
+      }
+      a {
+        display: block;
+        width: 60px;
+        height: 60px;
+        background-image: url('../images/awards/partners.png');
+        background-size: 240px auto;
+        background-repeat: no-repeat;
+      }
+      &:nth-child(2) {
+        a {
+          background-position: -60px 0;
+        }
+      }
+      &:nth-child(3) {
+        a {
+          background-position: -120px 0;
+        }
+      }
+      &:nth-child(4) {
+        a {
+          background-position: -180px 0;
+        }
+      }
+    }
+    @include devices('lg') {
+      > li {
+        margin-right: 10px;
+        &:last-child {
+          margin-right: 0;
+        }
+        a {
+          width: 90px;
+          height: 90px;
+          background-size: 360px auto;
+        }
+        &:nth-child(2) {
+          a {
+            background-position: -90px 0;
+          }
+        }
+        &:nth-child(3) {
+          a {
+            background-position: -180px 0;
+          }
+        }
+        &:nth-child(4) {
+          a {
+            background-position: -270px 0;
+          }
+        }
       }
     }
   }
@@ -147,14 +195,6 @@ footer > .disclaimer {
 
     .row {
       margin-bottom: 50px;
-    }
-
-    .list-block {
-      margin-bottom: 0;
-    }
-
-    .list-awards {
-      display: block;
     }
 
     .list-site-admin {
