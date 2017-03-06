@@ -39,15 +39,19 @@
                 <div class="col-sub-center col-lg-4 col-md-4">
                     {% block siteFooterSubCenter %}
                         <ul class="list-awards">
-                            {#{% for partner in partners %}#}
-                                {#<li>#}
-                                    {#<img src="{{ uploadedImage(partner.src) }}" alt="{{ partner.alt }}" class="ui-has-tooltip" data-original-title="{{ partner.alt|e('html_attr') }}">#}
-                                {#</li>#}
-                            {#{% endfor %}#}
-                            <li><a href="http://www.bpifrance.fr/" class="ui-has-tooltip" data-original-title="BPI France"></a></li>
-                            <li><a href="http://www.bpifrance.fr/" class="ui-has-tooltip" data-original-title="BPI France"></a></li>
-                            <li><a href="https://www.orias.fr/" class="ui-has-tooltip" data-original-title="ORIAS"></a></li>
-                            <li><a href="http://financeparticipative.org/" class="ui-has-tooltip" data-original-title="Financement Participatif France"></a></li>
+                            {% for partner in partners %}
+                                <li>
+                                    <a href="{{ partner.link }}" class="ui-has-tooltip" data-original-title="{{ partner.alt|e('html_attr') }}"></a>
+                                </li>
+                            {% endfor %}
+
+                            {# ---- A supprimer apres mis a jour du BO => il faudrait rajouter un lien pour chaque partner {{ partner.link }} + supprimer le champ pour l'image {{ uploadedImage(partner.src) }} ---- #}
+                            {#<li><a href="http://www.bpifrance.fr/" class="ui-has-tooltip" data-original-title="BPI France"></a></li>#}
+                            {#<li><a href="http://www.bpifrance.fr/" class="ui-has-tooltip" data-original-title="BPI France"></a></li>#}
+                            {#<li><a href="https://www.orias.fr/" class="ui-has-tooltip" data-original-title="ORIAS"></a></li>#}
+                            {#<li><a href="http://financeparticipative.org/" class="ui-has-tooltip" data-original-title="Financement Participatif France"></a></li>#}
+                            {# ---- End A supprimer.... ---- #}
+
                         </ul>
                         <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
                     {% endblock %}
