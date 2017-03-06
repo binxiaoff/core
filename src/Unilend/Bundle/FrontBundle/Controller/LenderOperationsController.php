@@ -116,6 +116,399 @@ class LenderOperationsController extends Controller
 
     /**
      * @param Request $request
+     * @return Response
+     * @Route("/operations/loanDetails", name="loan_details")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    // @TODO make this work correctly!
+    // @NOTE the output should be HTML which renders the details tabs and contents about the loan's docs and activity
+    public function loanDetails(Request $request)
+    {
+        /** @var \lenders_accounts $lender */
+        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        $lender->get($this->getUser()->getClientId(), 'id_client_owner');
+
+        // Which loan to get the details for
+        $loan_id = $request->query->get('id', null);
+
+        // Activity messages pagination
+        $page = $request->query->get('page', 1);
+        $per_page = $request->query->get('per_page', 10);
+
+        // @TODO I'm not sure how to get a single loan's details, so here's some dummy data for me to play with
+        // @NOTE with the `activity` collection, that should display the first 10 notifications and messages that a user has received per project/loan
+        $loan = [
+            "id" => $loan_id,
+            "url" => "/projects/detail/financement-service-conseil-et-assurances-vienne-6c2cb1c",
+            "name" => "H&L Prestations à domicile",
+            "rate" => 9.0,
+            "risk" => "E",
+            "amount" => 26800.0,
+            "start_date" => "2015-04-11",
+            "end_date" => "2020-03-12",
+            "next_payment_date" => "2016-10-12",
+            "monthly_repayment_amount" => "348.74",
+            "total_remaining_repayment_amount" => 9335,
+            "duration" => 38,
+            "status_change" => "2015-03-12 19:43:59",
+            "project_status" => "80",
+            "unread_messages_count" => 4,
+            "status" => "inprogress",
+            "count" => [
+                "bond" => 1,
+                "contract" => 1,
+                "declaration" => 1,
+            ],
+            "loans" => [
+                0 => [
+                    "rate" => 9.0,
+                    "amount" => 16800.0,
+                    "documents" => [
+                        0 => [
+                            "url" => "https://www.local.unilend.fr/pdf/contrat/d9fd557854e8616099bf35bc2ef56faa/42081",
+                            "label" => "Bon de caisse",
+                            "type" => "bond",
+                        ],
+                        1 => [
+                            "url" => "https://www.local.unilend.fr/pdf/contrat/d9fd557854e8616099bf35bc2ef56faa/42081",
+                            "label" => "Declaration",
+                            "type" => "declaration",
+                        ],
+                    ],
+                ],
+                1 => [
+                    "rate" => 9.0,
+                    "amount" => 10000.0,
+                    "documents" => [
+                        0 => [
+                            "url" => "https://www.local.unilend.fr/pdf/contrat/d9fd557854e8616099bf35bc2ef56faa/42081",
+                            "label" => "Contrat",
+                            "type" => "contract",
+                        ],
+                    ],
+                ],
+            ],
+            "activity" => [
+                "messages" => [
+                    // @NOTE these are standard notifications to the user about the project/loan
+                    0 => [
+                        "id" => "5440706",
+                        "type" => "remboursement",
+                        "title" => "Nouveau projet",
+                        "iso-8601" => "2016-11-15T11:42:54+01:00",
+                        "datetime" => "15 nov. 2016 11:42",
+                        "content" => "Nouveau projet <a href=\"/projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé&nbsp;: <strong>200 000&nbsp;€</strong> sur une période de 60 mois.",
+                        "image" => "notification-project",
+                        "status" => "read",
+                        "date" => "2016-11-15T10:42:54.000Z"
+                    ], [
+                        "id" => "5435046",
+                        "type" => "remboursement",
+                        "title" => "Remboursement",
+                        "iso-8601" => "2016-10-04T12:20:01+02:00",
+                        "datetime" => "4 oct. 2016 12:20",
+                        "content" => "Vous venez de recevoir un remboursement de <strong>136,58&nbsp;€</strong> pour le projet de <a href=\"/projects/detail/financement-alimentaire-thiais-18c88b1\">Eurosalaison</a>.",
+                        "image" => "notification-remboursement",
+                        "status" => "read",
+                        "date" => "2016-10-04T10:20:01.000Z"
+                    ],[
+                        "id" => "5419947",
+                        "type" => "remboursement",
+                        "title" => "Remboursement",
+                        "iso-8601" => "2016-10-02T12:30:06+02:00",
+                        "datetime" => "2 oct. 2016 12:30",
+                        "content" => "Vous venez de recevoir un remboursement de <strong>218,43&nbsp;€</strong> pour le projet de <a href=\"/projects/detail/financement-communication-paris-9676b82\">Travellerpad</a>.",
+                        "image" => "notification-remboursement",
+                        "status" => "read",
+                        "date" => "2016-10-02T10:30:06.000Z"
+                    ],[
+                        "id" => "5418993",
+                        "type" => "remboursement",
+                        "title" => "Remboursement",
+                        "iso-8601" => "2016-10-02T12:25:31+02:00",
+                        "datetime" => "2 oct. 2016 12:25",
+                        "content" => "Vous venez de recevoir un remboursement de <strong>160,99&nbsp;€</strong> pour le projet de <a href=\"/projects/detail/financement-alimentaire-thiais-b2b93ba\">Eurosalaison</a>.",
+                        "image" => "notification-remboursement",
+                        "status" => "read",
+                        "date" => "2016-10-02T10:25:31.000Z"
+                    ],[
+                        "id" => "5417244",
+                        "type" => "remboursement",
+                        "title" => "Remboursement",
+                        "iso-8601" => "2016-10-02T12:16:13+02:00",
+                        "datetime" => "2 oct. 2016 12:16",
+                        "content" => "Vous venez de recevoir un remboursement de <strong>357,35&nbsp;€</strong> pour le projet de <a href=\"/projects/detail/financement-btp-construction-malataverne-3a99754\">Eco House Construction</a>.",
+                        "image" => "notification-remboursement",
+                        "status" => "read",
+                        "date" => "2016-10-02T10:16:13.000Z"
+                    ],[
+                        "id" => "5409036",
+                        "type" => "remboursement",
+                        "title" => "Remboursement",
+                        "iso-8601" => "2016-10-01T12:54:12+02:00",
+                        "datetime" => "1 oct. 2016 12:54",
+                        "content" => "Vous venez de recevoir un remboursement de <strong>178,84&nbsp;€</strong> pour le projet de <a href=\"/projects/detail/financement-commerce-de-proximite-hors-alimentaire-carqueiranne-94bda07\">Story Diffusion</a>.",
+                        "image" => "notification-remboursement",
+                        "status" => "unread",
+                        "date" => "2016-10-01T10:54:12.000Z"
+                    ],[
+                        "id" => "5404986",
+                        "type" => "remboursement",
+                        "title" => "Remboursement",
+                        "iso-8601" => "2016-10-01T12:30:25+02:00",
+                        "datetime" => "1 oct. 2016 12:30",
+                        "content" => "Vous venez de recevoir un remboursement de <strong>754,68&nbsp;€</strong> pour le projet de <a href=\"/projects/detail/financement-culture-et-medias-bordeaux-cea4667\">Oxymore</a>.",
+                        "image" => "notification-remboursement",
+                        "status" => "unread",
+                        "date" => "2016-10-01T10:30:25.000Z"
+                    ],[
+                        "id" => "5402379",
+                        "type" => "remboursement",
+                        "title" => "Remboursement",
+                        "iso-8601" => "2016-10-01T12:18:35+02:00",
+                        "datetime" => "1 oct. 2016 12:18",
+                        "content" => "Vous venez de recevoir un remboursement de <strong>992,63&nbsp;€</strong> pour le projet de <a href=\"/projects/detail/financement-commerce-de-proximite-hors-alimentaire-croissy-beaubourg-0aa702a\">Alliances Est</a>.",
+                        "image" => "notification-remboursement",
+                        "status" => "unread",
+                        "date" => "2016-10-01T10:18:35.000Z"
+                    ],[
+                        "id" => "5402187",
+                        "type" => "remboursement",
+                        "title" => "Remboursement",
+                        "iso-8601" => "2016-10-01T12:14:48+02:00",
+                        "datetime" => "1 oct. 2016 12:14",
+                        "content" => "Vous venez de recevoir un remboursement de <strong>992,63&nbsp;€</strong> pour le projet de <a href=\"/projects/detail/financement-commerce-de-proximite-hors-alimentaire-croissy-beaubourg-0aa702a\">Alliances Est</a>.",
+                        "image" => "notification-remboursement",
+                        "status" => "unread",
+                        "date" => "2016-10-01T10:14:48.000Z"
+                    ],[
+                        "id" => "5373843",
+                        "type" => "remboursement",
+                        "title" => "Nouveau projet",
+                        "iso-8601" => "2016-09-30T16:01:32+02:00",
+                        "datetime" => "30 sept. 2016 16:01",
+                        "content" => "Nouveau projet <a href=\"/projects/detail/financement-service-conseil-et-assurances-aurillac-769e6a3\">HD Loc</a> mis en ligne le 30/09/2016 à 00:00. Montant demandé&nbsp;: <strong>100 000&nbsp;€</strong> sur une période de 60 mois.",
+                        "image" => "notification-project",
+                        "status" => "unread",
+                        "date" => "2016-09-30T14:01:32.000Z"
+                    ],
+                ],
+                'pagination' => [
+                    'total'       => 20, // @TODO put in actual total number messages
+                    'perPage'     => $per_page,
+                    'currentPage' => $page,
+                    'totalPages'  => 2 // @TODO put in actual total number of pages
+                ],
+            ],
+        ];
+
+        return $this->render('/pages/lender_operations/my_loans_details.html.twig',
+            [
+                'clientId'          => $lender->id_client_owner,
+                'hash'              => $this->getUser()->getHash(),
+                'loan'              => $loan
+            ]
+        );
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     * @Route("/operations/loanActivity", name="loan_activity")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    // @TODO make this work correctly!
+    // @NOTE this works essentially same as loanDetails, however it only renders the HTML for the activity tab pane
+    public function loanActivity(Request $request)
+    {
+        /** @var \lenders_accounts $lender */
+        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        $lender->get($this->getUser()->getClientId(), 'id_client_owner');
+
+        // Which loan to get the details for
+        $loan_id = $request->query->get('id', null);
+
+        // Activity messages pagination
+        $page = $request->query->get('page', 1);
+        $per_page = $request->query->get('per_page', 10);
+
+        // @TODO same as loanDetails
+        // @NOTE this is copy-pasted from loanDetails above. The return object should be the same structure as what's used in loanDetails (but that's up to you guys)
+        $loan = [
+            "id" => $loan_id,
+            "url" => "/projects/detail/financement-service-conseil-et-assurances-vienne-6c2cb1c",
+            "name" => "H&L Prestations à domicile",
+            "rate" => 9.0,
+            "risk" => "E",
+            "amount" => 26800.0,
+            "start_date" => "2015-04-11",
+            "end_date" => "2020-03-12",
+            "next_payment_date" => "2016-10-12",
+            "monthly_repayment_amount" => "348.74",
+            "total_remaining_repayment_amount" => 9335,
+            "duration" => 38,
+            "status_change" => "2015-03-12 19:43:59",
+            "project_status" => "80",
+            "unread_messages_count" => 4,
+            "status" => "inprogress",
+            "count" => [
+                "bond" => 1,
+                "contract" => 1,
+                "declaration" => 1,
+            ],
+            "loans" => [
+                0 => [
+                    "rate" => 9.0,
+                    "amount" => 16800.0,
+                    "documents" => [
+                        0 => [
+                            "url" => "https://www.local.unilend.fr/pdf/contrat/d9fd557854e8616099bf35bc2ef56faa/42081",
+                            "label" => "Bon de caisse",
+                            "type" => "bond",
+                        ],
+                        1 => [
+                            "url" => "https://www.local.unilend.fr/pdf/contrat/d9fd557854e8616099bf35bc2ef56faa/42081",
+                            "label" => "Declaration",
+                            "type" => "declaration",
+                        ],
+                    ],
+                ],
+                1 => [
+                    "rate" => 9.0,
+                    "amount" => 10000.0,
+                    "documents" => [
+                        0 => [
+                            "url" => "https://www.local.unilend.fr/pdf/contrat/d9fd557854e8616099bf35bc2ef56faa/42081",
+                            "label" => "Contrat",
+                            "type" => "contract",
+                        ],
+                    ],
+                ],
+            ],
+            "activity" => [
+                "messages" => [
+                    [
+                        "id" => "5333709",
+                        "type" => "notice",
+                        "title" => "Example notice message",
+                        "iso-8601" => "2016-09-29T12:45:19+02:00",
+                        "datetime" => "29 sept. 2016 12:45",
+                        "content" => "This is an example notification message which is a notice. Notices are displayed in pink with an info icon and denote general or helpful information. They can also have call-to-actions (CTAs) for the user to <a href=\"/projects/detail/financement-agriculture-la-brosse-montceaux-e99bc4d\">click on</a>.<br/><br/><a href=\"https://www.local.unilend.fr\" class=\"btn-primary btn-shape-md\">Big Call-to-Action</a>",
+                        "image" => "",
+                        "status" => "unread",
+                        "date" => "2016-09-29T10:45:19.000Z"
+                    ],[
+                        "id" => "5331354",
+                        "type" => "alert",
+                        "title" => "Example alert message",
+                        "iso-8601" => "2016-09-29T12:33:48+02:00",
+                        "datetime" => "29 sept. 2016 12:33",
+                        "content" => "This is an example notification message which is an alert. Alerts are displayed in pink with an exclamation mark icon and denote messages which require some important attention. They can also have call-to-actions (CTAs) for the user to <a href=\"/projects/detail/financement-agriculture-la-brosse-montceaux-e99bc4d\">click on</a>.<br/><br/><a href=\"https://www.local.unilend.fr\" class=\"btn-primary btn-shape-md\">Big Call-to-Action</a>",
+                        "image" => "",
+                        "status" => "unread",
+                        "date" => "2016-09-29T10:33:48.000Z"
+                    ],[
+                        "id" => "5324090",
+                        "type" => "remboursement",
+                        "title" => "Retrait d'argent",
+                        "iso-8601" => "2016-09-28T13:16:06+02:00",
+                        "datetime" => "28 sept. 2016 13:16",
+                        "content" => "Vous venez de retirer <strong>1 827,68&nbsp;€</strong>.",
+                        "image" => "account-withdraw",
+                        "status" => "unread",
+                        "date" => "2016-09-28T11:16:06.000Z"
+                    ],[
+                        "id" => "5324087",
+                        "type" => "remboursement",
+                        "title" => "Retrait d'argent",
+                        "iso-8601" => "2016-09-28T13:15:36+02:00",
+                        "datetime" => "28 sept. 2016 13:15",
+                        "content" => "Vous venez de retirer <strong>250,96&nbsp;€</strong>.",
+                        "image" => "account-withdraw",
+                        "status" => "unread",
+                        "date" => "2016-09-28T11:15:36.000Z"
+                    ],[
+                        "id" => "5324084",
+                        "type" => "remboursement",
+                        "title" => "Retrait d'argent",
+                        "iso-8601" => "2016-09-28T13:14:57+02:00",
+                        "datetime" => "28 sept. 2016 13:14",
+                        "content" => "Vous venez de retirer <strong>1 204,08&nbsp;€</strong>.",
+                        "image" => "account-withdraw",
+                        "status" => "unread",
+                        "date" => "2016-09-28T11:14:57.000Z"
+                    ],[
+                        "id" => "5315238",
+                        "type" => "remboursement",
+                        "title" => "Remboursement",
+                        "iso-8601" => "2016-09-28T12:28:43+02:00",
+                        "datetime" => "28 sept. 2016 12:28",
+                        "content" => "Vous venez de recevoir un remboursement de <strong>250,96&nbsp;€</strong> pour le projet de <a href=\"/projects/detail/financement-medical-et-paramedical-alencon-f6bfa8e\">Ethlugeda</a>.",
+                        "image" => "notification-remboursement",
+                        "status" => "unread",
+                        "date" => "2016-09-28T10:28:43.000Z"
+                    ],[
+                        "id" => "5310623",
+                        "type" => "remboursement",
+                        "title" => "Retrait d'argent",
+                        "iso-8601" => "2016-09-28T11:33:33+02:00",
+                        "datetime" => "28 sept. 2016 11:33",
+                        "content" => "Vous venez de retirer <strong>791,29&nbsp;€</strong>.",
+                        "image" => "account-withdraw",
+                        "status" => "unread",
+                        "date" => "2016-09-28T09:33:33.000Z"
+                    ],[
+                        "id" => "5310620",
+                        "type" => "remboursement",
+                        "title" => "Retrait d'argent",
+                        "iso-8601" => "2016-09-28T11:33:15+02:00",
+                        "datetime" => "28 sept. 2016 11:33",
+                        "content" => "Vous venez de retirer <strong>448,31&nbsp;€</strong>.",
+                        "image" => "account-withdraw",
+                        "status" => "unread",
+                        "date" => "2016-09-28T09:33:15.000Z"
+                    ],[
+                        "id" => "5310617",
+                        "type" => "remboursement",
+                        "title" => "Retrait d'argent",
+                        "iso-8601" => "2016-09-28T11:33:00+02:00",
+                        "datetime" => "28 sept. 2016 11:33",
+                        "content" => "Vous venez de retirer <strong>227,63&nbsp;€</strong>.",
+                        "image" => "account-withdraw",
+                        "status" => "unread",
+                        "date" => "2016-09-28T09:33:00.000Z"
+                    ],[
+                        "id" => "5310614",
+                        "type" => "remboursement",
+                        "title" => "Retrait d'argent",
+                        "iso-8601" => "2016-09-28T11:32:42+02:00",
+                        "datetime" => "28 sept. 2016 11:32",
+                        "content" => "Vous venez de retirer <strong>924,54&nbsp;€</strong>.",
+                        "image" => "account-withdraw",
+                        "status" => "unread",
+                        "date" => "2016-09-28T09:32:42.000Z"
+                    ],
+                ],
+                'pagination' => [
+                    'total'       => 20, // @TODO put in actual total number messages
+                    'perPage'     => $per_page,
+                    'currentPage' => $page,
+                    'totalPages'  => 2 // @TODO put in actual total number of pages
+                ],
+            ],
+        ];
+
+        return $this->render('/pages/lender_operations/my_loans_details_activity.html.twig',
+            [
+                'clientId'          => $lender->id_client_owner,
+                'hash'              => $this->getUser()->getHash(),
+                'loan'              => $loan
+            ]
+        );
+    }
+
+    /**
+     * @param Request $request
      * @return JsonResponse
      * @Route("/operations/filterLoans", name="filter_loans")
      * @Security("has_role('ROLE_LENDER')")
@@ -681,19 +1074,23 @@ class LenderOperationsController extends Controller
             /** @var \DateInterval $remainingDuration */
             $remainingDuration = $startDateTime->diff($endDateTime);
 
-            $loanData['id']                       = $aProjectLoans['id_project'];
-            $loanData['url']                      = $this->generateUrl('project_detail', ['projectSlug' => $aProjectLoans['slug']]);
-            $loanData['name']                     = $aProjectLoans['title'];
-            $loanData['rate']                     = round($aProjectLoans['rate'], 1);
-            $loanData['risk']                     = $aProjectLoans['risk'];
-            $loanData['amount']                   = round($aProjectLoans['amount']);
-            $loanData['start_date']               = $aProjectLoans['debut'];
-            $loanData['end_date']                 = $aProjectLoans['fin'];
-            $loanData['next_payment_date']        = $aProjectLoans['next_echeance'];
-            $loanData['monthly_repayment_amount'] = $aProjectLoans['monthly_repayment_amount'];
-            $loanData['duration']                 = $remainingDuration->y * 12 + $remainingDuration->m;
-            $loanData['status_change']            = $aProjectLoans['status_change'];
-            $loanData['project_status']           = $aProjectLoans['project_status'];
+            $loanData['id']                               = $aProjectLoans['id_project'];
+            $loanData['url']                              = $this->generateUrl('project_detail', ['projectSlug' => $aProjectLoans['slug']]);
+            $loanData['name']                             = $aProjectLoans['title'];
+            $loanData['rate']                             = round($aProjectLoans['rate'], 1);
+            $loanData['risk']                             = $aProjectLoans['risk'];
+            $loanData['amount']                           = round($aProjectLoans['amount']);
+            $loanData['start_date']                       = $aProjectLoans['debut'];
+            $loanData['end_date']                         = $aProjectLoans['fin'];
+            $loanData['next_payment_date']                = $aProjectLoans['next_echeance'];
+            $loanData['monthly_repayment_amount']         = $aProjectLoans['monthly_repayment_amount'];
+            // @TODO add in total remaining repayment amount
+            $loanData['total_remaining_repayment_amount'] = rand(1000, 20000);
+            $loanData['duration']                         = $remainingDuration->y * 12 + $remainingDuration->m;
+            $loanData['status_change']                    = $aProjectLoans['status_change'];
+            $loanData['project_status']                   = $aProjectLoans['project_status'];
+            // @TODO add in unread messages count, which represents number of user's unread notifications about project loan is related to
+            $loanData['unread_messages_count']            = rand(0, 10);
 
             $lenderLoans[$loanIndex]['project_remaining_duration'] = $remainingDuration->y * 12 + $remainingDuration->m;
 

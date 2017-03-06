@@ -852,7 +852,9 @@ $doc.on('ready', function () {
         var notificationId = $notification.attr('data-notification-id')
 
         // Toggle notification
-        UserNotifications.toggleNotification(notificationId)
+        if ($target.closest('[data-ignore-toggle]').length === 0) {
+          UserNotifications.toggleNotification(notificationId)
+        }
 
         // If notification unread, mark as read
         if ($notification.is('.ui-notification-status-unread')) {
