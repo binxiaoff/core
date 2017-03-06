@@ -11,7 +11,7 @@ class FraudControlCommand extends ContainerAwareCommand
 {
     protected function configure()
     {
-        $this->setName('unilend:fraud_control')
+        $this->setName('check:client_atypical_operations')
             ->setDescription('Detect atypical client operations based on defined rules');
     }
 
