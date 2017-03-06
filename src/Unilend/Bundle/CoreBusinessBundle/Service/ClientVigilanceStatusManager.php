@@ -94,10 +94,11 @@ class ClientVigilanceStatusManager
      * @param Clients       $client
      * @param null|string   $atypicalValue
      * @param null|string   $operationLog
+     * @param null|string   $comment
      * @param boolean       $checkPendingDuplicate
      * @return ClientAtypicalOperation
      */
-    public function addClientAtypicalOperation(VigilanceRule $vigilanceRule, Clients $client, $atypicalValue = null, $operationLog = null, $checkPendingDuplicate = false)
+    public function addClientAtypicalOperation(VigilanceRule $vigilanceRule, Clients $client, $atypicalValue = null, $operationLog = null, $comment = null, $checkPendingDuplicate = false)
     {
         if (true === $checkPendingDuplicate) {
             $pendingAtypicalOperation = $this->em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
@@ -114,6 +115,7 @@ class ClientVigilanceStatusManager
             ->setDetectionStatus(ClientAtypicalOperation::STATUS_PENDING)
             ->setAtypicalValue($atypicalValue)
             ->setOperationLog($operationLog)
+            ->setUserComment($comment)
             ->setIdUser(Users::USER_ID_CRON);
 
         $this->em->persist($atypicalOperation);
