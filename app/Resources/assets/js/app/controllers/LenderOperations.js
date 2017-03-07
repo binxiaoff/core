@@ -47,56 +47,40 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
   var $item = $(this)
   var $table = $item.parents('tbody').first()
   var $details = $table.find('[data-parent="' + $item.attr('id') + '"]')
-  event.preventDefault()
 
-  // Hide details
-  if ($item.is('.ui-details-open')) {
-    if ($details.length > 0) {
-      $details.slideUp(200, function () {
+  // My loans details
+  if ($item.is('.table-myloans-item')) {
+    var evTarget = $(event.target)
+    if (!evTarget.is('.table-myloans-item-project-name')) {
+      event.preventDefault()
+      if (evTarget.parents('.table-myloans-item-controls').length) {
+        if (evTarget.parents('.ui-show-table-myloans-item-activity').length || evTarget.is('.ui-show-table-myloans-item-activity')) {
+          $details.find('.nav-tab-anchors li:first-child a').trigger('click')
+        } else {
+          $details.find('.nav-tab-anchors li:last-child a').trigger('click')
+        }
+      }
+      if ($item.is('.ui-details-open')) {
+        $item.siblings('.table-myloans-item').removeClass('ui-details-closed')
         $item.removeClass('ui-details-open')
-      })
-    } else {
-      $item.removeClass('ui-details-open')
+        $details.hide()
+      } else {
+        $item.siblings('.table-myloans-item').removeClass('ui-details-open').addClass('ui-details-closed')
+        $table.find('[data-parent]').hide();
+        $item.removeClass('ui-details-closed').addClass('ui-details-open')
+        $details.show().trigger('UI:visible')
+      }
     }
-
-  // Show details
   } else {
+
+    event.preventDefault()
+
+    // My operations details & My operations borrower details
     if ($details.length === 0) {
       // Get the details
       var details = Utility.convertStringToJson($item.attr('data-details'))
       var detailsItemsHtml = ''
-
-      // My loans details
-      if ($item.is('.table-myloans-item')) {
-        $.each(details.loans, function (i, item) {
-          // Generate documents HTML for loan
-          var docsHtml = ''
-          $.each(item.documents, function (j, doc) {
-            docsHtml += Templating.replace('<a href="{{ url }}" class="loan-doc loan-doc-{{ type }}" title="{{ label }}" data-toggle="tooltip"><span class="sr-only">{{ label }}</span></a> ', doc)
-          })
-
-          // Generate loan details HTML
-          detailsItemsHtml += Templating.replace('<tr class="table-myloans-details-item">\
-            <td class="table-myloans-item-amount">\
-              {{ amount }}&nbsp;€\
-            </td>\
-            <td class="table-myloans-item-interest">\
-              {{ rate }}%\
-            </td>\
-            <td class="table-myloans-item-documents">\
-              {{ documents }}\
-            </td>\
-          </tr>', {
-            amount: __.localizedPrice(item.amount),
-            rate: __.localizedNumber(item.rate, 1),
-            documents: docsHtml
-          })
-        })
-
-        $details = $('<tr class="table-myloans-details" data-parent="' + $item.attr('id') + '"><td colspan="8"><table class="table-myloans-details-list">' + detailsItemsHtml + '</table></td></tr>')
-
-      // My operations details (lender)
-      } else if ($item.is('.table-myoperations-item')) {
+      if ($item.is('.table-myoperations-item')) {
         // Build the list of items
         $.each(details.items, function (i, item) {
           // @todo may need to programmatically change the currency here
@@ -111,9 +95,8 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
 
         // Build element and add to DOM
         $details = $('<tr class="table-myoperations-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="2">' + details.label + '</td><td colspan="3"><dl>' + detailsItemsHtml + '</dl></td><td>&nbsp;</td></tr>')
-
-      // My operations borrower details
-      } else if ($item.is('.table-myoperations-borrower-item')) {
+      }
+      else if ($item.is('.table-myoperations-borrower-item')) {
         // Build the list of items
         $.each(details.items, function (i, item) {
           // @todo may need to programmatically change the currency here
@@ -129,13 +112,17 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         // Build element and add to DOM
         $details = $('<tr class="table-myoperations-borrower-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td>' + details.label + '</td><td colspan="3"><dl>' + detailsItemsHtml + '</dl></td><td>&nbsp;</td></tr>')
       }
-
       $item.after($details)
     }
 
-    // Show
-    $item.addClass('ui-details-open')
-    $details.slideDown(200).trigger('UI:visible')
+    // Toggle details visibility
+    if ($item.is('.ui-details-open')) {
+      $item.removeClass('ui-details-open')
+      $details.hide()
+    } else {
+      $item.addClass('ui-details-open')
+      $details.show().trigger('UI:visible')
+    }
   }
 })
 

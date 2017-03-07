@@ -1,13 +1,9 @@
-<tr id="loan-{{ loan.id }}-details" class="table-myloans-view-details ui-details-open" data-parent="#loan-{{ loan.id }}" data-loan-id="{{ loan.id }}">
+<tr id="loan-{{ loan.id }}-details" class="table-myloans-view-details {{ 'ui-loan-status-' ~ loan.status }}" data-parent="loan-{{ loan.id }}" data-loan-id="{{ loan.id }}">
     <td colspan="8" class="table-myloans-item-details-tabs tabs">
         <ul class="nav nav-tab-anchors">
-            <li role="presentation">
-                <a href="#loan-{{ loan.id }}-details-docs" role="tab" data-toggle="tab" aria-expanded="false">
-                    {% trans %} lender-operations_info-tab-documents {% endtrans %}
-                </a>
-            </li>
-            <li role="presentation">
-                <a href="#loan-{{ loan.id }}-details-activity" role="tab" data-toggle="tab" aria-expanded="false">
+
+            <li role="presentation" class="active">
+                <a href="#loan-{{ loan.id }}-details-activity" role="tab" data-toggle="tab" aria-expanded="true">
                     {% trans %} lender-operations_info-tab-activity {% endtrans %}
                     {% if loan.unread_messages_count > 0 %}
                         <span class="pip {% if loan.unread_messages_count > 9 %} pip-has-many {% endif %}">
@@ -16,8 +12,16 @@
                     {% endif %}
                 </a>
             </li>
+            <li role="presentation">
+                <a href="#loan-{{ loan.id }}-details-docs" role="tab" data-toggle="tab" aria-expanded="false">
+                    {% trans %} lender-operations_info-tab-documents {% endtrans %}
+                </a>
+            </li>
         </ul>
         <div class="tab-content">
+            <article id="loan-{{ loan.id }}-details-activity" role="tabpanel" class="table-myloans-item-details-activity tab-pane active">
+                {% include '/pages/lender_operations/my_loans_details_activity.html.twig' %}
+            </article><!-- /.table-myloans-item-details-activity -->
             <article id="loan-{{ loan.id }}-details-docs" role="tabpanel" class="table-myloans-item-details-docs tab-pane">
                 <ul class="list-loans">
                     {% for i, loanItem in loan.loans %}
@@ -37,9 +41,7 @@
                     {% endfor %}
                 </ul>
             </article><!-- /.table-myloans-item-details-docs -->
-            <article id="loan-{{ loan.id }}-details-activity" role="tabpanel" class="table-myloans-item-details-activity tab-pane">
-                {% include '/pages/lender_operations/my_loans_details_activity.html.twig' %}
-            </article><!-- /.table-myloans-item-details-activity -->
+
         </div>
     </td>
 </tr><!-- .table-myloans-item-details -->

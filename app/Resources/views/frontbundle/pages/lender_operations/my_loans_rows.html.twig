@@ -1,0 +1,85 @@
+{% for i, loan in lenderLoans %}
+    <tr id="loan-{{ loan.id }}" class="table-myloans-item {{ 'ui-loan-status-' ~ loan.status }}" data-details
+        data-loan-id="{{ loan.id }}"
+        data-sortable-status="{{ loan.status }}"
+        data-sortable-project="{{ loan.name|escape('html_attr') }}"
+        data-sortable-rating="{{ loan.risk|convertRisk }}"
+        data-sortable-rate="{{ loan.amount }}"
+        data-sortable-interest="{{ loan.rate }}"
+        data-sortable-monthly="{{ loan.monthly_repayment_amount }}"
+        data-sortable-remaining="{{ loan.total_remaining_repayment_amount }}"
+        data-sortable-next="{{ loan.next_payment_date|date('U') }}"
+        data-sortable-duration="{{ loan.duration }}">
+        {#
+        <td colspan="8">
+            {{ dump(loan) }}
+        </td>
+        #}
+        <td class="table-myloans-item-project"
+            data-toggle="tooltip"
+            data-html="true"
+            data-original-title="<strong>{{ loan.name|e('html_attr') }}</strong><br/><em>{% trans with {'%risk%': loan.risk|convertRisk} %} lender-operations_unilend-rating-wording-label {% endtrans %}</em><br/>{{ "lender-operations_project-status-label-#{ loan.project_status }"|trans|e('html_attr') }}">
+            <a href="{{ loan.url }}" target="_blank" class="table-myloans-item-project-name">{{ loan.name }}</a>
+            <span class="rating rating-{{ loan.risk|convertRisk|split('.')|join('-') }}">
+                                <span class="sr-only">
+                                    {% trans with {'%risk%': loan.risk|convertRisk} %} lender-operations_unilend-rating-wording-label {% endtrans %}
+                                </span>
+                            </span>
+        </td>
+        <td class="table-myloans-item-amount">
+            {{ loan.amount|localizednumber }}&nbsp;€
+        </td>
+        <td class="table-myloans-item-rate">
+            {{ loan.rate|localizednumber }}&nbsp;<sup>%</sup>
+        </td>
+        {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
+            <td colspan="4" class="table-myloans-item-next">
+                <em class="c-t2">
+                    {% trans with {'%date%': loan.status_change|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}
+                </em>
+            </td>
+        {% else %}
+            <td class="table-myloans-item-monthly">
+                {{ loan.monthly_repayment_amount|localizedcurrency('EUR') }}
+            </td>
+            <td class="table-myloans-item-next">
+                {{ loan.next_payment_date|date('d/m/y') }}
+            </td>
+            <td class="table-myloans-item-remaining">
+                {{ loan.total_remaining_repayment_amount|localizedcurrency('EUR') }}
+            </td>
+            <td class="table-myloans-item-duration">
+                                <span title="{% trans with {'%startDate%': loan.start_date|date('d/m/Y'), '%endDate%': loan.end_date|date('d/m/Y')} %} lender-operations_remaining-duration-tooltip {% endtrans %}" data-toggle="tooltip">
+                                    {% trans with { '%count%' : loan.duration} %} lender-operations_loans-table-project-remaining-month {% endtrans %}
+                                </span>
+            </td>
+        {% endif %}
+        <td class="table-myloans-item-controls">
+            <a href="javascript:;" title="{{ 'lender-operations_loans-table-project-activity'|trans|e('html_attr') }}" class="ui-show-table-myloans-item-activity btn-default btn-shape-sq-sm">
+                <span class="icon fa-info-circle"></span>
+                <span class="sr-only">
+                                    {% trans %} lender-operations_loans-table-project-activity {% endtrans %}
+                                </span>
+                {% if loan.unread_messages_count > 0 %}
+                    <span class="pip {% if loan.unread_messages_count > 9 %} pip-has-many {% endif %}">
+                                    <span class="pip-number">{{ loan.unread_messages_count }}</span>
+                                </span>
+                {% endif %}
+            </a>
+            {% if loan.loans|length > 1 %}
+                <a href="javascript:;" title="{{ 'lender-operations_loans-table-project-documents'|trans|e('html_attr') }}"  class="ui-show-table-myloans-item-docs loan-doc loan-doc-multiple" data-toggle="tooltip">
+                                    <span class="sr-only">
+                                        {% trans %} lender-operations_loans-table-project-documents {% endtrans %}
+                                    </span>
+                </a>
+            {% else %}
+                <a href="javascript:;" title="{{ 'lender-operations_loans-table-project-documents'|trans|e('html_attr') }}" class="ui-show-table-myloans-item-docs loan-doc loan-doc-bond" data-toggle="tooltip">
+                                    <span class="sr-only">
+                                        {% trans %} lender-operations_loans-table-project-documents {% endtrans %}
+                                    </span>
+                </a>
+            {% endif %}
+        </td>
+    </tr>
+    {{ include('/pages/lender_operations/my_loans_details.html.twig') }}
+{% endfor %}

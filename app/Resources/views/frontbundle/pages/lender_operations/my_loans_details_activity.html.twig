@@ -1,10 +1,29 @@
-{% if loan.activity.messages|length > 0 %}
+{% set loanData = {
+    activity: {
+        messages: {
+            0: {
+                id: "5440706",
+                type: "remboursement",
+                title: "Nouveau projet",
+                datetime: "15 nov. 2016 11:42",
+                content: "Nouveau projet <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
+                image: "notification-project",
+                status: "read",
+                date: "2016-11-15T10:42:54.000Z"
+            }
+        }
+    }
+} %}
+
+
+
+{% if loanData.activity.messages|length > 0 %}
     <ul class="list-notifications">
-    {% for i, notification in loan.activity.messages %}
+    {% for i, notification in loanData.activity.messages %}
         <li class="notification notification-type-{{ notification.type|default('message')|e('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" tabindex="0" data-ignore-toggle="true">
             <div class="notification-image">
             {% if notification.image %}
-                <span class="svg-icon-wrap">{{ svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
+                <span class="svg-icon-wrap">{{ svgimage('#' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
             {% endif %}
             </div>
             <div class="notification-info">
@@ -23,112 +42,6 @@
         </li>
     {% endfor %}
     </ul>
-
-    {% if loan.activity.pagination.totalPages > 1 %}
-        <div class="pagination-wrap">
-            <nav class="pagination">
-                <div class="row">
-                    <div class="col-pagination-info col-lg-4 col-md-4">
-                        <div class="pagination-info">
-                        <span class="pagination-location">
-                            {% trans with {'%item%' : loan.activity.pagination.perPage, '%items%' : loan.activity.pagination.total} %} projects-listing_pagination-info-location {% endtrans %}
-                        </span>
-                            {% if loan.activity.pagination.currentPage < loan.activity.pagination.totalPages %}
-                                <a href="javascript:;" class="ui-show-pagination-page link pagination-next" data-page="{{ loan.activity.pagination.currentPage + 1 }}">
-                                    {% transchoice loan.activity.pagination.perPage with {'%items%' : loan.activity.pagination.perPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="col-pagination-index col-lg-8 col-md-8">
-                        <ul class="pagination-index">
-                            {% if loan.activity.pagination.currentPage > 1 %}
-                                <li role="presentation">
-                                    <a href="javascript:;" class="ui-show-pagination-page" data-page="{{ loan.activity.pagination.currentPage - 1 }}">
-                                        <span class="icon fa-angle-left"></span>
-                                        <span class="sr-only">
-                                            {% trans with {'%items%' : loan.activity.pagination.perPage } %} projects-listing_pagination-index-previous-label {% endtrans %}
-                                        </span>
-                                    </a>
-                                </li>
-                            {% endif %}
-
-                            {# Track ellipses #}
-                            {% set elidedBeforeCurrent = false %}
-                            {% set elidedAfterCurrent = false %}
-
-                            {# Always render the first... #}
-                            <li role="presentation" class="{% if loan.activity.pagination.currentPage == 1 %}current{% endif %}">
-                                <a href="javascript:;" class="ui-show-pagination-page" data-page="1">1</a>
-                            </li>
-
-                            {# Pagination index plan #}
-                            {% set paginationIndexPlan = [loan.activity.pagination.currentPage - 1, loan.activity.pagination.currentPage, loan.activity.pagination.currentPage + 1] %}
-
-                            {# Render inbetween numbers #}
-                            {% if loan.activity.pagination.totalPages > 2 %}
-                                {% if loan.activity.pagination.currentPage < 4 %}
-                                    {% set paginationIndexPlan = [2, 3, 4] %}
-                                {% elseif loan.activity.pagination.currentPage == 4 %}
-                                    {% set paginationIndexPlan = [2, 3, 4, 5] %}
-                                {% elseif loan.activity.pagination.currentPage == loan.activity.pagination.totalPages - 3 %}
-                                    {% set paginationIndexPlan = [loan.activity.pagination.totalPages - 4, loan.activity.pagination.totalPages - 3, loan.activity.pagination.totalPages - 2] %}
-                                {% elseif loan.activity.pagination.currentPage > loan.activity.pagination.totalPages - 3 %}
-                                    {% set paginationIndexPlan = [loan.activity.pagination.totalPages - 3, loan.activity.pagination.totalPages - 2, loan.activity.pagination.totalPages - 1] %}
-                                {% endif %}
-
-                                {% for i in 2..(loan.activity.pagination.totalPages - 1) %}
-                                    {# Current index #}
-                                    {% set classCurrent = '' %}
-                                    {% if loan.activity.pagination.currentPage == i %}
-                                        {% set classCurrent = 'current' %}
-                                    {% endif %}
-
-                                    {# Output a number to be displayed #}
-                                    {% if i in paginationIndexPlan %}
-                                        {% if i > 0 and i <= loan.activity.pagination.totalPages %}
-                                            <li role="presentation" class="{{ classCurrent }}">
-                                                <a href="javascript:;" class="ui-show-pagination-page" data-page="{{ i }}">
-                                                    {{ i }}
-                                                </a>
-                                            </li>
-                                        {% endif %}
-
-                                    {# Elide the numbers between the very first and the next to be displayed #}
-                                    {% elseif i < paginationIndexPlan[0] and elidedBeforeCurrent == false %}
-                                        {% set elidedBeforeCurrent = true %}
-                                        <li role="presentation" class="pagination-more">&hellip;</li>
-
-                                    {# Elide the numbers between the very last and the next to be displayed #}
-                                    {% elseif i > paginationIndexPlan[2] and elidedAfterCurrent == false %}
-                                        {% set elidedAfterCurrent = true %}
-                                        <li role="presentation" class="pagination-more">&hellip;</li>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
-
-                            {% if loan.activity.pagination.totalPages > 1 %}
-                                <li role="presentation" class=" {% if loan.activity.pagination.currentPage == loan.activity.pagination.totalPages %}current{% endif %}">
-                                    <a href="javascript:;" class="ui-show-pagination-page" data-page="{{ loan.activity.pagination.totalPages }}">{{ loan.activity.pagination.totalPages }}</a>
-                                </li>
-                            {% endif %}
-
-                            {% if loan.activity.pagination.currentPage < loan.activity.pagination.totalPages %}
-                                <li role="presentation">
-                                    <a href="javascript:;" class="ui-show-pagination-page" data-page="{{ loan.activity.pagination.currentPage + 1 }}">
-                                        <span class="sr-only">
-                                            {% transchoice loan.activity.pagination.perPage with {'%items%' : loan.activity.pagination.perPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
-                                        </span>
-                                        <span class="icon fa-angle-right"></span>
-                                    </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-        </div><!-- /.pagination -->
-    {% endif %}
 {% else %}
     <ul class="list-notifications">
         <li class="notification notification-type-empty">
