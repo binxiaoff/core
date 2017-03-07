@@ -646,7 +646,12 @@
                         <?php endif; ?>
                         <br><br><br><br>
                     <?php endif; ?>
-                    <h2>Actions</h2>
+                    <h2>
+                        Actions
+                        <a href="<?= $this->surl ?>/images/admin/projects_workflow.png" class="thickbox">
+                            <img src="<?= $this->surl ?>/images/admin/info.png" alt="Worflow statuts">
+                        </a>
+                    </h2>
                     <table class="form project-actions">
                         <tr>
                             <th>ID dossier</th>
@@ -862,7 +867,7 @@
                                             <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
                                             <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
                                             <?php if (empty($this->projects->id_product)) : ?>
-                                                <br><br>Pour passer le projet à l'étude, vous devez sélectionner un produit.
+                                                <br><br>Pour passer le projet à l'étude risque, vous devez sélectionner un produit.
                                             <?php else : ?>
                                                 <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
                                             <?php endif; ?>
@@ -872,7 +877,11 @@
                                         <div style="text-align: right">
                                             <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
                                             <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
-                                            <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
+                                            <?php if (empty($this->projects->id_product)) : ?>
+                                                <br><br>Pour passer le projet à l'étude risque, vous devez sélectionner un produit.
+                                            <?php else : ?>
+                                                <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
+                                            <?php endif; ?>
                                         </div>
                                         <?php break;
                                     case \projects_status::ANALYSIS_REVIEW:
@@ -895,7 +904,7 @@
                     </table>
                 </td>
             </tr>
-            <tr>
+            <tr<?php if (empty($this->projects->id_commercial)) : ?> style="display: none" <?php endif; ?>>
                 <td colspan="2" class="center">
                     <input type="hidden" name="statut_encours" id="statut_encours" value="0">
                     <input type="hidden" name="send_form_dossier_resume">
