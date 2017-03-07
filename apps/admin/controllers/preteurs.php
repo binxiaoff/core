@@ -235,7 +235,7 @@ class preteursController extends bootstrap
             }
 
             $this->getMessageAboutClientStatus();
-            $this->setClientVigilanceStatusdata();
+            $this->setClientVigilanceStatusData();
         }
     }
 
@@ -1437,7 +1437,7 @@ class preteursController extends bootstrap
     /**
      * @return array
      */
-    private function setClientVigilanceStatusdata()
+    private function setClientVigilanceStatusData()
     {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->get('doctrine.orm.entity_manager');
@@ -1450,6 +1450,9 @@ class preteursController extends bootstrap
                 'color'  => 'green',
                 'status' => 'Vigilance standard'
             ];
+            $this->userEntity = $em->getRepository('UnilendCoreBusinessBundle:Users');
+            $this->lendersAccount = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
+            return;
         }
         $this->clientAtypicalOperations = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $client], ['added' => 'DESC']);
 
@@ -1457,19 +1460,19 @@ class preteursController extends bootstrap
             case VigilanceRule::VIGILANCE_STATUS_LOW:
                 $this->vigilanceStatus = [
                     'color'  => 'yello',
-                    'status' => 'Vigilance standard. Dernière détections le :' . $this->clientAtypicalOperations[0]->getAdded()->format('d/m/Y H\hi')
+                    'status' => 'Vigilance standard. Dernière MAJ le :' . $vigilanceStatusHistory->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
                 $this->vigilanceStatus = [
                     'color'  => 'orange',
-                    'status' => 'Vigilance intermédiaire. Dernière détection le :' . $this->clientAtypicalOperations[0]->getAdded()->format('d/m/Y H\hi')
+                    'status' => 'Vigilance intermédiaire. Dernière MAJ le :' . $vigilanceStatusHistory->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_HIGH:
                 $this->vigilanceStatus = [
                     'color'  => 'red',
-                    'status' => 'Vigilance Renforcée. Dernière détection le :' . $this->clientAtypicalOperations[0]->getAdded()->format('d/m/Y H\hi')
+                    'status' => 'Vigilance Renforcée. Dernière MAJ le :' . $vigilanceStatusHistory->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             default:

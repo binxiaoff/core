@@ -31,17 +31,17 @@ class client_atypical_operationController extends bootstrap
         $this->atypicalOperation['pending']    = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
             ->findBy(
                 ['detectionStatus' => ClientAtypicalOperation::STATUS_PENDING],
-                ['added' => 'ASC', 'client' => 'ASC']
+                ['added' => 'DESC', 'client' => 'DESC']
             );
         $this->atypicalOperation['waitingACK'] = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
             ->findBy(
                 ['detectionStatus' => ClientAtypicalOperation::STATUS_WAITING_ACK],
-                ['added' => 'ASC', 'client' => 'ASC']
+                ['added' => 'DESC', 'client' => 'DESC']
             );
         $this->atypicalOperation['treated']    = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
             ->findBy(
                 ['detectionStatus' => ClientAtypicalOperation::STATUS_TREATED],
-                ['added' => 'ASC', 'client' => 'ASC']
+                ['added' => 'DESC', 'client' => 'DESC']
             );
         $this->showActions                     = true;
         $this->userEntity                      = $em->getRepository('UnilendCoreBusinessBundle:Users');
@@ -160,34 +160,49 @@ class client_atypical_operationController extends bootstrap
         if (isset($_POST['detection_status'])) {
             $status = $_POST['detection_status'];
         } else {
-            $status = ClientAtypicalOperation::STATUS_TREATED;
+            $status = ClientAtypicalOperation::STATUS_PENDING;
         }
 
         if (true === isset($_POST['clientId']) &&
             true === isset($_POST['vigilance_status']) &&
             array_key_exists($_POST['vigilance_status'], VigilanceRule::$vigilanceStatusLabel) &&
-            true === isset($_POST['user_comment']) &&
-            true === isset($_POST['vigilance_rule']) &&
-            null !== $vigilanceRule = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->find($_POST['vigilance_rule'])
+            true === isset($_POST['user_comment'])
         ) {
             try {
+                $vigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $_POST['clientId']], ['id' => 'DESC']);
+
+                if (false === empty($_POST['vigilance_rule'])) {
+                    $rule = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->find($_POST['vigilance_rule']);
+                } else {
+                    $rule = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findOneBy(['label' => 'other']);
+                }
                 /** @var Clients $client */
                 $client                  = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['clientId']);
                 $clientAtypicalOperation = new ClientAtypicalOperation();
                 $clientAtypicalOperation->setClient($client)
                     ->setDetectionStatus($status)
-                    ->setRule($vigilanceRule)
+                    ->setRule($rule)
                     ->setIdUser($_SESSION['user']['id_user'])
                     ->setUserComment($_POST['user_comment']);
                 $em->persist($clientAtypicalOperation);
                 $em->flush($clientAtypicalOperation);
 
-                $clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory(
-                    $client,
-                    $_POST['vigilance_status'],
-                    $_SESSION['user']['id_user'],
-                    $clientAtypicalOperation,
-                    $_POST['user_comment']);
+                if (false === empty($vigilanceStatusHistory) && $vigilanceStatusHistory->getVigilanceStatus() <= $_POST['vigilance_status']) {
+                    $clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory(
+                        $client,
+                        $_POST['vigilance_status'],
+                        $_SESSION['user']['id_user'],
+                        $clientAtypicalOperation,
+                        $_POST['user_comment']);
+                } else {
+                    $clientVigilanceStatusManager->retrogradeClientVigilanceStatusHistory(
+                        $client,
+                        $_POST['vigilance_status'],
+                        $_SESSION['user']['id_user'],
+                        $clientAtypicalOperation,
+                        $_POST['user_comment']);
+                }
+
                 echo json_encode(['message' => 'OK']);
             } catch (\Exception $exception) {
                 $this->get('logger')->error('Could not add atypical operation. id_client: ' . $_POST['clientId'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $_POST['clientId']]);
@@ -234,24 +249,25 @@ class client_atypical_operationController extends bootstrap
                 $result = 'OK';
             } else {
                 if (false === empty($_POST['vigilance_rule'])) {
-                    $atypicalOperation
-                        ->setDetectionStatus(ClientAtypicalOperation::STATUS_TREATED)
-                        ->setRule($em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->find($_POST['vigilance_rule']))
-                        ->setIdUser($_SESSION['user']['id_user'])
-                        ->setUserComment($_POST['user_comment']);
-
-                    $clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory(
-                        $clientVigilanceStatus->getClient(),
-                        $_POST['vigilance_status'],
-                        $_SESSION['user']['id_user'],
-                        $atypicalOperation,
-                        $_POST['user_comment']
-                    );
-                    $atypicalOperation->setDetectionStatus(ClientAtypicalOperation::STATUS_TREATED);
-                    $result = 'OK';
+                    $rule = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->find($_POST['vigilance_rule']);
                 } else {
-                    $result = 'KO';
+                    $rule = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findOneBy(['label' => 'other']);
                 }
+                $atypicalOperation
+                    ->setDetectionStatus(ClientAtypicalOperation::STATUS_TREATED)
+                    ->setRule($rule)
+                    ->setIdUser($_SESSION['user']['id_user'])
+                    ->setUserComment($_POST['user_comment']);
+
+                $clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory(
+                    $clientVigilanceStatus->getClient(),
+                    $_POST['vigilance_status'],
+                    $_SESSION['user']['id_user'],
+                    $atypicalOperation,
+                    $_POST['user_comment']
+                );
+                $atypicalOperation->setDetectionStatus(ClientAtypicalOperation::STATUS_TREATED);
+                $result = 'OK';
             }
         } else {
             $result = 'KO';
