@@ -471,31 +471,35 @@ class projects extends projects_crud
 
     /**
      * Retrieve the list of project IDs that needs email reminder
-     * @param int    $iStatus                Project status
-     * @param int    $iDaysInterval          Interval in days since previous reminder
-     * @param int    $iPreviousReminderIndex Previous reminder for counting days interval
+     *
+     * @param int $status                Project status
+     * @param int $daysInterval          Interval in days since previous reminder
+     * @param int $previousReminderIndex Previous reminder for counting days interval
      * @return array
      */
-    public function getReminders($iStatus, $iDaysInterval, $iPreviousReminderIndex)
+    public function getReminders($status, $daysInterval, $previousReminderIndex)
     {
-        $aProjects = array();
-        $rResult   = $this->bdd->query('
+        $projects = [];
+        $query    = '
             SELECT p.id_project
             FROM projects p
             INNER JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON plsh.id_project = p.id_project
             INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            WHERE p.status = ' . $iStatus . '
-                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE(psh.added)
-                AND psh.numero_relance = ' . $iPreviousReminderIndex
-        );
+            LEFT JOIN attachment a ON a.id_owner = p.id_project AND a.type_owner = "projects" AND a.id_type = ' . \attachment_type::DERNIERE_LIASSE_FISCAL . '
+            WHERE p.status = ' . $status . '
+                AND DATE_SUB(CURDATE(), INTERVAL ' . $daysInterval . ' DAY) = DATE(psh.added)
+                AND psh.numero_relance = ' . $previousReminderIndex . '
+                AND a.id IS NULL';
 
-        if ($this->bdd->num_rows($rResult) > 0) {
-            while ($aResult = $this->bdd->fetch_assoc($rResult)) {
-                $aProjects[] = (int) $aResult['id_project'];
+        $statement = $this->bdd->query($query);
+
+        if ($this->bdd->num_rows($statement) > 0) {
+            while ($record = $this->bdd->fetch_assoc($statement)) {
+                $projects[] = (int) $record['id_project'];
             }
         }
 
-        return $aProjects;
+        return $projects;
     }
 
     public function getProjectsInDebt()

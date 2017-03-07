@@ -2795,38 +2795,10 @@ class dossiersController extends bootstrap
         $oClients->get($iClientId);
 
         if (isset($oClients->secrete_question, $oClients->secrete_reponse)) {
-            return 'depot-dossier-relance-status-20-1';
+            return 'depot-dossier-completude';
         } else {
-            return 'depot-dossier-relance-status-20-1-avec-mdp';
+            return 'depot-dossier-completude-avec-mdp';
         }
-    }
-
-    private function sendEmailBorrowerArea($sTypeEmail)
-    {
-        $oSettings = $this->loadData('settings');
-        $oSettings->get('Facebook', 'type');
-        $sFacebookURL = $oSettings->value;
-        $oSettings->get('Twitter', 'type');
-        $sTwitterURL = $oSettings->value;
-
-        /** @var \temporary_links_login $oTemporaryLink */
-        $oTemporaryLink = $this->loadData('temporary_links_login');
-        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($this->clients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
-
-        $aVariables = array(
-            'surl'                   => $this->surl,
-            'url'                    => $this->url,
-            'link_compte_emprunteur' => $sTemporaryLink,
-            'lien_fb'                => $sFacebookURL,
-            'lien_tw'                => $sTwitterURL,
-            'prenom'                 => $this->clients->prenom
-        );
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $aVariables);
-        $message->setTo($this->clients->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
     }
 
     public function _status()
