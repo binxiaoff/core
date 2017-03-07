@@ -61,7 +61,7 @@
                     </td>
                     <td>
                         <?php if (false === empty($aProject['mandat'])) : ?>
-                            <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $aProject['mandat'] ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="MANDAT"/></a></td>
+                            <a href="<?= $this->lurl ?>/protected/mandat/<?= $aProject['mandat'] ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="MANDAT"/></a></td>
                         <?php endif; ?>
                     </td>
                     <td>

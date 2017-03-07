@@ -19,12 +19,13 @@ class attachmentController extends bootstrap
 
     public function _download()
     {
-        $attachmentId  = $this->params[1];
+        $attachmentId = $this->params[1];
+        $path         = $this->params[3];
 
         if (is_numeric($attachmentId)) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
             $attachment = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Attachment')->find($attachmentId);
-            if ($attachment) {
+            if ($attachment && urldecode($path) == $attachment->getPath()) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
                 $attachmentManager = $this->get('unilend.service.attachment_manager');
                 $attachmentPath = $attachmentManager->getFullPath($attachment);

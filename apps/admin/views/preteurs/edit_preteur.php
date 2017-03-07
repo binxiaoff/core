@@ -530,31 +530,63 @@
 
             <h2>Pièces jointes<span></span></h2>
             <div class="form-style-10">
-                <div class="section"><span>1</span>Identité</div>
+                <?php foreach ($this->attachmentGroups as $key => $attachmentGroup) : ?>
+                <div class="section"><span><?= $key + 1 ?></span><?= $attachmentGroup['title'] ?></div>
                 <div class="inner-wrap">
                     <table id="identity-attachments" class="add-attachment">
-                        <?php foreach ($this->aIdentity as $iIdType => $aAttachmentType) : ?>
+                        <?php
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
+                        foreach ($attachmentGroup['attachments'] as $attachment) :
+                            $greenpointLabel       = 'Non Contrôlé par GreenPoint';
+                            $greenpointColor       = 'error';
+                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $greenPointAttachment */
+                            $greenPointAttachment  = $this->greenpointAttachmentRepo->findOneBy(['idAttachment' => $attachment]);
+                            if ($greenPointAttachment) {
+                                $greenpointLabel = $greenPointAttachment->getValidationStatusLabel();
+                                if (0 == $greenPointAttachment->getValidationStatus()) {
+                                    $greenpointColor = 'error';
+                                } elseif (8 > $greenPointAttachment->getValidationStatus()) {
+                                    $greenpointColor = 'warning';
+                                } else {
+                                    $greenpointColor = 'valid';
+                                }
+                            }
+                            ?>
                             <tr>
-                                <th><?= $aAttachmentType['label'] ?></th>
+                                <th><?= $attachment->getType()->getLabel() ?></th>
                                 <td>
-                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
-                                        <?= $aAttachmentType['path'] ?>
+                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
+                                        <?= $attachment->getPath() ?>
                                     </a>
                                 </td>
-                                <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
-                                    <?= $aAttachmentType['greenpoint_label'] ?>
+                                <td class="td-greenPoint-status-<?= $greenpointColor?>">
+                                    <?= $greenpointLabel ?>
                                 </td>
                                 <td>
-                                    <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
+                                    <input type="file" name="<?= $attachment->getType()->getId() ?>" id="fichier_project_<?= $attachment->getType()->getId() ?>"/>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
+                        <?php if ('Autre' === $attachmentGroup['title']) : ?>
+                            <tr>
+                                <th>Mandat</th>
+                                <td>
+                                    <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
+                                        <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>"><?= $this->clients_mandats->name ?></a>
+                                    <?php endif; ?>
+                                </td>
+                                <td><input type="file" name="mandat"></td>
+                            </tr>
+                        <?php endif; ?>
                         <tr class="row row-upload">
                             <td>
                                 <select class="select">
                                     <option value="">Selectionnez un document</option>
-                                    <?php foreach ($this->aIdentityToAdd as $iIdType => $aAttachmentType) : ?>
-                                        <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
+                                    <?php
+                                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+                                    foreach ($attachmentGroup['typeToAdd'] as $attachmentType) :
+                                    ?>
+                                        <option value="<?= $attachmentType->getId() ?>"><?= $attachmentType->getLabel() ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
@@ -570,137 +602,7 @@
                         </tr>
                     </table>
                 </div>
-                <div class="section"><span>2</span>Justificatif de domicile</div>
-                <div class="inner-wrap">
-                    <table id="domicile-attachments" class="add-attachment">
-                        <?php foreach ($this->aDomicile as $iIdType => $aAttachmentType) : ?>
-                            <tr>
-                                <th><?= $aAttachmentType['label'] ?></th>
-                                <td>
-                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
-                                        <?= $aAttachmentType['path'] ?>
-                                    </a>
-                                </td>
-                                <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
-                                    <?= $aAttachmentType['greenpoint_label'] ?>
-                                </td>
-                                <td>
-                                    <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-
-                        <tr class="row row-upload">
-                            <td>
-                                <select class="select">
-                                    <option value="">Selectionnez un document</option>
-                                    <?php foreach ($this->aDomicileToAdd as $iIdType => $aAttachmentType) : ?>
-                                        <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="file" class="file-field">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span class="btn btn-small btn-add-row">+</span>
-                                <span style="margin-left: 5px;">Cliquez pour ajouter</span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="section"><span>3</span>RIB et Jsutificatif fiscal</div>
-                <div class="inner-wrap">
-                    <table id="rib-attachments" class="add-attachment">
-                        <?php foreach ($this->aRibAndFiscale as $iIdType => $aAttachmentType) : ?>
-                            <tr>
-                                <th><?= $aAttachmentType['label'] ?></th>
-                                <td>
-                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
-                                        <?= $aAttachmentType['path'] ?>
-                                    </a>
-                                </td>
-                                <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
-                                    <?= $aAttachmentType['greenpoint_label'] ?>
-                                </td>
-                                <td>
-                                    <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-
-                        <tr class="row row-upload">
-                            <td>
-                                <select class="select">
-                                    <option value="">Selectionnez un document</option>
-                                    <?php foreach ($this->aRibAndFiscaleToAdd as $iIdType => $aAttachmentType) : ?>
-                                        <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="file" class="file-field">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span class="btn btn-small btn-add-row">+</span>
-                                <span style="margin-left: 5px;">Cliquez pour ajouter</span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="section"><span>4</span>Autre</div>
-                <div class="inner-wrap">
-                    <table id="other-attachments" class="add-attachment">
-                        <?php foreach ($this->aOther as $iIdType => $aAttachmentType) : ?>
-                            <tr>
-                                <th><?= $aAttachmentType['label'] ?></th>
-                                <td>
-                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
-                                        <?= $aAttachmentType['path'] ?>
-                                    </a>
-                                </td>
-                                <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
-                                     <?= $aAttachmentType['greenpoint_label'] ?>
-                                </td>
-                                <td>
-                                    <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                        <tr>
-                            <th>Mandat</th>
-                            <td>
-                                <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
-                                    <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>"><?= $this->clients_mandats->name ?></a>
-                                <?php endif; ?>
-                            </td>
-                            <td><input type="file" name="mandat"></td>
-                        </tr>
-                        <tr class="row row-upload">
-                            <td>
-                                <select class="select">
-                                    <option value="">Selectionnez un document</option>
-                                    <?php foreach ($this->aOtherToAdd as $iIdType => $aAttachmentType) : ?>
-                                        <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="file" class="file-field">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span class="btn btn-small btn-add-row">+</span>
-                                <span style="margin-left: 5px;">Cliquez pour ajouter</span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+                <?php endforeach; ?>
             </div>
             </br></br>
             <div class="gauche">
@@ -799,7 +701,7 @@
                                                 Compte validé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />par <?= $this->users->name ?></td>
                                             <?php else : ?>
                                                 <?= $historyEntry['content'] . ' le ' . date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
-                                                <br>par <?= (-1 != $a['id_user']) ? $this->users->name : ' le CRON de validation automatique Greenpoint'?></td>
+                                                <br>par <?= (-1 != $historyEntry['id_user']) ? $this->users->name : ' le CRON de validation automatique Greenpoint'?></td>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

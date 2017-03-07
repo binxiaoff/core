@@ -353,12 +353,15 @@ class Projects
     private $status;
 
     /**
-     * @var
+     * @var ProjectAttachment[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment", mappedBy="idProject")
      */
     private $attachments;
 
+    /**
+     * Projects constructor.
+     */
     public function __construct() {
         $this->attachments = new ArrayCollection();
     }
@@ -1477,6 +1480,11 @@ class Projects
         return $this->status;
     }
 
+    /**
+     * Get project attachments
+     *
+     * @return ProjectAttachment[]
+     */
     public function getAttachments()
     {
         return $this->attachments;

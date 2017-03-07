@@ -31,6 +31,8 @@ abstract class Controller implements ContainerAwareInterface
     protected $container;
     /** @var string */
     public $current_template = '';
+    /** @var  \Symfony\Component\HttpFoundation\Request */
+    public $request;
 
     /**
      * Controller constructor.
@@ -38,13 +40,14 @@ abstract class Controller implements ContainerAwareInterface
      * @param Command $command
      * @param string  $app
      */
-    final public function __construct(Command &$command, $app)
+    final public function __construct(Command &$command, $app, $request)
     {
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
 
         $this->Command = $command;
         $this->App     = $app;
+        $this->request = $request;
     }
 
     protected function initialize()

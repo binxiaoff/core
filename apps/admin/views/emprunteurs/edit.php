@@ -158,7 +158,7 @@
                         <?php endif; ?>
                         &nbsp;&nbsp;
                         <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
-                            <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>">MANDAT</a>
+                            <a href="<?= $this->lurl ?>/protected/mandat/<?= $this->clients_mandats->name ?>">MANDAT</a>
                         <?php endif; ?>
                     </td>
                     <td align="center">
@@ -211,7 +211,7 @@
                     <td><?= $aMoneyOrder['id_project'] ?></td>
                     <td><?= $aMoneyOrder['iban'] ?></td>
                     <td><?= $aMoneyOrder['bic'] ?></td>
-                    <td><a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
+                    <td><a href="<?= $this->lurl ?>/protected/mandat/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
                     <td>
                         <?php
                             switch ($aMoneyOrder['status']) {

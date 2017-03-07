@@ -78,22 +78,6 @@ class protectedController extends bootstrap
         }
     }
 
-    public function _pouvoir()
-    {
-        if (file_exists($this->path . 'protected/pouvoir/' . $this->params[0])) {
-            $url = ($this->path . 'protected/pouvoir/' . $this->params[0]);
-
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($url) . '";');
-            @readfile($url);
-            die();
-        } else {
-            header('location:' . $this->lurl);
-            die;
-        }
-    }
-
     public function _contrat()
     {
         /** @var \clients $clients */

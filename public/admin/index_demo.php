@@ -1,4 +1,5 @@
 <?php
+use Symfony\Component\HttpFoundation\Request;
 
 if (getenv('SYMFONY_ENV') && 'prod' === getenv('SYMFONY_ENV')) {
     header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
@@ -17,7 +18,8 @@ ini_set('log_errors', 1);
 session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
-$oKernel = new AppKernel('demo', false);
-$oKernel->boot();
+$kernel = new AppKernel('demo', false);
+$request  = Request::createFromGlobals();
+$kernel->boot();
 
-$oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'admin');
+$oDispatcher = new \Unilend\core\Dispatcher($kernel, 'admin', $request);

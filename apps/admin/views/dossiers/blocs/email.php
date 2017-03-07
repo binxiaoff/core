@@ -25,16 +25,46 @@
                     <h2>Complétude - Personnalisation du message</h2>
                     <div class="liwording">
                         <table>
-                            <?php foreach ($this->completude_wording as $sSlug => $sWording) : ?>
+                            <?php
+                            foreach ($this->attachmentTypesForCompleteness as $key => $id) :
+                                $year = date('Y');
+                                $translation = 'projet_document-type-' . $id;
+                                if ($id == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL) {
+                                    $year -= 1;
+                                    $translation = 'projet_document-type-alternative-' . $id;
+                                }
+                                if ($id == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::LIASSE_FISCAL_N_1) {
+                                    $year -= 2;
+                                    $translation = 'projet_document-type-alternative-' . $id;
+                                }
+                                if ($id == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::LIASSE_FISCAL_N_2) {
+                                    $year -= 3;
+                                    $translation = 'projet_document-type-alternative-' . $id;
+                                }
+                                if ($id == \attachment_type::PHOTOS_ACTIVITE) {
+                                    $translation = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
+                                }
+                            ?>
                                 <tr>
                                 <td>
-                                    <a class="add_wording" id="add-<?= $sSlug ?>"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                                    <a class="add_wording" id="add-<?= $key ?>"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
                                 </td>
                                 <td>
-                                    <span class="content-add-<?= $sSlug ?>"><?= $sWording ?></span>
+                                    <span class="content-add-<?= $key ?>">
+                                        <?= $this->translator->trans($translation, ['%year%', $year]) ?>
+                                        <?php if ($id == \attachment_type::PHOTOS_ACTIVITE) : ?>
+                                            <?= $this->translator->trans('projet_completude-photos') ?>
+                                        <?php endif ?>
+                                    </span>
                                 </td>
                                 </tr>
                             <?php endforeach ?>
+                            <td>
+                                <a class="add_wording" id="add-<?= count($this->attachmentTypesForCompleteness) + 1 ?>"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                            </td>
+                            <td>
+                                <span class="content-add-<?= count($this->attachmentTypesForCompleteness) + 1  ?>"><?= $this->translator->trans('projet_completude-charge-affaires') ?></span>
+                            </td>
                         </table>
                     </div>
                     <br/>

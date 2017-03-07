@@ -619,13 +619,23 @@
                             <?php if (count($this->lProjects_status) > 0) : ?>
                                 <?php
                                     if ($this->projects->status == \projects_status::PREP_FUNDING) {
+                                        $hasDebtsStatement = false;
+                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
+                                        foreach ($this->aAttachments as $attachment) {
+                                            if ($attachment->getType()->getId() == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DEBTS_STATEMENT
+                                            && false === empty($attachment->getPath())) {
+                                                $hasDebtsStatement = true;
+                                                break;
+                                            }
+                                        }
+
                                         if (in_array($this->projects->period, [0, 1000000])) {
                                             $blockingPuttingOnlineError = 'Veuillez sélectionner une durée de prêt';
                                         }
 
                                         if (
                                             in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)
-                                            && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
+                                            && $hasDebtsStatement
                                         ) {
                                             $blockingPuttingOnlineError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
                                         }

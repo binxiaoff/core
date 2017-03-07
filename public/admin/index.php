@@ -1,4 +1,6 @@
 <?php
+use Symfony\Component\HttpFoundation\Request;
+
 $loader = require __DIR__.'/../../app/autoload.php';
 include '../../core/controller.class.php';
 include '../../core/command.class.php';
@@ -13,7 +15,8 @@ ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
 header('X-Server: ' . exec('hostname'));
 
-$oKernel = new AppKernel('prod', false);
-$oKernel->boot();
+$kernel = new AppKernel('prod', false);
+$request  = Request::createFromGlobals();
+$kernel->boot();
 
-$oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'admin');
+$oDispatcher = new \Unilend\core\Dispatcher($kernel, 'admin', $request);

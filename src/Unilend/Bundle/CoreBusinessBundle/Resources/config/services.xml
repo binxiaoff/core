@@ -307,5 +307,11 @@
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
         </service>
+
+        <service id="unilend.service.attachment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="filesystem" />
+            <argument>%path.protected%attachments</argument>
+        </service>
     </services>
 </container>

@@ -329,7 +329,19 @@ class Clients
      */
     private $idClient;
 
+    /**
+     * @var Attachment[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", mappedBy="idClient")
+     */
+    private $attachments;
 
+    /**
+     * Clients constructor.
+     */
+    public function __construct() {
+        $this->attachments = new ArrayCollection();
+    }
 
     /**
      * Set hash
@@ -1426,5 +1438,28 @@ class Clients
     {
         $uuid4 = Uuid::uuid4();
         return $uuid4->toString();
+    }
+
+    /**
+     * Get client attachments
+     *
+     * @param boolean $includeArchived
+     *
+     * @return Attachment[]
+     */
+    public function getAttachments($includeArchived = false)
+    {
+        if (false === $includeArchived) {
+            $attachments = [];
+            foreach ($this->attachments as $attachment) {
+                if (null === $attachment->getArchived()) {
+                    $attachments[] = $attachment;
+                }
+            }
+
+            return $attachments;
+        }
+
+        return $this->attachments;
     }
 }

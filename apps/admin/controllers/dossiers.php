@@ -1,11 +1,12 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
-use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class dossiersController extends bootstrap
 {
@@ -139,6 +140,8 @@ class dossiersController extends bootstrap
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             if ($this->projects->status <= \projects_status::PREP_FUNDING) {
@@ -309,24 +312,14 @@ class dossiersController extends bootstrap
                 }
             }
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-            $partnerManager = $this->get('unilend.service.partner_manager');
+            $partnerManager    = $this->get('unilend.service.partner_manager');
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $this->attachment_type           = $this->loadData('attachment_type');
-            $this->aAttachments              = $this->projects->getAttachments();
-            $this->aAttachmentTypes          = $this->attachment_type->getAllTypesForProjects($this->language);
-            $this->aMandatoryAttachmentTypes = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
-
-            $this->completude_wording = array();
-            $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
-
-            foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
-                if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
-                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
-                } else {
-                    $this->completude_wording[] = $aAttachment['label'];
-                }
-            }
-            $this->completude_wording[] = $this->translator->trans('projet_completude-charge-affaires');
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $this->aAttachments                   = $project->getAttachments();
+            $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
+            $this->aMandatoryAttachmentTypes      = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
+            $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
@@ -1366,11 +1359,13 @@ class dossiersController extends bootstrap
 
             $this->tablResult = array();
 
-            foreach ($_FILES as $field => $file) {
-                //We made the field name = attachment type id
-                $iAttachmentType = $field;
-                if ('' !== $file['name'] && $this->uploadAttachment($this->projects->id_project, $field, $iAttachmentType)) {
-                    $this->tablResult['fichier_' . $iAttachmentType] = 'ok';
+            foreach ($this->request->files->all() as $inputName => $uploadedFile) {
+                if ($uploadedFile) {
+                    $attachmentTypeId = $inputName;
+                    $attachment = $this->uploadAttachment($this->projects->id_project, $attachmentTypeId, $uploadedFile);
+                    if ($attachment) {
+                        $this->tablResult['fichier_' . $attachmentTypeId] = 'ok';
+                    }
                 }
             }
             $this->result = json_encode($this->tablResult);
@@ -2750,60 +2745,43 @@ class dossiersController extends bootstrap
     }
 
     /**
-     * @param integer $iOwnerId
-     * @param integer $field
-     * @param integer $iAttachmentType
-     * @return bool
+     * @param              $projectId
+     * @param              $attachmentTypeId
+     * @param UploadedFile $file
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment
      */
-    private function uploadAttachment($iOwnerId, $field, $iAttachmentType)
+    private function uploadAttachment($projectId, $attachmentTypeId, UploadedFile $file)
     {
-        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
-            $this->upload = $this->loadLib('upload');
-        }
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+        $attachmentType    = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
+        $project           = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        /** @var Clients $client */
+        $client            = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $attachment        = $attachmentManager->upload($client, $attachmentType, $file);
 
-        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
-            $this->attachment = $this->loadData('attachment');
-        }
-
-        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
-            $this->attachment_type = $this->loadData('attachment_type');
-        }
-
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
-        }
-
-        //add the new name for each file
-        $sNewName = '';
-        if (isset($_FILES[$field]['name']) && $aFileInfo = pathinfo($_FILES[$field]['name'])) {
-            $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
-        }
-
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->upload, $sNewName);
-
-        return $resultUpload;
+        return $attachmentManager->attachToProject($attachment, $project);
     }
 
     /**
-     * @param $iAttachmentId
+     * @param $attachmentId
      *
-     * @return mixed
+     * @return bool
      */
-    private function removeAttachment($iAttachmentId)
+    private function removeAttachment($attachmentId)
     {
-        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
-            $this->attachment = $this->loadData('attachment');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
+        $attachment = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Attachment')->find($attachmentId);
+        if ($attachment) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
+            $attachmentManager->archive($attachment);
         }
 
-        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
-            $this->attachment_type = $this->loadData('attachment_type');
-        }
-
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));
-        }
-
-        return $this->attachmentHelper->remove($iAttachmentId);
+        return true;
     }
 
     private function selectEmailCompleteness($iClientId)

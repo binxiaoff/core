@@ -12,6 +12,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class GreenpointAttachment
 {
+    const REVALIDATE_YES = 1;
+    const REVALIDATE_NO  = 0;
+
+    const FINAL_STATUS_YES = 1;
+    const FINAL_STATUS_NO  = 0;
     /**
      * @var integer
      *

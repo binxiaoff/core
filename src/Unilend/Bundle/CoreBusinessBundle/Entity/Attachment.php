@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Attachment
  *
  * @ORM\Table(name="attachment", indexes={@ORM\Index(name="fk_attachment_id_type", columns={"id_type"}), @ORM\Index(name="id_client", columns={"id_client"})})
- * @ORM\Entity
+ * @ORM\Entity()
  * @ORM\HasLifecycleCallbacks
  */
 class Attachment
@@ -63,7 +63,7 @@ class Attachment
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", inversedBy="attachments")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
      * })
