@@ -24,6 +24,7 @@
                     }
                     setTimeout(function () {
                         parent.$.fn.colorbox.close();
+                        location.reload();
                     }, 3000);
                 },
                 error: function (response, status) {
@@ -56,23 +57,25 @@
     <h1 style="text-align: center"><?= $this->title ?></h1>
     <ul>
         <li>
-            <b>Client: </b><?= $this->atypicalOperation->getClient()->getPrenom() . ' ' . $this->atypicalOperation->getClient()->getNom() ?>
+            <b>Client: </b><?= $this->client->getPrenom() . ' ' . $this->client->getNom() ?>
         </li>
-        <li>
-            <b>Statut de vigilance actuel:</b> <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[$this->clientVigilanceStatus->getVigilanceStatus()] ?>
-        </li>
+        <?php if (isset($this->currentVigilanceStatusId)) : ?>
+            <li>
+                <b>Statut de vigilance actuel:</b> <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[$this->currentVigilanceStatusId] ?>
+            </li>
+        <?php endif; ?>
     </ul>
     <hr>
-    <form action="<?= $this->lurl ?>/client_atypical_operation/process_detection/<?= $this->action ?>/<?= $this->atypicalOperation->getId() ?>" id="process-detection" name="process-detection" method="post" enctype="multipart/form-data">
-        <?php if ($this->action == 'doubt') : ?>
+    <form action="<?= $this->processDetectionUrl ?>" id="process-detection" name="process-detection" method="post" enctype="multipart/form-data">
+        <?php if ($this->action != 'ack') : ?>
             <label for="vigilance_status"><b>Nouveau statut de vigilance:</b></label>&nbsp;
             <select name="vigilance_status" id="vigilance_status" required>
                 <option value=""></option>
                 <?php foreach (\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel as $id => $label) : ?>
-                    <option value="<?= $id ?>" <?php if ($this->clientVigilanceStatus->getVigilanceStatus() === $id) : ?>selected<?php endif; ?> ><?= $label ?></option>
+                    <option value="<?= $id ?>" <?php if (isset($this->currentVigilanceStatusId) && $this->currentVigilanceStatusId === $id) : ?>selected<?php endif; ?> ><?= $label ?></option>
                 <?php endforeach; ?>
             </select>
-            <div id="vigilane_rule_list" style="display: none">
+            <div id="vigilane_rule_list" <?php if (isset($this->currentVigilanceStatusId)) : ?> style="display: none" <?php endif; ?>>
                 <label for="vigilance_rule"><b>Règle de vigilance:</b></label>&nbsp;
                 <select name="vigilance_rule" id="vigilance_rule">
                     <option value=""></option>
@@ -81,7 +84,7 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-        <?php elseif ($this->action == 'ack') : ?>
+        <?php else : ?>
             <!--            <label for="sender"><b>Expéditeur:</b></label>-->
             <!--            <br>-->
             <!--            <input style="margin: 5px; width: 200px;" type="email" autocomplete="on" name="sender" id="sender"/>-->
@@ -106,7 +109,8 @@
         <br>
         <div style="text-align: center">
             <input type="submit" class="btn" id="btn-process-detection" name="<?= $this->action ?>"/>
-            <input type="hidden" id="currentVigilanceStatus" value="<?= $this->clientVigilanceStatus->getVigilanceStatus() ?>"/>
+            <input type="hidden" id="currentVigilanceStatus" value="<?php if (isset($this->currentVigilanceStatusId)) : ?><?= $this->currentVigilanceStatusId ?> <?php else : ?>-1<?php endif; ?>"/>
+            <input type="hidden" name="clientId" id="clientId" value="<?= $this->client->getIdClient() ?>"/>
         </div>
         <br>
         <p id="success_message" style="display: none; color: #00A000">Changement effectué avec succès</p>

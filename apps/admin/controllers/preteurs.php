@@ -4,6 +4,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 
 class preteursController extends bootstrap
 {
@@ -234,6 +235,7 @@ class preteursController extends bootstrap
             }
 
             $this->getMessageAboutClientStatus();
+            $this->setClientVigilanceStatusdata();
         }
     }
 
@@ -1430,6 +1432,51 @@ class preteursController extends bootstrap
                 trigger_error('Unknown Client Status : ' . $currentStatus, E_USER_NOTICE);
                 break;
         }
+    }
+
+    /**
+     * @return array
+     */
+    private function setClientVigilanceStatusdata()
+    {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
+
+        $client                 = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
+        $vigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['id' => 'DESC']);
+
+        if (null === $vigilanceStatusHistory) {
+            $this->vigilanceStatus = [
+                'color'  => 'green',
+                'status' => 'Vigilance standard'
+            ];
+        }
+        $this->clientAtypicalOperations = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $client], ['added' => 'DESC']);
+
+        switch ($vigilanceStatusHistory->getVigilanceStatus()) {
+            case VigilanceRule::VIGILANCE_STATUS_LOW:
+                $this->vigilanceStatus = [
+                    'color'  => 'yello',
+                    'status' => 'Vigilance standard. Dernière détections le :' . $this->clientAtypicalOperations[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
+                $this->vigilanceStatus = [
+                    'color'  => 'orange',
+                    'status' => 'Vigilance intermédiaire. Dernière détection le :' . $this->clientAtypicalOperations[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            case VigilanceRule::VIGILANCE_STATUS_HIGH:
+                $this->vigilanceStatus = [
+                    'color'  => 'red',
+                    'status' => 'Vigilance Renforcée. Dernière détection le :' . $this->clientAtypicalOperations[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            default:
+                trigger_error('Unknown vigilance status :' . $vigilanceStatusHistory->getVigilanceStatus(), E_USER_NOTICE);
+        }
+        $this->userEntity = $em->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->lendersAccount = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
     }
 
     public function _saveBetaTesterSetting()

@@ -26,6 +26,14 @@
             <?php unset($_SESSION['freeow']); ?>
         <?php endif; ?>
     });
+    $(function () {
+        $('#btn-show-lender-vigilance-history').click(function () {
+            $('#lender-vigilance-history').toggle();
+            $(this).text(function (i, text) {
+                return text === 'Voir l\'historique' ? 'Cacher l\'historique' : 'Voir l\'historique'
+            })
+        })
+    })
 </script>
 <style>
     .td-greenPoint-status-valid {
@@ -214,7 +222,25 @@
                 <?php endforeach; ?>
             </table>
         <?php endif; ?>
-
+        <h3>Statut de surveillance</h3>
+        <div class="attention" style="margin-left: 0px;color: black; background-color: <?= $this->vigilanceStatus['color'] ?>">
+            <?= $this->vigilanceStatus['status'] ?>
+        </div>
+        <?php if (false === empty($this->clientAtypicalOperations)) : ?>
+            <button class="btn" id="btn-show-lender-vigilance-history">Voir l'historique</button>
+        <?php endif; ?>
+        <a class="thickbox btn" href="<?= $this->lurl ?>/client_atypical_operation/process_detection_box/add/<?= $this->clients->id_client ?>">
+            Ajouter
+        </a>
+        <div id="lender-vigilance-history" style="display: none;">
+            <?php if (false === empty($this->clientAtypicalOperations)) : ?>
+                <?php
+                $this->atypicalOperations = $this->clientAtypicalOperations;
+                $this->showActions        = false;
+                $this->fireView('../client_atypical_operation/detections_table');
+                ?>
+            <?php endif; ?>
+        </div>
         <br/><br/>
         <h2>Mouvements</h2>
         <div class="btnDroite">

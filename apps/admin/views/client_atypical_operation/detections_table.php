@@ -45,7 +45,7 @@
                     <?= $atypicalOperation->getUpdated()->format('d/m/Y - H\hi') ?>
                 <?php endif; ?>
             </td>
-            <td><?= $atypicalOperation->getUserComment() ?></td>
+            <td><?= htmlentities($atypicalOperation->getUserComment()) ?></td>
             <?php if ($this->showActions) : ?>
                 <td>
                     <?php if ($atypicalOperation->getDetectionStatus() === \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation::STATUS_PENDING) : ?>
