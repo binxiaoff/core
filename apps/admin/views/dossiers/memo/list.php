@@ -20,8 +20,9 @@
                     <?php endif; ?>
                 </td>
                 <td>
-                    <?php $this->users->get($_SESSION['user']['id_user']); ?>
-                    <?= $this->users->firstname ?> <?= $this->users->name ?>
+                    <?php if (false === empty($comment['id_user']) && $this->users->get($comment['id_user'])) : ?>
+                        <?= $this->users->firstname ?> <?= $this->users->name ?>
+                    <?php endif; ?>
                 </td>
                 <td><?= nl2br($comment['content']) ?></td>
                 <td align="center">

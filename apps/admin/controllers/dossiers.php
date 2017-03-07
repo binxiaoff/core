@@ -1479,19 +1479,23 @@ class dossiersController extends bootstrap
                 $clientAddressEntity = new ClientsAdresses();
 
                 $em->beginTransaction();
+
                 try {
                     $em->persist($clientEntity);
                     $em->flush();
+
                     $clientAddressEntity->setIdClient($clientEntity->getIdClient());
                     $em->persist($clientAddressEntity);
+
                     $companyEntity->setIdClientOwner($clientEntity->getIdClient());
                     $em->persist($companyEntity);
                     $em->flush();
+
                     $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
                     $em->commit();
                 } catch (Exception $exception) {
                     $em->getConnection()->rollBack();
-                    $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+                    $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
                 }
             }
 

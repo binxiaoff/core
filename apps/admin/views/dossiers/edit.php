@@ -674,7 +674,7 @@
                                 <td>
                                     <input type="hidden" id="current_commercial" value="<?= $this->projects->id_commercial ?>">
                                     <select name="commercial" id="commercial" class="select">
-                                        <option value="0">Choisir</option>
+                                        <option value="0"></option>
                                         <?php foreach ($this->aSalesPersons as $salesperson) : ?>
                                             <option value="<?= $salesperson['id_user'] ?>"<?= ($this->projects->id_commercial == $salesperson['id_user'] ? ' selected' : '') ?>><?= $salesperson['firstname'] ?> <?= $salesperson['name'] ?></option>
                                         <?php endforeach; ?>
@@ -688,7 +688,7 @@
                                 <td>
                                     <input type="hidden" id="current_analyst" value="<?= $this->projects->id_analyste ?>">
                                     <select name="analyste" id="analyste" class="select">
-                                        <option value="0">Choisir</option>
+                                        <option value="0"></option>
                                         <?php foreach ($this->aAnalysts as $analyst) : ?>
                                             <option value="<?= $analyst['id_user'] ?>"<?= ($this->projects->id_analyste == $analyst['id_user'] ? ' selected' : '') ?>><?= $analyst['firstname'] ?> <?= $analyst['name'] ?></option>
                                         <?php endforeach; ?>
@@ -857,16 +857,16 @@
                             <td colspan="2">
                                 <?php switch ($this->projects->status) :
                                     case \projects_status::COMMERCIAL_REVIEW: ?>
-                                        <?php if (empty($this->projects->id_product)) : ?>
-                                            Merci de séléctionner un produit avant de passer au prochain statut.
-                                        <?php else : ?>
-                                            <div style="text-align: right">
-                                                <a href="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Reporter</a>
-                                                <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
-                                                <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
+                                        <div style="text-align: right">
+                                            <a href="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Reporter</a>
+                                            <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
+                                            <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
+                                            <?php if (empty($this->projects->id_product)) : ?>
+                                                <br><br>Pour passer le projet à l'étude, vous devez sélectionner un produit.
+                                            <?php else : ?>
                                                 <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= \projects_status::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
-                                            </div>
-                                        <?php endif; ?>
+                                            <?php endif; ?>
+                                        </div>
                                         <?php break;
                                     case \projects_status::POSTPONED: ?>
                                         <div style="text-align: right">

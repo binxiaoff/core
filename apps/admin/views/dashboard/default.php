@@ -40,6 +40,7 @@
     table.tablesorter thead tr th {
         font-size: 12px;
     }
+    .status-line,
     .projects td[data-project] {
         cursor: pointer;
     }

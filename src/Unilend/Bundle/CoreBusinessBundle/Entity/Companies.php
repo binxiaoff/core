@@ -112,13 +112,6 @@ class Companies
     private $activite;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="lieu_exploi", type="string", length=191, nullable=true)
-     */
-    private $lieuExploi;
-
-    /**
      * @var float
      *
      * @ORM\Column(name="capital", type="float", precision=10, scale=0, nullable=true)
@@ -278,13 +271,6 @@ class Companies
      * @ORM\Column(name="code_naf", type="string", length=5, nullable=true)
      */
     private $codeNaf;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="libelle_naf", type="string", length=130, nullable=true)
-     */
-    private $libelleNaf;
 
     /**
      * @var \DateTime
@@ -645,30 +631,6 @@ class Companies
     public function getActivite()
     {
         return $this->activite;
-    }
-
-    /**
-     * Set lieuExploi
-     *
-     * @param string $lieuExploi
-     *
-     * @return Companies
-     */
-    public function setLieuExploi($lieuExploi)
-    {
-        $this->lieuExploi = $lieuExploi;
-
-        return $this;
-    }
-
-    /**
-     * Get lieuExploi
-     *
-     * @return string
-     */
-    public function getLieuExploi()
-    {
-        return $this->lieuExploi;
     }
 
     /**
@@ -1221,30 +1183,6 @@ class Companies
     public function getCodeNaf()
     {
         return $this->codeNaf;
-    }
-
-    /**
-     * Set libelleNaf
-     *
-     * @param string $libelleNaf
-     *
-     * @return Companies
-     */
-    public function setLibelleNaf($libelleNaf)
-    {
-        $this->libelleNaf = $libelleNaf;
-
-        return $this;
-    }
-
-    /**
-     * Get libelleNaf
-     *
-     * @return string
-     */
-    public function getLibelleNaf()
-    {
-        return $this->libelleNaf;
     }
 
     /**
