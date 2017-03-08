@@ -55,18 +55,21 @@
                         }
                         ?>
                     <?php endforeach; ?>
+                    <?php if ($currentAttachment) : ?>
                         <td class="remove_col">
-                            <?php if ($currentAttachment) : ?>
-                            <a href="#" data-id="<?= $currentAttachment->getId() ?>" data-label="<?= $attachmentType->getLabel() ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
-                            <?php endif; ?>
+                            <a href="#" data-id="<?= $projectAttachment->getId() ?>" data-label="<?= $attachmentType->getLabel() ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
                         </td>
                         <td class="type_col"><?= $attachmentType->getLabel() ?></td>
                         <td class="label_col">
-                            <?php if ($currentAttachment) : ?>
                             <a href="<?= $this->url ?>/attachment/download/id/<?= $currentAttachment->getId() ?>/file/<?= urlencode($currentAttachment->getPath()) ?>"><?= $currentAttachment->getPath() ?></a>
-                            <?php endif; ?>
                         </td>
-                        <td class="statut_fichier_<?= $attachmentType->getId() ?>" id="statut_fichier_id_<?= $attachmentType->getId() ?>"><?= $currentAttachment ? 'Enregistré' : '' ?></td>
+                        <td class="statut_fichier_<?= $attachmentType->getId() ?>" id="statut_fichier_id_<?= $projectAttachment->getId() ?>"><?= $currentAttachment ? 'Enregistré' : '' ?></td>
+                    <?php else : ?>
+                        <td class="remove_col"></td>
+                        <td class="type_col"><?= $attachmentType->getLabel() ?></td>
+                        <td class="label_col"></td>
+                        <td class="statut_fichier_<?= $attachmentType->getId() ?>"></td>
+                    <?php endif; ?>
                         <td><input type="file" name="<?= $attachmentType->getId() ?>" id="fichier_project_<?= $attachmentType->getId() ?>"/></td>
                     </tr>
                 <?php endforeach; ?>

@@ -1025,7 +1025,7 @@
                 dataType: 'json',
                 type: 'POST',
                 data: {
-                    attachment_id: id
+                    project_attachment_id: id
                 },
                 error: function() {
                     alert('An error has occurred');

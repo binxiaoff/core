@@ -4,18 +4,20 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 
 class ProjectAttachmentRepository extends EntityRepository
 {
     /**
-     * @param $project
-     * @param $attachmentType
+     * @param Projects|integer       $project
+     * @param AttachmentType|integer $attachmentType
      *
-     * @return array
+     * @return ProjectAttachment
      */
     public function getAttachedAttachments($project, $attachmentType)
     {
-        var_dump($attachmentType->getId());
         $qb = $this->createQueryBuilder('pa');
         $qb->innerJoin('UnilendCoreBusinessBundle:Attachment', 'a', Join::WITH, $qb->expr()->eq('pa.idAttachment', 'a.id'))
            ->where($qb->expr()->eq('a.idType', ':attachmentType'))

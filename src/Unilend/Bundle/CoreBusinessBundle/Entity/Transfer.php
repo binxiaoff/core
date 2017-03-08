@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -72,6 +73,20 @@ class Transfer
      * })
      */
     private $idClientOrigin;
+
+    /**
+     * @var ProjectAttachment[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\TransferAttachment", mappedBy="idTransfer")
+     */
+    private $attachments;
+
+    /**
+     * Projects constructor.
+     */
+    public function __construct() {
+        $this->attachments = new ArrayCollection();
+    }
 
     /**
      * Set comment
@@ -243,5 +258,15 @@ class Transfer
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * Get project attachments
+     *
+     * @return ProjectAttachment[]
+     */
+    public function getAttachments()
+    {
+        return $this->attachments;
     }
 }

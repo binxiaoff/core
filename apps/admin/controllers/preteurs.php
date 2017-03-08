@@ -214,11 +214,7 @@ class preteursController extends bootstrap
             $this->soldeRetrait = abs($this->soldeRetrait / 100);
             $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
 
-            $this->transferDocuments = [];
-            $transfers = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($client);
-            foreach ($transfers as $transfer) {
-                $this->transferDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:TransferAttachment')->findBy(['idTransfer' => $transfer]);
-            }
+            $this->transfers = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($client);
 
             $this->getMessageAboutClientStatus();
         }
@@ -500,11 +496,13 @@ class preteursController extends bootstrap
                     $this->clients->update();
 
                     $this->lenders_accounts->id_company_owner = 0;
-
-                    foreach ($this->request->files->all() as $inputName => $uploadedFile) {
+                    $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+                    foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
                         if ($uploadedFile) {
-                            $attachmentTypeId = $inputName;
-                            $this->uploadAttachment($client, $attachmentTypeId, $uploadedFile);
+                            $attachmentType   = $attachmentTypeRepo->find($attachmentTypeId);
+                            if ($attachmentType) {
+                                $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                            }
                         }
                     }
 
@@ -699,10 +697,13 @@ class preteursController extends bootstrap
                     $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
                     $this->clients->update();
 
-                    foreach ($this->request->files->all() as $inputName => $uploadedFile) {
+                    $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+                    foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
                         if ($uploadedFile) {
-                            $attachmentTypeId = $inputName;
-                            $this->uploadAttachment($client, $attachmentTypeId, $uploadedFile);
+                            $attachmentType   = $attachmentTypeRepo->find($attachmentTypeId);
+                            if ($attachmentType) {
+                                $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                            }
                         }
                     }
 

@@ -1350,9 +1350,17 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        $this->projects = $this->loadData('projects');
+        if (isset($_POST['send_etape5']) && isset($this->params[0])) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\AttachmentTypeRepository $attachmentTypeRepo */
+            $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+            $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
-        if (isset($_POST['send_etape5']) && isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             // Histo user //
             $serialize = serialize(array('id_project' => $this->params[0], 'files' => $_FILES));
             $this->users_history->histo(9, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
@@ -1361,13 +1369,23 @@ class dossiersController extends bootstrap
 
             foreach ($this->request->files->all() as $inputName => $uploadedFile) {
                 if ($uploadedFile) {
-                    $attachmentTypeId = $inputName;
-                    $attachment = $this->uploadAttachment($this->projects->id_project, $attachmentTypeId, $uploadedFile);
+                    $attachment        = null;
+                    $projectAttachment = null;
+                    $attachmentTypeId  = $inputName;
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+                    $attachmentType = $attachmentTypeRepo->find($attachmentTypeId);
+                    if ($attachmentType) {
+                        $attachment = $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                    }
                     if ($attachment) {
+                        $projectAttachment = $attachmentManager->attachToProject($attachment, $project);
+                    }
+                    if ($projectAttachment) {
                         $this->tablResult['fichier_' . $attachmentTypeId] = 'ok';
                     }
                 }
             }
+
             $this->result = json_encode($this->tablResult);
         }
     }
@@ -1381,12 +1399,15 @@ class dossiersController extends bootstrap
 
         $aResult = array();
 
-        if (isset($_POST['attachment_id'])) {
-            $iAttachmentId = $_POST['attachment_id'];
-
-            if ($this->removeAttachment($iAttachmentId)) {
-                $aResult[$iAttachmentId] = 'ok';
+        if (isset($_POST['project_attachment_id'])) {
+            $entityManager =  $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['project_attachment_id']);
+            if ($projectAttachment) {
+                $entityManager->remove($projectAttachment);
+                $entityManager->flush($projectAttachment);
             }
+            $aResult[$_POST['project_attachment_id']] = 'ok';
         }
 
         echo json_encode($aResult);
@@ -2742,46 +2763,6 @@ class dossiersController extends bootstrap
             'lien_stop_relance'      => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
             'link_compte_emprunteur' => $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG)
         );
-    }
-
-    /**
-     * @param              $projectId
-     * @param              $attachmentTypeId
-     * @param UploadedFile $file
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment
-     */
-    private function uploadAttachment($projectId, $attachmentTypeId, UploadedFile $file)
-    {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-        $attachmentManager = $this->get('unilend.service.attachment_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
-        $attachmentType    = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
-        $project           = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-        /** @var Clients $client */
-        $client            = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-        $attachment        = $attachmentManager->upload($client, $attachmentType, $file);
-
-        return $attachmentManager->attachToProject($attachment, $project);
-    }
-
-    /**
-     * @param $attachmentId
-     *
-     * @return bool
-     */
-    private function removeAttachment($attachmentId)
-    {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
-        $attachment = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Attachment')->find($attachmentId);
-        if ($attachment) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-            $attachmentManager = $this->get('unilend.service.attachment_manager');
-            $attachmentManager->archive($attachment);
-        }
-
-        return true;
     }
 
     private function selectEmailCompleteness($iClientId)
