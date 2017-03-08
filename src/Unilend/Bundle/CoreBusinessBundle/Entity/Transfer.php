@@ -237,7 +237,7 @@ class Transfer
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      */
-    public function getIdClientOrigin()
+    public function getClientOrigin()
     {
         return $this->idClientOrigin;
     }

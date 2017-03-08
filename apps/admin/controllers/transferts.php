@@ -7,6 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 
 class transfertsController extends bootstrap
 {
@@ -582,6 +583,8 @@ class transfertsController extends bootstrap
         $mandate = $this->loadData('clients_mandats');
         /** @var \projects_pouvoir $proxy */
         $proxy = $this->loadData('projects_pouvoir');
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
 
         if (
             isset($_POST['validateProxy'], $_POST['id_project'])
@@ -617,8 +620,6 @@ class transfertsController extends bootstrap
                 $oMailerManager = $this->get('unilend.service.email_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $oNotificationManager */
                 $oNotificationManager = $this->get('unilend.service.notification_manager');
-                /** @var \Doctrine\ORM\EntityManager $em */
-                $em = $this->get('doctrine.orm.entity_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
                 $operationManager = $this->get('unilend.service.operation_manager');
                 /** @var \lenders_accounts $lender */
@@ -808,29 +809,40 @@ class transfertsController extends bootstrap
         $aProjects = $project->selectProjectsByStatus([\projects_status::FUNDE], '', [], '', '', false);
 
         $this->aProjects = array();
-        foreach ($aProjects as $iProject => $aProject) {
-            $this->aProjects[$iProject] = $aProject;
+        foreach ($aProjects as $index => $aProject) {
+            $this->aProjects[$index] = $aProject;
 
-            $aMandate = $mandate->select('id_project = ' . $this->aProjects[$iProject]['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'added DESC', 0, 1);
+            $aMandate = $mandate->select('id_project = ' . $this->aProjects[$index]['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'added DESC', 0, 1);
             if ($aMandate = array_shift($aMandate)) {
-                $this->aProjects[$iProject]['bic']           = $aMandate['bic'];
-                $this->aProjects[$iProject]['iban']          = $aMandate['iban'];
-                $this->aProjects[$iProject]['mandat']        = $aMandate['name'];
-                $this->aProjects[$iProject]['status_mandat'] = $aMandate['status'];
+                $this->aProjects[$index]['bic']           = $aMandate['bic'];
+                $this->aProjects[$index]['iban']          = $aMandate['iban'];
+                $this->aProjects[$index]['mandat']        = $aMandate['name'];
+                $this->aProjects[$index]['status_mandat'] = $aMandate['status'];
             }
 
-            $aProxy = $proxy->select('id_project = ' . $this->aProjects[$iProject]['id_project'] . ' AND status = ' . \projects_pouvoir::STATUS_SIGNED, 'added DESC', 0, 1);
+            $aProxy = $proxy->select('id_project = ' . $this->aProjects[$index]['id_project'] . ' AND status = ' . \projects_pouvoir::STATUS_SIGNED, 'added DESC', 0, 1);
             if ($aProxy = array_shift($aProxy)) {
-                $this->aProjects[$iProject]['url_pdf']          = $aProxy['name'];
-                $this->aProjects[$iProject]['status_remb']      = $aProxy['status_remb'];
-                $this->aProjects[$iProject]['authority_status'] = $aProxy['status'];
+                $this->aProjects[$index]['url_pdf']          = $aProxy['name'];
+                $this->aProjects[$index]['status_remb']      = $aProxy['status_remb'];
+                $this->aProjects[$index]['authority_status'] = $aProxy['status'];
             }
 
-            if ($aAttachments = $project->getAttachments($this->aProjects[$iProject]['id_project'])) {
-                $this->aProjects[$iProject]['kbis']    = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['path'] : '';
-                $this->aProjects[$iProject]['id_kbis'] = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['id'] : '';
-                $this->aProjects[$iProject]['rib']     = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['path'] : '';
-                $this->aProjects[$iProject]['id_rib']  = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['id'] : '';
+            $projectEntity                      = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($aProject['id_project']);
+            $projectAttachments                 = $projectEntity->getAttachments();
+            $this->aProjects[$index]['kbis']    = '';
+            $this->aProjects[$index]['id_kbis'] = '';
+            $this->aProjects[$index]['rib']     = '';
+            $this->aProjects[$index]['id_rib']  = '';
+            foreach ($projectAttachments as $projectAttachment) {
+                $attachment = $projectAttachment->getAttachment();
+                if (AttachmentType::KBIS === $attachment->getType()->getId()) {
+                    $this->aProjects[$index]['kbis']    = $attachment->getPath();
+                    $this->aProjects[$index]['id_kbis'] = $attachment->getId();
+                }
+                if (AttachmentType::RIB === $attachment->getType()->getId()) {
+                    $this->aProjects[$index]['rib']    = $attachment->getPath();
+                    $this->aProjects[$index]['id_rib'] = $attachment->getId();
+                }
             }
         }
     }
@@ -846,8 +858,6 @@ class transfertsController extends bootstrap
             $originalClient = $this->loadData('clients');
             /** @var \clients $newOwner */
             $newOwner = $this->loadData('clients');
-            /** @var \attachment $transferDocument */
-            $transferDocument = $this->loadData('attachment');
 
             if (
                 false === empty($_POST['id_client_to_transfer'])
@@ -903,57 +913,73 @@ class transfertsController extends bootstrap
             }
 
             if (isset($_POST['succession_validate'])) {
-                if (empty($_FILES['transfer_document']['name'])) {
+                $transferDocument = $this->request->files->get('transfer_document');
+                if (null === $transferDocument) {
                     $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
                 }
-
-                /** @var \transfer $transfer */
-                $transfer                     = $this->loadData('transfer');
-                $transfer->id_client_origin   = $originalClient->id_client;
-                $transfer->id_client_receiver = $newOwner->id_client;
-                $transfer->id_transfer_type  = \transfer_type::TYPE_INHERITANCE;
-                $transfer->create();
-
-                $this->uploadTransferDocument($transferDocument, $transfer, 'transfer_document');
-
-                $originalClientBalance = $clientManager->getClientBalance($originalClient);
                 /** @var \Doctrine\ORM\EntityManager $em */
                 $em = $this->get('doctrine.orm.entity_manager');
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
-                $operationManager = $this->get('unilend.service.operation_manager');
-                $transferEntity   = $em->getRepository('UnilendCoreBusinessBundle:Transfer')->find($transfer->id_transfer);
-                $operationManager->lenderTransfer($transferEntity, $originalClientBalance);
 
-                /** @var \loan_transfer $loanTransfer */
-                $loanTransfer = $this->loadData('loan_transfer');
-                /** @var \lenders_accounts $originalLender */
-                $originalLender = $this->loadData('lenders_accounts');
-                $originalLender->get($transfer->id_client_origin, 'id_client_owner');
-                /** @var \lenders_accounts $newLender */
-                $newLender = $this->loadData('lenders_accounts');
-                $newLender->get($transfer->id_client_receiver, 'id_client_owner');
-
-                $numberLoans  = 0;
-                foreach ($loansInRepayment as $loan) {
-                    $loans->get($loan['id_loan']);
-                    $this->transferLoan($transfer, $loanTransfer, $loans, $newLender, $originalClient, $newOwner);
-                    $loans->unsetData();
-                    $numberLoans += 1;
-                }
-                /** @var \lenders_accounts_stats_queue $lenderStatQueue */
-                $lenderStatQueue = $this->loadData('lenders_accounts_stats_queue');
-                $lenderStatQueue->addLenderToQueue($newLender);
-                $lenderStatQueue->addLenderToQueue($originalLender);
-
-                $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
+                $em->getConnection()->beginTransaction();
                 try {
-                    $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
-                } catch (\Exception $exception){
-                    $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
+                    /** @var \transfer $transfer */
+                    $transfer                     = $this->loadData('transfer');
+                    $transfer->id_client_origin   = $originalClient->id_client;
+                    $transfer->id_client_receiver = $newOwner->id_client;
+                    $transfer->id_transfer_type   = \transfer_type::TYPE_INHERITANCE;
+                    $transfer->create();
+
+                    $transferEntity = $em->getRepository('UnilendCoreBusinessBundle:Transfer')->find($transfer->id_transfer);
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+                    $attachmentManager = $this->get('unilend.service.attachment_manager');
+                    $attachmentType    = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::TRANSFER_CERTIFICATE);
+                    if ($attachmentType) {
+                        $attachment = $attachmentManager->upload($transferEntity->getClientReceiver(), $attachmentType, $transferDocument);
+                    }
+                    if (false === empty($attachment)) {
+                        $attachmentManager->attachToTransfer($attachment, $transferEntity);
+                    }
+                    $originalClientBalance = $clientManager->getClientBalance($originalClient);
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
+                    $operationManager = $this->get('unilend.service.operation_manager');
+                    $operationManager->lenderTransfer($transferEntity, $originalClientBalance);
+
+                    /** @var \loan_transfer $loanTransfer */
+                    $loanTransfer = $this->loadData('loan_transfer');
+                    /** @var \lenders_accounts $originalLender */
+                    $originalLender = $this->loadData('lenders_accounts');
+                    $originalLender->get($transfer->id_client_origin, 'id_client_owner');
+                    /** @var \lenders_accounts $newLender */
+                    $newLender = $this->loadData('lenders_accounts');
+                    $newLender->get($transfer->id_client_receiver, 'id_client_owner');
+
+                    $numberLoans = 0;
+                    foreach ($loansInRepayment as $loan) {
+                        $loans->get($loan['id_loan']);
+                        $this->transferLoan($transfer, $loanTransfer, $loans, $newLender, $originalClient, $newOwner);
+                        $loans->unsetData();
+                        $numberLoans += 1;
+                    }
+                    /** @var \lenders_accounts_stats_queue $lenderStatQueue */
+                    $lenderStatQueue = $this->loadData('lenders_accounts_stats_queue');
+                    $lenderStatQueue->addLenderToQueue($newLender);
+                    $lenderStatQueue->addLenderToQueue($originalLender);
+
+                    $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
+                    try {
+                        $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
+                    } catch (\Exception $exception) {
+                        $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
+                    }
+
+                    $clientStatusManager->addClientStatus($newOwner, $_SESSION['user']['id_user'], $clientStatusManager->getLastClientStatus($newOwner),
+                        'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
+
+                    $em->getConnection()->commit();
+                } catch (Exception $exception) {
+                    $em->getConnection()->rollback();
+                    throw $exception;
                 }
-
-                $clientStatusManager->addClientStatus($newOwner, $_SESSION['user']['id_user'], $clientStatusManager->getLastClientStatus($newOwner), 'Reçu solde ('. $this->ficelle->formatNumber($originalClientBalance) .') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
-
                 $_SESSION['succession']['success'] = [
                     'accountBalance' => $originalClientBalance,
                     'numberLoans'    => $numberLoans,
@@ -1014,37 +1040,6 @@ class transfertsController extends bootstrap
         $_SESSION['succession']['error'] = $errorMessage;
         header('Location: ' . $this->lurl . '/transferts/succession');
         die;
-    }
-
-    /**
-     * @param \attachment $attachment
-     * @param \transfer $transfer
-     * @param string $field
-     * @return \attachment
-     */
-    private function uploadTransferDocument(\attachment $attachment, \transfer $transfer, $field)
-    {
-        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
-            $this->attachment_type = $this->loadData('attachment_type');
-        }
-
-        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
-            $this->upload = $this->loadLib('upload');
-        }
-
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($attachment, $this->attachment_type, $this->path));
-        }
-
-        $newName = '';
-        if (isset($_FILES[$field]['name']) && $fileInfo = pathinfo($_FILES[$field]['name'])) {
-            $newName = mb_substr($fileInfo['filename'], 0, 20) . '_' . $transfer->id_client_origin . '_' . $transfer->id_client_receiver . '_' . $transfer->id_transfer;
-        }
-
-        $idAttachment = $this->attachmentHelper->upload($transfer->id_transfer, \attachment::TRANSFER, \attachment_type::TRANSFER_CERTIFICATE, $field, $this->upload, $newName);
-        $attachment->get($idAttachment);
-
-        return $attachment;
     }
 
     private function transferLoanPdf(\loans $loan, \clients $originalClient, \clients $newOwner)

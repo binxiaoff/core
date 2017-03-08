@@ -64,7 +64,7 @@ class AttachmentManager
     public function upload(Clients $client, AttachmentType $attachmentType, UploadedFile $file, $name = null)
     {
         $destination = $this->getUploadDestination($client);
-        $fileName    = ($name === null ? md5(uniqid()) : $name) . '.' . $file->guessExtension();
+        $fileName    = ($name === null ? md5(uniqid()) : $name) . '.' . $file->guessClientExtension();
         if (file_exists($destination . DIRECTORY_SEPARATOR . $fileName)) {
             $fileName = md5(uniqid()) . $fileName;
         }
@@ -113,12 +113,13 @@ class AttachmentManager
     public function attachToProject(Attachment $attachment, Projects $project)
     {
         $projectAttachmentRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
-        $attached = $projectAttachmentRepo->getAttachedAttachments($project, $attachment->getType());
+        $attached              = $projectAttachmentRepo->getAttachedAttachments($project, $attachment->getType());
 
         foreach ($attached as $attachmentToDetach) {
             $this->entityManager->remove($attachmentToDetach);
             $this->entityManager->flush($attachmentToDetach);
         }
+
         $projectAttachment = $projectAttachmentRepo->findOneBy(['idAttachment' => $attachment, 'idProject' => $project]);
         if (null === $projectAttachment) {
             $projectAttachment = new ProjectAttachment();
@@ -139,11 +140,19 @@ class AttachmentManager
      */
     public function attachToTransfer(Attachment $attachment, Transfer $transfer)
     {
+        $transferAttachmentRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TransferAttachment');
+        $attached               = $transferAttachmentRepo->getAttachedAttachments($transfer, $attachment->getType());
+
+        foreach ($attached as $attachmentToDetach) {
+            $this->entityManager->remove($attachmentToDetach);
+            $this->entityManager->flush($attachmentToDetach);
+        }
+
         $transferAttachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TransferAttachment')->findOneBy(['idAttachment' => $attachment, 'idTransfer' => $transfer]);
         if (null === $transferAttachment) {
-            $projectAttachment = new TransferAttachment();
-            $projectAttachment->setTransfer($transfer)
-                              ->setAttachment($attachment);
+            $transferAttachment = new TransferAttachment();
+            $transferAttachment->setTransfer($transfer)
+                               ->setAttachment($attachment);
             $this->entityManager->persist($transferAttachment);
             $this->entityManager->flush($transferAttachment);
         }
@@ -260,21 +269,5 @@ class AttachmentManager
         }
 
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($aTypes);
-    }
-
-    /**
-     * @param Attachment $attachment
-     */
-    public function archive(Attachment $attachment)
-    {
-        $attachment->setArchived(new \DateTime());
-        $this->entityManager->flush($attachment);
-    }
-
-    public function findUploadedFile()
-    {
-        foreach ($_FILES as $file) {
-
-        }
     }
 }
