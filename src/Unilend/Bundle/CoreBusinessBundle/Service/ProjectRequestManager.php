@@ -214,7 +214,7 @@ class ProjectRequestManager
         $company = $this->entityManager->getRepository('companies');
         $company->get($project->id_company);
 
-        $project->balance_count             = '0000-00-00' === $company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $company->date_creation)->diff(new \DateTime())->y;
+        $project->balance_count             = null === $company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $company->date_creation)->diff(new \DateTime())->y;
         $project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
         $project->update();
 
@@ -222,7 +222,7 @@ class ProjectRequestManager
             return $this->addRejectionProjectStatus($rejectionReason, $project, $userId);
         }
 
-        if ($company->code_naf === \companies::NAF_CODE_NO_ACTIVITY) {
+        if ($company->code_naf === Companies::NAF_CODE_NO_ACTIVITY) {
             $altaresScore = $this->companyScoringCheck->getAltaresScore($company->siren);
 
             if (

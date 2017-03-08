@@ -13,6 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Companies
 {
+    const NAF_CODE_NO_ACTIVITY = '0000Z';
+
     /**
      * @var integer
      *
@@ -1305,6 +1307,10 @@ class Companies
      */
     public function setSectorAccordingToNaf()
     {
+        if ($this->codeNaf == self::NAF_CODE_NO_ACTIVITY) {
+            return;
+        }
+
         if (in_array(substr($this->codeNaf, 0, 2), ['01', '02', '03'])) {
             $this->sector = 1;
         }
@@ -1361,5 +1367,4 @@ class Companies
             $this->sector = 15;
         }
     }
-
 }

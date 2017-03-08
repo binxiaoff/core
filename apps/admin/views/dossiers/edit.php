@@ -31,6 +31,7 @@
         white-space: nowrap;
     }
 
+    .project-main .input_large,
     .project-main .select {
         width: 360px;
     }
@@ -453,16 +454,31 @@
                             </td>
                         </tr>
                         <tr>
+                            <th><label for="sector">Secteur de la société</label></th>
+                            <td>
+                                <?php if (false === empty($this->companies->code_naf) && $this->companies->code_naf === \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::NAF_CODE_NO_ACTIVITY) : ?>
+                                    <select name="sector" id="sector" class="select">
+                                        <option value="0"></option>
+                                        <?php foreach ($this->sectors as $sector) : ?>
+                                            <option<?= ($this->companies->sector == $sector['id_company_sector'] ? ' selected' : '') ?> value="<?= $sector['id_company_sector'] ?>">
+                                                <?= $this->translator->trans('company-sector_sector-' . $sector['id_company_sector']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php elseif (empty($this->companies->sector)) : ?>
+                                    -
+                                <?php else : ?>
+                                    <?= $this->translator->trans('company-sector_sector-' . $this->companies->sector) ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <tr>
                             <th><label for="title">Titre du projet</label></th>
                             <td><input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"></td>
                         </tr>
                         <tr>
                             <th><label for="societe">Raison sociale</label></th>
                             <td><input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"></td>
-                        </tr>
-                        <tr>
-                            <th><label for="sector">Secteur de la société</label></th>
-                            <td><?= $this->companies->sector > 0 ? $this->translator->trans('company-sector_sector-' . $this->companies->sector) : '-' ?></td>
                         </tr>
                         <tr>
                             <th><label for="tribunal_com">Tribunal de commerce</label></th>
@@ -478,7 +494,7 @@
                     <table class="form project-attributes">
                         <tr>
                             <th><label for="montant">Montant du prêt&nbsp;*</label></th>
-                            <td><input type="text" name="montant" id="montant" class="input_moy"<?php if ($this->projects->status >= \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €</td>
+                            <td><input type="text" name="montant" id="montant" class="input_court"<?php if ($this->projects->status >= \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €</td>
                         </tr>
                         <tr>
                             <th><label for="duree">Durée du prêt&nbsp;*</label></th>
