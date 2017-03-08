@@ -412,6 +412,7 @@ class companies extends companies_crud
             ->setParameter('siren', $siren)
             ->orderBy('p.status', 'DESC')
             ->orderBy('c.added', 'ASC')
+            ->groupBy('c.id_company')
             ->execute();
 
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);

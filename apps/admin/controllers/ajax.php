@@ -968,8 +968,6 @@ class ajaxController extends bootstrap
             $message->setTo($client->email);
             $mailer = $this->get('mailer');
             $mailer->send($message);
-        } elseif ($_POST['status'] == 4) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::ANALYSIS_REVIEW, $project);
         }
 
         if (

@@ -157,7 +157,8 @@
 
     .abandon-popup,
     .postpone-popup,
-    .publish-popup {
+    .publish-popup,
+    .comity-to-analysis-popup {
         width: 600px;
     }
 

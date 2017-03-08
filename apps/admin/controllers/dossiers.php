@@ -3077,6 +3077,39 @@ class dossiersController extends bootstrap
         }
     }
 
+    public function _comity_to_analysis()
+    {
+        $this->hideDecoration();
+
+        $this->projects = $this->loadData('projects');
+
+        if (
+            false === isset($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || false === $this->projects->get($this->params[0])
+        ) {
+            echo 'Projet inconnu';
+            $this->autoFireView = false;
+            return;
+        }
+
+        if (false === empty($_POST['comment'])) {
+            /** @var \projects_comments $projectComment */
+            $projectComment             = $this->loadData('projects_comments');
+            $projectComment->id_project = $this->projects->id_project;
+            $projectComment->id_user    = $_SESSION['user']['id_user'];
+            $projectComment->content    = "Retour à l'analyse\n--\n" . filter_var($_POST['comment'], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+            $projectComment->create();
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::ANALYSIS_REVIEW, $this->projects);
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
+        }
+    }
+
     public function _takeover()
     {
         $this->hideDecoration();

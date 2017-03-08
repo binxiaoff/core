@@ -595,7 +595,6 @@ function valid_rejete_etape7(status, id_project) {
     }
     else if (status == 2) var message = 'rejeter';
     else if (status == 3) var message = 'sauvegarder';
-    else if (status == 4) var message = 'vouloir plus d\'informations sur';
 
     if (confirm(validation_message + 'Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
         var structure                       = parseFloat($('#structure_comite').val().replace(',', '.')),
