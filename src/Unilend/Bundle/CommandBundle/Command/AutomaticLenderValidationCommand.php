@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
@@ -52,7 +53,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
     private function getClientsForAutoValidation()
     {
         $clientStatus   = [\clients_status::TO_BE_CHECKED, \clients_status::COMPLETENESS_REPLY, \clients_status::MODIFICATION];
-        $attachmentType = [\attachment_type::CNI_PASSPORTE, \attachment_type::JUSTIFICATIF_DOMICILE, \attachment_type::RIB];
+        $attachmentType = [AttachmentType::CNI_PASSPORTE, AttachmentType::JUSTIFICATIF_DOMICILE, AttachmentType::RIB];
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \clients $client */
@@ -95,7 +96,9 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
     /**
      * @param \clients $client
-     * @param array $attachment
+     * @param array    $attachment
+     * @throws \Exception
+     *
      */
     private function validateLender(\clients $client, array $attachment)
     {
