@@ -64,7 +64,7 @@ class AttachmentManager
     public function upload(Clients $client, AttachmentType $attachmentType, UploadedFile $file, $name = null)
     {
         $destination = $this->getUploadDestination($client);
-        $fileName    = ($name === null ? md5(uniqid()) : $name) . '.' . $file->guessExtension();
+        $fileName    = ($name === null ? md5(uniqid()) : $name) . '.' . $file->getClientOriginalExtension();
         if (file_exists($destination . DIRECTORY_SEPARATOR . $fileName)) {
             $fileName = md5(uniqid()) . $fileName;
         }
