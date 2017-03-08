@@ -1,5 +1,7 @@
 <?php
 
+use \Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
+
 class queriesController extends bootstrap
 {
     /** @var \queries */
@@ -37,7 +39,7 @@ class queriesController extends bootstrap
         $this->queries   = $this->loadData('queries');
         $this->lRequetes = $this->queries->select('', 'executed DESC');
 
-        if (isset($_POST['form_edit_requete']) && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
+        if (isset($_POST['form_edit_requete']) && UsersTypes::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
             $this->queries->get($this->params[0], 'id_query');
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
@@ -51,7 +53,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($_POST['form_add_requete']) && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
+        if (isset($_POST['form_add_requete']) && UsersTypes::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
             $this->queries->sql    = $_POST['sql'];
@@ -64,7 +66,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($this->params[0]) && $this->params[0] == 'delete' && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
+        if (isset($this->params[0]) && $this->params[0] == 'delete' && UsersTypes::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
             $this->queries->delete($this->params[1], 'id_query');
 
             $_SESSION['freeow']['title']   = 'Suppression d\'une requ&ecirc;te';

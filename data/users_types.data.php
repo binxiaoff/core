@@ -28,10 +28,6 @@
 
 class users_types extends users_types_crud
 {
-    const TYPE_ADMIN      = 1;
-    const TYPE_ANALYSTE   = 2;
-    const TYPE_COMMERCIAL = 3;
-
     function users_types($bdd, $params = '')
     {
         parent::users_types($bdd, $params);

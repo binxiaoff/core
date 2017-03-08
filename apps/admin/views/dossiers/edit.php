@@ -345,12 +345,15 @@
                 </table>
             </div>
             <div class="droite">
-                <h2>Partenaire</h2>
                 <table class="form" style="width: 575px;">
+                    <tr>
+                        <th><h2 style="text-align: left">Partenaire</h2></th>
+                    </tr>
                     <tr>
                         <th><label for="project_partner">Partenaire du projet :</label></th>
                         <td>
-                            <select name="project_partner" id="project_partner" class="select" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                            <select name="project_partner" id="project_partner" class="select" onchange="this.form.submit()" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                                <option value=""></option>
                                 <?php foreach ($this->partnerList as $partner) : ?>
                                     <option value="<?= $partner['id'] ?>"<?= $this->projects->id_partner === $partner['id'] ? ' selected="selected"' : '' ?>><?= $partner['name'] ?></option>
                                 <?php endforeach; ?>
@@ -358,16 +361,49 @@
                         </td>
                     </tr>
                     <tr>
+                        <th><h2 style="text-align: left">Produit</h2></th>
+                    </tr>
+                    <tr>
+                        <th><label for="assigned_product">Produit associé* :</label></th>
+                        <td>
+                            <select name="assigned_product" id="assigned_product" class="select" onchange="this.form.submit()" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                                <option value=""></option>
+                                <?php if (false === empty($this->selectedProduct->id_product) && false === in_array($this->selectedProduct, $this->eligibleProduct)) : ?>
+                                    <option value="<?= $this->selectedProduct->id_product ?>" selected disabled>
+                                        <?= $this->translator->trans('product_label_' . $this->selectedProduct->label) ?>
+                                    </option>
+                                <?php endif; ?>
+                                <?php foreach ($this->eligibleProduct as $product) : ?>
+                                    <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
+                                        <?= $this->translator->trans('product_label_' . $product->label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
                         <th>Commission de déblocage des fonds:</th>
-                        <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) ?> %</td>
+                        <td>
+                            <?php if (false === empty($this->assignedPartnerProduct->commission_rate_funds)) : ?>
+                                <?= $this->ficelle->formatNumber($this->assignedPartnerProduct->commission_rate_funds, 1) ?> %
+                            <?php else : ?>
+                                0,0 %
+                            <?php endif; ?>
+                        </td>
                     </tr>
                     <tr>
                         <th>Commission de remboursement:</th>
-                        <td><?= $this->ficelle->formatNumber($this->projects->commission_rate_repayment, 1) ?> %</td>
+                        <td>
+                            <?php if (false === empty($this->assignedPartnerProduct->commission_rate_repayment)) : ?>
+                                <?= $this->ficelle->formatNumber($this->assignedPartnerProduct->commission_rate_repayment, 1) ?> %
+                            <?php else : ?>
+                                0,0 %
+                            <?php endif; ?>
+                        </td>
                     </tr>
-                </table>
-                <h2>Projet</h2>
-                <table class="form" style="width: 575px;">
+                    <tr>
+                        <th><h2 style="text-align: left">Projet</h2></th>
+                    </tr>
                     <?php if (isset($this->fPredictAutoBid) && false === empty($this->fPredictAutoBid)) : ?>
                     <tr>
                         <th><label for="autobid_statistic"> AutoLend funding statistic :</label></th>
@@ -379,7 +415,6 @@
                             <th><label for="project_rate"> Taux min / max :</label></th>
                             <td><?= $this->rate_min ?> % - <?= $this->rate_max ?> %</td>
                         </tr>
-
                     <?php endif; ?>
                     <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
@@ -455,30 +490,22 @@
                             ?>
                         </td>
                     </tr>
+
+                    <tr>
+                        <th><label for="specific_commission_rate_funds">Commission déblocage spécifique:</label></th>
+                        <td>
+                            <?php if (true === $this->canModifyProjectCommissionRateFunds) : ?>
+                                <input style="width:160px;background-color:#AAACAC;" type="text" name="specific_commission_rate_funds" id="specific_commission_rate_funds" class="input_moy" <?php if (false === $this->canModifyProjectCommissionRateFunds) : ?>disabled<?php endif; ?> value="<?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) ?>"/> %
+                            <?php else : ?>
+                                <?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) ?> %
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+
                 </table>
                 <br><br>
 
-                <h2>Produit</h2>
                 <table class="form" style="width: 538px;">
-                    <tr>
-                        <th><label for="assigned_product">Produit associé* :</label></th>
-                        <td>
-                            <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
-                                <option value=""></option>
-                                <?php if (false === empty($this->selectedProduct->id_product) && false === in_array($this->selectedProduct, $this->eligibleProduct)) : ?>
-                                    <option value="<?= $this->selectedProduct->id_product ?>" selected disabled >
-                                        <?= $this->translator->trans('product_label_' . $this->selectedProduct->label) ?>
-                                    </option>
-                                <?php endif; ?>
-                                <?php foreach ($this->eligibleProduct as $product) : ?>
-                                    <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
-                                        <?= $this->translator->trans('product_label_' . $product->label) ?>
-                                    </option>
-
-                                <?php endforeach; ?>
-                                </select>
-                        </td>
-                    </tr>
                     <?php if (isset($this->availableContracts) && in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)) : ?>
                         <tr>
                             <th>DIRS</th>
@@ -660,7 +687,7 @@
                         </td>
                         <td>
                             <?php if (
-                                in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE))
+                                in_array($this->users->id_user_type, array(\Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes::TYPE_ADMIN, \Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes::TYPE_ANALYSTE))
                                 && in_array($this->projects->status, array(\projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE, \projects_status::REJETE))
                             ) : ?>
                                 <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"/></a>

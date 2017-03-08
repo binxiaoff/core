@@ -5,6 +5,7 @@ use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use \Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class dossiersController extends bootstrap
@@ -141,25 +142,8 @@ class dossiersController extends bootstrap
         $this->translator = $this->get('translator');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            if ($this->projects->status <= \projects_status::PREP_FUNDING) {
-                if (false === empty($_POST['project_partner'])) {
-                    $this->projects->id_partner                = $_POST['project_partner'];
-                    $this->projects->id_product                = null;
-                    $this->projects->commission_rate_funds     = null;
-                    $this->projects->commission_rate_repayment = null;
-                }
-                /** @var \partner_product $partnerProduct */
-                $partnerProduct = $this->loadData('partner_product');
+            $this->updateProjectPartner();
 
-                if (false === empty($_POST['assigned_product']) && $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' and id_product ')) {
-                    $this->projects->id_product                = $partnerProduct->id_product;
-                    $this->projects->commission_rate_funds     = $partnerProduct->commission_rate_funds;
-                    $this->projects->commission_rate_repayment = $partnerProduct->commission_rate_repayment;
-                } elseif (false === empty($_POST['assigned_product'])) {
-                    $_SESSION['freeow']['message'] = 'Ce produit n\'est pas configuré pour le partenaire';
-                }
-                $this->projects->update();
-            }
             $this->settings->get('Durée des prêts autorisées', 'type');
             $this->dureePossible   = explode(',', $this->settings->value);
             $this->taxFormTypes    = $companyTaxFormType->select();
@@ -304,7 +288,7 @@ class dossiersController extends bootstrap
             $this->bCanEditStatus = false;
             if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
                 $this->loadData('users_types');
-                if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE, \users_types::TYPE_COMMERCIAL))) {
+                if (in_array($this->users->id_user_type, array(UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_ANALYSTE, UsersTypes::TYPE_COMMERCIAL))) {
                     $this->bCanEditStatus = true;
                 }
             }
@@ -529,6 +513,17 @@ class dossiersController extends bootstrap
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
             } elseif (isset($_POST['send_form_dossier_resume'])) {
+                /** @var \partner_product $partnerProduct */
+                $partnerProduct = $this->loadData('partner_product');
+
+                if (false === empty($_POST['assigned_product']) && $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' AND id_product')) {
+                    $this->projects->id_product                = $partnerProduct->id_product;
+                    $this->projects->commission_rate_funds     = $this->getProjectCommissionRateFundsToUse($this->projects);
+                    $this->projects->commission_rate_repayment = $partnerProduct->commission_rate_repayment;
+                } elseif (false === empty($_POST['assigned_product'])) {
+                    $_SESSION['freeow']['message'] = 'Ce produit n\'est pas configuré pour le partenaire';
+                }
+
                 // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
                 /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
                 $dates_valide = false;
@@ -929,12 +924,58 @@ class dossiersController extends bootstrap
                     $this->aRatings = $oCompanyRating->getHistoryRatingsByType($this->projects->id_company_rating_history);
                 }
             }
+            $this->canModifyProjectCommissionRateFunds = $this->canUpdateProjectCommissionRateFunds($this->projects);
+            /** @var \partner_product assignedPartnerProduct */
+            $this->assignedPartnerProduct = $this->loadData('partner_product');
+            $this->assignedPartnerProduct->get($this->projects->id_product, 'id_partner = ' .  $this->projects->id_partner . ' AND id_product');
 
             $this->recup_info_remboursement_anticipe();
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
         }
+    }
+
+    private function updateProjectPartner()
+    {
+        if ($this->projects->status <= \projects_status::PREP_FUNDING &&
+            false === empty($_POST['project_partner']) &&
+            $_POST['project_partner'] != $this->projects->id_partner
+        ) {
+            $this->projects->id_partner                = $_POST['project_partner'];
+            $this->projects->id_product                = null;
+            $this->projects->commission_rate_funds     = null;
+            $this->projects->commission_rate_repayment = null;
+
+            $this->projects->update();
+        }
+    }
+
+    /**
+     * @param \projects $project
+     * @return double
+     */
+    private function getProjectCommissionRateFundsToUse(\projects $project)
+    {
+        /** @var \partner_product $partnerProduct */
+        $partnerProduct = $this->loadData('partner_product');
+
+        if (isset($_POST['specific_commission_rate_funds']) && '' != $_POST['specific_commission_rate_funds'] && $this->canUpdateProjectCommissionRateFunds($project)) {
+            return $this->ficelle->cleanFormatedNumber($_POST['specific_commission_rate_funds']);
+        } elseif(isset($_POST['assigned_product']) && $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' AND id_product')) {
+            return $partnerProduct->commission_rate_funds;
+        } else {
+            return \projects::DEFAULT_COMMISSION_RATE_FUNDS;
+        }
+    }
+
+    /**
+     * @param projects $project
+     * @return bool
+     */
+    private function canUpdateProjectCommissionRateFunds(\projects $project)
+    {
+        return ($project->status <= \projects_status::PREP_FUNDING && UsersTypes::TYPE_ADMIN == $_SESSION['user']['id_user_type'] && false === empty($project->id_product));
     }
 
     protected function sumBalances(array $aBalances, $aBalanceSheet)

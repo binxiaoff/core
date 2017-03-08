@@ -21,7 +21,7 @@
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Liste des requêtes</h1>
-    <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
+    <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
         <div class="btnDroite">
             <a href="<?= $this->lurl ?>/queries/add" class="btn_link thickbox">Ajouter une requête</a>
         </div>
@@ -60,7 +60,7 @@
                                 </a>
 
                             <?php endif; ?>
-                            <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
+                            <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
                                 <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $r['name'] ?>"/>
                                 </a>
