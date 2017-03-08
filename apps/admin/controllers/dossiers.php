@@ -1367,11 +1367,10 @@ class dossiersController extends bootstrap
 
             $this->tablResult = array();
 
-            foreach ($this->request->files->all() as $inputName => $uploadedFile) {
+            foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
                 if ($uploadedFile) {
                     $attachment        = null;
                     $projectAttachment = null;
-                    $attachmentTypeId  = $inputName;
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
                     $attachmentType = $attachmentTypeRepo->find($attachmentTypeId);
                     if ($attachmentType) {

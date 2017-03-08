@@ -286,12 +286,12 @@ class preteursController extends bootstrap
                 'typeToAdd'   => $identityTypes
             ],
             [
-                'title'       => 'Justificatif de domicile',
+                'title'       => 'RIB et Jsutificatif fiscal',
                 'attachments' => $bankAndFiscalAttachments,
                 'typeToAdd'   => $bankAndFiscalTypes
             ],
             [
-                'title'       => 'RIB et Jsutificatif fiscal',
+                'title'       => 'Justificatif de domicile',
                 'attachments' => $habitationAttachments,
                 'typeToAdd'   => $habitationTypes
             ],

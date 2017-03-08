@@ -70,6 +70,12 @@ class Attachment
      */
     private $idClient;
 
+    /**
+     * @var GreenpointAttachment
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment", mappedBy="idAttachment")
+     */
+    private $greenpointAttachment;
 
 
     /**
@@ -242,5 +248,15 @@ class Attachment
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * Get greenpointAttachment
+     *
+     * @return GreenpointAttachment
+     */
+    public function getGreenpointAttachment()
+    {
+        return $this->greenpointAttachment;
     }
 }

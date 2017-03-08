@@ -99,7 +99,7 @@ class GreenpointAttachment
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", inversedBy="greenpointAttachment")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
      * })

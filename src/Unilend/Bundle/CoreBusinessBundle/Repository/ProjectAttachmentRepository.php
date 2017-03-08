@@ -14,7 +14,7 @@ class ProjectAttachmentRepository extends EntityRepository
      * @param Projects|integer       $project
      * @param AttachmentType|integer $attachmentType
      *
-     * @return ProjectAttachment
+     * @return ProjectAttachment[]
      */
     public function getAttachedAttachments($project, $attachmentType)
     {

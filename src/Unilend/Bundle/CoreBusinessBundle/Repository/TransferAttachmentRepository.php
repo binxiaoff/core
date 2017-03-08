@@ -14,7 +14,7 @@ class TransferAttachmentRepository extends EntityRepository
      * @param Transfer|integer       $transfer
      * @param AttachmentType|integer $attachmentType
      *
-     * @return TransferAttachment
+     * @return TransferAttachment[]
      */
     public function getAttachedAttachments($transfer, $attachmentType)
     {
