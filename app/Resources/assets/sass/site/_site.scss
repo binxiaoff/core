@@ -109,7 +109,9 @@
 @import 'components/cta/cards';
 
 // Modules (dynamic components)
-@import 'modules';
+@import 'modules/autocomplete';
+@import 'modules/emprunter-sim';
+@import 'modules/project-list';
 
 // Individual page overrides
 @import 'pages';

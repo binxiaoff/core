@@ -55,9 +55,9 @@ var AutoComplete = function (elem, options) {
     minTermLength: 3, // The minimum character length of a term to find
     showEmpty: false, // Show autocomplete with messages if no results found
     showSingle: true, // Show the autocomplete if only one result found
-    attachTargetAfter: false, // Whether to apply the target to be directly after the input, or at the bottom in the body
+    attachTargetAfter: true, // Whether to apply the target to be directly after the input, or at the bottom in the body
     constrainTargetWidth: 'input', // Constrain the target's width. Accepted values: {Boolean} false, {String} 'input', or {Int} specific width in pixels
-    useTether: true, // Use tether to attach the target element
+    useTether: false, // Use tether to attach the target element
     optimised: true, // If true, it'll retrieve AJAX for the first call, and then search within the results for further drilling down (reduces server IO and hopefully speeds up UI for user)
 
     // Special events
