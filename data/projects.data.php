@@ -1281,6 +1281,8 @@ class projects extends projects_crud
     {
         return $this->bdd->createQueryBuilder()
             ->select('p.id_project,
+                IFNULL(pa.name, "") AS partner_name,
+                IFNULL(pa.logo, "") AS partner_logo,
                 p.amount AS amount,
                 p.period AS duration,
                 p.status AS status,
@@ -1299,6 +1301,7 @@ class projects extends projects_crud
             ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
             ->innerJoin('co', 'clients', 'cl', 'co.id_client_owner = cl.id_client')
             ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
+            ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
             ->where('p.status IN (:riskStatus)')
             ->setParameter('waitingAnalystStatus', \projects_status::PENDING_ANALYSIS)
             ->setParameter('riskStatus', \projects_status::$riskTeam, Connection::PARAM_INT_ARRAY)
@@ -1392,6 +1395,8 @@ class projects extends projects_crud
     {
         return $this->bdd->createQueryBuilder()
             ->select('p.id_project,
+                IFNULL(pa.name, "") AS partner_name,
+                IFNULL(pa.logo, "") AS partner_logo,
                 p.amount AS amount,
                 p.period AS duration,
                 p.status AS status,
@@ -1416,6 +1421,7 @@ class projects extends projects_crud
             ->leftJoin('p', 'pre_scoring', 'scoring', 'euler.value = scoring.euler_hermes AND altares.value = scoring.altares')
             ->leftJoin('p', 'company_rating', 'infolegale', 'p.id_company_rating_history = infolegale.id_company_rating_history AND infolegale.type = :infolegaleScoringType')
             ->leftJoin('p', 'users', 'u', 'p.id_commercial = u.id_user')
+            ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
             ->where('p.status IN (:commercialStatus)')
             ->setParameter('commercialStatus', $status, Connection::PARAM_INT_ARRAY)
             ->setParameter('eulerScoringType', \company_rating::TYPE_EULER_HERMES_GRADE)

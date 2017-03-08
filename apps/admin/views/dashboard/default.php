@@ -40,6 +40,16 @@
     table.tablesorter thead tr th {
         font-size: 12px;
     }
+    table.tablesorter.projects tbody tr td.partner-logo {
+        padding: 1px;
+        text-align: center;
+        vertical-align: middle;
+    }
+    table.tablesorter.projects tbody tr td.partner-logo img {
+        margin: 0;
+        max-height: 20px;
+        max-width: 20px;
+    }
     .status-line,
     .projects td[data-project] {
         cursor: pointer;
@@ -66,6 +76,7 @@
         display: none;
         margin-top: 20px;
     }
+
 </style>
 <div id="contenu">
     <h1>Mes projets (<?= $this->userProjects['count'] ?>)</h1>
