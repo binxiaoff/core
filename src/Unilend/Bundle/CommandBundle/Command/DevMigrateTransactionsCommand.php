@@ -87,10 +87,6 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                     continue;
                 }
 
-                if ($transaction['id_transaction'] == 2264291) {
-                    $this->lenderRegulation($transaction['id_client'], '39.63', $transaction['date_transaction']);
-                }
-
                 switch($transaction['type_transaction']) {
                     case \transactions_types::TYPE_LENDER_SUBSCRIPTION:
                     case \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT:
