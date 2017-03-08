@@ -24,7 +24,6 @@ class CompanyAddressType extends AbstractType
             ->add('zip', TextType::class)
             ->add('city', TextType::class)
             ->add('idPays', CountriesType::class)
-            //->add('statusAdresseCorrespondance', IntegerType::class, ['required' => false])
         ;
     }
 

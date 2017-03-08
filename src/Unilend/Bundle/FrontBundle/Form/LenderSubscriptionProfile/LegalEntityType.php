@@ -5,6 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -23,8 +24,11 @@ class LegalEntityType extends AbstractType
             ->add('nom', TextType::class)
             ->add('prenom', TextType::class)
             ->add('fonction', TextType::class)
-            ->add('telephone', TextType::class)
+            ->add('mobile', TextType::class)
             ->add('email', EmailType::class)
+            ->add('emailConfirmation', EmailType::class, ['mapped' => false])
+            ->add('password', PasswordType::class)
+            ->add('passwordConfirmation', PasswordType::class, ['mapped' => false])
         ;
     }
 

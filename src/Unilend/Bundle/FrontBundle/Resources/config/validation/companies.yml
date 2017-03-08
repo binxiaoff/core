@@ -9,7 +9,7 @@ Unilend\Bundle\CoreBusinessBundle\Entity\Companies:
             - Length:
                 min: 9
                 max: 14
-            - Type : numeric
+            - Type : string
         capital:
             - NotBlank: ~
             - Type: numeric

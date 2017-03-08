@@ -45,9 +45,10 @@ class CompanyIdentityType extends AbstractType
 
         $builder
             ->add('name', TextType::class)
-            ->add('forme', TextType::class)
-            ->add('capital', TextType::class)
-            ->add('phone', TextType::class)
+            ->add('forme')
+            ->add('siren')
+            ->add('capital')
+            ->add('phone')
             ->add('statusClient', ChoiceType::class, [
                 'choices' => $clientStatusChoices,
                 'expanded' => true,

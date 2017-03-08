@@ -206,7 +206,7 @@ $doc.on('ready', function () {
     // Show the "Autre" ("Other") text field if the company_external_counsel is equal to 3
     // @note this will also affect any other page which has an input named `company_client_status`, such as `inscription_preteur` / `LenderSubscription`
     function checkEntityExternalCounsel() {
-        if ($('select[name="company_external_counsel"]').val() == 3) {
+        if ($('select[name="form[company][statusConseilExterneEntreprise]"]').val() == 3) {
             $('.legal-entity-status-other-field').collapse('show')
         } else {
             $('.legal-entity-status-other-field').collapse('hide')
@@ -214,7 +214,7 @@ $doc.on('ready', function () {
     }
 
     checkEntityExternalCounsel()
-    $doc.on('change', 'select[name="company_external_counsel"]', function () {
+    $doc.on('change', 'select[name="form[company][statusConseilExterneEntreprise]"]', function () {
         checkEntityExternalCounsel()
     })
 

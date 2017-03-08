@@ -3,7 +3,6 @@
 {% form_theme identityForm '/frontbundle/forms/fields.html.twig' %}
 {% do identityForm.fiscalAddress.housedByThirdPerson.setRendered %}
 
-{#<form action="{{ path('lender_subscription_personal_information_person_form') }}" method="post" class="form-preter-create form-preter-create-info-person" data-formvalidation data-formvalidation-notificationselem="#form-preter-person-1-notifications" data-cacheform>#}
 {{ form_start(identityForm, {
     'attr' : {
         'class' : 'form-preter-create form-preter-create-info-person',
@@ -16,8 +15,8 @@
             <p>{% trans %} lender-subscription_person-mandatory-documents-information {% endtrans %}</p>
         </div><!-- /.message-alert -->
 
-        <div id="form-preter-person-1-notifications" class="ui-formvalidation-notifications">
-                {{ form_errors(identityForm) }}
+        <div id="form-preter-notifications" class="ui-formvalidation-notifications">
+            {{ form_errors(identityForm) }}
         </div>
 
         {# Hide the person form and display legal entity form when legal entity is chosen in above radio buttons #}
@@ -215,7 +214,8 @@
                         'id' : 'form-lender-person-client-mobile',
                         'attr' : {
                             'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true'
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-formvalidation-type' : 'telephone'
                         }
                     }) }}
                 </div>
@@ -337,7 +337,6 @@
                 {{ form_widget(identityForm.client.inseeBirth, {
                     'id' : 'form-lender-person-birth-city-insee'
                 }) }}
-                {#<input id="form-lender-person-birth-city-insee" type="hidden" name="client_insee_place_of_birth" value="{{ formData.client_insee_place_of_birth }}"/>#}
             </div><!-- /.form-field -->
         </div>
     </fieldset>
