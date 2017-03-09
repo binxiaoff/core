@@ -85,7 +85,18 @@ $doc.ready(function () {
     // -- slideChangeEnd
     swiperOptions.onSlideChangeEnd = function (swiper) {
       // Instigate or trigger any items within the slide now it's in view
-      $(swiper.slides[swiper.activeIndex]).trigger('UI:visible')
+      var $activeSlide = $(swiper.slides[swiper.activeIndex])
+      var $nextSlide = $(swiper.slides[swiper.activeIndex + 1])
+
+      $activeSlide.trigger('UI:visible')
+
+      if ($elem.is('.promo-battenberg-lender, .promo-battenberg-borrower') && /xs|sm/.test(Utility.getActiveBreakpoints())) {
+        var $activeSlideCaption  = $activeSlide.find('.vertical-align-content')
+        var $nextSlideCaption = $nextSlide.find('.vertical-align-content')
+        if ($nextSlideCaption.height() < $activeSlideCaption.height()) {
+          $nextSlideCaption.height($activeSlideCaption.height())
+        }
+      }
 
       // Update the window (watchWindow needs to be notified of any elements now being visible)
       Utility.debounceUpdateWindow()
