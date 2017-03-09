@@ -39,23 +39,6 @@ class AttachmentManager
     /**
      * @param Clients        $client
      * @param AttachmentType $attachmentType
-     *
-     * @return bool|int
-     */
-    public function attachmentExists(Clients $client, AttachmentType $attachmentType)
-    {
-        $attachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy(['idClient' => $client, 'idType' => $attachmentType]);
-
-        if ($attachment && empty($attachment->getPath())) {
-            return $attachment->getId();
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * @param Clients        $client
-     * @param AttachmentType $attachmentType
      * @param UploadedFile   $file
      * @param null           $name
      *

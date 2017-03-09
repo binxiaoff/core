@@ -5,6 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -317,12 +318,11 @@ class BorrowerAccountController extends Controller
 
             if (false === $error) {
                 $filePath = '';
-                if (isset($_FILES['attachment']['name'] ) && $_FILES['attachment']['name'] !== '') {
-                    $oUpload = new \upload;
-                    $path = $this->get('kernel')->getRootDir() . '/../';
-                    $oUpload->setUploadDir($path, 'protected/contact/');
-                    $oUpload->doUpload('attachment');
-                    $filePath = $path . 'protected/contact/' . $oUpload->getName();
+                $file = $request->files->get('attachment');
+                if ($file instanceof UploadedFile) {
+                    $uploadDestination = $this->getParameter('path.protected') . 'contact/';
+                    $file = $file->move($uploadDestination, $file->getClientOriginalName() . '.' . $file->getClientOriginalExtension());
+                    $filePath = $file->getPathname();
                 }
 
                 /** @var \settings $oSettings */
