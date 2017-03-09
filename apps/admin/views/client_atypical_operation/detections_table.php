@@ -18,8 +18,11 @@
     </thead>
     <tbody>
     <?php foreach ($this->atypicalOperations as $atypicalOperation) : ?>
+        <?php
+            $currentStatus = $this->clientVigilanceStatusHistory->findOneBy(['client' => $atypicalOperation->getClient()], ['added' => 'DESC']);
+        ?>
         <tr id="row-<?= $atypicalOperation->getId() ?>" <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-            <td style="border-radius: 7px; font-weight: bold; font-size: 14px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[$atypicalOperation->getRule()->getVigilanceStatus()] ?>;">
+            <td style="border-radius: 7px; font-weight: bold; font-size: 14px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[$currentStatus->getVigilanceStatus()] ?>;">
                 <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lendersAccount->findOneBy(['idClientOwner' => $atypicalOperation->getClient()->getIdClient()])->getIdLenderAccount() ?>"><?= $atypicalOperation->getClient()->getIdClient() ?></a>
             </td>
             <td><?= $atypicalOperation->getClient()->getPrenom() . ' ' . $atypicalOperation->getClient()->getNom() ?></td>

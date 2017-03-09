@@ -47,6 +47,7 @@ class client_atypical_operationController extends bootstrap
         $this->showActions                     = true;
         $this->userEntity                      = $em->getRepository('UnilendCoreBusinessBundle:Users');
         $this->lendersAccount                  = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
+        $this->clientVigilanceStatusHistory    = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
     }
 
     public function _process_detection_box()

@@ -1481,8 +1481,9 @@ class preteursController extends bootstrap
             default:
                 trigger_error('Unknown vigilance status :' . $this->vigilanceStatusHistory[0]->getVigilanceStatus(), E_USER_NOTICE);
         }
-        $this->userEntity = $em->getRepository('UnilendCoreBusinessBundle:Users');
-        $this->lendersAccount = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
+        $this->userEntity                   = $em->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->lendersAccount               = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
+        $this->clientVigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
     }
 
     public function _saveBetaTesterSetting()
