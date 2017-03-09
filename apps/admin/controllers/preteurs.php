@@ -1434,20 +1434,17 @@ class preteursController extends bootstrap
         }
     }
 
-    /**
-     * @return array
-     */
     private function setClientVigilanceStatusData()
     {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->get('doctrine.orm.entity_manager');
 
         $client                 = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
-        $vigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['id' => 'DESC']);
+        $this->vigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $client], ['id' => 'DESC']);
 
-        if (null === $vigilanceStatusHistory) {
+        if (empty($this->vigilanceStatusHistory)) {
             $this->vigilanceStatus = [
-                'color'  => 'green',
+                'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_LOW],
                 'status' => 'Vigilance standard'
             ];
             $this->userEntity = $em->getRepository('UnilendCoreBusinessBundle:Users');
@@ -1456,27 +1453,33 @@ class preteursController extends bootstrap
         }
         $this->clientAtypicalOperations = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $client], ['added' => 'DESC']);
 
-        switch ($vigilanceStatusHistory->getVigilanceStatus()) {
+        switch ($this->vigilanceStatusHistory[0]->getVigilanceStatus()) {
             case VigilanceRule::VIGILANCE_STATUS_LOW:
                 $this->vigilanceStatus = [
-                    'color'  => 'yello',
-                    'status' => 'Vigilance standard. Dernière MAJ le :' . $vigilanceStatusHistory->getAdded()->format('d/m/Y H\hi')
+                    'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_LOW],
+                    'status' => 'Vigilance standard. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
                 $this->vigilanceStatus = [
-                    'color'  => 'orange',
-                    'status' => 'Vigilance intermédiaire. Dernière MAJ le :' . $vigilanceStatusHistory->getAdded()->format('d/m/Y H\hi')
+                    'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_MEDIUM],
+                    'status' => 'Vigilance intermédiaire. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_HIGH:
                 $this->vigilanceStatus = [
-                    'color'  => 'red',
-                    'status' => 'Vigilance Renforcée. Dernière MAJ le :' . $vigilanceStatusHistory->getAdded()->format('d/m/Y H\hi')
+                    'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_HIGH],
+                    'status' => 'Vigilance Renforcée. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            case VigilanceRule::VIGILANCE_STATUS_REFUSE:
+                $this->vigilanceStatus = [
+                    'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_REFUSE],
+                    'status' => 'Vigilance Refus. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             default:
-                trigger_error('Unknown vigilance status :' . $vigilanceStatusHistory->getVigilanceStatus(), E_USER_NOTICE);
+                trigger_error('Unknown vigilance status :' . $this->vigilanceStatusHistory[0]->getVigilanceStatus(), E_USER_NOTICE);
         }
         $this->userEntity = $em->getRepository('UnilendCoreBusinessBundle:Users');
         $this->lendersAccount = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');

@@ -36,12 +36,13 @@ class client_atypical_operationController extends bootstrap
         $this->atypicalOperation['waitingACK'] = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
             ->findBy(
                 ['detectionStatus' => ClientAtypicalOperation::STATUS_WAITING_ACK],
-                ['added' => 'DESC', 'client' => 'DESC']
+                ['updated' => 'DESC', 'client' => 'DESC']
             );
         $this->atypicalOperation['treated']    = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
             ->findBy(
                 ['detectionStatus' => ClientAtypicalOperation::STATUS_TREATED],
-                ['added' => 'DESC', 'client' => 'DESC']
+                ['updated' => 'DESC', 'client' => 'DESC'],
+                10
             );
         $this->showActions                     = true;
         $this->userEntity                      = $em->getRepository('UnilendCoreBusinessBundle:Users');
@@ -98,7 +99,7 @@ class client_atypical_operationController extends bootstrap
 
         switch ($this->params[0]) {
             case 'add':
-                $this->addAtypicalOperation($this->params[1]);
+                $this->addAtypicalOperation();
                 break;
             case 'doubt':
                 /** @var \Doctrine\ORM\EntityManager $em */

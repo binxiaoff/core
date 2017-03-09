@@ -15,11 +15,20 @@ class VigilanceRule
     const VIGILANCE_STATUS_LOW    = 0;
     const VIGILANCE_STATUS_MEDIUM = 1;
     const VIGILANCE_STATUS_HIGH   = 2;
+    const VIGILANCE_STATUS_REFUSE = 3;
 
     public static $vigilanceStatusLabel = [
-        VigilanceRule::VIGILANCE_STATUS_LOW    => 'Standard',
-        VigilanceRule::VIGILANCE_STATUS_MEDIUM => 'Intermédiaire',
-        VigilanceRule::VIGILANCE_STATUS_HIGH   => 'Renforcée',
+        self::VIGILANCE_STATUS_LOW    => 'Standard',
+        self::VIGILANCE_STATUS_MEDIUM => 'Intermédiaire',
+        self::VIGILANCE_STATUS_HIGH   => 'Renforcée',
+        self::VIGILANCE_STATUS_REFUSE => 'Refus'
+    ];
+
+    public static $vigilanceStatusColor = [
+        self::VIGILANCE_STATUS_LOW    => 'green',
+        self::VIGILANCE_STATUS_MEDIUM => 'yellow',
+        self::VIGILANCE_STATUS_HIGH   => 'orange',
+        self::VIGILANCE_STATUS_REFUSE => 'red'
     ];
 
     /**

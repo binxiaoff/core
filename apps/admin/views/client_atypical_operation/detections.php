@@ -1,4 +1,23 @@
 <div id="contenu">
+    <fieldset style="color: black; padding: 10px; border: 1px solid #B10366; width: 280px;">
+        <legend style="color: #B20066"><b>Statut de vigilance:</b></legend>
+        <span style="padding: 5px; border-radius: 7px; width: 84px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_LOW]; ?>">
+            <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_LOW] ?>
+        </span>
+        &nbsp;
+        <span style="padding: 5px; border-radius: 7px; width: 84px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_MEDIUM]; ?>">
+            <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_MEDIUM] ?>
+        </span>
+        &nbsp;
+        <span style="padding: 5px; border-radius: 7px; width: 84px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_HIGH]; ?>">
+            <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_HIGH] ?>
+        </span>
+        &nbsp;
+        <span style="padding: 5px; border-radius: 7px; width: 84px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_REFUSE]; ?>">
+            <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_REFUSE] ?>
+        </span>
+    </fieldset>
+    <br>
     <h1>Détéctions en attente de traitement</h1>
     <?php if (empty($this->atypicalOperation['pending'])) : ?>
         <h2>Toutes les détéctions ont été traitées</h2>

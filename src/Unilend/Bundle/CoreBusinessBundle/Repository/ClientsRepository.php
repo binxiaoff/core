@@ -117,10 +117,10 @@ class ClientsRepository extends EntityRepository
 
     /**
      * @param int       $vigilanceStatus
-     * @param \DateTime $addedDate
+     * @param \DateTime $date
      * @return array
      */
-    public function getClientsByFiscalCountryStatus($vigilanceStatus, \DateTime $addedDate)
+    public function getClientsByFiscalCountryStatus($vigilanceStatus, \DateTime $date)
     {
         $qb = $this->createQueryBuilder('c');
         $qb->select('c.idClient, ca.idPaysFiscal, p.fr as countryLabel')
@@ -128,8 +128,9 @@ class ClientsRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:PaysV2', 'p', Join::WITH, 'p.idPays= ca.idPaysFiscal')
             ->where('p.vigilanceStatus = :vigilance_status')
             ->setParameter('vigilance_status', $vigilanceStatus)
-            ->andWhere('c.added >= :added_date')
-            ->setParameter('added_date', $addedDate);
+            ->andWhere('c.added >= :added_date OR ca.updated >= :updated_date')
+            ->setParameter('added_date', $date)
+            ->setParameter('updated_date', $date);
 
         return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
