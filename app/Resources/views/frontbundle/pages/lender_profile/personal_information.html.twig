@@ -9,33 +9,27 @@ classNames: 'user-preter-profile'
 {% if forms.identity.vars.valid == false %}
     {% set identityFormCollapse = 'in' %}
     {% set identityViewCollapse = '' %}
-    {% set identityFormErrors = true %}
 {% else %}
     {% set identityFormCollapse = '' %}
     {% set identityViewCollapse = 'in' %}
-    {% set identityFormErrors = false %}
 {% endif %}
 
 {% form_theme forms.fiscalAddress '/frontbundle/forms/fields.html.twig' %}
 {% if forms.fiscalAddress.vars.valid == false %}
     {% set fiscalAddressFormCollapse = 'in' %}
     {% set fiscalAddressViewCollapse = '' %}
-    {% set fiscalAddressFormErrors = true %}
 {% else %}
     {% set fiscalAddressFormCollapse = '' %}
     {% set fiscalAddressViewCollapse = 'in' %}
-    {% set fiscalAddressFormErrors = false %}
 {% endif %}
 
 {% form_theme forms.phone '/frontbundle/forms/fields.html.twig' %}
 {% if forms.phone.vars.valid == false %}
     {% set phoneFormCollapse = 'in' %}
     {% set phoneViewCollapse = '' %}
-    {% set phoneFormErrors = true %}
 {% else %}
     {% set phoneFormCollapse = '' %}
     {% set phoneViewCollapse = 'in' %}
-    {% set phoneFormErrors = false %}
 {% endif %}
 
 

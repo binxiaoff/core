@@ -955,18 +955,24 @@ class LenderSubscriptionController extends Controller
         $clientType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
 
         $formManager = $this->get('unilend.frontbundle.service.form_manager');
-        $form = $formManager->cleanPostData($request->request->all());
+        $post        = $formManager->cleanPostData($request->request->all());
+        $files       = $request->files;
 
         switch ($step) {
             case 1:
-                $post['client_password']              = md5($form['password']);
-                $post['client_password_confirmation'] = md5($form['client_password_confirmation']);
-                $post['client_secret_response']       = md5($form['client_secret_answer']);
-                $formId                               = 14;
+                $post['form']['client']['password']             = md5($post['form']['client']['password']);
+                $post['form']['client']['passwordConfirmation'] = md5($post['form']['client']['passwordConfirmation']);
+                $post['form']['security']['secreteReponse']     = md5($post['form']['security']['secreteReponse']);
+                $formId                                         = 14;
                 break;
             case 2:
                 $formId = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 17 : 19;
                 break;
+        }
+
+
+        if (false === empty($files)) {
+            $post = array_merge($post, $formManager->getNamesOfFiles($files));
         }
 
         /** @var \clients_history_actions $clientHistoryActions */
@@ -974,7 +980,7 @@ class LenderSubscriptionController extends Controller
         $clientHistoryActions->histo(
             $formId,
             'inscription etape ' . $step . ' ' . $clientType,
-            $client->getIdClient(), serialize(['id_client' => $client->getIdClient(), 'post' => $form, 'files' => $_FILES])
+            $client->getIdClient(), serialize(['id_client' => $client->getIdClient(), 'post' => $post])
         );
     }
 

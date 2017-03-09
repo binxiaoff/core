@@ -24,6 +24,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\BankAccountType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientEmailType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientPasswordType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityProfileType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\OriginOfFundsType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonPhoneType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonProfileType;
@@ -31,7 +32,6 @@ use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PostalAddressType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyAddressType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonFiscalAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\SecurityQuestionType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
@@ -62,12 +62,13 @@ class LenderProfileController extends Controller
             $company   = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
             $dbCompany = clone $company;
 
-            $identityFb      = $this->createFormBuilder()
-                ->add('client', LegalEntityType::class, ['data' => $client])
+            $identityFb = $this->createFormBuilder()
+                ->add('client', LegalEntityProfileType::class, ['data' => $client])
                 ->add('company', CompanyIdentityType::class, ['data' => $company]);
+            $identityFb->get('company')->remove('siren');
             $fiscalAddressForm = $this->createForm(CompanyAddressType::class, $company);
         } else {
-            $identityFb      = $this->createFormBuilder()
+            $identityFb = $this->createFormBuilder()
                 ->add('client', PersonProfileType::class, ['data' => $client]);
             $fiscalAddressForm = $this->createForm(PersonFiscalAddressType::class, $clientAddress);
         }
@@ -316,7 +317,7 @@ class LenderProfileController extends Controller
             }
         }
 
-        if ($form['company_client_status'] > Companies::CLIENT_STATUS_MANAGER) {
+        if ($companyEntity->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
             if (isset($_FILES['delegation-of-authority']) && $_FILES['delegation-of-authority']['name'] != '') {
                 $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
                 if (false === is_numeric($attachmentIdVerso)) {
@@ -375,11 +376,7 @@ class LenderProfileController extends Controller
         }
 
         if ($form->get('noUsPerson')->getData()) {
-            $modifications[]= ['noUsPerson'];
-        }
-
-        if (ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddressEntity->getMemeAdresseFiscal()) {
-            $this->updateFiscalAndPostalAddress($clientAddressEntity);
+            $modifications[] = 'noUsPerson';
         }
 
         if ($clientAddressEntity->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE) {
@@ -556,7 +553,7 @@ class LenderProfileController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            $this->saveClientHistoryAction($client, $request, 'info perso profile');
+            $this->saveClientHistoryAction($clientEntity, $request, 'info perso profile');
             if ($form->isValid()) {
                 $this->handleBankDetailsForm($dbBankAccount, $currentBankAccount, $dbClientEntity, $clientEntity, $form);
             }
@@ -813,7 +810,6 @@ class LenderProfileController extends Controller
             'documents'   => $ifu->select('id_client =' . $client->id_client . ' AND statut = 1', 'annee ASC'),
             'amounts'     => $this->getFiscalBalanceAndOwedCapital(),
             'rib'         => isset($attachment[\attachment_type::RIB]) ? $attachment[\attachment_type::RIB] : [],
-            'fundsOrigin' => $this->getFundsOrigin($client->type)
         ];
 
         if (in_array($client->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
@@ -951,12 +947,13 @@ class LenderProfileController extends Controller
      */
     private function saveClientHistoryAction(Clients $client, Request $request, $formName)
     {
-        $formManager = $this->get('unilend.frontbundle.service.form_manager');
-        $formData    = $formManager->cleanPostData($request->request->all());
         $formId      = '';
+        $formManager = $this->get('unilend.frontbundle.service.form_manager');
+        $post        = $formManager->cleanPostData($request->request->all());
+        $files       = $request->files;
 
-        if (isset($_FILES)) {
-            $formData = array_merge($formData, $_FILES);
+        if (false === empty($files)) {
+            $post = array_merge($post, $formManager->getNamesOfFiles($files));
         }
 
         switch ($formName) {
@@ -967,8 +964,8 @@ class LenderProfileController extends Controller
                 $formId = 7;
                 break;
             case 'change secret question':
-                $formId                 = 6;
-                $formData['reponseSecrete'] = md5($formData['reponseSecrete']);
+                $formId = 6;
+                $post['security_question']['secreteReponse'] = md5($post['security_question']['secreteReponse']);
                 break;
             case 'upload doc profile':
                 $formId = 12;
@@ -979,7 +976,7 @@ class LenderProfileController extends Controller
 
         /** @var \clients_history_actions $clientHistoryActions */
         $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
-        $clientHistoryActions->histo($formId, $formName, $client->getIdClient(), serialize(['id_client' => $client->getIdClient(), 'post' => $formData]));
+        $clientHistoryActions->histo($formId, $formName, $client->getIdClient(), serialize(['id_client' => $client->getIdClient(), 'post' => $post]));
     }
 
     /**

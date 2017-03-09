@@ -25,8 +25,8 @@ class CompanyIdentityType extends AbstractType
 
     public function __construct(EntityManager $entityManager, TranslatorInterface $translator)
     {
-        $this->em = $entityManager;
-        $this->translator    = $translator;
+        $this->em         = $entityManager;
+        $this->translator = $translator;
     }
 
     /**

@@ -131,7 +131,6 @@
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     {{ form_widget(forms.identity.company.statusConseilExterneEntreprise, {
                         'id' : 'form-profile-info-company-client-status',
-                        'full_name' : 'company_external_counsel',
                         'attr' : {
                             'class' : 'input-field',
                             'ncompany_external_counselame' : 'company_external_counsel',
@@ -219,12 +218,12 @@
 
         <div class="row row-multi-col-computer">
 
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.identity.client.telephone)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.identity.client.mobile)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-info-company-client-telephone">
-                    {% trans %} common_phone {% endtrans %}
+                    {% trans %} common_mobile-phone {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                {{ form_widget(forms.identity.client.telephone, {
+                {{ form_widget(forms.identity.client.mobile, {
                     'id' : 'form-profile-info-company-client-telephone',
                     'type' : 'tel',
                     'attr' : {
@@ -232,7 +231,7 @@
                         'data-formvalidation-input data-formvalidation-required' : 'true'
                     }
                 }) }}
-                {{ form_errors(forms.identity.client.telephone) }}
+                {{ form_errors(forms.identity.client.mobile) }}
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6">
@@ -310,7 +309,6 @@
                         {% for key, civilite in forms.identity.company.civiliteDirigeant.children %}
                         <li>
                             {{ form_widget(civilite, {
-                                'full_name' : 'company_director_form_of_address',
                                 'required' : false
                             }) }}
                             {{ form_label(civilite) }}

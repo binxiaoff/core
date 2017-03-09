@@ -7,6 +7,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormFactory;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -159,5 +160,22 @@ class FormManager
         }
 
         return $post;
+    }
+
+    /**
+     * @param array $files
+     *
+     * @return array
+     */
+    public function getNamesOfFiles($files)
+    {
+        $fileNames = [];
+        foreach($files as $name => $file) {
+            if ($file instanceof UploadedFile) {
+                $fileNames[$name] = $file->getClientOriginalName();
+            }
+        }
+
+        return $fileNames;
     }
 }
