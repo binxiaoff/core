@@ -17,6 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
@@ -170,10 +171,10 @@ class ProjectRequestController extends Controller
             );
         }
 
-        /** @var \clients $clientRepository */
-        $clientRepository = $entityManager->getRepository('clients');
+        /** @var EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
 
-        if ($clientRepository->existEmail($email)) {
+        if ($em->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($email)) {
             $email .= '-' . time();
         }
 
@@ -198,8 +199,6 @@ class ProjectRequestController extends Controller
             ->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        /** @var EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
         $em->beginTransaction();
         try {
             $em->persist($this->client);
@@ -538,9 +537,13 @@ class ProjectRequestController extends Controller
                 $advisorClient->get($advisor->id_client);
             }
 
+            /** @var ClientsRepository $clientRepo */
+            $clientRepo = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
             $email = $request->request->get('advisor')['email'];
-
-            if ($advisorClient->existEmail($email) && $this->removeEmailSuffix($advisorClient->email) !== $email) {
+            if (
+                $clientRepo->existEmail($email)
+                && $this->removeEmailSuffix($advisorClient->email) !== $email
+            ) {
                 $email = $email . '-' . time();
             }
 
@@ -1588,8 +1591,9 @@ class ProjectRequestController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        /** @var \clients $clientRepository */
-        $clientRepository = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $em =  $this->get('doctrine.orm.entity_manager');
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $em->getRepository('UnilendCoreBusinessBundle:Clients');
         if ($clientRepository->existEmail($email) && $this->removeEmailSuffix($this->client->getEmail()) !== $email) {
             $email = $email . '-' . time();
         }
@@ -1606,6 +1610,6 @@ class ProjectRequestController extends Controller
         $this->company->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        $this->get('doctrine.orm.entity_manager')->flush();
+        $em->flush();
     }
 }

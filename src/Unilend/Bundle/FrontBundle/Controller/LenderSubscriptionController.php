@@ -25,6 +25,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Villes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
@@ -856,7 +857,14 @@ class LenderSubscriptionController extends Controller
             $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-email'));
         }
 
-        if (false === empty($email) && $clients->existEmail($email) && $clients->get($email, 'email')){
+        /** @var ClientsRepository $clientRepo */
+        $clientRepo = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+
+        if (
+            false === empty($email)
+            && $clientRepo->existEmail($email)
+            && $clients->get($email, 'email')
+        ){
             $response = $this->checkProgressAndRedirect($request, $clients->hash);
             if ($response instanceof RedirectResponse){
                 return $response;

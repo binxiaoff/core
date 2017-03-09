@@ -135,23 +135,6 @@ class clients extends clients_crud
         );
     }
 
-    public function existEmail($email)
-    {
-        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return false;
-        }
-
-        $queryBuilder = $this->bdd->createQueryBuilder();
-        $queryBuilder
-            ->select('COUNT(*)')
-            ->from($this->userTable)
-            ->where('email = :email')
-            ->setParameter('email', $email);
-
-        $statement = $queryBuilder->execute();
-        return $statement->fetchColumn() > 0;
-    }
-
     public function checkAccess()
     {
         if (! isset($_SESSION['auth']) || $_SESSION['auth'] != true) {
