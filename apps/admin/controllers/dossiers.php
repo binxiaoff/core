@@ -313,6 +313,7 @@ class dossiersController extends bootstrap
             }
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
             $partnerManager    = $this->get('unilend.service.partner_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
 
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);

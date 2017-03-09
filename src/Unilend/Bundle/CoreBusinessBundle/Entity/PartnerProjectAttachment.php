@@ -122,7 +122,7 @@ class PartnerProjectAttachment
      *
      * @return PartnerProjectAttachment
      */
-    public function setIdAttachmentType(\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $idAttachmentType = null)
+    public function setAttachmentType(\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $idAttachmentType = null)
     {
         $this->idAttachmentType = $idAttachmentType;
 
@@ -134,7 +134,7 @@ class PartnerProjectAttachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType
      */
-    public function getIdAttachmentType()
+    public function getAttachmentType()
     {
         return $this->idAttachmentType;
     }
@@ -146,7 +146,7 @@ class PartnerProjectAttachment
      *
      * @return PartnerProjectAttachment
      */
-    public function setIdPartner(\Unilend\Bundle\CoreBusinessBundle\Entity\Partner $idPartner = null)
+    public function setPartner(\Unilend\Bundle\CoreBusinessBundle\Entity\Partner $idPartner = null)
     {
         $this->idPartner = $idPartner;
 
@@ -158,7 +158,7 @@ class PartnerProjectAttachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Partner
      */
-    public function getIdPartner()
+    public function getPartner()
     {
         return $this->idPartner;
     }
