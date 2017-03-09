@@ -31,15 +31,12 @@
                                 $translation = 'projet_document-type-' . $id;
                                 if ($id == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL) {
                                     $year -= 1;
-                                    $translation = 'projet_document-type-alternative-' . $id;
                                 }
                                 if ($id == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::LIASSE_FISCAL_N_1) {
                                     $year -= 2;
-                                    $translation = 'projet_document-type-alternative-' . $id;
                                 }
                                 if ($id == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::LIASSE_FISCAL_N_2) {
                                     $year -= 3;
-                                    $translation = 'projet_document-type-alternative-' . $id;
                                 }
                                 if ($id == \attachment_type::PHOTOS_ACTIVITE) {
                                     $translation = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');

@@ -311,16 +311,19 @@ class dossiersController extends bootstrap
                     $this->bCanEditStatus = true;
                 }
             }
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-            $partnerManager    = $this->get('unilend.service.partner_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $project                              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $partner                              = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->projects->id_partner);
             $this->aAttachments                   = $project->getAttachments();
             $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
-            $this->aMandatoryAttachmentTypes      = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
             $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
+            $partnerAttachments                   = $partner->getAttachmentTypes(true);
+            $this->aMandatoryAttachmentTypes      = [];
+            foreach ($partnerAttachments as $partnerAttachment) {
+                $this->aMandatoryAttachmentTypes[] = $partnerAttachment->getAttachmentType();
+            }
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);

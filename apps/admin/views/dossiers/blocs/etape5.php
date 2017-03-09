@@ -43,7 +43,7 @@
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
                 foreach ($this->aAttachmentTypes as $attachmentType) :
                 ?>
-                    <tr<?php if (in_array($attachmentType->getId(), $this->aMandatoryAttachmentTypes)) : ?> class="highlighted"<?php endif; ?>>
+                    <tr<?php if (in_array($attachmentType, $this->aMandatoryAttachmentTypes)) : ?> class="highlighted"<?php endif; ?>>
                     <?php
                     $currentAttachment = null;
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
