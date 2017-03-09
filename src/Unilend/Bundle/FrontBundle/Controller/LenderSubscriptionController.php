@@ -8,8 +8,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,27 +16,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Symfony\Component\Validator\Constraints\Bic;
-use Symfony\Component\Validator\Constraints\Iban;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Villes;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonFiscalAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PostalAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\SecurityQuestionType;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -56,7 +47,6 @@ class LenderSubscriptionController extends Controller
             return $response;
         }
 
-        $translator          = $this->get('translator');
         $clientEntity        = new Clients();
         $clientAddressEntity = new ClientsAdresses();
         $companyEntity       = new Companies();
@@ -69,40 +59,9 @@ class LenderSubscriptionController extends Controller
             $clientEntity->setEmail($landingPageData['prospect_email']);
         }
 
-        $identityForm = $this->createFormBuilder()
-            ->add('client', PersonType::class, ['data' => $clientEntity])
-            ->add('fiscalAddress', PersonFiscalAddressType::class, ['data' => $clientAddressEntity])
-            ->add('postalAddress', PostalAddressType::class, ['data' => $clientAddressEntity])
-            ->add('security', SecurityQuestionType::class, ['data' => $clientEntity])
-            ->add('clientType', ChoiceType::class, [
-                'choices'  => [
-                    $translator->trans('lender-subscription_identity-client-type-person-label') => 'person',
-                    $translator->trans('lender-subscription_identity-client-type-legal-entity-label')   => 'legalEntity'
-                ],
-                'expanded' => true,
-                'multiple' => false,
-                'data' => 'person'
-            ])
-            ->add('tos', CheckboxType::class)
-            ->getForm();
-
-        $companyIdentityForm = $this->createFormBuilder()
-            ->add('client', LegalEntityType::class, ['data' => $clientEntity])
-            ->add('company', CompanyIdentityType::class, ['data' => $companyEntity])
-            ->add('fiscalAddress', CompanyAddressType::class, ['data' => $companyEntity])
-            ->add('postalAddress', PostalAddressType::class, ['data' => $clientAddressEntity])
-            ->add('security', SecurityQuestionType::class, ['data' => $clientEntity])
-            ->add('clientType', ChoiceType::class, [
-                'choices'  => [
-                    $translator->trans('lender-subscription_identity-client-type-person-label') => 'person',
-                    $translator->trans('lender-subscription_identity-client-type-legal-entity-label')   => 'legalEntity'
-                ],
-                'expanded' => true,
-                'multiple' => false,
-                'data' => 'legalEntity'
-            ])
-            ->add('tos', CheckboxType::class)
-            ->getForm();
+        $formManager         = $this->get('unilend.frontbundle.service.form_manager');
+        $identityForm        = $formManager->getLenderSubscriptionPersonIdentityForm($clientEntity, $clientAddressEntity);
+        $companyIdentityForm = $formManager->getLenderSubscriptionLegalEntityIdentityForm($clientEntity, $companyEntity, $clientAddressEntity);
 
         $identityForm->handleRequest($request);
         $companyIdentityForm->handleRequest($request);
@@ -136,8 +95,6 @@ class LenderSubscriptionController extends Controller
             'identityForm' => $identityForm->createView(),
             'companyIdentityForm' => $companyIdentityForm->createView()
         ];
-
-        //return $this->render('pages/lender_profile/company_form.html.twig', $template);
 
         return $this->render('pages/lender_subscription/personal_information.html.twig', $template);
     }
@@ -343,7 +300,7 @@ class LenderSubscriptionController extends Controller
         if ($form->isValid()){
             $this->addClientSources($clientEntity);
 
-            $clientType   = ($clientEntity->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? \clients::TYPE_PERSON : \clients::TYPE_PERSON_FOREIGNER;
+            $clientType   = ($clientEntity->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? \clients::TYPE_LEGAL_ENTITY : \clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $secretAnswer = md5($clientEntity->getSecreteReponse());
             $password     = password_hash($clientEntity->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($clientEntity->getPrenom() . '-' . $clientEntity->getNom());
@@ -488,7 +445,6 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents", requirements={"clientHash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
      *
      * @param string  $clientHash
      * @param Request $request
@@ -501,222 +457,207 @@ class LenderSubscriptionController extends Controller
             return $response;
         }
 
-        /** @var Clients $client */
-        $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
-        /** @var ClientsAdresses $clientAddressEntity */
-        $clientAddressEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client->getIdClient()]);
+        $client        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneByHash($clientHash);
+        $clientAddress = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneByIdClient($client->getIdClient());
+        $bankAccount   = new BankAccount();
+        $formManager   = $this->get('unilend.frontbundle.service.form_manager');
+        $form          = $formManager->getBankInformationForm($bankAccount, $client);
+        $form->handleRequest($request);
 
-        $formData = $request->getSession()->get('subscriptionStep2FormData');
-        $request->getSession()->remove('subscriptionStep2FormData');
+        if ($form->isSubmitted()) {
+            //TODO client_history_actions
+            if ($form->isValid()) {
+                $isValid = $this->handleDocumentsForm($client, $bankAccount, $clientAddress, $form);
+                if ($isValid) {
+                    return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->getHash()]);
+                }
+            }
+        }
 
         $template = [
             'client'         => $client,
-            'isLivingAbroad' => $clientAddressEntity->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE,
-            'fundsOrigin'    => $this->getFundsOrigin($client->getType())
-        ];
-
-        $template['formData'] = [
-            'bic' => isset($formData['bic']) ? $formData['bic'] : '',
-            'iban' => isset($formData['iban']) ? $formData['iban'] : '',
-            'fundsOrigin' => isset($formData['funds_origin']) ? $formData['funds_origin'] : ''
+            'isLivingAbroad' => $clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE,
+            'fundsOrigin'    => $this->getFundsOrigin($client->getType()),
+            'form'           => $form->createView()
         ];
 
         if (in_array($client->getType(), [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            /** @var \companies $company */
-            $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-            $template['company'] = $company->select('id_client_owner = ' . $client->getIdClient())[0];
+            $template['company'] = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneByIdClientOwner($client);
         }
 
         return $this->render('pages/lender_subscription/documents.html.twig', $template);
     }
 
-    /**
-     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
-     * @Method("POST")
-     *
-     * @param string  $clientHash
-     * @param Request $request
-     * @return Response
-     */
-    public function documentsFormAction($clientHash, Request $request)
-    {
-        $response = $this->checkProgressAndRedirect($request, $clientHash);
-        if ($response instanceof RedirectResponse){
-            return $response;
-        }
-        /** @var ClientStatusManager $clientStatusManager */
-        $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($clientHash, 'hash');
+    /**
+     * @param Clients         $client
+     * @param BankAccount     $bankAccount
+     * @param ClientsAdresses $clientAddress
+     * @param FormInterface   $form
+     *
+     * @return bool
+     */
+    private function handleDocumentsForm(Clients $client, BankAccount $bankAccount, ClientsAdresses $clientAddress, FormInterface $form)
+    {
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
-
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
+        $lenderAccount->get($client->getIdClient(), 'id_client_owner');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
-        $post = $request->request->all();
-
-        $validator = $this->get('validator');
-        $bic = $request->request->get('bic');
-        $bicViolations = $validator->validate($bic, new Bic());
-        if (0 !== $bicViolations->count()) {
-            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-bic-error-message'));
-        }
-        $iban = $request->request->get('iban');
-        $ibanViolations = $validator->validate($iban, new Iban());
-        if (0 !== $ibanViolations->count()) {
-            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-iban-error-message'));
-        } elseif (strtoupper(substr($post['iban'], 0, 2)) !== 'FR') {
-            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-iban-not-french-error-message'));
+        if ('FR' !== strtoupper(substr($bankAccount->getIban(), 0, 2))) {
+            $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
         }
 
-        $fundsOrigin = $this->getFundsOrigin($client->type);
-        if (empty($post['funds_origin']) || empty($fundsOrigin[$post['funds_origin']])) {
-            $this->addFlash('documentsErrors', $translator->trans('lender-subscription-documents_wrong-funds-origin'));
+        $fundsOrigin = $this->getFundsOrigin($client->getType());
+        if (empty($client->getFundsOrigin()) || empty($fundsOrigin[$client->getFundsOrigin()])) {
+            $form->get('client')->get('fundsOrigin')->addError(new FormError($translator->trans('lender-subscription-documents_wrong-funds-origin')));
         }
 
-        if (isset($_FILES['rib']) && $_FILES['rib']['name'] != '') {
+        if (isset($_FILES['rib']) && false === empty($_FILES['rib']['name'])) {
             $attachmentIdRib = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::RIB, 'rib');
             if (false === is_numeric($attachmentIdRib)) {
-                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-upload-files-error-message'));
+                $form->get('bankAccount')->addError(new FormError($translator->trans('lender-subscription_documents-upload-files-error-message')));
             }
         } else {
-            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-missing-rib'));
+            $form->addError(new FormError($translator->trans('lender-subscription_documents-missing-rib')));
         }
 
-        if (in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
-            $this->validateAttachmentsPerson($post, $lenderAccount, $clientAddress, $translator);
+        if (in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+            $this->validateAttachmentsPerson($form, $lenderAccount, $clientAddress);
         } else {
-            /** @var \companies $company */
-            $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-            $company->get($client->id_client, 'id_client_owner');
-            $this->validateAttachmentsLegalEntity($lenderAccount, $company, $translator);
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneByIdClientOwner($client);
+            $this->validateAttachmentsLegalEntity($form, $lenderAccount, $company);
         }
 
-        if ($this->get('session')->getFlashBag()->has('documentsErrors')) {
-            $request->getSession()->set('subscriptionStep2FormData', $post);
-            return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
-        } else {
-            /** @var Clients $clientEntity */
-            $clientEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-            $clientEntity->setEtapeInscriptionPreteur(2);
-            $clientEntity->setFundsOrigin($post['funds_origin']);
+        if ($form->isValid()) {
+            $client->setEtapeInscriptionPreteur(2);
             $this->get('doctrine.orm.entity_manager')->flush();
 
             /** @var BankAccountManager $bankAccountManager */
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-            $bic                = trim(strtoupper($post['bic']));
-            $iban               = trim(strtoupper(str_replace(' ', '', $post['iban'])));
-            $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban);
+            $bankAccountManager->saveBankInformation($client, $bankAccount->getBic(), $bankAccount->getIban());
 
+            /** @var ClientStatusManager $clientStatusManager */
+            $clientStatusManager = $this->get('unilend.service.client_status_manager');
             $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
-            $this->saveClientHistoryAction($clientEntity, $post);
+
             $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client);
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
-            return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $clientEntity->getHash()]);
+            return true;
         }
+        return false;
     }
 
-    private function validateAttachmentsPerson($post, \lenders_accounts $lenderAccount, \clients_adresses $clientAddress, TranslatorInterface $translator)
+    /**
+     * @param FormInterface     $form
+     * @param \lenders_accounts $lenderAccount
+     * @param ClientsAdresses   $clientAddress
+     */
+    private function validateAttachmentsPerson(FormInterface $form, \lenders_accounts $lenderAccount, ClientsAdresses $clientAddress)
     {
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
 
-        if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
+        if (isset($_FILES['id_recto']) && false === empty($_FILES['id_recto']['name'])) {
             $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE, 'id_recto');
             if (false === is_numeric($attachmentIdRecto)) {
-                $this->addFlash('documentsErrors', $uploadErrorMessage);
+                $form->addError(new FormError($uploadErrorMessage));
             }
         } else {
-            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-id'));
+            $form->addError(new FormError($translator->trans('lender-subscription_documents-person-missing-id')));
         }
 
-        if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
+        if (isset($_FILES['id_verso']) && false === empty($_FILES['id_verso']['name'])) {
             $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
             if (false === is_numeric($attachmentIdVerso)) {
-                $this->addFlash('documentsErrors', $uploadErrorMessage);
+                $form->addError(new FormError($uploadErrorMessage));
             }
         }
 
-        if ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
-            if (isset($_FILES['tax-certificate']) && $_FILES['tax-certificate']['name'] != '') {
+        if ($clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE) {
+            if (isset($_FILES['tax-certificate']) && false === empty($_FILES['tax-certificate']['name'])) {
                 if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_FISCAL, 'tax-certificate'))) {
-                    $this->addFlash('documentsErrors', $uploadErrorMessage);
+                    $form->addError(new FormError($uploadErrorMessage));
                 }
             } else {
                 $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-tax-certificate'));
             }
         }
 
-        if (isset($_FILES['housing-certificate']) && $_FILES['housing-certificate']['name'] != '') {
+        if (isset($_FILES['housing-certificate']) && false === empty($_FILES['housing-certificate']['name'])) {
             if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_DOMICILE, 'housing-certificate'))) {
-                $this->addFlash('documentsErrors', $uploadErrorMessage);
+                $form->addError(new FormError($uploadErrorMessage));
             }
         } else {
-            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-housing-certificate'));
+            $form->addError(new FormError($translator->trans('lender-subscription_documents-person-missing-housing-certificate')));
         }
 
-        if (isset($post['housed_by_third_person']) && true == $post['housed_by_third_person']){
-            if (isset($_FILES['housed-by-third-person-declaration']) && $_FILES['housed-by-third-person-declaration']['name'] != ''){
+        if (false === empty($form->get('housedByThirdPerson')->getData())){
+            if (isset($_FILES['housed-by-third-person-declaration']) && false === empty($_FILES['housed-by-third-person-declaration']['name'])){
                 if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::ATTESTATION_HEBERGEMENT_TIERS, 'housed-by-third-person-declaration'))) {
-                    $this->addFlash('documentsErrors', $uploadErrorMessage);
+                    $form->addError(new FormError($uploadErrorMessage));
                 }
             } else {
-                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-housed-by-third-person-declaration'));
+                $form->addError(new FormError($translator->trans('lender-subscription_documents-person-missing-housed-by-third-person-declaration')));
             }
 
-            if (isset($_FILES['id-third-person-housing']) && $_FILES['housed-by-third-person-declaration']['name'] != ''){
+            if (isset($_FILES['id-third-person-housing']) && false === empty($_FILES['housed-by-third-person-declaration']['name'])){
                 if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT, 'id-third-person-housing'))) {
-                    $this->addFlash('documentsErrors', $uploadErrorMessage);
+                    $form->addError(new FormError($uploadErrorMessage));
                 }
             } else {
-                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-id-third-person-housing'));
+                $form->addError(new FormError($translator->trans('lender-subscription_documents-person-missing-id-third-person-housing')));
             }
         }
     }
 
-    private function validateAttachmentsLegalEntity(\lenders_accounts $lenderAccount, \companies $company, TranslatorInterface $translator)
+    /**
+     * @param FormInterface     $form
+     * @param \lenders_accounts $lenderAccount
+     * @param Companies         $company
+     */
+    private function validateAttachmentsLegalEntity(FormInterface $form, \lenders_accounts $lenderAccount, Companies $company)
     {
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
 
-        if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
+        if (isset($_FILES['id_recto']) && false === empty($_FILES['id_recto']['name'])) {
             $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'id_recto');
             if (false === is_numeric($attachmentIdRecto)) {
-                $this->addFlash('documentsErrors', $uploadErrorMessage);
+                $form->addError(new FormError($uploadErrorMessage));
             }
         } else {
-            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-legal-entity-missing-director-id'));
+            $form->addError(new FormError($translator->trans('lender-subscription_documents-legal-entity-missing-director-id')));
         }
 
-        if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
+        if (isset($_FILES['id_verso']) && false === empty($_FILES['id_verso']['name'])) {
             $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
             if (false === is_numeric($attachmentIdVerso)) {
-                $this->addFlash('documentsErrors', $uploadErrorMessage);
+                $form->addError(new FormError($uploadErrorMessage));
             }
         }
 
-        if (isset($_FILES['company-registration']) && $_FILES['company-registration']['name'] != '') {
+        if (isset($_FILES['company-registration']) && false === empty($_FILES['company-registration']['name'])) {
             $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::KBIS, 'company-registration');
             if (false === is_numeric($attachmentIdVerso)) {
-                $this->addFlash('documentsErrors', $uploadErrorMessage);
+                $form->addError(new FormError($uploadErrorMessage));
             }
         } else {
-            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-legal-entity-missing-company-registration'));
+            $form->addError(new FormError($translator->trans('lender-subscription_documents-legal-entity-missing-company-registration')));
         }
 
-        if ($company->status_client > \companies::CLIENT_STATUS_MANAGER) {
-            if (isset($_FILES['delegation-of-authority']) && $_FILES['delegation-of-authority']['name'] != '') {
+        if ($company->getStatusClient() > \companies::CLIENT_STATUS_MANAGER) {
+            if (isset($_FILES['delegation-of-authority']) && false === empty($_FILES['delegation-of-authority']['name'])) {
                 $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
                 if (false === is_numeric($attachmentIdVerso)) {
-                    $this->addFlash('documentsErrors', $uploadErrorMessage);
+                    $form->addError(new FormError($uploadErrorMessage));
                 }
             } else {
-                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-legal-entity-missing-delegation-of-authority'));
+                $form->addError(new FormError($translator->trans('lender-subscription_documents-legal-entity-missing-delegation-of-authority')));
             }
         }
     }
@@ -1120,7 +1061,7 @@ class LenderSubscriptionController extends Controller
         return new Response('not an ajax request');
     }
 
-    private function sendFinalizedSubscriptionConfirmationEmail(\clients $client)
+    private function sendFinalizedSubscriptionConfirmationEmail(Clients $client)
     {
         /** @var \settings $settings */
         $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
@@ -1129,19 +1070,22 @@ class LenderSubscriptionController extends Controller
         $settings->get('Twitter', 'type');
         $lien_tw = $settings->value;
 
-        $varMail = array(
-            'surl'        => $this->get('assets.packages')->getUrl(''),
-            'url'         => $this->get('assets.packages')->getUrl(''),
-            'prenom'         => $client->prenom,
-            'email_p'        => $client->email,
-            'motif_virement' => $client->getLenderPattern($client->id_client),
+        /** @var Wallet $wallet */
+        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+
+        $varMail = [
+            'surl'           => $this->get('assets.packages')->getUrl(''),
+            'url'            => $this->get('assets.packages')->getUrl(''),
+            'prenom'         => $client->getPrenom(),
+            'email_p'        => $client->getEmail(),
+            'motif_virement' => $wallet->getWireTransferPattern(),
             'lien_fb'        => $lien_fb,
             'lien_tw'        => $lien_tw
-        );
+        ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $varMail);
-        $message->setTo($client->email);
+        $message->setTo($client->getEmail());
         $mailer = $this->get('mailer');
         $mailer->send($message);
     }

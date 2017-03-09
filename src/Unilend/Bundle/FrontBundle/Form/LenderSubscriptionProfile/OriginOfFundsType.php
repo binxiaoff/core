@@ -42,7 +42,8 @@ class OriginOfFundsType extends AbstractType
             ->add('fundsOrigin', ChoiceType::class, [
                 'choices' => array_flip($fundsOrigin),
                 'expanded' => false,
-                'multiple' => false
+                'multiple' => false,
+                'placeholder' => ''
             ]);
     }
 
@@ -73,7 +74,7 @@ class OriginOfFundsType extends AbstractType
                 break;
             case Clients::TYPE_LEGAL_ENTITY:
             case Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
-                $setting = $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findeOneByType('Liste deroulante origine des fonds societe');
+                $setting = $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Liste deroulante origine des fonds societe');
                 break;
             default:
                 throw new \Exception('Client type not supported for origin of funds list');
