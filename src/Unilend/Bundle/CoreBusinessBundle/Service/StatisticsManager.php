@@ -322,11 +322,15 @@ class StatisticsManager
         /** @var \echeanciers $paymentSchedule */
         $paymentSchedule = $this->entityManager->getRepository('echeanciers');
 
-        $problematicProjects = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP, 60);
+        $problematicProjectsIfp       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP, 60);
+        $allProjectsIfp               = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP);
+        $incidenceRate['amountIFP']   = bcmul(bcdiv(array_sum(array_column($problematicProjectsIfp, 'amount')), array_sum(array_column($allProjectsIfp, 'amount')), 4), 100, 2);
+        $incidenceRate['projectsIFP'] = bcmul(bcdiv(count($problematicProjectsIfp), count($allProjectsIfp), 4), 100, 2);
 
-        $allProjects = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP);
-        $incidenceRate['amountIFP']   = bcmul(bcdiv(array_sum(array_column($problematicProjects, 'amount')), array_sum(array_column($allProjects, 'amount')), 4), 100, 2);
-        $incidenceRate['projectsIFP'] = bcmul(bcdiv(count($problematicProjects), count($allProjects), 4), 100, 2);
+        $problematicProjectsCip       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_MINIBON, 60);
+        $allProjectsCip               = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_MINIBON);
+        $incidenceRate['amountCIP']   = bcmul(bcdiv(array_sum(array_column($problematicProjectsCip, 'amount')), array_sum(array_column($allProjectsCip, 'amount')), 4), 100, 2);
+        $incidenceRate['projectsCIP'] = bcmul(bcdiv(count($problematicProjectsCip), count($allProjectsCip), 4), 100, 2);
 
         return $incidenceRate;
     }

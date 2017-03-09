@@ -1752,6 +1752,9 @@ class dossiersController extends bootstrap
                             $lenderRepayment->amount     = $e['montant'];
                             $lenderRepayment->create();
 
+                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
+                            $operationManager->repayment($repaymentSchedule);
+
                             $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
                             $this->echeanciers->capital_rembourse   = $this->echeanciers->capital;
                             $this->echeanciers->interets_rembourses = $this->echeanciers->interets;
@@ -1759,9 +1762,6 @@ class dossiersController extends bootstrap
                             $this->echeanciers->status_email_remb   = 1;
                             $this->echeanciers->date_echeance_reel  = $repaymentDate;
                             $this->echeanciers->update();
-
-                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
-                            $operationManager->repayment($repaymentSchedule);
 
                             $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
                             $this->transactions->montant          = $e['capital'];

@@ -238,10 +238,8 @@ class BidManager
         $iBidNb ++;
         $bid->setOrdre($iBidNb);
         $this->em->persist($bid);
-        $this->em->flush($bid);
-
         $this->walletManager->engageBalance($wallet, $amount, $bid);
-
+        $this->em->flush($bid);
         // Liste des offres non utilisées
         $aAllOffers = $oWelcomeOfferDetails->select('id_client = ' . $iClientId . ' AND status = 0');
         if ($aAllOffers != false) {

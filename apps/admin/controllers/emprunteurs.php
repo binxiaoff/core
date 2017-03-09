@@ -207,7 +207,9 @@ class emprunteursController extends bootstrap
                             $chemin        = $this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name;
                             $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
 
-                            rename($chemin, $nouveauChemin);
+                            if (file_exists($chemin)) {
+                                rename($chemin, $nouveauChemin);
+                            }
 
                             $this->clients_mandats->name = $nouveauNom;
                         }

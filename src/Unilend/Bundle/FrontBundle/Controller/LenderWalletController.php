@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -22,6 +23,7 @@ use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 
 class LenderWalletController extends Controller
@@ -33,10 +35,9 @@ class LenderWalletController extends Controller
      * @Route("/alimentation", name="lender_wallet_deposit")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
      * @return Response
      */
-    public function walletDepositAction(Request $request)
+    public function walletDepositAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -49,10 +50,6 @@ class LenderWalletController extends Controller
         $lender = $entityManager->getRepository('lenders_accounts');
         $lenderData = $lender->select('id_client_owner = ' . $clientData['id_client'])[0];
 
-        $depositResult = $request->query->get('depositResult', false);
-        $depositAmount = filter_var($request->query->get('depositAmount', 0), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-        $depositCode   = filter_var($request->query->get('depositCode', 0), FILTER_SANITIZE_NUMBER_INT);
-
         $template = [
             'balance'          => $this->getUser()->getBalance(),
             'maxDepositAmount' => self::MAX_DEPOSIT_AMOUNT,
@@ -60,13 +57,36 @@ class LenderWalletController extends Controller
             'client'           => $clientData,
             'lender'           => $lenderData,
             'lenderBankMotif'  => $client->getLenderPattern($clientData['id_client']),
-            'depositResult'    => $depositResult,
-            'depositAmount'    => $depositAmount,
-            'depositCode'      => $depositCode,
             'showNavigation'   => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ];
 
         return $this->render('pages/lender_wallet/deposit.html.twig', $template);
+    }
+
+    /**
+     * @Route("/alimentation/resultat/{token}", name="lender_wallet_deposit_result")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @return Response
+     */
+    public function walletDepositResultAction($token)
+    {
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $backPayline   = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['token' => $token]);
+        /** @var UserLender $user */
+        $user = $this->getUser();
+        if ($user) {
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
+            if ($wallet && $backPayline && $backPayline->getWallet() === $wallet) {
+                return $this->render('pages/lender_wallet/deposit_result.html.twig', [
+                    'depositAmount'  => round(bcdiv($backPayline->getAmount(), 100, 4), 2),
+                    'depositCode'    => $backPayline->getCode(),
+                    'showNavigation' => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
+                ]);
+            }
+        }
+
+        return $this->redirectToRoute('lender_wallet_deposit');
     }
 
     /**
@@ -107,15 +127,15 @@ class LenderWalletController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
+            $token = $this->get('security.csrf.token_manager');
+            $token->refreshToken(LenderWithdrawalType::CSRF_TOKEN_ID);
+
             if ($form->isValid()) {
                 $post = $form->getData();
-                $this->handleWithdrawalPost($post, $request);
+                $this->handleWithdrawalPost($post);
             } else {
                 $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
             }
-
-            $token = $this->get('security.csrf.token_manager');
-            $token->refreshToken(LenderWithdrawalType::CSRF_TOKEN_ID);
 
             //Redirection is needed to refresh the token in the form which is already generated above
             return $this->redirectToRoute('lender_wallet_withdrawal');
@@ -125,10 +145,9 @@ class LenderWalletController extends Controller
     }
 
     /**
-     * @param array   $post
-     * @param Request $request
+     * @param array $post
      */
-    private function handleWithdrawalPost(array $post, Request $request)
+    private function handleWithdrawalPost(array $post)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -136,8 +155,6 @@ class LenderWalletController extends Controller
         $transaction = $entityManager->getRepository('transactions');
         /** @var \lenders_accounts $lender */
         $lender = $entityManager->getRepository('lenders_accounts');
-        /** @var \offres_bienvenues_details $welcomeOfferDetails */
-        $welcomeOfferDetails = $entityManager->getRepository('offres_bienvenues_details');
         /** @var \notifications $notification */
         $notification = $entityManager->getRepository('notifications');
         /** @var \clients_gestion_notifications $clientNotification */
@@ -283,8 +300,8 @@ class LenderWalletController extends Controller
             $walletType = $em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::LENDER]);
             $wallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->id_client, 'idType' => $walletType]);
 
-            $successUrl = $this->generateUrl('wallet_payment', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
-            $cancelUrl = $this->generateUrl('wallet_payment', ['hash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
+            $successUrl = $this->generateUrl('wallet_payment', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $cancelUrl = $this->generateUrl('wallet_payment', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
             $redirectUrl = $this->get('unilend.service.payline_manager')->pay($amount, $wallet, $successUrl, $cancelUrl);
 
@@ -296,61 +313,27 @@ class LenderWalletController extends Controller
     }
 
     /**
-     * @Route("/alimentation/payment/{hash}", name="wallet_payment", requirements={"clientHash": "[0-9a-f-]{32,36}"})
+     * @Route("/alimentation/payment", name="wallet_payment")
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
-     * @param string  $hash
      * @return Response
      */
-    public function paymentAction($hash, Request $request)
+    public function paymentAction(Request $request)
     {
-        require_once $this->getParameter('path.payline') . 'include.php';
-
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
         /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-
-        $paylineParameter = [
-            'token' => $request->request->get('token', $request->query->get('token'))
-        ];
-
-        if ($client->get($hash, 'hash')) {
-            $token = $request->query->get('token');
-            $version = $request->query->get('version', Backpayline::WS_DEFAULT_VERSION);
-            if (true === empty($token)) {
-                $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-                return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
-            }
-
-            $paylineManager = $this->get('unilend.service.payline_manager');
-            $paidAmountInCent = $paylineManager->handlePaylineReturn($token, $version);
-
-            if (false !== $paidAmountInCent) {
-                return $this->redirectToRoute('lender_wallet_deposit', [
-                    'depositResult' => true,
-                    'depositCode' => Response::HTTP_OK,
-                    'depositAmount' => bcdiv($paidAmountInCent, 100, 2)
-                ]);
-            }
+        $logger  = $this->get('logger');
+        $token   = $request->query->get('token');
+        $version = $request->query->get('version', Backpayline::WS_DEFAULT_VERSION);
+        if (true === empty($token)) {
+            $clientId = $this->getUser()->getClientId();
+            $logger->error('Payline token not found, id_client=' . $clientId, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientId]);
+            return $this->redirectToRoute('lender_wallet_deposit');
         }
-        return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
-    }
+        $paylineManager = $this->get('unilend.service.payline_manager');
+        $paylineManager->handlePaylineReturn($token, $version);
 
-    /**
-     * Returns a RedirectResponse to the given route with the given parameters.
-     *
-     * @param string $route The name of the route
-     * @param array $parameters An array of parameters
-     * @param int $status The status code to use for the Response
-     * @return Response
-     */
-    protected function redirectToRoute($route, array $parameters = array(), $status = 302)
-    {
-        return $this->redirect($this->generateUrl($route, $parameters), $status);
+        return $this->redirectToRoute('lender_wallet_deposit_result', ['token' => $token]);
     }
 
     /**

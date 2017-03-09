@@ -14,11 +14,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 class FeedsFiscalStateCommand extends ContainerAwareCommand
 {
     /**
-     * @var \DateTime
-     */
-    private $dischargeMonth;
-
-    /**
      * @see Command
      */
     protected function configure()
@@ -46,9 +41,9 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         /** @var \underlying_contract $contract */
         $contract = $entityManager->getRepository('underlying_contract');
 
-        $this->dischargeMonth = new \DateTime('last month');
-
-        $aResult = $this->getData('fr');
+        $firstDayOfLastMonth = new \DateTime('first day of last month');
+        $lastDayOfLastMonth = new \DateTime('last day of last month');
+        $aResult = $this->getData('fr', $firstDayOfLastMonth, $lastDayOfLastMonth);
 
         if (false === empty($aResult)) {
             $exemptedInterests          = 0;
@@ -120,9 +115,9 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                     </tr>
                     <tr>
                         <th style="background-color:#C9DAF2;">P&eacute;riode :</th>
-                        <th style="background-color:#C9DAF2;">' . (new \DateTime('first day of last month'))->format('d/m/Y') . '</th>
+                        <th style="background-color:#C9DAF2;">' . $firstDayOfLastMonth->format('d/m/Y') . '</th>
                         <th style="background-color:#C9DAF2;">au</th>
-                        <th style="background-color:#C9DAF2;">' . (new \DateTime('last day of last month'))->format('d/m/Y') . '</th>
+                        <th style="background-color:#C9DAF2;">' . $lastDayOfLastMonth->format('d/m/Y') . '</th>
                     </tr>
                     <tr>
                         <th style="background-color:#ECAEAE;" colspan="4">Pr&eacute;l&egrave;vements obligatoires</th>
@@ -232,15 +227,18 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $message->attach(\Swift_Attachment::fromPath($sFilePath));
             $mailer = $this->getContainer()->get('mailer');
             $mailer->send($message);
-            $this->insertRepayment();
+            $this->insertRepayment($lastDayOfLastMonth);
         }
     }
 
     /**
-     * @param string $country
+     * @param           $country
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
      * @return array
      */
-    private function getData($country)
+    private function getData($country, \DateTime $start, \DateTime $end)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
@@ -250,7 +248,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $tax_type = $entityManager->getRepository('tax_type');
 
         try {
-            return $echeanciers->getFiscalState($this->dischargeMonth->modify('first day of this month'), $this->dischargeMonth->modify('last day of this month'), $tax_type->getTaxDetailsByCountry($country, [\tax_type::TYPE_VAT]));
+            return $echeanciers->getFiscalState($start, $end, $tax_type->getTaxDetailsByCountry($country, [\tax_type::TYPE_VAT]));
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getContainer()->get('monolog.logger.console');
@@ -261,8 +259,10 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
 
     /**
      * Create fiscal repayment transaction
+     *
+     * @param \DateTime $lastDayOfLastMonth
      */
-    private function insertRepayment()
+    private function insertRepayment(\DateTime $lastDayOfLastMonth)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
@@ -270,11 +270,9 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $bank_unilend = $entityManager->getRepository('bank_unilend');
         /** @var \transactions $transactions */
         $transactions = $entityManager->getRepository('transactions');
-        /** @var \DateTime $lastMonth */
-        $lastMonth = new \DateTime('last month');
 
-        $etatRemb         = $bank_unilend->sumMontantEtat('status = 1 AND type = 2 AND LEFT(added, 7) = "' . $lastMonth->format('Y-m') . '"');
-        $regulCom         = $transactions->getDailyState([\transactions_types::TYPE_REGULATION_COMMISSION], $lastMonth);
+        $etatRemb         = $bank_unilend->sumMontantEtat('status = 1 AND type = 2 AND LEFT(added, 7) = "' . $lastDayOfLastMonth->format('Y-m') . '"');
+        $regulCom         = $transactions->getDailyState([\transactions_types::TYPE_REGULATION_COMMISSION], $lastDayOfLastMonth);
         $sommeRegulDuMois = 0;
 
         if (true === isset($regulCom[\transactions_types::TYPE_REGULATION_COMMISSION])) {
@@ -303,13 +301,18 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $bank_unilend->create();
         }
 
-        $totalTaxAmount = bcmul($this->doTaxWalletsWithdrawals(), 100);
+        $totalTaxAmount = bcmul($this->doTaxWalletsWithdrawals($lastDayOfLastMonth), 100);
         if (0 !== (bccomp($totalTaxAmount, $etatRemb, 2))) {
             $this->getContainer()->get('logger')->error('Tax balance does not match in fiscal state. stateWallets = ' . $totalTaxAmount . ' fiscal state value : ' . $etatRemb);
         }
     }
 
-    private function doTaxWalletsWithdrawals()
+    /**
+     * @param \DateTime $lastDayOfLastMonth
+     *
+     * @return int|string
+     */
+    private function doTaxWalletsWithdrawals(\DateTime $lastDayOfLastMonth)
     {
         $operationsManager = $this->getContainer()->get('unilend.service.operation_manager');
         $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
@@ -320,7 +323,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $taxWallets = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getTaxWallets();
         foreach ($taxWallets as $wallet) {
             /** @var WalletBalanceHistory $lastMonthWalletHistory */
-            $lastMonthWalletHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getBalanceOfTheDay($wallet, $this->dischargeMonth->modify('last day of this month'));
+            $lastMonthWalletHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getBalanceOfTheDay($wallet, $lastDayOfLastMonth);
             if (null === $lastMonthWalletHistory) {
                 $logger->error('Could not get the wallet balance for ' . $wallet->getIdType()->getLabel(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 continue;

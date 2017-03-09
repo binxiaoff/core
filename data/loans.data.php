@@ -106,7 +106,7 @@ class loans extends loans_crud
         $result = $statement->fetchColumn();
         $statement->closeCursor();
 
-        return (int) $result[0];
+        return (int) $result;
     }
 
     public function getProjectLoansByLender($id_project)

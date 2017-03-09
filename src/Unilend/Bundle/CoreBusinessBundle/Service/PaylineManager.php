@@ -124,7 +124,7 @@ class PaylineManager
             ],
             'order'           => [
                 'ref'      => $backPayline->getIdBackpayline(),
-                'amount'   => $amount,
+                'amount'   => $amountInCent,
                 'currency' => ORDER_CURRENCY,
             ],
             'contracts'       => explode(";", CONTRACT_NUMBER_LIST),

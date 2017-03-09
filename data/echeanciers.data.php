@@ -1176,7 +1176,7 @@ class echeanciers extends echeanciers_crud
 
                 UNION ALL
 
-                SELECT
+                (SELECT
                     LEFT(e.date_echeance, 7)        AS month,
                     QUARTER(e.date_echeance)        AS quarter,
                     YEAR(e.date_echeance)           AS year,
@@ -1224,7 +1224,7 @@ class echeanciers extends echeanciers_crud
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                         LIMIT 1
                     )) > 180)), TRUE, FALSE) = FALSE
-                GROUP BY year, quarter, month
+                GROUP BY year, quarter, month)
             ) AS t
             GROUP BY t.year, t.quarter, t.month';
 
@@ -1238,8 +1238,13 @@ class echeanciers extends echeanciers_crud
             $taxes = (float) ($row['repaidTaxes'] + $row['upcomingTaxes']);
             unset($row['repaidTaxes'], $row['upcomingTaxes']);
             $row['capital']      = (float) $row['capital'];
-            $row['rawInterests'] = null === $row['rawInterests'] ? (float) ($row['netInterests'] + $taxes) : (float) $row['rawInterests'];
-            $row['netInterests'] = null === $row['netInterests'] ? (float) ($row['rawInterests'] - $taxes) : (float) $row['netInterests'];
+            if (null !== $row['rawInterests'] && null !== $row['netInterests']) {
+                $row['rawInterests'] = (float) ($row['rawInterests'] + $row['netInterests'] + $taxes);
+                $row['netInterests'] = (float) ($row['rawInterests'] + $row['netInterests'] - $taxes);
+            } else {
+                $row['rawInterests'] = null === $row['rawInterests'] ? (float) ($row['netInterests'] + $taxes) : (float) $row['rawInterests'];
+                $row['netInterests'] = null === $row['netInterests'] ? (float) ($row['rawInterests'] - $taxes) : (float) $row['netInterests'];
+            }
             $row['taxes']        = $taxes;
             $data[$row['month']] = $row;
         }
