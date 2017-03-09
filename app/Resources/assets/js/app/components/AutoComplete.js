@@ -55,9 +55,9 @@ var AutoComplete = function (elem, options) {
     minTermLength: 3, // The minimum character length of a term to find
     showEmpty: false, // Show autocomplete with messages if no results found
     showSingle: true, // Show the autocomplete if only one result found
-    attachTargetAfter: true, // Whether to apply the target to be directly after the input, or at the bottom in the body
+    attachTargetAfter: false, // Whether to apply the target to be directly after the input, or at the bottom in the body
     constrainTargetWidth: 'input', // Constrain the target's width. Accepted values: {Boolean} false, {String} 'input', or {Int} specific width in pixels
-    useTether: false, // Use tether to attach the target element
+    useTether: true, // Use tether to attach the target element
     optimised: true, // If true, it'll retrieve AJAX for the first call, and then search within the results for further drilling down (reduces server IO and hopefully speeds up UI for user)
 
     // Special events
@@ -131,17 +131,30 @@ var AutoComplete = function (elem, options) {
    * Events
    */
   // Type into the input elem
+
+  // For Android Chrome keycode fix
+  var getKeyCode = function (str) {
+    return str.charCodeAt(str.length - 1);
+  }
+
   self.$input.on('keydown', function ( event ) {
     clearTimeout(self.timer)
 
     // Only if it is enabled
     if (self.settings.enable) {
+
+      // For Android Chrome keycode fix
+      var keyCode = event.keyCode || event.which;
+      if (keyCode == 0 || keyCode == 229) {
+        keyCode = getKeyCode(this.value);
+      }
+
       // Escape key - hide
-      if (event.which === 27) {
+      if (keyCode === 27) {
         self.hide()
 
       // Arrow key - down
-      } else if (event.which === 40) {
+      } else if (keyCode === 40) {
         if (self.$target.is(':visible')) {
           event.preventDefault()
           self.$target.find('li').first().find('a').focus()
@@ -152,17 +165,17 @@ var AutoComplete = function (elem, options) {
         }
 
       // Press enter when there is one result
-      } else if (event.which === 13 && self.$target.find('li:visible').length === 1) {
+      } else if (keyCode === 13 && self.$target.find('li:visible').length === 1) {
         event.preventDefault()
         self.$target.find('li:visible').first().find('a').click()
 
       // Tab
-      } else if (event.which === 9 && self.$target.find('li:visible').length > 0) {
+      } else if (keyCode === 9 && self.$target.find('li:visible').length > 0) {
         event.preventDefault()
         self.$target.find('li:visible').first().find('a').focus()
 
       // Search for the term if user presses any letter/number/punctuation/delete key
-      } else if (event.which === 8 || event.which === 46 || (event.which >= 48 && event.which <= 90) || (event.which >= 186 && event.which <= 222)) {
+      } else if (keyCode === 8 || keyCode === 46 || (keyCode >= 48 && keyCode <= 90) || (keyCode >= 186 && keyCode <= 222)) {
         self.timer = setTimeout(self.findTerm, self.settings.delay)
       }
     }
