@@ -8,6 +8,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class GenderType extends AbstractType
 {
@@ -23,8 +24,8 @@ class GenderType extends AbstractType
     {
         $resolver->setDefaults([
             'choices' => [
-                $this->translator->trans('common_title-female') => \clients::TITLE_MISS,
-                $this->translator->trans('common_title-male')   => \clients::TITLE_MISTER
+                $this->translator->trans('common_title-female') => Clients::TITLE_MISS,
+                $this->translator->trans('common_title-male')   => Clients::TITLE_MISTER
             ],
             'expanded' => true,
             'multiple' => false

@@ -141,7 +141,7 @@ class preteursController extends bootstrap
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             $this->companies = $this->loadData('companies');
-            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
             }
 
@@ -307,7 +307,7 @@ class preteursController extends bootstrap
 
             $this->companies = $this->loadData('companies');
 
-            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
 
                 $this->meme_adresse_fiscal = $this->companies->status_adresse_correspondance;
@@ -415,7 +415,7 @@ class preteursController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager $taxManager */
                 $taxManager = $this->get('unilend.service.tax_manager');
 
-                if (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+                if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
 
                     if (false === empty($_POST['meme-adresse'])) {
                         $this->clients_adresses->meme_adresse_fiscal = 1;
@@ -546,7 +546,7 @@ class preteursController extends bootstrap
                         $iOriginForUserHistory = 3;
 
                         if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
-                            $this->changeClientStatus($this->clients, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
+                            $this->changeClientStatus($this->clients, Clients::STATUS_OFFLINE, $iOriginForUserHistory);
                             $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
                             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                             die;
@@ -577,7 +577,7 @@ class preteursController extends bootstrap
                     $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
                     header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                     die;
-                } elseif (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                } elseif (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                     $this->companies->name         = $_POST['raison-sociale'];
                     $this->companies->forme        = $_POST['form-juridique'];
                     $this->companies->capital      = str_replace(' ', '', $_POST['capital-sociale']);
@@ -1202,7 +1202,7 @@ class preteursController extends bootstrap
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
             }
 
@@ -1370,7 +1370,7 @@ class preteursController extends bootstrap
         $oSettings->get('Twitter', 'type');
         $lien_tw = $oSettings->value;
 
-        $lapage = (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) ? 'particulier_doc' : 'societe_doc';
+        $lapage = (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) ? 'particulier_doc' : 'societe_doc';
 
         $timeCreate = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month      = $this->dates->tableauMois['fr'][ date('n', $timeCreate) ];
@@ -1559,7 +1559,7 @@ class preteursController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
             $this->changeClientStatus($oClient, $this->params[2], 1);
-            if ($this->params[2] == \clients::STATUS_OFFLINE) {
+            if ($this->params[2] == Clients::STATUS_OFFLINE) {
                 $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND);
             } else {
                 $aLastTwoStatus = $oClientsStatusHistory->select('id_client =  ' . $oClient->id_client, 'id_client_status_history DESC', null, 2);
@@ -1673,7 +1673,7 @@ class preteursController extends bootstrap
      */
     private function isEmailUnique($email, \clients $clientEntity)
     {
-        $clientsWithSameEmailAddress = $clientEntity->select('email = "' . $email . '" AND id_client != ' . $clientEntity->id_client . ' AND status = ' . \clients::STATUS_ONLINE);
+        $clientsWithSameEmailAddress = $clientEntity->select('email = "' . $email . '" AND id_client != ' . $clientEntity->id_client . ' AND status = ' . Clients::STATUS_ONLINE);
         if (count($clientsWithSameEmailAddress) > 0) {
             $ClientIdWithSameEmail = '';
             foreach ($clientsWithSameEmailAddress as $client) {

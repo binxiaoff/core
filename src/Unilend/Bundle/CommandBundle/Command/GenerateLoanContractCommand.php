@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
@@ -85,7 +86,7 @@ EOF
                     $client->get($lender->id_client_owner, 'id_client');
                     $borrowerCompany->get($project->id_company, 'id_company');
 
-                    if (in_array($client->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+                    if (in_array($client->type, array(Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER))) {
                         $clientAddress->get($client->id_client, 'id_client');
 
                         if ($clientAddress->id_pays > 1) {

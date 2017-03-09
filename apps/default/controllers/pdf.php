@@ -2,6 +2,7 @@
 
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class pdfController extends bootstrap
 {
@@ -729,7 +730,7 @@ class pdfController extends bootstrap
             $this->lEcheances = array_values($this->echeanciers->getYearlySchedule(array('id_loan' => $this->oLoans->id_loan)));
             $this->lenderCountry = '';
 
-            if ($this->preteur->type == \clients::TYPE_LEGAL_ENTITY) {
+            if ($this->preteur->type == Clients::TYPE_LEGAL_ENTITY) {
                 $this->preteurCompanie->get($this->lender->id_company_owner, 'id_company');
 
                 $this->nomPreteur     = $this->preteurCompanie->name;
@@ -1032,7 +1033,7 @@ class pdfController extends bootstrap
         ) {
             $this->companiesEmpr->get($this->projects->id_company, 'id_company');
 
-            if (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+            if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
                 $iCountryId = $this->clients_adresses->id_pays_fiscal;
             } else {

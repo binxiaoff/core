@@ -816,7 +816,7 @@ class LenderProfileController extends Controller
             'fundsOrigin' => $this->getFundsOrigin($client->type)
         ];
 
-        if (in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+        if (in_array($client->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
             /** @var \clients_adresses $clientAddress */
             $clientAddress = $this->getClientAddress();
             /** @var \lender_tax_exemption $lenderTaxExemption */
@@ -1134,8 +1134,8 @@ class LenderProfileController extends Controller
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
 
         switch ($clientType) {
-            case \clients::TYPE_PERSON:
-            case \clients::TYPE_PERSON_FOREIGNER:
+            case Clients::TYPE_PERSON:
+            case Clients::TYPE_PERSON_FOREIGNER:
                 $settings->get("Liste deroulante origine des fonds", 'type');
                 break;
             default:

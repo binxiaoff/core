@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class DevMigrateCerfa2062Command extends ContainerAwareCommand
@@ -72,7 +73,7 @@ class DevMigrateCerfa2062Command extends ContainerAwareCommand
                 && $this->client->get($this->lender->id_client_owner, 'id_client')
                 && $this->borrowerCompany->get($this->project->id_company, 'id_company')
             ) {
-                if (in_array($this->client->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+                if (in_array($this->client->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                     $this->clientAddress->get($this->client->id_client, 'id_client');
 
                     if ($this->clientAddress->id_pays > 1) {

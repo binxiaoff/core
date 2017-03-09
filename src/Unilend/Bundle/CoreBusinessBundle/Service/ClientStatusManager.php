@@ -60,8 +60,8 @@ class ClientStatusManager
 
         $client->changePassword($client->email, mt_rand());
 
-        if ($client->status == \clients::STATUS_ONLINE) {
-            $client->status = \clients::STATUS_OFFLINE;
+        if ($client->status == Clients::STATUS_ONLINE) {
+            $client->status = Clients::STATUS_OFFLINE;
             $client->update();
         }
 

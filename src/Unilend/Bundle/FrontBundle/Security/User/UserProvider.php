@@ -6,6 +6,7 @@ use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
@@ -54,7 +55,7 @@ class UserProvider implements UserProviderInterface
         /** @var \clients_history $clientHistory */
         $clientHistory = $this->entityManager->getRepository('clients_history');
 
-        if (false !== filter_var($username, FILTER_VALIDATE_EMAIL) && $client->get($username, 'status = ' . \clients::STATUS_ONLINE. ' AND email')) {
+        if (false !== filter_var($username, FILTER_VALIDATE_EMAIL) && $client->get($username, 'status = ' . Clients::STATUS_ONLINE. ' AND email')) {
             $balance  = $this->clientManager->getClientBalance($client);
             $initials = $this->clientManager->getClientInitials($client);
             $isActive = $this->clientManager->isActive($client);

@@ -97,11 +97,11 @@ class TaxManager
         }
 
         switch ($client->type) {
-            case \clients::TYPE_LEGAL_ENTITY:
-            case \clients::TYPE_LEGAL_ENTITY_FOREIGNER:
+            case Clients::TYPE_LEGAL_ENTITY:
+            case Clients::TYPE_LEGAL_ENTITY_FOREIGNER:
                 return $this->taxLegalEntityLenderRepaymentInterests($transaction);
-            case \clients::TYPE_PERSON:
-            case \clients::TYPE_PERSON_FOREIGNER:
+            case Clients::TYPE_PERSON:
+            case Clients::TYPE_PERSON_FOREIGNER:
             default:
                 return $this->taxNaturalPersonLenderRepaymentInterests($transaction);
         }

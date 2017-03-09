@@ -61,7 +61,7 @@ classNames: 'user-preter-profile'
                     </div>
                 </header>
                 <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                         {{ include('pages/lender_profile/partials/person_identity.html.twig') }}
                         {{ include('pages/lender_profile/partials/person_identity_form.html.twig') }}
                     {% else %}
@@ -71,7 +71,7 @@ classNames: 'user-preter-profile'
                 </section><!-- /.ui-toggle-group -->
             </article><!-- /.panel -->
 
-            {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+            {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                 <article id="panel-phone" class="panel">
                     <header class="panel-header">
                         <h3>{% trans %} lender-profile_information-tab-phone-section-title {% endtrans %}</h3>
@@ -107,7 +107,7 @@ classNames: 'user-preter-profile'
                     </div>
                 </header>
                 <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                         {{ include('pages/lender_profile/partials/person_fiscal_address.html.twig') }}
                     {% else %}
                         {{ include('pages/lender_profile/partials/legal_entity_fiscal_address.html.twig') }}

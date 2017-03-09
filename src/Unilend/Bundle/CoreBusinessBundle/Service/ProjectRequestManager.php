@@ -114,7 +114,7 @@ class ProjectRequestManager
         $client
             ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(\clients::STATUS_ONLINE)
+            ->setStatus(Clients::STATUS_ONLINE)
             ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($this->sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))

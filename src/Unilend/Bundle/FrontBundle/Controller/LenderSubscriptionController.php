@@ -172,7 +172,7 @@ class LenderSubscriptionController extends Controller
         if ($form->isValid()) {
             $this->addClientSources($clientEntity);
 
-            $clientType   = ($clientEntity->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? \clients::TYPE_PERSON : \clients::TYPE_PERSON_FOREIGNER;
+            $clientType   = ($clientEntity->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
             $secretAnswer = md5($clientEntity->getSecreteReponse());
             $password     = password_hash($clientEntity->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($clientEntity->getPrenom() . '-' . $clientEntity->getNom());
@@ -183,7 +183,7 @@ class LenderSubscriptionController extends Controller
                 ->setType($clientType)
                 ->setIdLangue('fr')
                 ->setSlug($slug)
-                ->setStatus(\clients::STATUS_ONLINE)
+                ->setStatus(Clients::STATUS_ONLINE)
                 ->setStatusInscriptionPreteur(1)
                 ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
                 ->setType($clientType);
@@ -294,7 +294,7 @@ class LenderSubscriptionController extends Controller
         if ($form->isValid()){
             $this->addClientSources($clientEntity);
 
-            $clientType   = ($clientEntity->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? \clients::TYPE_LEGAL_ENTITY : \clients::TYPE_LEGAL_ENTITY_FOREIGNER;
+            $clientType   = ($clientEntity->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $secretAnswer = md5($clientEntity->getSecreteReponse());
             $password     = password_hash($clientEntity->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($clientEntity->getPrenom() . '-' . $clientEntity->getNom());
@@ -304,7 +304,7 @@ class LenderSubscriptionController extends Controller
                 ->setSlug($slug)
                 ->setSecreteReponse($secretAnswer)
                 ->setPassword($password)
-                ->setStatus(\clients::STATUS_ONLINE)
+                ->setStatus(Clients::STATUS_ONLINE)
                 ->setStatusInscriptionPreteur(1)
                 ->setEtapeInscriptionPreteur(1)
                 ->setType($clientType);
@@ -475,7 +475,7 @@ class LenderSubscriptionController extends Controller
             'form'           => $form->createView()
         ];
 
-        if (in_array($client->getType(), [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+        if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
             $template['company'] = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneByIdClientOwner($client);
         }
 
@@ -517,7 +517,7 @@ class LenderSubscriptionController extends Controller
             $form->addError(new FormError($translator->trans('lender-subscription_documents-missing-rib')));
         }
 
-        if (in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+        if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
             $this->validateAttachmentsPerson($form, $lenderAccount, $clientAddress);
         } else {
             $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneByIdClientOwner($client);
@@ -916,7 +916,10 @@ class LenderSubscriptionController extends Controller
             } else {
                 $clientEntity = $clientRepository->findOneBy(['hash' => $clientHash]);
 
-                if (\clients::STATUS_ONLINE !== $clientEntity->getStatus() || $clientEntity->getEtapeInscriptionPreteur() > 3) {
+                if (
+                    Clients::STATUS_ONLINE !== $clientEntity->getStatus()
+                    || $clientEntity->getEtapeInscriptionPreteur() > Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT
+                ) {
                     return $this->redirectToRoute('login');
                 }
             }
@@ -941,7 +944,7 @@ class LenderSubscriptionController extends Controller
     private function saveClientHistoryAction(Clients $client, Request $request, $step)
     {
         $formId     = '';
-        $clientType = in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
+        $clientType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
 
         $formManager = $this->get('unilend.frontbundle.service.form_manager');
         $form = $formManager->cleanPostData($request->request->all());
@@ -954,7 +957,7 @@ class LenderSubscriptionController extends Controller
                 $formId                               = 14;
                 break;
             case 2:
-                $formId = in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 17 : 19;
+                $formId = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 17 : 19;
                 break;
         }
 
@@ -1186,8 +1189,8 @@ class LenderSubscriptionController extends Controller
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
 
         switch ($clientType) {
-            case \clients::TYPE_PERSON:
-            case \clients::TYPE_PERSON_FOREIGNER:
+            case Clients::TYPE_PERSON:
+            case Clients::TYPE_PERSON_FOREIGNER:
                 $settings->get("Liste deroulante origine des fonds", 'type');
                 break;
             default:

@@ -3,6 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
@@ -373,7 +374,7 @@ class BidManager
                 && bccomp($currentRate, $autobid->getRateMin(), 1) >= 0
                 && $oLenderAccount->get($bid->getIdLenderAccount())
                 && $oClient->get($oLenderAccount->id_client_owner)
-                && $oClient->status == \clients::STATUS_ONLINE
+                && $oClient->status == Clients::STATUS_ONLINE
             ) { //check online/offline instead of LenderManager::canBid() because of the performance issue.
                 if (self::MODE_REBID_AUTO_BID_CREATE === $iMode) {
                     $iBidOrder = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
