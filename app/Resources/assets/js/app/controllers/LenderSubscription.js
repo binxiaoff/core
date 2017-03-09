@@ -276,9 +276,20 @@ $doc.on('ready', function () {
     cached.birthPlace.city = cityValue
     cached.birthPlace.insee = codeValue
 
-    // Set this element's value to the city value
-    $(this).val(cityValue)
+    // Set this element's value to the city value + remove the numbers
+    $(this).val(cityValue.replace(/ ?\(.*$/, ''))
     $('#form-lender-person-birth-city-insee').val(codeValue);
+  })
+
+  // If birthplace is other than France, disable the AutoComplete
+  $doc.on('change', '#form-lender-person-birth-country', function () {
+    var elem = $('#form-lender-person-birth-city');
+    // France === '1'
+    if ($(this).val() === '1') {
+      $(elem).uiAutoComplete('enable')
+    } else {
+      $(elem).uiAutoComplete('disable')
+    }
   })
 
   // If a user changes to a US nationality, show the error message

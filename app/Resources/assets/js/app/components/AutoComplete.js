@@ -829,17 +829,6 @@ $doc
       }
     })
 
-    // If birthplace is other than France, disable the AutoComplete
-    $(document).on('change', '[data-toggle-birthplace-autocomplete]', function () {
-      var elem = $(this).attr('data-toggle-birthplace-autocomplete');
-      // France === '1'
-      if ($(this).val() === '1') {
-        $(elem).uiAutoComplete('enable')
-      } else {
-        $(elem).uiAutoComplete('disable')
-      }
-    })
-
   })
 
 module.exports = AutoComplete
