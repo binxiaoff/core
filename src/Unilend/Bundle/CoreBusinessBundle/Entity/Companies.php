@@ -15,7 +15,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Companies
 {
-
     const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
     const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
 
@@ -23,7 +22,7 @@ class Companies
     const CLIENT_STATUS_DELEGATION_OF_POWER = 2;
     const CLIENT_STATUS_EXTERNAL_CONSULTANT = 3;
 
-    /** Attention, these constants are also setting , but added as constants for more clarity in the code*/
+    /** Warning, these constants are also setting , but added as constants for more clarity in the code*/
     const CLIENT_STATUS_EXTERNAL_COUNSEL_ACCOUNTANT    = 1;
     const CLIENT_STATUS_EXTERNAL_COUNSEL_CREDIT_BROKER = 2;
     const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;

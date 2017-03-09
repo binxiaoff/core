@@ -644,7 +644,7 @@ class LenderSubscriptionController extends Controller
             $form->addError(new FormError($translator->trans('lender-subscription_documents-legal-entity-missing-company-registration')));
         }
 
-        if ($company->getStatusClient() > \companies::CLIENT_STATUS_MANAGER) {
+        if ($company->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
             if (isset($_FILES['delegation-of-authority']) && false === empty($_FILES['delegation-of-authority']['name'])) {
                 $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
                 if (false === is_numeric($attachmentIdVerso)) {
