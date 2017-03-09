@@ -270,7 +270,7 @@
                 <label for="form-lender-person-birth-country">{% trans %} common_birth-country {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <select id="form-lender-person-birth-country" name="client_country_of_birth" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                <select id="form-lender-person-birth-country" name="client_country_of_birth" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-toggle-birthplace-autocomplete="#form-lender-person-birth-city">
                     {% for i, country in countries %}
                         <option value="{{ i }}" {% if formData.client_country_of_birth == i %} selected {% endif %}>{{ country }}</option>
                     {% endfor %}
@@ -286,6 +286,7 @@
                            data-formvalidation-input
                            data-formvalidation-required="true"
                            data-autocomplete
+                           data-autocomplete-birthplace
                            data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_birth_place') }}"
                            data-autocomplete-ajaxprop="birthPlace"
                            data-has-spinner="#person-birth-city-spinner"/>
