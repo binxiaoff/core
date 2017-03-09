@@ -50,6 +50,9 @@
   #{$js-is-loading} & {
     display: block;
   }
+  &.ui-is-loading {
+    display: block;
+  }
 }
 
 body#{$js-is-loading} {
