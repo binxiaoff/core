@@ -6,7 +6,7 @@
     </button>
 
     <div class="profile-correspondence-is-same collapse {% if clientsAdresses.memeAdresseFiscal == 1 %} in {% endif %}">
-        <span class="icon fa-check-u32"></span>{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}
+        <span class="icon fa-check-u32"></span>{% trans %} lender-address-form_same-address-checkbox {% endtrans %}
     </div>
 
     <dl class="profile-correspondence-not-same list-2col collapse {% if clientsAdresses.memeAdresseFiscal != 1 %} in {% endif %}">
@@ -34,7 +34,7 @@
             <div class="form-field form-field-single-checkbox">
                 <label>
                     {{ form_widget(forms.postalAddress.memeAdresseFiscal, {'id' : 'correspondence-is-same'}) }}
-                    <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}</span>
+                    <span class="label">{% trans %} lender-address-form_same-address-checkbox {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
         </div>
