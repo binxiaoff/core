@@ -12,6 +12,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Users
 {
+    const STATUS_OFFLINE = 0;
+    const STATUS_ONLINE  = 1;
+
+    const USER_ID_CRON   = -1;
+    const USER_ID_FRONT  = -2;
+
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes
      *

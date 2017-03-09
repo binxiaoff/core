@@ -47,7 +47,6 @@
 
         <service id="unilend.service.ws_client.euler_manager" class="Unilend\Bundle\WSClientBundle\Service\EulerHermesManager">
             <argument type="service" id="guzzle.client.euler"/>
-            <argument>%euler.coverage_key%</argument>
             <argument>%euler.grading_key%</argument>
             <argument>%euler.account_key%</argument>
             <argument>%euler.password%</argument>

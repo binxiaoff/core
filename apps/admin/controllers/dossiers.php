@@ -207,8 +207,10 @@ class dossiersController extends bootstrap
                     $this->companies->update();
                 }
             }
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
-            $this->rejectionReasonMessage = $this->getRejectionMotiveTranslation($this->projects_status_history);
+            $this->rejectionReasonMessage = $projectStatusManager->getRejectionMotiveTranslation($this->projects_status_history->content);
             $this->bHasAdvisor            = false;
 
             if ($this->projects->status == \projects_status::FUNDE) {
@@ -236,9 +238,7 @@ class dossiersController extends bootstrap
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_user > 0 AND id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC');
             $this->projectComments      = $this->loadData('projects_comments')->select('id_project = ' . $this->projects->id_project, 'added DESC');
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
-            $projectStatusManager   = $this->get('unilend.service.project_status_manager');
-            $this->lProjects_status = $projectStatusManager->getPossibleStatus($this->projects);
+            $this->lProjects_status     = $projectStatusManager->getPossibleStatus($this->projects);
 
             if (empty($this->projects->id_dernier_bilan)) {
                 $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
@@ -689,96 +689,6 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers');
             die;
         }
-    }
-
-    /**
-     * @param projects_status_history $projectStatusHistory
-     * @return string
-     */
-    private function getRejectionMotiveTranslation(\projects_status_history $projectStatusHistory)
-    {
-        /** @var \Symfony\Bundle\FrameworkBundle\Translation\Translator $translator */
-        $translator = $this->get('translator');
-
-        switch ($projectStatusHistory->content) {
-            case '':
-                $message = '';
-                break;
-            case \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-too-much-payment-incidents-message');
-                break;
-            case \projects_status::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-unauthorized-payment-incident-message');
-                break;
-            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-elimination-xerfi-score-message');
-                break;
-            case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-altares-score-message');
-                break;
-            case \projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-low-altares-score-message');
-                break;
-            case \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-low-infolegale-score-message');
-                break;
-            case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-euler-grade-message');
-                break;
-            case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-vs-altares-score-message');
-                break;
-            case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges-message');
-                break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'altares_identity':
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-identity-error-message');
-                break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident':
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-codinf-incident-error-message');
-                break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro':
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-fpro-error-message');
-                break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'altares_ebe':
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-ebe-error-message');
-                break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges':
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges-error-message');
-                break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'altares_score':
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-score-error-message');
-                break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'infolegale_score':
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-score-error-message');
-                break;
-            case \projects_status::UNEXPECTED_RESPONSE . 'euler_grade':
-                $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-eurler-grade-error-message');
-                break;
-            default:
-                $rejectReasons = explode(',', $projectStatusHistory->content);
-                if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
-                    $message = $translator->trans('project-rejection-reason-bo_collective-proceeding-message');
-                } elseif (
-                    in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
-                ) {
-                    $message = $translator->trans('project-rejection-reason-bo_no-siren-message');
-                } elseif (
-                    in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
-                ) {
-                    $message = $translator->trans('project-rejection-reason-bo_negative-operating-result-message');
-                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
-                    $message = $translator->trans('project-rejection-reason-bo_product-not-found-message');
-                } else {
-                    $message = $translator->trans('project-rejection-reason-bo_external-rating-rejection-default-message');
-                }
-                break;
-        }
-        return $message;
     }
 
     protected function sumBalances(array $aBalances, $aBalanceSheet)

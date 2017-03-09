@@ -15,52 +15,57 @@ class EulerHermesManager
     const RESOURCE_EULER_GRADE    = 'get_grade_euler';
     const RESOURCE_TRAFFIC_LIGHT  = 'get_traffic_light_euler';
 
-    /** @var  Client */
+    /** @var Client */
     private $client;
-    /** @var  string */
-    private $coverageApiKey;
-    /** @var  string */
+    /** @var string */
     private $gradingApiKey;
     /** @var string */
     private $accountKey;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
     /** @var CallHistoryManager */
     private $callHistoryManager;
-    /** @var  Serializer */
+    /** @var Serializer */
     private $serializer;
-    /** @var  string */
-    private $accountPwd;
-    /** @var  string */
+    /** @var string */
+    private $accountPassword;
+    /** @var string */
     private $accountEmail;
     /** @var bool */
     private $monitoring;
-    /** @var  ResourceManager */
+    /** @var ResourceManager */
     private $resourceManager;
 
     /**
-     * EulerHermesManager constructor.
-     * @param Client $client
-     * @param string $coverageApiKey
-     * @param string $gradingApiKey
-     * @param string $accountApiKey
-     * @param string $accountPwd
-     * @param string $accountEmail
-     * @param LoggerInterface $logger
+     * @param Client             $client
+     * @param string             $gradingApiKey
+     * @param string             $accountApiKey
+     * @param string             $accountPassword
+     * @param string             $accountEmail
+     * @param LoggerInterface    $logger
      * @param CallHistoryManager $callHistoryManager
-     * @param Serializer $serializer
-     * @param ResourceManager $resourceManager
+     * @param Serializer         $serializer
+     * @param ResourceManager    $resourceManager
      */
-    public function __construct(Client $client, $coverageApiKey, $gradingApiKey, $accountApiKey, $accountPwd, $accountEmail, LoggerInterface $logger, CallHistoryManager $callHistoryManager, Serializer $serializer, ResourceManager $resourceManager)
+    public function __construct(
+        Client $client,
+        $gradingApiKey,
+        $accountApiKey,
+        $accountPassword,
+        $accountEmail,
+        LoggerInterface $logger,
+        CallHistoryManager $callHistoryManager,
+        Serializer $serializer,
+        ResourceManager $resourceManager
+    )
     {
         $this->client             = $client;
-        $this->coverageApiKey     = $coverageApiKey;
         $this->gradingApiKey      = $gradingApiKey;
         $this->callHistoryManager = $callHistoryManager;
         $this->serializer         = $serializer;
         $this->logger             = $logger;
         $this->accountKey         = $accountApiKey;
-        $this->accountPwd         = $accountPwd;
+        $this->accountPassword    = $accountPassword;
         $this->accountEmail       = $accountEmail;
         $this->resourceManager    = $resourceManager;
     }
@@ -89,7 +94,7 @@ class EulerHermesManager
             throw new \InvalidArgumentException('Country code parameter is missing');
         }
 
-        if (null !== $result = $this->sendRequest(self::RESOURCE_SEARCH_COMPANY, strtolower($countryCode) . '/siren/' . $siren, $this->coverageApiKey, $siren)) {
+        if (null !== $result = $this->sendRequest(self::RESOURCE_SEARCH_COMPANY, strtolower($countryCode) . '/siren/' . $siren, $this->gradingApiKey, $siren)) {
             return $this->serializer->deserialize($result, CompanyIdentity::class, 'json');
         }
 
@@ -187,13 +192,9 @@ class EulerHermesManager
      */
     public function account()
     {
-        $response = $this->client
-            ->post('Account/Login',
-                [
-                    'headers' => ['apikey' => $this->accountKey],
-                    'json'    => ['email' => $this->accountEmail, 'password' => $this->accountPwd]
-                ]);
-
-        return $response;
+        return $this->client->post('Account/Login', [
+            'headers' => ['apikey' => $this->accountKey],
+            'json'    => ['email' => $this->accountEmail, 'password' => $this->accountPassword]
+        ]);
     }
 }

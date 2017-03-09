@@ -265,12 +265,11 @@ class CompanyBalanceSheetManager
 
     /**
      * Set company balance sheets
-     * @param \companies $company
-     * @param \projects $project
+     * @param \companies       $company
+     * @param \projects        $project
      * @param BalanceSheetList $balanceSheetList
-     * @param bool $bRecalculate
      */
-    public function setCompanyBalance(\companies $company, \projects &$project, BalanceSheetList $balanceSheetList, $bRecalculate = true)
+    public function setCompanyBalance(\companies $company, \projects &$project, BalanceSheetList $balanceSheetList)
     {
         $taxFormType = $this->detectTaxFormType($company);
 
@@ -324,10 +323,8 @@ class CompanyBalanceSheetManager
                     }
                 }
 
-                if ($bRecalculate) {
-                    $this->getIncomeStatement($companyAnnualAccounts);
-                    $this->calculateDebtsAssetsFromBalance($companyAnnualAccounts->id_bilan);
-                }
+                $this->getIncomeStatement($companyAnnualAccounts);
+                $this->calculateDebtsAssetsFromBalance($companyAnnualAccounts->id_bilan);
             }
 
             /** @var \companies_bilans $companyAccount */

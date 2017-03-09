@@ -18,8 +18,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating;
 use Unilend\core\Loader;
 use Doctrine\ORM\EntityManager;
 

@@ -75,7 +75,10 @@ class CompanyFinanceCheck
                 $company->date_creation = $companyData->getCreationDate()->format('Y-m-d');
                 $company->rcs           = $companyData->getRcs();
                 $company->tribunal_com  = $companyData->getCommercialCourt();
-                $company->update();
+
+                if (false === empty($company->id_company)) {
+                    $company->update();
+                }
 
                 if (true === in_array($companyData->getCompanyStatus(), [7, 9])) {
                     $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INACTIVE;

@@ -80,18 +80,20 @@ class CompanyScoringCheck
     }
 
     /**
-     * @param null|AltaresCompanyRating $altaresScore
-     * @param \company_rating_history   $companyRatingHistory
-     * @param \company_rating           $companyRating
-     * @param string                    $rejectionReason
+     * @param null|AltaresCompanyRating    $altaresScore
+     * @param string                       $rejectionReason
+     * @param null|\company_rating_history $companyRatingHistory
+     * @param null|\company_rating         $companyRating
      * @return bool
      */
-    public function isAltaresScoreLow($altaresScore, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
+    public function isAltaresScoreLow($altaresScore, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
     {
         if (null !== $altaresScore) {
-            $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_ALTARES_SCORE_20, $altaresScore->getScore20());
-            $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_ALTARES_SECTORAL_SCORE_100, $altaresScore->getSectoralScore100());
-            $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_ALTARES_VALUE_DATE, $altaresScore->getScoreDate()->format('Y-m-d'));
+            if (null !== $companyRatingHistory && null !== $companyRating) {
+                $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_ALTARES_SCORE_20, $altaresScore->getScore20());
+                $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_ALTARES_SECTORAL_SCORE_100, $altaresScore->getSectoralScore100());
+                $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_ALTARES_VALUE_DATE, $altaresScore->getScoreDate()->format('Y-m-d'));
+            }
 
             if ($altaresScore->getScore20() < 4) {
                 $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE;
@@ -108,13 +110,13 @@ class CompanyScoringCheck
     }
 
     /**
-     * @param string                  $codeNaf
-     * @param \company_rating_history $companyRatingHistory
-     * @param \company_rating         $companyRating
-     * @param string                  $rejectionReason
+     * @param string                       $codeNaf
+     * @param string                       $rejectionReason
+     * @param null|\company_rating_history $companyRatingHistory
+     * @param null|\company_rating         $companyRating
      * @return bool
      */
-    public function isXerfiUnilendOk($codeNaf, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
+    public function isXerfiUnilendOk($codeNaf, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
     {
         /** @var \xerfi $xerfi */
         $xerfi = $this->entityManager->getRepository('xerfi');
@@ -130,8 +132,10 @@ class CompanyScoringCheck
             $xerfiUnilend = $xerfi->unilend_rating;
         }
 
-        $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_XERFI_RISK_SCORE, $xerfiScore);
-        $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_UNILEND_XERFI_RISK, $xerfiUnilend);
+        if (null !== $companyRatingHistory && null !== $companyRating) {
+            $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_XERFI_RISK_SCORE, $xerfiScore);
+            $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_UNILEND_XERFI_RISK, $xerfiUnilend);
+        }
 
         if ('ELIMINATOIRE' === $xerfi->unilend_rating) {
             $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE;
@@ -170,21 +174,13 @@ class CompanyScoringCheck
      * @param string                  $rejectionReason
      * @return bool
      */
-    public function combineEulerTrafficLightXerfiAltaresScore(
-        AltaresCompanyRating $altaresScore,
-        \companies $company,
-        \company_rating_history $companyRatingHistory,
-        \company_rating $companyRating,
-        &$rejectionReason
-    )
+    public function combineEulerTrafficLightXerfiAltaresScore(AltaresCompanyRating $altaresScore, \companies $company, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
     {
         try {
-            /** @var \pays_v2 $country */
-            $country = $this->entityManager->getRepository('pays_v2');
-            $country->get($company->id_pays);
-
-            if (null !== ($eulerTrafficLight = $this->wsEuler->getTrafficLight($company->siren, empty($country->iso) ? 'fr' : $country->iso))) {
-                $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_EULER_HERMES_TRAFFIC_LIGHT, $eulerTrafficLight->getColor());
+            if (null !== ($eulerTrafficLight = $this->wsEuler->getTrafficLight($company->siren, 'fr'))) {
+                if (null !== $companyRatingHistory && null !== $companyRating) {
+                    $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_EULER_HERMES_TRAFFIC_LIGHT, $eulerTrafficLight->getColor());
+                }
 
                 if ($eulerTrafficLight->getColor() === EulerCompanyRating::COLOR_BLACK) {
                     $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT;
@@ -223,17 +219,19 @@ class CompanyScoringCheck
     }
 
     /**
-     * @param string                  $siren
-     * @param \company_rating_history $companyRatingHistory
-     * @param \company_rating         $companyRating
-     * @param string                  $rejectionReason
+     * @param string                       $siren
+     * @param string                       $rejectionReason
+     * @param null|\company_rating_history $companyRatingHistory
+     * @param null|\company_rating         $companyRating
      * @return bool
      */
-    public function isInfolegaleScoreLow($siren, \company_rating_history $companyRatingHistory, \company_rating $companyRating, &$rejectionReason)
+    public function isInfolegaleScoreLow($siren, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
     {
         try {
             if (null !== ($infolegaleScore = $this->wsInfolegale->getScore($siren))) {
-                $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_INFOLEGALE_SCORE, $infolegaleScore->getScore());
+                if (null !== $companyRatingHistory && null !== $companyRating) {
+                    $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_INFOLEGALE_SCORE, $infolegaleScore->getScore());
+                }
 
                 if ($infolegaleScore->getScore() < 5) {
                     $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE;
@@ -256,28 +254,20 @@ class CompanyScoringCheck
     }
 
     /**
-     * @param AltaresCompanyRating    $altaresScore
-     * @param \companies              $company
-     * @param \company_rating_history $companyRatingHistory
-     * @param \company_rating         $companyRating
-     * @param string                  $rejectionReason
+     * @param AltaresCompanyRating         $altaresScore
+     * @param \companies                   $company
+     * @param string                       $rejectionReason
+     * @param null|\company_rating_history $companyRatingHistory
+     * @param null|\company_rating         $companyRating
      * @return bool
      */
-    public function combineEulerGradeUnilendXerfiAltaresScore(
-        AltaresCompanyRating $altaresScore,
-        \companies $company,
-        \company_rating_history $companyRatingHistory,
-        \company_rating $companyRating,
-        &$rejectionReason
-    )
+    public function combineEulerGradeUnilendXerfiAltaresScore(AltaresCompanyRating $altaresScore, \companies $company, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
     {
         try {
-            /** @var \pays_v2 $country */
-            $country = $this->entityManager->getRepository('pays_v2');
-            $country->get($company->id_pays);
-
-            if (null !== ($eulerGrade = $this->wsEuler->getGrade($company->siren, empty($country->iso) ? 'fr' : $country->iso))) {
-                $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_EULER_HERMES_GRADE, $eulerGrade->getGrade());
+            if (null !== ($eulerGrade = $this->wsEuler->getGrade($company->siren, 'fr'))) {
+                if (null !== $companyRatingHistory && null !== $companyRating) {
+                    $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_EULER_HERMES_GRADE, $eulerGrade->getGrade());
+                }
 
                 /** @var \xerfi $xerfi */
                 $xerfi = $this->entityManager->getRepository('xerfi');
