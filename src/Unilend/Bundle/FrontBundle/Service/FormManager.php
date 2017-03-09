@@ -140,4 +140,24 @@ class FormManager
 
         return $form;
     }
+
+    /**
+     * @param  array $post
+     *
+     * @return mixed
+     */
+    public function cleanPostData($post)
+    {
+        foreach ($post as $key => $value) {
+            if (is_array($value)) {
+                $this->cleanPostData($value);
+            }
+
+            if (is_string($value)) {
+                $post[$key] = htmlspecialchars(strip_tags($value));
+            }
+        }
+
+        return $post;
+    }
 }

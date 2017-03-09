@@ -47,43 +47,39 @@ class LenderSubscriptionController extends Controller
             return $response;
         }
 
-        $clientEntity        = new Clients();
-        $clientAddressEntity = new ClientsAdresses();
-        $companyEntity       = new Companies();
+        $client        = new Clients();
+        $clientAddress = new ClientsAdresses();
+        $company       = new Companies();
 
         if (false === empty($this->get('session')->get('landingPageData'))) {
             $landingPageData = $this->get('session')->get('landingPageData');
             $this->get('session')->remove('landingPageData');
-            $clientEntity->setNom($landingPageData['prospect_name']);
-            $clientEntity->setPrenom($landingPageData['prospect_first_name']);
-            $clientEntity->setEmail($landingPageData['prospect_email']);
+            $client->setNom($landingPageData['prospect_name']);
+            $client->setPrenom($landingPageData['prospect_first_name']);
+            $client->setEmail($landingPageData['prospect_email']);
         }
 
         $formManager         = $this->get('unilend.frontbundle.service.form_manager');
-        $identityForm        = $formManager->getLenderSubscriptionPersonIdentityForm($clientEntity, $clientAddressEntity);
-        $companyIdentityForm = $formManager->getLenderSubscriptionLegalEntityIdentityForm($clientEntity, $companyEntity, $clientAddressEntity);
+        $identityForm        = $formManager->getLenderSubscriptionPersonIdentityForm($client, $clientAddress);
+        $companyIdentityForm = $formManager->getLenderSubscriptionLegalEntityIdentityForm($client, $company, $clientAddress);
 
         $identityForm->handleRequest($request);
         $companyIdentityForm->handleRequest($request);
 
         if ($request->isMethod('POST')) {
-            if ($identityForm->isSubmitted()) {
-                //TODO client_history_actions
-                if ($identityForm->isValid()) {
-                    $isValid = $this->handleIdentityPersonForm($clientEntity, $clientAddressEntity, $identityForm);
-                    if ($isValid) {
-                        return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $clientEntity->getHash()]);
-                    }
+            if ($identityForm->isSubmitted() && $identityForm->isValid()) {
+                $isValid = $this->handleIdentityPersonForm($client, $clientAddress, $identityForm);
+                if ($isValid) {
+                    $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+                    return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }
 
-            if ($companyIdentityForm->isSubmitted()) {
-                //TODO client_history_actions
-                if ($companyIdentityForm->isValid()) {
-                    $isValid = $this->handleLegalEntityForm($clientEntity, $clientAddressEntity, $companyEntity, $companyIdentityForm);
-                    if ($isValid) {
-                        return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $clientEntity->getHash()]);
-                    }
+            if ($companyIdentityForm->isSubmitted() && $companyIdentityForm->isValid()) {
+                $isValid = $this->handleLegalEntityForm($client, $clientAddress, $company, $companyIdentityForm);
+                if ($isValid) {
+                    $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+                    return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }
         }
@@ -91,9 +87,9 @@ class LenderSubscriptionController extends Controller
         /** @var array $template */
         $template = [
             'termsOfUseLegalEntity' => $this->generateUrl('lenders_terms_of_sales', ['type' => 'morale']),
-            'termsOfUsePerson' => $this->generateUrl('lenders_terms_of_sales'),
-            'identityForm' => $identityForm->createView(),
-            'companyIdentityForm' => $companyIdentityForm->createView()
+            'termsOfUsePerson'      => $this->generateUrl('lenders_terms_of_sales'),
+            'identityForm'          => $identityForm->createView(),
+            'companyIdentityForm'   => $companyIdentityForm->createView()
         ];
 
         return $this->render('pages/lender_subscription/personal_information.html.twig', $template);
@@ -143,9 +139,7 @@ class LenderSubscriptionController extends Controller
                 /** @var Villes $cityByInsee */
                 $cityByInsee = $em->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByInsee($clientEntity->getInseeBirth());
                 /** @var Villes $cityByCity */
-                $cityByCity = $em->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByVille(trim(substr($clientEntity->getVilleNaissance(), 0, -4)));
-
-                //TODO prepare cas of not used autocomplate with a pregmatch before trim and substring
+                $cityByCity = $em->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByVille($clientEntity->getVilleNaissance());
 
                 if (null !== $cityByInsee && null !== $cityByCity && $cityByInsee->getInsee() === $cityByCity->getInsee()) {
                     $clientEntity->setVilleNaissance($cityByCity->getVille());
@@ -191,7 +185,7 @@ class LenderSubscriptionController extends Controller
                 ->setSlug($slug)
                 ->setStatus(\clients::STATUS_ONLINE)
                 ->setStatusInscriptionPreteur(1)
-                ->setEtapeInscriptionPreteur(1)
+                ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
                 ->setType($clientType);
 
             if ($clientAddressEntity->getMemeAdresseFiscal()) {
@@ -465,7 +459,7 @@ class LenderSubscriptionController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            //TODO client_history_actions
+            $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_DOCUMENTS);
             if ($form->isValid()) {
                 $isValid = $this->handleDocumentsForm($client, $bankAccount, $clientAddress, $form);
                 if ($isValid) {
@@ -531,7 +525,7 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($form->isValid()) {
-            $client->setEtapeInscriptionPreteur(2);
+            $client->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_DOCUMENTS);
             $this->get('doctrine.orm.entity_manager')->flush();
 
             /** @var BankAccountManager $bankAccountManager */
@@ -837,23 +831,32 @@ class LenderSubscriptionController extends Controller
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');;
 
-        $post = $request->request->all();
+        $formManager = $this->get('unilend.frontbundle.service.form_manager');
+        $post        = $formManager->cleanPostData($request->request->all());
         $this->get('session')->set('landingPageData', $post);
 
-        if (false === isset($post['prospect_name']) || strlen($post['prospect_name']) > 255 || strlen($post['prospect_name']) <= 0) {
+        if (isset($post['prospect_name'])) {
+            $name = filter_var($post['prospect_name'], FILTER_SANITIZE_STRING);
+        } else {
             $this->addFlash('landingPageErrors', $translator->trans('common-validator_last-name-empty'));
         }
 
-        if (false === isset($post['prospect_first_name']) || strlen($post['prospect_first_name']) > 255 || strlen($post['prospect_first_name']) <= 0) {
+        if (isset($post['prospect_first_name'])) {
+            $firstName = filter_var($post['prospect_first_name'], FILTER_SANITIZE_STRING);
+        } else {
             $this->addFlash('landingPageErrors', $translator->trans('common-validator_first-name-empty'));
         }
 
-        if (empty($post['prospect_email']) || strlen($post['prospect_email']) > 255 || strlen($post['prospect_email']) <= 0
-            || false == filter_var($post['prospect_email'], FILTER_VALIDATE_EMAIL)) {
+        if (isset($post['prospect_email'])){
+            $email = filter_var($post['prospect_email'], FILTER_VALIDATE_EMAIL);
+            if (false === $email) {
+                $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-email'));
+            }
+        } else {
             $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-email'));
         }
 
-        if (false === empty($post['prospect_email']) && $clients->existEmail($post['prospect_email']) && $clients->get($post['prospect_email'], 'email')){
+        if (false === empty($email) && $clients->existEmail($email) && $clients->get($email, 'email')){
             $response = $this->checkProgressAndRedirect($request, $clients->hash);
             if ($response instanceof RedirectResponse){
                 return $response;
@@ -861,7 +864,7 @@ class LenderSubscriptionController extends Controller
         }
 
         if (false === $this->get('session')->getFlashBag()->has('landingPageErrors')) {
-            if (false === $prospect->exist($post['prospect_email'], 'email')) {
+            if (false === $prospect->exist($post['prospect_email'], 'email') && isset($name, $firstName, $email)) {
                 /** @var SourceManager $sourceManager */
                 $sourceManager          = $this->get('unilend.frontbundle.service.source_manager');
 
@@ -869,9 +872,9 @@ class LenderSubscriptionController extends Controller
                 $prospect->source2      = $sourceManager->getSource(SourceManager::SOURCE2);
                 $prospect->source3      = $sourceManager->getSource(SourceManager::SOURCE3);
                 $prospect->slug_origine = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
-                $prospect->nom          = $post['prospect_name'];
-                $prospect->prenom       = $post['prospect_first_name'];
-                $prospect->email        = $post['prospect_email'];
+                $prospect->nom          = $name;
+                $prospect->prenom       = $firstName;
+                $prospect->email        = $email;
                 $prospect->id_langue    = 'fr';
                 $prospect->create();
             }
@@ -932,18 +935,22 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param Clients $client
-     * @param $post
+     * @param Request $request
+     * @param int     $step
      */
-    private function saveClientHistoryAction(Clients $client, $post)
+    private function saveClientHistoryAction(Clients $client, Request $request, $step)
     {
         $formId     = '';
         $clientType = in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
 
-        switch ($client->getEtapeInscriptionPreteur()) {
+        $formManager = $this->get('unilend.frontbundle.service.form_manager');
+        $form = $formManager->cleanPostData($request->request->all());
+
+        switch ($step) {
             case 1:
-                $post['client_password']              = md5($post['client_password']);
-                $post['client_password_confirmation'] = md5($post['client_password_confirmation']);
-                $post['client_secret_response']       = md5($post['client_secret_answer']);
+                $post['client_password']              = md5($form['password']);
+                $post['client_password_confirmation'] = md5($form['client_password_confirmation']);
+                $post['client_secret_response']       = md5($form['client_secret_answer']);
                 $formId                               = 14;
                 break;
             case 2:
@@ -955,8 +962,8 @@ class LenderSubscriptionController extends Controller
         $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
         $clientHistoryActions->histo(
             $formId,
-            'inscription etape ' . $client->getEtapeInscriptionPreteur() . ' ' . $clientType,
-            $client->getIdClient(), serialize(['id_client' => $client->getIdClient(), 'post' => $post])
+            'inscription etape ' . $step . ' ' . $clientType,
+            $client->getIdClient(), serialize(['id_client' => $client->getIdClient(), 'post' => $form, 'files' => $_FILES])
         );
     }
 
