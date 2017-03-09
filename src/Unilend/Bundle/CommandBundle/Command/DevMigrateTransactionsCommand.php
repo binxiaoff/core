@@ -76,7 +76,7 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                 if ($transaction['id_transaction'] == 364887) {
                     $amount =  $this->calculateOperationAmount($transaction['montant']);
                     $this->lenderRegulation($transaction['id_client'], $amount, $transaction['date_transaction']);
-                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treate_new (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
+                    $this->dataBaseConnection->executeQuery('INSERT INTO transaction_treated_new (id_transaction) VALUE (' . $transaction['id_transaction'] . ')');
                     continue;
                 }
 
