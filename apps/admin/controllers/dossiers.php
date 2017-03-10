@@ -5,7 +5,6 @@ use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class dossiersController extends bootstrap
@@ -287,8 +286,7 @@ class dossiersController extends bootstrap
 
             $this->bCanEditStatus = false;
             if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
-                $this->loadData('users_types');
-                if (in_array($this->users->id_user_type, array(UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_ANALYSTE, UsersTypes::TYPE_COMMERCIAL))) {
+                if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE, \users_types::TYPE_COMMERCIAL))) {
                     $this->bCanEditStatus = true;
                 }
             }
@@ -963,6 +961,10 @@ class dossiersController extends bootstrap
         if (isset($_POST['specific_commission_rate_funds']) && '' != $_POST['specific_commission_rate_funds'] && $this->canUpdateProjectCommissionRateFunds($project)) {
             return $this->ficelle->cleanFormatedNumber($_POST['specific_commission_rate_funds']);
         } elseif(isset($_POST['assigned_product']) && $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' AND id_product')) {
+            if (0 != $project->commission_rate_funds and $project->commission_rate_funds != $partnerProduct->commission_rate_funds) {
+                return $project->commission_rate_funds;
+            }
+
             return $partnerProduct->commission_rate_funds;
         } else {
             return \projects::DEFAULT_COMMISSION_RATE_FUNDS;
@@ -975,7 +977,7 @@ class dossiersController extends bootstrap
      */
     private function canUpdateProjectCommissionRateFunds(\projects $project)
     {
-        return ($project->status <= \projects_status::PREP_FUNDING && UsersTypes::TYPE_ADMIN == $_SESSION['user']['id_user_type'] && false === empty($project->id_product));
+        return ($project->status <= \projects_status::PREP_FUNDING && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type'] && false === empty($project->id_product));
     }
 
     protected function sumBalances(array $aBalances, $aBalanceSheet)
