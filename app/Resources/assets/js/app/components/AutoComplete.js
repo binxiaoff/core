@@ -434,9 +434,10 @@ var AutoComplete = function (elem, options) {
     clearTimeout(self.hideTimer)
 
     // @debug
-    console.log('showing results', term, results)
     // console.log('showing results', term, results.length)
 
+    // Track results are open
+    self.track.resultsOpen = true
 
     // Remove any messages
     self.$target.find('li.autocomplete-message').remove()
@@ -659,6 +660,9 @@ var AutoComplete = function (elem, options) {
     // @trigger [input, target] `AutoComplete:hide:complete`, [elemAutoComplete]
     self.$input.trigger('AutoComplete:hide:complete', [self])
     self.$target.trigger('AutoComplete:hide:complete', [self])
+    // Track results are closed
+    self.track.resultsOpen = false
+
   }
 
   // Enable AutoComplete

@@ -276,20 +276,9 @@ $doc.on('ready', function () {
     cached.birthPlace.city = cityValue
     cached.birthPlace.insee = codeValue
 
-    // Set this element's value to the city value + remove the numbers
-    $(this).val(cityValue.replace(/ ?\(.*$/, ''))
+    // Set this element's value to the city value
+    $(this).val(cityValue)
     $('#form-lender-person-birth-city-insee').val(codeValue);
-  })
-
-  // If birthplace is other than France, disable the AutoComplete
-  $doc.on('change', '#form-lender-person-birth-country', function () {
-    var elem = $('#form-lender-person-birth-city');
-    // France === '1'
-    if ($(this).val() === '1') {
-      $(elem).uiAutoComplete('enable')
-    } else {
-      $(elem).uiAutoComplete('disable')
-    }
   })
 
   // If a user changes to a US nationality, show the error message
@@ -324,10 +313,14 @@ $doc.on('ready', function () {
 
   // Validate birthplace city/code on blur
   $doc.on('change', '#form-lender-person-birth-city, #form-lender-person-birth-country', function (event) {
-    $('#form-lender-person-birth-city-insee').val('')
-    debounceAjax(birthPlaceTimer, function () {
-      checkBirthCity($('#form-lender-person-birth-city-insee'), $('#form-lender-person-birth-country'))
-    })
+    if (this.hasOwnProperty('AutoComplete') && this.AutoComplete.resultsOpen) {
+      // results are open so do not validate yet !
+    } else {
+      $('#form-lender-person-birth-city-insee').val('')
+      debounceAjax(birthPlaceTimer, function () {
+        checkBirthCity($('#form-lender-person-birth-city-insee'), $('#form-lender-person-birth-country'))
+      })
+    }
   })
 
   // Validate that the person has filled in all their information correctly
