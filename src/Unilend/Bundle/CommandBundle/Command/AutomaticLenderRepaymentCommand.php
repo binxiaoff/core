@@ -302,7 +302,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 if (0 == $echeanciers->counter('id_project = ' . $r['id_project'] . ' AND status = 0')) {
                     /** @var ProjectManager $projectManager */
                     $projectManager = $this->getContainer()->get('unilend.service.project_manager');
-                    $projectManager->addProjectStatus(-1, ProjectsStatus::REMBOURSE, $projects);
+                    $projectManager->addProjectStatus(\users::USER_ID_CRON, ProjectsStatus::REMBOURSE, $projects);
 
                     /** @var MailerManager $mailerManager */
                     $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
