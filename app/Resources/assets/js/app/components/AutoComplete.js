@@ -51,14 +51,14 @@ var AutoComplete = function (elem, options) {
     target: false, // The target element to put the results
     ajaxUrl: false, // An ajax URL to send the term receive results from. If `false`, looks in target element for the text
     ajaxProp: 'term', // The name of the property to send to the ajax URL endpoint
-    delay: 250, // A delay to wait before searching for the term
+    delay: 500, // A delay to wait before searching for the term
     minTermLength: 3, // The minimum character length of a term to find
     showEmpty: false, // Show autocomplete with messages if no results found
     showSingle: true, // Show the autocomplete if only one result found
     attachTargetAfter: false, // Whether to apply the target to be directly after the input, or at the bottom in the body
     constrainTargetWidth: 'input', // Constrain the target's width. Accepted values: {Boolean} false, {String} 'input', or {Int} specific width in pixels
     useTether: true, // Use tether to attach the target element
-    optimised: true, // If true, it'll retrieve AJAX for the first call, and then search within the results for further drilling down (reduces server IO and hopefully speeds up UI for user)
+    optimised: false, // If true, it'll retrieve AJAX for the first call, and then search within the results for further drilling down (reduces server IO and hopefully speeds up UI for user)
 
     // Special events
     onbeforeajax: undefined, // function (AutoComplete) { return {Boolean} if you want it to continue }
@@ -137,7 +137,7 @@ var AutoComplete = function (elem, options) {
     return str.charCodeAt(str.length - 1);
   }
 
-  self.$input.on('keydown', function ( event ) {
+  self.$input.on('keyup', function ( event ) {
     clearTimeout(self.timer)
 
     // Only if it is enabled
@@ -434,7 +434,9 @@ var AutoComplete = function (elem, options) {
     clearTimeout(self.hideTimer)
 
     // @debug
+    console.log('showing results', term, results)
     // console.log('showing results', term, results.length)
+
 
     // Remove any messages
     self.$target.find('li.autocomplete-message').remove()
