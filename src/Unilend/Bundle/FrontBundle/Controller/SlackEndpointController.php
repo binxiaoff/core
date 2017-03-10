@@ -2,10 +2,10 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use GuzzleHttp\Client;
 use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -17,7 +17,7 @@ class SlackEndpointController extends Controller
      * @Route("/slack-command-api-endpoint", name="slack_command_api_endpoint")
      *
      * @param Request $request
-     * @return Response
+     * @return JsonResponse
      */
     public function commandAction(Request $request)
     {
@@ -37,49 +37,103 @@ class SlackEndpointController extends Controller
             ]);
         }
 
-        if (
-            1 === preg_match('/^[^0-9]*([0-9]{9})[^0-9]*$/', $message, $matches)
-            && false === empty($request->request->get('user_name'))
-        ) {
-            /** @var EntityManager $entityManager */
-            $entityManager  = $this->get('doctrine.orm.entity_manager');
-            $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
-            $user           = $userRepository->findOneBy([
-                'slack'  => $request->request->get('user_name'),
-                'status' => Users::STATUS_ONLINE
-            ]);
-
-            if (null === $user || false === in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_COMMERCIAL])) {
-                return new JsonResponse([
-                    'response_type' => 'in_channel',
-                    'text'          => 'Vous ne disposez pas des droits nécessaires. Veuillez contacter l\'administrateur pour en savoir plus.'
-                ]);
-            }
-
-            $siren    = $matches[1];
-            $response = 'SIREN éligible';
-
-            /** @var \companies $company */
-            $company        = $this->get('unilend.service.entity_manager')->getRepository('companies');
-            $company->siren = $siren;
-
-            $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $rejectionReason       = $projectRequestManager->checkRisk($company);
-
-            if (null !== $rejectionReason) {
-                $projectStatusManager = $this->get('unilend.service.project_status_manager');
-                $response             = $projectStatusManager->getRejectionMotiveTranslation($rejectionReason);
-            }
-
-            return new JsonResponse([
-                'response_type' => 'in_channel',
-                'text'          => $response
-            ]);
+        if (1 === preg_match('/^[^0-9]*([0-9]{9})[^0-9]*$/', $message, $matches)) {
+            $siren = $matches[1];
+            return $this->sirenCheckerCommand($siren, $request);
         }
 
         return new JsonResponse([
-            'response_type' => 'in_channel',
+            'response_type' => 'ephemeral',
             'text'          => 'J\'aime bien discuter cher @' . $request->request->get('user_name') . ' mais je ne vais pas pouvoir vous aider'
+        ]);
+    }
+
+    /**
+     * @param string  $siren
+     * @param Request $request
+     * @return JsonResponse
+     */
+    private function sirenCheckerCommand($siren, Request $request)
+    {
+        if (empty($request->request->get('user_name')) || empty($request->request->get('response_url'))) {
+            return new JsonResponse([
+                'response_type' => 'ephemeral',
+                'text'          => 'Requête invalide'
+            ]);
+        }
+
+        /** @var EntityManager $entityManager */
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $user           = $userRepository->findOneBy([
+            'slack'  => $request->request->get('user_name'),
+            'status' => Users::STATUS_ONLINE
+        ]);
+
+        if (null === $user || false === in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_COMMERCIAL])) {
+            return new JsonResponse([
+                'response_type' => 'ephemeral',
+                'text'          => 'Vous ne disposez pas des droits nécessaires. Veuillez contacter l\'administrateur pour en savoir plus.'
+            ]);
+        }
+
+        /** @var \companies $company */
+        $company        = $this->get('unilend.service.entity_manager')->getRepository('companies');
+        $company->siren = $siren;
+
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $rejectionReason       = $projectRequestManager->checkRisk($company);
+
+        $eligibility = 'Éligible';
+        $color       = 'good';
+        $footer      = '';
+        $fields      = [[
+            'title' => 'Éligible',
+            'value' => null === $rejectionReason ? 'Oui' : 'Non',
+            'short' => true
+        ]];
+
+        if (false === empty($company->name)) {
+            $fields[] = [
+                'title' => 'Nom société',
+                'value' => $company->name,
+                'short' => true
+            ];
+        }
+
+        if (null !== $rejectionReason) {
+            $eligibility     = 'Non éligible';
+            $color           = 'danger';
+            $rejectionReason = $this->get('unilend.service.project_status_manager')->getRejectionMotiveTranslation($rejectionReason);
+            $fields[]        = [
+                'title' => 'Motif de rejet',
+                'value' => $rejectionReason,
+                'short' => false
+            ];
+        } else {
+            $projectCreationUrl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin') . '/dossiers/add/siren/' . $siren;
+            $footer             = '<' . $projectCreationUrl . '|Créer un nouveau dossier pour ce SIREN>';
+        }
+
+        $client = new Client();
+        $client->request('POST', $request->request->get('response_url'), [
+            'headers' => ['Content-Type' => 'application/json'],
+            'body'    => json_encode([
+                'response_type' => 'in_channel',
+                'text'          => 'SIREN ' . $siren,
+                'unfurl_links'  => false,
+                'attachments'   => [[
+                    'fallback' => 'Éligibilité : ' . $eligibility,
+                    'color'    => $color,
+                    'fields'   => $fields,
+                    'footer'   => $footer
+                ]]
+            ])
+        ]);
+
+        return new JsonResponse([
+            'response_type' => 'ephemeral',
+            'text'          => ''
         ]);
     }
 }

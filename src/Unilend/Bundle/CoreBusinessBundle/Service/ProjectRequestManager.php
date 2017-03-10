@@ -238,7 +238,7 @@ class ProjectRequestManager
      * @param null|\company_rating         $companyRating
      * @return null|string
      */
-    public function checkRisk(\companies $company, &$balanceSheetList = null, $companyRatingHistory = null, $companyRating = null)
+    public function checkRisk(\companies &$company, &$balanceSheetList = null, $companyRatingHistory = null, $companyRating = null)
     {
         if (false === $this->companyFinanceCheck->isCompanySafe($company, $rejectionReason)) {
             return $rejectionReason;

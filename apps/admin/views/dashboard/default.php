@@ -7,7 +7,7 @@
             }
         })
 
-        $('[data-project]').click(function() {
+        $('body').on('click', '[data-project]', function() {
             var projectId = $(this).data('project')
             if (projectId) {
                 $(this).parent().children().css('background-color', '#b20066').css('color', '#fff')
