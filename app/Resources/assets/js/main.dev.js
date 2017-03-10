@@ -772,6 +772,11 @@ $doc.ready(function ($) {
     // Start animating
     if ($html.is('.has-csstransforms')) {
       $scrollMore.addClass('scroll-more-animate')
+
+      // Only animate on homepages, not inner landing pages
+      if (!$('body').is('.layout-page-single')) {
+        $scrollMore.addClass('start')
+      }
     }
 
     // Scroll down the page
@@ -818,10 +823,12 @@ $doc.ready(function ($) {
       if (winScrollTop > startScrollFixed) {
         if (winScrollTop < endScrollFixed) {
           offsetInfo = translateAmount
+          // Arrows - Back to original state
           if ($scrollMore.hasClass('end')) $scrollMore.removeClass('end')
         } else {
           offsetInfo = endScrollFixed - startScrollFixed
-          if (!$scrollMore.hasClass('end')) $scrollMore.addClass('end')
+          // Invert arrows once at the bottom of the page
+          if (!$scrollMore.hasClass('end')) $scrollMore.addClass('end').removeClass('start')
         }
       }
 

@@ -290,16 +290,7 @@
 
         {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
 
-        <div id="scroll-more" class="scroll-more">
-            <div class="site-wrap">
-                <a class="scroll-more-arrow">
-                    <span class="icon fa-angle-down fa-1"></span>
-                    <span class="icon fa-angle-down fa-2"></span>
-                    <span class="icon fa-angle-up fa-3"></span>
-                    <span class="icon fa-angle-up fa-4"></span>
-                </a>
-            </div>
-        </div><!-- /.scroll-more -->
+        {% include 'partials/site/scroll-more.html.twig' %}
 
     </article><!-- /.page -->
 {% endblock %}

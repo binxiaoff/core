@@ -554,23 +554,20 @@
       display: block;
       padding: 60px 1em 4px;
       font-size: 18px;
+      color: $c-t1;
+      text-decoration: none;
       @include devices('tablet-l') {
         padding-left: 12px;
         padding-right: 12px;
       }
-      @include link-states(
-        $link: (
-                color: $c-t1,
-                text-decoration: none
-        ),
-        $hover: (
-                color: $c-p1,
-                text-decoration: none
-        ),
-        $active: (
-                color: $c-p2
-        )
-      );
+      &:hover {
+        color: $c-p1;
+        text-decoration: none;
+      }
+      &:focus {
+        color: $c-p2;
+        text-decoration: none;
+      }
     }
   }
 
@@ -832,10 +829,11 @@
       a {
         &:after {
           bottom: -2px;
-          left: 5px;
-          right: 5px;
-          margin-left: 0;
-          width: auto;
+          margin-left: -40px;
+          width: 80px;
+        }
+        &:active, &:focus {
+          color: $c-p2;
         }
       }
     }

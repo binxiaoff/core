@@ -2,8 +2,17 @@
 // Unilend Scroll More
 //
 
-$size : 50px;
+$size : 40px;
 $sm : $size/1.5;
+
+.scroll-more-wrap {
+  position: relative;
+  max-width: 1600px;
+  margin: 0 auto;
+  @include devices('lg') {
+    max-width: 1800px;
+  }
+}
 
 .scroll-more {
   display: none;
@@ -11,9 +20,12 @@ $sm : $size/1.5;
   z-index: 1000;
   top: 100%;
   left: 0;
-  right: 0;
+  right: 5px;
   @include devices('md', 'lg') {
     display: block;
+  }
+  @include devices('lg') {
+    right: 15px;
   }
   a {
     position: absolute;
@@ -31,7 +43,7 @@ $sm : $size/1.5;
   }
   .icon {
     display: block;
-    transform: translateY(-($sm));
+    //transform: translateY(-($sm));
     color: darken($c-bg2, 15%); 
     font-size: $size;
     &:before {
@@ -43,18 +55,20 @@ $sm : $size/1.5;
     display: none;
   }
   &.scroll-more-animate {
-    .fa-1 {
-      animation: scroll-more-animation 2s linear infinite;
-    }
-    .fa-2 {
-      animation: scroll-more-animation-2 2s linear infinite;
+    &.start {
+      .fa-1 {
+        animation: scroll-more-animation 1s linear 2;
+      }
+      .fa-2 {
+        animation: scroll-more-animation-2 1s linear 2;
+      }
     }
     &.end {
       .fa-3 {
-        animation: scroll-more-animation-3 2s linear infinite;
+        animation: scroll-more-animation-3 1s linear 2;
       }
       .fa-4 {
-        animation: scroll-more-animation-4 2s linear infinite;
+        animation: scroll-more-animation-4 1s linear 2;
       }
     }
   }
@@ -70,73 +84,81 @@ $sm : $size/1.5;
 
 @keyframes scroll-more-animation {
   0% {
-    transform: translateY(-($sm));
+    transform: translateY(-($size/1.75));
     opacity: 0;
   }
   25% {
-    transform: translateY($size/3);
-    opacity: 1;
+    transform: translateY(-($size/2));
+    opacity: 0.5;
   }
   50% {
-    transform: translateY($size/2);
-    opacity: 0;
+    transform: translateY(0);
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
   }
   100% {
-    transform: translateY($size+$sm);
     opacity: 0;
   }
 }
 @keyframes scroll-more-animation-2 {
   0% {
-    transform: translateY(-($sm));
+    transform: translateY(-($size/1.75));
     opacity: 0;
   }
-  23% {
-    transform: translateY($size/3);
+  20% {
+    transform: translateY(-($size/2));
+    opacity: 0.5;
+  }
+  45% {
+    transform: translateY(0);
     opacity: 1;
   }
-  48% {
-    transform: translateY($size/2);
-    opacity: 0;
+  85% {
+    opacity: 1;
   }
   100% {
-    transform: translateY($size+$sm);
     opacity: 0;
   }
 }
 @keyframes scroll-more-animation-3 {
   0% {
-    transform: translateY($size + $sm);
+    transform: translateY($size/1.75);
     opacity: 0;
   }
-  23% {
-    transform: translateY($size/3);
+  25% {
+    transform: translateY($size/2);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(0);
     opacity: 1;
   }
-  48% {
-    transform: translateY(- $size/2);
-    opacity: 0;
+  85% {
+    opacity: 1;
   }
   100% {
-    transform: translateY((-$sm));
     opacity: 0;
   }
 }
 @keyframes scroll-more-animation-4 {
   0% {
-    transform: translateY($size + $sm);
+    transform: translateY($size/1.75);
     opacity: 0;
   }
-  25% {
-    transform: translateY($size/3);
+  20% {
+    transform: translateY($size/2);
+    opacity: 0.5;
+  }
+  45% {
+    transform: translateY(0);
     opacity: 1;
   }
-  50% {
-    transform: translateY((-$sm));
-    opacity: 0;
+  85% {
+    opacity: 1;
   }
   100% {
-    transform: translateY((-$sm));
     opacity: 0;
   }
 }
