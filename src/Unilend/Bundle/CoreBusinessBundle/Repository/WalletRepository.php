@@ -2,10 +2,12 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -71,27 +73,29 @@ class WalletRepository extends EntityRepository
      */
     public function getInactiveLenderWalletOnPeriod(\DateTime $inactiveSince, $minAvailableBalance = null)
     {
-        $params = [
-            'inactive_since' => $inactiveSince->format('Y-m-d H:i:s'),
-            'wallet_label'   => WalletType::LENDER
-        ];
-        $query  = '
-                SELECT w.id_client, w.available_balance, w.id
-                FROM
-                  wallet w INNER JOIN wallet_type wt ON w.id_type = wt.id
-                WHERE
-                  wt.label = :wallet_label
-                  AND w.added <= :inactive_since
-                  AND w.updated <= :inactive_since
-                  AND ( SELECT COUNT(id_bid) FROM bids WHERE bids.added <= :inactive_since AND bids.id_lender_account = ( SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = w.id_client)) = 0
-                  ';
-        if (null !== $minAvailableBalance) {
-            $query .= 'AND w.available_balance >= :available_balance';
-            $params['available_balance'] = $minAvailableBalance;
-        }
+        $qb = $this->createQueryBuilder('w')
+            ->select('MAX(wbh.added) AS lastOperationDate, IDENTITY(w.idClient) AS idClient, w.availableBalance')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
+            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
+            ->innerJoin('UnilendCoreBusinessBundle:LendersAccounts', 'la', Join::WITH, 'la.idClientOwner = w.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'b.idLenderAccount = la.idLenderAccount AND b.added >= :inactive_since')
+            ->where('wt.label = :wallet_type')
+            ->setParameter('wallet_type', WalletType::LENDER)
+            ->andWhere('ot.label IN (:operation_type)')
+            ->setParameter(':operation_type', [OperationType::LENDER_PROVISION, OperationType::LENDER_WITHDRAW]);
 
-        return $this->getEntityManager()
-            ->getConnection()
-            ->executeQuery($query, $params)->fetchAll();
+        if (null !== $minAvailableBalance) {
+            $qb->andWhere('w.availableBalance >= :available_balance')
+                ->setParameter('available_balance', $minAvailableBalance);
+        }
+        $qb->andWhere('b.idBid IS NULL')
+            ->groupBy('w.id')
+            ->having('lastOperationDate <= :inactive_since')
+            ->setParameter('inactive_since', $inactiveSince);
+
+        return $qb->getQuery()
+            ->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
 }

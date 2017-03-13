@@ -27,7 +27,7 @@ class ClientAtypicalOperation
     /**
      * @var string
      *
-     * @ORM\Column(name="operation_log", type="string", length=191, nullable=true)
+     * @ORM\Column(name="operation_log", type="text", length=65535, nullable=true)
      */
     private $operationLog;
 

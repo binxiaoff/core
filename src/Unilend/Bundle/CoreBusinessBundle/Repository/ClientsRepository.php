@@ -60,7 +60,7 @@ class ClientsRepository extends EntityRepository
     public function getClientsByDepositAmountAndDate(\DateTime $operationDateSince, $amount, $sum = false)
     {
         if (true === $sum) {
-            $select = 'c.idClient, o.id as operation, SUM(o.amount) as depositAmount'; // @todo find a solution to get concatenation of operation IDs
+            $select = 'c.idClient, GROUP_CONCAT(o.id) as operation, SUM(o.amount) as depositAmount';
         } else {
             $select = 'c.idClient, o.id as operation, o.amount as depositAmount';
         }

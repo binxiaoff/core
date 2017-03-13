@@ -52,7 +52,6 @@ class VigilanceRuleManager
 
     /**
      * @param VigilanceRule $vigilanceRule
-     * @return array
      */
     public function checkRule(VigilanceRule $vigilanceRule)
     {
@@ -214,13 +213,13 @@ class VigilanceRuleManager
     {
         foreach ($inactiveWallets as $wallet) {
             try {
-                $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($wallet['id_client']);
-                $comment           = 'Le client a un solde inactif d\'un montant de ' . number_format($wallet['available_balance'], 2, ',', ' ') . ' €';
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $wallet['available_balance'], null, $comment, true);
+                $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($wallet['idClient']);
+                $comment           = 'Le client a un solde inactif d\'un montant de ' . number_format($wallet['availableBalance'], 2, ',', ' ') . ' €. Dernière opération le ' . \DateTime::createFromFormat('Y-m-d H:i:s', $wallet['lastOperationDate'])->format('d/m/Y H:i:s');
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $wallet['availableBalance'], null, $comment, true);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
-                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $wallet['id_client'] .
-                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $wallet['id_client']]);
+                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $wallet['idClient'] .
+                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $wallet['idClient']]);
             }
         }
     }
