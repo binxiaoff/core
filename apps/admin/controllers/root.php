@@ -70,7 +70,10 @@ class rootController extends bootstrap
         $user = $this->loadData('users');
         $user->get($_SESSION['user']['id_user']);
 
-        if (in_array($user->id_user_type, [\users_types::TYPE_COMMERCIAL, \users_types::TYPE_RISK])) {
+        if (
+            in_array($user->id_user_type, [\users_types::TYPE_COMMERCIAL, \users_types::TYPE_RISK])
+            || in_array($user->id_user, [23, 28])
+        ) {
             header('Location: ' . $this->lurl . '/dashboard');
             die;
         }

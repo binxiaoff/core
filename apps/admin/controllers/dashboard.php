@@ -29,24 +29,21 @@ class dashboardController extends bootstrap
         $user = $this->loadData('users');
         $user->get($_SESSION['user']['id_user']);
 
-        switch ($user->id_user_type) {
-            case \users_types::TYPE_RISK:
-                $this->template     = 'risk';
-                $this->userProjects = $this->getRiskUserProjects($user);
-                $this->teamProjects = $this->getRiskTeamProjects($user);
-                break;
-            case \users_types::TYPE_COMMERCIAL:
-                $this->template                     = 'sale';
-                $this->userProjects                 = $this->getSaleUserProjects($user);
-                $this->teamProjects                 = $this->getSaleTeamProjects($user);
-                $this->upcomingProjects             = $this->getSaleUpcomingProjects();
-                $this->impossibleEvaluationProjects = $this->getImpossibleEvaluationProjects();
-                $this->collapsedStatus              = self::$saleCollapsedStatus;
-                $this->salesPeople                  = $user->select('status = 1 AND id_user_type = ' . \users_types::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
-                break;
-            default:
-                header('Location: ' . $this->lurl);
-                die;
+        if (\users_types::TYPE_RISK == $user->id_user_type || $user->id_user == 28) { // Risk team or Alain
+            $this->template     = 'risk';
+            $this->userProjects = $this->getRiskUserProjects($user);
+            $this->teamProjects = $this->getRiskTeamProjects($user);
+        } elseif (\users_types::TYPE_COMMERCIAL == $user->id_user_type || $user->id_user == 23) { // Sales team or Arnaud
+            $this->template                     = 'sale';
+            $this->userProjects                 = $this->getSaleUserProjects($user);
+            $this->teamProjects                 = $this->getSaleTeamProjects($user);
+            $this->upcomingProjects             = $this->getSaleUpcomingProjects();
+            $this->impossibleEvaluationProjects = $this->getImpossibleEvaluationProjects();
+            $this->collapsedStatus              = self::$saleCollapsedStatus;
+            $this->salesPeople                  = $user->select('status = 1 AND id_user_type = ' . \users_types::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
+        } else {
+            header('Location: ' . $this->lurl);
+            die;
         }
     }
 
