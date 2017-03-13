@@ -417,11 +417,22 @@
                             <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y') ?></td>
                         </tr>
                         <tr>
-                            <th>Source</th>
-                            <td><?= $this->clients->source ?></td>
+                            <th><label for="source">Source</label></th>
+                            <td>
+                                <?php if ($this->projects->create_bo && empty($this->clients->source)) : ?>
+                                    <select id="source" name="source" class="select">
+                                        <option value=""></option>
+                                        <?php foreach ($this->sources as $source) : ?>
+                                            <option value="<?= stripslashes($source) ?>"<?= $this->clients->source === $source ? ' selected' : '' ?>><?= $source ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php else : ?>
+                                    <?= empty($this->clients->source) ? '-' : $this->clients->source ?>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                         <tr>
-                            <th><label for="siren">SIREN</label></th>
+                            <th>SIREN</th>
                             <td><?= $this->companies->siren ?></td>
                         </tr>
                         <?php if ($this->isTakeover) : ?>
@@ -442,7 +453,7 @@
                             </tr>
                         <?php endif; ?>
                         <tr>
-                            <th><label for="code_naf">Code NAF</label></th>
+                            <th>Code NAF</th>
                             <td>
                                 <?php if (empty($this->companies->code_naf)) : ?>
                                     -

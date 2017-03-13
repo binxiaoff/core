@@ -504,6 +504,11 @@ class dossiersController extends bootstrap
                     $_POST['status'] = \projects_status::ANALYSIS_REVIEW;
                 }
 
+                if ($this->projects->create_bo && empty($this->clients->source) && isset($_POST['source'])) {
+                    $this->clients->source = $_POST['source'];
+                    $this->clients->update();
+                }
+
                 $this->companies->sector       = isset($_POST['sector']) ? $_POST['sector'] : $this->companies->sector;
                 $this->companies->name         = $_POST['societe'];
                 $this->companies->tribunal_com = $_POST['tribunal_com'];
@@ -674,6 +679,7 @@ class dossiersController extends bootstrap
 
             $this->xerfi                 = $this->loadData('xerfi');
             $this->sectors               = $this->loadData('company_sector')->select();
+            $this->sources               = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
             $this->ratings               = $this->loadRatings($this->companies, $this->projects->id_company_rating_history, $this->xerfi);
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
             $this->iCompanyProjectsCount = count($this->aCompanyProjects);
