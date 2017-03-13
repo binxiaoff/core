@@ -51,7 +51,8 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
      */
     private function getClientsForAutoValidation()
     {
-        $clientStatus   = [\clients_status::TO_BE_CHECKED, \clients_status::COMPLETENESS_REPLY, \clients_status::MODIFICATION];
+      //$clientStatus   = [\clients_status::TO_BE_CHECKED, \clients_status::COMPLETENESS_REPLY, \clients_status::MODIFICATION];
+        $clientStatus   = [\clients_status::TO_BE_CHECKED]; // this is a temporary restriction. Waiting for a fix on the root cause of TMA-1613
         $attachmentType = [\attachment_type::CNI_PASSPORTE, \attachment_type::JUSTIFICATIF_DOMICILE, \attachment_type::RIB];
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
