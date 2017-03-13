@@ -93,18 +93,18 @@
 
 <a class="tab_title" id="section-balance-sheets" href="#section-balance-sheets">4.2 - Bilans</a>
 <div class="tab_content" id="etape4_2">
-    <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
+    <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" style="float:right">
         <input type="hidden" name="add_annual_accounts" value="1">
-        <label for="tax-form-type"  style="float:right" > Type de liasse :
+        <label for="tax-form-type">Ajouter un bilan
             <select id="tax-form-type" name="tax_form_type" onchange="">
-                <option value="">Selectionez un type de liasse</option>
+                <option value="">Type de liasse</option>
                 <?php foreach ($this->taxFormTypes as $type) : ?>
                     <option value="<?= $type['id_type'] ?>"><?= $type['label'] ?></option>
                 <?php endforeach; ?>
             </select>
         </label>
         <br><br>
-        <input id="add-balance-submit" type="submit" class="btn_link" value="Ajouter un bilan" style="float:right" disabled>
+        <input id="add-balance-submit" type="submit" class="btn-small btn_link" value="Ajouter un bilan" disabled style="float:right">
     </form>
     <form id="last-annual-accounts-form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" class="balance-form">
         <h2>
@@ -114,16 +114,20 @@
                 <a href="<?= $this->url ?>/attachment/download/id/<?= $lastBalanceSheet['id'] ?>/file/<?= urlencode($lastBalanceSheet['path']) ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="Dernière liasse fiscale"></a>
             <?php endif; ?>
         </h2>
-        <select id="last-annual-accounts" name="last_annual_accounts" title="Dernier bilan">
-        <?php foreach ($this->aAllAnnualAccounts as $aAnnualAccounts) : ?>
-            <option value="<?= $aAnnualAccounts['id_bilan'] ?>"<?= $aAnnualAccounts['id_bilan'] == $this->projects->id_dernier_bilan ? ' selected' : '' ?>><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</option>
-        <?php endforeach; ?>
+        <?php if (empty($this->aAllAnnualAccounts)) : ?>
+            Aucun bilan saisi actuellement
+        <?php else : ?>
+            <select id="last-annual-accounts" name="last_annual_accounts" title="Dernier bilan">
+            <?php foreach ($this->aAllAnnualAccounts as $aAnnualAccounts) : ?>
+                <option value="<?= $aAnnualAccounts['id_bilan'] ?>"<?= $aAnnualAccounts['id_bilan'] == $this->projects->id_dernier_bilan ? ' selected' : '' ?>><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</option>
+            <?php endforeach; ?>
+        <?php endif; ?>
         </select>
     </form>
     <form id="balance-count-form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" class="balance-form">
         <h2><label for="balance-count">Nombre de bilans</label></h2>
         <input type="text" name="balance_count" id="balance-count" value="<?= empty($this->projects->balance_count) ? '' : $this->projects->balance_count ?>">
-        <input type="submit" class="btn_link" value="Modifier">
+        <input type="submit" class="btn-small btn_link" value="Modifier">
     </form>
     <br>
     <form id="dossier_etape4_2" action="/ajax/valid_etapes" method="post">
@@ -136,8 +140,10 @@
         <?php if (in_array(company_tax_form_type::FORM_2035, array_column($this->aBalanceSheets, 'form_type'))) : ?>
             <?php $this->fireView('blocs/balance_sheet/2035'); ?>
         <?php endif; ?>
-        <div class="btnDroite">
-            <input type="submit" class="btn_link" value="Sauvegarder les bilans">
-        </div>
+        <?php if (false === empty($this->aBalanceSheets)) : ?>
+            <div class="btnDroite">
+                <input type="submit" class="btn_link" value="Sauvegarder les bilans">
+            </div>
+        <?php endif; ?>
     </form>
 </div>
