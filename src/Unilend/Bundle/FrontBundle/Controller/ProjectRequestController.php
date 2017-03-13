@@ -212,7 +212,7 @@ class ProjectRequestController extends Controller
             $em->commit();
         } catch (\Exception $exception) {
             $em->getConnection()->rollBack();
-            $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->get('logger')->error('An error occurred while creating client', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
         if (empty($this->client->getIdClient())) {
@@ -904,7 +904,8 @@ class ProjectRequestController extends Controller
                     'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->getFonction()
                 ],
                 'project' => [
-                    'duration' => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period
+                    'duration'    => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period,
+                    'description' => isset($values['project']['description']) ? $values['project']['description'] : $this->project->comments
                 ]
             ]
         ];
@@ -968,6 +969,9 @@ class ProjectRequestController extends Controller
         if (empty($request->request->get('project')['duration']) || false === in_array($request->request->get('project')['duration'], $loanPeriods)) {
             $errors['project']['duration'] = true;
         }
+        if (empty($request->request->get('project')['description'])) {
+            $errors['project']['description'] = true;
+        }
         if (empty($request->request->get('terms'))) {
             $errors['terms'] = true;
         }
@@ -1001,7 +1005,8 @@ class ProjectRequestController extends Controller
             $tosAcceptation->create();
         }
 
-        $this->project->period = $request->request->get('project')['duration'];
+        $this->project->period   = $request->request->get('project')['duration'];
+        $this->project->comments = $request->request->get('project')['description'];
         $this->project->update();
 
         $files = $request->request->get('files', []);
