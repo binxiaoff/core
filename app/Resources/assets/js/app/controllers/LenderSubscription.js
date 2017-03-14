@@ -287,8 +287,9 @@ $doc.on('ready', function () {
 
   // Validate address city and zip if country is France
   $doc.on('change', '#form-lender-person-fiscal-address-country, #form-lender-legal-entity-fiscal-address-country, #form-lender-person-postal-address-country', function () {
-    if ($(this).val() === '1') {
-        checkPostCodeCity(this)
+    var $dataAddressElem = $(this).parents('.panel').find('[data-autocomplete-address]').first()
+    if ($(this).val() === 1) { // France
+      checkPostCodeCity($dataAddressElem[0])
     }
   })
 
