@@ -816,7 +816,7 @@ $doc
         if ($cityElem.val() !== cityValue) {
           $cityElem.val(cityValue)
           // @debug
-          console.log('set city', cityValue)
+          // console.log('set city', cityValue)
         }
       }
 
@@ -828,7 +828,7 @@ $doc
           $zipElem.val(codeValue)
 
           // @debug
-          console.log('set code', codeValue)
+          // console.log('set code', codeValue)
         }
       }
     }
@@ -860,8 +860,8 @@ $doc
       })
     })
 
-    // Set the new text value of the input and of the ville element
-    $(document).on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function (event, elemAutoComplete, newValue) {
+    // Set the new text value of the zip and city element
+    $doc.on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function (event, elemAutoComplete, newValue) {
       // Empty value given
       newValue = (newValue + '').trim()
       if (!newValue) return
