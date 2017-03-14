@@ -190,11 +190,12 @@ class PaylineManager
                 return false;
             }
 
-            if ($response['result']['code'] == Backpayline::CODE_TRANSACTION_APPROVED) {
+            if ($response['result']['code'] === Backpayline::CODE_TRANSACTION_APPROVED) {
                 $this->operationManager->provisionLenderWallet($backPayline->getWallet(), $backPayline);
                 $this->notifyClientAboutMoneyTransfer($backPayline);
-            } elseif ($response['result']['code'] !== Backpayline::CODE_TRANSACTION_CANCELLED) { // Payment error
-                $this->logger->error('erreur sur page payment alimentation preteur (wallet id : ' . $backPayline->getWallet()->getId() . ') : ' . serialize($response));
+            // See codes https://support.payline.com/hc/fr/article_attachments/206064778/PAYLINE-GUIDE-Descriptif_des_appels_webservices-FR-v3.A.pdf
+            } elseif (in_array($response['result']['code'], ['01109', '01110', '01114', '01115', '01122', '01123', '01181', '01182', '01197', '01198', '01199', '01207', '01904', '01907', '01909', '01912', '01913', '01914', '01940', '01941', '01942', '01943', '02101', '02102', '02103', '02109', '02201', '02202', '02301', '02303', '02304', '02305', '02307', '02308', '02309', '02310', '02311', '02312', '02313', '02314', '02315', '02316', '02317', '02318', '02320', '02321', '02322'])) {
+                $this->logger->error('Lender provision error (wallet id : ' . $backPayline->getWallet()->getId() . ') : ' . serialize($response));
 
                 return false;
             }
