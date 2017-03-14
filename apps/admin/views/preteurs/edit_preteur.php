@@ -1,3 +1,6 @@
+<?php
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+?>
 <script type="text/javascript">
     $(function() {
         $(".histo_status_client").tablesorter({headers: {8: {sorter: false}}});
@@ -70,7 +73,7 @@
     <form action="" method="post" enctype="multipart/form-data" id="form_etape1">
         <h2>Etape 1</h2>
         <table class="form" style="margin: auto;">
-            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+            <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) : ?>
                 <tr class="particulier">
                     <th>ID Client :</th>
                     <td>
@@ -230,7 +233,7 @@
                 <th><label for="cp">Code postal :</label></th>
                 <td><input type="text" class="input_large" name="cp" id="cp" value="<?= $this->zip_fiscal ?>" data-autocomplete="post_code"></td>
             </tr>
-            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+            <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) : ?>
                 <tr>
                     <th><label for="id_pays_fiscal">Pays fiscal :</label></th>
                     <td>
@@ -266,7 +269,7 @@
                 <th><label for="cp2">Code postal :</label></th>
                 <td><input type="text" class="input_large" name="cp2" id="cp2" value="<?= $this->clients_adresses->cp ?>" data-autocomplete="post_code"></td>
             </tr>
-            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+            <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) : ?>
                 <tr class="meme-adresse" style="display:none;">
                     <th><label for="id_pays">Pays :</label></th>
                     <td>
@@ -280,7 +283,7 @@
                     <td></td>
                 </tr>
             <?php endif; ?>
-            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+            <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) : ?>
                 <tr class="particulier">
                     <th><label for="phone">Téléphone :</label></th>
                     <td><input type="text" class="input_large" name="phone" id="phone" value="<?= $this->clients->telephone ?>"></td>
@@ -445,7 +448,7 @@
                 </td>
             </tr>
             <?php if ($this->origine_fonds[0] != false) : ?>
-                <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) : ?>
+                <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) : ?>
                     <tr class="particulier">
                         <th colspan="2" style="text-align:left;"><label for="origines">Quelle est l'origine des fonds que vous déposez sur Unilend ?</label></th>
                     </tr>
@@ -779,7 +782,7 @@
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if ($this->clients_status->status != clients_status::VALIDATED && $this->clients->status == \clients::STATUS_ONLINE) : ?>
+                            <?php if (clients_status::VALIDATED != $this->clients_status->status && Clients::STATUS_ONLINE == $this->clients->status) : ?>
                             <input type="button" id="valider_preteur" class="btn" value="Valider le prêteur">
                             <?php endif; ?>
                         </td>
@@ -795,14 +798,14 @@
                         <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
                     <tr>
                         <td colspan="2">
-                            <?php if ($this->clients->status == \clients::STATUS_ONLINE) :?>
+                            <?php if (Clients::STATUS_ONLINE == $this->clients->status) :?>
                                 <input type="button"
-                                       onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
+                                       onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
                                        class="btnRouge"
                                        value="Hors ligne / Clôturé par Unilend">
                             <?php else: ?>
                                 <input type="button"
-                                       onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_ONLINE ?>';}"
+                                       onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ?>';}"
                                        class="btn"
                                        value="En ligne / Status avant mis hors ligne">
                             <?php endif; ?>
@@ -812,7 +815,7 @@
                         <td colspan="2">
                             <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
                             <input type="button"
-                                   onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
+                                   onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->lenders_accounts->id_lender_account ?>/<?= Clients::STATUS_OFFLINE ?>';}"
                                    class="btnRouge" value="Hors ligne / Clôturé à la demande du client">
                             <?php endif; ?>
                         </td>

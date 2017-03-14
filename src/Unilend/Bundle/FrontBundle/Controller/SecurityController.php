@@ -10,11 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
 use Unilend\core\Loader;
 
@@ -118,7 +117,7 @@ class SecurityController extends Controller
             $clients = $entityManager->getRepository('clients');
             $email   = $request->request->get('client_email');
 
-            if (filter_var($email, FILTER_VALIDATE_EMAIL) && $clients->get($email, 'status = ' . \clients::STATUS_ONLINE . ' AND email')) {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) && $clients->get($email, 'status = ' . Clients::STATUS_ONLINE . ' AND email')) {
                 /** @var \settings $settings */
                 $settings = $entityManager->getRepository('settings');
                 $settings->get('Facebook', 'type');

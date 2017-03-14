@@ -13,6 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ClientsAdresses
 {
+    const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
+    const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
+
     /**
      * @var integer
      *
@@ -133,9 +136,9 @@ class ClientsAdresses
     private $commentaire;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="meme_adresse_fiscal", type="integer", nullable=true)
+     * @ORM\Column(name="meme_adresse_fiscal", type="boolean", nullable=true)
      */
     private $memeAdresseFiscal;
 

@@ -374,7 +374,7 @@ class bootstrap extends Controller
 
     private function getDataLender()
     {
-        if ($this->clients->type == clients::TYPE_PERSON) {
+        if ($this->clients->type == \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON) {
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
         } else {

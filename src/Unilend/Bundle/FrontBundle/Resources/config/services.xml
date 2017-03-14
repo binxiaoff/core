@@ -105,5 +105,10 @@
         </service>
 
         <service id="unilend.frontbundle.security.logout.success_handler" class="Unilend\Bundle\FrontBundle\Security\LogoutSuccessHandler" parent="security.logout.success_handler" />
+
+        <service id="unilend.frontbundle.service.form_manager" class="Unilend\Bundle\FrontBundle\Service\FormManager">
+            <argument type="service" id="form.factory" />
+            <argument type="service" id="translator" />
+        </service>
     </services>
 </container>

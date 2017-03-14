@@ -30,4 +30,24 @@ class ClientsRepository extends EntityRepository
         return $result;
     }
 
+    /**
+     * @param $email
+     * @return bool
+     */
+    public function existEmail($email)
+    {
+        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
+            ->select('COUNT(c)')
+            ->where('c.email = :email')
+            ->setParameter('email', $email);
+        $query = $queryBuilder->getQuery();
+
+        return $query->getSingleScalarResult() > 0;
+    }
+
 }

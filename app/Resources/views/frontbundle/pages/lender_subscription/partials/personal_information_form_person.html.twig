@@ -1,98 +1,109 @@
 {# Set this to 'person' to make included partials' JS UX functionality compatible with this form #}
 {% set idClientType = 'person' %}
+{% form_theme identityForm '/frontbundle/forms/fields.html.twig' %}
+{% do identityForm.fiscalAddress.housedByThirdPerson.setRendered %}
 
-<form action="{{ path('lender_subscription_personal_information_person_form') }}" method="post" class="form-preter-create form-preter-create-info-person" data-formvalidation data-formvalidation-notificationselem="#form-preter-person-1-notifications" data-cacheform>
+{{ form_start(identityForm, {
+    'attr' : {
+        'class' : 'form-preter-create form-preter-create-info-person',
+        'data-formvalidation data-formvalidation-notificationselem' : '#form-preter-person-1-notifications',
+        'data-cacheform' : true
+    }
+}) }}
     <fieldset class="panel">
         <div class="message-info">
             <p>{% trans %} lender-subscription_person-mandatory-documents-information {% endtrans %}</p>
         </div><!-- /.message-alert -->
 
-        <div id="form-preter-person-1-notifications" class="ui-formvalidation-notifications">
-            {% if app.session.flashBag.has('personalInformationErrors') %}
-                <div class="message-error">
-                    {% for error in app.session.flashBag.peek('personalInformationErrors') %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+        <div id="form-preter-notifications" class="ui-formvalidation-notifications">
+            {{ form_errors(identityForm) }}
         </div>
 
         {# Hide the person form and display legal entity form when legal entity is chosen in above radio buttons #}
         <h3 class="h3">{% trans %} lender-subscription_identity-section-title {% endtrans %}</h3>
 
         <div class="row">
-            <div class="form-field form-field-multi">
+            <div class="form-field form-field-multi {% if form_errors(identityForm.clientType)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <div class="field-label">
                     <label>{% trans %} lender-subscription_identity-client-type-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
-                    <li>
-                        <label>
-                            <input type="radio" name="client_type" value="person"{% if formData.client_type == 'person' or formData.client_type is empty %} checked{% endif %}/>
-                            {% trans %} lender-subscription_identity-client-type-person-label {% endtrans %}
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="radio" name="client_type" value="legal_entity"{% if formData.client_type == 'legal_entity' %} checked{% endif %}/>
-                            {% trans %} lender-subscription_identity-client-type-legal-entity-label {% endtrans %}
-                        </label>
-                    </li>
+                    {% for key, type in identityForm.clientType.children %}
+                        <li>
+                            {{ form_widget(type) }}
+                            {{ form_label(type) }}
+                        </li>
+                    {% endfor %}
                 </ul>
             </div><!-- /.form-field -->
         </div>
 
         <div class="row">
-            <div class="form-field form-field-multi">
+            <div class="form-field form-field-multi {% if form_errors(identityForm.client.civilite)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <div class="field-label">
                     <label>
-                        {% trans %} common_form-of-address {% endtrans %}
+                        {% trans %} common_title {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
-                    <li>
-                        <label>
-                            <input type="radio" name="client_form_of_address" value="Mme" {% if formData.client_form_of_address == 'Mme' %} checked {% endif %}/>
-                            {% trans %} common_form-of-address-female {% endtrans %}
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="radio" name="client_form_of_address" value="M." {% if formData.client_form_of_address == 'M.' %} checked {% endif %}/>
-                            {% trans %} common_form-of-address-male {% endtrans %}
-                        </label>
-                    </li>
+                    {% for key, civilite in identityForm.client.civilite.children %}
+                        <li>
+                            {{ form_widget(civilite) }}
+                            {{ form_label(civilite) }}
+                        </li>
+                    {% endfor %}
                 </ul>
+                {{ form_errors(identityForm.client.civilite) }}
             </div><!-- /.form-field -->
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.nom)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-name">
                     {% trans %} common_birth-name {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <input id="form-lender-person-name" type="text" name="client_name" value="{{ formData.client_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                {{ form_widget(identityForm.client.nom, {
+                    'id' : 'form-lender-person-name',
+                    'attr' : {
+                        'class' : 'input-field',
+                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    }
+                }) }}
+                {{ form_errors(identityForm.client.nom) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.prenom)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-first-name">
                     {% trans %} common_firstname {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <input id="form-lender-person-first-name" type="text" name="client_first_name" value="{{ formData.client_first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                {{ form_widget(identityForm.client.prenom, {
+                    'id' : 'form-lender-person-first-name',
+                    'attr' :  {
+                        'class' : 'input-field',
+                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    }
+                }) }}
+                {{ form_errors(identityForm.client.prenom) }}
             </div><!-- /.form-field -->
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.nomUsage)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-used-name">
                     {% trans %} common_used-name {% endtrans %}
                 </label>
-                <input id="form-lender-person-used-name" type="text" name="client_used_name" value="{{ formData.client_used_name }}" class="input-field"/>
+                {{ form_widget(identityForm.client.nomUsage, {
+                    'id' : 'form-lender-person-used-name',
+                    'attr' : {
+                        'class' : 'input-field'
+                    }
+                }) }}
+                {{ form_errors(identityForm.client.nomUsage) }}
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6">
@@ -109,54 +120,66 @@
         </div>
 
         <div class="row">
-            <div class="form-field">
+            <div class="form-field {% if form_errors(identityForm.fiscalAddress.adresseFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-street">{% trans %} lender-subscription_address-form-fiscal-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <input id="form-lender-person-fiscal-address-street" type="text" name="fiscal_address_street" value="{{ formData.fiscal_address_street }}" class="input-field"
-                       placeholder="{% trans %} lender-subscription_address-form-fiscal-address-placeholder {% endtrans %}"
-                       data-formvalidation-input
-                       data-formvalidation-required="true"/>
+                {{ form_widget(identityForm.fiscalAddress.adresseFiscal, {
+                    'id' : 'form-lender-person-fiscal-address-street',
+                    'attr' :  {
+                        'class' : 'input-field',
+                        'data-formvalidation-input data-formvalidation-required' : 'true',
+                        'placeholder' : 'lender-subscription_address-form-fiscal-address-placeholder'|trans
+                    }
+                }) }}
+                {{ form_errors(identityForm.fiscalAddress.adresseFiscal) }}
             </div><!-- /.form-field -->
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.fiscalAddress.cpFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-zip">{% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    <input id="form-lender-person-fiscal-address-zip" type="text" name="fiscal_address_zip" value="{{ formData.fiscal_address_zip }}" autocomplete="off" class="input-field"
-                           data-formvalidation-input
-                           data-formvalidation-required="true"
-                           {# AutoComplete behaviours for addresses needs to be further marked and configured #}
-                           data-autocomplete-address
-                           data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_zip') }}"
-                           data-autocomplete-address-countryelem="#form-lender-person-fiscal-address-country"
-                           data-autocomplete-address-cityelem="#form-lender-person-fiscal-address-city"
-                           data-autocomplete-address-zipelem="#form-lender-person-fiscal-address-zip"
-                           data-has-spinner="#person-zip-autocomplete-spinner"/>
+                    {{ form_widget(identityForm.fiscalAddress.cpFiscal, {
+                        'id' : 'form-lender-person-fiscal-address-zip',
+                        'attr' : {
+                            'class' : 'input-field',
+                            'autocomplete' : 'off',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_subscription_ajax_zip'),
+                            'data-autocomplete-address-countryelem' : '#form-lender-person-fiscal-address-country',
+                            'data-autocomplete-address-cityelem' : '#form-lender-person-fiscal-address-city',
+                            'data-autocomplete-address-zipelem' : '#form-lender-person-fiscal-address-zip',
+                            'data-has-spinner' : '#person-zip-autocomplete-spinner'
+                        }})
+                    }}
+                    {{ form_errors(identityForm.fiscalAddress.cpFiscal) }}
                     <div class="btn-group">
                         <span id="person-zip-autocomplete-spinner" class="ui-is-spinner"></span>
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.fiscalAddress.villeFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-city">{% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    <input id="form-lender-person-fiscal-address-city" type="text" name="fiscal_address_city" value="{{ formData.fiscal_address_city }}" autocomplete="off" class="input-field"
-                           data-formvalidation-input
-                           data-formvalidation-required="true"
-                           {# AutoComplete behaviours for addresses needs to be further marked and configured #}
-                           data-autocomplete-address
-                           data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_city') }}"
-                           data-autocomplete-ajaxprop="city"
-                           data-autocomplete-address-countryelem="#form-lender-person-fiscal-address-country"
-                           data-autocomplete-address-cityelem="#form-lender-person-fiscal-address-city"
-                           data-autocomplete-address-zipelem="#form-lender-person-fiscal-address-zip"
-                           data-has-spinner="#person-city-autocomplete-spinner"/>
+                    {{ form_widget(identityForm.fiscalAddress.villeFiscal, {
+                        'id' : 'form-lender-person-fiscal-address-city',
+                        'attr' : {
+                            'class' : 'input-field',
+                            'autocomplete' : 'off',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_subscription_ajax_city'),
+                            'data-autocomplete-address-countryelem' : '#form-lender-person-fiscal-address-country',
+                            'data-autocomplete-address-cityelem' : '#form-lender-person-fiscal-address-city',
+                            'data-autocomplete-address-zipelem' : '#form-lender-person-fiscal-address-zip',
+                            'data-has-spinner' : '#person-city-autocomplete-spinner'
+                        }})
+                    }}
+                    {{ form_errors(identityForm.fiscalAddress.villeFiscal) }}
                     <div class="btn-group">
                         <span id="person-city-autocomplete-spinner" class="ui-is-spinner"></span>
                     </div>
@@ -165,38 +188,48 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.fiscalAddress.idPaysFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-country">
                     {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <select id="form-lender-person-fiscal-address-country" name="fiscal_address_country" class="input-field"
-                        data-formvalidation-input
-                        data-formvalidation-required="true">
-                    {% for i, country in countries %}
-                        <option value="{{ i }}"{% if formData.fiscal_address_country == i %} selected{% endif %}>
-                            {{ country }}
-                        </option>
-                    {% endfor %}
-                </select>
+                {{ form_widget(identityForm.fiscalAddress.idPaysFiscal, {
+                    'id' : 'form-lender-person-fiscal-address-country',
+                    'attr' : {
+                        'class' : 'input-field',
+                        'data-formvalidation-input' : true,
+                        'data-formvalidation-required' : true
+                    }})
+                }}
+                {{ form_errors(identityForm.fiscalAddress.idPaysFiscal) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.mobile)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-client-mobile">
                     {% trans %} common_mobile-phone {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group">
-                    <input id="form-lender-person-client-mobile" type="tel" name="client_mobile" value="{{ formData.client_mobile }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                    {{ form_widget(identityForm.client.mobile, {
+                        'id' : 'form-lender-person-client-mobile',
+                        'attr' : {
+                            'class' : 'input-field',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-formvalidation-type' : 'telephone'
+                        }
+                    }) }}
                 </div>
             </div><!-- /.form-field -->
         </div>
 
         <div class="row">
-            <div class="form-field form-field-single-checkbox">
+            <div class="form-field form-field-single-checkbox ">
                 <label>
-                    <input type="checkbox" name="same_postal_address" value="true"
-                           class="toggle-correspondence-address"{% if formData.same_postal_address == true or formData.same_postal_address is not empty %} checked{% endif %}>
+                    {{ form_widget(identityForm.postalAddress.memeAdresseFiscal, {
+                        'attr' :  {
+                            'class' : 'toggle-correspondence-address'
+                        }
+                    }) }}
                     <span class="label">{% trans %} lender-subscription_address-form-same-postal-address-checkbox {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
@@ -216,94 +249,109 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div id="form-lender-person-birthdate" class="form-field col-lg-6 col-md-6">
+            <div id="form-lender-person-birthdate"
+                 class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.naissance)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="client_day_of_birth" >
                     {% trans %} common_birthday {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <select id="client_day_of_birth" name="client_day_of_birth" class="input-field input-field-short"
-                        data-formvalidation-input
-                        data-formvalidation-required="true"
-                        data-formvalidation-date="day">
-                    <option value=""></option>
-                    {% for i in 1..31 %}
-                        <option value="{{ i }}"{% if formData.client_day_of_birth == i %} selected{% endif %}>{{ i }}</option>
-                    {% endfor %}
-                </select>
-                <select name="client_month_of_birth" class="input-field input-field-short"
-                        data-formvalidation-input
-                        data-formvalidation-required="true"
-                        data-formvalidation-date="month">
-                    <option value=""></option>
-                    {% for i, month in getMonths() %}
-                        <option value="{{ i }}"{% if formData.client_month_of_birth == i %} selected{% endif %}>{{ month }}</option>
-                    {% endfor %}
-                </select>
-                <select name="client_year_of_birth" class="input-field input-field-short"
-                        data-formvalidation-input
-                        data-formvalidation-required="true"
-                        data-formvalidation-date="year">
-                    <option value=""></option>
-                    {% for i in date('NOW-18 years')|date('Y')..1910 %}
-                        <option value="{{ i }}"{% if formData.client_year_of_birth == i %} selected{% endif %}>{{ i }}</option>
-                    {% endfor %}
-                </select>
+                {{ form_widget(identityForm.client.naissance.children.day, {
+                    'attr' :  {
+                        'class' : 'input-field input-field-short',
+                        'data-formvalidation-input data-formvalidation-required' : "true",
+                        'data-formvalidation-date' : 'day'
+                    }
+                }) }}
+                {{ form_widget(identityForm.client.naissance.children.month, {
+                    'attr' :  {
+                        'class' : 'input-field input-field-short',
+                        'data-formvalidation-input data-formvalidation-required' : "true",
+                        'data-formvalidation-date' : 'month'
+                    }
+                }) }}
+                {{ form_widget(identityForm.client.naissance.children.year, {
+                    'attr' :  {
+                        'class' : 'input-field input-field-short',
+                        'data-formvalidation-input data-formvalidation-required' : 'true',
+                        'data-formvalidation-date' : 'year'
+                    }
+                }) }}
+                {{ form_errors(identityForm.client.naissance) }}
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.idNationalite)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-nationality">{% trans %} common_nationality {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <select id="form-lender-person-nationality" name="client_nationality" class="input-field"
-                        data-formvalidation-input
-                        data-formvalidation-required="true">
-                    {% for i, nationality in nationalities %}
-                        <option value="{{ i }}"{% if formData.client_nationality == i %} selected {% endif %}>{{ nationality }}</option>
-                    {% endfor %}
-                </select>
+                {{ form_widget(identityForm.client.idNationalite, {
+                    'id' : 'form-lender-person-nationality',
+                    'attr' :  {
+                        'class' : 'input-field',
+                        'data-formvalidation-input data-formvalidation-required' :  'true'
+                    }
+                }) }}
+                {{ form_errors(identityForm.client.idNationalite) }}
             </div><!-- /.form-field -->
         </div>
 
-        <div class="message-alert" id="error-message-selected-nationality-other" style="display: none;">{% trans %}lender-subscription_error-message-selected-nationality-other{% endtrans %}</div>
+        <div class="message-alert" id="error-message-selected-nationality-other" style="display: none;">
+            {% trans %}lender-subscription_error-message-selected-nationality-other{% endtrans %}
+        </div>
 
         <div class="row row-multi-col-computer">
-            <div id="form-lender-person-birth-place" class="form-field col-lg-6 col-md-6">
+            <div id="form-lender-person-birth-place"
+                 class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.idPaysNaissance)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-birth-country">{% trans %} common_birth-country {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <select id="form-lender-person-birth-country" name="client_country_of_birth" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                    {% for i, country in countries %}
-                        <option value="{{ i }}" {% if formData.client_country_of_birth == i %} selected {% endif %}>{{ country }}</option>
-                    {% endfor %}
-                </select>
+                {{ form_widget(identityForm.client.idPaysNaissance, {
+                    'id' : 'form-lender-person-birth-country',
+                    'attr' :  {
+                        'class' : 'input-field',
+                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    }
+                }) }}
+                {{ form_errors(identityForm.client.idPaysNaissance) }}
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.villeNaissance)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-birth-city">
                     {% trans %} common_birth-city {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    <input id="form-lender-person-birth-city" type="text" name="client_place_of_birth" value="{{ formData.client_place_of_birth }}" autocomplete="off" class="input-field"
-                           data-formvalidation-input
-                           data-formvalidation-required="true"
-                           data-autocomplete
-                           data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_birth_place') }}"
-                           data-autocomplete-ajaxprop="birthPlace"
-                           data-has-spinner="#person-birth-city-spinner"/>
+                    {{ form_widget(identityForm.client.villeNaissance, {
+                        'id' : 'form-lender-person-birth-city',
+                        'attr' :  {
+                            'autocomplete' : 'off',
+                            'class' : 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true',
+                            'data-autocomplete data-autocomplete-ajaxurl' : path('lender_subscription_ajax_birth_place'),
+                            'data-autocomplete-ajaxprop' : 'birthPlace',
+                            'data-has-spinner' : '#person-birth-city-spinner'
+                        }
+                    }) }}
+                    {{ form_errors(identityForm.client.villeNaissance) }}
                     <div class="btn-group">
                         <span id="person-birth-city-spinner" class="ui-is-spinner"></span>
                     </div>
                 </div>
-                <input id="form-lender-person-birth-city-insee" type="hidden" name="client_insee_place_of_birth" value="{{ formData.client_insee_place_of_birth }}"/>
+                {{ form_widget(identityForm.client.inseeBirth, {
+                    'id' : 'form-lender-person-birth-city-insee'
+                }) }}
             </div><!-- /.form-field -->
         </div>
     </fieldset>
 
     <fieldset class="panel">
         <div class="row">
-            <div class="form-field form-field-single-checkbox">
+            <div class="form-field form-field-single-checkbox {% if form_errors(identityForm.tos)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label>
-                    <input type="checkbox" name="terms_of_use" value="true" data-formvalidation-input data-formvalidation-required="true">
-                    <span class="label">{% trans with {'%tosStart%' : '<a href="' ~ termsOfUsePerson ~ '" target="_blank">', '%tosEnd%' : '</a>'} %} lender-subscription_terms-of-use-acceptance {% endtrans %}
+                    {{ form_widget(identityForm.tos, {
+                        'attr' :  {
+                            'data-formvalidation-input data-formvalidation-required' : 'true'
+                        }
+                    }) }}
+                    <span class="label">
+                        {% trans with {'%tosStart%' : '<a href="' ~ termsOfUsePerson ~ '" target="_blank">', '%tosEnd%' : '</a>'} %} lender-subscription_terms-of-use-acceptance {% endtrans %}
                         <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}
                             </span>
                         </span>
@@ -313,8 +361,9 @@
         </div>
 
         <div class="row">
-            <div class="form-field form-field-single-checkbox">
-                <label><input type="checkbox" name="client_no_us_person" value="true" {% if formData.client_no_us_person %}checked {% endif %}>
+            <div class="form-field form-field-single-checkbox {% if form_errors(identityForm.fiscalAddress.noUsPerson)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                <label>
+                    {{ form_widget(identityForm.fiscalAddress.noUsPerson) }}
                     <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>
                 </label>
             </div>
@@ -330,4 +379,4 @@
             </button>
         </div>
     </div><!-- /.btn-controls.tab-footer -->
-</form><!-- /.form-preter-create -->
+{{ form_end(identityForm) }}

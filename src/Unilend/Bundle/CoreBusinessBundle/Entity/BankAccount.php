@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * BankAccount
@@ -21,14 +20,12 @@ class BankAccount
 
     /**
      * @var string
-     * @Assert\Bic()
      * @ORM\Column(name="bic", type="string", length=100, nullable=false)
      */
     private $bic;
 
     /**
      * @var string
-     * @Assert\Iban()
      * @ORM\Column(name="iban", type="string", length=100, nullable=false)
      */
     private $iban;

@@ -5,6 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 
 class FeedsBankTransferCommand extends ContainerAwareCommand
@@ -103,7 +104,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     }
                     $recipientIban = $bankAccount->getIban();
                     $recipientBic  = $bankAccount->getBic();
-                    if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                    if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                         $company       = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
                         $recipientName = $company->getName();
                     } else {

@@ -72,7 +72,10 @@
             <h5>Désignation du prêteur</h5>
             <div class="list">
                 <ul>
-                    <?php if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) : ?>
+                    <?php if (in_array($this->clients->type, [
+                        \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_LEGAL_ENTITY,
+                        \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_LEGAL_ENTITY_FOREIGNER
+                    ])) : ?>
                         <li>
                             <div class="col-long">Raison sociale</div>
                             <div class="col-small"><?= $this->companiesPreteur->name ?></div>

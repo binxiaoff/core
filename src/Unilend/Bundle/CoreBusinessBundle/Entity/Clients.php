@@ -27,6 +27,11 @@ class Clients
     const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
     const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
     const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
+
+    const TITLE_MISS      = 'Mme';
+    const TITLE_MISTER    = 'M.';
+    const TITLE_UNDEFINED = '';
+
     /**
      * @var string
      *

@@ -1,7 +1,7 @@
 <div class="field-help">
     <p>{% trans %} lender-profile_information-tab-fiscal-address-help-message {% endtrans %}</p>
 </div>
-<section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
+<section id="profile-address-view" role="tabpanel" class="profile-address-view collapse {{ fiscalAddressViewCollapse }}">
 
     <button data-target="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit">
         <span class="icon fa-pencil-u32"></span>
@@ -10,15 +10,13 @@
 
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}</dt>
-        <dd id="profile-address-street-output">{{ clientAddresses.adresse_fiscal }}</dd>
+        <dd id="profile-address-street-output">{{ clientsAdresses.adresseFiscal }}</dd>
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}</dt>
-        <dd id="profile-address-code-output">{{ clientAddresses.cp_fiscal }}</dd>
+        <dd id="profile-address-code-output">{{ clientsAdresses.cpFiscal }}</dd>
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}</dt>
-        <dd id="profile-address-ville-output">{{ clientAddresses.ville_fiscal }}</dd>
+        <dd id="profile-address-ville-output">{{ clientsAdresses.villeFiscal }}</dd>
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}</dt>
-        <dd id="profile-address-pays-output">{{ clientAddresses.id_pays_fiscal|countryLabel }}</dd>
-        <dt>{% trans %} common_mobile-phone {% endtrans %}</dt>
-        <dd id="profile-address-mobile-output">{{ client.mobile }}</dd>
+        <dd id="profile-address-pays-output">{{ clientsAdresses.idPaysFiscal|countryLabel }}</dd>
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-attachments {% endtrans %}</dt>
         <dd id="profile-address-fichier-domicile-output">
             {% set isHousedByThirdPerson = false %}
@@ -41,53 +39,72 @@
     </dl>
 </section><!-- /.profile-address-view -->
 
-<section id="profile-address-edit" role="tabpanel" class="profile-address-edit collapse">
-    <form id="form-profile-address-edit" action="{{ path('profile_person_fiscal_address_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-address-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-address-notifications">
+<section id="profile-address-edit" role="tabpanel" class="profile-address-edit collapse {{ fiscalAddressFormCollapse }}">
+    {{ form_start(forms.fiscalAddress, {
+        'multipart' : true,
+        'attr' : {
+            'class' : 'form-profile form-profile-address-edit',
+            'data-formvalidation' : true,
+            'data-formvalidation-notificationselem' : '#form-profile-address-notifications'
+        }})
+    }}
         <div class="row">
-            <div class="form-field">
+            <div class="form-field {% if form_errors(forms.fiscalAddress.adresseFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <input id="form-profile-address-street" type="text" name="fiscal_address_street" value="{{ formData.person.fiscal_address_street }}" class="input-field"
-                        data-formvalidation-input data-formvalidation-required="true"/>
+                {{ form_widget(forms.fiscalAddress.adresseFiscal, {
+                    'attr' : {
+                        'class' : 'input-field',
+                        'data-formvalidation-input' : true,
+                        'data-formvalidation-required' : true
+                    }})
+                }}
+                {{ form_errors(forms.fiscalAddress.adresseFiscal) }}
             </div><!-- /.form-field -->
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.cpFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    <input id="form-profile-address-code" type="text" name="fiscal_address_zip" value="{{ formData.person.fiscal_address_zip  }}" class="input-field"
-                           data-formvalidation-input
-                           data-formvalidation-required="true"
-                           {# AutoComplete behaviours for addresses needs to be further marked and configured #}
-                           data-autocomplete-address
-                           data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
-                           data-autocomplete-address-countryelem="#form-profile-address-pays"
-                           data-autocomplete-address-cityelem="#form-profile-address-ville"
-                           data-autocomplete-address-zipelem="#form-profile-address-code"
-                           data-has-spinner="#spinner-profile-address-code"/>
+                    {{ form_widget(forms.fiscalAddress.cpFiscal, {
+                        'id' : 'form-profile-address-code',
+                        'attr' : {
+                            'class' : 'input-field',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_profile_ajax_zip'),
+                            'data-autocomplete-address-countryelem' : '#form-profile-address-pays',
+                            'data-autocomplete-address-cityelem' : '#form-profile-address-ville',
+                            'data-autocomplete-address-zipelem' : '#form-profile-address-code',
+                            'data-has-spinner' : '#spinner-profile-address-code'
+                        }})
+                    }}
+                    {{ form_errors(forms.fiscalAddress.cpFiscal) }}
                     <div class="btn-group">
                         <span id="spinner-profile-address-code" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.villeFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <div class="input-group set-right">
-                    <input id="form-profile-address-ville" type="text" name="fiscal_address_city" value="{{ formData.person.fiscal_address_city  }}" class="input-field"
-                           data-formvalidation-input
-                           data-formvalidation-required="true"
-                           {# AutoComplete behaviours for addresses needs to be further marked and configured #}
-                           data-autocomplete-address
-                           data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
-                           data-autocomplete-address-countryelem="#form-profile-address-pays"
-                           data-autocomplete-address-cityelem="#form-profile-address-ville"
-                           data-autocomplete-address-zipelem="#form-profile-address-code"
-                           data-has-spinner="#spinner-profile-address-city"/>
+                    {{ form_widget(forms.fiscalAddress.villeFiscal, {
+                        'id' : 'form-profile-address-ville',
+                        'attr' : {
+                            'class' : 'input-field',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_profile_ajax_zip'),
+                            'data-autocomplete-address-countryelem' : '#form-profile-address-pays',
+                            'data-autocomplete-address-cityelem' : '#form-profile-address-ville',
+                            'data-autocomplete-address-zipelem' : '#form-profile-address-code',
+                            'data-has-spinner' : '#spinner-profile-address-city'
+                        }})
+                    }}
+                    {{ form_errors(forms.fiscalAddress.villeFiscal) }}
                     <div class="btn-group">
                         <span id="spinner-profile-address-city" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
                     </div>
@@ -96,21 +113,18 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.idPaysFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                <select id="form-profile-address-pays" name="fiscal_address_country" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                    {% for i, country in countries %}
-                        <option value="{{ i }}"{% if i == formData.person.fiscal_address_country  %} selected="selected"{% endif %}>{{ country }}</option>
-                    {% endfor %}
-                </select>
-            </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-address-mobile">{% trans %} common_mobile-phone {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                <div class="input-group">
-                    <input id="form-profile-address-mobile" type="text" name="client_mobile" value="{{ formData.person.client_mobile }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
-                </div>
+                {{ form_widget(forms.fiscalAddress.idPaysFiscal, {
+                    'id' : 'form-profile-address-pays',
+                    'attr' : {
+                        'class' : 'input-field',
+                        'data-formvalidation-input' : true,
+                        'data-formvalidation-required' : true
+                    }})
+                }}
+                {{ form_errors(forms.fiscalAddress.idPaysFiscal) }}
             </div><!-- /.form-field -->
         </div>
 
@@ -118,16 +132,12 @@
         <div id="us-person" class="row collapse {% if isLivingAbroad == true %} in {% endif %}">
             <div class="form-field form-field-single-checkbox">
                 <label>
-                    <input id="form-profile-no-us-person" type="checkbox" name="no_us_person" value="true" {% if formData.person.no_us_person == true %} checked="checked" {%
-                    endif %}>
+                    {{ form_widget(forms.fiscalAddress.noUsPerson, {
+                        'id' : 'form-profile-no-us-person'
+                    }) }}
                     <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
-
-            {# Only show message if checkbox is unchecked #}
-            <div id="message-us-person" class="message-info collapse {% if formData.person.no_us_person != true %} in {% endif %} ">
-                <p>{% trans %} lender-profile_information-tab-fiscal-address-us-person-checkbox-message {% endtrans %}</p>
-            </div>
         </div>
 
         {# Show if country changes from France #}
@@ -142,7 +152,6 @@
                      data-fileattach
                      data-fileattach-inputname="tax-certificate"
                      data-fileattach-maxfiles="1"
-                     {# data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}" #}
                      data-fileattach-fileremove="false">
                     {% if residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_FISCAL')]['path'] is defined %}
                         <input type="file" name="tax-certificate" value="{{ residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_FISCAL')]['path'] }}" />
@@ -180,9 +189,8 @@
         {# Housed by Third Person #}
         <div class="row">
             <div class="form-field form-field-single-checkbox">
+                {{ form_widget(forms.fiscalAddress.housedByThirdPerson, {'id' : 'housed-by-third-person' }) }}
                 <label>
-                    <input id="housed-by-third-person" type="checkbox" name="housed_by_third_person" value="true"
-                           {% if isHousedByThirdPerson == true %}checked="checked"{% endif %} />
                     <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-housed-by-third-person-checkbox {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
@@ -200,7 +208,6 @@
                      data-fileattach
                      data-fileattach-inputname="housed-by-third-person-declaration"
                      data-fileattach-maxfiles="1"
-                     {# data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-housed-by-third-person-declaration {% endtrans %}" #}
                      data-fileattach-fileremove="false">
                     {% if residenceAttachments[constant('\\attachment_type::ATTESTATION_HEBERGEMENT_TIERS')]['path'] is defined %}
                         <input type="file" name="housed-by-third-person-declaration" value="{{ residenceAttachments[constant('\\attachment_type::ATTESTATION_HEBERGEMENT_TIERS')]['path'] }}" />
@@ -219,7 +226,6 @@
                          data-fileattach
                          data-fileattach-inputname="id-third-person-housing"
                          data-fileattach-maxfiles="1"
-                         {# data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-id-third-person-housing {% endtrans %}" #}
                          data-fileattach-fileremove="false">
                         {% if residenceAttachments[constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT')]['path'] is defined %}
                             <input type="file" name="id-third-person-housing" value="{{ residenceAttachments[constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT')]['path'] }}" />
@@ -234,5 +240,5 @@
             <button class="btn-primary" data-spinnerbutton>{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
             <button type="reset" role="button" data-toggle="collapse" data-target="#profile-address-view" data-parent="#profile-address-section" class="btn-default" aria-controls="#profile-address-view" aria-expanded="true">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
         </div><!-- /.btn-controls -->
-    </form><!-- /.form-profile-address-edit -->
+    {{ form_end(forms.fiscalAddress) }}
 </section><!-- /.profile-address-edit -->

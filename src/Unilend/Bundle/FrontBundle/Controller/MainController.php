@@ -17,6 +17,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
@@ -260,7 +261,7 @@ class MainController extends Controller
             $client = $entityManager->getRepository('clients');
             $client->get($user->getClientId());
 
-            if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $settings->get('Lien conditions generales inscription preteur societe', 'type');
                 $idTree = $settings->value;
             }
@@ -522,7 +523,7 @@ class MainController extends Controller
             $loans      = $entityManager->getRepository('loans');
             $loansCount = $loans->counter('id_lender = ' . $oLenderAccount->id_lender_account . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
-            if (in_array($client->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+            if (in_array($client->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $this->getTOSReplacementsForPerson($client, $dateAccept, $loansCount, $content, $template);
             } else {
                 $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $loansCount, $content, $template);

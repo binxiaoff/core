@@ -1,4 +1,4 @@
-<section id="profile-info-view" role="tabpanel" class="profile-info-view collapse in">
+<section id="profile-info-view" role="tabpanel" class="profile-info-view collapse {{ identityViewCollapse }}">
     <a href="javascript:;" data-target="#profile-info-edit" role="button" data-toggle="collapse" data-parent="#profile-info-section" class="btn-edit"
     aria-controls="#profile-info-edit" aria-expanded="false">
         <span class="icon fa-pencil-u32"></span>
@@ -7,27 +7,27 @@
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}</dt>
             <dd id="profile-info-statut-output">{% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}</dd>
-        <dt>{% trans %} common_form-of-address {% endtrans %}</dt>
+        <dt>{% trans %} common_title {% endtrans %}</dt>
         {% if client.civilite == 'M.' %}
-            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-male {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_title-male {% endtrans %}</dd>
         {% else %}
-            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-female {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_title-female {% endtrans %}</dd>
         {% endif %}
 
         <dt>{% trans %} common_birth-name {% endtrans %}</dt>
         <dd id="profile-info-nom-output">{{ client.nom }}</dd>
         <dt>{% trans %} common_used-name {% endtrans %}</dt>
-        <dd id="profile-info-prenom-output">{{ client.nom_usage }}</dd>
+        <dd id="profile-info-prenom-output">{{ client.nomUsage }}</dd>
         <dt>{% trans %} common_firstname {% endtrans %}</dt>
         <dd id="profile-info-prenom-output">{{ client.prenom }}</dd>
         <dt>{% trans %} common_birthday {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ client.naissance|date('d/m/Y') }}</dd>
         <dt>{% trans %} common_birth-country {% endtrans %}</dt>
-        <dd id="profile-info-dob-pays-output">{{ client.id_pays_naissance|countryLabel }}</dd>
+        <dd id="profile-info-dob-pays-output">{{ client.idPaysNaissance|countryLabel }}</dd>
         <dt>{% trans %} common_birth-city {% endtrans %}</dt>
-        <dd id="profile-info-dob-commune-output">{{ client.ville_naissance }}</dd>
+        <dd id="profile-info-dob-commune-output">{{ client.villeNaissance }}</dd>
         <dt>{% trans %} common_nationality {% endtrans %}</dt>
-        <dd id="profile-info-dob-nationalite-output">{{ client.id_pays_naissance|countryLabel }}</dd>
+        <dd id="profile-info-dob-nationalite-output">{{ client.idNationalite|nationalityLabel }}</dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}</dt>
         <dd id="profile-info-fichier-identitie-output">
             {% for attachment in identityAttachments %}

@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS clientEntity;
+
 class clients extends clients_crud
 {
     const OCTROI_FINANCMENT           = 1;
@@ -37,21 +39,7 @@ class clients extends clients_crud
     const REMBOURSEMENT_ANTICIPE      = 7;
     const AFFECTATION_RA_PRETEURS     = 8;
 
-    const TYPE_PERSON                 = 1;
-    const TYPE_LEGAL_ENTITY           = 2;
-    const TYPE_PERSON_FOREIGNER       = 3;
-    const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
-
-    const STATUS_OFFLINE = 0;
-    const STATUS_ONLINE  = 1;
-
-    const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
-    const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
-    const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
-
-    const TITLE_MISS      = 'Mme';
-    const TITLE_MISTER    = 'M.';
-    const TITLE_UNDEFINED = '';
+    //Type, Status, Subscription Step & Title constants moved to Entity
 
     public function __construct($bdd, $params = '')
     {
@@ -145,23 +133,6 @@ class clients extends clients_crud
             SET ' . $this->userPass . ' = "' . password_hash($pass, PASSWORD_DEFAULT) . '"
             WHERE ' . $this->userMail . ' = "' . $email . '"'
         );
-    }
-
-    public function existEmail($email)
-    {
-        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return false;
-        }
-
-        $queryBuilder = $this->bdd->createQueryBuilder();
-        $queryBuilder
-            ->select('COUNT(*)')
-            ->from($this->userTable)
-            ->where('email = :email')
-            ->setParameter('email', $email);
-
-        $statement = $queryBuilder->execute();
-        return $statement->fetchColumn() > 0;
     }
 
     public function checkAccess()
@@ -262,7 +233,7 @@ class clients extends clients_crud
             FROM clients c
             INNER JOIN companies co ON c.id_client = co.id_client_owner
             WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
-                AND c.type NOT IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]) .')
+                AND c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) .')
             GROUP BY c.id_client
             ORDER BY c.id_client DESC
            LIMIT 100';
@@ -412,8 +383,8 @@ class clients extends clients_crud
      */
     public function selectLendersByLastStatus(array $clientStatus = array())
     {
-        $naturalPerson = [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER];
-        $legalEntity   = [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER];
+        $naturalPerson = [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER];
+        $legalEntity   = [ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER];
         $bind          = [
             'naturalPerson' => $naturalPerson,
             'legalEntity'   => $legalEntity
@@ -1195,12 +1166,12 @@ class clients extends clients_crud
                       END AS insee_region_code,
                       COUNT(*) AS count
                     FROM (SELECT id_client,
-                         CASE WHEN clients.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) . ') THEN clients_adresses.cp_fiscal ELSE companies.zip END AS cp
+                         CASE WHEN clients.type IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER]) . ') THEN clients_adresses.cp_fiscal ELSE companies.zip END AS cp
                          FROM clients
                              LEFT JOIN clients_adresses USING (id_client)
                              LEFT JOIN companies ON clients.id_client = companies.id_client_owner
                              INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner
-                         WHERE clients.status = '. \clients::STATUS_ONLINE .' AND lenders_accounts.status = 1
+                         WHERE clients.status = '. ClientEntity::STATUS_ONLINE .' AND lenders_accounts.status = 1
                          AND (clients_adresses.id_pays_fiscal = ' . \pays_v2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . \pays_v2::COUNTRY_FRANCE . ')) AS client_base
                     GROUP BY insee_region_code';
 

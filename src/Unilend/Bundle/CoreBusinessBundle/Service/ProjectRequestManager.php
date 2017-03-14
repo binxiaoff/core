@@ -89,8 +89,6 @@ class ProjectRequestManager
     {
         /** @var \projects $project */
         $project = $this->entityManager->getRepository('projects');
-        /** @var \clients $clientRepository */
-        $clientRepository = $this->entityManager->getRepository('clients');
 
         if (empty($aFormData['email']) || false === filter_var($aFormData['email'], FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email');
@@ -108,13 +106,13 @@ class ProjectRequestManager
             throw new \InvalidArgumentException('Invalid reason');
         }
 
-        $email = $clientRepository->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
+        $email = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
 
         $client = new Clients();
         $client
             ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(\clients::STATUS_ONLINE)
+            ->setStatus(Clients::STATUS_ONLINE)
             ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($this->sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))
