@@ -1,20 +1,20 @@
 <div id="contenu">
     <fieldset style="color: black; padding: 10px; border: 1px solid #B10366; width: 280px;">
         <legend style="color: #B20066"><b>Statut de vigilance:</b></legend>
-        <span style="padding: 5px; border-radius: 7px; width: 84px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_LOW]; ?>">
-            <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_LOW] ?>
+        <span class="vigilance-status-0">
+            <?= $this->translator->trans('client-vigilance_status-0') ?>
         </span>
         &nbsp;
-        <span style="padding: 5px; border-radius: 7px; width: 84px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_MEDIUM]; ?>">
-            <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_MEDIUM] ?>
+        <span class="vigilance-status-1">
+            <?= $this->translator->trans('client-vigilance_status-1') ?>
         </span>
         &nbsp;
-        <span style="padding: 5px; border-radius: 7px; width: 84px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_HIGH]; ?>">
-            <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_HIGH] ?>
+        <span class="vigilance-status-2">
+            <?= $this->translator->trans('client-vigilance_status-2') ?>
         </span>
         &nbsp;
-        <span style="padding: 5px; border-radius: 7px; width: 84px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_REFUSE]; ?>">
-            <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::VIGILANCE_STATUS_REFUSE] ?>
+        <span class="vigilance-status-3">
+            <?= $this->translator->trans('client-vigilance_status-3') ?>
         </span>
     </fieldset>
     <br>
@@ -25,16 +25,21 @@
         <a href="<?= $this->lurl ?>/client_atypical_operation/export/pending">
             <img src="<?= $this->surl ?>/images/admin/xls.png" alt="exporter en CSV" title="Exporter en CSV">
         </a>
-        <?php $this->atypicalOperations = $this->atypicalOperation['pending'] ?>
-        <?php $this->fireView('detections_table'); ?>
+        <?php
+        $this->atypicalOperations = $this->atypicalOperation['pending'];
+        $this->fireView('detections_table');
+        ?>
     <?php endif; ?>
     <h1>Détéctions en attente d'aquittement de la SFPMEI</h1>
     <?php if (false === empty($this->atypicalOperation['waitingACK'])) : ?>
-        <a  href="<?= $this->lurl ?>/client_atypical_operation/export/waiting">
+        <a href="<?= $this->lurl ?>/client_atypical_operation/export/waiting">
             <img src="<?= $this->surl ?>/images/admin/xls.png" alt="exporter en CSV" title="Exporter en CSV">
         </a>
-        <?php $this->atypicalOperations = $this->atypicalOperation['waitingACK'] ?>
-        <?php $this->fireView('detections_table'); ?>
+        <?php
+        $this->showUpdated        = true;
+        $this->atypicalOperations = $this->atypicalOperation['waitingACK'];
+        $this->fireView('detections_table');
+        ?>
     <?php endif; ?>
     <h1>Détéctions traitées</h1>
     <?php if (false === empty($this->atypicalOperation['treated'])) : ?>
@@ -43,6 +48,7 @@
         </a>
         <?php
         $this->atypicalOperations = $this->atypicalOperation['treated'];
+        $this->showUpdated        = true;
         $this->showActions        = false;
         $this->fireView('detections_table');
         ?>

@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
@@ -34,11 +35,30 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
+     * @param \DateTime $birthDate
+     * @param \DateTime $subscriptionDate
+     * @return Clients[]
+     */
+    public function getClientByAgeAndSubscriptionDate(\DateTime $birthDate, \DateTime $subscriptionDate)
+    {
+        $criteria = [
+            'naissance' => $birthDate,
+            'added'     => $subscriptionDate
+        ];
+        $operator = [
+            'naissance' => Comparison::LTE,
+            'added'     => Comparison::GTE
+        ];
+
+        return $this->getClientsBy($criteria, $operator);
+    }
+
+    /**
      * @param $criteria
      * @param $operator
      * @return Clients[]
      */
-    public function getClientsBy($criteria, $operator)
+    private function getClientsBy($criteria, $operator)
     {
         $qb = $this->createQueryBuilder('c');
         $qb->select('c');
@@ -65,7 +85,8 @@ class ClientsRepository extends EntityRepository
             $select = 'c.idClient, o.id as operation, o.amount as depositAmount';
         }
         $operationType = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType');
-        $qb            = $this->createQueryBuilder('c')
+
+        $qb = $this->createQueryBuilder('c')
             ->select($select)
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = c.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWalletCreditor = w.id')
@@ -90,29 +111,20 @@ class ClientsRepository extends EntityRepository
      */
     public function getClientsWithMultipleBankAccountsOnPeriod(\DateTime $fromDate, $maxRibChange)
     {
-        $query = '
-        SELECT c.id_client,
-          w.id,
-          (SELECT COUNT(*) FROM bank_account ba WHERE ba.id_client = c.id_client AND ba.added >= :from_date) AS nb_rib_change
-        FROM
-          clients c
-          INNER JOIN wallet w ON w.id_client = c.id_client
-          INNER JOIN wallet_type wt ON wt.id = w.id_type
-        WHERE
-          wt.label = :wallet_type_label
-        HAVING nb_rib_change >= :max_rib_change
-        ';
+        $qb = $this->createQueryBuilder('c')
+            ->select('c.idClient, COUNT(ba.id) AS nbRibChange')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = c.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
+            ->innerJoin('UnilendCoreBusinessBundle:BankAccount', 'ba', Join::WITH, 'ba.idClient = w.idClient')
+            ->where('wt.label = :lender')
+            ->setParameter('lender', WalletType::LENDER)
+            ->andWhere('ba.added >= :fromDate')
+            ->setParameter('fromDate', $fromDate)
+            ->groupBy('c.idClient')
+            ->having('nbRibChange >= :maxRibChange')
+            ->setParameter('maxRibChange', $maxRibChange);
 
-        return $this->getEntityManager()
-            ->getConnection()
-            ->executeQuery(
-                $query,
-                [
-                    'from_date' => $fromDate->format('Y-m-d H:i:s'),
-                    'max_rib_change' => $maxRibChange,
-                    'wallet_type_label' => WalletType::LENDER
-                ]
-            )->fetchAll();
+        return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
 
     /**

@@ -13,11 +13,13 @@
     <tbody>
     <?php foreach ($this->vigilanceStatusHistory as $vigilanceStatus) : ?>
         <tr id="row-<?= $vigilanceStatus->getId() ?>" <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-            <td style="border-radius: 7px; font-weight: bold; font-size: 14px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[$vigilanceStatus->getVigilanceStatus()] ?>;">
-                <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lendersAccount->findOneBy(['idClientOwner' => $vigilanceStatus->getClient()->getIdClient()])->getIdLenderAccount() ?>"><?= $vigilanceStatus->getClient()->getIdClient() ?></a>
+            <td>
+                <span style="font-weight: bold; font-size: 14px" class="vigilance-status-<?= $vigilanceStatus->getVigilanceStatus() ?>">
+                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lendersAccount->findOneBy(['idClientOwner' => $vigilanceStatus->getClient()->getIdClient()])->getIdLenderAccount() ?>"><?= $vigilanceStatus->getClient()->getIdClient() ?></a>
+                </span>
             </td>
             <td><?= $vigilanceStatus->getClient()->getPrenom() . ' ' . $vigilanceStatus->getClient()->getNom() ?></td>
-            <td><?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[$vigilanceStatus->getVigilanceStatus()] ?></td>
+            <td><?= $this->translator->trans('client-vigilance_status-' . $vigilanceStatus->getVigilanceStatus()) ?></td>
             <td>
                 <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_CRON === $vigilanceStatus->getIdUser()) : ?>
                     Cron

@@ -2,7 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
+use \Doctrine\ORM\Query\Expr\Join;
 
 class BidsRepository extends EntityRepository
 {
@@ -27,27 +29,16 @@ class BidsRepository extends EntityRepository
 
     public function countByClientInPeriod(\DateTime $from, \DateTime $to, $clientId)
     {
-        $query = '
-            SELECT COUNT(id_bid)
-            FROM bids
-            WHERE bids.added BETWEEN :from_date AND :to_date
-              AND bids.id_lender_account = (SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = :id_client)
-        ';
+        $qb = $this->createQueryBuilder('b')
+            ->select('COUNT(b.idBid) AS bidNumber')
+            ->innerJoin('UnilendCoreBusinessBundle:LendersAccounts', 'la', Join::WITH, 'la.idLenderAccount = b.idLenderAccount')
+            ->where('b.added BETWEEN :fromDate AND :toDate')
+            ->andWhere('la.idClientOwner = :idClientOwner')
+            ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClientOwner' => $clientId]);
 
-        return $this->getEntityManager()
-            ->getConnection()
-            ->executeQuery(
-                $query,
-                [
-                    'from_date' => $from->format('Y-m-d H:i:s'),
-                    'to_date'   => $to->format('Y-m-d H:i:s'),
-                    'id_client' => $clientId
-                ],
-                [
-                    'from_date' => \PDO::PARAM_STR,
-                    'to_date'   => \PDO::PARAM_STR,
-                    'id_client' => \PDO::PARAM_INT
-                ]
-            )->fetchColumn();
+        $bidCount =  $qb->getQuery()
+            ->getResult(AbstractQuery::HYDRATE_SINGLE_SCALAR);
+
+        return $bidCount;
     }
 }

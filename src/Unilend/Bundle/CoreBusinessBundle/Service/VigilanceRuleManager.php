@@ -59,18 +59,10 @@ class VigilanceRuleManager
 
         switch ($vigilanceRule->getLabel()) {
             case 'max_client_age':
-                $criteria = [
-                    'naissance' => new \DateTime(self::VIGILANCE_SUBSCRIPTION_AGE . ' years ago'),
-                    'added'     => new \DateTime('1 day ago 00:00:00')
-                ];
-                $operator = [
-                    'naissance' => Comparison::LTE,
-                    'added'     => Comparison::GTE
-                ];
-                $this->processMaxAgeDetection($clientRepository->getClientsBy($criteria, $operator), $vigilanceRule);
+                $this->processMaxAgeDetection($clientRepository->getClientByAgeAndSubscriptionDate(new \DateTime(self::VIGILANCE_SUBSCRIPTION_AGE . ' years ago'), new \DateTime('1 day ago 00:00:00')), $vigilanceRule);
                 break;
             case 'max_unitary_deposit_amount':
-                $this->processDepositDetection($clientRepository->getClientsByDepositAmountAndDate((new \DateTime('1 day ago 00:00:00')), self::VIGILANCE_UNITARY_DEPOSIT_AMOUNT), $vigilanceRule);
+                $this->processDepositDetection($clientRepository->getClientsByDepositAmountAndDate((new \DateTime('yesterday midnight')), self::VIGILANCE_UNITARY_DEPOSIT_AMOUNT), $vigilanceRule);
                 break;
             case 'max_sum_deposit_amount_1_w':
                 $this->processDepositDetection($clientRepository->getClientsByDepositAmountAndDate(new \DateTime('1 week ago 00:00:00'), self::VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_1_W, true), $vigilanceRule, true);
@@ -84,32 +76,24 @@ class VigilanceRuleManager
                 break;
             case 'max_deposit_withdraw_without_operation':
                 $operationRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Operation');
-                $criteria            = [
-                    'idType' => $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION]),
-                    'amount' => self::VIGILANCE_DEPOSIT_FOLLOWED_BY_WITHDRAW_AMOUNT
-                ];
-                $operator            = [
-                    'idType' => Comparison::EQ,
-                    'amount' => Comparison::GTE
-                ];
-                $this->processDepositFollowedByWithdrawDetection($operationRepository->getOperationsBy($criteria, $operator), $vigilanceRule);
+                $this->processDepositFollowedByWithdrawDetection($operationRepository->getOperationByTypeAndAmount(OperationType::LENDER_PROVISION, self::VIGILANCE_DEPOSIT_FOLLOWED_BY_WITHDRAW_AMOUNT), $vigilanceRule);
                 break;
             case 'frequent_rib_modification_on_period':
                 $this->processRibModificationDetection($clientRepository->getClientsWithMultipleBankAccountsOnPeriod(new \DateTime('1 year ago 00:00:00'), self::VIGILANCE_RIB_CHANGE_FREQUENCY), $vigilanceRule);
                 break;
             case 'frequent_deposit_fails':
                 $backPaylineRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Backpayline');
-                $this->processDepositFailsDetection($backPaylineRepository->getTransactionsToVerify(new \DateTime('1 day ago 00:00:00')), $vigilanceRule);
+                $this->processDepositFailsDetection($backPaylineRepository->getTransactionsToVerify(new \DateTime('yesterday midnight')), $vigilanceRule);
                 break;
             case 'legal_entity_max_sum_deposit_amount':
                 $companyRepository = $this->em->getRepository('UnilendCoreBusinessBundle:Companies');
                 $this->processDepositDetection($companyRepository->getLegalEntitiesByCumulativeDepositAmount(self::VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_LEGAL_ENTITY), $vigilanceRule, true);
                 break;
             case 'fiscal_country_risk':
-                $this->processClientWithFiscalCountryRisk($clientRepository->getClientsByFiscalCountryStatus(PaysV2::VIGILANCE_STATUS_MEDIUM_RISK, new \DateTime('1 day ago 00:00:00')), $vigilanceRule);
+                $this->processClientWithFiscalCountryRisk($clientRepository->getClientsByFiscalCountryStatus(PaysV2::VIGILANCE_STATUS_MEDIUM_RISK, new \DateTime('yesterday midnight')), $vigilanceRule);
                 break;
             case 'fiscal_country_high_risk':
-                $this->processClientWithFiscalCountryRisk($clientRepository->getClientsByFiscalCountryStatus(PaysV2::VIGILANCE_STATUS_HIGH_RISK, new \DateTime('1 day ago 00:00:00')), $vigilanceRule);
+                $this->processClientWithFiscalCountryRisk($clientRepository->getClientsByFiscalCountryStatus(PaysV2::VIGILANCE_STATUS_HIGH_RISK, new \DateTime('yesterday midnight')), $vigilanceRule);
                 break;
         }
     }
@@ -163,22 +147,8 @@ class VigilanceRuleManager
         $walletRepository    = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         foreach ($depositOperations as $depositOperation) {
-            $wallet   = $walletRepository->findOneBy(['id' => $depositOperation->getWalletCreditor()->getId()]);
-            $criteria = [
-                'idType'         => $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW]),
-                'idWalletDebtor' => $depositOperation->getWalletCreditor(),
-                'amount'         => self::VIGILANCE_DEPOSIT_FOLLOWED_BY_WITHDRAW_AMOUNT,
-                'added'          => $depositOperation->getAdded()
-            ];
-            $operator = [
-                'idType'         => Comparison::EQ,
-                'idWalletDebtor' => Comparison::EQ,
-                'amount'         => Comparison::GTE,
-                'added'          => Comparison::GTE
-            ];
-
-            /** @var Operation[] $withdrawOperations */
-            $withdrawOperations = $operationRepository->getOperationsBy($criteria, $operator);
+            $wallet             = $walletRepository->findOneBy(['id' => $depositOperation->getWalletCreditor()->getId()]);
+            $withdrawOperations = $operationRepository->getWithdrawOperationByWallet($depositOperation->getWalletCreditor(), self::VIGILANCE_DEPOSIT_FOLLOWED_BY_WITHDRAW_AMOUNT, $depositOperation->getAdded());
 
             foreach ($withdrawOperations as $withdrawOperation) {
 
@@ -232,13 +202,13 @@ class VigilanceRuleManager
     {
         foreach ($clients as $clientRow) {
             try {
-                $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientRow['id_client']);
-                $comment           = 'Le client a modifié son RIB ' . $clientRow['nb_rib_change'] . ' fois sur une année';
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['nb_rib_change'], null, $comment, true);
+                $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientRow['idClient']);
+                $comment           = 'Le client a modifié son RIB ' . $clientRow['nbRibChange'] . ' fois sur une année';
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['nbRibChange'], null, $comment, true);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
-                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $clientRow['id_client'] .
-                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['id_client']]);
+                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $clientRow['idClient'] .
+                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['idClient']]);
             }
         }
     }

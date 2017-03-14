@@ -29,10 +29,10 @@ class ClientVigilanceStatusManager
 
     /**
      * @param Clients                      $client
-     * @param                              $vigilanceStatus
-     * @param                              $userId
+     * @param int                          $vigilanceStatus
+     * @param int                          $userId
      * @param ClientAtypicalOperation|null $clientAtypicalOperation
-     * @param null                         $comment
+     * @param null|string                  $comment
      * @return null|object|ClientVigilanceStatusHistory
      */
     public function upgradeClientVigilanceStatusHistory(Clients $client, $vigilanceStatus, $userId, ClientAtypicalOperation $clientAtypicalOperation = null, $comment = null)
@@ -40,7 +40,6 @@ class ClientVigilanceStatusManager
         $currentClientVigilanceStatus = $this->em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['added' => 'DESC']);
 
         if (null === $currentClientVigilanceStatus ||
-            $currentClientVigilanceStatus instanceof ClientVigilanceStatusHistory &&
             $currentClientVigilanceStatus->getVigilanceStatus() < $vigilanceStatus
         ) {
             $vigilanceStatusHistory = new ClientVigilanceStatusHistory();
@@ -60,10 +59,10 @@ class ClientVigilanceStatusManager
 
     /**
      * @param Clients                      $client
-     * @param                              $vigilanceStatus
-     * @param                              $userId
+     * @param int                          $vigilanceStatus
+     * @param int                          $userId
      * @param ClientAtypicalOperation|null $clientAtypicalOperation
-     * @param null                         $comment
+     * @param null|string                  $comment
      * @return null|object|ClientVigilanceStatusHistory
      */
     public function retrogradeClientVigilanceStatusHistory(Clients $client, $vigilanceStatus, $userId, ClientAtypicalOperation $clientAtypicalOperation = null, $comment = null)
@@ -71,8 +70,7 @@ class ClientVigilanceStatusManager
         $currentClientVigilanceStatus = $this->em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['added' => 'DESC']);
 
         if (null === $currentClientVigilanceStatus ||
-            $currentClientVigilanceStatus instanceof ClientVigilanceStatusHistory
-            && $currentClientVigilanceStatus->getVigilanceStatus() >= $vigilanceStatus
+            $currentClientVigilanceStatus->getVigilanceStatus() >= $vigilanceStatus
         ) {
             $vigilanceStatusHistory = new ClientVigilanceStatusHistory();
             $vigilanceStatusHistory->setClient($client)
@@ -102,9 +100,9 @@ class ClientVigilanceStatusManager
     {
         if (true === $checkPendingDuplicate) {
             $pendingAtypicalOperation = $this->em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
-                ->findOneBy(['client' => $client, 'rule' => $vigilanceRule, 'detectionStatus' => ClientAtypicalOperation::STATUS_PENDING, 'atypicalValue' => $atypicalValue, 'operationLog' => $operationLog]);
+                ->findOneBy(['client' => $client, 'rule' => $vigilanceRule, 'atypicalValue' => $atypicalValue, 'operationLog' => $operationLog]);
 
-            if ($pendingAtypicalOperation instanceof ClientAtypicalOperation and $pendingAtypicalOperation->getId() > 0) {
+            if (null !== $pendingAtypicalOperation) {
                 return $pendingAtypicalOperation;
             }
         }

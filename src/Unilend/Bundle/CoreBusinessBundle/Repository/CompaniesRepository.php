@@ -12,7 +12,7 @@ class CompaniesRepository extends EntityRepository
      * @param int $maxDepositAmount
      * @return array
      */
-    public function getLegalEntitiesByCumulativeDepositAmount($maxDepositAmount = 15000)
+    public function getLegalEntitiesByCumulativeDepositAmount($maxDepositAmount)
     {
         $operationType = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType');
         $qb            = $this->createQueryBuilder('c')

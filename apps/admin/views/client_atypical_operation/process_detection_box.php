@@ -25,7 +25,7 @@
                     setTimeout(function () {
                         parent.$.fn.colorbox.close();
                         location.reload();
-                    }, 3000);
+                    }, 1500);
                 },
                 error: function (response, status) {
                     console.log(response.responseText);
@@ -33,7 +33,7 @@
 
                     setTimeout(function () {
                         parent.$.fn.colorbox.close();
-                    }, 3000);
+                    }, 1500);
                 }
             });
         })
@@ -61,7 +61,7 @@
         </li>
         <?php if (isset($this->currentVigilanceStatusId)) : ?>
             <li>
-                <b>Statut de vigilance actuel:</b> <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[$this->currentVigilanceStatusId] ?>
+                <b>Statut de vigilance actuel:</b> <?= $this->translator->trans('client-vigilance_status-' . $this->currentVigilanceStatusId) ?>
             </li>
         <?php endif; ?>
     </ul>
@@ -71,7 +71,7 @@
             <label for="vigilance_status"><b>Nouveau statut de vigilance:</b></label>&nbsp;
             <select name="vigilance_status" id="vigilance_status" required>
                 <option value=""></option>
-                <?php foreach (\Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel as $id => $label) : ?>
+                <?php foreach ($this->clientVigilanceStatus as $id => $label) : ?>
                     <option value="<?= $id ?>" <?php if (isset($this->currentVigilanceStatusId) && $this->currentVigilanceStatusId === $id) : ?>selected<?php endif; ?> ><?= $label ?></option>
                 <?php endforeach; ?>
             </select>
@@ -84,27 +84,15 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-        <?php else : ?>
-            <!--            <label for="sender"><b>Expéditeur:</b></label>-->
-            <!--            <br>-->
-            <!--            <input style="margin: 5px; width: 200px;" type="email" autocomplete="on" name="sender" id="sender"/>-->
-            <!--            <br>-->
-            <!--            <label for="receiver"><b>Destinataire:</b></label>-->
-            <!--            <br>-->
-            <!--            <input style="margin: 5px; width: 200px;" type="email" autocomplete="on" name="receiver" id="receiver"/>-->
-            <!--            <br>-->
-            <!--            <label for="attachment_1"><b>Pièces jointes:</b></label>&nbsp;-->
-            <!--            <br>-->
-            <!--            <input style="padding: 5px" type="file" name="attachment_1"/>-->
-            <!--            <br>-->
-            <!--            <input style="padding: 5px" type="file" name="attachment_2"/>-->
-            <!--            <br>-->
-            <!--            <input style="padding: 5px" type="file" name="attachment_3"/>-->
         <?php endif; ?>
         <br><br>
         <div>
             <label for="user_comment"><b>Commentaire</b></label><br>
-            <textarea id="user_comment" type="text" name="user_comment" rows="6" cols="80" required></textarea>
+            <textarea id="user_comment" type="text" name="user_comment" rows="6" cols="80" required>
+                <?php if (false === empty($this->currentUserComment)) : ?>
+                    <?= $this->currentUserComment ?>
+                <?php endif; ?>
+            </textarea>
         </div>
         <br>
         <div style="text-align: center">

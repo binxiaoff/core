@@ -2,6 +2,7 @@
 
 use \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use \Unilend\Bundle\CoreBusinessBundle\Entity\ClientVigilanceStatusHistory;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientVigilanceStatusManager;
 use \Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
@@ -16,6 +17,9 @@ class client_atypical_operationController extends bootstrap
         $this->users->checkAccess('transferts');
 
         $this->menu_admin = 'transferts';
+
+        /** @var \Symfony\Component\Translation\Translator translator */
+        $this->translator = $this->get('translator');
     }
 
     public function _default()
@@ -44,10 +48,12 @@ class client_atypical_operationController extends bootstrap
                 ['updated' => 'DESC', 'client' => 'DESC'],
                 10
             );
-        $this->showActions                     = true;
-        $this->userEntity                      = $em->getRepository('UnilendCoreBusinessBundle:Users');
-        $this->lendersAccount                  = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
-        $this->clientVigilanceStatusHistory    = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
+
+        $this->showActions                  = true;
+        $this->showUpdated                  = false;
+        $this->userEntity                   = $em->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->lendersAccount               = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
+        $this->clientVigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
     }
 
     public function _process_detection_box()
@@ -58,7 +64,7 @@ class client_atypical_operationController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->get('doctrine.orm.entity_manager');
 
-        switch ($this->params[0]) {
+        switch ($this->action) {
             case 'add':
                 $this->title               = 'Ajouter une opération atypique';
                 $this->vigilanceRules      = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findAll();
@@ -78,20 +84,34 @@ class client_atypical_operationController extends bootstrap
                 header('Location: /client_atypical_operation/detections');
                 die;
         }
+        $this->clientVigilanceStatus = [
+            VigilanceRule::VIGILANCE_STATUS_LOW    => $this->translator->trans('client-vigilance_status-' . VigilanceRule::VIGILANCE_STATUS_LOW),
+            VigilanceRule::VIGILANCE_STATUS_MEDIUM => $this->translator->trans('client-vigilance_status-' . VigilanceRule::VIGILANCE_STATUS_MEDIUM),
+            VigilanceRule::VIGILANCE_STATUS_HIGH   => $this->translator->trans('client-vigilance_status-' . VigilanceRule::VIGILANCE_STATUS_HIGH),
+            VigilanceRule::VIGILANCE_STATUS_REFUSE => $this->translator->trans('client-vigilance_status-' . VigilanceRule::VIGILANCE_STATUS_REFUSE),
+        ];
     }
 
     private function getAtypicalOperationDetails($atypicalOperationId)
     {
         /** @var \Doctrine\ORM\EntityManager $em */
-        $em                             = $this->get('doctrine.orm.entity_manager');
-        $atypicalOperation              = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->find($atypicalOperationId);
-        $this->currentVigilanceStatusId = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')
+        $em                     = $this->get('doctrine.orm.entity_manager');
+        $atypicalOperation      = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->find($atypicalOperationId);
+        $currentVigilanceStatus = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')
             ->findOneBy(
                 ['client' => $atypicalOperation->getClient()],
                 ['added' => 'DESC']
-            )->getVigilanceStatus();
-        $this->client                   = $atypicalOperation->getClient();
-        $this->processDetectionUrl      = $this->lurl . '/client_atypical_operation/process_detection/' . $this->action . '/' . $atypicalOperation->getId();
+            );
+
+        if (null !== $currentVigilanceStatus && $currentVigilanceStatus instanceof ClientVigilanceStatusHistory) {
+            $this->currentVigilanceStatusId = $currentVigilanceStatus->getVigilanceStatus();
+        } else {
+            $this->currentVigilanceStatusId = VigilanceRule::VIGILANCE_STATUS_LOW;
+        }
+
+        $this->client              = $atypicalOperation->getClient();
+        $this->processDetectionUrl = $this->lurl . '/client_atypical_operation/process_detection/' . $this->action . '/' . $atypicalOperation->getId();
+        $this->currentUserComment  = $atypicalOperation->getUserComment();
     }
 
     public function _process_detection()
@@ -167,7 +187,7 @@ class client_atypical_operationController extends bootstrap
 
         if (true === isset($_POST['clientId']) &&
             true === isset($_POST['vigilance_status']) &&
-            array_key_exists($_POST['vigilance_status'], VigilanceRule::$vigilanceStatusLabel) &&
+            in_array($_POST['vigilance_status'], [VigilanceRule::VIGILANCE_STATUS_LOW, VigilanceRule::VIGILANCE_STATUS_MEDIUM, VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE]) &&
             true === isset($_POST['user_comment'])
         ) {
             try {
@@ -232,8 +252,9 @@ class client_atypical_operationController extends bootstrap
             );
 
         if (
+            null !== $clientVigilanceStatus &&
             true === isset($_POST['vigilance_status']) &&
-            array_key_exists($_POST['vigilance_status'], VigilanceRule::$vigilanceStatusLabel) &&
+            in_array($_POST['vigilance_status'], [VigilanceRule::VIGILANCE_STATUS_LOW, VigilanceRule::VIGILANCE_STATUS_MEDIUM, VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE]) &&
             true === isset($_POST['user_comment'])
         ) {
             if ($_POST['vigilance_status'] <= $clientVigilanceStatus->getVigilanceStatus()) {
@@ -302,13 +323,14 @@ class client_atypical_operationController extends bootstrap
      */
     private function createCSV(array $aData, $fileName)
     {
+        /** @var \Symfony\Component\Translation\Translator $translator */
+        $translator  = $this->get('translator');
         $document    = new \PHPExcel();
         $activeSheet = $document->setActiveSheetIndex(0);
         $headers     = ['ID client', 'Prénom Nom', 'Règle de vigilance', 'Statut de vigilance', 'Valeur atypique', 'Utilisateur', 'Date de l\'opération', 'Date de modification', 'Commentaire'];
-        if (count($headers) > 0) {
-            foreach ($headers as $iIndex => $sColumnName) {
-                $activeSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName);
-            }
+
+        foreach ($headers as $iIndex => $sColumnName) {
+            $activeSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName);
         }
 
         foreach ($aData as $rowIndex => $row) {
@@ -317,13 +339,14 @@ class client_atypical_operationController extends bootstrap
                 $row->getClient()->getIdClient(),
                 $row->getClient()->getPrenom() . ' ' . $row->getClient()->getNom(),
                 $row->getRule()->getName(),
-                VigilanceRule::$vigilanceStatusLabel[$row->getRule()->getVigilanceStatus()],
+                $translator->trans('client-vigilance_status-' . $row->getRule()->getVigilanceStatus()),
                 $row->getAtypicalValue(),
                 $this->getUserNameByID($row->getIdUser()),
                 $row->getAdded()->format('d/m/Y H\hi'),
                 empty($row->getUpdated()) ? null : $row->getUpdated()->format('d/m/Y H\hi'),
                 $row->getUserComment()
             ];
+
             foreach ($opData as $cellValue) {
                 $activeSheet->setCellValueByColumnAndRow($coleIndex++, $rowIndex + 2, $cellValue);
             }

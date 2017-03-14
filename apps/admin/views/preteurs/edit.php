@@ -231,8 +231,8 @@
             </table>
         <?php endif; ?>
         <h3>Statut de surveillance</h3>
-        <div class="attention" style="margin-left: 0px;color: black; background-color: <?= $this->vigilanceStatus['color'] ?>">
-            <?= $this->vigilanceStatus['status'] ?>
+        <div class="attention vigilance-status-<?= $this->vigilanceStatus['status'] ?>" style="margin-left: 0px;color: black;">
+            <?= $this->vigilanceStatus['message'] ?>
         </div>
         <?php if (false === empty($this->clientAtypicalOperations)) : ?>
             <button class="btn" id="btn-show-lender-atypical-operation">Voir les détections</button>
@@ -250,6 +250,7 @@
                 <?php
                 $this->atypicalOperations = $this->clientAtypicalOperations;
                 $this->showActions        = false;
+                $this->showUpdated        = true;
                 $this->fireView('../client_atypical_operation/detections_table');
                 ?>
             <?php endif; ?>

@@ -9,7 +9,9 @@
         <th style="width:120px">Valeur atypique</th>
         <th style="width:150px">Utilisateur</th>
         <th style="width:140px">Date de détection</th>
-        <th style="width:140px">Date de modification</th>
+        <?php if ($this->showUpdated) : ?>
+            <th style="width:140px">Date de modification</th>
+        <?php endif; ?>
         <th style="width:150px">Commentaire</th>
         <?php if ($this->showActions) : ?>
             <th style="width:50px">Actions</th>
@@ -22,12 +24,16 @@
             $currentStatus = $this->clientVigilanceStatusHistory->findOneBy(['client' => $atypicalOperation->getClient()], ['added' => 'DESC']);
         ?>
         <tr id="row-<?= $atypicalOperation->getId() ?>" <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-            <td style="border-radius: 7px; font-weight: bold; font-size: 14px; background-color: <?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusColor[$currentStatus->getVigilanceStatus()] ?>;">
-                <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lendersAccount->findOneBy(['idClientOwner' => $atypicalOperation->getClient()->getIdClient()])->getIdLenderAccount() ?>"><?= $atypicalOperation->getClient()->getIdClient() ?></a>
+            <td >
+                <span style="font-weight: bold; font-size: 14px" class="vigilance-status-<?= $currentStatus->getVigilanceStatus() ?>">
+                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lendersAccount->findOneBy(['idClientOwner' => $atypicalOperation->getClient()->getIdClient()])->getIdLenderAccount() ?>">
+                        <?= $atypicalOperation->getClient()->getIdClient() ?>
+                    </a>
+                </span>
             </td>
             <td><?= $atypicalOperation->getClient()->getPrenom() . ' ' . $atypicalOperation->getClient()->getNom() ?></td>
             <td><?= $atypicalOperation->getRule()->getName() ?></td>
-            <td><?= \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule::$vigilanceStatusLabel[$atypicalOperation->getRule()->getVigilanceStatus()] ?></td>
+            <td><?= $this->translator->trans('client-vigilance_status-' . $atypicalOperation->getRule()->getVigilanceStatus()) ?></td>
             <td><?= $atypicalOperation->getAtypicalValue() ?></td>
             <td>
                 <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_CRON === $atypicalOperation->getIdUser()) : ?>
@@ -43,11 +49,13 @@
                 <? endif; ?>
             </td>
             <td><?= $atypicalOperation->getAdded()->format('d/m/Y - H\hi') ?></td>
+            <?php if ($this->showUpdated) : ?>
             <td>
                 <?php if (false === empty($atypicalOperation->getUpdated())) : ?>
                     <?= $atypicalOperation->getUpdated()->format('d/m/Y - H\hi') ?>
                 <?php endif; ?>
             </td>
+            <?php endif; ?>
             <td><?= htmlentities($atypicalOperation->getUserComment()) ?></td>
             <?php if ($this->showActions) : ?>
                 <td>

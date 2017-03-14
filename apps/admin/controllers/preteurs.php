@@ -1439,16 +1439,17 @@ class preteursController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->get('doctrine.orm.entity_manager');
 
-        $client                 = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
+        $client                       = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
         $this->vigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $client], ['id' => 'DESC']);
 
         if (empty($this->vigilanceStatusHistory)) {
             $this->vigilanceStatus = [
-                'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_LOW],
-                'status' => 'Vigilance standard'
+                'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
+                'message' => 'Vigilance standard'
             ];
-            $this->userEntity = $em->getRepository('UnilendCoreBusinessBundle:Users');
-            $this->lendersAccount = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
+            $this->userEntity      = $em->getRepository('UnilendCoreBusinessBundle:Users');
+            $this->lendersAccount  = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
+
             return;
         }
         $this->clientAtypicalOperations = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $client], ['added' => 'DESC']);
@@ -1456,31 +1457,33 @@ class preteursController extends bootstrap
         switch ($this->vigilanceStatusHistory[0]->getVigilanceStatus()) {
             case VigilanceRule::VIGILANCE_STATUS_LOW:
                 $this->vigilanceStatus = [
-                    'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_LOW],
-                    'status' => 'Vigilance standard. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
+                    'message' => 'Vigilance standard. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
                 $this->vigilanceStatus = [
-                    'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_MEDIUM],
-                    'status' => 'Vigilance intermédiaire. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_MEDIUM,
+                    'message' => 'Vigilance intermédiaire. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_HIGH:
                 $this->vigilanceStatus = [
-                    'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_HIGH],
-                    'status' => 'Vigilance Renforcée. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_HIGH,
+                    'message' => 'Vigilance Renforcée. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_REFUSE:
                 $this->vigilanceStatus = [
-                    'color'  => VigilanceRule::$vigilanceStatusColor[VigilanceRule::VIGILANCE_STATUS_REFUSE],
-                    'status' => 'Vigilance Refus. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_REFUSE,
+                    'message' => 'Vigilance Refus. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             default:
                 trigger_error('Unknown vigilance status :' . $this->vigilanceStatusHistory[0]->getVigilanceStatus(), E_USER_NOTICE);
         }
+        /** @var \Symfony\Component\Translation\Translator translator */
+        $this->translator                   = $this->get('translator');
         $this->userEntity                   = $em->getRepository('UnilendCoreBusinessBundle:Users');
         $this->lendersAccount               = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
         $this->clientVigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
