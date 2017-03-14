@@ -52,6 +52,7 @@ class WalletCreationManager
         switch($walletTypeEntity->getLabel()){
             case WalletType::LENDER :
                 $wallet = $this->createBaseWallet($client, $walletTypeEntity);
+                $wallet->setWireTransferPattern();
                 $this->createLegacyLenderAccount($client, $wallet);
                 break;
             case WalletType::BORROWER:
