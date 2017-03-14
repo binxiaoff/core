@@ -1479,7 +1479,7 @@ class dossiersController extends bootstrap
                     $em->commit();
                 } catch (Exception $exception) {
                     $em->getConnection()->rollBack();
-                    $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+                    $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
                 }
             }
 
@@ -1963,12 +1963,11 @@ class dossiersController extends bootstrap
                 // if the repayment exists also in automatic repayment pending list, update its status to "automatic disabled".
                 /** @var \projects_remb $autoRepayment */
                 $projectRepayment = $this->loadData('projects_remb');
-                if($projectRepayment->get($RembEmpr['id_project'], 'ordre = ' . $RembEmpr['ordre'] . ' AND id_project')) {
+                if ($projectRepayment->get($RembEmpr['id_project'], 'ordre = ' . $RembEmpr['ordre'] . ' AND id_project')) {
                     $projectRepayment->status = \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED;
                     $projectRepayment->date_remb_preteurs_reel = date('Y-m-d H:i:s');
                     $projectRepayment->update();
                 }
-
 
                 if (0 != $montant) {
                     $rembNetTotal = $montant - $iTotalTaxAmount;
@@ -1997,6 +1996,7 @@ class dossiersController extends bootstrap
                     $oAccountUnilend = $this->loadData('platform_account_unilend');
                     $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
 
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur $paymentSchedule */
                     $paymentSchedule = $paymentScheduleRepo->find($RembEmpr['id_echeancier_emprunteur']);
                     $operationManager->repaymentCommission($paymentSchedule);
 
@@ -2032,7 +2032,7 @@ class dossiersController extends bootstrap
                         'datedelafacture' => $dateRemb,
                         'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
                         'annee'           => date('Y'),
-                        'montantRemb'     => $this->ficelle->formatNumber(bcdiv($rembNetTotal, 100, 2)),
+                        'montantRemb'     => $this->ficelle->formatNumber(bcdiv($paymentSchedule->getMontant(), 100, 2)),
                         'lien_fb'         => $lien_fb,
                         'lien_tw'         => $lien_tw
                     );

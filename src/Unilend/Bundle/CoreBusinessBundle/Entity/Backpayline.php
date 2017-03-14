@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Backpayline
 {
-
     const WS_DEFAULT_VERSION = 3;
 
     const CODE_TRANSACTION_APPROVED = '00000';
@@ -359,7 +358,7 @@ class Backpayline
      */
     public function setAddedValue()
     {
-        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
