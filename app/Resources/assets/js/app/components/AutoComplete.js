@@ -230,12 +230,14 @@ var AutoComplete = function (elem, options) {
         } else {
           event.preventDefault()
           $(this).parents('li').prev('li').find('a').focus()
+          self.track.lastFocused = $(this).parents('li').prev('li').find('a').text()
         }
 
       // -- Down key
       } else if (event.which === 40) {
         event.preventDefault()
         $(this).parents('li').next('li').find('a').focus()
+        self.track.lastFocused = $(this).parents('li').next('li').find('a').text()
 
       // -- Press esc to clear the autocomplete and go back to the search
       } else if (event.which === 27) {
@@ -790,11 +792,8 @@ $doc
       }
     })
 
-    // Set the new text value of the input and of the ville element
-    $(document).on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function (event, elemAutoComplete, newValue) {
-      // Empty value given
-      newValue = (newValue + '').trim()
-      if (!newValue) return
+    // Common action for the functions below
+    var splitValues = function(elemAutoComplete, newValue) {
 
       // Separate the values from the city and the code
       // Takes a value like `PARIS 2E ARRONDISSMENT (75002)` and splits it into two
@@ -802,10 +801,10 @@ $doc
       var cityValue = newValue.replace(/ ?\(.*$/, '')
 
       // @trigger elem `AutoComplete:address:city` [cityValue]
-      $(this).trigger('AutoComplete:address:city', [cityValue])
+      elemAutoComplete.$input.trigger('AutoComplete:address:city', [cityValue])
 
       // @trigger elem `AutoComplete:address:code` [codeValue]
-      $(this).trigger('AutoComplete:address:code', [codeValue])
+      elemAutoComplete.$input.trigger('AutoComplete:address:code', [codeValue])
 
       // Set the new code value
       // elemAutoComplete.$input.val(codeValue)
@@ -816,9 +815,8 @@ $doc
         var $cityElem = $(cityElemSelector)
         if ($cityElem.val() !== cityValue) {
           $cityElem.val(cityValue)
-
           // @debug
-          console.log('set city', cityValue, $cityElem)
+          console.log('set city', cityValue)
         }
       }
 
@@ -830,9 +828,45 @@ $doc
           $zipElem.val(codeValue)
 
           // @debug
-          console.log('set code', codeValue, $zipElem)
+          console.log('set code', codeValue)
         }
       }
+    }
+
+    // Handling outside click while results are open
+    $doc.on('AutoComplete:showResults:complete', '[data-autocomplete-address]', function (event, elemAutoComplete) {
+
+      // Bind outside click event - user didn't finish the autocomplete
+      $doc.bind('click.outsideAutoComplete',function(event) {
+        if ($(event.target).parents('.autocomplete-results').length === 0) {
+
+          // Set Post Code and City based on first value in the results
+          var newValue = elemAutoComplete.$target.find('ul li:first-child a').text()
+          splitValues(elemAutoComplete, newValue)
+          $doc.unbind('click.outsideAutoComplete')
+        }
+      });
+
+      // Unbind outside click if user clicks on a result - user finished the autocomplete
+      elemAutoComplete.$target.on('click', 'a', function () {
+        $doc.unbind('click.outsideAutoComplete')
+      })
+
+      // Unbind outside click if user presses Enter or Right arrow  - user finished the autocomplete
+      elemAutoComplete.$target.on('keydown', '.autocomplete-results a:focus', function (event) {
+        if (event.which === 39 || event.which === 13) {
+          $doc.unbind('click.outsideAutoComplete')
+        }
+      })
+    })
+
+    // Set the new text value of the input and of the ville element
+    $(document).on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function (event, elemAutoComplete, newValue) {
+      // Empty value given
+      newValue = (newValue + '').trim()
+      if (!newValue) return
+
+      splitValues(elemAutoComplete, newValue)
     })
 
   })

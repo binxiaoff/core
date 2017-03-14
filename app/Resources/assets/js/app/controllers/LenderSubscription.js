@@ -14,9 +14,6 @@ var $body = $('body')
 // Timers
 var ageTimer = 0
 var pwdTimer = 0
-var fiscalAddrTimer = 0
-var postalAddrTimer = 0
-var birthPlaceTimer = 0
 var debounceAjaxDelay = 1000
 var ajaxDelay = 2000
 
@@ -151,8 +148,10 @@ function checkBirthCity($city, $country) {
 }
 
 // Hide AutoComplete errors
-function hideAutocompleteErrors() {
-  $('.autocomplete-error').hide()
+function hideAutocompleteError(elem) {
+    elem.parents('fieldset').find('.autocomplete-error').hide()
+    $(elem.attr('data-autocomplete-address-cityelem')).parents('.form-field').removeClass('ui-formvalidation-error')
+    $(elem.attr('data-autocomplete-address-zipelem')).parents('.form-field').removeClass('ui-formvalidation-error')
 }
 
 function removeBlankFileField() {
@@ -249,6 +248,8 @@ $doc.on('ready', function () {
     }, ajaxDelay)
   })
 
+
+
   // When AutoComplete has set a value for the address fields, cache the values to then re-check they haven't changed before form submit
   $doc.on('AutoComplete:address:city', '#form-lender-person-fiscal-address-city, #form-lender-legal-entity-fiscal-address-city', function (event, cityValue) {
     cached.fiscalAddress.city = cityValue
@@ -263,22 +264,97 @@ $doc.on('ready', function () {
     cached.postalAddress.zip = codeValue
   })
 
+  $(document).on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function () {
+      hideAutocompleteError($(this))
+  })
+
+  // If the user changes the country, check the zip and the city again
+  $doc.on('change', '#form-lender-person-fiscal-address-country, #form-lender-legal-entity-fiscal-address-country, #form-lender-person-postal-address-country', function () {
+
+    var fiscalOrPostal
+    if ($(this).attr('id').indexOf('fiscal') > -1) {
+      fiscalOrPostal = 'fiscal'
+    } else {
+      fiscalOrPostal = 'postal'
+    }
+
+    var zip = $('#form-lender-' + getClientType() + '-' + fiscalOrPostal + '-address-zip')
+    var city = $('#form-lender-' + getClientType() + '-' + fiscalOrPostal + '-address-city')
+    var country = $('#form-lender-' + getClientType() + '-' + fiscalOrPostal + '-address-country')
+
+    // Validate only if value is France
+    if ($(this).val() === '1') {
+        checkPostCodeCity(zip, city, country)
+    }
+  })
+
+  // If the user changes the country, check the zip and the city again
+  $doc.on('change', '#form-lender-person-birth-country', function () {
+    if ($(this).val() === '1') {
+      $('#form-lender-person-birth-city').uiAutoComplete('enable')
+      var birthInsee = $('#form-lender-person-birth-city-insee')
+      var birthCountry = $('#form-lender-person-birth-country')
+      checkBirthCity(birthInsee, birthCountry)
+    } else {
+      $('#form-lender-person-birth-city').uiAutoComplete('disable')
+    }
+  })
+
+  var splitValues = function(elemAutoComplete, elemItem, newValue) {
+      // The newValue is the insee code, so get the city from the element item
+      var cityValue = $(elemItem).text().replace(/ ?\(.*$/, '')
+      var codeValue = newValue
+
+      cached.birthPlace.city = cityValue
+      cached.birthPlace.insee = codeValue
+
+      // Set this element's value to the city value
+      elemAutoComplete.$input.val(cityValue)
+      $('#form-lender-person-birth-city-insee').val(codeValue);
+
+      console.log('set city ' + cityValue)
+      console.log('set insee ' + codeValue)
+  }
+
   // When AutoComplete has set a value for the commune de naissance / birthplace field, ensure the hidden insee value is set by extracting the value from the AutoComplete's result item
   $doc.on('AutoComplete:setInputValue:complete', '#form-lender-person-birth-city', function (event, elemAutoComplete, newValue, elemItem) {
     // Empty value given
     newValue = (newValue + '').trim()
     if (!newValue) return
 
-    // The newValue is the insee code, so get the city from the element item
-    var cityValue = $(elemItem).text()
-    var codeValue = newValue
+    splitValues(elemAutoComplete, elemItem, newValue)
+  })
 
-    cached.birthPlace.city = cityValue
-    cached.birthPlace.insee = codeValue
+  // Handling outside click while results are open
+  $doc.on('AutoComplete:showResults:complete', '#form-lender-person-birth-city', function (event, elemAutoComplete) {
 
-    // Set this element's value to the city value
-    $(this).val(cityValue)
-    $('#form-lender-person-birth-city-insee').val(codeValue);
+    // Bind outside click event - user didn't finish the autocomplete
+    $doc.bind('click.outsideAutoComplete',function(event) {
+        if ($(event.target).parents('.autocomplete-results').length === 0) {
+            // Set Post Code and City based on first value in the results
+            var elemItem = elemAutoComplete.$target.find('ul li:first-child')
+            var newValue = elemItem.find('a').attr('data-value')
+            splitValues(elemAutoComplete, elemItem[0], newValue)
+            $doc.unbind('click.outsideAutoComplete')
+        }
+    });
+
+    // Unbind outside click if user clicks on a result - user finished the autocomplete
+    elemAutoComplete.$target.on('click', 'a', function () {
+        $doc.unbind('click.outsideAutoComplete')
+    })
+
+    // Unbind outside click if user presses Enter or Right arrow  - user finished the autocomplete
+    elemAutoComplete.$target.on('keydown', '.autocomplete-results a:focus', function (event) {
+        if (event.which === 39 || event.which === 13) {
+            $doc.unbind('click.outsideAutoComplete')
+        }
+    })
+  })
+
+  // Reset insee value when typing typing a city
+  $doc.on('keydown', '#form-lender-person-birth-city', function() {
+      $('#form-lender-person-birth-city-insee').val('')
   })
 
   // If a user changes to a US nationality, show the error message
@@ -288,39 +364,6 @@ $doc.on('ready', function () {
       } else {
           $("#error-message-selected-nationality-other").hide()
       }
-  })
-
-  // Validate fiscal address city/code on blur
-  $doc.on('change', '#devenir-preteur input[name="fiscal_address_zip"]:visible, #devenir-preteur input[name="fiscal_address_city"]:visible', function (event) {
-    debounceAjax(fiscalAddrTimer, function () {
-      checkPostCodeCity($('input[name="fiscal_address_zip"]:visible'), $('input[name="fiscal_address_city"]:visible'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
-    })
-  })
-
-  // Validate postal address city/code on blur
-  $doc.on('change', '#devenir-preteur input[name="postal_address_zip"]:visible, #devenir-preteur input[name="postal_address_city"]:visible', function (event) {
-    debounceAjax(postalAddrTimer, function () {
-      checkPostCodeCity($('input[name="postal_address_zip"]:visible'), $('input[name="postal_address_city"]:visible'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
-    })
-  })
-
-  // If the user changes the country, check the zip and the city again
-  $doc.on('change', '#form-lender-person-fiscal-address-country, #form-lender-legal-entity-fiscal-address-country', function (event) {
-    debounceAjax(fiscalAddrTimer, function () {
-      checkPostCodeCity($('#form-lender-' + getClientType() + '-fiscal-address-zip'), $('#form-lender-' + getClientType() + '-fiscal-address-city'), $('#form-lender-' + getClientType() + '-fiscal-address-country'))
-    })
-  })
-
-  // Validate birthplace city/code on blur
-  $doc.on('change', '#form-lender-person-birth-city, #form-lender-person-birth-country', function (event) {
-    if (this.hasOwnProperty('AutoComplete') && this.AutoComplete.resultsOpen) {
-      // results are open so do not validate yet !
-    } else {
-      $('#form-lender-person-birth-city-insee').val('')
-      debounceAjax(birthPlaceTimer, function () {
-        checkBirthCity($('#form-lender-person-birth-city-insee'), $('#form-lender-person-birth-country'))
-      })
-    }
   })
 
   // Validate that the person has filled in all their information correctly
@@ -342,10 +385,6 @@ $doc.on('ready', function () {
 
   $doc.on('submit', '#form-lender-step-2', function () {
     removeBlankFileField();
-  })
-
-  $doc.on('keydown', '#form-lender-person-birth-city', function() {
-    $('#form-lender-person-birth-city-insee').val('')
   })
 
   function getClientType() {
