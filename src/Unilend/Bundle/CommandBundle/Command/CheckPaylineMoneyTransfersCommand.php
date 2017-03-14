@@ -9,7 +9,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 
 class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
 {
-
     /**
      * @see Command
      */
@@ -25,12 +24,14 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $em = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $em             = $this->getContainer()->get('doctrine.orm.entity_manager');
         $paylineManager = $this->getContainer()->get('unilend.service.payline_manager');
+
         /** @var Backpayline[] $pendingPayline */
         $pendingPayline = $em->getRepository('UnilendCoreBusinessBundle:Backpayline')->findBy(['code' => null]);
+
         if ($pendingPayline) {
-            foreach($pendingPayline as $payline) {
+            foreach ($pendingPayline as $payline) {
                 if (false === empty($payline->getSerializeDoPayment())) {
                     $paymentDetails = unserialize($payline->getSerializeDoPayment());
                     $token          = $paymentDetails['token'];
