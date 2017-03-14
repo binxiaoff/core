@@ -70,7 +70,7 @@ class SlackEndpointController extends Controller
             'status' => Users::STATUS_ONLINE
         ]);
 
-        if (null === $user || false === in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_COMMERCIAL])) {
+        if (null === $user || false === in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_DIRECTION, \users_types::TYPE_COMMERCIAL])) {
             return new JsonResponse([
                 'response_type' => 'ephemeral',
                 'text'          => 'Vous ne disposez pas des droits nécessaires. Veuillez contacter l\'administrateur pour en savoir plus.'
