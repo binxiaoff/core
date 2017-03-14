@@ -51,7 +51,7 @@ var AutoComplete = function (elem, options) {
     target: false, // The target element to put the results
     ajaxUrl: false, // An ajax URL to send the term receive results from. If `false`, looks in target element for the text
     ajaxProp: 'term', // The name of the property to send to the ajax URL endpoint
-    delay: 500, // A delay to wait before searching for the term
+    delay: 300, // A delay to wait before searching for the term
     minTermLength: 3, // The minimum character length of a term to find
     showEmpty: false, // Show autocomplete with messages if no results found
     showSingle: true, // Show the autocomplete if only one result found
@@ -266,8 +266,8 @@ var AutoComplete = function (elem, options) {
     // Term length not long enough, abort
     if (term.length < self.settings.minTermLength) return
 
-    // Trim whitespace from start/end of term
-    term = (term + '').trim()
+    // Trim whitespace from start/end of term and convert to uppercase
+    term = (term.toUpperCase() + '').trim()
 
     // User is attempting to search while it is loading
     if (self.track.isLoading) {
@@ -312,8 +312,9 @@ var AutoComplete = function (elem, options) {
 
   // Find a term within results array (or element)
   self.findTermInResults = function (term, results) {
+
     // Trim whitespace from start/end of term
-    term = (term + '').trim()
+    term = (term.toUpperCase() + '').trim()
 
     // Get last retrieved results
     if (!results) results = self.track.results
@@ -369,6 +370,7 @@ var AutoComplete = function (elem, options) {
   // Find a term via AJAX
   self.findTermViaAjax = function (term) {
     if (!self.settings.enable) return
+
     var ajaxData = {}
 
     // @trigger `AutoComplete:findTermViaAjax:before` [elemAutoComplete, term]
@@ -566,6 +568,7 @@ var AutoComplete = function (elem, options) {
 
   // Add highlights to the results
   self.highlightResults = function (term, results) {
+
     results.each( function (i, item) {
       var text = $(this).find('a').text()
       var newText = self.highlightTerm(term, text)
