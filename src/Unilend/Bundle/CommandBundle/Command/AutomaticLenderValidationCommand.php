@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
@@ -145,7 +146,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $bankAccountManager = $this->getContainer()->get('unilend.service.bank_account_manager');
         $bankAccountManager->validateBankAccount($gpValidatedBankAccount);
 
-        $clientStatusManager->addClientStatus($client, \users::USER_ID_CRON, \clients_status::VALIDATED, 'Validation automatique basée sur Green Point');
+        $clientStatusManager->addClientStatus($client, Users::USER_ID_CRON, \clients_status::VALIDATED, 'Validation automatique basée sur Green Point');
         $serialize = serialize(array('id_client' => $client->id_client, 'attachment_data' => $attachment));
         $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
 
@@ -154,7 +155,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         } else {
             $mailerManager->sendClientValidationEmail($client, 'preteur-confirmation-activation');
         }
-        $taxManager->addTaxToApply($client, $lenderAccount, $clientAddress, \users::USER_ID_CRON);
+        $taxManager->addTaxToApply($client, $lenderAccount, $clientAddress, Users::USER_ID_CRON);
     }
 
 }

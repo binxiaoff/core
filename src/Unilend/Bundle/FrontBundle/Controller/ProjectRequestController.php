@@ -15,6 +15,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
@@ -285,7 +286,7 @@ class ProjectRequestController extends Controller
             if (false === $result['eligible']) {
                 $projectManager = $this->get('unilend.service.project_manager');
                 $motif          = implode(',', $result['reason']);
-                $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $this->project, 0, $motif);
+                $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $this->project, 0, $motif);
 
                 return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
             }
@@ -1568,7 +1569,7 @@ class ProjectRequestController extends Controller
         $oProjectManager = $this->get('unilend.service.project_manager');
 
         if ($this->project->status != $projectStatus) {
-            $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $projectStatus, $this->project, 0, $message);
+            $oProjectManager->addProjectStatus(Users::USER_ID_FRONT, $projectStatus, $this->project, 0, $message);
         }
 
         return $this->redirectToRoute($route, ['hash' => $this->project->hash]);
