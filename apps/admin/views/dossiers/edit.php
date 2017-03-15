@@ -382,22 +382,22 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Commission de déblocage des fonds:</th>
+                        <th>Commission déblocage des fonds produit:</th>
                         <td>
                             <?php if (false === empty($this->assignedPartnerProduct->commission_rate_funds)) : ?>
                                 <?= $this->ficelle->formatNumber($this->assignedPartnerProduct->commission_rate_funds, 1) ?> %
                             <?php else : ?>
-                                0,0 %
+                                N/A
                             <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
-                        <th>Commission de remboursement:</th>
+                        <th>Commission de remboursement produit:</th>
                         <td>
                             <?php if (false === empty($this->assignedPartnerProduct->commission_rate_repayment)) : ?>
                                 <?= $this->ficelle->formatNumber($this->assignedPartnerProduct->commission_rate_repayment, 1) ?> %
                             <?php else : ?>
-                                0,0 %
+                                N/A
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -494,10 +494,16 @@
                     <tr>
                         <th><label for="specific_commission_rate_funds">Commission déblocage spécifique:</label></th>
                         <td>
-                            <?php if (true === $this->canModifyProjectCommissionRateFunds) : ?>
-                                <input style="width:160px;background-color:#AAACAC;" type="text" name="specific_commission_rate_funds" id="specific_commission_rate_funds" class="input_moy" <?php if (false === $this->canModifyProjectCommissionRateFunds) : ?>disabled<?php endif; ?> value="<?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) ?>"/> %
+                            <?php if ('0.00' !== $this->projects->commission_rate_funds && null !== $this->projects->commission_rate_funds) : ?>
+                                <?php $specificCommission = $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1); ?>
                             <?php else : ?>
-                                <?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) ?> %
+                                <?php $specificCommission = ''; ?>
+                            <?php endif; ?>
+
+                            <?php if (true === $this->canModifyProjectCommissionRateFunds) : ?>
+                                <input style="width:160px;background-color:#AAACAC;" type="text" name="specific_commission_rate_funds" id="specific_commission_rate_funds" class="input_moy" value="<?= $specificCommission ?>"/> %
+                            <?php else : ?>
+                                <?= (false === empty($specificCommission)) ? $specificCommission . ' %' : 'N/A'; ?>
                             <?php endif; ?>
                         </td>
                     </tr>
