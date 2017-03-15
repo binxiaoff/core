@@ -12,10 +12,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UsersTypes
 {
-    const TYPE_ADMIN      = 1;
-    const TYPE_ANALYSTE   = 2;
-    const TYPE_COMMERCIAL = 3;
-
     /**
      * @var string
      *

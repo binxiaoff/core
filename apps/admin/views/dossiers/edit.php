@@ -345,10 +345,8 @@
                 </table>
             </div>
             <div class="droite">
+                <h2>Partenaire</h2>
                 <table class="form" style="width: 575px;">
-                    <tr>
-                        <th><h2 style="text-align: left">Partenaire</h2></th>
-                    </tr>
                     <tr>
                         <th><label for="project_partner">Partenaire du projet :</label></th>
                         <td>
@@ -360,9 +358,9 @@
                             </select>
                         </td>
                     </tr>
-                    <tr>
-                        <th><h2 style="text-align: left">Produit</h2></th>
-                    </tr>
+                </table>
+                <h2>Produit</h2>
+                <table class="form" style="width: 575px;">
                     <tr>
                         <th><label for="assigned_product">Produit associé* :</label></th>
                         <td>
@@ -384,8 +382,8 @@
                     <tr>
                         <th>Commission déblocage des fonds produit:</th>
                         <td>
-                            <?php if (false === empty($this->assignedPartnerProduct->commission_rate_funds)) : ?>
-                                <?= $this->ficelle->formatNumber($this->assignedPartnerProduct->commission_rate_funds, 1) ?> %
+                            <?php if (false === empty($this->partnerProduct->commission_rate_funds)) : ?>
+                                <?= $this->ficelle->formatNumber($this->partnerProduct->commission_rate_funds, 1) ?> %
                             <?php else : ?>
                                 N/A
                             <?php endif; ?>
@@ -394,16 +392,16 @@
                     <tr>
                         <th>Commission de remboursement produit:</th>
                         <td>
-                            <?php if (false === empty($this->assignedPartnerProduct->commission_rate_repayment)) : ?>
-                                <?= $this->ficelle->formatNumber($this->assignedPartnerProduct->commission_rate_repayment, 1) ?> %
+                            <?php if (false === empty($this->partnerProduct->commission_rate_repayment)) : ?>
+                                <?= $this->ficelle->formatNumber($this->partnerProduct->commission_rate_repayment, 1) ?> %
                             <?php else : ?>
                                 N/A
                             <?php endif; ?>
                         </td>
                     </tr>
-                    <tr>
-                        <th><h2 style="text-align: left">Projet</h2></th>
-                    </tr>
+                </table>
+                <h2>Projet</h2>
+                <table class="form" style="width: 575px;">
                     <?php if (isset($this->fPredictAutoBid) && false === empty($this->fPredictAutoBid)) : ?>
                     <tr>
                         <th><label for="autobid_statistic"> AutoLend funding statistic :</label></th>
@@ -490,7 +488,6 @@
                             ?>
                         </td>
                     </tr>
-
                     <tr>
                         <th><label for="specific_commission_rate_funds">Commission déblocage spécifique:</label></th>
                         <td>
@@ -507,7 +504,6 @@
                             <?php endif; ?>
                         </td>
                     </tr>
-
                 </table>
                 <br><br>
 

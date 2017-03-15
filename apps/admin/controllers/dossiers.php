@@ -479,9 +479,10 @@ class dossiersController extends bootstrap
                 /** @var \partner_product $partnerProduct */
                 $partnerProduct = $this->loadData('partner_product');
 
-                if (false === $this->updateProjectPartner() &&
-                    false === empty($_POST['assigned_product']) &&
-                    $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' AND id_product')
+                if (
+                    false === $this->updateProjectPartner()
+                    && false === empty($_POST['assigned_product'])
+                    && $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' AND id_product')
                 ) {
                     if ($partnerProduct->id_product === $this->projects->id_product) {
                         $this->projects->commission_rate_funds     = $this->getProjectCommissionRateFundsToUse($this->projects, $partnerProduct);
@@ -928,8 +929,8 @@ class dossiersController extends bootstrap
 
             $this->canModifyProjectCommissionRateFunds = $this->canModifyProjectCommissionRateFunds($this->projects);
             /** @var \partner_product assignedPartnerProduct */
-            $this->assignedPartnerProduct = $this->loadData('partner_product');
-            $this->assignedPartnerProduct->get($this->projects->id_product, 'id_partner = ' .  $this->projects->id_partner . ' AND id_product');
+            $this->partnerProduct = $this->loadData('partner_product');
+            $this->partnerProduct->get($this->projects->id_product, 'id_partner = ' .  $this->projects->id_partner . ' AND id_product');
 
             $this->recup_info_remboursement_anticipe();
         } else {
@@ -944,15 +945,15 @@ class dossiersController extends bootstrap
      */
     private function updateProjectPartner()
     {
-        if ($this->projects->status <= \projects_status::PREP_FUNDING &&
-            false === empty($_POST['project_partner']) &&
-            $_POST['project_partner'] != $this->projects->id_partner
+        if (
+            $this->projects->status <= \projects_status::PREP_FUNDING
+            && false === empty($_POST['project_partner'])
+            && $_POST['project_partner'] != $this->projects->id_partner
         ) {
             $this->projects->id_partner                = $_POST['project_partner'];
             $this->projects->id_product                = 0;
             $this->projects->commission_rate_funds     = 0;
             $this->projects->commission_rate_repayment = 0;
-
             $this->projects->update();
 
             return true;
@@ -964,7 +965,7 @@ class dossiersController extends bootstrap
     /**
      * @param \projects             $project
      * @param \partner_product $partnerProduct
-     * @return double
+     * @return float
      */
     private function getProjectCommissionRateFundsToUse(\projects $project, \partner_product $partnerProduct)
     {
@@ -983,7 +984,7 @@ class dossiersController extends bootstrap
      */
     private function canModifyProjectCommissionRateFunds(\projects $project)
     {
-        return ($project->status <= \projects_status::PREP_FUNDING && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type'] && false === empty($project->id_product));
+        return ($project->status <= \projects_status::FUNDE && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type'] && false === empty($project->id_product));
     }
 
     protected function sumBalances(array $aBalances, $aBalanceSheet)
