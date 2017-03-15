@@ -59,7 +59,7 @@ class VigilanceRuleManager
 
         switch ($vigilanceRule->getLabel()) {
             case 'max_client_age':
-                $this->processMaxAgeDetection($clientRepository->getClientByAgeAndSubscriptionDate(new \DateTime(self::VIGILANCE_SUBSCRIPTION_AGE . ' years ago'), new \DateTime('1 day ago 00:00:00')), $vigilanceRule);
+                $this->processMaxAgeDetection($clientRepository->getClientByAgeAndSubscriptionDate(new \DateTime(self::VIGILANCE_SUBSCRIPTION_AGE . ' years ago'), new \DateTime('yesterday midnight')), $vigilanceRule);
                 break;
             case 'max_unitary_deposit_amount':
                 $this->processDepositDetection($clientRepository->getClientsByDepositAmountAndDate((new \DateTime('yesterday midnight')), self::VIGILANCE_UNITARY_DEPOSIT_AMOUNT), $vigilanceRule);

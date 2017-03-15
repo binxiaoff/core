@@ -17,13 +17,6 @@ class VigilanceRule
     const VIGILANCE_STATUS_HIGH   = 2;
     const VIGILANCE_STATUS_REFUSE = 3;
 
-    public static $vigilanceStatusColor = [
-        self::VIGILANCE_STATUS_LOW    => 'green',
-        self::VIGILANCE_STATUS_MEDIUM => 'yellow',
-        self::VIGILANCE_STATUS_HIGH   => 'orange',
-        self::VIGILANCE_STATUS_REFUSE => 'red'
-    ];
-
     /**
      * @var string
      *
