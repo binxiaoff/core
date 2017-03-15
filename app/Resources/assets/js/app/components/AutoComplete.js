@@ -132,50 +132,43 @@ var AutoComplete = function (elem, options) {
    */
   // Type into the input elem
 
-  // For Android Chrome keycode fix
-  var getKeyCode = function (str) {
-    return str.charCodeAt(str.length - 1);
-  }
-
   self.$input.on('keyup', function ( event ) {
     clearTimeout(self.timer)
 
     // Only if it is enabled
     if (self.settings.enable) {
+      // Detect keyboard keys only for Desktop devices
+      if (!Utility.isMobile()) {
+        // Escape key - hide
+        if (event.which === 27) {
+          self.hide()
 
-      // For Android Chrome keycode fix
-      var keyCode = event.keyCode || event.which;
-      if (keyCode == 0 || keyCode == 229) {
-        keyCode = getKeyCode(this.value);
-      }
+          // Arrow key - down
+        } else if (event.which === 40) {
+          if (self.$target.is(':visible')) {
+            event.preventDefault()
+            self.$target.find('li').first().find('a').focus()
 
-      // Escape key - hide
-      if (keyCode === 27) {
-        self.hide()
+            // Pressing down when not visible means user wants to see the autocomplete results
+          } else {
+            self.timer = setTimeout(self.findTerm, self.settings.delay)
+          }
 
-      // Arrow key - down
-      } else if (keyCode === 40) {
-        if (self.$target.is(':visible')) {
+          // Press enter when there is one result
+        } else if (event.which === 13 && self.$target.find('li:visible').length === 1) {
           event.preventDefault()
-          self.$target.find('li').first().find('a').focus()
+          self.$target.find('li:visible').first().find('a').click()
 
-          // Pressing down when not visible means user wants to see the autocomplete results
-        } else {
+          // Tab
+        } else if (event.which === 9 && self.$target.find('li:visible').length > 0) {
+          event.preventDefault()
+          self.$target.find('li:visible').first().find('a').focus()
+
+          // Search for the term if user presses any letter/number/punctuation/delete key
+        } else if (event.which === 8 || event.which === 46 || (event.which >= 48 && event.which <= 90) || (event.which >= 186 && event.which <= 222)) {
           self.timer = setTimeout(self.findTerm, self.settings.delay)
         }
-
-      // Press enter when there is one result
-      } else if (keyCode === 13 && self.$target.find('li:visible').length === 1) {
-        event.preventDefault()
-        self.$target.find('li:visible').first().find('a').click()
-
-      // Tab
-      } else if (keyCode === 9 && self.$target.find('li:visible').length > 0) {
-        event.preventDefault()
-        self.$target.find('li:visible').first().find('a').focus()
-
-      // Search for the term if user presses any letter/number/punctuation/delete key
-      } else if (keyCode === 8 || keyCode === 46 || (keyCode >= 48 && keyCode <= 90) || (keyCode >= 186 && keyCode <= 222)) {
+      } else {
         self.timer = setTimeout(self.findTerm, self.settings.delay)
       }
     }
@@ -207,10 +200,8 @@ var AutoComplete = function (elem, options) {
   // Keyboard operations on results
   self.$target.on('keydown', '.autocomplete-results a:focus', function (event) {
     clearTimeout(self.hideTimer)
-
     // Move between results and input
-    if (self.settings.enable) {
-
+    if (self.settings.enable && !Utility.isMobile()) {
       // -- Press shift+tab on first item to go back to the input
       if (event.which === 9 && event.shiftKey && self.$target.find('.autocomplete-results a').index(this) === 0) {
         event.preventDefault()
@@ -226,25 +217,25 @@ var AutoComplete = function (elem, options) {
           self.$input.focus()
           return
 
-        // Focus on previous result anchor
+          // Focus on previous result anchor
         } else {
           event.preventDefault()
           $(this).parents('li').prev('li').find('a').focus()
           self.track.lastFocused = $(this).parents('li').prev('li').find('a').text()
         }
 
-      // -- Down key
+        // -- Down key
       } else if (event.which === 40) {
         event.preventDefault()
         $(this).parents('li').next('li').find('a').focus()
         self.track.lastFocused = $(this).parents('li').next('li').find('a').text()
 
-      // -- Press esc to clear the autocomplete and go back to the search
+        // -- Press esc to clear the autocomplete and go back to the search
       } else if (event.which === 27) {
         self.$input.focus()
         self.hide()
 
-      // -- Press enter or right arrow on highlighted result to complete the input
+        // -- Press enter or right arrow on highlighted result to complete the input
       } else if (event.which === 39 || event.which === 13) {
         event.preventDefault()
         self.setInputValue($(this).data('value') || $(this).text(), this)
@@ -266,12 +257,12 @@ var AutoComplete = function (elem, options) {
     // Term length not long enough, abort
     if (term.length < self.settings.minTermLength) return
 
-    // Trim whitespace from start/end of term
+    // Trim whitespace from start/end of term and convert to uppercase
     term = (term + '').trim()
 
     // User is attempting to search while it is loading
     if (self.track.isLoading) {
-      self.track.newSearch = term.toUpperCase()
+      self.track.newSearch = term
       self.track.changedWhileLoading = true
 
       // @debug
@@ -302,11 +293,11 @@ var AutoComplete = function (elem, options) {
 
     // Perform ajax search
     if (self.settings.ajaxUrl) {
-      self.findTermViaAjax(term.toUpperCase())
+      self.findTermViaAjax(term)
 
     // Perform search within target for an element's whose children contain the text
     } else {
-      self.findTermInResults(term.toUpperCase())
+      self.findTermInResults(term)
     }
   }
 
@@ -314,7 +305,7 @@ var AutoComplete = function (elem, options) {
   self.findTermInResults = function (term, results) {
 
     // Trim whitespace from start/end of term
-    term = (term.toUpperCase() + '').trim()
+    term = (term + '').trim()
 
     // Get last retrieved results
     if (!results) results = self.track.results
@@ -377,7 +368,7 @@ var AutoComplete = function (elem, options) {
     self.$input.trigger('AutoComplete:findTermViaAjax:before', [self, term])
 
     // Set the property correctly within the data object to send to the AJAX endpoint
-    ajaxData[self.settings.ajaxProp] = term.toUpperCase();
+    ajaxData[self.settings.ajaxProp] = term
 
     // @trigger input `Spinner:showLoading`
     self.$input.trigger('Spinner:showLoading')
@@ -397,7 +388,6 @@ var AutoComplete = function (elem, options) {
 
         if (textStatus === 'success') {
           // Results, huzzah!
-          term = term.toUpperCase();
           if (data instanceof Array) {
             // Show the results
             self.showResults(term, data)
@@ -437,7 +427,6 @@ var AutoComplete = function (elem, options) {
   self.showResults = function (term, results) {
     clearTimeout(self.hideTimer)
 
-    term = term.toUpperCase()
     // @debug
     // console.log('showing results', term, results.length)
 
@@ -569,9 +558,9 @@ var AutoComplete = function (elem, options) {
 
   // Add highlights to the results
   self.highlightResults = function (term, results) {
-    var term = term.toUpperCase()
+
     results.each( function (i, item) {
-      var text = $(this).find('a').text().toUpperCase()
+      var text = $(this).find('a').text()
       var newText = self.highlightTerm(term, text)
       $(this).find('a').html(newText)
     })
@@ -579,8 +568,7 @@ var AutoComplete = function (elem, options) {
 
   // Add highlight to string
   self.highlightTerm = function (term, str) {
-    var term = term.toUpperCase()
-    var str = str.toUpperCase()
+    // console.log('highlight : ' + term + ' | str ' + str)
     var reTerm = new RegExp( '(' + Utility.reEscape(term) + ')', 'gi')
     return str.replace(reTerm, '<span class="highlight">$1</span>')
   }
@@ -845,11 +833,12 @@ $doc
       // Bind outside click event - user didn't finish the autocomplete
       $doc.bind('click.outsideAutoComplete',function(event) {
         if ($(event.target).parents('.autocomplete-results').length === 0) {
+
           // Set Post Code and City based on first value in the results
           var newValue = elemAutoComplete.$target.find('ul li:first-child a').text()
           splitValues(elemAutoComplete, newValue)
           $doc.unbind('click.outsideAutoComplete')
-          elemAutoComplete.hide()
+
         }
       });
 
@@ -860,7 +849,7 @@ $doc
 
       // Unbind outside click if user presses Enter or Right arrow  - user finished the autocomplete
       elemAutoComplete.$target.on('keydown', '.autocomplete-results a:focus', function (event) {
-        if (event.which === 39 || event.which === 13) {
+        if ( !isMobile() && event.which === 39 || !isMobile() && event.which === 13) {
           $doc.unbind('click.outsideAutoComplete')
         }
       })
