@@ -15,7 +15,7 @@ class SymfonyCache extends \Sonata\CacheBundle\Adapter\SymfonyCache
                     throw new \InvalidArgumentException(sprintf('"%s" is not a valid ip address', $server['ip']));
                 }
 
-                $ch = curl_init($this->router->getContext()->getScheme() . '://' . $server['ip'] . $this->getUrl($type));
+                $ch = curl_init($this->router->getContext()->getScheme() . '://' . $server['domain'] . $this->getUrl($type));
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
                 curl_setopt($ch, CURLOPT_AUTOREFERER, true);
@@ -36,7 +36,6 @@ class SymfonyCache extends \Sonata\CacheBundle\Adapter\SymfonyCache
                 } else {
                     return false;
                 }
-
                 curl_close($ch);
             }
         }
