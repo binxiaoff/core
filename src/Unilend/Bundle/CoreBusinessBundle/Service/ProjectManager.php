@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
@@ -111,7 +112,7 @@ class ProjectManager
         }
 
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, false);
-        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject);
+        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject);
     }
 
     /**
@@ -145,7 +146,7 @@ class ProjectManager
             $offset += $limit;
         }
 
-        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $project);
+        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::EN_FUNDING, $project);
     }
 
     public function checkBids(\projects $oProject, $bSendNotification)
@@ -302,9 +303,9 @@ class ProjectManager
     {
         $bidRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::BID_TERMINATED, $oProject);
+        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::BID_TERMINATED, $oProject);
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
-        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
+        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info('Project ' . $oProject->id_project . ' is now changed to status funded', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
@@ -545,7 +546,7 @@ class ProjectManager
     {
         $bidRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject);
+        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject);
 
         $criteria      = ['idProject' => $oProject->id_project];
         $bids          = $bidRepo->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);

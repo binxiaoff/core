@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -146,9 +147,9 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                              * When project is pending documents, abort status is not automatic and must be set manually in BO
                              */
                             if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $project, $iReminderIndex, $projectStatusHistory->content);
+                                $oProjectManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::ABANDON, $project, $iReminderIndex, $projectStatusHistory->content);
                             } else {
-                                $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);
+                                $oProjectManager->addProjectStatus(Users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);
                             }
                         } catch (\Exception $oException) {
                             $logger->error('Cannot send reminder (project ' . $project->id_project . ') - Message: "' . $oException->getMessage() . '"', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));

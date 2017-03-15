@@ -398,3 +398,25 @@ table.hidden_table{display: none;}
     position: relative;
     top: 10px;
 }
+
+.vigilance-status-0 {
+    background-color: green;
+    border-radius: 7px;
+}
+.vigilance-status-1 {
+    background-color: darkorange;
+    border-radius: 7px;
+}
+.vigilance-status-2 {
+    background-color: orangered;
+    border-radius: 7px;
+}
+.vigilance-status-3 {
+    background-color: red;
+    border-radius: 7px;
+}
+span[class^="vigilance-status-"], span[class*=" vigilance-status-"] {
+    border-radius: 7px;
+    padding: 5px;
+    width: 84px;
+}
