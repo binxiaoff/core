@@ -249,7 +249,6 @@ class bootstrap extends Controller
     public function handlePartenaire($params)
     {
         $partenaires       = $this->loadData('partenaires');
-        $promotions        = $this->loadData('promotions');
         $partenaires_clics = $this->loadData('partenaires_clics');
 
         // On check les params pour voir si on a un partenaire
@@ -269,7 +268,6 @@ class bootstrap extends Controller
 
                     $indexPart = $i + 1;
 
-
                     // On regarde si on trouve un partenaire
                     if ($partenaires->get($params[ $indexPart ], 'hash')) {
                         // on controle qu'on a pas un double clique
@@ -288,20 +286,7 @@ class bootstrap extends Controller
                                 $partenaires_clics->create(array('id_partenaire' => $partenaires->id_partenaire, 'date' => date('Y-m-d')));
                             }
                         }
-
-                        // On met le partenaire en session
                         $_SESSION['partenaire']['id_partenaire'] = $partenaires->id_partenaire;
-
-                        // On regarde si on a un code promo actif
-                        if ($promotions->get($partenaires->id_code, 'id_code')) {
-                            // On ajoute le code en session
-                            $_SESSION['partenaire']['code_promo'] = $promotions->code;
-                            $_SESSION['partenaire']['id_promo']   = $promotions->id_code;
-                        } else {
-                            unset($_SESSION['partenaire']['code_promo']);
-                            unset($_SESSION['partenaire']['id_promo']);
-                        }
-
 
                         // On enregistre le partenaire en cookie
                         setcookie('izicom_partenaire', $partenaires->hash, time() + 3153600, '/');
