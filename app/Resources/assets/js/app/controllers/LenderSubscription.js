@@ -313,7 +313,7 @@ $doc.on('ready', function () {
   $doc.on('AutoComplete:showResults:complete', '#form-lender-person-birth-city', function (event, elemAutoComplete) {
 
     // Bind outside click event - user didn't finish the autocomplete
-    $doc.bind('click.outsideAutoComplete',function(event) {
+    $doc.bind('click.outsideAutoComplete', function(event) {
 
         if ($(event.target).parents('.autocomplete-results').length === 0) {
 
@@ -322,8 +322,9 @@ $doc.on('ready', function () {
             var newValue = elemItem.find('a').attr('data-value')
             splitBirthplaceValue(elemAutoComplete, elemItem[0], newValue)
 
-            // Unbind outside click event
+            // Unbind outside click event and hide results
             $doc.unbind('click.outsideAutoComplete')
+            elemAutoComplete.hide()
         }
     });
 

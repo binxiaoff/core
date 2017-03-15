@@ -266,12 +266,12 @@ var AutoComplete = function (elem, options) {
     // Term length not long enough, abort
     if (term.length < self.settings.minTermLength) return
 
-    // Trim whitespace from start/end of term and convert to uppercase
-    term = (term.toUpperCase() + '').trim()
+    // Trim whitespace from start/end of term
+    term = (term + '').trim()
 
     // User is attempting to search while it is loading
     if (self.track.isLoading) {
-      self.track.newSearch = term
+      self.track.newSearch = term.toUpperCase()
       self.track.changedWhileLoading = true
 
       // @debug
@@ -302,11 +302,11 @@ var AutoComplete = function (elem, options) {
 
     // Perform ajax search
     if (self.settings.ajaxUrl) {
-      self.findTermViaAjax(term)
+      self.findTermViaAjax(term.toUpperCase())
 
     // Perform search within target for an element's whose children contain the text
     } else {
-      self.findTermInResults(term)
+      self.findTermInResults(term.toUpperCase())
     }
   }
 
@@ -377,7 +377,7 @@ var AutoComplete = function (elem, options) {
     self.$input.trigger('AutoComplete:findTermViaAjax:before', [self, term])
 
     // Set the property correctly within the data object to send to the AJAX endpoint
-    ajaxData[self.settings.ajaxProp] = term
+    ajaxData[self.settings.ajaxProp] = term.toUpperCase();
 
     // @trigger input `Spinner:showLoading`
     self.$input.trigger('Spinner:showLoading')
@@ -397,10 +397,10 @@ var AutoComplete = function (elem, options) {
 
         if (textStatus === 'success') {
           // Results, huzzah!
+          term = term.toUpperCase();
           if (data instanceof Array) {
             // Show the results
             self.showResults(term, data)
-
           } else {
             self.warning('Ajax Error: Data is not an array')
             console.log(data, textStatus, xhr)
@@ -437,6 +437,7 @@ var AutoComplete = function (elem, options) {
   self.showResults = function (term, results) {
     clearTimeout(self.hideTimer)
 
+    term = term.toUpperCase()
     // @debug
     // console.log('showing results', term, results.length)
 
@@ -568,9 +569,9 @@ var AutoComplete = function (elem, options) {
 
   // Add highlights to the results
   self.highlightResults = function (term, results) {
-
+    var term = term.toUpperCase()
     results.each( function (i, item) {
-      var text = $(this).find('a').text()
+      var text = $(this).find('a').text().toUpperCase()
       var newText = self.highlightTerm(term, text)
       $(this).find('a').html(newText)
     })
@@ -578,6 +579,8 @@ var AutoComplete = function (elem, options) {
 
   // Add highlight to string
   self.highlightTerm = function (term, str) {
+    var term = term.toUpperCase()
+    var str = str.toUpperCase()
     var reTerm = new RegExp( '(' + Utility.reEscape(term) + ')', 'gi')
     return str.replace(reTerm, '<span class="highlight">$1</span>')
   }
@@ -842,11 +845,11 @@ $doc
       // Bind outside click event - user didn't finish the autocomplete
       $doc.bind('click.outsideAutoComplete',function(event) {
         if ($(event.target).parents('.autocomplete-results').length === 0) {
-
           // Set Post Code and City based on first value in the results
           var newValue = elemAutoComplete.$target.find('ul li:first-child a').text()
           splitValues(elemAutoComplete, newValue)
           $doc.unbind('click.outsideAutoComplete')
+          elemAutoComplete.hide()
         }
       });
 
