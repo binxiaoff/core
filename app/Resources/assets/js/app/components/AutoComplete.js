@@ -838,13 +838,14 @@ $doc
           var newValue = elemAutoComplete.$target.find('ul li:first-child a').text()
           splitValues(elemAutoComplete, newValue)
           $doc.unbind('click.outsideAutoComplete')
-
+          elemAutoComplete.hide()
         }
       });
 
       // Unbind outside click if user clicks on a result - user finished the autocomplete
       elemAutoComplete.$target.on('click', 'a', function () {
         $doc.unbind('click.outsideAutoComplete')
+        elemAutoComplete.hide()
       })
 
       // Unbind outside click if user presses Enter or Right arrow  - user finished the autocomplete
