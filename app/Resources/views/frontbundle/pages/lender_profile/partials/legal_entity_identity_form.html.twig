@@ -267,8 +267,8 @@
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}"
                          data-fileattach-fileremove="false">
-                        {% if companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_DIRIGEANT')]['path'] is defined %}
-                            <input type="file" name="id_recto" value="{{ companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_DIRIGEANT')]['path'] }}" />
+                        {% if companyIdAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_DIRIGEANT')].path is defined %}
+                            <input type="file" name="id_recto" value="{{ companyIdAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_DIRIGEANT')].path }}" />
                         {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
@@ -279,8 +279,8 @@
                          data-fileattach-inputname="id_verso"
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}">
-                        {% if companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
-                            <input type="file" name="id_verso" value="{{ companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}" />
+                        {% if companyIdAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO')].path is defined %}
+                            <input type="file" name="id_verso" value="{{ companyIdAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO')].path }}" />
                         {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
@@ -429,8 +429,8 @@
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-company-registration {% endtrans %}"
                          data-fileattach-fileremove="false">
-                        {% if companyOtherAttachments[constant('\\attachment_type::KBIS')]['path'] is defined %}
-                            <input type="file" name="company-registration" value="{{ companyOtherAttachments[constant('\\attachment_type::KBIS')]['path'] }}" />
+                        {% if companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::KBIS')].path is defined %}
+                            <input type="file" name="company-registration" value="{{ companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::KBIS')].path }}" />
                         {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div><!-- /.form-field -->
@@ -446,8 +446,8 @@
                             data-fileattach-maxfiles="1"
                             data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-delegation-of-authority {% endtrans %}"
                             data-fileattach-fileremove="false">
-                            {% if companyOtherAttachments[constant('\\attachment_type::DELEGATION_POUVOIR')]['path'] is defined %}
-                                <input type="file" name="delegation-of-authority" value="{{ companyOtherAttachments[constant('\\attachment_type::DELEGATION_POUVOIR')]['path'] }}" />
+                            {% if companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DELEGATION_POUVOIR')].path is defined %}
+                                <input type="file" name="delegation-of-authority" value="{{ companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DELEGATION_POUVOIR')].path }}" />
                             {% endif %}
                         </div><!-- /.ui-fileattach -->
                     </div><!-- /.form-field -->

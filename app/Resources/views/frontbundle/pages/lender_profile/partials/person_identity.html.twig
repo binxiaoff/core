@@ -31,17 +31,19 @@
         <dt>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}</dt>
         <dd id="profile-info-fichier-identitie-output">
             {% for attachment in identityAttachments %}
-                {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
-                {% if attachment.id_type == constant('\\attachment_type::CNI_PASSPORTE') %}
-                    <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
-                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate }) }}" data-toggle="tooltip">
-                                <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate}) }}</span>
-                            </span>
-                {%  else  %}
-                    <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b"
-                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate}) }}" data-toggle="tooltip">
-                                <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate})}}</span>
-                            </span>
+                {% if attachment is not null %}
+                    {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
+                    {% if attachment.getType().id == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE') %}
+                        <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
+                              title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate }) }}" data-toggle="tooltip">
+                                    <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate}) }}</span>
+                                </span>
+                    {%  else  %}
+                        <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b"
+                              title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate}) }}" data-toggle="tooltip">
+                                    <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate})}}</span>
+                                </span>
+                    {% endif %}
                 {% endif %}
             {% endfor %}
         </dd>

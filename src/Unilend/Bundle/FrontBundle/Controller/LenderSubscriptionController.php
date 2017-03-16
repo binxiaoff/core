@@ -10,12 +10,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
@@ -139,13 +143,9 @@ class LenderSubscriptionController extends Controller
             if (\pays_v2::COUNTRY_FRANCE == $clientEntity->getIdPaysNaissance() && false === empty($clientEntity->getInseeBirth())) {
                 /** @var Villes $cityByInsee */
                 $cityByInsee = $em->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByInsee($clientEntity->getInseeBirth());
-                /** @var Villes $cityByCity */
-                $cityByCity = $em->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByVille($clientEntity->getVilleNaissance());
 
-                if (null !== $cityByInsee && null !== $cityByCity && $cityByInsee->getInsee() === $cityByCity->getInsee()) {
-                    $clientEntity->setVilleNaissance($cityByCity->getVille());
-                } else {
-                    $clientEntity->setInseeBirth($cityByCity->getVille());
+                if (null !== $cityByInsee) {
+                    $clientEntity->setVilleNaissance($cityByInsee->getVille());
                 }
 
             } else {
@@ -462,7 +462,7 @@ class LenderSubscriptionController extends Controller
         if ($form->isSubmitted()) {
             $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_DOCUMENTS);
             if ($form->isValid()) {
-                $isValid = $this->handleDocumentsForm($client, $bankAccount, $clientAddress, $form);
+                $isValid = $this->handleDocumentsForm($client, $bankAccount, $clientAddress, $form, $request->files);
                 if ($isValid) {
                     return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->getHash()]);
                 }
@@ -489,14 +489,12 @@ class LenderSubscriptionController extends Controller
      * @param BankAccount     $bankAccount
      * @param ClientsAdresses $clientAddress
      * @param FormInterface   $form
+     * @param FileBag         $fileBag
      *
      * @return bool
      */
-    private function handleDocumentsForm(Clients $client, BankAccount $bankAccount, ClientsAdresses $clientAddress, FormInterface $form)
+    private function handleDocumentsForm(Clients $client, BankAccount $bankAccount, ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag)
     {
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lenderAccount->get($client->getIdClient(), 'id_client_owner');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
@@ -509,9 +507,11 @@ class LenderSubscriptionController extends Controller
             $form->get('client')->get('fundsOrigin')->addError(new FormError($translator->trans('lender-subscription-documents_wrong-funds-origin')));
         }
 
-        if (isset($_FILES['rib']) && false === empty($_FILES['rib']['name'])) {
-            $attachmentIdRib = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::RIB, 'rib');
-            if (false === is_numeric($attachmentIdRib)) {
+        $file = $fileBag->get('rib');
+        if ($file instanceof UploadedFile) {
+            try {
+                $this->upload($client, AttachmentType::RIB, $file);
+            } catch (\Exception $exception) {
                 $form->get('bankAccount')->addError(new FormError($translator->trans('lender-subscription_documents-upload-files-error-message')));
             }
         } else {
@@ -519,10 +519,10 @@ class LenderSubscriptionController extends Controller
         }
 
         if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-            $this->validateAttachmentsPerson($form, $lenderAccount, $clientAddress);
+            $this->validateAttachmentsPerson($form, $client, $clientAddress, $fileBag);
         } else {
             $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneByIdClientOwner($client);
-            $this->validateAttachmentsLegalEntity($form, $lenderAccount, $company);
+            $this->validateAttachmentsLegalEntity($form, $client, $company, $fileBag);
         }
 
         if ($form->isValid()) {
@@ -547,112 +547,109 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param FormInterface     $form
-     * @param \lenders_accounts $lenderAccount
+     * @param Clients           $client
      * @param ClientsAdresses   $clientAddress
+     * @param FileBag           $fileBag
      */
-    private function validateAttachmentsPerson(FormInterface $form, \lenders_accounts $lenderAccount, ClientsAdresses $clientAddress)
+    private function validateAttachmentsPerson(FormInterface $form, Clients $client, ClientsAdresses $clientAddress, FileBag $fileBag)
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
 
-        if (isset($_FILES['id_recto']) && false === empty($_FILES['id_recto']['name'])) {
-            $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE, 'id_recto');
-            if (false === is_numeric($attachmentIdRecto)) {
-                $form->addError(new FormError($uploadErrorMessage));
-            }
-        } else {
-            $form->addError(new FormError($translator->trans('lender-subscription_documents-person-missing-id')));
-        }
-
-        if (isset($_FILES['id_verso']) && false === empty($_FILES['id_verso']['name'])) {
-            $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
-            if (false === is_numeric($attachmentIdVerso)) {
-                $form->addError(new FormError($uploadErrorMessage));
-            }
-        }
-
+        $files = [
+            AttachmentType::CNI_PASSPORTE       => $fileBag->get('id_recto'),
+            AttachmentType::CNI_PASSPORTE_VERSO => $fileBag->get('id_verso'),
+            AttachmentType::JUSTIFICATIF_DOMICILE => $fileBag->get('housing-certificate'),
+        ];
         if ($clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE) {
-            if (isset($_FILES['tax-certificate']) && false === empty($_FILES['tax-certificate']['name'])) {
-                if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_FISCAL, 'tax-certificate'))) {
-                    $form->addError(new FormError($uploadErrorMessage));
-                }
-            } else {
-                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-tax-certificate'));
-            }
+            $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
-
-        if (isset($_FILES['housing-certificate']) && false === empty($_FILES['housing-certificate']['name'])) {
-            if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_DOMICILE, 'housing-certificate'))) {
-                $form->addError(new FormError($uploadErrorMessage));
-            }
-        } else {
-            $form->addError(new FormError($translator->trans('lender-subscription_documents-person-missing-housing-certificate')));
-        }
-
         if (false === empty($form->get('housedByThirdPerson')->getData())){
-            if (isset($_FILES['housed-by-third-person-declaration']) && false === empty($_FILES['housed-by-third-person-declaration']['name'])){
-                if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::ATTESTATION_HEBERGEMENT_TIERS, 'housed-by-third-person-declaration'))) {
-                    $form->addError(new FormError($uploadErrorMessage));
+            $files[AttachmentType::ATTESTATION_HEBERGEMENT_TIERS] = $fileBag->get('housed-by-third-person-declaration');
+            $files[AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT] = $fileBag->get('id-third-person-housing');
+        }
+        foreach ($files as $attachmentTypeId => $file) {
+            if ($file instanceof UploadedFile) {
+                try {
+                    $this->upload($client,  $attachmentTypeId, $file);
+                } catch (\Exception $exception) {
+                    $form->addError(new FormError($uploadErrorMessage . $attachmentTypeId . ' error : ' . $exception->getMessage()));
                 }
             } else {
-                $form->addError(new FormError($translator->trans('lender-subscription_documents-person-missing-housed-by-third-person-declaration')));
-            }
-
-            if (isset($_FILES['id-third-person-housing']) && false === empty($_FILES['housed-by-third-person-declaration']['name'])){
-                if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT, 'id-third-person-housing'))) {
-                    $form->addError(new FormError($uploadErrorMessage));
+                switch ($attachmentTypeId) {
+                    case AttachmentType::CNI_PASSPORTE :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-id');
+                        break;
+                    case AttachmentType::JUSTIFICATIF_FISCAL :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-tax-certificate');
+                        break;
+                    case AttachmentType::JUSTIFICATIF_DOMICILE :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-housing-certificate');
+                        break;
+                    case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-housed-by-third-person-declaration');
+                        break;
+                    case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-id-third-person-housing');
+                        break;
+                    default :
+                        continue 2;
                 }
-            } else {
-                $form->addError(new FormError($translator->trans('lender-subscription_documents-person-missing-id-third-person-housing')));
+                $form->addError(new FormError($error));
             }
         }
     }
 
     /**
-     * @param FormInterface     $form
-     * @param \lenders_accounts $lenderAccount
-     * @param Companies         $company
+     * @param FormInterface $form
+     * @param Clients       $client
+     * @param Companies     $company
+     * @param FileBag       $fileBag
      */
-    private function validateAttachmentsLegalEntity(FormInterface $form, \lenders_accounts $lenderAccount, Companies $company)
+    private function validateAttachmentsLegalEntity(FormInterface $form, Clients $client, Companies $company, FileBag $fileBag)
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
 
-        if (isset($_FILES['id_recto']) && false === empty($_FILES['id_recto']['name'])) {
-            $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'id_recto');
-            if (false === is_numeric($attachmentIdRecto)) {
-                $form->addError(new FormError($uploadErrorMessage));
-            }
-        } else {
-            $form->addError(new FormError($translator->trans('lender-subscription_documents-legal-entity-missing-director-id')));
-        }
-
-        if (isset($_FILES['id_verso']) && false === empty($_FILES['id_verso']['name'])) {
-            $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
-            if (false === is_numeric($attachmentIdVerso)) {
-                $form->addError(new FormError($uploadErrorMessage));
-            }
-        }
-
-        if (isset($_FILES['company-registration']) && false === empty($_FILES['company-registration']['name'])) {
-            $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::KBIS, 'company-registration');
-            if (false === is_numeric($attachmentIdVerso)) {
-                $form->addError(new FormError($uploadErrorMessage));
-            }
-        } else {
-            $form->addError(new FormError($translator->trans('lender-subscription_documents-legal-entity-missing-company-registration')));
-        }
-
+        $files = [
+            AttachmentType::CNI_PASSPORTE_DIRIGEANT => $fileBag->get('id_recto'),
+            AttachmentType::CNI_PASSPORTE_VERSO     =>  $fileBag->get('id_verso'),
+            AttachmentType::KBIS                    =>  $fileBag->get('company-registration')
+        ];
         if ($company->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
-            if (isset($_FILES['delegation-of-authority']) && false === empty($_FILES['delegation-of-authority']['name'])) {
-                $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
-                if (false === is_numeric($attachmentIdVerso)) {
+            $files[AttachmentType::DELEGATION_POUVOIR] = $fileBag->get('delegation-of-authority');
+        }
+
+        foreach ($files as $attachmentTypeId => $file) {
+            if ($file instanceof UploadedFile) {
+                try {
+                    $this->upload($client,  $attachmentTypeId, $file);
+                } catch (\Exception $exception) {
                     $form->addError(new FormError($uploadErrorMessage));
                 }
             } else {
-                $form->addError(new FormError($translator->trans('lender-subscription_documents-legal-entity-missing-delegation-of-authority')));
+                switch ($attachmentTypeId) {
+                    case AttachmentType::CNI_PASSPORTE :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-id');
+                        break;
+                    case AttachmentType::JUSTIFICATIF_FISCAL :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-tax-certificate');
+                        break;
+                    case AttachmentType::JUSTIFICATIF_DOMICILE :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-housing-certificate');
+                        break;
+                    case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-housed-by-third-person-declaration');
+                        break;
+                    case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT :
+                        $error = $translator->trans('lender-subscription_documents-person-missing-id-third-person-housing');
+                        break;
+                    default :
+                        continue 2;
+                }
+                $form->addError(new FormError($error));
             }
         }
     }
@@ -985,34 +982,23 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param integer $lenderAccountId
-     * @param integer $attachmentType
-     * @param string $fieldName
-     * @return bool
+     * @param Clients $client
+     * @param $attachmentTypeId
+     * @param UploadedFile $file
+     * @return Attachment
+     * @throws \Exception
      */
-    private function uploadAttachment($lenderAccountId, $attachmentType, $fieldName)
+    private function upload(Clients $client, $attachmentTypeId, UploadedFile $file)
     {
-        /** @var \upload $uploadLib */
-        $uploadLib = Loader::loadLib('upload');
-        /** @var \attachment $attachments */
-        $attachments = $this->get('unilend.service.entity_manager')->getRepository('attachment');
-        /** @var \attachment_type $attachmentTypes */
-        $attachmentTypes = $this->get('unilend.service.entity_manager')->getRepository('attachment_type');
-        /** @var \attachment_helper $attachmentHelper */
-        $attachmentHelper = Loader::loadLib('attachment_helper', [$attachments, $attachmentTypes, $this->get('kernel')->getRootDir() . '/../']);
-        /** @var \greenpoint_attachment $greenPointAttachment */
-        $greenPointAttachment = $this->get('unilend.service.entity_manager')->getRepository('greenpoint_attachment');
-
-        /** @var mixed $result */
-        $result = $attachmentHelper->attachmentExists($attachments, $lenderAccountId, \attachment::LENDER, $attachmentType);
-        if (is_numeric($result)) {
-            $greenPointAttachment->get($result, 'id_attachment');
-            $greenPointAttachment->revalidate   = \greenpoint_attachment::REVALIDATE_YES;
-            $greenPointAttachment->final_status = \greenpoint_attachment::FINAL_STATUS_NO;
-            $greenPointAttachment->update();
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $attachmentType    = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+        $attachment        = $attachmentManager->upload($client, $attachmentType, $file);
+        if (false === $attachment instanceof Attachment) {
+            throw new \Exception();
         }
 
-        return $attachmentHelper->upload($lenderAccountId, \attachment::LENDER, $attachmentType, $fieldName, $uploadLib);
+        return $attachment;
     }
 
     /**

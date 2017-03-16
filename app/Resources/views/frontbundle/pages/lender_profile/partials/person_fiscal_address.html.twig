@@ -21,18 +21,20 @@
         <dd id="profile-address-fichier-domicile-output">
             {% set isHousedByThirdPerson = false %}
             {% for attachment in residenceAttachments %}
-                {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
-                {% if attachment.id_type == constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT') %}
-                    {% set isHousedByThirdPerson = true %}
-                    <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
-                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate}) }}"
-                          data-toggle="tooltip">
-                        <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate})}}</span>
-                    </span>
-                {% else %}
-                    <span id="form-profile-address-file-domicile-1-output" class="file-justificatif file-domicile" title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate}) }}" data-toggle="tooltip">
-                        <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate}) }}</span>
-                    </span>
+                {% if attachment is not null %}
+                    {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
+                    {% if attachment.type.id == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT') %}
+                        {% set isHousedByThirdPerson = true %}
+                        <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
+                              title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}"
+                              data-toggle="tooltip">
+                            <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate})}}</span>
+                        </span>
+                    {% else %}
+                        <span id="form-profile-address-file-domicile-1-output" class="file-justificatif file-domicile" title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}" data-toggle="tooltip">
+                            <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}</span>
+                        </span>
+                    {% endif %}
                 {% endif %}
             {% endfor %}
         </dd>
@@ -153,8 +155,8 @@
                      data-fileattach-inputname="tax-certificate"
                      data-fileattach-maxfiles="1"
                      data-fileattach-fileremove="false">
-                    {% if residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_FISCAL')]['path'] is defined %}
-                        <input type="file" name="tax-certificate" value="{{ residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_FISCAL')]['path'] }}" />
+                    {% if residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::JUSTIFICATIF_FISCAL')].path is defined %}
+                        <input type="file" name="tax-certificate" value="{{ residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::JUSTIFICATIF_FISCAL')].path }}" />
                     {% endif %}
                 </div><!-- /.ui-fileattach -->
             </div>
@@ -179,8 +181,8 @@
                      data-fileattach-maxfiles="1"
                      data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-location-certificate {% endtrans %}"
                      data-fileattach-fileremove="false">
-                    {% if residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_DOMICILE')]['path'] is defined %}
-                        <input type="file" name="housing-certificate" value="{{ residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_DOMICILE')]['path'] }}" />
+                    {% if residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::JUSTIFICATIF_DOMICILE')].path is defined %}
+                        <input type="file" name="housing-certificate" value="{{ residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::JUSTIFICATIF_DOMICILE')].path }}" />
                     {% endif %}
                 </div><!-- /.ui-fileattach -->
             </div>
@@ -209,8 +211,8 @@
                      data-fileattach-inputname="housed-by-third-person-declaration"
                      data-fileattach-maxfiles="1"
                      data-fileattach-fileremove="false">
-                    {% if residenceAttachments[constant('\\attachment_type::ATTESTATION_HEBERGEMENT_TIERS')]['path'] is defined %}
-                        <input type="file" name="housed-by-third-person-declaration" value="{{ residenceAttachments[constant('\\attachment_type::ATTESTATION_HEBERGEMENT_TIERS')]['path'] }}" />
+                    {% if residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::ATTESTATION_HEBERGEMENT_TIERS')].path is defined %}
+                        <input type="file" name="housed-by-third-person-declaration" value="{{ residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::ATTESTATION_HEBERGEMENT_TIERS')].path }}" />
                     {% endif %}
                 </div><!-- /.ui-fileattach -->
             </div><!-- /.form-field -->
@@ -227,8 +229,8 @@
                          data-fileattach-inputname="id-third-person-housing"
                          data-fileattach-maxfiles="1"
                          data-fileattach-fileremove="false">
-                        {% if residenceAttachments[constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT')]['path'] is defined %}
-                            <input type="file" name="id-third-person-housing" value="{{ residenceAttachments[constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT')]['path'] }}" />
+                        {% if residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT')].path is defined %}
+                            <input type="file" name="id-third-person-housing" value="{{ residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT')].path }}" />
                         {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>

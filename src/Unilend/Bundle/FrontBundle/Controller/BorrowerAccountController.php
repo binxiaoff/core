@@ -477,7 +477,7 @@ class BorrowerAccountController extends Controller
         include $rootDir . '/apps/default/controllers/pdf.php';
 
         $pdfCommand    = new \Command('pdf', 'setDisplay', 'fr');
-        $pdfController = new \pdfController($pdfCommand, 'default');
+        $pdfController = new \pdfController($pdfCommand, 'default', $request);
         $pdfController->setContainer($this->container);
         $pdfController->initialize();
 

@@ -54,8 +54,8 @@
                                                         <div class="col-lg-6 col-md-6">
                                                             <select name="files[extra__NUM__]" class="input-field">
                                                                 <option value="">{% trans %} lender-profile_completeness-form-select-label {% endtrans %}</option>
-                                                                {% for attachment in attachmentTypes %}
-                                                                    <option value="{{ attachment.id }}">{{ attachment.label }}</option>
+                                                                {% for attachmentType in attachmentTypes %}
+                                                                    <option value="{{ attachmentType.id }}">{{ 'projet_document-type-' ~ attachmentType.id }}</option>
                                                                 {% endfor %}
                                                             </select>
                                                         </div>
@@ -79,8 +79,8 @@
                                                         <div class="col-lg-6 col-md-6">
                                                             <select name="files[file]" class="input-field">
                                                                 <option value="">{% trans %} lender-profile_completeness-form-select-label {% endtrans %}</option>
-                                                                {% for attachment in attachmentTypes %}
-                                                                    <option value="{{ attachment.id }}">{{ attachment.label }}</option>
+                                                                {% for attachmentType in attachmentTypes %}
+                                                                    <option value="{{ attachmentType.id }}">{{ 'projet_document-type-' ~ attachmentType.id }}</option>
                                                                 {% endfor %}
                                                             </select>
                                                         </div>

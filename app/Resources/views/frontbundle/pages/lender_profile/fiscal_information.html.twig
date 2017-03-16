@@ -55,12 +55,14 @@ classNames: 'user-preter-profile'
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-iban {% endtrans %}</dt>
                                 <dd id="profile-fiscalite-bank-iban-output">{{ bankAccount.iban }}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-documents {% endtrans %}</dt>
+                                {% if lenderAccount.fiscal_info.rib %}
                                 <dd id="profile-fiscalite-bank-fichier-rib-output">
                                     {% set ribDate = lenderAccount.fiscal_info.rib.updated|default(lenderAccount.fiscal_info.rib.added)|localizeddate('short', 'none', app.request.locale) %}
                                     {% set ribProvidedTranslation = "lender-profile_lender-attachment-provided-label-type-#{constant('\\attachment_type::RIB')}" | transchoice(ribDate, {'%date%': ribDate}) %}
                                     <span id="form-fiscalite-bank-file-rib-1-output" class="file-justificatif file-rib" title="{{ ribProvidedTranslation }}" data-toggle="tooltip">
                                     </span>
                                 </dd>
+                                {% endif %}
                             </dl>
                         </section>
 
@@ -142,7 +144,7 @@ classNames: 'user-preter-profile'
                                              data-fileattach data-fileattach-inputname="iban-certificate"
                                              data-fileattach-maxfiles="1"
                                              data-fileattach-emptyfilelabel="
-                                                 {% if lenderAccount.fiscal_info.rib.path is not empty %}
+                                                 {% if lenderAccount.fiscal_info.rib %}
                                                     {{ lenderAccount.fiscal_info.rib.path }}
                                                  {% else %}
                                                     {% trans %} lender-profile_fiscal-tab-iban-certificate {% endtrans %}

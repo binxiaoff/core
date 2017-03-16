@@ -3,7 +3,7 @@
 
 {% block pageTitle %}
     <h1 class="page-title">
-        {{ errorPageTitle }}
+        {{ errorPageTitle|default('error-page_general-page-title'|trans) }}
     </h1>
 {% endblock %}
 
