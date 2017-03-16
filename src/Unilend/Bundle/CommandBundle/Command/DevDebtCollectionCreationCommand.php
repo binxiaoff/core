@@ -159,9 +159,12 @@ EOF
                 $amount   = str_replace(',', '.', $aRow[1]);
                 $lender   = $walletRepo->findOneBy(['idClient' => $clientId]);
                 if ($lender) {
-                    $operationManager->repaymentCollection($lender, $project, $amount);
+                    $commissionLender = 0;
                     if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
                         $commissionLender = str_replace(',', '.', $aRow[2]);
+                    }
+                    $operationManager->repaymentCollection($lender, $project, $amount, $commissionLender);
+                    if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
                         $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender, $project);
                     }
                 }
