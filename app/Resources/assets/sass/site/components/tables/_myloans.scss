@@ -197,19 +197,6 @@
       background-color: $c-bg3;
     }
 
-    //.table-myloans-details-item {
-    //  @include clearfix;
-    //  width: 100%;
-    //
-    //  > div {
-    //    padding: 10px;
-    //    box-sizing: border-box;
-    //    float: left;
-    //    clear: none;
-    //    vertical-align: middle;
-    //  }
-    //}
-
     .table-myloans-item-amount {
       width: 42%;
     }
@@ -227,6 +214,20 @@
     .nav,
     .pagination-wrap {
       margin: 8px;
+    }
+  }
+
+  &.ui-items-closed-grayscale {
+    .table-myloans-item {
+      filter: grayscale(.6);
+      opacity: 0.4;
+      &.ui-details-open {
+        filter: none;
+        opacity: 1;
+        & + .table-myloans-view-details {
+          display: table-row;
+        }
+      }
     }
   }
 
@@ -375,10 +376,6 @@
 
   &#{$js-details-open} {
     background-color: $c-bg3!important;
-  }
-  &.ui-details-closed{
-    filter: grayscale(.6);
-    opacity: 0.4;
   }
 }
 

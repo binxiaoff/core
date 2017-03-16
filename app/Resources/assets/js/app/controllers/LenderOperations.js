@@ -10,7 +10,6 @@ var __ = require('__')
 var $doc = $(document)
 
 var operationsAjaxTimer = 0
-var lastFormState = {}
 
 // Changing filters will change the contents of the loans table
 // TMA-1182 Added extra filters to avoid firing change event on input before initilised pikaday
@@ -61,14 +60,12 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         }
       }
       if ($item.is('.ui-details-open')) {
-        $item.siblings('.table-myloans-item').removeClass('ui-details-closed')
+        $table.parent().removeClass('ui-items-closed-grayscale')
         $item.removeClass('ui-details-open')
-        $details.hide()
       } else {
-        $item.siblings('.table-myloans-item').removeClass('ui-details-open').addClass('ui-details-closed')
-        $table.find('[data-parent]').hide();
-        $item.removeClass('ui-details-closed').addClass('ui-details-open')
-        $details.show().trigger('UI:visible')
+        $table.parent().addClass('ui-items-closed-grayscale')
+        $item.siblings().removeClass('ui-details-open')
+        $item.addClass('ui-details-open')
       }
     }
   } else {
