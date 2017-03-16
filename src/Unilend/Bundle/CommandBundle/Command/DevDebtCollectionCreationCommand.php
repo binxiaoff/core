@@ -54,7 +54,7 @@ EOF
     {
         $receptionId   = $input->getOption('reception-id');
         $projectId     = $input->getOption('project-id');
-        $commission    = $input->getOption('commission');
+        $commission    = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         $clientRepo    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $walletRepo    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
@@ -79,7 +79,7 @@ EOF
             $output->writeln('Client hash: 2f9f590e-d689-11e6-b3d7-005056a378e2 not found.');
             return;
         }
-        if (false === filter_var($commission, FILTER_VALIDATE_INT) || $commission <= 0) {
+        if ($commission <= 0) {
             $output->writeln('Invalid commission');
             return;
         }
@@ -110,7 +110,7 @@ EOF
         $walletRepo       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $clientRepo       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $projectId        = $input->getOption('project-id');
-        $commission       = $input->getOption('commission');
+        $commission       = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
         $project          = $projectRepo->find($projectId);
 
         if (null === $project) {
@@ -139,7 +139,7 @@ EOF
         $entityManager->getConnection()->beginTransaction();
         try {
             if ($fundReleaseDate >= $dateOfChange) {
-                if (false === filter_var($commission, FILTER_VALIDATE_INT) || $commission <= 0) {
+                if ($commission <= 0) {
                     throw new \Exception('Invalid commission');
                 }
                 $operationManager->payCollectionCommissionByBorrower($borrower, $collector, $commission, $project);
@@ -159,9 +159,12 @@ EOF
                 $amount   = str_replace(',', '.', $aRow[1]);
                 $lender   = $walletRepo->findOneBy(['idClient' => $clientId]);
                 if ($lender) {
-                    $operationManager->repaymentCollection($lender, $project, $amount);
+                    $commissionLender = 0;
                     if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
                         $commissionLender = str_replace(',', '.', $aRow[2]);
+                    }
+                    $operationManager->repaymentCollection($lender, $project, $amount, $commissionLender);
+                    if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
                         $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender, $project);
                     }
                 }
