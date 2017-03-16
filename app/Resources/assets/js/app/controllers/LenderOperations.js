@@ -127,9 +127,9 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
 })
 
 // Remove details before sorting
-$doc.on('Sortable:sort:before', 'table.table-myoperations, table.table-myloans', function (event, elemSortable, columnName, direction) {
+$doc.on('Sortable:sort:before', 'table.table-myoperations', function (event, elemSortable, columnName, direction) {
   var $table = $(this)
-  var $details = $table.find('.table-myoperations-details, .table-myloans-view-details')
+  var $details = $table.find('.table-myoperations-details')
 
   // Find any details rows and remove them before the sorting occurs
   if ($details.length > 0) $details.remove()
@@ -137,3 +137,30 @@ $doc.on('Sortable:sort:before', 'table.table-myoperations, table.table-myloans',
   // Find any items which are "open" and remove the class
   $table.find('.ui-details-open').removeClass('ui-details-open')
 })
+
+
+// Handling my loans items details before/after sorting
+$doc.on('Sortable:sort:before', 'table.table-myloans', function () {
+  var $table = $(this).find('tbody').first()
+  $table.children('.ui-details-open').removeClass('ui-details-open')
+
+  // Store the details in a hidden div
+  var $detailsElms = $table.children("[data-parent]")
+  var $hiddenDiv = $('<div class="table-myloans-hidden-details" style="display: none;"></div>')
+  $table.after($hiddenDiv)
+  $detailsElms.appendTo($hiddenDiv)
+})
+$doc.on('Sortable:sort:after', 'table.table-myloans', function () {
+  var $table = $(this).find('tbody').first()
+  var $hiddenDiv = $table.next()
+  var $detailsElms = $hiddenDiv.children()
+
+  // Retrieve and place each detail after its respective parent
+  for (i = 0; i < $detailsElms.length; i++) {
+    var id = $detailsElms[i].getAttribute('data-parent');
+    $table.find('#'+ id).after($detailsElms[i])
+  }
+
+  $hiddenDiv.remove()
+})
+

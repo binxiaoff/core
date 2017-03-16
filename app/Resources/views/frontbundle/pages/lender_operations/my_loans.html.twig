@@ -69,11 +69,10 @@
         <div class="panel-before-table">
             {% if lenderLoans|length > 0 %}
             <div class="chart" data-chartview='{{ loansChartData.charts.lenderOperations|json_encode|escape('html_attr') }}'></div>
-
             {# Responsive issues, so I am rendering the legend in the page itself, rather than in the chart above #}
             <div class="chart-legend">
                 {% for i, series in loansChartData.charts.lenderOperations.highcharts.series %}
-                    {% for j, dataItem in series.data if dataItem.showInLegend is defined %}
+                    {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.y > 0 %}
                         <div class="chart-key">
                             <div class="icon" style="background-color: {{ dataItem.color }}"></div>
                             <div class="label">{{ dataItem.name }}</div>
@@ -81,34 +80,17 @@
                     {% endfor %}
                 {% endfor %}
             </div>
-            {% endif %}
-
             <form id="form-filters-loans" action="{{ path('filter_loans') }}" method="post" class="form-filters" data-ajax>
                 <input class="id_last_action" type="hidden" name="filter[id_last_action]" value="">
-                <div class="row row-multi-col">
-                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2">
-                        <select id="filter-status" name="filter[status]" class="input-field">
-                            <option value="">{% trans %} lender-operations_loans-table-by-status-filter {% endtrans %}</option>
-                            {% for statusDetail in loansStatusFilter %}
-                                <option value="{{ statusDetail.status }}" {% if currentFilters.filter.status is defined and currentFilters.filter.status == statusDetail.status %} selected="selected" {% endif %}>
-                                    {{ "lender-operations_project-status-label-#{ statusDetail.status }" | trans }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2">
-                        <select id="filter-next" name="filter[date]" class="input-field">
-                            <option value=""> {% trans %} lender-operations_loans-table-by-date-filter {% endtrans %} </option>
-                            {% for year in firstLoanYear..date()|date('Y') %}
-                                <option value="{{ year }}" {% if currentFilters.filter.date is defined and currentFilters.filter.date == year %} selected="selected" {% endif %}> {{ year }} </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+                <select id="filter-next" name="filter[date]" class="input-field">
+                    <option value="">{% trans %} lender-operations_loans-table-by-date-filter {% endtrans %}</option>
+                    {% for year in firstLoanYear..date()|date('Y') %}
+                        <option value="{{ year }}"{% if currentFilters.date is defined and currentFilters.date == year %} selected="selected"{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
             </form><!-- /.form-filters -->
         </div><!-- /.panel-before-table -->
 
-        {% if lenderLoans|length > 0 %}
         <div class="table-scroll">
             <table class="table table-myloans" data-sortable data-sortable-responsivefilters="false">
                 <thead>

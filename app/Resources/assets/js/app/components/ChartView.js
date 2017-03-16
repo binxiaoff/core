@@ -751,7 +751,95 @@ ChartView.prototype.render = function (data, schema) {
 
         // Preter Operations Pie/Donut Chart
         case 'preterOperations':
-          break
+
+            var $preterLoans = $('#dashboard-lender-operations #loans');
+            var $preterLoansTable = $preterLoans.find('.table-myloans');
+            var $preterLoansKeys = $preterLoans.find('.chart-key');
+
+            var mapStatusFunction = function(status) {
+                if (status.indexOf('à jour') > -1)         {status = 'inprogress';}
+                if (status.indexOf('retard') > -1)         {status = 'late';}
+                if (status.indexOf('recouvrement') > -1)   {status = 'completing';}
+                if (status.indexOf('collective') > -1)     {status = 'problem';}
+                if (status.indexOf('défaut') > -1)         {status = 'defaulted';}
+                if (status.indexOf('remboursé') > -1)      {status = 'completed';}
+                return status;
+            }
+
+            // Sort table when Clicking on a piece of the pie
+            Utility.extendObjProp(self.settings.highcharts, 'plotOptions.pie.point.events.click', function () {
+                var status = this.name;
+                $preterLoansKeys.each(function(){
+                    if ($(this).find('.label').text() === status) {
+                        $(this).trigger('click')
+                    }
+                })
+            });
+
+            // Hover legend buttons
+            Utility.extendObjProp(self.settings.highcharts, 'plotOptions.series.point.events.mouseOver', function () {
+                var status = this.name;
+                $preterLoansKeys.each(function(){
+                    if ($(this).find('.label').text() === status) {
+                        $(this).addClass('hover')
+                    }
+                })
+            });
+
+            // Hover legend buttons
+            Utility.extendObjProp(self.settings.highcharts, 'plotOptions.series.point.events.mouseOut', function () {
+                $preterLoansKeys.removeClass('hover')
+            });
+
+            $preterLoansKeys.click(function() {
+
+                var $btn = $(this), status = mapStatusFunction($btn.find('.label').text())
+                var $tbody = $preterLoansTable.find('tbody')
+
+                // Initialise
+                if (!$preterLoansTable.is('[data-hidden-details-cloned]')) {
+
+                    // Create a hidden div
+                    var $hiddenClone = $('<div class="table-myloans-hidden-details" style="display:none" />')
+
+                    // Clone all rows in their original order
+                    $tbody.children().clone().appendTo($hiddenClone)
+                    $tbody.after($hiddenClone)
+
+                    $preterLoansTable.attr('data-hidden-details-cloned', '')
+                    // console.log('hidden details cloned')
+
+                }
+
+                var $hiddenClone = $preterLoansTable.find('.table-myloans-hidden-details')
+                var $rows = $hiddenClone.children()
+
+                // If clicked status is not active
+                if (!$btn.is('.active')) {
+
+                    $btn.addClass('active')
+                    $btn.siblings().removeClass('active')
+                    $tbody.html('')
+
+                    // Filter hidden rows by status and clone them inside the table
+                    for (i = 0; i < $rows.length; i++) {
+                        if ($rows[i].getAttribute('[data-sortable-status]') === status || $rows[i].className.indexOf('ui-loan-status-' + status) > -1) {
+                            $($rows[i]).clone().appendTo($tbody)
+                        }
+                    }
+
+                } else {
+                    // If clicked status is active
+                    $btn.removeClass('active')
+
+                    // Release the filter and clone all rows back to the table
+                    $tbody.html('')
+                    $rows.clone().appendTo($tbody)
+
+                }
+            })
+        break
+
       }
     }
 
