@@ -164,6 +164,24 @@
             }
         });
 
+        $('body').on('change', '#partner', function() {
+            var partnerId = $(this).find('option:selected').val()
+
+            if (partnerId !== '') {
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->lurl ?>/dossiers/partner_products/<?= $this->projects->id_project ?>/' + partnerId,
+                    dataType: 'json',
+                    success: function(products) {
+                        $('#product').find('option').remove().end().append('<option value=""></option>')
+                        $.each(products, function(index, product) {
+                            $('#product').append('<option value="' + product.id + '">' + product.label + '</option>')
+                        })
+                    }
+                })
+            }
+        })
+
         $(document).click(function(event) {
             var $clicked = $(event.target);
             if ($clicked.hasClass('tab_title')) {
@@ -348,12 +366,14 @@
                 <h2>Partenaire</h2>
                 <table class="form" style="width: 575px;">
                     <tr>
-                        <th><label for="project_partner">Partenaire du projet :</label></th>
+                        <th><label for="partner">Partenaire</label></th>
                         <td>
-                            <select name="project_partner" id="project_partner" class="select" onchange="this.form.submit()" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
-                                <option value=""></option>
+                            <select name="partner" id="partner" class="select"<?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                                <?php if (empty($this->projects->id_partner)) : ?>
+                                    <option value="" selected></option>
+                                <?php endif; ?>
                                 <?php foreach ($this->partnerList as $partner) : ?>
-                                    <option value="<?= $partner['id'] ?>"<?= $this->projects->id_partner === $partner['id'] ? ' selected="selected"' : '' ?>><?= $partner['name'] ?></option>
+                                    <option value="<?= $partner['id'] ?>"<?= $this->projects->id_partner === $partner['id'] ? ' selected' : '' ?>><?= $partner['name'] ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </td>
@@ -362,16 +382,18 @@
                 <h2>Produit</h2>
                 <table class="form" style="width: 575px;">
                     <tr>
-                        <th><label for="assigned_product">Produit associé* :</label></th>
+                        <th><label for="product">Produit associé*</label></th>
                         <td>
-                            <select name="assigned_product" id="assigned_product" class="select" onchange="this.form.submit()" <?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
-                                <option value=""></option>
-                                <?php if (false === empty($this->selectedProduct->id_product) && false === in_array($this->selectedProduct, $this->eligibleProduct)) : ?>
+                            <select name="product" id="product" class="select"<?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                                <?php if (empty($this->selectedProduct->id_product)) : ?>
+                                    <option value="" selected></option>
+                                <?php endif; ?>
+                                <?php if (false === empty($this->selectedProduct->id_product) && false === in_array($this->selectedProduct, $this->eligibleProducts)) : ?>
                                     <option value="<?= $this->selectedProduct->id_product ?>" selected disabled>
                                         <?= $this->translator->trans('product_label_' . $this->selectedProduct->label) ?>
                                     </option>
                                 <?php endif; ?>
-                                <?php foreach ($this->eligibleProduct as $product) : ?>
+                                <?php foreach ($this->eligibleProducts as $product) : ?>
                                     <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
                                         <?= $this->translator->trans('product_label_' . $product->label) ?>
                                     </option>
@@ -380,22 +402,22 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Commission déblocage des fonds produit:</th>
+                        <th>Commission déblocage des fonds</th>
                         <td>
                             <?php if (false === empty($this->partnerProduct->commission_rate_funds)) : ?>
                                 <?= $this->ficelle->formatNumber($this->partnerProduct->commission_rate_funds, 1) ?> %
                             <?php else : ?>
-                                N/A
+                                -
                             <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
-                        <th>Commission de remboursement produit:</th>
+                        <th>Commission de remboursement</th>
                         <td>
                             <?php if (false === empty($this->partnerProduct->commission_rate_repayment)) : ?>
                                 <?= $this->ficelle->formatNumber($this->partnerProduct->commission_rate_repayment, 1) ?> %
                             <?php else : ?>
-                                N/A
+                                -
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -489,18 +511,12 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="specific_commission_rate_funds">Commission déblocage spécifique:</label></th>
+                        <th><label for="specific_commission_rate_funds">Commission déblocage spécifique</label></th>
                         <td>
-                            <?php if ('0.00' !== $this->projects->commission_rate_funds && null !== $this->projects->commission_rate_funds) : ?>
-                                <?php $specificCommission = $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1); ?>
+                            <?php if (true === $this->isFundsCommissionRateEditable) : ?>
+                                <input style="width:160px;background-color:#AAACAC;" type="text" name="specific_commission_rate_funds" id="specific_commission_rate_funds" class="input_moy" value="<?= null === $this->projects->commission_rate_funds ? '' : $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) ?>"> %
                             <?php else : ?>
-                                <?php $specificCommission = ''; ?>
-                            <?php endif; ?>
-
-                            <?php if (true === $this->canModifyProjectCommissionRateFunds) : ?>
-                                <input style="width:160px;background-color:#AAACAC;" type="text" name="specific_commission_rate_funds" id="specific_commission_rate_funds" class="input_moy" value="<?= $specificCommission ?>"/> %
-                            <?php else : ?>
-                                <?= (false === empty($specificCommission)) ? $specificCommission . ' %' : 'N/A'; ?>
+                                <?= null === $this->projects->commission_rate_funds ? '-' : $this->ficelle->formatNumber($this->projects->commission_rate_funds, 1) . ' %' ?>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -903,7 +919,7 @@
                                 return;
                             }
 
-                            if($('#assigned_product').val().length < 1) {
+                            if($('#product').val().length < 1) {
                                 alert('Merci de séléctionner un produit avant de passer au prochin status.');
                                 $('#status option[value="' + previous_status + '"]').prop('selected', true);
                                 return;
