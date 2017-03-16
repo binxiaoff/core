@@ -141,8 +141,6 @@ class dossiersController extends bootstrap
         $this->translator = $this->get('translator');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
-        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
-        $this->translator = $this->get('translator');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->settings->get('Durée des prêts autorisées', 'type');
@@ -2028,6 +2026,10 @@ class dossiersController extends bootstrap
                 }
 
                 if (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0')) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                    $projectManager = $this->get('unilend.service.project_manager');
+                    $projectManager->addProjectStatus($_SESSION['user']['id_user'], \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::REMBOURSE, $this->projects);
+
                     /** @var MailerManager $mailerManager */
                     $mailerManager = $this->get('unilend.service.email_manager');
                     $mailerManager->setLogger($oLogger);

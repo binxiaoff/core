@@ -15,6 +15,22 @@
             $('#changeDate').attr('href', "<?= $this->lurl ?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
     });
+    $(function () {
+        $('#btn-show-lender-vigilance-history').click(function () {
+            $('#lender-vigilance-history').toggle();
+            $(this).text(function (i, text) {
+                return text === 'Voir l\'historique de vigilance' ? 'Cacher l\'historique' : 'Voir l\'historique de vigilance'
+            })
+        })
+    })
+    $(function () {
+        $('#btn-show-lender-atypical-operation').click(function () {
+            $('#lender-atypical-operation').toggle();
+            $(this).text(function (i, text) {
+                return text === 'Voir les détections' ? 'Cacher les détections' : 'Voir les détections'
+            })
+        })
+    })
 </script>
 <style>
     .td-greenPoint-status-valid {
@@ -202,7 +218,39 @@
                 <?php endforeach; ?>
             </table>
         <?php endif; ?>
-
+        <h3>Statut de surveillance</h3>
+        <div class="attention vigilance-status-<?= $this->vigilanceStatus['status'] ?>" style="margin-left: 0px;color: black;">
+            <?= $this->vigilanceStatus['message'] ?>
+        </div>
+        <?php if (false === empty($this->clientAtypicalOperations)) : ?>
+            <button class="btn" id="btn-show-lender-atypical-operation">Voir les détections</button>
+        <?php endif; ?>
+        <?php if (false === empty($this->vigilanceStatusHistory)) : ?>
+            <button class="btn" id="btn-show-lender-vigilance-history">Voir l'historique de vigilance</button>
+        <?php endif; ?>
+        <a class="thickbox btn" href="<?= $this->lurl ?>/client_atypical_operation/process_detection_box/add/<?= $this->clients->id_client ?>">
+            Ajouter
+        </a>
+        <div id="lender-atypical-operation" style="display: none;">
+            <br>
+            <h2>Liste des opérations atypiques détéctés</h2>
+            <?php if (false === empty($this->clientAtypicalOperations)) : ?>
+                <?php
+                $this->atypicalOperations = $this->clientAtypicalOperations;
+                $this->showActions        = false;
+                $this->showUpdated        = true;
+                $this->fireView('../client_atypical_operation/detections_table');
+                ?>
+            <?php endif; ?>
+        </div>
+        <br>
+        <div id="lender-vigilance-history" style="display: none;">
+            <br>
+            <h2>Historique de vigilance du client</h2>
+            <?php if (false === empty($this->clientAtypicalOperations)) : ?>
+                <?php $this->fireView('../client_atypical_operation/vigilance_status_history'); ?>
+            <?php endif; ?>
+        </div>
         <br/><br/>
         <h2>Mouvements</h2>
         <div class="btnDroite">

@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
@@ -133,7 +134,7 @@ class BorrowerAccountController extends Controller
                 $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
                 $project->create();
 
-                $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::COMPLETE_REQUEST, $project);
+                $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::COMPLETE_REQUEST, $project);
 
                 $this->addFlash('success', $translator->trans('borrower-demand_success'));
 

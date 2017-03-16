@@ -13,7 +13,7 @@
         <a href="<?= $this->lurl ?>/users/add" class="btn_link thickbox">Ajouter un utilisateur</a>
     </div>
     <?php foreach ($this->users as $userStatus => $users) : ?>
-        <?php if ($userStatus == \users::STATUS_ONLINE) : ?>
+        <?php if ($userStatus == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE) : ?>
             <h2>Utilisateurs en ligne</h2>
         <?php else : ?>
             <h2>Utilisateurs hors ligne</h2>

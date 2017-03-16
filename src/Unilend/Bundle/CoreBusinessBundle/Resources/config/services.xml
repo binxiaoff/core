@@ -304,6 +304,16 @@
             </call>
         </service>
 
+        <service id="unilend.service.vigilance_rule_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\VigilanceRuleManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.client_vigilance_status_manager"/>
+            <argument type="service" id="logger"/>
+        </service>
+
+        <service id="unilend.service.client_vigilance_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientVigilanceStatusManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+        </service>
+
         <service id="unilend.service.company_scoring_check" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyScoringCheck">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>

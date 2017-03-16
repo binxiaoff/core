@@ -30,11 +30,6 @@ use Unilend\core\Loader;
 
 class users extends users_crud
 {
-    const USER_ID_CRON   = -1;
-    const USER_ID_FRONT  = -2;
-    const STATUS_ONLINE  = 1;
-    const STATUS_OFFLINE = 0;
-
     public function __construct($bdd, $params = '')
     {
         parent::users($bdd, $params);
