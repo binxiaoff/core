@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -301,7 +302,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 if (0 == $echeanciers->counter('id_project = ' . $r['id_project'] . ' AND status = 0')) {
                     /** @var ProjectManager $projectManager */
                     $projectManager = $this->getContainer()->get('unilend.service.project_manager');
-                    $projectManager->addProjectStatus(\users::USER_ID_CRON, ProjectsStatus::REMBOURSE, $projects);
+                    $projectManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::REMBOURSE, $projects);
 
                     /** @var MailerManager $mailerManager */
                     $mailerManager = $this->getContainer()->get('unilend.service.email_manager');

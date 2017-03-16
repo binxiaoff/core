@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
@@ -50,7 +51,7 @@ class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
                 while ($row = fgetcsv($inputHandler)) {
                     if ($project->get($row[0])) {
                         if ($company->get($project->id_company)) {
-                            $result = $projectRequestManager->checkProjectRisk($project, \users::USER_ID_CRON);
+                            $result = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_CRON);
                             fputcsv($outputHandler, [$project->id_project, (isset($result['motive'])) ? $result['motive'] : 'All checks ok']);
                         }
                     } else {

@@ -6,7 +6,7 @@ use CL\Slack\Payload\ChatPostMessagePayload;
 use CL\Slack\Payload\PayloadResponseInterface;
 use CL\Slack\Transport\ApiClientInterface;
 use Symfony\Component\Asset\Packages;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Doctrine\ORM\EntityManager;
 
 class SlackManager
 {
@@ -16,14 +16,20 @@ class SlackManager
     private $entityManager;
     /** @var string */
     private $iconUrl;
-    /** @var string*/
+    /** @var string */
     private $frontUrl;
+    /** @var string */
+    private $backUrl;
     /** @var string */
     private $environment;
 
     /**
      * @param ApiClientInterface $apiClient
+     * @param EntityManager      $entityManager
      * @param Packages           $assetsPackages
+     * @param string             $scheme
+     * @param string             $frontHost
+     * @param string             $backHost
      * @param string             $defaultChannel
      * @param string             $environment
      */
@@ -31,6 +37,9 @@ class SlackManager
         ApiClientInterface $apiClient,
         EntityManager $entityManager,
         Packages $assetsPackages,
+        $scheme,
+        $frontHost,
+        $backHost,
         $defaultChannel,
         $environment
     )
@@ -38,7 +47,8 @@ class SlackManager
         $this->apiClient      = $apiClient;
         $this->entityManager  = $entityManager;
         $this->iconUrl        = $assetsPackages->getUrl('/assets/images/slack/unilend.png');
-        $this->frontUrl       = $assetsPackages->getUrl('');
+        $this->frontUrl       = $scheme . '://' . $frontHost;
+        $this->backUrl        = $scheme . '://' . $backHost;
         $this->defaultChannel = $defaultChannel;
         $this->environment    = $environment;
     }
@@ -74,20 +84,22 @@ class SlackManager
      */
     public function getProjectName(\projects $project)
     {
-        $title = $project->title;
+        $title   = $project->title;
+        $backUrl = $this->backUrl . '/dossiers/edit/' . $project->id_project;
+        $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
 
         if (empty($title)) {
-            /** @var \companies $company */
-            $company = $this->entityManager->getRepository('companies');
-            $company->get($project->id_company);
+            $title = $company->getName();
+        }
 
-            $title = $company->name;
+        if (empty($title)) {
+            $title = $company->getSiren();
         }
 
         if ($project->status >= \projects_status::EN_FUNDING) {
-            return '*<' . $this->frontUrl . '/projects/detail/' . $project->slug . '|' . $title . '>*';
+            return '*<' . $this->frontUrl . '/projects/detail/' . $project->slug . '|' . $title . '>* (<' . $backUrl . '|' . $project->id_project . '>)';
         }
 
-        return '*' . $title . '*';
+        return '*' . $title . '* (<' . $backUrl . '|' . $project->id_project . '>)';
     }
 }

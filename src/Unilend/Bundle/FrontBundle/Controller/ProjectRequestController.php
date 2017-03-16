@@ -211,7 +211,7 @@ class ProjectRequestController extends Controller
             $em->commit();
         } catch (\Exception $exception) {
             $em->getConnection()->rollBack();
-            $this->get('logger')->error('An error occurred while creating client', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
         if (empty($this->client->getIdClient())) {
@@ -236,7 +236,7 @@ class ProjectRequestController extends Controller
         $this->project->create();
 
         $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::INCOMPLETE_REQUEST, $this->project);
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::INCOMPLETE_REQUEST, $this->project);
 
         return $this->start();
     }
@@ -270,7 +270,7 @@ class ProjectRequestController extends Controller
     {
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        if (null === $projectRequestManager->checkProjectRisk($this->project, \users::USER_ID_FRONT)) {
+        if (null === $projectRequestManager->checkProjectRisk($this->project, Users::USER_ID_FRONT)) {
             return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::INCOMPLETE_REQUEST);
         }
 
@@ -1248,7 +1248,7 @@ class ProjectRequestController extends Controller
         }
 
         $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'client_not_interested');
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'client_not_interested');
 
         return $this->render('pages/project_request/emails.html.twig');
     }

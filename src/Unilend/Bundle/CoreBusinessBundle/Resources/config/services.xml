@@ -338,8 +338,11 @@
 
         <service id="unilend.service.slack_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\SlackManager">
             <argument type="service" id="cl_slack.api_client"/>
-            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="assets.packages"/>
+            <argument>%router.request_context.scheme%</argument>
+            <argument>%url.host_default%</argument>
+            <argument>%url.host_admin%</argument>
             <argument>%slack.default_channel%</argument>
             <argument>%kernel.environment%</argument>
         </service>

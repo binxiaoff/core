@@ -765,12 +765,11 @@ class ProjectManager
     private function projectStatusUpdateTrigger(\projects_status $projectStatus, \projects $project, $userId)
     {
         if ($project->status >= \projects_status::COMPLETE_REQUEST) {
-            /** @var \users $user */
-            $user    = $this->entityManagerSimulator->getRepository('users');
-            $message = $this->slackManager->getProjectName($project) . ' passé en statut *' . $projectStatus->label . '*';
+            $userRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            $message        = $this->slackManager->getProjectName($project) . ' passé en statut *' . $projectStatus->label . '*';
 
-            if ($userId > 0 && $user->get($userId)) {
-                $message .= ' par ' . $user->firstname . ' ' . $user->name;
+            if ($userId > 0 && ($user = $userRepository->find($userId))) {
+                $message .= ' par ' . $user->getFirstname() . ' ' . $user->getName();
             }
 
             $this->slackManager->sendMessage($message, '#statuts-projets');
