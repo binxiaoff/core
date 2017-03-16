@@ -138,8 +138,6 @@ class dossiersController extends bootstrap
         $this->translator = $this->get('translator');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
-        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
-        $this->translator = $this->get('translator');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 

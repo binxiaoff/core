@@ -179,6 +179,9 @@ class PaylineManager
             $backPayline->setSerialize(serialize($response));
             $backPayline->setCode($response['result']['code']);
 
+            if (isset($response['card']) && isset($response['card']['number'])) {
+                $backPayline->setCardNumber($response['card']['number']);
+            }
             $this->em->flush($backPayline);
 
             if ($backPayline->getAmount() != $response['payment']['amount']) {

@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Companies
  *
  * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Companies

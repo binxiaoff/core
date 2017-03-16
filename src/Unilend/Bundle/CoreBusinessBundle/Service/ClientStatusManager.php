@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ClientStatusManager
@@ -122,15 +123,15 @@ class ClientStatusManager
             case \clients_status::COMPLETENESS:
             case \clients_status::COMPLETENESS_REMINDER:
             case \clients_status::COMPLETENESS_REPLY:
-                $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $client->id_client, $content);
+                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $client->id_client, $content);
                 break;
             case \clients_status::VALIDATED:
             case \clients_status::MODIFICATION:
-                $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $client->id_client, $content);
+                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, \clients_status::MODIFICATION, $client->id_client, $content);
                 break;
             case \clients_status::TO_BE_CHECKED:
             default:
-                $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client, $content);
+                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client, $content);
                 break;
         }
     }

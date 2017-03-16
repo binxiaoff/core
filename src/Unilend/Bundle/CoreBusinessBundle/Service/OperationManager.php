@@ -1108,12 +1108,13 @@ class OperationManager
      * @param Wallet   $lender
      * @param Projects $project
      * @param          $amount
+     * @param          $commission
      *
      * @return bool
      */
-    public function repaymentCollection(Wallet $lender, Projects $project, $amount)
+    public function repaymentCollection(Wallet $lender, Projects $project, $amount, $commission)
     {
-        $this->legacyRepaymentCollection($lender, $amount, $project);
+        $this->legacyRepaymentCollection($lender, $amount, $commission, $project);
 
         $borrower = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         if (null === $borrower) {
@@ -1126,14 +1127,17 @@ class OperationManager
     /**
      * @param Wallet   $wallet
      * @param          $amount
+     * @param          $commission
      * @param Projects $project
      */
-    public function legacyRepaymentCollection(Wallet $wallet, $amount, Projects $project)
+    public function legacyRepaymentCollection(Wallet $wallet, $amount, $commission, Projects $project)
     {
         /** @var \transactions $transaction */
         $transaction = $this->entityManager->getRepository('transactions');
         /** @var \wallets_lines $walletLine */
         $walletLine = $this->entityManager->getRepository('wallets_lines');
+
+        $amount = bcsub($amount, $commission, 2);
 
         $transaction->id_project       = $project->getIdProject();
         $transaction->id_client        = $wallet->getIdClient()->getIdClient();
