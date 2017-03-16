@@ -79,7 +79,7 @@ EOF
             $output->writeln('Client hash: 2f9f590e-d689-11e6-b3d7-005056a378e2 not found.');
             return;
         }
-        if (false === filter_var($commission, FILTER_VALIDATE_INT) || $commission <= 0) {
+        if (false === is_numeric($commission) || $commission <= 0) {
             $output->writeln('Invalid commission');
             return;
         }
@@ -139,7 +139,7 @@ EOF
         $entityManager->getConnection()->beginTransaction();
         try {
             if ($fundReleaseDate >= $dateOfChange) {
-                if (false === filter_var($commission, FILTER_VALIDATE_INT) || $commission <= 0) {
+                if (false === is_numeric($commission) || $commission <= 0) {
                     throw new \Exception('Invalid commission');
                 }
                 $operationManager->payCollectionCommissionByBorrower($borrower, $collector, $commission, $project);
