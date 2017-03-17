@@ -1,20 +1,14 @@
 <?php
 
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\LoanManager;
-use Unilend\librairies\CacheKeys;
 
 class DevLenderWireTransferPatternCommand extends ContainerAwareCommand
 {
-
     protected function configure()
     {
         $this
@@ -41,5 +35,4 @@ class DevLenderWireTransferPatternCommand extends ContainerAwareCommand
 
         $output->writeln($count . ' wallets repaired.');
     }
-
 }
