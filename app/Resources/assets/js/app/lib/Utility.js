@@ -128,6 +128,15 @@ var Utility = {
     return false
   },
 
+  isMobile: function() {
+    var check = false
+    var userAgent = navigator.userAgent||navigator.vendor||window.opera
+    if (/(Mobile|Android|Windows Phone|webOS|iPhone|iPad|iPod|BlackBerry)/.test(userAgent)) {
+      check = true
+    }
+    return check
+  },
+
   // Generate a random string
   randomString: function (stringLength) {
     var output = ''
