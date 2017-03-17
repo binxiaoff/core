@@ -237,8 +237,6 @@ class ProjectRequestController extends Controller
         $this->project->fonds_propres_declara_client         = 0;
         $this->project->status                               = \projects_status::DEMANDE_SIMULATEUR;
         $this->project->id_partner                           = $partnerId;
-        $this->project->commission_rate_funds                = null;
-        $this->project->commission_rate_repayment            = null;
         $this->project->create();
 
         return $this->start();
