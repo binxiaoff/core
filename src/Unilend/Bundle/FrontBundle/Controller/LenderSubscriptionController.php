@@ -295,7 +295,7 @@ class LenderSubscriptionController extends Controller
                 $em->commit();
             } catch (Exception $exception) {
                 $em->getConnection()->rollBack();
-                $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+                $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
 
             $this->get('unilend.service.client_manager')->acceptLastTos($clientEntity);
@@ -495,7 +495,7 @@ class LenderSubscriptionController extends Controller
                 $em->commit();
             } catch (Exception $exception) {
                 $em->getConnection()->rollBack();
-                $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+                $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
 
             $this->get('unilend.service.client_manager')->acceptLastTos($client);

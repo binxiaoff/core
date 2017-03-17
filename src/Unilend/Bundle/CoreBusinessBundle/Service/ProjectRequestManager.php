@@ -146,7 +146,7 @@ class ProjectRequestManager
             $this->em->commit();
         } catch (Exception $exception) {
             $this->em->getConnection()->rollBack();
-            $this->logger->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->logger->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
         $project->id_company                           = $company->getIdCompany();

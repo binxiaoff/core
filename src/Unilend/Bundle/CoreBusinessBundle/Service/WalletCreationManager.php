@@ -58,7 +58,7 @@ class WalletCreationManager
                 $this->createBaseWallet($client, $walletTypeEntity);
                 break;
             default:
-                $this->logger->info('Unknown wallet type ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+                $this->logger->info('Unknown wallet type ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
                 break;
         }
     }
