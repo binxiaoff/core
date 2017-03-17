@@ -1092,7 +1092,11 @@ class LenderSubscriptionController extends Controller
             } else {
                 $clientEntity = $clientRepository->findOneBy(['hash' => $clientHash]);
 
-                if (\clients::STATUS_ONLINE !== $clientEntity->getStatus() || $clientEntity->getEtapeInscriptionPreteur() > 3) {
+                if (
+                    null === $clientEntity
+                    || \clients::STATUS_ONLINE !== $clientEntity->getStatus()
+                    || $clientEntity->getEtapeInscriptionPreteur() > 3
+                ) {
                     return $this->redirectToRoute('login');
                 }
             }
