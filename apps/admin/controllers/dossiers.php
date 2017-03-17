@@ -5,6 +5,7 @@ use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class dossiersController extends bootstrap
@@ -346,7 +347,7 @@ class dossiersController extends bootstrap
             }
             /** @var \partner $partner */
             $partner = $this->loadData('partner');
-            $this->partnerList = $partner->select('', 'name ASC');
+            $this->partnerList = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
 
             $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
             /** @var \product selectedProduct */

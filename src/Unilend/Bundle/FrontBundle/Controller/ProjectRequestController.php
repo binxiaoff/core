@@ -188,7 +188,6 @@ class ProjectRequestController extends Controller
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-
         $siret = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
         $this->company = new Companies();
         $this->company->setSiren($siren)
@@ -223,7 +222,12 @@ class ProjectRequestController extends Controller
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $this->client->getIdClient());
         }
 
-        $partnerManager = $this->get('unilend.service.partner_manager');
+        $partnerId = $request->request->getInt('partner');
+
+        if (empty($partnerId) || null === $em->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
+            $partnerManager = $this->get('unilend.service.partner_manager');
+            $partnerId      = $partnerManager->getDefaultPartner()->id;
+        }
 
         $this->project                                       = $entityManager->getRepository('projects');
         $this->project->id_company                           = $this->company->getIdCompany();
@@ -232,9 +236,7 @@ class ProjectRequestController extends Controller
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
         $this->project->status                               = \projects_status::DEMANDE_SIMULATEUR;
-        $this->project->id_partner                           = $partnerManager->getDefaultPartner()->id;
-        $this->project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
-        $this->project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
+        $this->project->id_partner                           = $partnerId;
         $this->project->create();
 
         return $this->start();
