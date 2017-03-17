@@ -250,7 +250,7 @@ class ProjectRequestManager
 
             if (
                 true === $this->companyScoringCheck->isAltaresScoreLow($altaresScore, $rejectionReason, $companyRatingHistory, $companyRating)
-                || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $companyRatingHistory, $companyRating, $rejectionReason)
+                || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $rejectionReason, $companyRatingHistory, $companyRating)
             ) {
                 return $rejectionReason;
             }
