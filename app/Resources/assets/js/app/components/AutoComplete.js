@@ -257,7 +257,7 @@ var AutoComplete = function (elem, options) {
     // Term length not long enough, abort
     if (term.length < self.settings.minTermLength) return
 
-    // Trim whitespace from start/end of term and convert to uppercase
+    // Trim whitespace from start/end of term
     term = (term + '').trim()
 
     // User is attempting to search while it is loading
@@ -568,7 +568,6 @@ var AutoComplete = function (elem, options) {
 
   // Add highlight to string
   self.highlightTerm = function (term, str) {
-    // console.log('highlight : ' + term + ' | str ' + str)
     var reTerm = new RegExp( '(' + Utility.reEscape(term) + ')', 'gi')
     return str.replace(reTerm, '<span class="highlight">$1</span>')
   }
@@ -658,7 +657,6 @@ var AutoComplete = function (elem, options) {
     self.$target.trigger('AutoComplete:hide:complete', [self])
     // Track results are closed
     self.track.resultsOpen = false
-
   }
 
   // Enable AutoComplete
@@ -833,14 +831,13 @@ $doc
       // Bind outside click event - user didn't finish the autocomplete
       $doc.bind('click.outsideAutoComplete',function(event) {
         if ($(event.target).parents('.autocomplete-results').length === 0) {
-
           // Set Post Code and City based on first value in the results
           var newValue = elemAutoComplete.$target.find('ul li:first-child a').text()
           splitValues(elemAutoComplete, newValue)
           $doc.unbind('click.outsideAutoComplete')
           elemAutoComplete.hide()
         }
-      });
+      })
 
       // Unbind outside click if user clicks on a result - user finished the autocomplete
       elemAutoComplete.$target.on('click', 'a', function () {
@@ -850,7 +847,7 @@ $doc
 
       // Unbind outside click if user presses Enter or Right arrow  - user finished the autocomplete
       elemAutoComplete.$target.on('keydown', '.autocomplete-results a:focus', function (event) {
-        if ( !isMobile() && event.which === 39 || !isMobile() && event.which === 13) {
+        if (!isMobile() && event.which === 39 || !isMobile() && event.which === 13) {
           $doc.unbind('click.outsideAutoComplete')
         }
       })
@@ -861,7 +858,6 @@ $doc
       // Empty value given
       newValue = (newValue + '').trim()
       if (!newValue) return
-
       splitValues(elemAutoComplete, newValue)
     })
 
