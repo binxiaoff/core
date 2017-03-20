@@ -140,54 +140,11 @@ class dossiersController extends bootstrap
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            if ($this->projects->status <= \projects_status::PREP_FUNDING) {
-                if (false === empty($_POST['project_partner'])) {
-                    $this->projects->id_partner                = $_POST['project_partner'];
-                    $this->projects->id_product                = null;
-                    $this->projects->commission_rate_funds     = null;
-                    $this->projects->commission_rate_repayment = null;
-                }
-                /** @var \partner_product $partnerProduct */
-                $partnerProduct = $this->loadData('partner_product');
-
-                if (false === empty($_POST['assigned_product']) && $partnerProduct->get($_POST['assigned_product'], 'id_partner = ' . $this->projects->id_partner . ' and id_product ')) {
-                    $this->projects->id_product                = $partnerProduct->id_product;
-                    $this->projects->commission_rate_funds     = $partnerProduct->commission_rate_funds;
-                    $this->projects->commission_rate_repayment = $partnerProduct->commission_rate_repayment;
-                } elseif (false === empty($_POST['assigned_product'])) {
-                    $_SESSION['freeow']['message'] = 'Ce produit n\'est pas configuré pour le partenaire';
-                }
-                $this->projects->update();
-            }
-            $this->settings->get('Durée des prêts autorisées', 'type');
-            $this->dureePossible   = explode(',', $this->settings->value);
             $this->taxFormTypes    = $companyTaxFormType->select();
             $this->allTaxFormTypes = [];
 
             foreach ($this->taxFormTypes as $formType) {
                 $this->allTaxFormTypes[$formType['label']] = $companyBalanceDetailsType->select('id_company_tax_form_type = '.$formType['id_type']);
-            }
-            /** @var \product $product */
-            $product = $this->loadData('product');
-            $this->availableContracts = [];
-            if (false === empty($this->projects->id_product) && $product->get($this->projects->id_product)) {
-                $durationMax = $productManager->getMaxEligibleDuration($product);
-                $durationMin = $productManager->getMinEligibleDuration($product);
-
-                foreach ($this->dureePossible as $index => $duration) {
-                    if (is_numeric($durationMax) && $duration > $durationMax
-                        || is_numeric($durationMin) && $duration < $durationMin
-                    ) {
-                        unset($this->dureePossible[$index]);
-                    }
-                }
-
-                $this->availableContracts = array_column($productManager->getAvailableContracts($product), 'label');
-            }
-
-            if (false === in_array($this->projects->period, array(0, 1000000)) && false === in_array($this->projects->period, $this->dureePossible)) {
-                array_push($this->dureePossible, $this->projects->period);
-                sort($this->dureePossible);
             }
 
             $this->aBorrowingMotives = $borrowingMotive->select();
@@ -302,30 +259,10 @@ class dossiersController extends bootstrap
 
             $this->bCanEditStatus = false;
             if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
-                $this->loadData('users_types');
                 if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE, \users_types::TYPE_COMMERCIAL))) {
                     $this->bCanEditStatus = true;
                 }
             }
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-            $partnerManager = $this->get('unilend.service.partner_manager');
-
-            $this->attachment_type           = $this->loadData('attachment_type');
-            $this->aAttachments              = $this->projects->getAttachments();
-            $this->aAttachmentTypes          = $this->attachment_type->getAllTypesForProjects($this->language);
-            $this->aMandatoryAttachmentTypes = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
-
-            $this->completude_wording = array();
-            $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
-
-            foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
-                if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
-                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
-                } else {
-                    $this->completude_wording[] = $aAttachment['label'];
-                }
-            }
-            $this->completude_wording[] = $this->translator->trans('projet_completude-charge-affaires');
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
@@ -343,20 +280,6 @@ class dossiersController extends bootstrap
                     $rateRange      = $bidManager->getProjectRateRange($this->projects);
                     $this->rate_min = $rateRange['rate_min'];
                     $this->rate_max = $rateRange['rate_max'];
-                }
-            }
-            /** @var \partner $partner */
-            $partner = $this->loadData('partner');
-            $this->partnerList = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
-
-            $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
-            /** @var \product selectedProduct */
-            $this->selectedProduct = $product;
-            $this->isProductUsable = false;
-
-            if (projects_status::PREP_FUNDING == $this->projects->status) {
-                if ($productManager->isProjectEligible($this->projects, $this->selectedProduct)) {
-                    $this->isProductUsable = true;
                 }
             }
 
@@ -528,6 +451,51 @@ class dossiersController extends bootstrap
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
             } elseif (isset($_POST['send_form_dossier_resume'])) {
+                $resetFundsCommissionRate = false;
+
+                if ($this->projects->status <= \projects_status::PREP_FUNDING) {
+                    if (false === empty($_POST['partner']) && $this->projects->id_partner != $_POST['partner']) {
+                        $this->projects->id_partner                = $_POST['partner'];
+                        $this->projects->id_product                = 0;
+                        $this->projects->commission_rate_funds     = null;
+                        $this->projects->commission_rate_repayment = null;
+
+                        $resetFundsCommissionRate = true;
+                    }
+
+                    /** @var \product $product */
+                    $product = $this->loadData('product');
+                    /** @var \partner_product $partnerProduct */
+                    $partnerProduct = $this->loadData('partner_product');
+
+                    if (
+                        false === empty($_POST['product'])
+                        && false === empty($this->projects->id_partner)
+                        && $product->get($_POST['product'])
+                        && $partnerProduct->get($_POST['product'], 'id_partner = ' . $this->projects->id_partner . ' AND id_product')
+                        && $productManager->isProjectEligible($this->projects, $product)
+                    ) {
+                        if ($this->projects->id_product != $partnerProduct->id_product) {
+                            $resetFundsCommissionRate = true;
+                        }
+
+                        $this->projects->id_product                = $partnerProduct->id_product;
+                        $this->projects->commission_rate_repayment = $partnerProduct->commission_rate_repayment;
+
+                        if ($resetFundsCommissionRate) {
+                            $this->projects->commission_rate_funds = $partnerProduct->commission_rate_funds;
+                        }
+                    }
+                }
+
+                if (
+                    false === $resetFundsCommissionRate
+                    && false === empty($_POST['specific_commission_rate_funds'])
+                    && $this->isFundsCommissionRateEditable()
+                ) {
+                    $this->projects->commission_rate_funds = $this->ficelle->cleanFormatedNumber($_POST['specific_commission_rate_funds']);
+                }
+
                 // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
                 /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
                 $dates_valide = false;
@@ -929,11 +897,85 @@ class dossiersController extends bootstrap
                 }
             }
 
+            /** @var \product $product */
+            $product = $this->loadData('product');
+
+            $this->settings->get('Durée des prêts autorisées', 'type');
+            $this->dureePossible      = explode(',', $this->settings->value);
+            $this->availableContracts = [];
+
+            if (false === empty($this->projects->id_product) && $product->get($this->projects->id_product)) {
+                $durationMax = $productManager->getMaxEligibleDuration($product);
+                $durationMin = $productManager->getMinEligibleDuration($product);
+
+                foreach ($this->dureePossible as $index => $duration) {
+                    if (
+                        is_numeric($durationMax) && $duration > $durationMax
+                        || is_numeric($durationMin) && $duration < $durationMin
+                    ) {
+                        unset($this->dureePossible[$index]);
+                    }
+                }
+
+                $this->availableContracts = array_column($productManager->getAvailableContracts($product), 'label');
+            }
+
+            if (false === in_array($this->projects->period, [0, 1000000]) && false === in_array($this->projects->period, $this->dureePossible)) {
+                array_push($this->dureePossible, $this->projects->period);
+                sort($this->dureePossible);
+            }
+
+            /** @var \partner $partner */
+            $partner = $this->loadData('partner');
+
+            $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
+            $this->selectedProduct  = $product;
+            $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
+            $this->partnerList      = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
+            $this->partnerProduct   = $this->loadData('partner_product');
+
+            if (false === empty($this->projects->id_product)) {
+                $this->partnerProduct->get($this->projects->id_product, 'id_partner = ' . $this->projects->id_partner . ' AND id_product');
+            }
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
+            $partnerManager = $this->get('unilend.service.partner_manager');
+
+            $this->attachment_type               = $this->loadData('attachment_type');
+            $this->aAttachments                  = $this->projects->getAttachments();
+            $this->aAttachmentTypes              = $this->attachment_type->getAllTypesForProjects($this->language);
+            $this->aMandatoryAttachmentTypes     = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
+            $this->isFundsCommissionRateEditable = $this->isFundsCommissionRateEditable();
+
+            $this->completude_wording = [];
+            $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
+
+            foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
+                if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
+                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
+                } else {
+                    $this->completude_wording[] = $aAttachment['label'];
+                }
+            }
+            $this->completude_wording[] = $this->translator->trans('projet_completude-charge-affaires');
+
             $this->recup_info_remboursement_anticipe();
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    private function isFundsCommissionRateEditable()
+    {
+        return (
+            $this->projects->status <= \projects_status::FUNDE
+            && false === empty($this->projects->id_product)
+            && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']
+        );
     }
 
     protected function sumBalances(array $aBalances, $aBalanceSheet)
@@ -3169,6 +3211,40 @@ class dossiersController extends bootstrap
                     $path . 'archives/' . $project->slug . '/' . date('Y-m-d H:i:s') . '.pdf'
                 );
             }
+        }
+    }
+
+    public function _partner_products()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
+        /** @var \partner $partner */
+        $partner = $this->loadData('partner');
+
+        if (
+            isset($this->params[0], $this->params[1])
+            && $project->get($this->params[0])
+            && $partner->get($this->params[1])
+        ) {
+            $project->id_partner = $partner->id;
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
+            $productManager   = $this->get('unilend.service_product.product_manager');
+            $eligibleProducts = $productManager->findEligibleProducts($project, true);
+            $translator       = $this->get('translator');
+            $partnerProducts  = [];
+
+            foreach ($eligibleProducts as $eligibleProduct) {
+                $partnerProducts[] = [
+                    'id'    => $eligibleProduct->id_product,
+                    'label' => $translator->trans('product_label_' . $eligibleProduct->label)
+                ];
+            }
+
+            echo json_encode($partnerProducts);
         }
     }
 }
