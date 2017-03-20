@@ -381,8 +381,6 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \projects $projects */
-        $projects = $this->loadData('projects');
         /** @var \receptions $receptions */
         $receptions = $this->loadData('receptions');
         /** @var \echeanciers $echeanciers */
@@ -397,7 +395,7 @@ class transfertsController extends bootstrap
         if (isset($_POST['id_reception'])) {
             /** @var Receptions $reception */
             $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
-            if (null !== $reception && in_array($reception->getStatusBo(), [Receptions::STATUS_MANUALLY_ASSIGNED, Receptions::STATUS_AUTO_ASSIGNED])) {
+            if (null !== $reception && null != $reception->getIdProject() && in_array($reception->getStatusBo(), [Receptions::STATUS_MANUALLY_ASSIGNED, Receptions::STATUS_AUTO_ASSIGNED])) {
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
                 if ($wallet) {
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
@@ -409,16 +407,16 @@ class transfertsController extends bootstrap
                     $reception->setRemb(0);
                     $entityManager->flush();
 
-                    $eche   = $echeanciers_emprunteur->select('id_project = ' . $projects->id_project . ' AND status_emprunteur = 1', 'ordre DESC');
+                    $eche   = $echeanciers_emprunteur->select('id_project = ' . $reception->getIdProject()->getIdProject() . ' AND status_emprunteur = 1', 'ordre DESC');
                     $newsum = $receptions->montant / 100;
 
                     foreach ($eche as $e) {
                         $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
 
                         if ($montantDuMois <= $newsum) {
-                            $echeanciers->updateStatusEmprunteur($projects->id_project, $e['ordre'], 'annuler');
+                            $echeanciers->updateStatusEmprunteur($reception->getIdProject()->getIdProject(), $e['ordre'], 'annuler');
 
-                            $echeanciers_emprunteur->get($projects->id_project, 'ordre = ' . $e['ordre'] . ' AND id_project');
+                            $echeanciers_emprunteur->get($reception->getIdProject()->getIdProject(), 'ordre = ' . $e['ordre'] . ' AND id_project');
                             $echeanciers_emprunteur->status_emprunteur             = 0;
                             $echeanciers_emprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
                             $echeanciers_emprunteur->update();
@@ -427,8 +425,8 @@ class transfertsController extends bootstrap
                             $newsum = $newsum - $montantDuMois;
 
                             // On met a jour le remb emprunteur rejete
-                            if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
-                                $projects_remb->get($e['ordre'], 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
+                            if ($projects_remb->counter('id_project = "' . $reception->getIdProject()->getIdProject() . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
+                                $projects_remb->get($e['ordre'], 'status = 0 AND id_project = "' . $reception->getIdProject()->getIdProject() . '" AND ordre');
                                 $projects_remb->status = \projects_remb::STATUS_REJECTED;
                                 $projects_remb->update();
                             }
