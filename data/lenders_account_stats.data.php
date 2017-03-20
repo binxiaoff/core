@@ -138,8 +138,8 @@ class lenders_account_stats extends lenders_account_stats_crud
         FROM transactions t
           INNER JOIN lenders_accounts la ON t.id_client = la.id_client_owner
           INNER JOIN loans l ON la.id_lender_account = l.id_lender AND l.id_project = t.id_project
-          INNER JOIN loan_transfer lt ON l.id_transfer  = lt.id_transfer
-          INNER JOIN transfer ON lt.id_transfer = transfer.id_transfer
+          LEFT JOIN loan_transfer lt ON l.id_transfer  = lt.id_transfer
+          LEFT JOIN transfer ON lt.id_transfer = transfer.id_transfer
         WHERE
           type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
           AND (la.id_lender_account = ' . $iLendersAccountId . ' OR t.id_client = transfer.id_client_origin)';
