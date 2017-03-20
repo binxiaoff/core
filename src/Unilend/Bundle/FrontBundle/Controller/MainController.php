@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
@@ -437,16 +438,17 @@ class MainController extends Controller
         }
 
         $template = [
-            'cms'      => [
-                'partner_logo'                => $content['logo-partenaire'],
-                'partner_logo_alt'            => $complement['logo-partenaire'],
-                'partner_funnel'              => $isPartnerFunnel
+            'cms'  => [
+                'partner_logo'     => $content['logo-partenaire'],
+                'partner_logo_alt' => $complement['logo-partenaire'],
+                'partner_funnel'   => $isPartnerFunnel
             ],
-            'form'     => [
-                'values'  => [
-                    'amount' => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
-                    'siren'  => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
-                    'email'  => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email']
+            'form' => [
+                'values' => [
+                    'amount'  => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
+                    'siren'   => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
+                    'email'   => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
+                    'partner' => $content['partenaire']
                 ],
             ],
         ];

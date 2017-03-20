@@ -884,7 +884,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                                 <td><?= date('d/m/Y', strtotime($this->tree->added)) ?></td>
                                 <td><?= $this->tree->title ?></td>
                                 <td><a target="_blank" href="<?= $this->furl . '/' . $this->tree->slug ?>"><?= $this->furl . '/' . $this->tree->slug ?></a></td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($a['updated'])) ?></td>
+                                <td><?= date('d/m/Y H:i:s', strtotime($a['added'])) ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

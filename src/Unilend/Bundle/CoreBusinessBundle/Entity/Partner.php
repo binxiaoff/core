@@ -13,6 +13,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Partner
 {
+    const STATUS_PENDING   = 1;
+    const STATUS_VALIDATED = 2;
+    const STATUS_DISABLED  = 3;
+
     /**
      * @var string
      *

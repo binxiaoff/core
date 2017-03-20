@@ -61,32 +61,12 @@ class ClientsRepository extends EntityRepository
      */
     public function getClientByAgeAndSubscriptionDate(\DateTime $birthDate, \DateTime $subscriptionDate)
     {
-        $criteria = [
-            'naissance' => $birthDate,
-            'added'     => $subscriptionDate
-        ];
-        $operator = [
-            'naissance' => Comparison::LTE,
-            'added'     => Comparison::GTE
-        ];
-
-        return $this->getClientsBy($criteria, $operator);
-    }
-
-    /**
-     * @param $criteria
-     * @param $operator
-     * @return Clients[]
-     */
-    private function getClientsBy($criteria, $operator)
-    {
-        $qb = $this->createQueryBuilder('c');
-        $qb->select('c');
-
-        foreach ($criteria as $field => $value) {
-            $qb->andWhere('c.' . $field . $operator[$field] . ':' . $field)
-                ->setParameter($field, $value);
-        }
+        $qb = $this->createQueryBuilder('c')
+            ->innerJoin('UnilendCoreBusinessBundle:LendersAccounts', 'la', Join::WITH, 'c.idClient = la.idClientOwner')
+            ->where('c.naissance <= :naissance')
+            ->andWhere('c.added >= :added')
+            ->setParameter('naissance', $birthDate)
+            ->setParameter('added', $subscriptionDate);
 
         return $qb->getQuery()->getResult();
     }
