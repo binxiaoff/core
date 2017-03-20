@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 
@@ -76,10 +75,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 if ($pendingBankTransfer->getClient()) {
                     $client->get($pendingBankTransfer->getClient()->getIdClient(), 'id_client');
                     if (null === $bankAccount) {
-                        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy([
-                            'idClient' => $pendingBankTransfer->getClient(),
-                            'status'   => BankAccount::STATUS_VALIDATED
-                        ]);
+                        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($pendingBankTransfer->getClient());
                     }
                 } elseif ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
                     $logger->error('The client is null for transfer id: ' . $pendingBankTransfer->getIdVirement());

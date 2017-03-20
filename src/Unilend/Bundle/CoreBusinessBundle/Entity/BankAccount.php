@@ -14,10 +14,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class BankAccount
 {
-    const STATUS_PENDING   = 0;
-    const STATUS_VALIDATED = 1;
-    const STATUS_ARCHIVED  = 2;
-
     /**
      * @var string
      * @ORM\Column(name="bic", type="string", length=100, nullable=false)
@@ -62,13 +58,6 @@ class BankAccount
      * })
      */
     private $idClient;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="status", type="integer", nullable=false)
-     */
-    private $status;
 
     /**
      * @var \DateTime
@@ -224,10 +213,14 @@ class BankAccount
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedAndPendingValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->added->getTimestamp()) {
             $this->added = new \DateTime();
+        }
+
+        if (! $this->datePending instanceof \DateTime || 1 > $this->datePending->getTimestamp()) {
+            $this->datePending = new \DateTime();
         }
     }
 
@@ -237,30 +230,6 @@ class BankAccount
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
-    }
-
-    /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return BankAccount
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
-     *
-     * @return integer
-     */
-    public function getStatus()
-    {
-        return $this->status;
     }
 
     /**

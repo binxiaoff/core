@@ -213,10 +213,7 @@ class LenderWalletController extends Controller
                 /** @var WalletRepository $walletRepo */
                 $walletRepo  = $em->getRepository('UnilendCoreBusinessBundle:Wallet');
                 $wallet      = $walletRepo->getWalletByType($client->getIdClient(), WalletType::LENDER);
-                $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy([
-                    'idClient' => $wallet->getIdClient(),
-                    'status'   => BankAccount::STATUS_VALIDATED
-                ]);
+                $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($wallet->getIdClient());
 
                 $wireTransferOut = new Virements();
                 $wireTransferOut->setClient($wallet->getIdClient());
