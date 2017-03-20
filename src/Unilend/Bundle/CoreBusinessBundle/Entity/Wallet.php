@@ -270,7 +270,7 @@ class Wallet
     {
         if ($this->getIdClient() instanceof Clients && $this->getIdClient()->getNom() && $this->getIdClient()->getPrenom()) {
             $this->wireTransferPattern = mb_strtoupper(
-                str_pad($this->idClient, 6, 0, STR_PAD_LEFT) .
+                str_pad($this->getIdClient()->getIdClient(), 6, 0, STR_PAD_LEFT) .
                 substr(\URLify::downcode($this->getIdClient()->getPrenom()), 0, 1) .
                 \URLify::downcode($this->getIdClient()->getNom())
             );
