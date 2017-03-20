@@ -10,7 +10,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 use Unilend\Bundle\CoreBusinessBundle\Entity\AccountMatching;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -49,9 +48,10 @@ class WalletCreationManager
         /** @var WalletType $walletTypeEntity */
         $walletTypeEntity = $walletTypeRepository->findOneByLabel($walletType);
 
-        switch($walletTypeEntity->getLabel()){
+        switch ($walletTypeEntity->getLabel()) {
             case WalletType::LENDER :
                 $wallet = $this->createBaseWallet($client, $walletTypeEntity);
+                $wallet->setWireTransferPattern();
                 $this->createLegacyLenderAccount($client, $wallet);
                 break;
             case WalletType::BORROWER:
