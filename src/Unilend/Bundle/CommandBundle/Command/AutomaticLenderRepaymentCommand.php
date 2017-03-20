@@ -6,7 +6,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\core\Loader;
@@ -242,8 +244,9 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     'annee'           => date('Y'),
                     'lien_fb'         => $sFB,
                     'lien_tw'         => $sTwitter,
-                    'montantRemb'     => $ficelle->formatNumber(bcdiv($rembNetTotal, 100, 2))
+                    'montantRemb'     => $ficelle->formatNumber(bcdiv($paymentSchedule->getMontant(), 100, 2))
                 );
+
                 $logger->debug('Automatic repayment, send email : facture-emprunteur-remboursement. Data to use: ' . json_encode($varMail), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $r['id_project'] ]);
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -298,6 +301,10 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $repaymentLog->update();
 
                 if (0 == $echeanciers->counter('id_project = ' . $r['id_project'] . ' AND status = 0')) {
+                    /** @var ProjectManager $projectManager */
+                    $projectManager = $this->getContainer()->get('unilend.service.project_manager');
+                    $projectManager->addProjectStatus(\users::USER_ID_CRON, ProjectsStatus::REMBOURSE, $projects);
+
                     /** @var MailerManager $mailerManager */
                     $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
                     $mailerManager->setLogger($logger);

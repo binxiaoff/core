@@ -8,9 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * Wallet
  *
  * @ORM\Table(name="wallet", indexes={@ORM\Index(name="fk_id_type_idx", columns={"id_type"}), @ORM\Index(name="idx_id_client", columns={"id_client"})})
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Wallet
 {

@@ -5,6 +5,7 @@ use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class dossiersController extends bootstrap
@@ -930,7 +931,7 @@ class dossiersController extends bootstrap
             $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
             $this->selectedProduct  = $product;
             $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partner->select('', 'name ASC');
+            $this->partnerList      = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
             $this->partnerProduct   = $this->loadData('partner_product');
 
             if (false === empty($this->projects->id_product)) {
@@ -1519,7 +1520,7 @@ class dossiersController extends bootstrap
                     $em->commit();
                 } catch (Exception $exception) {
                     $em->getConnection()->rollBack();
-                    $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+                    $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
                 }
             }
 
@@ -2003,12 +2004,11 @@ class dossiersController extends bootstrap
                 // if the repayment exists also in automatic repayment pending list, update its status to "automatic disabled".
                 /** @var \projects_remb $autoRepayment */
                 $projectRepayment = $this->loadData('projects_remb');
-                if($projectRepayment->get($RembEmpr['id_project'], 'ordre = ' . $RembEmpr['ordre'] . ' AND id_project')) {
+                if ($projectRepayment->get($RembEmpr['id_project'], 'ordre = ' . $RembEmpr['ordre'] . ' AND id_project')) {
                     $projectRepayment->status = \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED;
                     $projectRepayment->date_remb_preteurs_reel = date('Y-m-d H:i:s');
                     $projectRepayment->update();
                 }
-
 
                 if (0 != $montant) {
                     $rembNetTotal = $montant - $iTotalTaxAmount;
@@ -2037,6 +2037,7 @@ class dossiersController extends bootstrap
                     $oAccountUnilend = $this->loadData('platform_account_unilend');
                     $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
 
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur $paymentSchedule */
                     $paymentSchedule = $paymentScheduleRepo->find($RembEmpr['id_echeancier_emprunteur']);
                     $operationManager->repaymentCommission($paymentSchedule);
 
@@ -2072,7 +2073,7 @@ class dossiersController extends bootstrap
                         'datedelafacture' => $dateRemb,
                         'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
                         'annee'           => date('Y'),
-                        'montantRemb'     => $this->ficelle->formatNumber(bcdiv($rembNetTotal, 100, 2)),
+                        'montantRemb'     => $this->ficelle->formatNumber(bcdiv($paymentSchedule->getMontant(), 100, 2)),
                         'lien_fb'         => $lien_fb,
                         'lien_tw'         => $lien_tw
                     );
@@ -2136,6 +2137,10 @@ class dossiersController extends bootstrap
                 }
 
                 if (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0')) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                    $projectManager = $this->get('unilend.service.project_manager');
+                    $projectManager->addProjectStatus($_SESSION['user']['id_user'], \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::REMBOURSE, $this->projects);
+
                     /** @var MailerManager $mailerManager */
                     $mailerManager = $this->get('unilend.service.email_manager');
                     $mailerManager->setLogger($oLogger);

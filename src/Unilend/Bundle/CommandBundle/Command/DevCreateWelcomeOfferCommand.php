@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,12 +28,12 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
             throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/welcome_offer.csv not found');
         }
         if (false === ($handle = fopen($fileName, 'r'))) {
-            throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/import/welcome_offer.csv cannot be opened');
+            throw new \Exception($this->getContainer()->getParameter('path.protected') . 'import/welcome_offer.csv cannot be opened');
         }
 
-        while (($row = fgetcsv($handle, 0, ';')) !== false) {
-            if (false !== filter_var($row[0], FILTER_VALIDATE_INT)) {
-                $clients[] = $row[0];
+        foreach (fgetcsv($handle, 0, ';') as $row) {
+            if (false !== filter_var($row, FILTER_VALIDATE_INT)) {
+                $clients[] = $row;
             }
         }
         fclose($handle);

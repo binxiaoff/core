@@ -16,6 +16,7 @@ class ResponseListener
 
         if ('lender_landing_page_form_only' !== $event->getRequest()->attributes->get('_route')) {
             $responseHeaders->set('X-Frame-Options', 'DENY');
+            $responseHeaders->set('X-Frame-Options', 'ALLOW-FROM http://app.vwo.com/');
         }
     }
 }

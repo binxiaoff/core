@@ -51,14 +51,14 @@ var AutoComplete = function (elem, options) {
     target: false, // The target element to put the results
     ajaxUrl: false, // An ajax URL to send the term receive results from. If `false`, looks in target element for the text
     ajaxProp: 'term', // The name of the property to send to the ajax URL endpoint
-    delay: 250, // A delay to wait before searching for the term
+    delay: 300, // A delay to wait before searching for the term
     minTermLength: 3, // The minimum character length of a term to find
     showEmpty: false, // Show autocomplete with messages if no results found
     showSingle: true, // Show the autocomplete if only one result found
     attachTargetAfter: false, // Whether to apply the target to be directly after the input, or at the bottom in the body
     constrainTargetWidth: 'input', // Constrain the target's width. Accepted values: {Boolean} false, {String} 'input', or {Int} specific width in pixels
     useTether: true, // Use tether to attach the target element
-    optimised: true, // If true, it'll retrieve AJAX for the first call, and then search within the results for further drilling down (reduces server IO and hopefully speeds up UI for user)
+    optimised: false, // If true, it'll retrieve AJAX for the first call, and then search within the results for further drilling down (reduces server IO and hopefully speeds up UI for user)
 
     // Special events
     onbeforeajax: undefined, // function (AutoComplete) { return {Boolean} if you want it to continue }
@@ -131,38 +131,44 @@ var AutoComplete = function (elem, options) {
    * Events
    */
   // Type into the input elem
-  self.$input.on('keydown', function ( event ) {
+
+  self.$input.on('keyup', function ( event ) {
     clearTimeout(self.timer)
 
     // Only if it is enabled
     if (self.settings.enable) {
-      // Escape key - hide
-      if (event.which === 27) {
-        self.hide()
+      // Detect keyboard keys only for Desktop devices
+      if (!Utility.isMobile()) {
+        // Escape key - hide
+        if (event.which === 27) {
+          self.hide()
 
-      // Arrow key - down
-      } else if (event.which === 40) {
-        if (self.$target.is(':visible')) {
+          // Arrow key - down
+        } else if (event.which === 40) {
+          if (self.$target.is(':visible')) {
+            event.preventDefault()
+            self.$target.find('li').first().find('a').focus()
+
+            // Pressing down when not visible means user wants to see the autocomplete results
+          } else {
+            self.timer = setTimeout(self.findTerm, self.settings.delay)
+          }
+
+          // Press enter when there is one result
+        } else if (event.which === 13 && self.$target.find('li:visible').length === 1) {
           event.preventDefault()
-          self.$target.find('li').first().find('a').focus()
+          self.$target.find('li:visible').first().find('a').click()
 
-          // Pressing down when not visible means user wants to see the autocomplete results
-        } else {
+          // Tab
+        } else if (event.which === 9 && self.$target.find('li:visible').length > 0) {
+          event.preventDefault()
+          self.$target.find('li:visible').first().find('a').focus()
+
+          // Search for the term if user presses any letter/number/punctuation/delete key
+        } else if (event.which === 8 || event.which === 46 || (event.which >= 48 && event.which <= 90) || (event.which >= 186 && event.which <= 222)) {
           self.timer = setTimeout(self.findTerm, self.settings.delay)
         }
-
-      // Press enter when there is one result
-      } else if (event.which === 13 && self.$target.find('li:visible').length === 1) {
-        event.preventDefault()
-        self.$target.find('li:visible').first().find('a').click()
-
-      // Tab
-      } else if (event.which === 9 && self.$target.find('li:visible').length > 0) {
-        event.preventDefault()
-        self.$target.find('li:visible').first().find('a').focus()
-
-      // Search for the term if user presses any letter/number/punctuation/delete key
-      } else if (event.which === 8 || event.which === 46 || (event.which >= 48 && event.which <= 90) || (event.which >= 186 && event.which <= 222)) {
+      } else {
         self.timer = setTimeout(self.findTerm, self.settings.delay)
       }
     }
@@ -194,10 +200,8 @@ var AutoComplete = function (elem, options) {
   // Keyboard operations on results
   self.$target.on('keydown', '.autocomplete-results a:focus', function (event) {
     clearTimeout(self.hideTimer)
-
     // Move between results and input
-    if (self.settings.enable) {
-
+    if (self.settings.enable && !Utility.isMobile()) {
       // -- Press shift+tab on first item to go back to the input
       if (event.which === 9 && event.shiftKey && self.$target.find('.autocomplete-results a').index(this) === 0) {
         event.preventDefault()
@@ -213,23 +217,25 @@ var AutoComplete = function (elem, options) {
           self.$input.focus()
           return
 
-        // Focus on previous result anchor
+          // Focus on previous result anchor
         } else {
           event.preventDefault()
           $(this).parents('li').prev('li').find('a').focus()
+          self.track.lastFocused = $(this).parents('li').prev('li').find('a').text()
         }
 
-      // -- Down key
+        // -- Down key
       } else if (event.which === 40) {
         event.preventDefault()
         $(this).parents('li').next('li').find('a').focus()
+        self.track.lastFocused = $(this).parents('li').next('li').find('a').text()
 
-      // -- Press esc to clear the autocomplete and go back to the search
+        // -- Press esc to clear the autocomplete and go back to the search
       } else if (event.which === 27) {
         self.$input.focus()
         self.hide()
 
-      // -- Press enter or right arrow on highlighted result to complete the input
+        // -- Press enter or right arrow on highlighted result to complete the input
       } else if (event.which === 39 || event.which === 13) {
         event.preventDefault()
         self.setInputValue($(this).data('value') || $(this).text(), this)
@@ -297,6 +303,7 @@ var AutoComplete = function (elem, options) {
 
   // Find a term within results array (or element)
   self.findTermInResults = function (term, results) {
+
     // Trim whitespace from start/end of term
     term = (term + '').trim()
 
@@ -354,6 +361,7 @@ var AutoComplete = function (elem, options) {
   // Find a term via AJAX
   self.findTermViaAjax = function (term) {
     if (!self.settings.enable) return
+
     var ajaxData = {}
 
     // @trigger `AutoComplete:findTermViaAjax:before` [elemAutoComplete, term]
@@ -383,7 +391,6 @@ var AutoComplete = function (elem, options) {
           if (data instanceof Array) {
             // Show the results
             self.showResults(term, data)
-
           } else {
             self.warning('Ajax Error: Data is not an array')
             console.log(data, textStatus, xhr)
@@ -422,6 +429,9 @@ var AutoComplete = function (elem, options) {
 
     // @debug
     // console.log('showing results', term, results.length)
+
+    // Track results are open
+    self.track.resultsOpen = true
 
     // Remove any messages
     self.$target.find('li.autocomplete-message').remove()
@@ -548,6 +558,7 @@ var AutoComplete = function (elem, options) {
 
   // Add highlights to the results
   self.highlightResults = function (term, results) {
+
     results.each( function (i, item) {
       var text = $(this).find('a').text()
       var newText = self.highlightTerm(term, text)
@@ -644,6 +655,8 @@ var AutoComplete = function (elem, options) {
     // @trigger [input, target] `AutoComplete:hide:complete`, [elemAutoComplete]
     self.$input.trigger('AutoComplete:hide:complete', [self])
     self.$target.trigger('AutoComplete:hide:complete', [self])
+    // Track results are closed
+    self.track.resultsOpen = false
   }
 
   // Enable AutoComplete
@@ -771,11 +784,8 @@ $doc
       }
     })
 
-    // Set the new text value of the input and of the ville element
-    $(document).on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function (event, elemAutoComplete, newValue) {
-      // Empty value given
-      newValue = (newValue + '').trim()
-      if (!newValue) return
+    // Common action for the functions below
+    var splitValues = function(elemAutoComplete, newValue) {
 
       // Separate the values from the city and the code
       // Takes a value like `PARIS 2E ARRONDISSMENT (75002)` and splits it into two
@@ -783,10 +793,10 @@ $doc
       var cityValue = newValue.replace(/ ?\(.*$/, '')
 
       // @trigger elem `AutoComplete:address:city` [cityValue]
-      $(this).trigger('AutoComplete:address:city', [cityValue])
+      elemAutoComplete.$input.trigger('AutoComplete:address:city', [cityValue])
 
       // @trigger elem `AutoComplete:address:code` [codeValue]
-      $(this).trigger('AutoComplete:address:code', [codeValue])
+      elemAutoComplete.$input.trigger('AutoComplete:address:code', [codeValue])
 
       // Set the new code value
       // elemAutoComplete.$input.val(codeValue)
@@ -797,9 +807,8 @@ $doc
         var $cityElem = $(cityElemSelector)
         if ($cityElem.val() !== cityValue) {
           $cityElem.val(cityValue)
-
           // @debug
-          console.log('set city', cityValue, $cityElem)
+          // console.log('set city', cityValue)
         }
       }
 
@@ -811,10 +820,47 @@ $doc
           $zipElem.val(codeValue)
 
           // @debug
-          console.log('set code', codeValue, $zipElem)
+          // console.log('set code', codeValue)
         }
       }
+    }
+
+    // Handling outside click while results are open
+    $doc.on('AutoComplete:showResults:complete', '[data-autocomplete-address]', function (event, elemAutoComplete) {
+
+      // Bind outside click event - user didn't finish the autocomplete
+      $doc.bind('click.outsideAutoComplete',function(event) {
+        if ($(event.target).parents('.autocomplete-results').length === 0) {
+          // Set Post Code and City based on first value in the results
+          var newValue = elemAutoComplete.$target.find('ul li:first-child a').text()
+          splitValues(elemAutoComplete, newValue)
+          $doc.unbind('click.outsideAutoComplete')
+          elemAutoComplete.hide()
+        }
+      })
+
+      // Unbind outside click if user clicks on a result - user finished the autocomplete
+      elemAutoComplete.$target.on('click', 'a', function () {
+        $doc.unbind('click.outsideAutoComplete')
+        elemAutoComplete.hide()
+      })
+
+      // Unbind outside click if user presses Enter or Right arrow  - user finished the autocomplete
+      elemAutoComplete.$target.on('keydown', '.autocomplete-results a:focus', function (event) {
+        if (!isMobile() && event.which === 39 || !isMobile() && event.which === 13) {
+          $doc.unbind('click.outsideAutoComplete')
+        }
+      })
     })
+
+    // Set the new text value of the zip and city element
+    $doc.on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function (event, elemAutoComplete, newValue) {
+      // Empty value given
+      newValue = (newValue + '').trim()
+      if (!newValue) return
+      splitValues(elemAutoComplete, newValue)
+    })
+
   })
 
 module.exports = AutoComplete

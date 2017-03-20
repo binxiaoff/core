@@ -12,6 +12,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Users
 {
+    const USER_ID_CRON   = -1;
+    const USER_ID_FRONT  = -2;
+    const STATUS_ONLINE  = 1;
+    const STATUS_OFFLINE = 0;
+
     /**
      * @var integer
      *

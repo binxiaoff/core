@@ -2,6 +2,7 @@ imports:
     - { resource: parameters.yml }
     - { resource: security.yml }
     - { resource: parameters_extended.yml, ignore_errors: true }
+    - { resource: dql_mysql_functions.yml, ignore_errors: true }
 
 framework:
     secret: "%secret%"

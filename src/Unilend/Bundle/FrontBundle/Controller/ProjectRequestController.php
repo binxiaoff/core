@@ -15,6 +15,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
@@ -187,7 +188,6 @@ class ProjectRequestController extends Controller
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-
         $siret = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
         $this->company = new Companies();
         $this->company->setSiren($siren)
@@ -212,7 +212,7 @@ class ProjectRequestController extends Controller
             $em->commit();
         } catch (\Exception $exception) {
             $em->getConnection()->rollBack();
-            $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->get('logger')->error('An error occurred while creating client', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
         if (empty($this->client->getIdClient())) {
@@ -222,7 +222,12 @@ class ProjectRequestController extends Controller
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $this->client->getIdClient());
         }
 
-        $partnerManager = $this->get('unilend.service.partner_manager');
+        $partnerId = $request->request->getInt('partner');
+
+        if (empty($partnerId) || null === $em->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
+            $partnerManager = $this->get('unilend.service.partner_manager');
+            $partnerId      = $partnerManager->getDefaultPartner()->id;
+        }
 
         $this->project                                       = $entityManager->getRepository('projects');
         $this->project->id_company                           = $this->company->getIdCompany();
@@ -231,9 +236,7 @@ class ProjectRequestController extends Controller
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
         $this->project->status                               = \projects_status::DEMANDE_SIMULATEUR;
-        $this->project->id_partner                           = $partnerManager->getDefaultPartner()->id;
-        $this->project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
-        $this->project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
+        $this->project->id_partner                           = $partnerId;
         $this->project->create();
 
         return $this->start();
@@ -285,7 +288,7 @@ class ProjectRequestController extends Controller
             if (false === $result['eligible']) {
                 $projectManager = $this->get('unilend.service.project_manager');
                 $motif          = implode(',', $result['reason']);
-                $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $this->project, 0, $motif);
+                $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $this->project, 0, $motif);
 
                 return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
             }
@@ -904,7 +907,8 @@ class ProjectRequestController extends Controller
                     'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->getFonction()
                 ],
                 'project' => [
-                    'duration' => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period
+                    'duration'    => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period,
+                    'description' => isset($values['project']['description']) ? $values['project']['description'] : $this->project->comments
                 ]
             ]
         ];
@@ -968,6 +972,9 @@ class ProjectRequestController extends Controller
         if (empty($request->request->get('project')['duration']) || false === in_array($request->request->get('project')['duration'], $loanPeriods)) {
             $errors['project']['duration'] = true;
         }
+        if (empty($request->request->get('project')['description'])) {
+            $errors['project']['description'] = true;
+        }
         if (empty($request->request->get('terms'))) {
             $errors['terms'] = true;
         }
@@ -1001,7 +1008,8 @@ class ProjectRequestController extends Controller
             $tosAcceptation->create();
         }
 
-        $this->project->period = $request->request->get('project')['duration'];
+        $this->project->period   = $request->request->get('project')['duration'];
+        $this->project->comments = $request->request->get('project')['description'];
         $this->project->update();
 
         $files = $request->request->get('files', []);
@@ -1563,7 +1571,7 @@ class ProjectRequestController extends Controller
         $oProjectManager = $this->get('unilend.service.project_manager');
 
         if ($this->project->status != $projectStatus) {
-            $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $projectStatus, $this->project, 0, $message);
+            $oProjectManager->addProjectStatus(Users::USER_ID_FRONT, $projectStatus, $this->project, 0, $message);
         }
 
         return $this->redirectToRoute($route, ['hash' => $this->project->hash]);

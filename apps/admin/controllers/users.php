@@ -1,5 +1,7 @@
 <?php
 
+use \Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+
 class usersController extends bootstrap
 {
     var $Command;
@@ -138,9 +140,9 @@ class usersController extends bootstrap
             die;
         }
 
-        $onlineUsers  = $this->users->select('id_user != 1 AND status = ' . \users::STATUS_ONLINE, 'name ASC');
-        $offlineUsers = $this->users->select('id_user != 1 AND status = ' . \users::STATUS_OFFLINE, 'name ASC');
-        $this->users  = [\users::STATUS_ONLINE => $onlineUsers, \users::STATUS_OFFLINE => $offlineUsers];
+        $onlineUsers  = $this->users->select('id_user != 1 AND status = ' . Users::STATUS_ONLINE, 'name ASC');
+        $offlineUsers = $this->users->select('id_user != 1 AND status = ' . Users::STATUS_OFFLINE, 'name ASC');
+        $this->users  = [Users::STATUS_ONLINE => $onlineUsers, Users::STATUS_OFFLINE => $offlineUsers];
     }
 
     public function _edit()
