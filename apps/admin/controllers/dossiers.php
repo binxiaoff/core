@@ -2073,7 +2073,7 @@ class dossiersController extends bootstrap
                         'datedelafacture' => $dateRemb,
                         'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
                         'annee'           => date('Y'),
-                        'montantRemb'     => $ficelle->formatNumber(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 2)),
+                        'montantRemb'     => $this->ficelle->formatNumber(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 2)),
                         'lien_fb'         => $lien_fb,
                         'lien_tw'         => $lien_tw
                     );
