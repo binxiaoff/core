@@ -16,7 +16,6 @@ $activeSheet->setCellValueByColumnAndRow(0, 1, 'ID');
 $activeSheet->setCellValueByColumnAndRow(1, 1, 'Motif');
 $activeSheet->setCellValueByColumnAndRow(2, 1, 'Montant');
 $activeSheet->setCellValueByColumnAndRow(3, 1, 'Attribution');
-$activeSheet->setCellValueByColumnAndRow(4, 1, 'ID client');
 $activeSheet->setCellValueByColumnAndRow(5, 1, 'Date');
 
 foreach ($this->receptions as $index => $reception) {
@@ -31,10 +30,12 @@ foreach ($this->receptions as $index => $reception) {
         $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $this->statusOperations[$reception->getStatusBo()]);
     }
 
-    if (null === $reception->getIdClient()) {
-        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdProject()->getIdCompany()->getIdClientOwner());
-    } else {
+    if (null === $reception->getIdProject()) {
+        $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID client');
         $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdClient()->getIdClient());
+    } else {
+        $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID projet');
+        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdProject()->getIdProject());
     }
 
     $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getAdded()->format('d/m/Y'));
