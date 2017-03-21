@@ -244,7 +244,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     'annee'           => date('Y'),
                     'lien_fb'         => $sFB,
                     'lien_tw'         => $sTwitter,
-                    'montantRemb'     => $ficelle->formatNumber(bcdiv($paymentSchedule->getMontant(), 100, 2))
+                    'montantRemb'     => $ficelle->formatNumber(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 2))
                 );
 
                 $logger->debug('Automatic repayment, send email : facture-emprunteur-remboursement. Data to use: ' . json_encode($varMail), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $r['id_project'] ]);

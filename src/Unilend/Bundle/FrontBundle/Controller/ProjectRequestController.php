@@ -878,6 +878,7 @@ class ProjectRequestController extends Controller
         $this->attachmentType         = $entityManager->getRepository('attachment_type');
         $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
         $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
+        array_multisort(array_column($template['attachment_types'], 'label'), SORT_ASC, $template['attachment_types']);
 
         $settings->get('Lien conditions generales depot dossier', 'type');
 
