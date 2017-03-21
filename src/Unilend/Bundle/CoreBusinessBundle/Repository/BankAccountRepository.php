@@ -67,11 +67,17 @@ class BankAccountRepository extends EntityRepository
         return $cb->getQuery()->getOneOrNullResult();
     }
 
+    /**
+     * @param Clients|integer $idClient
+     *
+     * @return BankAccount|null
+     */
     public function getClientValidatedBankAccount($idClient)
     {
         $qb = $this->createQueryBuilder('ba');
         $qb->where('ba.idClient = :idClient')
            ->andWhere('ba.dateValidated IS NOT NULL')
+           ->andWhere('ba.dateArchived IS NULL')
            ->setParameter(':idClient', $idClient);
 
         return $qb->getQuery()->getOneOrNullResult();

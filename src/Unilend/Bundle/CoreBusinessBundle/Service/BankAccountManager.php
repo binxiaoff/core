@@ -47,6 +47,8 @@ class BankAccountManager
     {
         $this->em->getConnection()->beginTransaction();
         try {
+            $bic  = preg_replace('/\s+/', '', $bic);
+            $iban = preg_replace('/\s+/', '', $iban);
             $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy(['idClient' => $client, 'iban' => $iban]);
 
             if ($bankAccount instanceof BankAccount) {

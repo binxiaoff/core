@@ -28,8 +28,6 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $em            = $this->getContainer()->get('doctrine.orm.entity_manager');
         $logger        = $this->getContainer()->get('monolog.logger.console');
 
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
         /** @var \compteur_transferts $counter */
         $counter = $entityManager->getRepository('compteur_transferts');
         /** @var \settings $settings */
@@ -72,10 +70,15 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 
             if (\DateTime::createFromFormat('Y-m-d H:i:s', $transaction->date_transaction) < new \DateTime('today')) {
                 $bankAccount = $pendingBankTransfer->getBankAccount();
-                if ($pendingBankTransfer->getClient()) {
-                    $client->get($pendingBankTransfer->getClient()->getIdClient(), 'id_client');
+                $client = $pendingBankTransfer->getClient();
+                if ($client) {
                     if (null === $bankAccount) {
+                        // todo: for backward compatibility only, can be replaced by an error message in the next release.
                         $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($pendingBankTransfer->getClient());
+                        if (null === $bankAccount) {
+                            $logger->error('The bank account is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
+                            continue;
+                        }
                     }
                 } elseif ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
                     $logger->error('The client is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
@@ -88,9 +91,8 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     $recipientName = $unilendAccountHolder;
                 } elseif ($client->isBorrower()) {
                     $company       = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
-                    // Todo: use BankAccount when multiRIB is done.
-                    $recipientIban = $company->getIban();
-                    $recipientBic  = $company->getBic();
+                    $recipientIban = $bankAccount->getIban();
+                    $recipientBic  = $bankAccount->getBic();
                     $recipientName = $company->getName();
                 } else {
                     $balance = $transaction->getSolde($pendingBankTransfer->getClient()->getIdClient());
@@ -100,11 +102,11 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     }
                     $recipientIban = $bankAccount->getIban();
                     $recipientBic  = $bankAccount->getBic();
-                    if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                    if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                         $company       = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
                         $recipientName = $company->getName();
                     } else {
-                        $recipientName = $client->nom . ' ' . $client->prenom;
+                        $recipientName = $client->getNom() . ' ' . $client->getPrenom();
                     }
                 }
 

@@ -343,10 +343,19 @@ class Clients
     private $attachments;
 
     /**
+     * @var Wallet[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet", mappedBy="idClient")
+     */
+    private $wallets;
+
+    /**
      * Clients constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->attachments = new ArrayCollection();
+        $this->wallets     = new ArrayCollection();
     }
 
     /**
@@ -1349,7 +1358,7 @@ class Clients
         if (is_null($this->hash)) {
             try {
                 $this->hash = $this->generateHash();
-            } catch (UnsatisfiedDependencyException $exception){
+            } catch (UnsatisfiedDependencyException $exception) {
                 $this->hash = md5(uniqid());
             }
         }
@@ -1370,7 +1379,7 @@ class Clients
         } else {
             $tabName = explode('-', $name);
             $newName = '';
-            $i      = 0;
+            $i       = 0;
             foreach ($tabName as $name) {
                 $newName .= ($i == 0 ? '' : '-') . ucwords($name);
                 $i++;
@@ -1467,5 +1476,45 @@ class Clients
         }
 
         return $this->attachments;
+    }
+
+    /**
+     * Get wallets
+     *
+     * @return Wallet[]
+     */
+    public function getWallets()
+    {
+        return $this->wallets;
+    }
+
+    /**
+     * Dose client has a borrower wallet. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isBorrower()
+    {
+        $isBorrower = false;
+        if (false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::BORROWER) {
+            $isBorrower = true;
+        }
+
+        return $isBorrower;
+    }
+
+    /**
+     * Dose client has a lender wallet. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isLender()
+    {
+        $isLender = false;
+        if (false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::LENDER) {
+            $isLender = true;
+        }
+
+        return $isLender;
     }
 }

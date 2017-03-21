@@ -661,6 +661,8 @@ class dossiersController extends bootstrap
                             $clients->get($companies->id_client_owner, 'id_client');
                             $clients_adresses->get($companies->id_client_owner, 'id_client');
 
+                            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($companies->id_client_owner);
+
                             $mess = '<ul>';
 
                             if ($this->projects->title == '') {
@@ -687,10 +689,8 @@ class dossiersController extends bootstrap
                             if ($companies->siret == '') {
                                 $mess .= '<li>SIRET entreprise</li>';
                             }
-                            if ($companies->iban == '') {
+                            if (null === $bankAccount) {
                                 $mess .= '<li>IBAN entreprise</li>';
-                            }
-                            if ($companies->bic == '') {
                                 $mess .= '<li>BIC entreprise</li>';
                             }
                             if ($companies->tribunal_com == '') {
