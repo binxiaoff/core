@@ -665,8 +665,9 @@
                                 <?php
                                     if ($this->projects->status == \projects_status::PREP_FUNDING) {
                                         $hasDebtsStatement = false;
-                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
-                                        foreach ($this->aAttachments as $attachment) {
+                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+                                        foreach ($this->aAttachments as $projectAttachment) {
+                                            $attachment = $projectAttachment->getAttachment();
                                             if ($attachment->getType()->getId() == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DEBTS_STATEMENT
                                             && false === empty($attachment->getPath())) {
                                                 $hasDebtsStatement = true;
