@@ -144,7 +144,7 @@ class lenders_account_stats extends lenders_account_stats_crud
               (t.id_client IN ( SELECT
                                   DISTINCT(transfer.id_client_origin)
                                 FROM loans l
-                                  LEFT JOIN loan_transfer lt ON l.id_transfer = lt.id_transfer
+                                  LEFT JOIN loan_transfer lt ON l.id_transfer = lt.id_loan_transfer
                                   LEFT JOIN transfer ON lt.id_transfer = transfer.id_transfer
                                 WHERE l.id_lender = ' . $iLendersAccountId . ')
               OR la.id_lender_account = ' . $iLendersAccountId . ')
