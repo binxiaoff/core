@@ -87,24 +87,6 @@ class Companies
     private $siret;
 
     /**
-     * @var string
-     *
-     * @Assert\Iban
-     *
-     * @ORM\Column(name="iban", type="string", length=28, nullable=true)
-     */
-    private $iban;
-
-    /**
-     * @var string
-     *
-     * @Assert\Bic
-     *
-     * @ORM\Column(name="bic", type="string", length=100, nullable=true)
-     */
-    private $bic;
-
-    /**
      * @var integer
      *
      * @ORM\Column(name="execices_comptables", type="integer", nullable=true)
@@ -524,54 +506,6 @@ class Companies
     public function getSiret()
     {
         return $this->siret;
-    }
-
-    /**
-     * Set iban
-     *
-     * @param string $iban
-     *
-     * @return Companies
-     */
-    public function setIban($iban)
-    {
-        $this->iban = $iban;
-
-        return $this;
-    }
-
-    /**
-     * Get iban
-     *
-     * @return string
-     */
-    public function getIban()
-    {
-        return $this->iban;
-    }
-
-    /**
-     * Set bic
-     *
-     * @param string $bic
-     *
-     * @return Companies
-     */
-    public function setBic($bic)
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    /**
-     * Get bic
-     *
-     * @return string
-     */
-    public function getBic()
-    {
-        return $this->bic;
     }
 
     /**
