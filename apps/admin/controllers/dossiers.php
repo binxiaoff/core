@@ -950,6 +950,8 @@ class dossiersController extends bootstrap
             $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
             $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
             $partnerAttachments                   = $partner->getAttachmentTypes(true);
+            $this->isFundsCommissionRateEditable  = $this->isFundsCommissionRateEditable();
+
             $this->aMandatoryAttachmentTypes      = [];
             foreach ($partnerAttachments as $partnerAttachment) {
                 $this->aMandatoryAttachmentTypes[] = $partnerAttachment->getAttachmentType();
