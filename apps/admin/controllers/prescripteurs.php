@@ -98,56 +98,59 @@ class prescripteursController extends bootstrap
         $this->hideDecoration();
 
         if (isset($_POST['send_add_prescripteur'])) {
+            $this->autoFireView = false;
+
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-            $this->autoFireView = false;
-            /** @var clients $oClients */
-            $oClients = $this->loadData('clients');
-            /** @var clients_adresse $oClientsAdresses */
-            $oClientsAdresses = $this->loadData('clients_adresses');
-            /** @var prescripteurs $oPrescripteurs */
-            $oPrescripteurs = $this->loadData('prescripteurs');
-            /** @var companies $oCompanies */
-            $oCompanies = $this->loadData('companies');
+            /** @var \clients $client */
+            $client = $this->loadData('clients');
+            $client->civilite  = $_POST['civilite'];
+            $client->nom       = $this->ficelle->majNom($_POST['nom']);
+            $client->prenom    = $this->ficelle->majNom($_POST['prenom']);
+            $client->email     = trim($_POST['email']);
+            $client->telephone = str_replace(' ', '', $_POST['telephone']);
+            $client->id_langue = 'fr';
+            $client->create();
 
-            $oClients->civilite  = $_POST['civilite'];
-            $oClients->nom       = $this->ficelle->majNom($_POST['nom']);
-            $oClients->prenom    = $this->ficelle->majNom($_POST['prenom']);
-            $oClients->email     = trim($_POST['email']);
-            $oClients->telephone = str_replace(' ', '', $_POST['telephone']);
-            $oClients->id_langue = 'fr';
+            /** @var \clients_adresses $clientAddress */
+            $clientAddress            = $this->loadData('clients_adresses');
+            $clientAddress->adresse1  = $_POST['adresse'];
+            $clientAddress->ville     = $_POST['ville'];
+            $clientAddress->cp        = $_POST['cp'];
+            $clientAddress->id_client = $client->id_client;
+            $clientAddress->create();
 
-            $oClientsAdresses->adresse1 = $_POST['adresse'];
-            $oClientsAdresses->ville    = $_POST['ville'];
-            $oClientsAdresses->cp       = $_POST['cp'];
+            /** @var \companies $company */
+            $company      = $this->loadData('companies');
+            $sirenCompany = $company->select('siren = ' . $_POST['siren'], 'added ASC', 0, 1);
 
-            $aCompany = $oCompanies->select('siren = ' . $_POST['siren'], 'added ASC', 0, 1);
-            if ($aCompany) {
-                $iCompanyId = $aCompany[0]['id_company'];
+            if ($sirenCompany) {
+                $companyId = $sirenCompany[0]['id_company'];
             } else {
-                $oCompanies->siren = $_POST['siren'];
-                $oCompanies->name  = $_POST['company_name'];
-                $oCompanies->iban  = $_POST['iban'];
-                $oCompanies->bic   = $_POST['bic'];
-                $iCompanyId        = $oCompanies->create();
+                $company->siren = $_POST['siren'];
+                $company->name  = $_POST['company_name'];
+                $company->iban  = $_POST['iban'];
+                $company->bic   = $_POST['bic'];
+
+                $companyId = $company->create();
             }
 
-            $oClients->id_client = $oClients->create();
+            /** @var \prescripteurs $advisor */
+            $advisor            = $this->loadData('prescripteurs');
+            $advisor->id_client = $client->id_client;
+            $advisor->id_entite = $companyId;
+            $advisor->create();
 
-            $oClientsAdresses->id_client = $oClients->id_client;
-            $oClientsAdresses->create();
+            if (false === empty($_POST['id_project'])) {
+                $this->addAdvisorToProject($_POST['id_project'], $advisor->id_prescripteur);
+            }
 
-            $oPrescripteurs->id_client = $oClients->id_client;
-            $oPrescripteurs->id_entite = $iCompanyId;
+            $this->users_history->histo(5, 'add prescripteur', $_SESSION['user']['id_user'], serialize(['id_prescripteur' => $advisor->id_prescripteur, 'post' => $_POST]));
 
-            $oPrescripteurs->id_prescripteur = $oPrescripteurs->create();
-
-            $this->addAdvisorToProject($_POST['id_project'], $oPrescripteurs->id_prescripteur);
-
-            $serialize = serialize(array('id_prescripteur' => $oPrescripteurs->id_prescripteur, 'post' => $_POST, 'files' => $_FILES));
-            $this->users_history->histo(5, 'add prescripteur', $_SESSION['user']['id_user'], $serialize);
-
-            echo json_encode(array('result' => 'OK', 'id_prescripteur' => $oPrescripteurs->id_prescripteur));
+            echo json_encode([
+                'result'          => 'OK',
+                'id_prescripteur' => $advisor->id_prescripteur
+            ]);
         }
     }
 

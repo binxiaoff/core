@@ -780,11 +780,12 @@ class transfertsController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                     $_SESSION['freeow']['message'] = 'Une erreur s\'élève. Les fonds ne sont pas débloqués';
                 }
+
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Ekomi $ekomi */
+                $ekomi = $this->get('unilend.service.ekomi');
+                $ekomi->sendProjectEmail($project);
+
                 if ($this->getParameter('kernel.environment') === 'prod') {
-                    $ekomi = $this->get('unilend.service.ekomi');
-                    $ekomi->sendProjectEmail($project);
-
-
                     $payload = new ChatPostMessagePayload();
                     $payload->setChannel('#general');
                     $payload->setText('Fonds débloqués pour *<' . $this->furl . '/projects/detail/' . $project->slug . '|' . $project->title . '>*');

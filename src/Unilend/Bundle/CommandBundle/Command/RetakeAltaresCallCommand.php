@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
 class RetakeAltaresCallCommand extends ContainerAwareCommand
 {
@@ -61,7 +62,7 @@ EOF
                     if (false === $result['eligible']) {
                         if ($project->status != \projects_status::NOTE_EXTERNE_FAIBLE) {
                             $motif = implode(',', $result['reason']);
-                            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $motif);
+                            $projectManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $motif);
                         }
                         continue;
                     }
@@ -75,7 +76,7 @@ EOF
                     }
 
                     if ($project->status < \projects_status::A_TRAITER){
-                        $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $project);
+                        $projectManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::A_TRAITER, $project);
                     }
                 } catch (\Exception $exception) {
                     if ($settingsAltaresStatus->value) {

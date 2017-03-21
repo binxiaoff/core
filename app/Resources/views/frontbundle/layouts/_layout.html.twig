@@ -37,6 +37,9 @@
     <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }} {% if is_granted('ROLE_LENDER') %} ui-user-type-lender {% endif %} {% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower {% endif %} {% else %} ui-no-user {% endif %} {% if bodyClassNames is defined %} {{ bodyClassNames }} {% endif %}">
         {{ google_tag_manager() }}
         <div id="top" class="site">
+            {% block siteCookie %}
+                {% include 'partials/site/cookie-box.html.twig' %}
+            {% endblock %}
             {% block siteHeader %}
                 {% if app.user is defined and is_granted('ROLE_LENDER') %}
                     {% include 'partials/site/connected_header_lender.html.twig' %}
@@ -47,14 +50,12 @@
                 {%  endif %}
             {% endblock %}
 
+
+
             <div class="site-content">
                 {% block siteContent %}
                 {% endblock %}
             </div>
-
-            {% block siteCookie %}
-                {% include 'partials/site/cookie-box.html.twig' %}
-            {% endblock %}
 
             {% block siteFooter %}
                 {{ render(controller('UnilendFrontBundle:Main:footer', {'route': app.request.attributes.get('_route')})) }}
@@ -99,6 +100,7 @@
                 and false == app.session.get(tos_session_key)
                 and is_granted('ROLE_LENDER')
                 and app.user.getClientStatus() == constant('\\clients_status::VALIDATED')
+                and app.request.get('_route') != 'lenders_terms_of_sales'
             %}
                 <div id="modal-tos" data-modal data-modal-openonload="true"><form id="form-tos" method="post" action="{{ path('lender_tos_popup') }}"></form></div>
             {% endif %}

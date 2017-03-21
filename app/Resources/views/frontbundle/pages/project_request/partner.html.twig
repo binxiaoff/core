@@ -178,6 +178,23 @@
                                         </fieldset><!-- /.panel -->
 
                                         <fieldset class="panel">
+                                            <h3 class="h3">{% trans %} project-request_step-1-project-details-title {% endtrans %}</h3>
+
+                                            <div class="row">
+                                                <div class="form-field col-lg-12 col-md-12{% if form.errors.project.description is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-description">
+                                                        {% trans %} project-request_project-description-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <textarea id="form-project-create-description" name="project[description]" class="input-field" rows="5" placeholder="{{ 'project-request_project-description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
+                                                    {% if form.errors.project.description is defined %}
+                                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="panel">
                                             <div class="row">
                                                 <div class="form-field form-field-single-checkbox{% if form.errors.terms is defined %} ui-formvalidation-error{% endif %}">
                                                     <label>

@@ -99,8 +99,8 @@ class partenairesController extends bootstrap
             $this->partenaires->nom     = $_POST['nom'];
             $this->partenaires->slug    = $this->bdd->generateSlug($_POST['nom']);
             $this->partenaires->id_type = $_POST['id_type'];
-            $this->partenaires->id_code = $_POST['id_code'];
             $this->partenaires->status  = $_POST['status'];
+            $this->partenaires->id_user = $_SESSION['user']['id_user'];
             $this->partenaires->create();
 
             $_SESSION['freeow']['title']   = 'Ajout d\'une campagne';
@@ -115,8 +115,8 @@ class partenairesController extends bootstrap
             $this->partenaires->nom     = $_POST['nom'];
             $this->partenaires->slug    = $this->bdd->generateSlug($_POST['nom']);
             $this->partenaires->id_type = $_POST['id_type'];
-            $this->partenaires->id_code = $_POST['id_code'];
             $this->partenaires->status  = $_POST['status'];
+            $this->partenaires->id_user = $_SESSION['user']['id_user'];
             $this->partenaires->update();
 
             $_SESSION['freeow']['title']   = 'Modification d\'une campagne';
@@ -138,7 +138,8 @@ class partenairesController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
             $this->partenaires->get($this->params[1], 'id_partenaire');
-            $this->partenaires->status = ($this->params[2] == 1 ? 0 : 1);
+            $this->partenaires->status  = ($this->params[2] == 1 ? 0 : 1);
+            $this->partenaires->id_user = $_SESSION['user']['id_user'];
             $this->partenaires->update();
 
             $_SESSION['freeow']['title']   = 'Statut d\'une campagne';
@@ -156,17 +157,12 @@ class partenairesController extends bootstrap
         $this->hideDecoration();
 
         /** @var \partenaires_types $partnerType */
-        $partnerType = $this->loadData('partenaires_types');
-        /** @var \promotions $promotion */
-        $promotion = $this->loadData('promotions');
-
+        $partnerType             = $this->loadData('partenaires_types');
         $_SESSION['request_url'] = $this->url;
+        $this->partenaires       = $this->loadData('partenaires');
 
-        $this->partenaires = $this->loadData('partenaires');
         $this->partenaires->get($this->params[0], 'id_partenaire');
-
-        $this->lTypes      = $partnerType->select('status = 1', 'nom ASC');
-        $this->lPromotions = $promotion->select('status = 1', 'code ASC');
+        $this->lTypes = $partnerType->select('status = 1', 'nom ASC');
     }
 
     public function _add()
@@ -174,13 +170,8 @@ class partenairesController extends bootstrap
         $this->hideDecoration();
 
         /** @var \partenaires_types $partnerType */
-        $partnerType = $this->loadData('partenaires_types');
-        /** @var \promotions $promotion */
-        $promotion = $this->loadData('promotions');
-
+        $partnerType             = $this->loadData('partenaires_types');
         $_SESSION['request_url'] = $this->url;
-
-        $this->lTypes      = $partnerType->select('status = 1', 'nom ASC');
-        $this->lPromotions = $promotion->select('status = 1', 'code ASC');
+        $this->lTypes            = $partnerType->select('status = 1', 'nom ASC');
     }
 }
