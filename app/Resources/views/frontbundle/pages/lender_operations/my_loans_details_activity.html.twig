@@ -1,8 +1,80 @@
-{% set loanData = {
+
+
+{% set loan = {
     activity: {
         messages: {
             0: {
-                id: "5440706",
+                id: "7944943",
+                type: "remboursement",
+                title: "Nouveau projet",
+                datetime: "15 nov. 2016 11:42",
+                content: "Nouveau projet <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
+                image: "notification-project",
+                status: "unread",
+                date: "2016-11-15T10:42:54.000Z"
+            },
+            1: {
+                id: "7944420",
+                type: "remboursement",
+                title: "Nouveau projet",
+                datetime: "15 nov. 2016 11:42",
+                content: "Nouveau projet <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
+                image: "notification-project",
+                status: "unread",
+                date: "2016-11-15T10:42:54.000Z"
+            },
+            2: {
+                id: "7942947",
+                type: "remboursement",
+                title: "Nouveau projet",
+                datetime: "15 nov. 2016 11:42",
+                content: "Nouveau projet <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
+                image: "notification-project",
+                status: "read",
+                date: "2016-11-15T10:42:54.000Z"
+            },
+            3: {
+                id: "5440709",
+                type: "remboursement",
+                title: "Nouveau projet",
+                datetime: "15 nov. 2016 11:42",
+                content: "Nouveau projet <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
+                image: "notification-project",
+                status: "read",
+                date: "2016-11-15T10:42:54.000Z"
+            },
+            4: {
+                id: "5440710",
+                type: "remboursement",
+                title: "Nouveau projet",
+                datetime: "15 nov. 2016 11:42",
+                content: "Nouveau projet <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
+                image: "notification-project",
+                status: "read",
+                date: "2016-11-15T10:42:54.000Z"
+            },
+            5: {
+                id: "5440711",
+                type: "remboursement",
+                title: "Nouveau projet",
+                datetime: "15 nov. 2016 11:42",
+                content: "Nouveau projet <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
+                image: "notification-project",
+                status: "read",
+                date: "2016-11-15T10:42:54.000Z"
+            },
+            6: {
+                id: "5440712",
+                type: "remboursement",
+                title: "Nouveau projet",
+                datetime: "15 nov. 2016 11:42",
+                content: "Nouveau projet <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
+                image: "notification-project",
+                status: "unread",
+                date: "2016-11-15T10:42:54.000Z"
+            },
+            7: {
+                id: "5440713",
                 type: "remboursement",
                 title: "Nouveau projet",
                 datetime: "15 nov. 2016 11:42",
@@ -16,38 +88,29 @@
 } %}
 
 
-
-{% if loanData.activity.messages|length > 0 %}
-    <ul class="list-notifications">
-    {% for i, notification in loanData.activity.messages %}
-        <li class="notification notification-type-{{ notification.type|default('message')|e('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" tabindex="0" data-ignore-toggle="true">
+{% if loan.activity.messages|length > 0 %}
+    <div class="list-notifications" data-paginate>
+    {% for i, notification in loan.activity.messages %}
+        <div class="notification notification-type-{{ notification.type|default('message')|e('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" tabindex="0">
             <div class="notification-image">
             {% if notification.image %}
                 <span class="svg-icon-wrap">{{ svgimage('#' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
             {% endif %}
             </div>
             <div class="notification-info">
-                <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
                 <h4 class="notification-title">{{ notification.title|raw }}</h4>
+                <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
                 <div class="notification-content">
                     <p>{{ notification.content|raw|nl2br }}</p>
                 </div>
             </div>
-        </li><!-- /.notification -->
+        </div><!-- /.notification -->
     {% else %}
-        <li class="notification notification-type-empty">
+        <div class="notification notification-type-empty">
             <div class="notification-content">
                 <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
             </div>
-        </li>
+        </div>
     {% endfor %}
-    </ul>
-{% else %}
-    <ul class="list-notifications">
-        <li class="notification notification-type-empty">
-            <div class="notification-content">
-                <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
-            </div>
-        </li>
-    </ul>
+    </div>
 {% endif %}

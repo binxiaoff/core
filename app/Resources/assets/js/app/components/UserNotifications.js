@@ -854,6 +854,12 @@ $doc.on('ready', function () {
         // Toggle notification
         if ($target.closest('[data-ignore-toggle]').length === 0) {
           UserNotifications.toggleNotification(notificationId)
+          var $projNotifitcation = $('[data-project-notification-id='+notificationId+']')
+          if ($projNotifitcation.length) {
+            if ($projNotifitcation.is('.ui-notification-open')) {
+              $projNotifitcation.removeClass()
+            }
+          }
         }
 
         // If notification unread, mark as read

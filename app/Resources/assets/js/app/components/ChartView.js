@@ -797,21 +797,19 @@ ChartView.prototype.render = function (data, schema) {
                 var $tbody = $preterLoansTable.find('tbody')
 
                 // Initialise
-                if (!$preterLoansTable.is('[data-hidden-details-cloned]')) {
+                if (!$preterLoansTable.is('.ui-details-cloned')) {
 
                     // Create a hidden div
-                    var $hiddenClone = $('<div class="table-myloans-hidden-details" style="display:none" />')
+                    var $hiddenClone = $('<div class="table-myloans-details-cloned" style="display:none" />')
 
                     // Clone all rows in their original order
                     $tbody.children().clone().appendTo($hiddenClone)
                     $tbody.after($hiddenClone)
 
-                    $preterLoansTable.attr('data-hidden-details-cloned', '')
-                    // console.log('hidden details cloned')
-
+                    $preterLoansTable.addClass('ui-details-cloned')
                 }
 
-                var $hiddenClone = $preterLoansTable.find('.table-myloans-hidden-details')
+                var $hiddenClone = $preterLoansTable.find('.table-myloans-details-cloned')
                 var $rows = $hiddenClone.children()
 
                 // If clicked status is not active

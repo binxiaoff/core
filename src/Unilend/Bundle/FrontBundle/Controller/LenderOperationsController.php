@@ -152,7 +152,6 @@ class LenderOperationsController extends Controller
             "duration" => 38,
             "status_change" => "2015-03-12 19:43:59",
             "project_status" => "80",
-            "unread_messages_count" => 4,
             "status" => "inprogress",
             "count" => [
                 "bond" => 1,
@@ -189,6 +188,7 @@ class LenderOperationsController extends Controller
                 ],
             ],
             "activity" => [
+                "unread_count" => 4,
                 "messages" => [
                     // @NOTE these are standard notifications to the user about the project/loan
                     0 => [
@@ -349,7 +349,6 @@ class LenderOperationsController extends Controller
             "duration" => 38,
             "status_change" => "2015-03-12 19:43:59",
             "project_status" => "80",
-            "unread_messages_count" => 4,
             "status" => "inprogress",
             "count" => [
                 "bond" => 1,
@@ -386,6 +385,7 @@ class LenderOperationsController extends Controller
                 ],
             ],
             "activity" => [
+                "unread_count" => 4,
                 "messages" => [
                     [
                         "id" => "5333709",
@@ -1090,7 +1090,7 @@ class LenderOperationsController extends Controller
             $loanData['status_change']                    = $aProjectLoans['status_change'];
             $loanData['project_status']                   = $aProjectLoans['project_status'];
             // @TODO add in unread messages count, which represents number of user's unread notifications about project loan is related to
-            $loanData['unread_messages_count']            = rand(0, 10);
+            $loanData['activity']['unread_count'] = rand(0, 10);
 
             $lenderLoans[$loanIndex]['project_remaining_duration'] = $remainingDuration->y * 12 + $remainingDuration->m;
 

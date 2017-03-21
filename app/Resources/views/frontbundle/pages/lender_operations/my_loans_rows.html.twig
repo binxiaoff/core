@@ -60,9 +60,9 @@
                 <span class="sr-only">
                                     {% trans %} lender-operations_loans-table-project-activity {% endtrans %}
                                 </span>
-                {% if loan.unread_messages_count > 0 %}
-                    <span class="pip {% if loan.unread_messages_count > 9 %} pip-has-many {% endif %}">
-                                    <span class="pip-number">{{ loan.unread_messages_count }}</span>
+                {% if loan.activity.unread_count > 0 %}
+                    <span class="pip {% if loan.activity.unread_count > 9 %} pip-has-many {% endif %}">
+                                    <span class="pip-number">{{ loan.activity.unread_count }}</span>
                                 </span>
                 {% endif %}
             </a>
@@ -81,5 +81,4 @@
             {% endif %}
         </td>
     </tr>
-    {{ include('/pages/lender_operations/my_loans_details.html.twig') }}
 {% endfor %}

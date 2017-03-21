@@ -5,6 +5,7 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 var Templating = require('Templating')
+var ProjectNotifications = require('../components/ProjectNotifications')
 var __ = require('__')
 
 var $doc = $(document)
@@ -66,6 +67,9 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         $table.parent().addClass('ui-items-closed-grayscale')
         $item.siblings().removeClass('ui-details-open')
         $item.addClass('ui-details-open')
+        if ($details.find('.nav-tab-anchors li:first-child').is('.active')) {
+          $details.trigger('MyLoansActivity:visible');
+        }
       }
     }
   } else {
@@ -138,8 +142,10 @@ $doc.on('Sortable:sort:before', 'table.table-myoperations', function (event, ele
 
 // Handling my loans items details before/after sorting
 $doc.on('Sortable:sort:before', 'table.table-myloans', function () {
+
   var $table = $(this).find('tbody').first()
   $table.children('.ui-details-open').removeClass('ui-details-open')
+  if ($table.parent().is('.ui-items-closed-grayscale')) $table.parent().removeClass('ui-items-closed-grayscale')
 
   // Store the details in a hidden div
   var $detailsElms = $table.children("[data-parent]")
@@ -157,7 +163,17 @@ $doc.on('Sortable:sort:after', 'table.table-myloans', function () {
     var id = $detailsElms[i].getAttribute('data-parent');
     $table.find('#'+ id).after($detailsElms[i])
   }
-
   $hiddenDiv.remove()
 })
+
+$doc.on(Utility.clickEvent, 'table.table-myloans .notification', function () {
+  ProjectNotifications.markRead(this)
+})
+
+$doc.on('MyLoansActivity:visible', '.table-myloans-view-details', function () {
+  var $list = $(this).find('.list-notifications')
+  $list.uiPaginate()
+})
+
+
 
