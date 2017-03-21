@@ -263,8 +263,9 @@ table.lng label { cursor: pointer; font-weight: bold; }
 .btnCompletude{background-color:#5591EC;border-color:#5591EC;}
 .tabLesStatuts .btnBackListe{background-color:#BCC2CB;border-color:#BCC2CB;}
 
-.form.tableNotes td,.form.tableNotes th{width:100px;}
-.form.tableNotes td .input_court{width:27px;}
+.form.tableNotes th {width:15%}
+.form.tableNotes td {width:10%}
+.form.tableNotes td .input_court{width:27px}
 
 /* message completude */
 .liwording td{padding-bottom:3px;padding-right: 5px;}
