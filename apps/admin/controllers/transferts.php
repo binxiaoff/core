@@ -674,10 +674,7 @@ class transfertsController extends bootstrap
                         $borrowerWallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($companies->id_client_owner, WalletType::BORROWER);
                         //Todo: in MultiRIB, the bank account will be defined in the release funds process.
                         /** @var BankAccount $bankAccount */
-                        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy([
-                            'idClient' => $borrowerWallet->getIdClient(),
-                            'iban'     => $companies->iban
-                        ]);
+                        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($borrowerWallet->getIdClient());
 
                         $wireTransferOut = new Virements();
                         $wireTransferOut->setProject($projectEntity)

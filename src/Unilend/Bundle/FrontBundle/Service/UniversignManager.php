@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Routing\RouterInterface;
@@ -16,6 +17,8 @@ class UniversignManager
 {
     /** @var EntityManagerSimulator */
     private $entityManager;
+    /** @var  EntityManager */
+    private $em;
     /** @var Router */
     private $router;
     /** @var LoggerInterface */
@@ -31,6 +34,7 @@ class UniversignManager
 
     public function __construct(
         EntityManagerSimulator $entityManager,
+        EntityManager $em,
         MailerManager $mailerManager,
         RouterInterface $router,
         LoggerInterface $logger,
@@ -41,6 +45,7 @@ class UniversignManager
     )
     {
         $this->entityManager   = $entityManager;
+        $this->em              = $em;
         $this->mailerManager   = $mailerManager;
         $this->router          = $router;
         $this->logger          = $logger;
@@ -134,15 +139,18 @@ class UniversignManager
         $url         = $resultValue['url']->scalarVal();
         $id          = $resultValue['id']->scalarVal();
 
-        /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
-        $company->get($mandate->id_client, 'id_client_owner');
+        $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($mandate->id_client);
+        if (null === $bankAccount) {
+            $this->logger->warning('No validated bank account found for mandat : '. $mandate->id_mandat . ' of client : ' . $mandate->id_client , ['function' => __FUNCTION__]);
+
+            return false;
+        }
 
         $mandate->id_universign  = $id;
         $mandate->url_universign = $url;
         $mandate->status         = \clients_mandats::STATUS_PENDING;
-        $mandate->bic            = $company->bic;
-        $mandate->iban           = $company->iban;
+        $mandate->bic            = $bankAccount->getBic();
+        $mandate->iban           = $bankAccount->getIban();
         $mandate->update();
 
         return true;
