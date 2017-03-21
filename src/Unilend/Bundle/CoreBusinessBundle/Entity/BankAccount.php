@@ -83,9 +83,10 @@ class BankAccount
     /**
      * @var Attachment
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
+     * })
      */
     private $idAttachment;
 

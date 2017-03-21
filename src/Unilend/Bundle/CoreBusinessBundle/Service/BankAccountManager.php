@@ -6,6 +6,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -35,20 +36,21 @@ class BankAccountManager
 
 
     /**
-     * @param Clients $client
-     * @param string  $bic
-     * @param string  $iban
+     * @param Clients    $client
+     * @param string     $bic
+     * @param string     $iban
+     * @param Attachment $attachment
      *
      * @return BankAccount
      *
      * @throws \Exception
      */
-    public function saveBankInformation(Clients $client, $bic, $iban)
+    public function saveBankInformation(Clients $client, $bic, $iban, Attachment $attachment = null)
     {
         $this->em->getConnection()->beginTransaction();
         try {
-            $bic  = preg_replace('/\s+/', '', $bic);
-            $iban = preg_replace('/\s+/', '', $iban);
+            $bic         = preg_replace('/\s+/', '', $bic);
+            $iban        = preg_replace('/\s+/', '', $iban);
             $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy(['idClient' => $client, 'iban' => $iban]);
 
             if ($bankAccount instanceof BankAccount) {
@@ -58,6 +60,7 @@ class BankAccountManager
                     $bankAccount->setDatePending(new \DateTime('NOW'));
                     $this->updateLegacyBankAccount($client, $bankAccount);
                 }
+                $bankAccount->setAttachment($attachment);
                 $bankAccount->setDateArchived(null);
                 $this->em->flush($bankAccount);
             } else {
@@ -65,7 +68,8 @@ class BankAccountManager
                 $bankAccount = new BankAccount();
                 $bankAccount->setIdClient($client)
                             ->setIban($iban)
-                            ->setBic($bic);
+                            ->setBic($bic)
+                            ->setAttachment($attachment);
                 $this->em->persist($bankAccount);
                 $this->em->flush($bankAccount);
 
