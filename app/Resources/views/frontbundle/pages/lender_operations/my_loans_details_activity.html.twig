@@ -1,5 +1,3 @@
-
-
 {% set loan = {
     activity: {
         messages: {
@@ -87,7 +85,6 @@
     }
 } %}
 
-
 {% if loan.activity.messages|length > 0 %}
     <div class="list-notifications" data-paginate>
     {% for i, notification in loan.activity.messages %}
@@ -105,12 +102,6 @@
                 </div>
             </div>
         </div><!-- /.notification -->
-    {% else %}
-        <div class="notification notification-type-empty">
-            <div class="notification-content">
-                <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
-            </div>
-        </div>
     {% endfor %}
     </div>
 {% endif %}

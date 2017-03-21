@@ -143,9 +143,10 @@
                 </tr>
                 </thead>
                 <tbody data-sortable-content>
-
-                    {{ include('/pages/lender_operations/my_loans_rows.html.twig') }}
-
+                    {% for i, loan in lenderLoans %}
+                        {{ include('/pages/lender_operations/my_loans_rows.html.twig') }}
+                        {{ include('/pages/lender_operations/my_loans_details.html.twig') }}
+                    {% endfor %}
                 </tbody>
             </table><!-- /.table-myloans -->
         </div><!-- /.table-scroll -->
