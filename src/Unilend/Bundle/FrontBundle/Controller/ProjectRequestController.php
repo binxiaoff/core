@@ -895,9 +895,13 @@ class ProjectRequestController extends Controller
 
         $partnerAttachments = $project->getPartner()->getAttachmentTypes();
         $template['attachmentTypes']    = [];
+        $labels    = [];
         foreach ($partnerAttachments as $partnerAttachment) {
             $template['attachmentTypes'][] = $partnerAttachment->getAttachmentType();
+            $labels[] = $partnerAttachment->getAttachmentType()->getLabel();
         }
+
+        array_multisort($labels, SORT_ASC, $template['attachmentTypes']);
 
         $settings->get('Lien conditions generales depot dossier', 'type');
 
