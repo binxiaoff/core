@@ -755,21 +755,26 @@ class dossiersController extends bootstrap
         return (
             $this->projects->status <= \projects_status::FUNDE
             && false === empty($this->projects->id_product)
-            && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']
+            && in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_ADMIN, \users_types::TYPE_DIRECTION])
         );
     }
 
-    protected function sumBalances(array $aBalances, $aBalanceSheet)
+    /**
+     * @param array $balances
+     * @param array $balanceSheet
+     * @return float
+     */
+    protected function sumBalances(array $balances, array $balanceSheet)
     {
-        $fTotal = 0.0;
-        foreach ($aBalances as $sBalance) {
-            if ('-' === substr($sBalance, 0, 1)) {
-                $fTotal -= $aBalanceSheet['details'][substr($sBalance, 1)];
+        $total = 0.0;
+        foreach ($balances as $balance) {
+            if ('-' === substr($balance, 0, 1)) {
+                $total -= $balanceSheet['details'][substr($balance, 1)];
             } else {
-                $fTotal += $aBalanceSheet['details'][$sBalance];
+                $total += $balanceSheet['details'][$balance];
             }
         }
-        return $fTotal;
+        return $total;
     }
 
     private function problematicStatusForm($iStatus)

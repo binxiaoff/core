@@ -602,7 +602,7 @@
                         <tr>
                             <th><label for="partner">Partenaire *</label></th>
                             <td>
-                                <select name="partner" id="partner" class="select"<?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                                <select name="partner" id="partner" class="select"<?php if ($this->projects->status >= \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?>>
                                     <?php if (empty($this->projects->id_partner)) : ?>
                                         <option value="" selected></option>
                                     <?php endif; ?>
@@ -619,7 +619,7 @@
                         <tr>
                             <th><label for="product">Produit associé&nbsp;*</label></th>
                             <td>
-                                <select name="product" id="product" class="select"<?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                                <select name="product" id="product" class="select"<?php if ($this->projects->status > \projects_status::PREP_FUNDING) : ?> disabled<?php endif; ?>>
                                     <?php if (empty($this->selectedProduct->id_product)) : ?>
                                         <option value="" selected></option>
                                     <?php endif; ?>
@@ -637,7 +637,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Commission déblocage des fonds</th>
+                            <th>Commission déblocage</th>
                             <td>
                                 <?php if (false === empty($this->partnerProduct->commission_rate_funds)) : ?>
                                     <?= $this->ficelle->formatNumber($this->partnerProduct->commission_rate_funds, 1) ?> %
@@ -647,7 +647,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Commission de remboursement</th>
+                            <th>Commission remboursement</th>
                             <td>
                                 <?php if (false === empty($this->partnerProduct->commission_rate_repayment)) : ?>
                                     <?= $this->ficelle->formatNumber($this->partnerProduct->commission_rate_repayment, 1) ?> %
