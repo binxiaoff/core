@@ -207,7 +207,8 @@ class CallHistoryManager
         } catch (\Exception $exception) {
             $this->logger->warning('Unable to fetch data from mongoDB: ' . $exception->getMessage(), $logContext);
         }
-        $this->logger->info('Data fetch from mongo DB took: ' . $this->stopwatch->stop(__FUNCTION__ . $time)->getDuration() . ' ms', $logContext);
+
+        $this->logger->info('Data fetch from mongo DB took ' . $this->stopwatch->stop(__FUNCTION__ . $time)->getDuration() . ' ms', $logContext);
 
         return $wsCall;
     }
@@ -228,7 +229,7 @@ class CallHistoryManager
             );
 
             if ($data instanceof WsCall) {
-                $this->logger->debug('Fetched data from mongoDB for: ' . $data->getProvider() . '->' . $data->getResource() . ': ' . $data->getResponse() . ' --- Stored at: ' . $data->getAdded()->format('Y-m-d H:i:s'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $data->getSiren()]);
+                $this->logger->debug('Fetched data from mongoDB for ' . $data->getProvider() . '->' . $data->getResource() . ': ' . $data->getResponse() . ' --- Stored at: ' . $data->getAdded()->format('Y-m-d H:i:s'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $data->getSiren()]);
                 return $data->getResponse();
             }
         }

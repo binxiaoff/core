@@ -311,10 +311,5 @@ class CompanyScoringCheck
         $companyRating->type                      = $ratingType;
         $companyRating->value                     = $ratingValue;
         $companyRating->create();
-
-        $this->logger->info(
-            'Company rating created: id=' . $companyRating->id_company_rating . ' type=' . $companyRating->type . ' value=' . $companyRating->value,
-            ['class' => __CLASS__, 'function' => __FUNCTION__, 'company_rating_history_id' => $companyRatingHistory->id_company_rating_history]
-        );
     }
 }

@@ -27,13 +27,13 @@
     }
 
     .project-main .form th {
-        width: 170px;
+        width: 200px;
         white-space: nowrap;
     }
 
     .project-main .input_large,
     .project-main .select {
-        width: 360px;
+        width: 340px;
     }
 
     .lanote {

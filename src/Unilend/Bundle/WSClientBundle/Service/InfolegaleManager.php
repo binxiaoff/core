@@ -116,19 +116,14 @@ class InfolegaleManager
         try {
             if (false === ($content = $this->callHistoryManager->getStoredResponse($wsResource, $siren))) {
                 /** @var ResponseInterface $response */
-                $response = $this->client->$method(
-                    $wsResource->resource_name,
-                    [
-                        'query'    => $query,
-                        'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
-                    ]
-                );
+                $response = $this->client->$method($wsResource->resource_name, [
+                    'query'    => $query,
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
+                ]);
 
                 if (200 === $response->getStatusCode()) {
                     $alertType = 'up';
                     $content   = $response->getBody()->getContents();
-
-                    $this->logger->info('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Result: ' . $content, $logContext);
                 } else {
                     $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Response status code: ' . $response->getStatusCode(), $logContext);
                 }
@@ -141,7 +136,13 @@ class InfolegaleManager
                 $result = $xml->content[0];
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage(), $logContext);
+            $alertType = 'down';
+            $message   = 'Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage();
+            if (isset($content)) {
+                $message .= $content;
+            }
+            $this->logger->error($message, $logContext);
+            $this->setMonitoring(true);
         }
 
         if ($this->monitoring) {

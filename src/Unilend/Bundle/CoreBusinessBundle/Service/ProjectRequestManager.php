@@ -305,7 +305,6 @@ class ProjectRequestManager
             : \projects_status::NOT_ELIGIBLE;
 
         $this->projectManager->addProjectStatus($userId, $status, $project, 0, $motive);
-        $this->logger->info('Project rejection reason: ' . $motive . ' - Project status: ' . $status . ' - Added by: ' . $userId, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
         return ['motive' => $motive, 'status' => $status];
     }

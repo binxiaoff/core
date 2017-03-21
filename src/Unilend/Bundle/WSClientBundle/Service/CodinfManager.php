@@ -117,24 +117,21 @@ class CodinfManager
      */
     private function sendRequest($resourceLabel, array $query, $siren)
     {
+        $alertType  = 'up';
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
         $content    = null;
         $wsResource = $this->resourceManager->getResource($resourceLabel);
 
         try {
             if (false === $content = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
-                $response = $this->client->get(
-                    $wsResource->resource_name,
-                    [
-                        'query'    => $query,
-                        'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
-                    ]
-                );
+                $response = $this->client->get($wsResource->resource_name, [
+                    'query'    => $query,
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
+                ]);
 
                 if (200 === $response->getStatusCode()) {
-                    $content  = $response->getBody()->getContents();
+                    $content   = $response->getBody()->getContents();
                     $alertType = 'up';
-                    $this->logger->info('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Response: ' . $content, $logContext);
                 } else {
                     $alertType = 'down';
                     $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Response: ' . $content, $logContext);

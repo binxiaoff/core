@@ -179,7 +179,6 @@ class AltaresManager
                 );
 
                 call_user_func($callable, json_encode($response));
-                $this->logger->info('Call to ' . $wsResource->resource_name . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
             } else {
                 $response = json_decode($response);
                 $this->setMonitoring(false);
@@ -216,15 +215,12 @@ class AltaresManager
         try {
             if (false === $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
                 $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
-                ini_set("default_socket_timeout", 8);
-                $response = $this->riskClient->__soapCall(
-                    $wsResource->resource_name,
-                    [
-                        ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
-                    ]
-                );
+                ini_set('default_socket_timeout', 8);
+                $response = $this->riskClient->__soapCall($wsResource->resource_name, [
+                    ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
+                ]);
+
                 call_user_func($callable, json_encode($response));
-                $this->logger->info('Call to ' . $wsResource->resource_name . '. Response: ' . json_encode($response, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
             } else {
                 $response = json_decode($response);
                 $this->setMonitoring(false);

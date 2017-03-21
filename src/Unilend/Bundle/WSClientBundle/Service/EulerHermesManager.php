@@ -156,18 +156,14 @@ class EulerHermesManager
 
         try {
             if (false === $result = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
-                $response = $this->client->get(
-                    $wsResource->resource_name . $uri,
-                    [
-                        'headers'  => ['apikey' => $apiKey],
-                        'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
-                    ]
-                );
+                $response = $this->client->get($wsResource->resource_name . $uri, [
+                    'headers'  => ['apikey' => $apiKey],
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
+                ]);
 
                 if (200 === $response->getStatusCode()) {
                     $result    = $response->getBody()->getContents();
                     $alertType = 'up';
-                    $this->logger->info('Call to ' . $wsResource->resource_name . '. Result: ' . $result, $logContext);
                 } else {
                     $alertType = 'down';
                     $this->logger->error('Call to ' . $wsResource->resource_name . '. Result: ' . $response->getBody()->getContents(), $logContext);

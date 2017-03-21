@@ -69,6 +69,7 @@ class InfogreffeManager
         if (true === empty($siren)) {
             throw new \InvalidArgumentException('SIREN is missing');
         }
+        $alertType  = 'up';
         $extraInfo  = '';
         $result     = null;
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
@@ -115,7 +116,6 @@ class InfogreffeManager
         } elseif (isset($indebtedness[0])) {
             try {
                 $responseArray = $this->xml2array($indebtedness[0]);
-                $this->logger->info('Extracted Array: ' . json_encode($responseArray), $logContext);
 
                 $result = $this->serializer->deserialize($this->getSubscription_3_4($responseArray), CompanyIndebtedness::class, 'json');
                 $alertType = 'up';
