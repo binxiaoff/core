@@ -81,6 +81,15 @@ class BankAccount
     private $dateArchived;
 
     /**
+     * @var Attachment
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
+     */
+    private $idAttachment;
+
+    /**
      * Set bic
      *
      * @param string $bic
@@ -242,10 +251,14 @@ class BankAccount
 
     /**
      * @param \DateTime $datePending
+     *
+     * @return BankAccount
      */
-    public function setDatePending($datePending)
+    public function setDatePending(\DateTime $datePending)
     {
         $this->datePending = $datePending;
+
+        return $this;
     }
 
     /**
@@ -258,10 +271,14 @@ class BankAccount
 
     /**
      * @param \DateTime $dateValidated
+     *
+     * @return BankAccount
      */
     public function setDateValidated($dateValidated)
     {
         $this->dateValidated = $dateValidated;
+
+        return $this;
     }
 
     /**
@@ -274,10 +291,30 @@ class BankAccount
 
     /**
      * @param \DateTime $dateArchived
+     *
+     * @return BankAccount
      */
     public function setDateArchived($dateArchived)
     {
         $this->dateArchived = $dateArchived;
+
+        return $this;
     }
 
+    public function getAttachment()
+    {
+        return $this->idAttachment;
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return $this
+     */
+    public function setAttachment(Attachment $attachment)
+    {
+        $this->idAttachment = $attachment;
+
+        return $this;
+    }
 }
