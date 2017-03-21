@@ -26,8 +26,10 @@
                     <div class="liwording">
                         <table>
                             <?php
-                            foreach ($this->attachmentTypesForCompleteness as $key => $id) :
+                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+                            foreach ($this->attachmentTypesForCompleteness as $key => $attachmentType) :
                                 $year = date('Y');
+                                $id = $attachmentType->getId();
                                 $translation = 'projet_document-type-' . $id;
                                 if ($id == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL) {
                                     $year -= 1;
@@ -38,8 +40,8 @@
                                 if ($id == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::LIASSE_FISCAL_N_2) {
                                     $year -= 3;
                                 }
-                                if ($id == \attachment_type::PHOTOS_ACTIVITE) {
-                                    $translation = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
+                                if ($id == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::PHOTOS_ACTIVITE) {
+                                    $translation = $attachmentType->getLabel() . ' ' . $this->translator->trans('projet_completude-photos');
                                 }
                             ?>
                                 <tr>
