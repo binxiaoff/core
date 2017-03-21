@@ -100,6 +100,7 @@
                 and false == app.session.get(tos_session_key)
                 and is_granted('ROLE_LENDER')
                 and app.user.getClientStatus() == constant('\\clients_status::VALIDATED')
+                and app.request.get('_route') != 'lenders_terms_of_sales'
             %}
                 <div id="modal-tos" data-modal data-modal-openonload="true"><form id="form-tos" method="post" action="{{ path('lender_tos_popup') }}"></form></div>
             {% endif %}

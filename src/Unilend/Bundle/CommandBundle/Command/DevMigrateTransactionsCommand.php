@@ -1018,7 +1018,11 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
     private function migrateRecoveryToLender(array $transaction)
     {
-        $filePrefix             = $transaction['id_project'] . '_' . substr($transaction['date_transaction'], 0, 10);
+        $filePrefix = $transaction['id_project'] . '_' . substr($transaction['date_transaction'], 0, 10);
+        if ('2017-03-16' == substr($transaction['date_transaction'], 0, 10)) {
+            $filePrefix = $filePrefix . '_' . str_replace(':', '-', substr($transaction['date_transaction'], 11, 5));
+        }
+
         $recoveryDetails        = $this->getRecoveryDetails($filePrefix);
         $netTransactionAmount   = $this->calculateOperationAmount($transaction['montant']);
         $transaction['montant'] = bcmul($recoveryDetails[$transaction['id_client']]['gross_amount'], 100);
@@ -1113,6 +1117,14 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
                         return bcmul(1084.25, 100);
                     case '2016-10-07':
                         return bcmul(5421.61, 100);
+                    case '2017-03-16':
+                        if (14 == substr($transaction['date_transaction'], 11, 2)) {
+                            return bcmul(2168.54, 100);
+                        }
+                        if (15 == substr($transaction['date_transaction'], 11, 2)) {
+                            return bcmul(2062.54, 100);
+                        }
+                        break;
                     default:
                         $this->getContainer()->get('monolog.logger.migration')->error('Recovery payment date could not be found for : ' . $transaction['id_transaction']);
                         break;

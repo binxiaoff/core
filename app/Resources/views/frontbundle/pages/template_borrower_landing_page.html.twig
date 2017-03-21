@@ -104,16 +104,17 @@
 
                                 <footer class="form-borrower-lp-footer row row-multi-col-computer">
                                     <div class="col-submit push-lg-2 col-lg-8 push-md-3 col-md-8">
+                                        <input type="hidden" name="partner" value="{{ form.values.partner }}">
                                         <button type="submit" class="btn-primary btn-alternate btn-size-full" data-spinnerbutton>{% trans %} borrower-landing-page_form-submit-button {% endtrans %}</button>
                                     </div>
-                                </footer><!-- /.form-preter-lp-footer -->
+                                </footer><!-- /.form-borrower-lp-footer -->
 
-                                    <div class="stamp bg-p2" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
-                                        <span class="lg">
-                                            {% trans with {'%amountBorrowedInMillions%' : getStatistic('amountBorrowedInMillions')|round(0, 'common')} %}borrower-landing-page_macaroon-on-form{% endtrans %}
-                                        </span>
-                                    </div><!-- /.stamp -->
-                            </form><!-- /.form-preter-lp -->
+                                <div class="stamp bg-p2" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                                    <span class="lg">
+                                        {% trans with {'%amountBorrowedInMillions%' : getStatistic('amountBorrowedInMillions')|round(0, 'common')} %}borrower-landing-page_macaroon-on-form{% endtrans %}
+                                    </span>
+                                </div><!-- /.stamp -->
+                            </form><!-- /.form-borrower-lp -->
                         </div>
                     </div>
 
@@ -142,7 +143,6 @@
                             <p>{% trans %} borrower-landing-page_promo-section-step-3-text {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div><!-- /.promos -->
-
                 </div><!-- /.site-wrap -->
             </div><!-- /.page-content -->
 

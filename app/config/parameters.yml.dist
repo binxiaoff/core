@@ -27,6 +27,10 @@ parameters:
     payline.merchant_id:            '16828263878877'
     payline.access_key:             'vtPtmVrGFhFx6OPeg7No'
 
+    ekomi.url:                       http://apps.ekomi.com/srr/add-recipient
+    ekomi.shop_id:                   ~
+    ekomi.password:                  ~
+
     euler.account_key:              JTP0gJbzwOzct7HTsKYcpjayoK5urpcLkxSAKIPnoXMNUEhN6RMe4bJjalU6n
     euler.grading_key:              kXZVEwuNtZhczOicgd2X74Gj8tSI5NqKKyPXr1ll30zyWUftRSN7aQ0M3mxvOBtX
     euler.url:                      'https://api-demo.single-invoice.co/v2.0/'
@@ -90,10 +94,6 @@ parameters:
     new_relic.front_app_name:        Unilend-front
     new_relic.back_app_name:         Unilend-backoffice
     new_relic.console_app_name:      Unilend-batchjobs
-
-    ekomi.url:                       http://apps.ekomi.com/srr/add-recipient
-    ekomi.shop_id:                   ~
-    ekomi.password:                  ~
 
     slack.team_id:                   T09JRNH40
     slack.token:                     xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5

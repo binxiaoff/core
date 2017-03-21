@@ -6,7 +6,6 @@ use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Finder\Finder;
 
-
 class TranslationManager
 {
     /** @var EntityManager  */
@@ -76,7 +75,6 @@ class TranslationManager
         $translations->name        = $sName;
         $translations->translation = $sTranslation;
         $translations->create();
-
     }
 
     /**
