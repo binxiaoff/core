@@ -249,16 +249,19 @@ class pdfController extends bootstrap
 
         if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
             $this->entreprise = true;
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $bankAccount      = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
 
-            $this->iban[1] = substr($this->companies->iban, 0, 4);
-            $this->iban[2] = substr($this->companies->iban, 4, 4);
-            $this->iban[3] = substr($this->companies->iban, 8, 4);
-            $this->iban[4] = substr($this->companies->iban, 12, 4);
-            $this->iban[5] = substr($this->companies->iban, 16, 4);
-            $this->iban[6] = substr($this->companies->iban, 20, 4);
-            $this->iban[7] = substr($this->companies->iban, 24, 3);
+            $this->iban[1] = substr($bankAccount->getIban(), 0, 4);
+            $this->iban[2] = substr($bankAccount->getIban(), 4, 4);
+            $this->iban[3] = substr($bankAccount->getIban(), 8, 4);
+            $this->iban[4] = substr($bankAccount->getIban(), 12, 4);
+            $this->iban[5] = substr($bankAccount->getIban(), 16, 4);
+            $this->iban[6] = substr($bankAccount->getIban(), 20, 4);
+            $this->iban[7] = substr($bankAccount->getIban(), 24, 3);
 
-            $this->leIban = $this->companies->iban;
+            $this->leIban = $bankAccount->getIban();
         } else {
             $this->entreprise = false;
 

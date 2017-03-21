@@ -39,7 +39,7 @@ class BankAccountManager
      * @param string  $bic
      * @param string  $iban
      *
-     * @return mixed
+     * @return BankAccount
      *
      * @throws \Exception
      */

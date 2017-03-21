@@ -51,12 +51,15 @@ class emprunteursController extends bootstrap
         $this->clients->history  = '';
         $this->settings          = $this->loadData('settings');
         $companySection          = $this->loadData('company_sector');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
         $this->lSecteurs  = $companySection->select();
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
@@ -65,7 +68,7 @@ class emprunteursController extends bootstrap
             if ($this->clients->telephone != '') {
                 $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
             }
-
+            $this->bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
             if (isset($_POST['form_edit_emprunteur'])) {
                 $this->clients->nom    = $this->ficelle->majNom($_POST['nom']);
                 $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
@@ -82,22 +85,25 @@ class emprunteursController extends bootstrap
                     $this->clients->email = $_POST['email'];
                 }
 
+
+
                 $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
                 $this->companies->name    = $_POST['societe'];
                 $this->companies->sector  = $_POST['secteur'];
                 $edited_rib               = false;
-                $sCurrentIban             = $this->companies->iban;
-                $sCurrentBic              = $this->companies->bic;
+                $sCurrentIban             = $this->bankAccount->getIban();
+                $sCurrentBic              = $this->bankAccount->getBic();
                 $sNewIban                 = str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']));
                 $sNewBic = str_replace(' ', '', strtoupper($_POST['bic']));
 
                 if ($sCurrentBic != $sNewBic || $sCurrentIban != $sNewIban) {
-                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->companies->iban . " / " . $this->companies->bic . "<br><u>Nouvelle valeur:</u> " . $sNewIban . " / " . $sNewBic . "</tr></td>";
+                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->bankAccount->getIban() . " / " . $this->bankAccount->getBic() . "<br><u>Nouvelle valeur:</u> " . $sNewIban . " / " . $sNewBic . "</tr></td>";
                     $edited_rib = true;
                 }
 
-                $this->companies->bic           = $sNewBic;
-                $this->companies->iban          = $sNewIban;
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                $newBankAccount = $bankAccountManager->saveBankInformation($client, $sNewBic, $sNewIban);
                 $this->companies->email_facture = trim($_POST['email_facture']);
 
                 // on verif si le bic est good
@@ -111,7 +117,7 @@ class emprunteursController extends bootstrap
                     die;
                 }
 
-                if ($this->companies->iban != '' && $this->ficelle->isIBAN($this->companies->iban) != 1) {
+                if ($newBankAccount->getIban() != '' && $this->ficelle->isIBAN($newBankAccount->getIban()) != 1) {
                     $_SESSION['erreurIban'] = '';
 
                     $_SESSION['freeow']['title']   = 'Erreur IBAN';

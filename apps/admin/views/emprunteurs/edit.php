@@ -82,13 +82,13 @@
             <tr>
                 <th><label for="iban">IBAN :</label></th>
                 <td colspan="3">
-                    <input type="text" name="iban1" id="iban1" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 0, 4) ?>" />
-                    <input type="text" name="iban2" id="iban2" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 4, 4) ?>" />
-                    <input type="text" name="iban3" id="iban3" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 8, 4) ?>" />
-                    <input type="text" name="iban4" id="iban4" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 12, 4) ?>" />
-                    <input type="text" name="iban5" id="iban5" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 16, 4) ?>" />
-                    <input type="text" name="iban6" id="iban6" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 20, 4) ?>" />
-                    <input type="text" name="iban7" id="iban7" onkeyup="jumpIBAN(this)" style="width: 53px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 24, 3) ?>" />
+                    <input type="text" name="iban1" id="iban1" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->bankAccount->getIban(), 0, 4) ?>" />
+                    <input type="text" name="iban2" id="iban2" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->bankAccount->getIban(), 4, 4) ?>" />
+                    <input type="text" name="iban3" id="iban3" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->bankAccount->getIban(), 8, 4) ?>" />
+                    <input type="text" name="iban4" id="iban4" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->bankAccount->getIban(), 12, 4) ?>" />
+                    <input type="text" name="iban5" id="iban5" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->bankAccount->getIban(), 16, 4) ?>" />
+                    <input type="text" name="iban6" id="iban6" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->bankAccount->getIban(), 20, 4) ?>" />
+                    <input type="text" name="iban7" id="iban7" onkeyup="jumpIBAN(this)" style="width: 53px;" size="4" class="input_big" value="<?= substr($this->bankAccount->getIban(), 24, 3) ?>" />
                 </td>
             </tr>
             <tr>
@@ -260,7 +260,7 @@
             return false;
         }
         // si on a deja les memes infos deja 'enregistré on valide
-        if (iban == "<?= $this->companies->iban ?>" && bic == "<?= $this->companies->bic ?>") {
+        if (iban == "<?= $this->bankAccount->getIban() ?>" && bic == "<?= $this->bankAccount->getBic() ?>") {
             return true;
         }
 
