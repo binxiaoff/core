@@ -251,6 +251,7 @@ class ajaxController extends bootstrap
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
                 $result                = $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user']);
 
+                // NAF code may be filled in in checkProjectRisk method
                 $company->get($project->id_company, 'id_company');
 
                 if (true === is_array($result) && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
@@ -266,6 +267,16 @@ class ajaxController extends bootstrap
                     ]);
                     return;
                 }
+
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
+                $productManager   = $this->get('unilend.service_product.product_manager');
+                $eligibleProducts = $productManager->findEligibleProducts($project, true);
+
+                if (1 === count($eligibleProducts)) {
+                    $project->id_product = $eligibleProducts[0]->id_product;
+                    $project->update();
+                }
+
                 echo json_encode([
                     'success' => true
                 ]);

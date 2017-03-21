@@ -66,12 +66,12 @@
             <div id="recherche_client">
                 <table style="width:500px; margin:auto;text-align:center;margin-bottom:10px; border:2px solid;padding:10px;">
                     <tr>
-                        <th style="padding:15px;"><label for="search">Prénom / nom : </label></th>
+                        <th style="padding:15px;"><label for="search">Prénom / nom / SIREN : </label></th>
                         <td style="padding:15px;">
                             <input id="search" class="input_moy" type="text" name="search">
                         </td>
                         <td style="padding:15px;">
-                            <a id="link_search" class="btn_link thickbox" onclick="$(this).attr('href','<?= $this->lurl ?>/dossiers/changeClient/'+$('#search').val());" href="<?= $this->lurl ?>/dossiers/changeClient/">Rechercher</a>
+                            <a id="link_search" class="btn_link thickbox" onclick="$(this).attr('href','<?= $this->lurl ?>/dossiers/changeClient/' + $('#search').val());" href="<?= $this->lurl ?>/dossiers/changeClient/">Rechercher</a>
                         </td>
                     </tr>
                 </table>

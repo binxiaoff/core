@@ -1259,10 +1259,12 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        $this->clients = $this->loadData('clients');
+        $this->search = urldecode(filter_var($this->params[0], FILTER_SANITIZE_STRING));
 
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->lClients = $this->clients->searchEmprunteurs('OR', $this->params[0], $this->params[0]);
+        if (false === empty($this->params[0])) {
+            /** @var \clients $clients */
+            $clients       = $this->loadData('clients');
+            $this->clients = $clients->searchEmprunteurs('OR', $this->search, $this->search, '', '', str_replace(' ', '', $this->search));
         }
     }
 
