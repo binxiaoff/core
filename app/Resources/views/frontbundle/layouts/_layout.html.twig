@@ -104,15 +104,6 @@
             {% endif %}
         </div>
 
-        {{ dump(app.user) }}
-        {#{% if app.user.lenderLoans is defined %}#}
-            {#PROJNOTIFS#}
-            {#{% for i, loan in lenderLoans %}#}
-                {#{% for i, notification in loan.activity.messages %}#}
-
-                {#{% endfor %}#}
-            {#{% endfor %}#}
-        {#{% endif %}#}
         {% block jsFiles %}
             <script type="text/javascript">
                 {% set notifications = [] %}
@@ -131,12 +122,9 @@
                     {% endfor %}
                 {% endif %}
 
-                {% set projNotifications = [] %}
-
-
-                var PROJNOTIFICATIONS = JSON.parse('{{ projNotifications|json_encode|escape('js')|raw }}')
-
                 var USERNOTIFICATIONS = JSON.parse('{{ notifications|json_encode|escape('js')|raw }}')
+
+
 
                 var UTILITY_LANG = JSON.parse('{{ dictionary('utility')|json_encode|escape('js')|raw }}')
                 var AUTOCOMPLETE_LANG = JSON.parse('{{ dictionary('auto-complete')|json_encode|escape('js')|raw }}')

@@ -117,9 +117,9 @@ $.fn.uiPaginate = function(op) {
 }
 
 // Navigate to specific page within paginate component
-$doc.on('click', '[data-paginate] .pagination-index a', function(){
+$doc.on('click', '.ui-paginate .pagination-index a', function(){
     var index = parseInt($(this).text(), 10)
-    $(this).closest('[data-paginate]').uiPaginate('goto', index)
+    $(this).closest('.ui-paginate').uiPaginate('goto', index)
 })
 
 // Init the components when ready

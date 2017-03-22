@@ -82,6 +82,12 @@
             </div>
             <form id="form-filters-loans" action="{{ path('filter_loans') }}" method="post" class="form-filters" data-ajax>
                 <input class="id_last_action" type="hidden" name="filter[id_last_action]" value="">
+                <select id="filter-status" name="filter[status]" class="input-field">
+                    <option value="">{% trans %} lender-operations_loans-table-by-status-filter {% endtrans %}</option>
+                    {% for statusDetail in loansStatusFilter %}
+                        <option value="{{ statusDetail.status }}" {% if currentFilters.status is defined and currentFilters.status == statusDetail.status %} selected="selected" {% endif %}>{{ "lender-operations_project-status-label-#{ statusDetail.status }" | trans }}</option>
+                    {% endfor %}
+                </select>
                 <select id="filter-next" name="filter[date]" class="input-field">
                     <option value="">{% trans %} lender-operations_loans-table-by-date-filter {% endtrans %}</option>
                     {% for year in firstLoanYear..date()|date('Y') %}

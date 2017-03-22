@@ -791,51 +791,45 @@ ChartView.prototype.render = function (data, schema) {
                 $preterLoansKeys.removeClass('hover')
             });
 
-            $preterLoansKeys.click(function() {
-
-                var $btn = $(this), status = mapStatusFunction($btn.find('.label').text())
-                var $tbody = $preterLoansTable.find('tbody')
-
-                // Initialise
-                if (!$preterLoansTable.is('.ui-details-cloned')) {
-
-                    // Create a hidden div
-                    var $hiddenClone = $('<div class="table-myloans-details-cloned" style="display:none" />')
-
-                    // Clone all rows in their original order
-                    $tbody.children().clone().appendTo($hiddenClone)
-                    $tbody.after($hiddenClone)
-
-                    $preterLoansTable.addClass('ui-details-cloned')
-                }
-
-                var $hiddenClone = $preterLoansTable.find('.table-myloans-details-cloned')
-                var $rows = $hiddenClone.children()
-
-                // If clicked status is not active
-                if (!$btn.is('.active')) {
-
-                    $btn.addClass('active')
-                    $btn.siblings().removeClass('active')
-                    $tbody.html('')
-
-                    // Filter hidden rows by status and clone them inside the table
-                    for (i = 0; i < $rows.length; i++) {
-                        if ($rows[i].getAttribute('[data-sortable-status]') === status || $rows[i].className.indexOf('ui-loan-status-' + status) > -1) {
-                            $($rows[i]).clone().appendTo($tbody)
-                        }
-                    }
-
-                } else {
-                    // If clicked status is active
-                    $btn.removeClass('active')
-
-                    // Release the filter and clone all rows back to the table
-                    $tbody.html('')
-                    $rows.clone().appendTo($tbody)
-
-                }
-            })
+            // $preterLoansKeys.click(function() {
+            //
+            //     var $btn = $(this), status = mapStatusFunction($btn.find('.label').text())
+            //     var $tbody = $preterLoansTable.find('tbody')
+            //
+            //     // Initialise
+            //     if (!$preterLoansTable.is('.ui-details-cloned')) {
+            //         $preterLoansTable.addClass('ui-details-cloned')
+            //     }
+            //
+            //     // If clicked status is not active
+            //     if (!$btn.is('.active')) {
+            //
+            //         $btn.addClass('active')
+            //         $btn.siblings().removeClass('active')
+            //         $tbody.html('')
+            //
+            //         var filtered = '';
+            //
+            //         $preterLoansTableChildren.each(function(){
+            //             if ($(this).data('sortable-status') === status || $(this).is('.ui-loan-status-' + status))
+            //                 filtered += $(this).wrap('<div />').parent().html()
+            //                 $(this).unwrap()
+            //         })
+            //
+            //         $tbody.html(filtered)
+            //
+            //
+            //
+            //     } else {
+            //         // // If clicked status is active
+            //         // $btn.removeClass('active')
+            //         //
+            //         // // Release the filter and clone all rows back to the table
+            //         // $tbody.html('')
+            //         // $rows.clone().appendTo($tbody)
+            //
+            //     }
+            // })
         break
 
       }

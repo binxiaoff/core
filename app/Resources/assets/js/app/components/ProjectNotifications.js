@@ -11,38 +11,52 @@ var UserNotifications = require('UserNotifications')
 
 var ProjectNotifications = {
 
-    toggleNotification: function($notification, notificationId) {
-        var notificationId = notificationId.toString()
-        if (UserNotifications.getNotificationById(notificationId) === undefined) {
-            $notification.toggleClass('ui-notification-open')
-        }
-    },
-
     markRead: function (notification) {
+
         var $notification = $(notification)
-        var $projectDetails  = $notification.closest('[data-parent]')
-        var $project = $projectDetails.prev() // Same as $('#' + $projectDetails.data('loan-id'))
+        var notificationId = $notification.data('notification-id').toString()
 
-        var projectId = $project.data('loan-id')
-        var notificationId = $notification.data('notification-id')
+        // Check if the notification is in the user notifications collection
+        // (window.UserNotifications)
+        var isUserNotification = UserNotifications.getNotificationById(notificationId)
 
-        ProjectNotifications.toggleNotification($notification, notificationId)
+        // Toggle notification visibility
+        ProjectNotifications.toggleNotification(notification)
+        if (isUserNotification) {
+            UserNotifications.toggleNotification(notificationId)
+        }
 
         if ($notification.is('.ui-notification-status-unread')) {
 
-            // Update notification class
-            $notification.removeClass('ui-notification-status-unread').addClass('ui-notification-status-read')
+            // Calculate unread count and update pip
+            var $projectDetails  = $notification.closest('[data-parent]')
+            var $project = $('#loan-' + $projectDetails.data('loan-id'))
+            var currentUnreadCount = parseFloat($project.find('.pip-number').text())
 
-            // Update PIP
-            var currentUnreadCound = parseFloat($project.find('.pip').text())
-            var updatedUnreadCount = currentUnreadCound - 1
-            $project.find('.pip').text(updatedUnreadCount)
-            $projectDetails.find('.pip').text(updatedUnreadCount)
+            $project.find('.pip-number').text(currentUnreadCount - 1)
+            $projectDetails.find('.pip-number').text(currentUnreadCount - 1)
 
-            // Update DB
-            if (!ProjectNotifications.isLoading) {
-                ProjectNotifications.delayAjaxRead(projectId, notificationId)
+            // Mark as read
+            if (isUserNotification) {
+                // Use UserNotifications method
+                UserNotifications.markRead(notificationId)
+            } else {
+                // Use ProjectNotifications method
+                $notification.removeClass('ui-notification-status-unread').addClass('ui-notification-status-read')
+                ProjectNotifications.track.actions.markedRead.push(notificationId)
+                ProjectNotifications.delayAjaxRead(notificationId)
             }
+        }
+    },
+
+    toggleNotification: function(notification) {
+        var $notification = $(notification)
+        $notification.toggleClass('ui-notification-open')
+    },
+
+    track: {
+        actions: {
+            markedRead: [],
         }
     },
 
@@ -50,24 +64,19 @@ var ProjectNotifications = {
 
     isLoading: false,
 
-    delayAjaxRead: function(projectId, notificationId) {
-
+    delayAjaxRead: function () {
         if (ProjectNotifications.isLoading) return
 
         clearTimeout(ProjectNotifications.ajaxTimer)
-        UserNotifications.ajaxTimer = setTimeout(function () {
+        ProjectNotifications.ajaxTimer = setTimeout(function () {
+            var data = {}
 
             // Set to loading
-            UserNotifications.isLoading = true
+            ProjectNotifications.isLoading = true
 
-            // Determine what kind of action to send
-            var data = {}
             data.action = 'read'
-            data.notification = notificationId
-            data.project = projectId
-
-            console.log(data)
-
+            data.list = ProjectNotifications.track.actions.markedRead
+            
             // Do AJAX
             $.ajax({
                 url: '/notifications/update',
@@ -77,9 +86,12 @@ var ProjectNotifications = {
                 success: function (data, textStatus) {
                     if (textStatus === 'success' && data && data.hasOwnProperty('success') && data.success) {
                         // @debug
-                        // console.log('ProjectNotifications successfully updated', data)
+                        // console.log('UserNotifications successfully updated', data)
 
-                        // @trigger document `UserNotifications:ajax:success` [UserNotifications, serverResponse]
+                        // Update tracking
+                        ProjectNotifications.track.actions.markedRead = []
+
+                        // @trigger document `UserNotifications:ajax:success` [ProjectNotifications, serverResponse]
                         $doc.trigger('ProjectNotifications:ajax:success', [ProjectNotifications, data])
 
                         return
@@ -90,19 +102,19 @@ var ProjectNotifications = {
                         console.warn('ProjectNotifications AJAX error: ' + data.error.details)
                     }
 
-                    // @trigger document `UserNotifications:ajax:error` [UserNotifications, serverResponse]
-                    $doc.trigger('ProjectNotifications:ajax:error', [UserNotifications, data])
+                    // @trigger document `UserNotifications:ajax:error` [ProjectNotifications, serverResponse]
+                    $doc.trigger('ProjectNotifications:ajax:error', [ProjectNotifications, data])
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    // @trigger document `UserNotifications:ajax:error` [UserNotifications, ajaxErrorObject]
-                    $doc.trigger('UserNotifications:ajax:error', [UserNotifications, {
+                    // @trigger document `UserNotifications:ajax:error` [ProjectNotifications, ajaxErrorObject]
+                    $doc.trigger('ProjectNotifications:ajax:error', [ProjectNotifications, {
                         jqXHR: jqXHR,
                         textStatus: textStatus,
                         errorThrown: errorThrown
                     }])
                 },
                 complete: function () {
-                    // @trigger document `UserNotifications:updated` [UserNotifications, serverResponse]
+                    // @trigger document `UserNotifications:updated` [ProjectNotifications, serverResponse]
                     $doc.trigger('ProjectNotifications:ajax:complete', [ProjectNotifications, data])
 
                     ProjectNotifications.isLoading = false
@@ -113,5 +125,15 @@ var ProjectNotifications = {
         }, 2000)
     }
 }
+
+$(document).on(Utility.clickEvent, '[data-proj-notification]', function (event) {
+
+    // If a link was interacted with, ignore the following actions and let the link event go through
+    var $target = $(event.target)
+    if ($target.is('a')) return true
+
+    // Mark as read
+    ProjectNotifications.markRead(this)
+})
 
 module.exports = ProjectNotifications

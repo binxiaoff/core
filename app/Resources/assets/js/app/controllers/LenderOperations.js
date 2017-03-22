@@ -69,6 +69,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         $item.addClass('ui-details-open')
         if ($details.find('.nav-tab-anchors li:first-child').is('.active')) {
           $details.trigger('MyLoansActivity:visible');
+
         }
       }
     }
@@ -153,6 +154,7 @@ $doc.on('Sortable:sort:before', 'table.table-myloans', function () {
   $table.after($hiddenDiv)
   $detailsElms.appendTo($hiddenDiv)
 })
+
 $doc.on('Sortable:sort:after', 'table.table-myloans', function () {
   var $table = $(this).find('tbody').first()
   var $hiddenDiv = $table.next()
@@ -166,13 +168,10 @@ $doc.on('Sortable:sort:after', 'table.table-myloans', function () {
   $hiddenDiv.remove()
 })
 
-$doc.on(Utility.clickEvent, 'table.table-myloans .notification', function () {
-  ProjectNotifications.markRead(this)
-})
-
 $doc.on('MyLoansActivity:visible', '.table-myloans-view-details', function () {
   var $list = $(this).find('.list-notifications')
   $list.uiPaginate()
+  $list.trigger('UI:visible')
 })
 
 
