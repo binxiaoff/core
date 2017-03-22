@@ -75,9 +75,9 @@
                         <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
                             <dl class="list-2col">
                                 <dt>{{ 'borrower-profile_bic'|trans|upper }}</dt>
-                                <dd>{{ company.bic }}</dd>
+                                <dd>{{ bankAccount.bic }}</dd>
                                 <dt>{{ 'borrower-profile_iban'|trans|upper }}</dt>
-                                <dd>{{ company.iban|split('', 4)|join(' ') }}</dd>
+                                <dd>{{ bankAccount.iban|split('', 4)|join(' ') }}</dd>
                             </dl>
                             <p>{{ 'borrower-profile_bank-information-modification-message'|trans|raw }}</p>
                         </section>

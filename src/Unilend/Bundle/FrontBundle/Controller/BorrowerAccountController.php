@@ -34,16 +34,11 @@ class BorrowerAccountController extends Controller
         $projectsFunding     = $this->getProjectsFunding();
         $projectsPostFunding = $this->getProjectsPostFunding();
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
         return [
             'pre_funding_projects'  => $projectsPreFunding,
             'funding_projects'      => $projectsFunding,
             'post_funding_projects' => $projectsPostFunding,
-            'closing_projects'      => $request->getSession()->get('closingProjects'),
-            'faq_url'               => $settings->value
+            'closing_projects'      => $request->getSession()->get('closingProjects')
         ];
     }
 
@@ -143,11 +138,7 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
-        return ['project_form' => $projectForm->createView(), 'faq_url' => $settings->value];
+        return ['project_form' => $projectForm->createView()];
     }
 
     /**
@@ -240,10 +231,6 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
         return $this->render(
             'borrower_account/operations.html.twig',
             [
@@ -251,7 +238,6 @@ class BorrowerAccountController extends Controller
                 'projects_ids'          => $projectsIds,
                 'invoices'              => $clientsInvoices,
                 'post_funding_projects' => $projectsPostFunding,
-                'faq_url'               => $settings->value
             ]
         );
     }
@@ -264,17 +250,14 @@ class BorrowerAccountController extends Controller
      */
     public function profileAction()
     {
-        $client  = $this->getClient();
-        $company = $this->getCompany();
-
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
+        $client      = $this->getClient();
+        $company     = $this->getCompany();
+        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
 
         return [
-            'client'         => $client,
-            'company'        => $company,
-            'faq_url'        => $settings->value
+            'client'      => $client,
+            'company'     => $company,
+            'bankAccount' => $bankAccount
         ];
     }
 
@@ -377,11 +360,7 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
-        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name, 'faq_url' => $settings->value];
+        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name];
     }
 
     /**
