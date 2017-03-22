@@ -266,10 +266,10 @@ class CompanyBalanceSheetManager
     /**
      * Set company balance sheets
      * @param \companies       $company
-     * @param \projects        $project
      * @param BalanceSheetList $balanceSheetList
+     * @param \projects        $project
      */
-    public function setCompanyBalance(\companies $company, \projects &$project, BalanceSheetList $balanceSheetList)
+    public function setCompanyBalance(\companies $company, BalanceSheetList $balanceSheetList, \projects &$project = null)
     {
         $taxFormType = $this->detectTaxFormType($company);
 
@@ -331,8 +331,10 @@ class CompanyBalanceSheetManager
             $companyAccount = $this->entityManager->getRepository('companies_bilans');
             $balanceId      = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
 
-            $project->id_dernier_bilan = $balanceId;
-            $project->update();
+            if (null !== $project) {
+                $project->id_dernier_bilan = $balanceId;
+                $project->update();
+            }
         }
     }
 }

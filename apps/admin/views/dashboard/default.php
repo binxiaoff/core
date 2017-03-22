@@ -32,6 +32,13 @@
             }).done(function(response) {
                 $('#team-projects-count').text(response.count)
                 $('#team-projects').html(response.projects)
+
+                $('[data-toggle="tooltip"]').tooltip({
+                    // For line breaks
+                    content: function() {
+                        return $(this).attr('title');
+                    }
+                })
             })
         })
     })

@@ -1,4 +1,4 @@
-<script type="text/javascript">
+<script>
     $(function() {
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 
@@ -17,12 +17,11 @@
             <thead>
                 <tr>
                     <th>ID utilisateur</th>
-                    <th>Prénom / nom</th>
+                    <th>Nom</th>
                     <th>Email</th>
                     <th>Date</th>
                     <th>IP</th>
                     <th>Pays</th>
-                    <th>Statut</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,27 +40,6 @@
                         <td><?= $this->dates->formatDate($u['date_connexion'], 'd/m/Y H:i:s') ?></td>
                         <td><?= $u['ip'] ?></td>
                         <td><?= $u['pays'] ?></td>
-
-                        <?php
-                            $color = 'green';
-                            switch ($u['statut']) {
-                                case 0:
-                                    $color = 'green';
-                                    $type  = 'Succès';
-                                    break;
-                                case 1:
-                                    $type  = 'Échec';
-                                    $color = 'red';
-                                    break;
-                                case 2:
-                                    $type  = 'Mise à jour du mot de passe';
-                                    $color = 'orange';
-                                    break;
-                            }
-                        ?>
-                        <td style="color:<?= $color ?>">
-                            <?= $type ?>
-                        </td>
                     </tr>
                     <?php $i++; ?>
                 <?php endforeach; ?>

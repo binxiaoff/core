@@ -121,7 +121,7 @@
                 </td>
             </tr>
             <tr>
-                <th colspan="4" style="text-align:left;"><br>Identification du dirigeant</th>
+                <th colspan="4" style="text-align:left;"><br><h2>Identification du dirigeant</h2></th>
             </tr>
             <tr>
                 <th>Civilité</th>

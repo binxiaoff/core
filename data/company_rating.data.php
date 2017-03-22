@@ -11,7 +11,7 @@ class company_rating extends company_rating_crud
     const TYPE_EULER_HERMES_GRADE         = 'grade_euler_hermes';
     const TYPE_EULER_HERMES_TRAFFIC_LIGHT = 'get_traffic_light_euler';
 
-    public static $ratingTypes = [
+    public static $automaticRatingTypes = [
         self::TYPE_ALTARES_VALUE_DATE,
         self::TYPE_ALTARES_SCORE_20,
         self::TYPE_ALTARES_SECTORAL_SCORE_100,

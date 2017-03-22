@@ -17,9 +17,9 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 class ProjectRequestManager
 {
     /** @var EntityManagerSimulator */
-    private $entityManager;
+    private $entityManagerSimulator;
     /** @var EntityManager */
-    private $em;
+    private $entityManager;
     /** @var ProjectManager */
     private $projectManager;
     /** @var WalletCreationManager */
@@ -38,8 +38,8 @@ class ProjectRequestManager
     private $logger;
 
     /**
-     * @param EntityManagerSimulator     $entityManager
-     * @param EntityManager              $em
+     * @param EntityManagerSimulator     $entityManagerSimulator
+     * @param EntityManager              $entityManager
      * @param ProjectManager             $projectManager
      * @param WalletCreationManager      $walletCreationManager
      * @param SourceManager              $sourceManager
@@ -50,8 +50,8 @@ class ProjectRequestManager
      * @param LoggerInterface            $logger
      */
     public function __construct(
-        EntityManagerSimulator $entityManager,
-        EntityManager $em,
+        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager,
         ProjectManager $projectManager,
         WalletCreationManager $walletCreationManager,
         SourceManager $sourceManager,
@@ -62,8 +62,8 @@ class ProjectRequestManager
         LoggerInterface $logger
     )
     {
+        $this->entityManagerSimulator     = $entityManagerSimulator;
         $this->entityManager              = $entityManager;
-        $this->em                         = $em;
         $this->projectManager             = $projectManager;
         $this->walletCreationManager      = $walletCreationManager;
         $this->sourceManager              = $sourceManager;
@@ -77,7 +77,7 @@ class ProjectRequestManager
     public function getMonthlyRateEstimate()
     {
         /** @var \projects $projects */
-        $projects = $this->entityManager->getRepository('projects');
+        $projects = $this->entityManagerSimulator->getRepository('projects');
 
         return round($projects->getGlobalAverageRateOfFundedProjects(50), 1);
     }
@@ -88,7 +88,7 @@ class ProjectRequestManager
         $oFinancial = new \PHPExcel_Calculation_Financial();
 
         /** @var \tax_type $taxType */
-        $taxType = $this->entityManager->getRepository('tax_type');
+        $taxType = $this->entityManagerSimulator->getRepository('tax_type');
         $taxType->get(\tax_type::TYPE_VAT);
         $fVATRate = $taxType->rate / 100;
 
@@ -105,9 +105,9 @@ class ProjectRequestManager
     public function saveSimulatorRequest($aFormData)
     {
         /** @var \projects $project */
-        $project = $this->entityManager->getRepository('projects');
+        $project = $this->entityManagerSimulator->getRepository('projects');
         /** @var \clients $clientRepository */
-        $clientRepository = $this->entityManager->getRepository('clients');
+        $clientRepository = $this->entityManagerSimulator->getRepository('clients');
 
         if (empty($aFormData['email']) || false === filter_var($aFormData['email'], FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email');
@@ -148,20 +148,20 @@ class ProjectRequestManager
             ->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        $this->em->beginTransaction();
+        $this->entityManager->beginTransaction();
         try {
-            $this->em->persist($client);
-            $this->em->flush($client);
+            $this->entityManager->persist($client);
+            $this->entityManager->flush($client);
             $clientAddress = new ClientsAdresses();
             $clientAddress->setIdClient($client->getIdClient());
-            $this->em->persist($clientAddress);
+            $this->entityManager->persist($clientAddress);
             $company->setIdClientOwner($client->getIdClient());
-            $this->em->persist($company);
-            $this->em->flush();
+            $this->entityManager->persist($company);
+            $this->entityManager->flush();
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
-            $this->em->commit();
+            $this->entityManager->commit();
         } catch (Exception $exception) {
-            $this->em->getConnection()->rollBack();
+            $this->entityManager->getConnection()->rollBack();
             $this->logger->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
@@ -184,25 +184,31 @@ class ProjectRequestManager
     }
 
     /**
-     * @param \projects $project
-     * @param int       $userId
-     * @return null|array
+     * @param \companies            $company
+     * @param int                   $userId
+     * @param null|BalanceSheetList $balanceSheetList
+     * @return null|string
      */
-    public function checkProjectRisk(\projects &$project, $userId)
+    public function checkCompanyRisk(\companies &$company, $userId, BalanceSheetList &$balanceSheetList = null)
     {
+        /** @var \company_rating $companyRating */
+        $companyRating                  = $this->entityManagerSimulator->getRepository('company_rating');
+        $companyRatingHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
+        $lastCompanyRatingHistory       = $companyRatingHistoryRepository->findOneBy(
+            ['idCompany' => $company->id_company],
+            ['added' => 'DESC']
+        );
+
         /** @var \company_rating_history $companyRatingHistory */
-        $companyRatingHistory             = $this->entityManager->getRepository('company_rating_history');
-        $companyRatingHistory->id_company = $project->id_company;
+        $companyRatingHistory             = $this->entityManagerSimulator->getRepository('company_rating_history');
+        $companyRatingHistory->id_company = $company->id_company;
         $companyRatingHistory->id_user    = $userId;
         $companyRatingHistory->action     = \company_rating_history::ACTION_WS;
         $companyRatingHistory->create();
 
-        /** @var \company_rating $companyRating */
-        $companyRating = $this->entityManager->getRepository('company_rating');
-
-        if (false === empty($project->id_company_rating_history)) {
-            foreach ($companyRating->getHistoryRatingsByType($project->id_company_rating_history) as $rating => $value) {
-                if (false === in_array($rating, \company_rating::$ratingTypes)) {
+        if (null !== $lastCompanyRatingHistory) {
+            foreach ($companyRating->getHistoryRatingsByType($lastCompanyRatingHistory->getIdCompanyRatingHistory()) as $rating => $value) {
+                if (false === in_array($rating, \company_rating::$automaticRatingTypes)) {
                     $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
                     $companyRating->type                      = $rating;
                     $companyRating->value                     = $value['value'];
@@ -211,18 +217,41 @@ class ProjectRequestManager
             }
         }
 
-        /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
-        $company->get($project->id_company);
-
-        $project->balance_count             = null === $company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $company->date_creation)->diff(new \DateTime())->y;
-        $project->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
-        $project->update();
-
         $riskCheck = $this->checkRisk($company, $balanceSheetList, $companyRatingHistory, $companyRating);
 
         if (null !== $balanceSheetList) {
-            $this->companyBalanceSheetManager->setCompanyBalance($company, $project, $balanceSheetList);
+            $this->companyBalanceSheetManager->setCompanyBalance($company, $balanceSheetList, $project);
+        }
+
+        return $riskCheck;
+    }
+
+    /**
+     * @param \projects $project
+     * @param int       $userId
+     * @return null|array
+     */
+    public function checkProjectRisk(\projects &$project, $userId)
+    {
+        /** @var \companies $company */
+        $company = $this->entityManagerSimulator->getRepository('companies');
+        $company->get($project->id_company);
+
+        $balanceSheetList = null;
+        $riskCheck        = $this->checkCompanyRisk($company, $userId, $balanceSheetList);
+
+        $companyRatingHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
+        $lastCompanyRatingHistory       = $companyRatingHistoryRepository->findOneBy(
+            ['idCompany' => $company->id_company],
+            ['added' => 'DESC']
+        );
+
+        $project->balance_count             = null === $company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $company->date_creation)->diff(new \DateTime())->y;
+        $project->id_company_rating_history = $lastCompanyRatingHistory->getIdCompanyRatingHistory();
+        $project->update();
+
+        if (null !== $balanceSheetList) {
+            $this->companyBalanceSheetManager->setCompanyBalance($company, $balanceSheetList, $project);
         }
 
         if (null !== $riskCheck) {
@@ -298,7 +327,7 @@ class ProjectRequestManager
      * @param int       $userId
      * @return array
      */
-    private function addRejectionProjectStatus($motive, &$project, $userId)
+    public function addRejectionProjectStatus($motive, &$project, $userId)
     {
         $status = substr($motive, 0, strlen(\projects_status::UNEXPECTED_RESPONSE)) === \projects_status::UNEXPECTED_RESPONSE
             ? \projects_status::IMPOSSIBLE_AUTO_EVALUATION

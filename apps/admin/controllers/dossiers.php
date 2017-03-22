@@ -3177,6 +3177,7 @@ class dossiersController extends bootstrap
                     $company->create();
 
                     $this->projects->id_target_company = $company->id_company;
+                    $this->projects->update();
 
                     $this->checkTargetCompanyRisk();
 
@@ -3184,6 +3185,7 @@ class dossiersController extends bootstrap
                     die;
                 case 'select':
                     $this->projects->id_target_company = $_POST['id_target_company'];
+                    $this->projects->update();
 
                     $this->checkTargetCompanyRisk();
 
@@ -3200,10 +3202,15 @@ class dossiersController extends bootstrap
                             $companyRatingHistoryId = $companyRatingHistory[0]['id_company_rating_history'];
                         }
 
+                        /** @var \companies $company */
+                        $company = $this->loadData('companies');
+                        $company->get($this->projects->id_target_company);
+
                         $targetCompanyId                           = $this->projects->id_company;
                         $this->projects->id_company                = $this->projects->id_target_company;
                         $this->projects->id_target_company         = $targetCompanyId;
                         $this->projects->id_company_rating_history = $companyRatingHistoryId;
+                        $this->projects->balance_count             = null === $company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $company->date_creation)->diff(new \DateTime())->y;
                         $this->projects->id_dernier_bilan          = 0;
                         $this->projects->update();
                     }
@@ -3241,10 +3248,7 @@ class dossiersController extends bootstrap
      */
     private function loadTargetCompany()
     {
-        if (
-            empty($this->projects->id_target_company)
-            || false === $this->targetCompany->get($this->projects->id_target_company)
-        ) {
+        if (empty($this->projects->id_target_company) || false === $this->targetCompany->get($this->projects->id_target_company)) {
             return false;
         }
 
@@ -3255,17 +3259,17 @@ class dossiersController extends bootstrap
 
     private function checkTargetCompanyRisk()
     {
-        $targetCompanyId                   = $this->projects->id_target_company;
-        $this->projects->id_target_company = $this->projects->id_company;
-        $this->projects->id_company        = $targetCompanyId;
+        /** @var \companies $company */
+        $company = $this->loadData('companies');
+        $company->get($this->projects->id_target_company);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $projectRequestManager->checkProjectRisk($this->projects, $_SESSION['user']['id_user']);
+        $riskCheck             = $projectRequestManager->checkCompanyRisk($company, $_SESSION['user']['id_user']);
 
-        $this->projects->id_company        = $this->projects->id_target_company;
-        $this->projects->id_target_company = $targetCompanyId;
-        $this->projects->update();
+        if (null !== $riskCheck) {
+            $projectRequestManager->addRejectionProjectStatus($riskCheck, $this->projects, $_SESSION['user']['id_user']);
+        }
     }
 
     public function _autocompleteCompanyName()
@@ -3273,7 +3277,7 @@ class dossiersController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $aNames = array();
+        $aNames = [];
 
         if ($sTerm = filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)) {
             /** @var \companies $oCompanies */
