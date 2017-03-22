@@ -11,7 +11,7 @@
   .input-field {
     margin-bottom: 10px;
   }
-  @include devices('sm', 'lg') {
+  @include devices('sm', 'md', 'lg') {
     .input-field {
       float: left;
       width: 47.5%;

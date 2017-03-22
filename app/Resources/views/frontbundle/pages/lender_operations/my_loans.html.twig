@@ -71,9 +71,25 @@
             <div class="chart" data-chartview='{{ loansChartData.charts.lenderOperations|json_encode|escape('html_attr') }}'></div>
             {# Responsive issues, so I am rendering the legend in the page itself, rather than in the chart above #}
             <div class="chart-legend">
+                {% set filterVal = 0 %}
                 {% for i, series in loansChartData.charts.lenderOperations.highcharts.series %}
                     {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.y > 0 %}
-                        <div class="chart-key">
+                        {% if 'à jour' in dataItem.name %}
+                            {% set filterVal = 80 %}
+                        {% elseif 'retard' in dataItem.name %}
+                            {% set filterVal = 100 %}
+                            {# group 100 and 110 #}
+                        {% elseif 'recouvrement' in dataItem.name %}
+                            {% set filterVal = 120 %}
+                        {% elseif 'collective' in dataItem.name %}
+                            {% set filterVal = 130 %}
+                            {# group 130, 140 and  150 #}
+                        {% elseif 'défaut' in dataItem.name %}
+                            {% set filterVal = 160 %}
+                        {% elseif 'remboursé' in dataItem.name %}
+                            {% set filterVal = 90 %}
+                        {% endif %}
+                        <div class="chart-key" data-filter-val="{{ filterVal }}">
                             <div class="icon" style="background-color: {{ dataItem.color }}"></div>
                             <div class="label">{{ dataItem.name }}</div>
                         </div>

@@ -753,20 +753,9 @@ ChartView.prototype.render = function (data, schema) {
         case 'preterOperations':
 
             var $preterLoans = $('#dashboard-lender-operations #loans');
-            var $preterLoansTable = $preterLoans.find('.table-myloans');
             var $preterLoansKeys = $preterLoans.find('.chart-key');
 
-            var mapStatusFunction = function(status) {
-                if (status.indexOf('à jour') > -1)         {status = 'inprogress';}
-                if (status.indexOf('retard') > -1)         {status = 'late';}
-                if (status.indexOf('recouvrement') > -1)   {status = 'completing';}
-                if (status.indexOf('collective') > -1)     {status = 'problem';}
-                if (status.indexOf('défaut') > -1)         {status = 'defaulted';}
-                if (status.indexOf('remboursé') > -1)      {status = 'completed';}
-                return status;
-            }
-
-            // Sort table when Clicking on a piece of the pie
+            // Map clicking on a pie piece to a legend item
             Utility.extendObjProp(self.settings.highcharts, 'plotOptions.pie.point.events.click', function () {
                 var status = this.name;
                 $preterLoansKeys.each(function(){
@@ -776,62 +765,20 @@ ChartView.prototype.render = function (data, schema) {
                 })
             });
 
-            // Hover legend buttons
-            Utility.extendObjProp(self.settings.highcharts, 'plotOptions.series.point.events.mouseOver', function () {
-                var status = this.name;
-                $preterLoansKeys.each(function(){
-                    if ($(this).find('.label').text() === status) {
-                        $(this).addClass('hover')
-                    }
-                })
-            });
+            // Map clicking on a legend item to an option in the select filter
+            $preterLoansKeys.click(function() {
+                var $btn = $(this)
+                var statusVal = $btn.data('filter-val')
+                var $filter = $preterLoans.find('#filter-status')
 
-            // Hover legend buttons
-            Utility.extendObjProp(self.settings.highcharts, 'plotOptions.series.point.events.mouseOut', function () {
-                $preterLoansKeys.removeClass('hover')
-            });
-
-            // $preterLoansKeys.click(function() {
-            //
-            //     var $btn = $(this), status = mapStatusFunction($btn.find('.label').text())
-            //     var $tbody = $preterLoansTable.find('tbody')
-            //
-            //     // Initialise
-            //     if (!$preterLoansTable.is('.ui-details-cloned')) {
-            //         $preterLoansTable.addClass('ui-details-cloned')
-            //     }
-            //
-            //     // If clicked status is not active
-            //     if (!$btn.is('.active')) {
-            //
-            //         $btn.addClass('active')
-            //         $btn.siblings().removeClass('active')
-            //         $tbody.html('')
-            //
-            //         var filtered = '';
-            //
-            //         $preterLoansTableChildren.each(function(){
-            //             if ($(this).data('sortable-status') === status || $(this).is('.ui-loan-status-' + status))
-            //                 filtered += $(this).wrap('<div />').parent().html()
-            //                 $(this).unwrap()
-            //         })
-            //
-            //         $tbody.html(filtered)
-            //
-            //
-            //
-            //     } else {
-            //         // // If clicked status is active
-            //         // $btn.removeClass('active')
-            //         //
-            //         // // Release the filter and clone all rows back to the table
-            //         // $tbody.html('')
-            //         // $rows.clone().appendTo($tbody)
-            //
-            //     }
-            // })
+                // Trigger filter select change
+                if (statusVal.toString() !== $filter.val()) { // Needs to be converted as $('#filter-status').val() returns text
+                    $filter.val(statusVal).change()
+                } else {
+                    $filter.val('').change()
+                }
+            })
         break
-
       }
     }
 
