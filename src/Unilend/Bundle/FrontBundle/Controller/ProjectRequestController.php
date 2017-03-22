@@ -192,13 +192,13 @@ class ProjectRequestController extends Controller
         $em->beginTransaction();
         try {
             $em->persist($this->client);
-            $em->flush();
             $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($this->client->getIdClient());
+            $clientAddress->setIdClient($this->client);
             $em->persist($clientAddress);
+            $em->flush($clientAddress);
             $this->company->setIdClientOwner($this->client->getIdClient());
             $em->persist($this->company);
-            $em->flush();
+            $em->flush($this->company);
             $this->get('unilend.service.wallet_creation_manager')->createWallet($this->client, WalletType::BORROWER);
             $em->commit();
         } catch (\Exception $exception) {

@@ -64,7 +64,9 @@ class FormManager
                 substr($method->name, 0, 3) === 'get'
                 && $method->invoke($dbObject) != $method->invoke($formObject)
             ) {
-                $differences[] = str_replace('get', '', $method->name);
+                if ($method->name !== 'getUpdated') {
+                    $differences[] = str_replace('get', '', $method->name);
+                }
             }
         }
 
@@ -129,10 +131,15 @@ class FormManager
         return $form;
     }
 
-    public function getBankInformationForm(BankAccount $bankAccount, Clients $client)
+    /**
+     * @param Clients $client
+     *
+     * @return \Symfony\Component\Form\FormInterface
+     */
+    public function getBankInformationForm(Clients $client)
     {
         $form = $this->formFactory->createBuilder()
-            ->add('bankAccount', BankAccountType::class, ['data' => $bankAccount])
+            ->add('bankAccount', BankAccountType::class)
             ->add('client', OriginOfFundsType::class, ['data' => $client])
             ->add('housedByThirdPerson', CheckboxType::class, [
                 'required' => false,

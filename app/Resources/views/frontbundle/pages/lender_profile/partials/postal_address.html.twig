@@ -40,7 +40,7 @@
         </div>
         <div class="profile-correspondence-not-same collapse {% if clientsAdresses.memeAdresseFiscal != 1 %} in {% endif %}">
             <div class="row">
-                <div class="form-field {% if form_errors(forms.postalAddress.adresse1)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="form-field {% if forms.postalAddress.adresse1.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     <label for="form-profile-correspondence-street">{% trans %} lender-profile_information-tab-postal-address-section-address-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     {{ form_widget(forms.postalAddress.adresse1, {
@@ -55,7 +55,7 @@
             </div>
 
             <div class="row row-multi-col-computer">
-                <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.postalAddress.cp)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="form-field col-lg-6 col-md-6 {% if forms.postalAddress.cp.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     <label for="form-profile-correspondence-code">{% trans %} lender-profile_information-tab-postal-address-section-zip-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
@@ -78,7 +78,7 @@
                         </div>
                     </div><!-- /.input-group -->
                 </div><!-- /.form-field -->
-                <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.postalAddress.ville)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="form-field col-lg-6 col-md-6 {% if forms.postalAddress.ville.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     <label for="form-profile-correspondence-ville">{% trans %} lender-profile_information-tab-postal-address-section-city-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     <div class="input-group set-right">
@@ -103,7 +103,7 @@
             </div>
 
             <div class="row row-multi-col-computer">
-                <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.postalAddress.idPays)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="form-field col-lg-6 col-md-6 {% if forms.postalAddress.idPays.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     <label for="form-profile-correspondence-pays">{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %} <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     {{ form_widget(forms.postalAddress.idPays, {
                         'id' : 'form-profile-correspondence-pays',

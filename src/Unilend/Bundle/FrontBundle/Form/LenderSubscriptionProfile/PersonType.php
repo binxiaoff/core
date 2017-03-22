@@ -29,19 +29,19 @@ class PersonType extends AbstractType
 
         $builder
             ->add('civilite', GenderType::class)
-            ->add('nom', TextType::class)
-            ->add('nomUsage', TextType::class)
-            ->add('prenom', TextType::class)
+            ->add('nom')
+            ->add('nomUsage', TextType::class, ['required' => false])
+            ->add('prenom')
             ->add('naissance', BirthdayType::class, ['years' => range($startBdayRange->format('Y'), 1910)])
             ->add('idPaysNaissance', CountriesType::class)
-            ->add('villeNaissance', TextType::class)
+            ->add('villeNaissance')
             ->add('inseeBirth', HiddenType::class, ['required' => false])
             ->add('idNationalite',NationalitiesType::class)
             ->add('email', EmailType::class)
             ->add('emailConfirmation', EmailType::class, ['mapped' => false])
             ->add('password', PasswordType::class)
             ->add('passwordConfirmation', PasswordType::class, ['mapped' => false])
-            ->add('mobile', TextType::class)
+            ->add('mobile')
         ;
     }
 

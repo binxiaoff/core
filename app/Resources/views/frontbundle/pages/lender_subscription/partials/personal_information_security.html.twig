@@ -1,6 +1,6 @@
 <fieldset class="panel">
     <div class="row row-multi-col-computer">
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.email)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-email">
                 {% trans %} common_email {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -15,7 +15,7 @@
             {{ form_errors(identityForm.client.email)}}
         </div><!-- /.form-field -->
 
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.emailConfirmation)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.emailConfirmation.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-email-conf">
                 {% trans %} common_email-confirmation {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -38,7 +38,7 @@
         <div class="form-field col-lg-12 col-md-12">
             <div class="field-help">{% trans %} common_password-hint {% endtrans %}</div>
         </div>
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.password)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-pwd">
                 {% trans %} common_password {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -54,7 +54,7 @@
             {{ form_errors(identityForm.client.password) }}
         </div><!-- /.form-field -->
 
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.passwordConfirmation)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.passwordConfirmation.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-pwd-conf">
                 {% trans %} common_password-confirmation {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -74,7 +74,7 @@
     </div>
 
     <div class="row">
-        <div class="form-field {% if form_errors(identityForm.security.secreteQuestion)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field {% if identityForm.security.secreteQuestion.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-security-question">
                 {% trans %} lender-subscription_security-form-secret-question-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -92,7 +92,7 @@
     </div>
 
     <div class="row">
-        <div class="form-field {% if form_errors(identityForm.security.secreteReponse)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field {% if identityForm.security.secreteReponse.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-security-answer">
                 {% trans %} lender-subscription_security-form-secret-answer-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>

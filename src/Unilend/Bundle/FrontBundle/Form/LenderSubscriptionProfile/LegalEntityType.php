@@ -21,10 +21,10 @@ class LegalEntityType extends AbstractType
     {
         $builder
             ->add('civilite', GenderType::class)
-            ->add('nom', TextType::class)
-            ->add('prenom', TextType::class)
-            ->add('fonction', TextType::class)
-            ->add('mobile', TextType::class)
+            ->add('nom')
+            ->add('prenom')
+            ->add('fonction')
+            ->add('mobile')
             ->add('email', EmailType::class)
             ->add('emailConfirmation', EmailType::class, ['mapped' => false])
             ->add('password', PasswordType::class)

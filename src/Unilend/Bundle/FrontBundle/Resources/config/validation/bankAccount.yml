@@ -1,6 +1,0 @@
-Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount:
-    properties:
-        iban:
-            - Iban :
-        bic:
-            - Bic : ~

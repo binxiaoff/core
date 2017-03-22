@@ -1507,15 +1507,15 @@ class dossiersController extends bootstrap
             }
         }
 
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (isset($this->params[0]) && $this->params[0] == 'create_etape2') {
             if (isset($this->params[1]) && is_numeric($this->params[1])) {
                 /** @var Clients $clientEntity */
-                $clientEntity = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
+                $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
                 if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)){
-                    $companyEntity = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
+                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
                 } else {
                     $_SESSION['freeow']['title']   = 'La création n\' pas abouti';
                     $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
@@ -1527,19 +1527,19 @@ class dossiersController extends bootstrap
                 $companyEntity       = new Companies();
                 $clientAddressEntity = new ClientsAdresses();
 
-                $em->beginTransaction();
+                $entityManager->beginTransaction();
                 try {
-                    $em->persist($clientEntity);
-                    $em->flush();
-                    $clientAddressEntity->setIdClient($clientEntity->getIdClient());
-                    $em->persist($clientAddressEntity);
+                    $entityManager->persist($clientEntity);
+                    $clientAddressEntity->setIdClient($clientEntity);
+                    $entityManager->persist($clientAddressEntity);
+                    $entityManager->flush($clientAddressEntity);
                     $companyEntity->setIdClientOwner($clientEntity->getIdClient());
-                    $em->persist($companyEntity);
-                    $em->flush();
+                    $entityManager->persist($companyEntity);
+                    $entityManager->flush($companyEntity);
                     $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
-                    $em->commit();
+                    $entityManager->commit();
                 } catch (Exception $exception) {
-                    $em->getConnection()->rollBack();
+                    $entityManager->getConnection()->rollBack();
                     $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
                 }
             }

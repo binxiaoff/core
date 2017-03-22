@@ -7,7 +7,6 @@ namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -16,15 +15,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 class OriginOfFundsType extends AbstractType
 {
     /** @var  EntityManager */
-    private $em;
+    private $entityManager;
 
     /**
      * OriginOfFundsType constructor.
-     * @param EntityManager $em
+     * @param EntityManager $entityManager
      */
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManager $entityManager)
     {
-        $this->em = $em;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -40,9 +39,9 @@ class OriginOfFundsType extends AbstractType
 
         $builder
             ->add('fundsOrigin', ChoiceType::class, [
-                'choices' => array_flip($fundsOrigin),
-                'expanded' => false,
-                'multiple' => false,
+                'choices'     => array_flip($fundsOrigin),
+                'expanded'    => false,
+                'multiple'    => false,
                 'placeholder' => ''
             ]);
     }
@@ -70,11 +69,11 @@ class OriginOfFundsType extends AbstractType
         switch ($clientType) {
             case Clients::TYPE_PERSON:
             case Clients::TYPE_PERSON_FOREIGNER:
-                $setting = $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Liste deroulante origine des fonds');
+                $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Liste deroulante origine des fonds');
                 break;
             case Clients::TYPE_LEGAL_ENTITY:
             case Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
-                $setting = $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Liste deroulante origine des fonds societe');
+                $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Liste deroulante origine des fonds societe');
                 break;
             default:
                 throw new \Exception('Client type not supported for origin of funds list');

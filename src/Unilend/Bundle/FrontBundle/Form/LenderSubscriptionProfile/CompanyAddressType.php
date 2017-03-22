@@ -20,10 +20,10 @@ class CompanyAddressType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('adresse1', TextType::class)
-            ->add('zip', TextType::class)
-            ->add('city', TextType::class)
-            ->add('idPays', CountriesType::class)
+            ->add('adresse1')
+            ->add('zip')
+            ->add('city')
+            ->add('idPays')
         ;
     }
 

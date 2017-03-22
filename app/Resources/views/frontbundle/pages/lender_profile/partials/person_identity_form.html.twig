@@ -44,7 +44,7 @@
                 <label for="form-profile-info-nom">{% trans %} common_birth-name {% endtrans %}</label>
                 <span id="form-profile-info-nom" >{{ client.nom }}</span>
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.identity.client.prenom)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.identity.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-info-prenom">{% trans %} common_firstname {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     {{ form_widget(forms.identity.client.prenom, {
@@ -59,7 +59,7 @@
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.identity.client.nomUsage)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.identity.client.nomUsage.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-info-prenom">{% trans %} common_used-name {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -77,7 +77,7 @@
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.identity.client.idNationalite)|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.identity.client.idNationalite.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label>{% trans %} common_birthday {% endtrans %}</label>
                 <span id="profile-info-dob-output">{{ client.naissance|date('d/m/Y') }}</span>
             </div><!-- /.form-field -->
