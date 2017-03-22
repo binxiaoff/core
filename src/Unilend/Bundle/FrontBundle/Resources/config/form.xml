@@ -52,5 +52,25 @@
             <tag name="form.type" />
             <argument type="service" id="doctrine.orm.entity_manager" />
         </service>
+
+        <service id="unilend.form.email" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientEmailType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.password" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientPasswordType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.person_identity" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.legal_entity_identity" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
     </services>
 </container>

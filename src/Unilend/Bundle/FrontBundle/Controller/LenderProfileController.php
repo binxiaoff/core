@@ -401,7 +401,7 @@ class LenderProfileController extends Controller
         if (
             $dbCompanyEntity->getZip() !== $companyEntity->getZip()
             && \pays_v2::COUNTRY_FRANCE == $companyEntity->getIdPays()
-            && null === $em->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $companyEntity->getZip()])
+            && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $companyEntity->getZip()])
         ) {
             $form->get('company_fiscal_address')->get('zip')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
         }
@@ -1075,10 +1075,6 @@ class LenderProfileController extends Controller
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if ($client->getEmail() !== $form->get('emailConfirmation')->getData()) {
-            $form->addError(new FormError($translator->trans('common-validator_email-address-invalid')));
-        }
-
         if (
             $client->getEmail() !== $dbClient->getEmail()
             && $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($client->getEmail())
@@ -1088,19 +1084,19 @@ class LenderProfileController extends Controller
 
         if ($form->isValid()) {
             $entityManager->flush($client);
-
             $this->addFlash('securityIdentificationSuccess', $translator->trans('lender-profile_security-identification-form-success-message'));
+
             return $this->redirectToRoute('lender_profile_security');
         }
     }
 
     /**
-     * @param Clients       $clientEntity
+     * @param Clients       $client
      * @param FormInterface $form
      *
      * @return RedirectResponse
      */
-    public function handlePasswordForm(Clients $clientEntity, FormInterface $form)
+    public function handlePasswordForm(Clients $client, FormInterface $form)
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
@@ -1114,16 +1110,13 @@ class LenderProfileController extends Controller
         if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $form->get('formerPassword')->getData())) {
             $form->get('formerPassword')->addError(new FormError($translator->trans('lender-profile_security-password-section-error-wrong-former-password')));
         }
-        if ($form->get('newPassword')->getData() !== $form->get('passwordConfirmation')->getData()) {
-            $form->get('passwordConfirmation')->addError(new FormError($translator->trans('common-validator_password-not-equal')));
-        }
-        if (false === $ficelle->password_fo($form->get('newPassword')->getData(), 6)) {
-            $form->get('passwordConfirmation')->addError(new FormError($translator->trans('common-validator_password-invalid')));
+        if (false === $ficelle->password_fo($form->get('password')->getData(), 6)) {
+            $form->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
         }
 
         if ($form->isValid()) {
-            $clientEntity->setPassword($securityPasswordEncoder->encodePassword($this->getUser(), $form->get('newPassword')->getData()));
-            $entityManager->flush($clientEntity);
+            $client->setPassword($securityPasswordEncoder->encodePassword($this->getUser(), $form->get('password')->getData()));
+            $entityManager->flush($client);
 
             $this->sendPasswordModificationEmail($this->getClient());
             $this->addFlash('securityPasswordSuccess', $translator->trans('lender-profile_security-password-section-form-success-message'));
@@ -1133,17 +1126,17 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Clients       $clientEntity
+     * @param Clients       $client
      * @param FormInterface $form
      *
      * @return RedirectResponse
      */
-    public function handleQuestionForm(Clients $clientEntity)
+    public function handleQuestionForm(Clients $client)
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
-        $this->get('doctrine.orm.entity_manager')->flush($clientEntity);
+        $this->get('doctrine.orm.entity_manager')->flush($client);
         $this->addFlash('securitySecretQuestionSuccess', $translator->trans('lender-profile_security-secret-question-section-form-success-message'));
 
         return $this->redirectToRoute('lender_profile_security');

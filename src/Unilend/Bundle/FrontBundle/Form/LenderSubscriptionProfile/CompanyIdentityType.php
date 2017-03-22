@@ -45,7 +45,7 @@ class CompanyIdentityType extends AbstractType
         ];
 
         $builder
-            ->add('name')
+            ->add('name', TextType::class)
             ->add('forme')
             ->add('siren')
             ->add('capital')

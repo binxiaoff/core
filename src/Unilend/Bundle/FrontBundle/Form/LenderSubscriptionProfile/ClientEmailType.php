@@ -5,12 +5,22 @@ namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Translation\TranslatorInterface;
 
 
 class ClientEmailType extends AbstractType
 {
+    /** @var  TranslatorInterface */
+    private $translator;
+
+    public function __construct(TranslatorInterface $translator)
+    {
+        $this->translator = $translator;
+    }
+
     /**
      * @param FormBuilderInterface $builder
      * @param array $options
@@ -18,8 +28,11 @@ class ClientEmailType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('email', EmailType::class)
-            ->add('emailConfirmation', EmailType::class, ['mapped' => false])
+            ->add('email', RepeatedType::class, [
+                'type'            => EmailType::class,
+                'invalid_message' => $this->translator->trans('common-validator_email-address-invalid'),
+                'required'        => true
+            ])
         ;
     }
 

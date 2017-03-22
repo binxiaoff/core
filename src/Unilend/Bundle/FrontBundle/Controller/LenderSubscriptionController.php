@@ -393,19 +393,10 @@ class LenderSubscriptionController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-
-        if ($clientEntity->getEmail() !== $form->get('client')->get('emailConfirmation')->getData()) {
-            $form->get('client')->get('email')->addError(new FormError($translator->trans('common-validator_email-address-invalid')));
-        }
-
-        if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($clientEntity->getEmail())
-        ) {
+        if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($clientEntity->getEmail())) {
             $form->get('client')->get('email')->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
         }
 
-        if ($clientEntity->getPassword() !== $form->get('client')->get('passwordConfirmation')->getData()) {
-            $form->get('client')->get('passwordConfirmation')->addError(new FormError($translator->trans('common-validator_password-not-equal')));
-        }
         if (false === $ficelle->password_fo($clientEntity->getPassword(), 6)) {
             $form->get('client')->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
         }
@@ -956,10 +947,10 @@ class LenderSubscriptionController extends Controller
 
         switch ($step) {
             case 1:
-                $post['form']['client']['password']             = md5($post['form']['client']['password']);
-                $post['form']['client']['passwordConfirmation'] = md5($post['form']['client']['passwordConfirmation']);
-                $post['form']['security']['secreteReponse']     = md5($post['form']['security']['secreteReponse']);
-                $formId                                         = 14;
+                $post['form']['client']['password']['first']  = md5($post['form']['client']['password']['first']);
+                $post['form']['client']['password']['second'] = md5($post['form']['client']['password']['second']);
+                $post['form']['security']['secreteReponse']   = md5($post['form']['security']['secreteReponse']);
+                $formId                                       = 14;
                 break;
             case 2:
                 $formId = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 17 : 19;

@@ -5,23 +5,22 @@
                 {% trans %} common_email {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
-            {{ form_widget(identityForm.client.email, {
+            {{ form_widget(identityForm.client.email.first, {
                 'id' : 'form-lender-' ~ idClientType ~ '-email',
                 'attr' :  {
                     'class' : 'input-field',
                     'data-formvalidation-input data-formvalidation-required' : 'true'
                 }
             }) }}
-            {{ form_errors(identityForm.client.email)}}
         </div><!-- /.form-field -->
 
-        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.emailConfirmation.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.email.second.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-email-conf">
                 {% trans %} common_email-confirmation {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group">
-                {{ form_widget(identityForm.client.emailConfirmation, {
+                {{ form_widget(identityForm.client.email.second, {
                     'id' : 'form-lender-'~ idClientType ~'-email-conf',
                     'attr' :  {
                         'class' : 'input-field',
@@ -29,9 +28,9 @@
                         'data-formvalidation-samevalueas' : '#form-lender-' ~ idClientType ~ '-email'
                     }
                 }) }}
-                {{ form_errors(identityForm.client.emailConfirmation)}}
             </div>
         </div><!-- /.form-field -->
+        {{ form_errors(identityForm.client.email)}}
     </div>
 
     <div class="row row-multi-col-computer">
@@ -43,7 +42,7 @@
                 {% trans %} common_password {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
-            {{ form_widget(identityForm.client.password, {
+            {{ form_widget(identityForm.client.password.first, {
                 'id' : 'form-lender-'~ idClientType ~'-pwd',
                 'attr' : {
                     'class' : 'input-field',
@@ -51,16 +50,15 @@
                     'data-formvalidation-minlength' : '6'
                 }
             }) }}
-            {{ form_errors(identityForm.client.password) }}
         </div><!-- /.form-field -->
 
-        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.passwordConfirmation.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-pwd-conf">
                 {% trans %} common_password-confirmation {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group">
-                {{ form_widget(identityForm.client.passwordConfirmation, {
+                {{ form_widget(identityForm.client.password.second, {
                     'id' : 'form-lender-'~ idClientType ~'-pwd-conf',
                     'attr' : {
                         'class' : 'input-field',
@@ -68,9 +66,9 @@
                         'data-formvalidation-samevalueas' : '#form-lender-' ~ idClientType ~ '-pwd'
                     }
                 }) }}
-                {{ form_errors(identityForm.client.passwordConfirmation) }}
             </div>
         </div><!-- /.form-field -->
+        {{ form_errors(identityForm.client.password) }}
     </div>
 
     <div class="row">

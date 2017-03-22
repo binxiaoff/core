@@ -266,23 +266,22 @@
                 {% trans %} common_email {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
-            {{ form_widget(companyIdentityForm.client.email, {
+            {{ form_widget(companyIdentityForm.client.email.first, {
                 'id' : 'form-lender-' ~ idClientType ~ '-email',
                 'attr' :  {
                     'class' : 'input-field',
                     'data-formvalidation-input data-formvalidation-required' : 'true'
                 }
             }) }}
-            {{ form_errors(companyIdentityForm.client.email)}}
         </div><!-- /.form-field -->
 
-        <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.emailConfirmation.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-email-conf">
                 {% trans %} common_email-confirmation {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group">
-                {{ form_widget(companyIdentityForm.client.emailConfirmation, {
+                {{ form_widget(companyIdentityForm.client.email.second, {
                     'id' : 'form-lender-'~ idClientType ~'-email-conf',
                     'attr' :  {
                         'class' : 'input-field',
@@ -290,9 +289,9 @@
                         'data-formvalidation-samevalueas' : '#form-lender-' ~ idClientType ~ '-email'
                     }
                 }) }}
-                {{ form_errors(companyIdentityForm.client.emailConfirmation)}}
             </div>
         </div><!-- /.form-field -->
+        {{ form_errors(companyIdentityForm.client.email)}}
     </div>
 
     <div class="row row-multi-col-computer">
@@ -304,7 +303,7 @@
                 {% trans %} common_password {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
-            {{ form_widget(companyIdentityForm.client.password, {
+            {{ form_widget(companyIdentityForm.client.password.first, {
                 'id' : 'form-lender-'~ idClientType ~'-pwd',
                 'attr' : {
                     'class' : 'input-field',
@@ -312,16 +311,15 @@
                     'data-formvalidation-minlength' : '6'
                 }
             }) }}
-            {{ form_errors(companyIdentityForm.client.password) }}
         </div><!-- /.form-field -->
 
-        <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.passwordConfirmation.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-pwd-conf">
                 {% trans %} common_password-confirmation {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group">
-                {{ form_widget(companyIdentityForm.client.passwordConfirmation, {
+                {{ form_widget(companyIdentityForm.client.password.second, {
                     'id' : 'form-lender-'~ idClientType ~'-pwd-conf',
                     'attr' : {
                         'class' : 'input-field',
@@ -329,9 +327,9 @@
                         'data-formvalidation-samevalueas' : '#form-lender-' ~ idClientType ~ '-pwd'
                     }
                 }) }}
-                {{ form_errors(companyIdentityForm.client.passwordConfirmation) }}
             </div>
         </div><!-- /.form-field -->
+        {{ form_errors(companyIdentityForm.client.password) }}
     </div>
 
     <div class="row">
@@ -512,7 +510,7 @@
                     {{ form_widget(companyIdentityForm.fiscalAddress.zip, {
                         'id' : 'form-lender-legal-entity-fiscal-address-zip',
                         'attr' : {
-                            'class' : 'input-field',
+                            'class' : 'input-field ui-autocomplete',
                             'data-formvalidation-input data-formvalidation-required' : 'true',
                             'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_subscription_ajax_zip'),
                             'data-autocomplete-address-countryelem' : '#form-lender-legal-entity-fiscal-address-country',

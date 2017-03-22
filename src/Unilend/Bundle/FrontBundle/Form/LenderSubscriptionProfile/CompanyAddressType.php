@@ -3,10 +3,6 @@
 namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CountryType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Bundle\FrontBundle\Form\Components\CountriesType;
@@ -23,7 +19,7 @@ class CompanyAddressType extends AbstractType
             ->add('adresse1')
             ->add('zip')
             ->add('city')
-            ->add('idPays')
+            ->add('idPays', CountriesType::class)
         ;
     }
 
