@@ -1233,17 +1233,17 @@ class echeanciers extends echeanciers_crud
         $data      = [];
 
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            if (null !== $row['rawInterests'] && null !== $row['netInterests']) {
+                $row['rawInterests'] = (float) ($row['rawInterests'] + $row['netInterests'] + $row['upcomingTaxes']);
+                $row['netInterests'] = (float) ($row['rawInterests'] + $row['netInterests'] - $row['repaidTaxes']);
+            } else {
+                $row['rawInterests'] = null === $row['rawInterests'] ? (float) ($row['netInterests'] + $row['repaidTaxes']) : (float) $row['rawInterests'];
+                $row['netInterests'] = null === $row['netInterests'] ? (float) ($row['rawInterests'] - $row['upcomingTaxes']) : (float) $row['netInterests'];
+            }
             $taxes = (float) ($row['repaidTaxes'] + $row['upcomingTaxes']);
             unset($row['repaidTaxes'], $row['upcomingTaxes']);
-            $row['capital']      = (float) $row['capital'];
-            if (null !== $row['rawInterests'] && null !== $row['netInterests']) {
-                $row['rawInterests'] = (float) ($row['rawInterests'] + $row['netInterests'] + $taxes);
-                $row['netInterests'] = (float) ($row['rawInterests'] + $row['netInterests'] - $taxes);
-            } else {
-                $row['rawInterests'] = null === $row['rawInterests'] ? (float) ($row['netInterests'] + $taxes) : (float) $row['rawInterests'];
-                $row['netInterests'] = null === $row['netInterests'] ? (float) ($row['rawInterests'] - $taxes) : (float) $row['netInterests'];
-            }
             $row['taxes']        = $taxes;
+            $row['capital']      = (float) $row['capital'];
             $data[$row['month']] = $row;
         }
         $statement->closeCursor();
