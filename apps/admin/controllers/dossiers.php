@@ -3192,7 +3192,7 @@ class dossiersController extends bootstrap
                     header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                     die;
                 case 'swap':
-                    if ($this->isTakeover() && false === empty($this->projects->id_target_company)) {
+                    if ($this->isTakeover() && false === empty($this->projects->id_target_company) && $this->projects->status < \projects_status::A_FUNDER) {
                         /** @var \company_rating_history $companyRatingHistory */
                         $companyRatingHistory   = $this->loadData('company_rating_history');
                         $companyRatingHistory   = $companyRatingHistory->select('id_company = ' . $this->projects->id_target_company, 'added DESC', 0, 1);

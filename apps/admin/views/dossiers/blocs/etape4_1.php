@@ -78,7 +78,7 @@
         <?php endif; ?>
     });
 </script>
-<a class="tab_title" id="section-external-ratings" href="#section-external-ratings">4.1 - Notation externe</a>
+<a class="tab_title" id="section-external-ratings" href="#section-external-ratings">4.1. Notation externe</a>
 <div class="tab_content<?php if (in_array($this->projects->status, [\projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW]) && \users_types::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape4_1">
     <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" onsubmit="valid_etape4_1(<?= $this->projects->id_project ?>); return false;" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="contenu_etape4_1">

@@ -224,11 +224,11 @@
         });
 
         <?php if ($this->nb_lignes != '') : ?>
-            $('.tablesorter').tablesorterPager({
-                container: $('#pager'),
-                positionFixed: false,
-                size: <?= $this->nb_lignes ?>
-            })
+        $('.tablesorter').tablesorterPager({
+            container: $('#pager'),
+            positionFixed: false,
+            size: <?= $this->nb_lignes ?>
+        })
         <?php endif; ?>
 
         $('body').on('change', '#partner', function() {
@@ -451,19 +451,21 @@
                         </tr>
                         <tr>
                             <th>SIREN</th>
-                            <td><?= $this->companies->siren ?></td>
+                            <td><?= $this->companies->siren ?><?php if ($this->isTakeover) : ?> - <?= $this->companies->name ?><?php endif; ?></td>
                         </tr>
                         <?php if ($this->isTakeover) : ?>
                             <tr>
-                                <th>
+                                <th style="position: relative;">
                                     <label for="target_siren" class="tooltip" title="SIREN de la société reprise/rachetée">SIREN cible</label>
-                                </th>
-                                <td style="position: relative;">
-                                    <?php if (false === empty($this->targetCompany->id_company)) : ?>
-                                        <?= $this->targetCompany->siren ?>
-                                        <a href="<?= $this->lurl ?>/dossiers/takeover/<?= $this->projects->id_project ?>/swap" style="position: absolute; top: -15px; left: 75px;">
+                                    <?php if ($this->projects->status < \projects_status::A_FUNDER) : ?>
+                                        <a href="<?= $this->lurl ?>/dossiers/takeover/<?= $this->projects->id_project ?>/swap" style="position: absolute; top: -15px; left: 100px;">
                                             <img src="<?= $this->surl ?>/images/admin/swap.png" alt="Inverser" height="19">
                                         </a>
+                                    <?php endif; ?>
+                                </th>
+                                <td>
+                                    <?php if (false === empty($this->targetCompany->id_company)) : ?>
+                                        <?= $this->targetCompany->siren ?> - <?= $this->targetCompany->name ?>
                                     <?php else : ?>
                                         <a href="<?= $this->lurl ?>/dossiers/takeover/<?= $this->projects->id_project ?>" class="btn btn-small btn_link thickbox" title="Définir la cible">Définir</a>
                                     <?php endif; ?>
@@ -816,22 +818,22 @@
                         <?php endif; ?>
                         <?php if ($this->projects->status == \projects_status::PREP_FUNDING) : ?>
                             <?php
-                                $blockingPublishingError = '';
+                            $blockingPublishingError = '';
 
-                                if (in_array($this->projects->period, [0, 1000000])) {
-                                    $blockingPublishingError = 'Veuillez sélectionner une durée de prêt';
-                                }
+                            if (in_array($this->projects->period, [0, 1000000])) {
+                                $blockingPublishingError = 'Veuillez sélectionner une durée de prêt';
+                            }
 
-                                if (
-                                    in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)
-                                    && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
-                                ) {
-                                    $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
-                                }
+                            if (
+                                in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)
+                                && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
+                            ) {
+                                $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                            }
 
-                                if (false === $this->isProductUsable) {
-                                    $blockingPublishingError = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
-                                }
+                            if (false === $this->isProductUsable) {
+                                $blockingPublishingError = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
+                            }
                             ?>
                             <?php if (false === empty($blockingPublishingError)) : ?>
                                 <tr>
@@ -970,7 +972,7 @@
                                             <?php endif; ?>
                                         </div>
                                         <?php break; ?>
-                                <?php endswitch; ?>
+                                    <?php endswitch; ?>
                             </td>
                         </tr>
                     </table>

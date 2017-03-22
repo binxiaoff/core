@@ -25,7 +25,7 @@
             $start = '5 étoiles';
         }
         ?>
-        <a class="tab_title" id="section-risk-comity" href="#section-risk-comity">7 - Comité risque</a>
+        <a class="tab_title" id="section-risk-comity" href="#section-risk-comity">7. Comité risque</a>
         <div class="tab_content<?php if (\users_types::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape7">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>

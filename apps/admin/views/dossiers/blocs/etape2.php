@@ -8,6 +8,7 @@
             changeYear: true,
             yearRange: '<?= (date('Y') - 100) ?>:<?= (date('Y')) ?>'
         });
+
         $("#date_naissance_gerant").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -16,6 +17,7 @@
             changeYear: true,
             yearRange: '<?= (date('Y') - 100) ?>:<?= (date('Y')) ?>'
         });
+
         $('#same_address_etape2').click(function () {
             if ($(this).prop('checked')) {
                 $('.same_adresse').hide('slow');
@@ -24,12 +26,14 @@
                 $('.same_adresse').show('slow');
             }
         });
+
         $('#enterprise1_etape2').click(function () {
             if ($(this).prop('checked')) {
                 $('.statut_dirigeant_etape2').hide('slow');
                 $('.identification_prescripteur').hide('slow');
             }
         });
+
         $('#enterprise3_etape2').click(function () {
             if ($(this).prop('checked')) {
                 $('.statut_dirigeant_etape2').show('slow');
@@ -38,7 +42,7 @@
         });
     });
 </script>
-<a class="tab_title" id="section-contact-details" href="#section-contact-details">2 - Coordonnées</a>
+<a class="tab_title" id="section-contact-details" href="#section-contact-details">2. Coordonnées</a>
 <div class="tab_content" id="etape2">
     <form method="post" id="dossier_etape2" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" onsubmit="valid_etape2(<?= $this->projects->id_project ?>); return false;">
         <table class="form" style="width: 100%;">

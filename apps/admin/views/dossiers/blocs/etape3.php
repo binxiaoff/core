@@ -1,4 +1,4 @@
-<a class="tab_title" id="section-presentation" href="#section-presentation">3 - Présentation</a>
+<a class="tab_title" id="section-presentation" href="#section-presentation">3. Présentation</a>
 <div class="tab_content<?php if ($this->projects->status == \projects_status::PREP_FUNDING && \users_types::TYPE_COMMERCIAL == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape3">
     <form method="post" name="dossier_etape3" id="dossier_etape3" enctype="multipart/form-data" action="<?= $this->lurl ?>/ajax/valid_etapes">
         <input type="hidden" name="etape" value="3">

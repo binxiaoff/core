@@ -4,7 +4,7 @@
 ) : ?>
     <div id="content_etape6">
         <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
-        <a class="tab_title" id="section-risk-analysis" href="#section-risk-analysis">6 - Analyse risque</a>
+        <a class="tab_title" id="section-risk-analysis" href="#section-risk-analysis">6. Analyse risque</a>
         <div class="tab_content<?php if (\users_types::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape6">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>

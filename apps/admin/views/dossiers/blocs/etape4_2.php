@@ -91,7 +91,7 @@
     </form>
 </div>
 
-<a class="tab_title" id="section-balance-sheets" href="#section-balance-sheets">4.2 - Bilans</a>
+<a class="tab_title" id="section-balance-sheets" href="#section-balance-sheets">4.2. Bilans</a>
 <div class="tab_content" id="etape4_2">
     <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" style="float:right">
         <input type="hidden" name="add_annual_accounts" value="1">
