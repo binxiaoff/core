@@ -29,12 +29,14 @@ var ProjectNotifications = {
         if ($notification.is('.ui-notification-status-unread')) {
 
             // Calculate unread count and update pip
-            var $projectDetails  = $notification.closest('[data-parent]')
-            var $project = $('#loan-' + $projectDetails.data('loan-id'))
-            var currentUnreadCount = parseFloat($project.find('.pip-number').text())
+            var $project = $('#' + $notification.closest('[data-parent]').data('parent'))
+            var $pip = $project.find('.ui-show-table-myloans-item-activity .pip-number')
+            if (parseFloat($pip.text()) > 1) {
+                $pip.text(parseFloat($pip.text()) - 1)
+            } else {
+                $pip.parent().remove()
+            }
 
-            $project.find('.pip-number').text(currentUnreadCount - 1)
-            $projectDetails.find('.pip-number').text(currentUnreadCount - 1)
 
             // Mark as read
             if (isUserNotification) {

@@ -104,6 +104,12 @@
       }
     }
   }
+
+  .pip {
+    position: absolute;
+    right: -4px;
+    top: -4px;
+  }
 }
 
 // Row showing a single loan
@@ -188,7 +194,7 @@
   }
   .nav-tab-anchors {
     padding: 0 10px;
-    border-bottom: 2px solid #eceaed;
+    border-bottom: 2px solid $c-bg2;
     position: relative;
     > li {
       > a {
@@ -200,7 +206,7 @@
     }
   }
   .tab-content {
-    border-bottom: 2px solid #eceaed;
+    border-bottom: 2px solid $c-bg2;
   }
   .notification {
     padding: 10px 25px 10px 50px;
@@ -245,24 +251,51 @@
     }
   }
 }
-
-.fancybox-overlay, .fancybox-wrap {
-  display: none!important;
-}
-
 .table-myloans-item-details-docs {
-  margin: 5px 10px;
+  margin: 5px 0;
   tbody {
     tr, tr:nth-of-type(4n+1) {
       background-color: transparent;
+    }
+    tr {
+      &:last-child {
+        td {
+          border-bottom: 0;
+        }
+      }
     }
     th {
       padding-bottom: 5px;
     }
     td {
       font-size: 14px;
-      padding: 5px 10px;
+      padding-top: 10px;
+      padding-bottom: 10px;
       color: #787679;
+      border-bottom: 1px solid $c-bg2;
+    }
+    .amount {
+      width: 22%;
+      padding-left: 20px;
+      border-color: $c-bg2!important;
+    }
+    .interest {
+      width: 11.5%;
+    }
+    .documents {
+      padding-right: 20px;
+      a {
+        position: relative;
+        padding-left: 23px;
+        margin-right: 20px;
+      }
+      .svg-icon-wrap {
+        width: 70px;
+        height: 70px;
+        position: absolute;
+        left: -25px;
+        top: -25px;
+      }
     }
   }
 }
@@ -272,14 +305,6 @@
   position: relative;
   height: 38px;
   border-radius: 3px;
-
-  .pip {
-    margin-right: -($height-pip * .3);
-    margin-top: -($height-pip * .3);
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
 
   &.active {
     background-color: $c-p1;
@@ -300,29 +325,20 @@
   line-height: 22px;
   position: relative;
 
+  background-image: url('/assets/images/dashboard/file-multiple-28x38.png');
   background-color: transparent;
   background-repeat: no-repeat;
   background-position: center center;
   vertical-align: middle;
-
+  
   .pip {
-    margin-right: -($height-pip * .3);
-    margin-top: -($height-pip * .3);
-    position: absolute;
-    right: 0;
-    top: 0;
+    top: -2px;
   }
-}
-.loan-doc-multiple {
-  background-image: url('/assets/images/dashboard/file-multiple-28x38.png');
 }
 .loan-doc-declaration {
   background-image: url('/assets/images/dashboard/file-declaration-28x38.png');
 }
-.loan-doc-contract,
-.loan-doc-bond {
-  background-image: url('/assets/images/dashboard/file-voucher-28x38.png');
-}
+
 
 
 

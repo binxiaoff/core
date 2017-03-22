@@ -67,10 +67,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         $table.parent().addClass('ui-items-closed-grayscale')
         $item.siblings().removeClass('ui-details-open')
         $item.addClass('ui-details-open')
-        if ($details.find('.nav-tab-anchors li:first-child').is('.active')) {
-          $details.trigger('MyLoansActivity:visible');
-
-        }
+        $details.trigger('MyLoansActivity:visible');
       }
     }
   } else {
