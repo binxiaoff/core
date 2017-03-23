@@ -1234,8 +1234,8 @@ class echeanciers extends echeanciers_crud
 
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             if (null !== $row['grossInterests'] && null !== $row['netInterests']) {
-                $netInterest   = bcadd(bcsub($row['grossInterests'], $row['upcomingTaxes'], 2), $row['netInterest'], 2);
-                $grossInterest = bcadd(bcadd($row['netInterest'], $row['repaidTaxed'], 2), $row['grossInterest'], 2);
+                $netInterest   = bcadd(bcsub($row['grossInterests'], $row['upcomingTaxes'], 2), $row['netInterests'], 2);
+                $grossInterest = bcadd(bcadd($row['netInterests'], $row['repaidTaxes'], 2), $row['grossInterests'], 2);
             } else {
                 $netInterest   = null === $row['netInterests'] ? bcsub($row['grossInterests'], $row['upcomingTaxes'], 2) : $row['netInterests'];
                 $grossInterest = null === $row['grossInterests'] ? bcadd($row['netInterests'], $row['repaidTaxes'], 2) : $row['grossInterests'];
