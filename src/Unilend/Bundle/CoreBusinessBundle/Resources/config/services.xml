@@ -326,7 +326,7 @@
         </service>
 
         <service id="unilend.service.company_finance_check" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyFinanceCheck">
-            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>
             <argument type="service" id="cache"/>

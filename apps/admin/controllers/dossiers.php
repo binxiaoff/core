@@ -1504,6 +1504,7 @@ class dossiersController extends bootstrap
     }
 
     /**
+     * @param null|string $siren
      * @return Companies
      */
     private function createBlankCompany($siren = null)
@@ -1525,6 +1526,7 @@ class dossiersController extends bootstrap
 
             $companyEntity->setSiren($siren);
             $companyEntity->setIdClientOwner($clientEntity->getIdClient());
+            $companyEntity->setStatusAdresseCorrespondance(1);
             $em->persist($companyEntity);
             $em->flush();
 

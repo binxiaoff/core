@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\PaymentIncident;
@@ -32,7 +32,7 @@ class CompanyFinanceCheck
     private $wsInfogreffe;
 
     /**
-     * @param EntityManager              $entityManager
+     * @param EntityManager     $entityManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
      * @param ProjectManager             $projectManager
      * @param CacheItemPoolInterface     $cacheItemPool
@@ -41,7 +41,16 @@ class CompanyFinanceCheck
      * @param CodinfManager              $wsCodinf
      * @param InfogreffeManager          $wsInfogreffe
      */
-    public function __construct(EntityManager $entityManager, CompanyBalanceSheetManager $companyBalanceSheetManager, ProjectManager $projectManager, CacheItemPoolInterface $cacheItemPool, LoggerInterface $logger, AltaresManager $wsAltares, CodinfManager $wsCodinf, InfogreffeManager $wsInfogreffe)
+    public function __construct(
+        EntityManager $entityManager,
+        CompanyBalanceSheetManager $companyBalanceSheetManager,
+        ProjectManager $projectManager,
+        CacheItemPoolInterface $cacheItemPool,
+        LoggerInterface $logger,
+        AltaresManager $wsAltares,
+        CodinfManager $wsCodinf,
+        InfogreffeManager $wsInfogreffe
+    )
     {
         $this->entityManager              = $entityManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
@@ -54,7 +63,7 @@ class CompanyFinanceCheck
     }
 
     /**
-     * Check if siren exists in Altares System, if company has collective procedures and if company is active
+     * Check if SIREN exists in Altares System, if company has collective procedures and if company is active
      *
      * @param \companies $company
      * @param string     $rejectionReason
@@ -64,17 +73,17 @@ class CompanyFinanceCheck
     {
         try {
             if (null !== ($companyData = $this->wsAltares->getCompanyIdentity($company->siren))) {
-                $company->name          = $companyData->getCorporateName();
-                $company->forme         = $companyData->getCompanyForm();
-                $company->capital       = $companyData->getCapital();
-                $company->code_naf      = $companyData->getNAFCode();
-                $company->adresse1      = $companyData->getAddress();
-                $company->city          = $companyData->getCity();
-                $company->zip           = $companyData->getPostCode();
-                $company->siret         = $companyData->getSiret();
-                $company->date_creation = $companyData->getCreationDate()->format('Y-m-d');
-                $company->rcs           = $companyData->getRcs();
-                $company->tribunal_com  = $companyData->getCommercialCourt();
+                $company->name          = $company->name ?: $companyData->getCorporateName();
+                $company->forme         = $company->forme ?: $companyData->getCompanyForm();
+                $company->capital       = $company->capital ?: $companyData->getCapital();
+                $company->code_naf      = $company->code_naf ?: $companyData->getNAFCode();
+                $company->adresse1      = $company->adresse1 ?: $companyData->getAddress();
+                $company->city          = $company->city ?: $companyData->getCity();
+                $company->zip           = $company->zip ?: $companyData->getPostCode();
+                $company->siret         = $company->siret ?: $companyData->getSiret();
+                $company->date_creation = $company->date_creation ?: $companyData->getCreationDate()->format('Y-m-d');
+                $company->rcs           = $company->rcs ?: $companyData->getRcs();
+                $company->tribunal_com  = $company->tribunal_com ?: $companyData->getCommercialCourt();
 
                 if (false === empty($company->id_company)) {
                     $company->update();
@@ -82,13 +91,11 @@ class CompanyFinanceCheck
 
                 if (true === in_array($companyData->getCompanyStatus(), [7, 9])) {
                     $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INACTIVE;
-
                     return false;
                 }
 
                 if (true === $companyData->getCollectiveProcedure()) {
                     $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_PROCEEDING;
-
                     return false;
                 }
 
@@ -140,14 +147,12 @@ class CompanyFinanceCheck
 
                 if (count($incidents) > 2) {
                     $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT;
-
                     return true;
                 }
 
                 foreach ($incidents as $incident) {
                     if (true === in_array($incident->getType(), $nonAllowedIncident) && 12 >= $this->numberOfMonthsAgo($incident->getDate())) {
                         $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT;
-
                         return true;
                     }
                 }
@@ -157,8 +162,8 @@ class CompanyFinanceCheck
             $this->logger->error('Could not get incident list: CodinfManager::getIncidentList(' . $siren . ') for 1 year. Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
         }
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident';
 
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident';
         return true;
     }
 

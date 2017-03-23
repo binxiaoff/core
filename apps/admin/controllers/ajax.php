@@ -244,7 +244,7 @@ class ajaxController extends bootstrap
                 $company->update();
 
                 $client->get($company->id_client_owner);
-                $client->source = $_POST['source_etape1'];
+                $client->source = $_POST['source_etape1'] ?: 'Directe';
                 $client->update();
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
