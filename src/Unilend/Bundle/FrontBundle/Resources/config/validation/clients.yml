@@ -61,9 +61,6 @@ Unilend\Bundle\CoreBusinessBundle\Entity\Clients:
         secreteQuestion:
             - Type :
                 type: string
-            - Regex:
-                pattern: '/[^\w\-\,\s]/'
-                match: false
         secreteReponse:
             - Type : string
         fundsOrigin:

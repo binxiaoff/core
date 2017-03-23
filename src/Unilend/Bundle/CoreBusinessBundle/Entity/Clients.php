@@ -947,7 +947,7 @@ class Clients
      */
     public function setSecreteReponse($secreteReponse)
     {
-        $this->secreteReponse = $secreteReponse;
+        $this->secreteReponse = md5($secreteReponse);
 
         return $this;
     }

@@ -16,7 +16,7 @@
             </label>
 
             <div class="input-group">
-                <div class="custom-input-bic {% if form_errors(form.bankAccount.bic)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="custom-input-bic {% if form.bankAccount.bic.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     {{ form_widget(form.bankAccount.bic, {
                         'id' : 'form-lender-step-2-bic',
                         'attr' : {
@@ -38,7 +38,7 @@
             </label>
 
             <div class="input-group">
-                <div class="custom-input-iban {% if form_errors(form.bankAccount.iban)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="custom-input-iban {% if form.bankAccount.iban.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     {{ form_widget(form.bankAccount.iban, {
                         'id' : 'form-lender-step-2-iban',
                         'attr' : {
@@ -55,7 +55,7 @@
     </div>
 
     <div class="row">
-        <div class="form-field {% if form_errors(form.client.fundsOrigin)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field {% if form.client.fundsOrigin.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <div class="field-label">
                 <label for="lender-subscription-funds-origin">{% trans %} lender-subscription_documents-bank-info-section-funds-origin-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>

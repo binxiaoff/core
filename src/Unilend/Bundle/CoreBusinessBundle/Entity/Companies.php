@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 
 /**
@@ -51,8 +50,6 @@ class Companies
 
     /**
      * @var string
-     *
-     * @Assert\Email
      *
      * @ORM\Column(name="email_facture", type="string", length=191, nullable=true)
      */
@@ -249,8 +246,6 @@ class Companies
 
     /**
      * @var string
-     *
-     * @Assert\Email
      *
      * @ORM\Column(name="email_dirigeant", type="string", length=191, nullable=true)
      */

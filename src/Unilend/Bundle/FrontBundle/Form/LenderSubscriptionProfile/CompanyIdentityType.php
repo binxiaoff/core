@@ -18,15 +18,15 @@ use Unilend\Bundle\FrontBundle\Form\Components\GenderType;
 class CompanyIdentityType extends AbstractType
 {
     /** @var  EntityManager */
-    private $em;
+    private $entityManager;
 
     /** @var  TranslatorInterface */
     private $translator;
 
     public function __construct(EntityManager $entityManager, TranslatorInterface $translator)
     {
-        $this->em         = $entityManager;
-        $this->translator = $translator;
+        $this->entityManager = $entityManager;
+        $this->translator    = $translator;
     }
 
     /**
@@ -35,7 +35,7 @@ class CompanyIdentityType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $settingEntity       = $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => "Liste deroulante conseil externe de l'entreprise"]);
+        $settingEntity       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => "Liste deroulante conseil externe de l'entreprise"]);
         $externalCounselList = array_flip(json_decode($settingEntity->getValue(), true));
 
         $clientStatusChoices = [
@@ -61,7 +61,7 @@ class CompanyIdentityType extends AbstractType
                 'expanded' => false,
                 'multiple' => false
             ])
-            ->add('preciserConseilExterneEntreprise', TextType::class)
+            ->add('preciserConseilExterneEntreprise', TextType::class, ['required' => false])
             ->add('civiliteDirigeant', GenderType::class)
             ->add('nomDirigeant', TextType::class, ['required' => false])
             ->add('prenomDirigeant', TextType::class, ['required' => false])

@@ -23,7 +23,7 @@
         <h3 class="h3">{% trans %} lender-subscription_identity-section-title {% endtrans %}</h3>
 
         <div class="row">
-            <div class="form-field form-field-multi {% if form_errors(identityForm.clientType)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-multi {% if identityForm.clientType.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <div class="field-label">
                     <label>{% trans %} lender-subscription_identity-client-type-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -41,7 +41,7 @@
         </div>
 
         <div class="row">
-            <div class="form-field form-field-multi {% if form_errors(identityForm.client.civilite)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-multi {% if identityForm.client.civilite.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <div class="field-label">
                     <label>
                         {% trans %} common_title {% endtrans %}
@@ -61,7 +61,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.nom)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.nom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-name">
                     {% trans %} common_birth-name {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -76,7 +76,7 @@
                 {{ form_errors(identityForm.client.nom) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.prenom)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-first-name">
                     {% trans %} common_firstname {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -93,7 +93,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.nomUsage)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.nomUsage.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-used-name">
                     {% trans %} common_used-name {% endtrans %}
                 </label>
@@ -120,7 +120,7 @@
         </div>
 
         <div class="row">
-            <div class="form-field {% if form_errors(identityForm.fiscalAddress.adresseFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field {% if identityForm.fiscalAddress.adresseFiscal.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-street">{% trans %} lender-subscription_address-form-fiscal-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -137,7 +137,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.fiscalAddress.cpFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.fiscalAddress.cpFiscal.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-zip">{% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -161,7 +161,7 @@
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.fiscalAddress.villeFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.fiscalAddress.villeFiscal.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-city">{% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -188,7 +188,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.fiscalAddress.idPaysFiscal)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.fiscalAddress.idPaysFiscal.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-country">
                     {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -204,7 +204,7 @@
                 {{ form_errors(identityForm.fiscalAddress.idPaysFiscal) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.mobile)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.mobile.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-client-mobile">
                     {% trans %} common_mobile-phone {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -250,7 +250,7 @@
 
         <div class="row row-multi-col-computer">
             <div id="form-lender-person-birthdate"
-                 class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.naissance)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                 class="form-field col-lg-6 col-md-6 {% if identityForm.client.naissance.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="client_day_of_birth" >
                     {% trans %} common_birthday {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -278,7 +278,7 @@
                 }) }}
                 {{ form_errors(identityForm.client.naissance) }}
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.idNationalite)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.idNationalite.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-nationality">{% trans %} common_nationality {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -299,7 +299,7 @@
 
         <div class="row row-multi-col-computer">
             <div id="form-lender-person-birth-place"
-                 class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.idPaysNaissance)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                 class="form-field col-lg-6 col-md-6 {% if identityForm.client.idPaysNaissance.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-birth-country">{% trans %} common_birth-country {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -312,7 +312,7 @@
                 }) }}
                 {{ form_errors(identityForm.client.idPaysNaissance) }}
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(identityForm.client.villeNaissance)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.villeNaissance.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-birth-city">
                     {% trans %} common_birth-city {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -343,7 +343,7 @@
 
     <fieldset class="panel">
         <div class="row">
-            <div class="form-field form-field-single-checkbox {% if form_errors(identityForm.tos)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-single-checkbox {% if identityForm.tos.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label>
                     {{ form_widget(identityForm.tos, {
                         'attr' :  {
@@ -361,7 +361,7 @@
         </div>
 
         <div class="row">
-            <div class="form-field form-field-single-checkbox {% if form_errors(identityForm.fiscalAddress.noUsPerson)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-single-checkbox {% if identityForm.fiscalAddress.noUsPerson.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label>
                     {{ form_widget(identityForm.fiscalAddress.noUsPerson) }}
                     <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>

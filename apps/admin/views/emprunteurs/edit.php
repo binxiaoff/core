@@ -182,7 +182,7 @@
                         <?php endif; ?>
                         &nbsp;&nbsp;
                         <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
-                            <a href="<?= $this->lurl ?>/protected/mandat/<?= $this->clients_mandats->name ?>">MANDAT</a>
+                            <a href="<?= $this->lurl ?>/protected/mandats/<?= $this->clients_mandats->name ?>">MANDAT</a>
                         <?php elseif ($aProject['id_project']  > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
                             <a href="/emprunteurs/link_ligthbox/mandat/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">MANDAT</a>
                         <?php endif; ?>
@@ -237,7 +237,7 @@
                     <td><?= $aMoneyOrder['id_project'] ?></td>
                     <td><?= $aMoneyOrder['iban'] ?></td>
                     <td><?= $aMoneyOrder['bic'] ?></td>
-                    <td><a href="<?= $this->lurl ?>/protected/mandat/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
+                    <td><a href="<?= $this->lurl ?>/protected/mandats/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
                     <td>
                         <?php
                             switch ($aMoneyOrder['status']) {

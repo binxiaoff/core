@@ -3,8 +3,6 @@
 namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -19,9 +17,9 @@ class PersonFiscalAddressType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('adresseFiscal', TextType::class)
-            ->add('villeFiscal', TextType::class)
-            ->add('cpFiscal', TextType::class)
+            ->add('adresseFiscal')
+            ->add('villeFiscal')
+            ->add('cpFiscal')
             ->add('idPaysFiscal', CountriesType::class)
             ->add('housedByThirdPerson', CheckboxType::class, [
                 'required' => false,

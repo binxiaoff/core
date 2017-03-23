@@ -4,14 +4,9 @@ namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Bundle\FrontBundle\Form\Components\CountriesType;
 use Unilend\Bundle\FrontBundle\Form\Components\GenderType;
 use Unilend\Bundle\FrontBundle\Form\Components\NationalitiesType;
 
@@ -25,8 +20,8 @@ class PersonProfileType extends AbstractType
     {
         $builder
             ->add('civilite', GenderType::class)
-            ->add('nomUsage', TextType::class)
-            ->add('prenom', TextType::class)
+            ->add('nomUsage', TextType::class, ['required' => false])
+            ->add('prenom')
             ->add('idNationalite', NationalitiesType::class)
         ;
     }

@@ -78,7 +78,7 @@ classNames: 'user-preter-profile'
                                 <div id="form-profile-fiscalite-bank-notifications"></div>
 
                                 <div class="row">
-                                    <div class="form-field form-field-iban {% if form_errors(bankForm.bankAccount.iban)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field form-field-iban {% if bankForm.bankAccount.iban.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <div id="form-profile-fiscalite-iban-add" data-toggle-group="iban" class="ui-toggle iban-add">
                                             <label for="form-profile-fiscalite-iban" class="form-field-label">{% trans %} lender-profile_fiscal-tab-bank-info-section-iban {% endtrans %}
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -102,7 +102,7 @@ classNames: 'user-preter-profile'
                                     </div><!-- /.form-field -->
                                 </div>
                                 <div class="row row-multi-col">
-                                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2 {% if form_errors(bankForm.bankAccount.bic)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2 {% if bankForm.bankAccount.bic.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <div class="field-label">
                                             <label>{% trans %} lender-profile_fiscal-tab-bank-info-section-bic {% endtrans %}
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -119,7 +119,7 @@ classNames: 'user-preter-profile'
                                             {{ form_errors(bankForm.bankAccount.bic) }}
                                         </div>
                                     </div>
-                                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2 {% if form_errors(bankForm.client.fundsOrigin)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2 {% if bankForm.client.fundsOrigin.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <div class="field-label">
                                             <label>{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>

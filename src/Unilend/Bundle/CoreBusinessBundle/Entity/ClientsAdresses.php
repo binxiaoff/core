@@ -17,9 +17,12 @@ class ClientsAdresses
     const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", inversedBy="clientsAdresses")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
      */
     private $idClient;
 
@@ -205,11 +208,11 @@ class ClientsAdresses
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
      * @return ClientsAdresses
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient)
     {
         $this->idClient = $idClient;
 
@@ -219,7 +222,7 @@ class ClientsAdresses
     /**
      * Get idClient
      *
-     * @return integer
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      */
     public function getIdClient()
     {
@@ -627,7 +630,7 @@ class ClientsAdresses
     /**
      * Get memeAdresseFiscal
      *
-     * @return integer
+     * @return bool
      */
     public function getMemeAdresseFiscal()
     {

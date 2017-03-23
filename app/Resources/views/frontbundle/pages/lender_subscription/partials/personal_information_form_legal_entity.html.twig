@@ -128,7 +128,7 @@
         <h3 class="h3">{% trans %} lender-subscription_legal-entity-client-information-section-title {% endtrans %}</h3>
         <div class="row">
             <div id="form-lender-legal-entity-field-client-status"
-                 class="form-field form-field-multi {% if form_errors(companyIdentityForm.company.statusClient)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                 class="form-field form-field-multi {% if companyIdentityForm.company.statusClient.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <div class="field-label">
                     <label>
                         {% trans %} lender-subscription_personal-information-company-client-status-label {% endtrans %}
@@ -150,7 +150,7 @@
         {# Show if input company_client_status value equals 3 #}
         <div class="legal-entity-status-3 collapse {% if companyIdentityForm.company.vars.value.statusConseilExterneEntreprise is not empty %} in {% endif %}">
             <div class="row row-multi-col-computer">
-                <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.company.statusConseilExterneEntreprise)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.company.statusConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     <label for="form-lender-legal-entity-client-external">
                         {% trans %} lender-subscription_personal-information-company-external-counsel-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -167,7 +167,7 @@
 
                 <div class="col-lg-6 col-md-6">
                     <div class="legal-entity-status-other-field collapse {% if companyIdentityForm.company.vars.value.statusConseilExterneEntreprise == 3 %} in {% endif %}
-                    {% if form_errors(companyIdentityForm.company.preciserConseilExterneEntreprise)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                    {% if companyIdentityForm.company.preciserConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                         <div class="form-field">
                             <label for="form-lender-legal-entity-client-external-other">
                                 {% trans %} lender-subscription_personal-information-company-other-external-counsel-label {% endtrans %}
@@ -189,7 +189,7 @@
         </div><!-- /.legal-entity-status-3 -->
 
         <div class="row">
-            <div class="form-field form-field-multi {% if form_errors(companyIdentityForm.client.civilite)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-multi {% if companyIdentityForm.client.civilite.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <div class="field-label">
                     <label>
                         {% trans %} common_title {% endtrans %}
@@ -209,7 +209,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.client.nom)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.nom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-client-name">
                     {% trans %} common_name {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -224,7 +224,7 @@
                 {{ form_errors(companyIdentityForm.client.nom) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.client.prenom)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-client-first-name">
                     {% trans %} common_firstname {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -241,7 +241,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.client.fonction)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.fonction.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-client-function">
                     {% trans %} common_position {% endtrans %}
                 </label>
@@ -261,28 +261,27 @@
 
 <fieldset class="panel">
     <div class="row row-multi-col-computer">
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.client.email)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-email">
                 {% trans %} common_email {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
-            {{ form_widget(companyIdentityForm.client.email, {
+            {{ form_widget(companyIdentityForm.client.email.first, {
                 'id' : 'form-lender-' ~ idClientType ~ '-email',
                 'attr' :  {
                     'class' : 'input-field',
                     'data-formvalidation-input data-formvalidation-required' : 'true'
                 }
             }) }}
-            {{ form_errors(companyIdentityForm.client.email)}}
         </div><!-- /.form-field -->
 
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.client.emailConfirmation)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-email-conf">
                 {% trans %} common_email-confirmation {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group">
-                {{ form_widget(companyIdentityForm.client.emailConfirmation, {
+                {{ form_widget(companyIdentityForm.client.email.second, {
                     'id' : 'form-lender-'~ idClientType ~'-email-conf',
                     'attr' :  {
                         'class' : 'input-field',
@@ -290,21 +289,21 @@
                         'data-formvalidation-samevalueas' : '#form-lender-' ~ idClientType ~ '-email'
                     }
                 }) }}
-                {{ form_errors(companyIdentityForm.client.emailConfirmation)}}
             </div>
         </div><!-- /.form-field -->
+        {{ form_errors(companyIdentityForm.client.email)}}
     </div>
 
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-12 col-md-12">
             <div class="field-help">{% trans %} common_password-hint {% endtrans %}</div>
         </div>
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.client.password)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-pwd">
                 {% trans %} common_password {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
-            {{ form_widget(companyIdentityForm.client.password, {
+            {{ form_widget(companyIdentityForm.client.password.first, {
                 'id' : 'form-lender-'~ idClientType ~'-pwd',
                 'attr' : {
                     'class' : 'input-field',
@@ -312,16 +311,15 @@
                     'data-formvalidation-minlength' : '6'
                 }
             }) }}
-            {{ form_errors(companyIdentityForm.client.password) }}
         </div><!-- /.form-field -->
 
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.client.passwordConfirmation)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-pwd-conf">
                 {% trans %} common_password-confirmation {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group">
-                {{ form_widget(companyIdentityForm.client.passwordConfirmation, {
+                {{ form_widget(companyIdentityForm.client.password.second, {
                     'id' : 'form-lender-'~ idClientType ~'-pwd-conf',
                     'attr' : {
                         'class' : 'input-field',
@@ -329,13 +327,13 @@
                         'data-formvalidation-samevalueas' : '#form-lender-' ~ idClientType ~ '-pwd'
                     }
                 }) }}
-                {{ form_errors(companyIdentityForm.client.passwordConfirmation) }}
             </div>
         </div><!-- /.form-field -->
+        {{ form_errors(companyIdentityForm.client.password) }}
     </div>
 
     <div class="row">
-        <div class="form-field {% if form_errors(companyIdentityForm.security.secreteQuestion)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field {% if companyIdentityForm.security.secreteQuestion.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-security-question">
                 {% trans %} lender-subscription_security-form-secret-question-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -353,7 +351,7 @@
     </div>
 
     <div class="row">
-        <div class="form-field {% if form_errors(companyIdentityForm.security.secreteReponse)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field {% if companyIdentityForm.security.secreteReponse.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-security-answer">
                 {% trans %} lender-subscription_security-form-secret-answer-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -374,7 +372,7 @@
     <fieldset class="panel legal-entity-status-not-1 collapse {% if companyIdentityForm.company.vars.value.statusClient > 1 %} in {% endif %}">
         <h3>{% trans %} lender-subscription_legal-entity-company-director-section-title {% endtrans %}</h3>
         <div class="row">
-            <div class="form-field form-field-multi {% if form_errors(companyIdentityForm.company.civiliteDirigeant)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-multi {% if companyIdentityForm.company.civiliteDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <div class="field-label">
                     <label>
                         {% trans %} common_title {% endtrans %}
@@ -394,7 +392,7 @@
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.company.nomDirigeant)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.company.nomDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-director-name">
                     {% trans %} common_name {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -409,7 +407,7 @@
                 {{ form_errors(companyIdentityForm.company.nomDirigeant) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.company.prenomDirigeant)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.company.prenomDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-director-first-name">
                     {% trans %} common_firstname{% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -426,7 +424,7 @@
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.company.fonctionDirigeant)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.company.fonctionDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-director-position">
                     {% trans %} common_position {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -446,7 +444,7 @@
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.company.phoneDirigeant)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.company.phoneDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-director-phone">
                     {% trans %} common_phone {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -462,7 +460,7 @@
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-lender-legal-entity-client-first-name {% if form_errors(companyIdentityForm.company.emailDirigeant)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                <label for="form-lender-legal-entity-client-first-name {% if companyIdentityForm.company.emailDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     {% trans %} common_email {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -485,7 +483,7 @@
         </div>
 
         <div class="row">
-            <div class="form-field {% if form_errors(companyIdentityForm.fiscalAddress.adresse1)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field {% if companyIdentityForm.fiscalAddress.adresse1.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-fiscal-address-street">
                     {% trans %} lender-subscription_address-form-fiscal-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -503,7 +501,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.fiscalAddress.zip)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.fiscalAddress.zip.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-fiscal-address-zip">
                     {% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -512,7 +510,7 @@
                     {{ form_widget(companyIdentityForm.fiscalAddress.zip, {
                         'id' : 'form-lender-legal-entity-fiscal-address-zip',
                         'attr' : {
-                            'class' : 'input-field',
+                            'class' : 'input-field ui-autocomplete',
                             'data-formvalidation-input data-formvalidation-required' : 'true',
                             'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_subscription_ajax_zip'),
                             'data-autocomplete-address-countryelem' : '#form-lender-legal-entity-fiscal-address-country',
@@ -528,7 +526,7 @@
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.fiscalAddress.city)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.fiscalAddress.city.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-fiscal-address-city">
                     {% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -556,7 +554,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.fiscalAddress.idPays)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.fiscalAddress.idPays.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-fiscal-address-country">
                     {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -571,7 +569,7 @@
                 {{ form_errors(companyIdentityForm.fiscalAddress.idPays) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.client.mobile)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.client.mobile.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-legal-entity-client-mobile">
                     {% trans %} common_mobile-phone {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -615,7 +613,7 @@
         </div>
 
         <div class="row">
-            <div class="form-field {% if form_errors(companyIdentityForm.postalAddress.adresse1)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field {% if companyIdentityForm.postalAddress.adresse1.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-{{ idClientType }}-postal-address-street">
                     {% trans %} lender-subscription_address-form-postal-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -632,7 +630,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.postalAddress.cp)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.postalAddress.cp.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-{{ idClientType }}-postal-address-zip">
                     {% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -658,7 +656,7 @@
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.postalAddress.ville)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.postalAddress.ville.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-{{ idClientType }}-postal-address-city">
                     {% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -686,7 +684,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(companyIdentityForm.postalAddress.idPays)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if companyIdentityForm.postalAddress.idPays.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-{{ idClientType }}-postal-address-country">
                     {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -705,7 +703,7 @@
 
     <fieldset class="panel">
         <div class="row">
-            <div class="form-field form-field-single-checkbox {% if form_errors(companyIdentityForm.tos)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-single-checkbox {% if companyIdentityForm.tos.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label>{{ form_widget(companyIdentityForm.tos, {
                         'attr' :  {
                             'data-formvalidation-input data-formvalidation-required' : 'true'

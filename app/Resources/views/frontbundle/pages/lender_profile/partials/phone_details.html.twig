@@ -24,7 +24,7 @@
     }}
 
     <div class="row row-multi-col-computer">
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.phone.mobile)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if forms.phone.mobile.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-profile-phone-mobile">{% trans %} common_mobile-phone {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <div class="input-group">
@@ -40,7 +40,7 @@
             </div>
         </div><!-- /.form-field -->
 
-        <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.phone.telephone)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if forms.phone.telephone.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-profile-security-identification-telephone">{% trans %} common_landline {% endtrans %}</label>
             <div class="input-group">
                 {{ form_widget(forms.phone.telephone, {

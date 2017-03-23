@@ -28,7 +28,7 @@
         }
     }) }}
         <div class="row">
-            <div class="form-field {% if form_errors(forms.fiscalAddress.adresse1)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field {% if forms.fiscalAddress.adresse1.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     {{ form_widget(forms.fiscalAddress.adresse1, {
@@ -43,7 +43,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.zip)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.fiscalAddress.zip.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -66,7 +66,7 @@
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.city)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.fiscalAddress.city.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <div class="input-group set-right">
@@ -91,7 +91,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.fiscalAddress.idPays)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.fiscalAddress.idPays.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 {{ form_widget(forms.fiscalAddress.idPays, {

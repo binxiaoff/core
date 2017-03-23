@@ -18,7 +18,7 @@ class PersonPhoneType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('mobile', TextType::class)
+            ->add('mobile')
             ->add('telephone', TextType::class, ['required' => false])
         ;
     }

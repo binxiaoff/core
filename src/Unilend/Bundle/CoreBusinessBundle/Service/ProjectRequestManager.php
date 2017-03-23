@@ -17,13 +17,13 @@ use Unilend\Bundle\FrontBundle\Service\SourceManager;
 class ProjectRequestManager
 {
     /** @var EntityManagerSimulator  */
-    private $entityManager;
+    private $entityManagerSimulator;
     /** @var  ProjectManager */
     private $projectManager;
     /** @var SourceManager  */
     private $sourceManager;
     /** @var  EntityManager */
-    private $em;
+    private $entityManager;
     /** @var  WalletCreationManager */
     private $walletCreationManager;
     /** @var  LoggerInterface */
@@ -33,35 +33,35 @@ class ProjectRequestManager
 
     /**
      * ProjectRequestManager constructor.
-     * @param EntityManagerSimulator $entityManager
+     * @param EntityManagerSimulator $entityManagerSimulator
      * @param ProjectManager $projectManager
      * @param SourceManager $sourceManager
-     * @param EntityManager $em
+     * @param EntityManager $entityManager
      * @param WalletCreationManager $walletCreationManager
      * @param LoggerInterface $logger
      */
     public function __construct(
-        EntityManagerSimulator $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
         ProjectManager $projectManager,
         SourceManager $sourceManager,
-        EntityManager $em,
+        EntityManager $entityManager,
         WalletCreationManager $walletCreationManager,
         LoggerInterface $logger,
         PartnerManager $partnerManager
     ) {
-        $this->entityManager         = $entityManager;
-        $this->projectManager        = $projectManager;
-        $this->sourceManager         = $sourceManager;
-        $this->em                    = $em;
-        $this->walletCreationManager = $walletCreationManager;
-        $this->logger                = $logger;
-        $this->partnerManager        = $partnerManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->projectManager         = $projectManager;
+        $this->sourceManager          = $sourceManager;
+        $this->entityManager          = $entityManager;
+        $this->walletCreationManager  = $walletCreationManager;
+        $this->logger                 = $logger;
+        $this->partnerManager         = $partnerManager;
     }
 
     public function getMonthlyRateEstimate()
     {
         /** @var \projects $projects */
-        $projects = $this->entityManager->getRepository('projects');
+        $projects = $this->entityManagerSimulator->getRepository('projects');
 
         return round($projects->getGlobalAverageRateOfFundedProjects(50), 1);
     }
@@ -72,7 +72,7 @@ class ProjectRequestManager
         $oFinancial = new \PHPExcel_Calculation_Financial();
 
         /** @var \tax_type $taxType */
-        $taxType = $this->entityManager->getRepository('tax_type');
+        $taxType = $this->entityManagerSimulator->getRepository('tax_type');
         $taxType->get(\tax_type::TYPE_VAT);
         $fVATRate = $taxType->rate / 100;
 
@@ -89,7 +89,7 @@ class ProjectRequestManager
     public function saveSimulatorRequest($aFormData)
     {
         /** @var \projects $project */
-        $project = $this->entityManager->getRepository('projects');
+        $project = $this->entityManagerSimulator->getRepository('projects');
 
         if (empty($aFormData['email']) || false === filter_var($aFormData['email'], FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email');
@@ -107,7 +107,7 @@ class ProjectRequestManager
             throw new \InvalidArgumentException('Invalid reason');
         }
 
-        $email = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
+        $email = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
 
         $client = new Clients();
         $client
@@ -130,20 +130,20 @@ class ProjectRequestManager
             ->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        $this->em->beginTransaction();
+        $this->entityManager->beginTransaction();
         try {
-            $this->em->persist($client);
-            $this->em->flush($client);
+            $this->entityManager->persist($client);
             $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($client->getIdClient());
-            $this->em->persist($clientAddress);
+            $clientAddress->setIdClient($client);
+            $this->entityManager->persist($clientAddress);
+            $this->entityManager->flush($clientAddress);
             $company->setIdClientOwner($client->getIdClient());
-            $this->em->persist($company);
-            $this->em->flush();
+            $this->entityManager->persist($company);
+            $this->entityManager->flush($company);
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
-            $this->em->commit();
+            $this->entityManager->commit();
         } catch (Exception $exception) {
-            $this->em->getConnection()->rollBack();
+            $this->entityManager->getConnection()->rollBack();
             $this->logger->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 

@@ -88,25 +88,24 @@ classNames: 'user-preter-profile'
                             {{ form_errors(forms.securityEmail) }}
                                 <div id="form-profile-security-identification-notifications"></div>
                                 <div class="row row-multi-col-computer">
-                                    <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.securityEmail.email)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field col-lg-6 col-md-6 {% if forms.securityEmail.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <label for="form-profile-security-identification-email">{% trans %} common_email {% endtrans %}
                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                         <div class="input-group">
-                                            {{ form_widget(forms.securityEmail.email, {
+                                            {{ form_widget(forms.securityEmail.email.first, {
                                                 'id' : 'form-profile-security-identification-email',
                                                 'attr' : {
                                                     'class' : 'input-field',
                                                     'data-formvalidation-input data-formvalidation-required' : 'true'
                                                 }
                                             }) }}
-                                            {{ form_errors(forms.securityEmail.email) }}
                                         </div>
                                     </div><!-- /.form-field -->
-                                    <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.securityEmail.emailConfirmation)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field col-lg-6 col-md-6 {% if forms.securityEmail.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <label for="form-profile-security-identification-email-conf">{% trans %} common_email-confirmation {% endtrans %}
                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                         <div class="input-group">
-                                            {{ form_widget(forms.securityEmail.emailConfirmation, {
+                                            {{ form_widget(forms.securityEmail.email.second, {
                                                 'id' : 'form-profile-security-identification-email-conf',
                                                 'attr' :  {
                                                     'class' : 'input-field',
@@ -114,9 +113,9 @@ classNames: 'user-preter-profile'
                                                     'data-formvalidation-samevalueas' : '#form-profile-security-identification-email'
                                                 }
                                             }) }}
-                                            {{ form_errors(forms.securityEmail.emailConfirmation) }}
                                         </div>
                                     </div><!-- /.form-field -->
+                                    {{ form_errors(forms.securityEmail.email) }}
                                 </div>
 
                                 <div class="btn-controls">
@@ -169,7 +168,7 @@ classNames: 'user-preter-profile'
                                 }
                             }) }}
                              <div class="row row-multi-col-computer">
-                                    <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.securityPwd.formerPassword)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field col-lg-6 col-md-6 {% if forms.securityPwd.formerPassword.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <label for="form-profile-security-password-passe">{% trans %} lender-profile_security-password-section-former-password-field-label {% endtrans %}
                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                         <div class="input-group">
@@ -188,10 +187,10 @@ classNames: 'user-preter-profile'
                                 </div>
 
                                 <div class="row row-multi-col-computer">
-                                    <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.securityPwd.newPassword)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field col-lg-6 col-md-6 {% if forms.securityPwd.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <label for="form-profile-security-password-passe-new">{% trans %} lender-profile_security-password-section-new-password-field-label {% endtrans %}
                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                                        {{ form_widget(forms.securityPwd.newPassword, {
+                                        {{ form_widget(forms.securityPwd.password.first, {
                                             'id' : 'form-profile-security-password-passe-new',
                                             'attr' :  {
                                                 'class' : 'input-field',
@@ -199,13 +198,12 @@ classNames: 'user-preter-profile'
                                                 'data-formvalidation-minlength' : '6'
                                             }
                                         }) }}
-                                        {{ form_errors(forms.securityPwd.newPassword) }}
                                     </div><!-- /.form-field -->
-                                    <div class="form-field col-lg-6 col-md-6 {% if form_errors(forms.securityPwd.passwordConfirmation)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field col-lg-6 col-md-6 {% if forms.securityPwd.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <label for="form-profile-security-password-passe-new-conf">{% trans %} lender-profile_security-password-section-new-password-confirmation-field-label {% endtrans %}
                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                         <div class="input-group">
-                                            {{ form_widget(forms.securityPwd.passwordConfirmation, {
+                                            {{ form_widget(forms.securityPwd.password.second, {
                                                 'id' : 'form-profile-security-password-passe-new-conf',
                                                 'attr' :  {
                                                     'class' : 'input-field',
@@ -213,9 +211,9 @@ classNames: 'user-preter-profile'
                                                     'data-formvalidation-samevalueas' : '#form-profile-security-password-passe-new'
                                                 }
                                             }) }}
-                                            {{ form_errors(forms.securityPwd.passwordConfirmation) }}
                                         </div>
                                     </div><!-- /.form-field -->
+                                    {{ form_errors(forms.securityPwd.password) }}
                                 </div>
 
                                 <div class="btn-controls">
@@ -265,7 +263,7 @@ classNames: 'user-preter-profile'
                                 <div id="form-profile-security-question-notifications"></div>
 
                                 <div class="row">
-                                    <div class="form-field {% if form_errors(forms.securityQuestion.secreteQuestion)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field {% if forms.securityQuestion.secreteQuestion.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <label for="form-profile-security-question-q">{% trans %} common_security-question {% endtrans %}
                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                         {{ form_widget(forms.securityQuestion.secreteQuestion, {
@@ -281,7 +279,7 @@ classNames: 'user-preter-profile'
                                 </div>
 
                                 <div class="row">
-                                    <div class="form-field {% if form_errors(forms.securityQuestion.secreteReponse)|trim|length > 0 %}ui-formvalidation-error{% endif %}">
+                                    <div class="form-field {% if forms.securityQuestion.secreteReponse.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <label for="form-profile-security-question-a">{% trans %} common_security-answer {% endtrans %}
                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                         {{ form_widget(forms.securityQuestion.secreteReponse, {
