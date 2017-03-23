@@ -88,9 +88,17 @@ class prescripteursController extends bootstrap
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
 
             $clientEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->prescripteurs->id_client);
-            $bankAccount   = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
-            if ($bankAccount) {
-                $bankAccountManager->validateBankAccount($bankAccount);
+            try {
+                $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
+                if ($bankAccount) {
+                    $bankAccountManager->validateBankAccount($bankAccount);
+                }
+            } catch (Exception $exception) {
+                $_SESSION['freeow']['title']   = 'Error RIB';
+                $_SESSION['freeow']['message'] = $exception->getMessage();
+
+                header('Location: ' . $this->lurl . '/prescripteurs/edit/' . $this->prescripteurs->id_prescripteur);
+                exit;
             }
 
             $serialize = serialize(array('id_prescripteur' => $this->prescripteurs->id_prescripteur, 'post' => $_POST));
@@ -142,9 +150,16 @@ class prescripteursController extends bootstrap
                 /** @var \Doctrine\ORM\EntityManager $entityManager */
                 $entityManager = $this->get('doctrine.orm.entity_manager');
                 $clientEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-                $bankAccount   = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
-                if ($bankAccount) {
-                    $bankAccountManager->validateBankAccount($bankAccount);
+                try {
+                    $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
+                    if ($bankAccount) {
+                        $bankAccountManager->validateBankAccount($bankAccount);
+                    }
+                } catch (Exception $exception) {
+                    echo json_encode([
+                        'result' => 'KO'
+                    ]);
+                    exit;
                 }
 
                 $company->siren = $_POST['siren'];

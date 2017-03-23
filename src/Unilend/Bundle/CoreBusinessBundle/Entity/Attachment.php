@@ -77,6 +77,13 @@ class Attachment
      */
     private $greenpointAttachment;
 
+    /**
+     * @var BankAccount
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount", mappedBy="idAttachment")
+     */
+    private $bankAccount;
+
 
     /**
      * Set path
@@ -258,5 +265,15 @@ class Attachment
     public function getGreenpointAttachment()
     {
         return $this->greenpointAttachment;
+    }
+
+    /**
+     * Get bankAccount
+     *
+     * @return BankAccount
+     */
+    public function getBankAccount()
+    {
+        return $this->bankAccount;
     }
 }

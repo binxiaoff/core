@@ -29,25 +29,6 @@ class BankAccountRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime       $dateTime
-     * @param Clients|integer $idClient
-     *
-     * @return Clients[]
-     */
-    public function getPreviousBankAccounts(\DateTime $dateTime, $idClient)
-    {
-        $cb = $this->createQueryBuilder('ba');
-        $cb->where('ba.idClient = :idClient')
-           ->andWhere('ba.datePending < :dateTime')
-           ->setParameters([
-               'idClient' => $idClient,
-               'dateTime' => $dateTime
-           ]);
-
-        return $cb->getQuery()->getResult();
-    }
-
-    /**
      * @param Clients|integer $idClient
      *
      * @return BankAccount|null

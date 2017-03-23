@@ -182,6 +182,9 @@ class pdfController extends bootstrap
         $project = $this->loadData('projects');
         /** @var \companies $company */
         $company = $this->loadData('companies');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
 
         if (
             $this->clients->get($this->params[0], 'hash')
@@ -190,6 +193,11 @@ class pdfController extends bootstrap
             && $project->id_company == $company->id_company
             && $project->status != \projects_status::PRET_REFUSE
         ) {
+            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
+            if (null === $bankAccount) {
+                header('Location: ' . $this->lurl);
+                die;
+            }
             $path            = $this->path . 'protected/pdf/mandat/';
             $namePDFClient   = 'MANDAT-UNILEND-' . $project->slug . '-' . $this->clients->id_client;
             $mandates        = $this->loadData('clients_mandats');
@@ -222,6 +230,8 @@ class pdfController extends bootstrap
                 $mandates->name       = 'mandat-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
                 $mandates->id_project = $project->id_project;
                 $mandates->status     = \clients_mandats::STATUS_PENDING;
+                $mandates->iban       = $bankAccount->getIban();
+                $mandates->bic        = $bankAccount->getBic();
                 $mandates->create();
             }
 
@@ -242,38 +252,23 @@ class pdfController extends bootstrap
     {
         $this->pays             = $this->loadData('pays');
         $this->oLendersAccounts = $this->loadData('lenders_accounts');
-
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
         $this->pays->get($this->clients->id_langue, 'id_langue');
 
         if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
             $this->entreprise = true;
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager    = $this->get('doctrine.orm.entity_manager');
-            $bankAccount      = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
-
-            $this->iban[1] = substr($bankAccount->getIban(), 0, 4);
-            $this->iban[2] = substr($bankAccount->getIban(), 4, 4);
-            $this->iban[3] = substr($bankAccount->getIban(), 8, 4);
-            $this->iban[4] = substr($bankAccount->getIban(), 12, 4);
-            $this->iban[5] = substr($bankAccount->getIban(), 16, 4);
-            $this->iban[6] = substr($bankAccount->getIban(), 20, 4);
-            $this->iban[7] = substr($bankAccount->getIban(), 24, 3);
-
-            $this->leIban = $bankAccount->getIban();
         } else {
             $this->entreprise = false;
-
-            $this->iban[1] = substr($this->oLendersAccounts->iban, 0, 4);
-            $this->iban[2] = substr($this->oLendersAccounts->iban, 4, 4);
-            $this->iban[3] = substr($this->oLendersAccounts->iban, 8, 4);
-            $this->iban[4] = substr($this->oLendersAccounts->iban, 12, 4);
-            $this->iban[5] = substr($this->oLendersAccounts->iban, 16, 4);
-            $this->iban[6] = substr($this->oLendersAccounts->iban, 20, 4);
-            $this->iban[7] = substr($this->oLendersAccounts->iban, 24, 3);
-
-            $this->leIban = $this->oLendersAccounts->iban;
+        }
+        $this->iban  = '';
+        $this->bic   = '';
+        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
+        if ($bankAccount) {
+            $this->iban = $bankAccount->getIban();
+            $this->bic  = $bankAccount->getBic();
         }
 
         // pour savoir si Preteur ou emprunteur

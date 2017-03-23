@@ -1,5 +1,13 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Symfony\Component\HttpFoundation\File\File;
+
 class emprunteursController extends bootstrap
 {
     public function initialize()
@@ -48,7 +56,6 @@ class emprunteursController extends bootstrap
         $this->projects_status   = $this->loadData('projects_status');
         $this->clients_mandats   = $this->loadData('clients_mandats');
         $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
-        $this->clients->history  = '';
         $this->settings          = $this->loadData('settings');
         $companySection          = $this->loadData('company_sector');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -68,7 +75,13 @@ class emprunteursController extends bootstrap
             if ($this->clients->telephone != '') {
                 $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
             }
-            $this->bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+
+            $this->bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+            $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
+                'idClient' => $client,
+                'idType'   => AttachmentType::RIB
+            ]);
+
             if (isset($_POST['form_edit_emprunteur'])) {
                 $this->clients->nom    = $this->ficelle->majNom($_POST['nom']);
                 $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
@@ -85,47 +98,10 @@ class emprunteursController extends bootstrap
                     $this->clients->email = $_POST['email'];
                 }
 
-
-
-                $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
-                $this->companies->name    = $_POST['societe'];
-                $this->companies->sector  = $_POST['secteur'];
-                $edited_rib               = false;
-                $sCurrentIban             = $this->bankAccount->getIban();
-                $sCurrentBic              = $this->bankAccount->getBic();
-                $sNewIban                 = str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']));
-                $sNewBic = str_replace(' ', '', strtoupper($_POST['bic']));
-
-                if ($sCurrentBic != $sNewBic || $sCurrentIban != $sNewIban) {
-                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->bankAccount->getIban() . " / " . $this->bankAccount->getBic() . "<br><u>Nouvelle valeur:</u> " . $sNewIban . " / " . $sNewBic . "</tr></td>";
-                    $edited_rib = true;
-                }
-
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
-                $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-                $newBankAccount = $bankAccountManager->saveBankInformation($client, $sNewBic, $sNewIban);
+                $this->clients->telephone       = str_replace(' ', '', $_POST['telephone']);
+                $this->companies->name          = $_POST['societe'];
+                $this->companies->sector        = $_POST['secteur'];
                 $this->companies->email_facture = trim($_POST['email_facture']);
-
-                // on verif si le bic est good
-                if ($this->companies->bic != '' && $this->ficelle->swift_validate(trim($this->companies->bic)) == false) {
-                    $_SESSION['erreurBic'] = '';
-
-                    $_SESSION['freeow']['title']   = 'Erreur BIC';
-                    $_SESSION['freeow']['message'] = 'Le BIC est invalide';
-
-                    header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
-                    die;
-                }
-
-                if ($newBankAccount->getIban() != '' && $this->ficelle->isIBAN($newBankAccount->getIban()) != 1) {
-                    $_SESSION['erreurIban'] = '';
-
-                    $_SESSION['freeow']['title']   = 'Erreur IBAN';
-                    $_SESSION['freeow']['message'] = 'L\'IBAN est invalide';
-
-                    header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
-                    die;
-                }
 
                 if ($this->companies->status_adresse_correspondance == 1) {
                     $this->companies->adresse1 = $_POST['adresse'];
@@ -141,15 +117,6 @@ class emprunteursController extends bootstrap
                 $this->clients->update();
                 $this->clients_adresses->update();
 
-                if ($edited_rib) {
-                    $this->sendRibUpdateEmail($this->clients);
-                }
-
-                if ($sCurrentIban !== $sNewIban) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
-                    $oMailerManager = $this->get('unilend.service.email_manager');
-                    $oMailerManager->sendIbanUpdateToStaff($this->clients->id_client, $sCurrentIban, $sNewIban);
-                }
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
                 $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
 
@@ -167,143 +134,85 @@ class emprunteursController extends bootstrap
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
      */
-    private function sendRibUpdateEmail($client)
+    private function updateMandat(Clients $client)
     {
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
-
-        /** @var \companies $company */
-        $company = $this->loadData('companies');
-
-        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-
-        foreach ($company->select('id_client_owner = ' . $client->id_client) as $currentCompany) {
-            foreach ($project->select('id_company = ' . $currentCompany['id_company']) as $projects) {
-                $aMandats = $this->clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $client->id_client . ' AND status != ' . \clients_mandats::STATUS_ARCHIVED);
-
-                if (false === empty($aMandats)) {
-                    foreach ($aMandats as $aMandatToArchive) {
-                        $this->clients_mandats->get($aMandatToArchive['id_mandat']);
-
-                        if (\clients_mandats::STATUS_SIGNED == $this->clients_mandats->status) {
-                            $nouveauNom    = str_replace('mandat', 'mandat-' . $this->clients_mandats->id_mandat, $this->clients_mandats->name);
-                            $chemin        = $this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name;
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $companies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idClientOwner' => $client->getIdClient()]);
+        foreach ($companies as $company) {
+            $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
+            foreach ($projects as $project) {
+                if (in_array($project->getStatus(), [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
+                    continue;
+                }
+                $mandats = $project->getMandats();
+                if (false === empty($mandats)) {
+                    foreach ($mandats as $mandat) {
+                        if (! $mandat instanceof ClientsMandats || $mandat->getStatus() === ClientsMandats::STATUS_ARCHIVED) {
+                            continue;
+                        }
+                        if (ClientsMandats::STATUS_SIGNED == $mandat->getStatus()) {
+                            $nouveauNom    = str_replace('mandat', 'mandat-' . $mandat->getIdMandat(), $mandat->getName());
+                            $chemin        = $this->path . 'protected/pdf/mandat/' . $mandat->getName();
                             $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
 
                             if (file_exists($chemin)) {
                                 rename($chemin, $nouveauChemin);
                             }
 
-                            $this->clients_mandats->name = $nouveauNom;
+                            $mandat->setName($nouveauNom);
                         }
-                        $this->clients_mandats->status = \clients_mandats::STATUS_ARCHIVED;
-                        $this->clients_mandats->update();
+                        $mandat->setStatus(ClientsMandats::STATUS_ARCHIVED);
+                        $entityManager->flush($mandat);
                     }
-
                     // No need to create the new mandat, it will be created in pdf::_mandat()
-                    //**********************************************//
-                    //*** ENVOI DU MAIL FUNDE EMPRUNTEUR TERMINE ***//
-                    //**********************************************//
-                    $project->get($projects['id_project'], 'id_project');
-                    $company->get($project->id_company, 'id_company');
-                    $client->get($company->id_client_owner, 'id_client');
-                    $echeanciers_emprunteur->get($project->id_project, 'ordre = 1 AND id_project');
-                    $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
-                    $mensualite = ($mensualite / 100);
 
+                    $paymentSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
+                    if (null === $paymentSchedule) {
+                        continue;
+                    }
+                    $monthlyPayment = round(bcdiv($paymentSchedule->getMontant() + $paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    /** @var \prelevements $directDebit */
-                    $directDebit        = $this->loadData('prelevements');
-                    $this->nextEcheance = $directDebit->select('status = 0 AND id_project = ' . $projects['id_project']);
+                    $nextDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->findOneBy(
+                        ['idProject' => $project, 'status' => Prelevements::STATUS_PENDING],
+                        ['dateEcheanceEmprunteur' => 'DESC']
+                    );
+
+                    if (null === $nextDirectDebit) {
+                        continue;
+                    }
 
                     $varMail = array(
                         'surl'                   => $this->surl,
                         'url'                    => $this->lurl,
-                        'prenom_e'               => $client->prenom,
-                        'nom_e'                  => $company->name,
-                        'mensualite'             => $this->ficelle->formatNumber($mensualite),
-                        'montant'                => $this->ficelle->formatNumber($project->amount, 0),
-                        'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
-                        'link_mandat'            => $this->furl . '/pdf/mandat/' . $client->hash . '/' . $project->id_project,
-                        'link_pouvoir'           => $this->furl . '/pdf/pouvoir/' . $client->hash . '/' . $project->id_project,
-                        'projet'                 => $project->title,
+                        'prenom_e'               => $client->getPrenom(),
+                        'nom_e'                  => $company->getName(),
+                        'mensualite'             => $this->ficelle->formatNumber($monthlyPayment),
+                        'montant'                => $this->ficelle->formatNumber($project->getAmount(), 0),
+                        'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->getIdProject(),
+                        'link_mandat'            => $this->furl . '/pdf/mandat/' . $client->getHash() . '/' . $project->getIdProject(),
+                        'link_pouvoir'           => $this->furl . '/pdf/pouvoir/' . $client->getHash() . '/' . $project->getIdProject(),
+                        'projet'                 => $project->getTitle(),
                         'lien_fb'                => $lien_fb,
                         'lien_tw'                => $lien_tw,
-                        'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur']))
+                        'date_echeance'          => $nextDirectDebit->getDateEcheanceEmprunteur()->format('d/m/Y')
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('changement-de-rib', $varMail);
-                    $message->setTo($client->email);
+                    $message->setTo($client->getEmail());
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
                 }
             }
         }
-    }
-
-
-    public function _RIBlightbox()
-    {
-        $this->hideDecoration();
-
-        $_SESSION['request_url'] = $this->url;
-
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            /** @var \companies $company */
-            $company = $this->loadData('companies');
-            $company->get($this->params[0], 'id_client_owner');
-
-            /** @var \projects $project */
-            $project         = $this->loadData('projects');
-            $this->aProjects = $project->selectProjectsByStatus([\projects_status::$runningRepayment], ' AND id_company = ' . $company->id_company);
-        }
-    }
-
-    public function _RIBlightbox_no_prelev()
-    {
-        $this->hideDecoration();
-
-        $_SESSION['request_url'] = $this->url;
-
-        $this->date_activation = date('d/m/Y');
-    }
-
-    public function _RIB_iban_existant()
-    {
-        $this->hideDecoration();
-
-        $_SESSION['request_url'] = $this->url;
-
-        //recuperation de la liste des compagnies avec le même iban
-        $list_comp       = explode('-', $this->params[0]);
-        $this->list_comp = $sep = "";
-
-        foreach ($list_comp as $company) {
-            //recuperation du nom de la compagnie
-            $companies = $this->loadData('companies');
-            if ($companies->get($company)) {
-                $this->list_comp .= $company . ': ' . $companies->name . ' <br />';
-            }
-        }
-    }
-
-    public function _error_iban_lightbox()
-    {
-        $this->hideDecoration();
-    }
-
-    public function _error_bic_lightbox()
-    {
-        $this->hideDecoration();
     }
 
     public function _factures()
@@ -335,5 +244,90 @@ class emprunteursController extends bootstrap
             }
         }
         $this->aProjectInvoices = $aProjectInvoices;
+    }
+
+    public function _extraction_rib_lightbox()
+    {
+        $this->hideDecoration();
+
+        $this->isImage = false;
+
+        if (false === empty($this->params[0])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $this->attachment = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->find($this->params[0]);
+            if ($this->attachment) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+                $attachmentManager = $this->get('unilend.service.attachment_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                try {
+                    $file = new File($attachmentManager->getFullPath($this->attachment));
+                    if (in_array($file->getMimeType(), ['image/jpeg', 'image/gif', 'image/png', 'image/bmp'])) { // The 4 formats supported by most of the web browser
+                        $this->isImage = true;
+                    }
+                } catch (Exception $exception) {
+                    $this->isImage = false;
+                }
+
+                if ($this->request->isMethod('POST')) {
+                    if ($_POST['iban1'] && $_POST['iban2'] && $_POST['iban3'] && $_POST['iban4'] && $_POST['iban5'] && $_POST['iban6'] && $_POST['iban7'] && $this->request->request->get('bic')) {
+                        $iban = $_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7'];
+                        try {
+                            $bankAccountManager->saveBankInformation($this->attachment->getClient(), $_POST['bic'], $iban, $this->attachment);
+                        } catch (Exception $exception) {
+                            $_SESSION['freeow']['title']   = 'Erreur RIB';
+                            $_SESSION['freeow']['message'] = $exception->getMessage();
+                        }
+                    }
+                    header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->attachment->getClient()->getIdClient());
+                }
+            }
+        }
+    }
+
+    public function _validate_rib_lightbox()
+    {
+        $this->hideDecoration();
+        if (false === empty($this->params[0])) {
+            $entityManager     = $this->get('doctrine.orm.entity_manager');
+            $this->bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($this->params[0]);
+        }
+    }
+
+    public function _validate_rib()
+    {
+        if ($this->request->isMethod('POST') && false === empty($_POST['id_bank_account'])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var BankAccount $bankAccount */
+            $entityManager->beginTransaction();
+            try {
+                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($_POST['id_bank_account']);
+                if ($bankAccount) {
+                    $currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccount->getIdClient());
+                    $currentIban        = '';
+                    if ($currentBankAccount) {
+                        $currentIban = $currentBankAccount->getIban();
+                    }
+                    $this->updateMandat($bankAccount->getIdClient());
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
+                    $oMailerManager = $this->get('unilend.service.email_manager');
+                    $oMailerManager->sendIbanUpdateToStaff($bankAccount->getIdClient()->getIdClient(), $currentIban, $bankAccount->getIban());
+
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                    $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                    $bankAccountManager->validateBankAccount($bankAccount);
+                }
+                $entityManager->commit();
+            } catch (Exception $exception) {
+                $entityManager->rollback();
+                $_SESSION['freeow']['title']   = 'Erreur RIB';
+                $_SESSION['freeow']['message'] = $exception->getMessage();
+            }
+            header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $bankAccount->getIdClient()->getIdClient());
+            exit;
+        }
+        header('Location: ' . $this->lurl);
     }
 }

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * BankAccount
  *
- * @ORM\Table(name="bank_account", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_iban_UNIQUE", columns={"id_client", "iban"})}, indexes={@ORM\Index(name="fk_bank_account_id_client_idx", columns={"id_client"})})
+ * @ORM\Table(name="bank_account", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_iban_UNIQUE", columns={"id_client", "iban"})}, indexes={@ORM\Index(name="fk_bank_account_id_client_idx", columns={"id_client"}), @ORM\Index(name="idx_id_attachment", columns={"id_attachment"})})
  * @ORM\Entity
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository")
  * @ORM\HasLifecycleCallbacks
@@ -83,7 +83,7 @@ class BankAccount
     /**
      * @var Attachment
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", inversedBy="bankAccount")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
      * })

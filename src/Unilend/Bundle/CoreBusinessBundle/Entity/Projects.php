@@ -360,10 +360,19 @@ class Projects
     private $attachments;
 
     /**
+     * @var ClientsMandats[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats", mappedBy="idProject")
+     */
+    private $mandats;
+
+    /**
      * Projects constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->attachments = new ArrayCollection();
+        $this->mandats     = new ArrayCollection();
     }
 
     /**
@@ -1488,5 +1497,15 @@ class Projects
     public function getAttachments()
     {
         return $this->attachments;
+    }
+
+    /**
+     * Get project mandats
+     *
+     * @return ClientsMandats[]
+     */
+    public function getMandats()
+    {
+        return $this->mandats;
     }
 }
