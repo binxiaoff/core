@@ -26,6 +26,10 @@ img {
   @include constrain-size-by-width;
 }
 
+a {
+  cursor: pointer;
+}
+
 // This helps lame browsers like IE scale SVGs properly
 .svg-icon-wrap {
   display: inline-block;
