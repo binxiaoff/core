@@ -176,8 +176,10 @@ class CompanyBalanceSheetManager
         $companyBalanceDetails = $this->entityManager->getRepository('company_balance');
 
         if ($companyBalanceDetailsType->get($box, 'id_company_tax_form_type = ' . $companyBalanceSheet->id_company_tax_form_type . ' AND code')) {
-            if ($companyBalanceDetails->exist('id_balance_type = ' . $companyBalanceDetailsType->id_balance_type . ' AND id_bilan = ' . $companyBalanceSheet->id_bilan)){
-                $companyBalanceDetails->get($companyBalanceDetailsType->id_balance_type, 'id_bilan = ' . $companyBalanceSheet->id_bilan . ' AND id_balance_type');
+            $companyBalanceValues = $companyBalanceDetails->select('id_balance_type = ' . $companyBalanceDetailsType->id_balance_type . ' AND id_bilan = ' . $companyBalanceSheet->id_bilan, 'id_balance DESC', 0, 1);
+
+            if (count($companyBalanceValues) > 0) {
+                $companyBalanceDetails->get($companyBalanceValues[0]['id_balance']);
                 $companyBalanceDetails->value = $value;
                 $companyBalanceDetails->update();
             } else {
