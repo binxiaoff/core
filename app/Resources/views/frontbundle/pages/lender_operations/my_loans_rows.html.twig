@@ -1,7 +1,7 @@
 
 {# The following values need to be added the loan  #}
-{% set total_amount = 16000 %}
-{% set total_paid_amount = 2100 %}
+{% set outstanding_balance = 16000 %}
+{% set total_paid_amount = 21000 %}
 
 <tr id="loan-{{ loan.id }}" class="table-myloans-item {{ 'ui-loan-status-' ~ loan.status }}" data-details
     data-loan-id="{{ loan.id }}"
@@ -37,11 +37,11 @@
                 {% trans with {'%date%': loan.status_change|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}
             </em>
         </td>
-    {% elseif loan.project_status == constant('\\projects_status::PROBLEME_J_X') %}
+    {% elseif loan.project_status == constant('\\projects_status::PROCEDURE_SAUVEGARDE') or loan.project_status == constant('\\projects_status::REDRESSEMENT_JUDICIAIRE') or loan.project_status == constant('\\projects_status::LIQUIDATION_JUDICIAIRE')%}
         {# Projet avec déchéance du terme sur lequel on a récupéré plus de 0 € #}
         <td colspan="2" class="table-myloans-item-next">
             <em class="c-t2">
-                {% trans %} lender-operations_loans-table-project-remaining-amount {% endtrans %} :  {{ loan.total_remaining_repayment_amount|localizedcurrency('EUR') }}
+                {% trans %} lender-operations_loans-table-project-outstanding-balance {% endtrans %} :  {{ outstanding_balance|localizedcurrency('EUR') }}
             </em>
         </td>
         <td colspan="2" class="table-myloans-item-next">
@@ -49,11 +49,11 @@
                 {% trans %} lender-operations_loans-table-project-paid-amount {% endtrans %} : {{ total_paid_amount|localizedcurrency('EUR') }}
             </em>
         </td>
-    {% elseif loan.project_status == constant('\\projects_status::PROCEDURE_SAUVEGARDE') or loan.project_status == constant('\\projects_status::REDRESSEMENT_JUDICIAIRE') %}
+    {% elseif loan.project_status == constant('\\projects_status::PROCEDURE_SAUVEGARDE') or loan.project_status == constant('\\projects_status::REDRESSEMENT_JUDICIAIRE') or loan.project_status == constant('\\projects_status::LIQUIDATION_JUDICIAIRE')%}
         {# Projet avec déchéance du terme sur lequel on a pas récupéré d'argent #}
         <td colspan="2" class="table-myloans-item-next">
             <em class="c-t2">
-                {% trans %} lender-operations_loans-table-project-total-amount {% endtrans %} : {{ total_amount|localizedcurrency('EUR') }}
+                {% trans %} lender-operations_loans-table-project-total-amount {% endtrans %} : {{ outstanding_balance|localizedcurrency('EUR') }}
             </em>
         </td>
         <td colspan="2" class="table-myloans-item-next">
@@ -61,11 +61,11 @@
                 {% trans %} lender-operations_loans-table-project-procedure-in-progress {% endtrans %}
             </em>
         </td>
-    {% elseif loan.project_status == constant('\\projects_status::LIQUIDATION_JUDICIAIRE')%}
+    {% elseif loan.project_status == constant('\\projects_status::PROCEDURE_SAUVEGARDE') or loan.project_status == constant('\\projects_status::REDRESSEMENT_JUDICIAIRE') or loan.project_status == constant('\\projects_status::LIQUIDATION_JUDICIAIRE')%}
         {# Projet avec déchéance du terme (procédure collective) et dont la procédure est achevée (irrécouvrabilité) #}
         <td colspan="2" class="table-myloans-item-next">
             <em class="c-t2">
-                {% trans %} lender-operations_loans-table-project-total-amount {% endtrans %} : {{ total_amount|localizedcurrency('EUR') }}
+                {% trans %} lender-operations_loans-table-project-outstanding-balance {% endtrans %} : {{ total_amount|localizedcurrency('EUR') }}
             </em>
         </td>
         <td colspan="2" class="table-myloans-item-next">

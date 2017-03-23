@@ -73,7 +73,16 @@
             <div class="chart-legend">
                 {% set filterVal = 0 %}
                 {% for i, series in loansChartData.charts.lenderOperations.highcharts.series %}
-                    {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.y > 0 %}
+                    {% for j, dataItem in series.data if dataItem.showInLegend is defined > 0 %}
+                        {#var mapStatusFunction = function(status) {#}
+                        {#if (status.indexOf('à jour') > -1)         {status = 'inprogress';}#}
+                        {#if (status.indexOf('retard') > -1)         {status = 'late';}#}
+                        {#if (status.indexOf('recouvrement') > -1)   {status = 'completing';}#}
+                        {#if (status.indexOf('collective') > -1)     {status = 'problem';}#}
+                        {#if (status.indexOf('défaut') > -1)         {status = 'defaulted';}#}
+                        {#if (status.indexOf('remboursé') > -1)      {status = 'completed';}#}
+                        {#return status;#}
+                        {#}#}
                         {% if 'à jour' in dataItem.name %}
                             {% set filterVal = 80 %}
                         {% elseif 'retard' in dataItem.name %}
@@ -151,7 +160,7 @@
                     </th>
                     <th class="table-sortable-column table-myloans-item-remaining" data-sortable-by="remaining">
                         <span class="label" title="{{ 'lender-operations_sr-sort-loan-total-repayment-remaining-amount-column'|trans|e('html_attr') }}" data-toggle="tooltip">
-                            {% trans %} lender-operations_loans-table-total-repayment-remaining-amount-column {% endtrans %}
+                            {% trans %} lender-operations_loans-table-total-capital-remaining-amount-column {% endtrans %}
                         </span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-duration" data-sortable-by="duration">
