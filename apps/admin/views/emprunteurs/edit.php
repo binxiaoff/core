@@ -136,9 +136,9 @@
             </td>
             <td>
                 <?php if ($bankAccount) : ?>
-                    <a href="/emprunteurs/validate_rib_lightbox/<?=$bankAccount->getId();?>" class="btn_link thickbox cboxElement">Mettre en vigueur</a>
+                    <a href="/emprunteurs/validate_rib_lightbox/<?= $bankAccount->getId(); ?>" class="btn_link thickbox cboxElement">Mettre en vigueur</a>
                 <?php else : ?>
-                    <a href="/emprunteurs/extraction_rib_lightbox/<?=$attachment->getId();?>" class="btn_link thickbox cboxElement">Extraire</a>
+                    <a href="/emprunteurs/extraction_rib_lightbox/<?= $attachment->getId(); ?>" class="btn_link thickbox cboxElement">Extraire</a>
                 <?php endif; ?>
                 <br>
                 <br>
@@ -177,10 +177,14 @@
                     <td>
                         <?php if ($this->projects_pouvoir->get($aProject['id_project'], 'id_project')) : ?>
                             <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a>
+                        <?php elseif ($aProject['id_project']  > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
+                            <a href="/emprunteurs/link_ligthbox/pouvoir/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">POUVOIR</a>
                         <?php endif; ?>
                         &nbsp;&nbsp;
                         <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
                             <a href="<?= $this->lurl ?>/protected/mandat/<?= $this->clients_mandats->name ?>">MANDAT</a>
+                        <?php elseif ($aProject['id_project']  > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
+                            <a href="/emprunteurs/link_ligthbox/mandat/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">MANDAT</a>
                         <?php endif; ?>
                     </td>
                     <td align="center">

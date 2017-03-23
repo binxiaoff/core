@@ -291,7 +291,8 @@ class emprunteursController extends bootstrap
         $this->hideDecoration();
         if (false === empty($this->params[0])) {
             $entityManager     = $this->get('doctrine.orm.entity_manager');
-            $this->bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($this->params[0]);
+            $bankAccountId     = filter_var($this->params[0], FILTER_VALIDATE_INT);
+            $this->bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($bankAccountId);
         }
     }
 
@@ -329,5 +330,31 @@ class emprunteursController extends bootstrap
             exit;
         }
         header('Location: ' . $this->lurl);
+    }
+
+    public function _link_ligthbox()
+    {
+        $this->hideDecoration();
+        $this->link = '';
+        if (false === empty($this->params[0]) && false === empty($this->params[1])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $projectId = filter_var($this->params[1], FILTER_VALIDATE_INT);
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            if ($project) {
+                $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+                switch ($this->params[0]) {
+                    case 'pouvoir' :
+                        $this->link = $this->furl . '/pdf/pouvoir/' . $client->getHash() . '/' . $projectId;
+                        break;
+                    case 'mandat' :
+                        $this->link = $this->furl . '/pdf/mandat/' . $client->getHash() . '/' . $projectId;
+                        break;
+                    default :
+                        $this->link = '';
+                        break;
+                }
+            }
+        }
     }
 }
