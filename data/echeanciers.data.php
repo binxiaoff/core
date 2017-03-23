@@ -1234,8 +1234,10 @@ class echeanciers extends echeanciers_crud
 
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             if (null !== $row['rawInterests'] && null !== $row['netInterests']) {
-                $row['rawInterests'] = (float) ($row['rawInterests'] + $row['netInterests'] + $row['upcomingTaxes']);
-                $row['netInterests'] = (float) ($row['rawInterests'] + $row['netInterests'] - $row['repaidTaxes']);
+                $rawInterest         = (float) ($row['rawInterests'] + $row['netInterests'] + $row['upcomingTaxes']);
+                $grossInterest       = (float) ($row['rawInterests'] + $row['netInterests'] - $row['repaidTaxes']);
+                $row['rawInterests'] = $rawInterest;
+                $row['netInterests'] = $grossInterest;
             } else {
                 $row['rawInterests'] = null === $row['rawInterests'] ? (float) ($row['netInterests'] + $row['repaidTaxes']) : (float) $row['rawInterests'];
                 $row['netInterests'] = null === $row['netInterests'] ? (float) ($row['rawInterests'] - $row['upcomingTaxes']) : (float) $row['netInterests'];
