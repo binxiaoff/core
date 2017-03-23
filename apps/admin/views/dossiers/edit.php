@@ -167,6 +167,13 @@
     }
 </style>
 <script>
+    function deleteWordingli(id) {
+        var id_delete = id;
+        var id_input = id.replace("delete", "input");
+        $("#"+id_delete).remove();
+        $("#"+id_input).remove();
+    }
+
     $(function () {
         $('.tooltip').tooltip();
 
@@ -361,13 +368,6 @@
                 });
             }
         });
-
-        function deleteWordingli(id) {
-            var id_delete = id;
-            var id_input = id.replace("delete", "input");
-            $("#"+id_delete).remove();
-            $("#"+id_input).remove();
-        }
 
         $(".add_wording").click(function(e) {
             e.preventDefault();
