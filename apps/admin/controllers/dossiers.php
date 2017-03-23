@@ -1546,7 +1546,7 @@ class dossiersController extends bootstrap
     {
         $this->projects->id_company                = $companyEntity->getIdCompany();
         $this->projects->create_bo                 = 1;
-        $this->projects->status                    = \projects_status::COMPLETE_REQUEST;
+        $this->projects->status                    = \projects_status::INCOMPLETE_REQUEST;
         $this->projects->id_partner                = $partnerId;
         $this->projects->commission_rate_funds     = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
         $this->projects->commission_rate_repayment = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
@@ -1554,7 +1554,7 @@ class dossiersController extends bootstrap
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
-        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMPLETE_REQUEST, $this->projects);
+        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::INCOMPLETE_REQUEST, $this->projects);
 
         $serialize = serialize(['id_project' => $this->projects->id_project]);
         $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], $serialize);

@@ -174,7 +174,7 @@
                     <?php endif; ?>
                 </tr>
                 <tr>
-                    <th><label>Présence de RPC < 6 mois</label></th>
+                    <th><label>Présence de RPC < 6 mois *</label></th>
                     <td>
                         <?php if (isset($this->ratings['rpc_6mois']['value']) && in_array($this->ratings['rpc_6mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="rpc_6mois"><?php endif; ?>
                             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
@@ -203,7 +203,7 @@
                     <?php endif; ?>
                 </tr>
                 <tr>
-                    <th><label>Présence de RPC > 12 mois</label></th>
+                    <th><label>Présence de RPC > 12 mois *</label></th>
                     <td>
                         <?php if (isset($this->ratings['rpc_12mois']['value']) && in_array($this->ratings['rpc_12mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="rpc_12mois"><?php endif; ?>
                             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
@@ -232,7 +232,7 @@
                     <?php endif; ?>
                 </tr>
                 <tr>
-                    <th><label for="cotation_fiben">Cotation FIBEN</label></th>
+                    <th><label for="cotation_fiben">Cotation FIBEN *</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['cotation_fiben']['value'])) : ?><span class="rating-tooltip" title="cotation_fiben"><?php endif; ?>
                             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
@@ -348,7 +348,7 @@
                     <?php endif; ?>
                 </tr>
                 <tr>
-                    <th><label for="date_tresorerie">Dernière situation de trésorerie connue</label></th>
+                    <th><label for="date_tresorerie">Dernière situation de trésorerie connue *</label></th>
                     <td>
                         <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                             <?php if (isset($this->ratings['date_tresorerie']) && '' !== $this->ratings['date_tresorerie']['value']) : ?>
@@ -399,7 +399,7 @@
                     <?php endif; ?>
                 </tr>
                 <tr>
-                    <th><label for="delais_paiement_altares">Délais de paiement Altares (à date)</label></th>
+                    <th><label for="delais_paiement_altares">Délais de paiement Altares (à date) *</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['delais_paiement_altares']['value'])) : ?><span class="rating-tooltip" title="delais_paiement_altares"><?php endif; ?>
                             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
@@ -422,7 +422,7 @@
                     <?php endif; ?>
                 </tr>
                 <tr>
-                    <th><label for="delais_paiement_secteur">Délais de paiement du secteur</label></th>
+                    <th><label for="delais_paiement_secteur">Délais de paiement du secteur *</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['delais_paiement_secteur']['value'])) : ?><span class="rating-tooltip" title="delais_paiement_secteur"><?php endif; ?>
                             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>

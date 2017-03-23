@@ -539,6 +539,20 @@ function valid_rejete_etape6(status, id_project) {
         else if (status == 2 && rejection_reason == '') {
             form_ok = false;
             alert('Vous devez renseigner le motif de rejet');
+        } else if (
+            status == 1
+            && (
+                undefined === $('input[name="ratings[rpc_6mois]"]:checked').val()
+                || undefined === $('input[name="ratings[rpc_12mois]"]:checked').val()
+                || ! $('input[name="ratings[cotation_fiben]"]').val()
+                || ! $('input[name="ratings[date_tresorerie]"]').val()
+                || ! $('input[name="ratings[montant_tresorerie]"]').val()
+                || ! $('input[name="ratings[delais_paiement_altares]"]').val()
+                || ! $('input[name="ratings[delais_paiement_secteur]"]').val()
+            )
+        ) {
+            form_ok = false
+            alert('Toutes les données obligatoires de notation externe doivent être remplies')
         }
 
         if (form_ok == true) {
