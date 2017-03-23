@@ -7,11 +7,23 @@
             }
         })
 
-        $('body').on('click', '[data-project]', function() {
+        $('body').on('click', '[data-project]', function (event) {
             var projectId = $(this).data('project')
             if (projectId) {
-                $(this).parent().children().css('background-color', '#b20066').css('color', '#fff')
-                $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/' + projectId)
+                if (event.shiftKey || event.ctrlKey || event.metaKey) {
+                    window.open('<?= $this->lurl ?>/dossiers/edit/' + projectId, '_blank')
+                } else {
+                    $(this).parent().children().css('background-color', '#b20066').css('color', '#fff')
+                    $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/' + projectId)
+                }
+            }
+        })
+
+        $('body').on('contextmenu', '[data-project]', function (event) {
+            event.preventDefault()
+            var projectId = $(this).data('project')
+            if (projectId) {
+                window.open('<?= $this->lurl ?>/dossiers/edit/' + projectId, '_blank')
             }
         })
 
@@ -19,7 +31,7 @@
             $(this).toggleClass('expand').nextUntil('.status-line').slideToggle(0)
         })
 
-        $('#sales-projects-selector').change(function() {
+        $('#sales-projects-selector').change(function () {
             var userId = $(this).val()
 
             $.ajax({
