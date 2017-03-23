@@ -1136,7 +1136,7 @@ class echeanciers extends echeanciers_crud
                 t.quarter                      AS quarter,
                 t.year                         AS year,
                 ROUND(SUM(t.capital), 2)       AS capital,
-                ROUND(SUM(t.rawInterests), 2)  AS rawInterests,
+                ROUND(SUM(t.grossInterests), 2)  AS grossInterests,
                 ROUND(SUM(t.netInterests), 2)  AS netInterests,
                 ROUND(SUM(t.repaidTaxes), 2)   AS repaidTaxes,
                 ROUND(SUM(t.upcomingTaxes), 2) AS upcomingTaxes
@@ -1146,7 +1146,7 @@ class echeanciers extends echeanciers_crud
                     QUARTER(t_capital.date_transaction)                                                                                AS quarter,
                     YEAR(t_capital.date_transaction)                                                                                   AS year,
                     ROUND(SUM(t_capital.montant) / 100, 2)                                                                             AS capital,
-                    NULL                                                                                                               AS rawInterests,
+                    NULL                                                                                                               AS grossInterests,
                     ROUND(SUM(t_interest.montant) / 100, 2)                                                                            AS netInterests,
                     SUM((SELECT ROUND(IFNULL(SUM(tax.amount), 0) / 100, 2) FROM tax WHERE id_transaction = t_interest.id_transaction)) AS repaidTaxes,
                     0                                                                                                                  AS upcomingTaxes
@@ -1163,7 +1163,7 @@ class echeanciers extends echeanciers_crud
                     QUARTER(t.date_transaction)            AS quarter,
                     YEAR(t.date_transaction)               AS year,
                     ROUND(SUM(t.montant) / 100 / 0.844, 2) AS capital,
-                    0                                      AS rawInterests,
+                    0                                      AS grossInterests,
                     NULL                                   AS netInterests,
                     0                                      AS repaidTaxes,
                     0                                      AS upcomingTaxes
@@ -1179,7 +1179,7 @@ class echeanciers extends echeanciers_crud
                     QUARTER(e.date_echeance)        AS quarter,
                     YEAR(e.date_echeance)           AS year,
                     ROUND(SUM(e.capital) / 100, 2)  AS capital,
-                    ROUND(SUM(e.interets) / 100, 2) AS rawInterests,
+                    ROUND(SUM(e.interets) / 100, 2) AS grossInterests,
                     NULL                            AS netInterests,
                     0                               AS repaidTaxes,
                     CASE c.type
@@ -1233,20 +1233,21 @@ class echeanciers extends echeanciers_crud
         $data      = [];
 
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            if (null !== $row['rawInterests'] && null !== $row['netInterests']) {
-                $rawInterest         = (float) ($row['rawInterests'] + $row['netInterests'] + $row['upcomingTaxes']);
-                $grossInterest       = (float) ($row['rawInterests'] + $row['netInterests'] - $row['repaidTaxes']);
-                $row['rawInterests'] = $rawInterest;
-                $row['netInterests'] = $grossInterest;
+            if (null !== $row['grossInterests'] && null !== $row['netInterests']) {
+                $netInterest   = bcadd(bcsub($row['grossInterests'], $row['upcomingTaxes'], 2), $row['netInterest'], 2);
+                $grossInterest = bcadd(bcadd($row['netInterest'], $row['repaidTaxed'], 2), $row['grossInterest'], 2);
             } else {
-                $row['rawInterests'] = null === $row['rawInterests'] ? (float) ($row['netInterests'] + $row['repaidTaxes']) : (float) $row['rawInterests'];
-                $row['netInterests'] = null === $row['netInterests'] ? (float) ($row['rawInterests'] - $row['upcomingTaxes']) : (float) $row['netInterests'];
+                $netInterest   = null === $row['netInterests'] ? bcsub($row['grossInterests'], $row['upcomingTaxes'], 2) : $row['netInterests'];
+                $grossInterest = null === $row['grossInterests'] ? bcadd($row['netInterests'], $row['repaidTaxes'], 2) : $row['grossInterests'];
             }
-            $taxes = (float) ($row['repaidTaxes'] + $row['upcomingTaxes']);
+            $taxes = bcadd($row['repaidTaxes'], $row['upcomingTaxes'], 2);
             unset($row['repaidTaxes'], $row['upcomingTaxes']);
-            $row['taxes']        = $taxes;
-            $row['capital']      = (float) $row['capital'];
-            $data[$row['month']] = $row;
+
+            $row['grossInterests'] = (float) $grossInterest;
+            $row['netInterests']   = (float) $netInterest;
+            $row['taxes']          = (float) $taxes;
+            $row['capital']        = (float) $row['capital'];
+            $data[$row['month']]   = $row;
         }
         $statement->closeCursor();
         return $data;
