@@ -475,12 +475,10 @@ class LenderProfileController extends Controller
         /** @var \clients $client */
         $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->getLenderAccount();
-        /** @var Clients $clientEntity */
+        $lenderAccount  = $this->getLenderAccount();
         $clientEntity   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         $dbClientEntity = clone $clientEntity;
-        /** @var BankAccount $dbBankAccount */
-        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
+        $bankAccount    = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
 
         $form = $this->createFormBuilder()
             ->add('client', OriginOfFundsType::class, ['data' => $clientEntity])
@@ -495,16 +493,16 @@ class LenderProfileController extends Controller
         if ($form->isSubmitted()) {
             $this->saveClientHistoryAction($clientEntity, $request, 'info perso profile');
             if ($form->isValid()) {
-                $this->handleBankDetailsForm($bankAccount, $dbClientEntity, $form, $request->files);
+                $result = $this->handleBankDetailsForm($bankAccount, $dbClientEntity, $form, $request->files);
+
+                if ($result instanceof RedirectResponse) {
+                    return $result;
+                }
             }
         }
 
         /** @var \ifu $ifu */
-        $ifu        = $this->get('unilend.service.entity_manager')->getRepository('ifu');
-        $attachment = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Attachment')
-            ->findOneClientAttachmentByType($client->id_client, AttachmentType::RIB);
-
+        $ifu          = $this->get('unilend.service.entity_manager')->getRepository('ifu');
         $templateData = [
             'client'      => $clientEntity,
             'bankAccount' => $bankAccount,
@@ -514,7 +512,7 @@ class LenderProfileController extends Controller
                 'fiscal_info' => [
                     'documents'   => $ifu->select('id_client =' . $client->id_client . ' AND statut = 1', 'annee ASC'),
                     'amounts'     => $this->getFiscalBalanceAndOwedCapital(),
-                    'rib'         => $attachment,
+                    'rib'         => $bankAccount->getAttachment(),
                     'fundsOrigin' => $this->getFundsOrigin($clientEntity->getType())
                 ]
             ]
@@ -965,37 +963,38 @@ class LenderProfileController extends Controller
 
 
     /**
-     * @param BankAccount   $dbBankAccount
+     * @param BankAccount   $bankAccount
      * @param Clients       $dbClientEntity
      * @param FormInterface $form
      * @param FileBag       $fileBag
      *
      * @return RedirectResponse
      */
-    private function handleBankDetailsForm(BankAccount $dbBankAccount, Clients $dbClientEntity, FormInterface $form, FileBag $fileBag )
+    private function handleBankDetailsForm(BankAccount $bankAccount, Clients $dbClientEntity, FormInterface $form, FileBag $fileBag )
     {
         $translator               = $this->get('translator');
         $bankAccountModifications = [];
         $iban                     = $form->get('bankAccount')->get('iban')->getData();
         $bic                      = $form->get('bankAccount')->get('bic')->getData();
         $clientEntity             = $form->get('client')->getData();
+        $bankAccountDocument      = null;
 
         if ('FR' !== strtoupper(substr($iban, 0, 2))) {
             $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
         }
 
-        if ($dbBankAccount->getBic() !== $bic) {
+        if ($bankAccount->getBic() !== $bic) {
             $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-bic');
         }
 
-        if ($dbBankAccount->getIban() !== $iban) {
+        if ($bankAccount->getIban() !== $iban) {
             $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-iban');
             $file                       = $fileBag->get('iban-certificate');
             if (false === $file instanceof UploadedFile) {
                $form->get('bankAccount')->addError(new FormError($translator->trans('lender-profile_rib-file-mandatory')));
             } else {
                try {
-                   $this->upload($clientEntity, AttachmentType::RIB, $file);
+                   $bankAccountDocument        = $this->upload($clientEntity, AttachmentType::RIB, $file);
                    $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-documents');
                } catch (\Exception $exception) {
                    $form->addError(new FormError($translator->trans('lender-profile_fiscal-tab-rib-file-error')));
@@ -1003,7 +1002,7 @@ class LenderProfileController extends Controller
            }
         }
 
-        if ($form->isValid()) {
+        if ($form->isValid() && $bankAccountDocument) {
             $formManager              = $this->get('unilend.frontbundle.service.form_manager');
             $clientModifications      = $formManager->getModifiedContent($dbClientEntity, $clientEntity);
             $dataModifications        = array_merge($clientModifications, $bankAccountModifications);
@@ -1012,9 +1011,8 @@ class LenderProfileController extends Controller
             }
 
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-            $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban);
+            $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban, $bankAccountDocument);
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
-
             return $this->redirectToRoute('lender_profile_fiscal_information');
         }
     }

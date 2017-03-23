@@ -484,9 +484,10 @@ class LenderSubscriptionController extends Controller
         /** @var TranslatorInterface $translator */
         $translator  = $this->get('translator');
         /** @var Clients $client */
-        $client = $form->get('client')->getData();
-        $iban   = $form->get('bankAccount')->get('iban')->getData();
-        $bic    = $form->get('bankAccount')->get('bic')->getData();
+        $client              = $form->get('client')->getData();
+        $iban                = $form->get('bankAccount')->get('iban')->getData();
+        $bic                 = $form->get('bankAccount')->get('bic')->getData();
+        $bankAccountDocument = null;
 
         if ('FR' !== strtoupper(substr($iban, 0, 2))) {
             $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
@@ -500,7 +501,7 @@ class LenderSubscriptionController extends Controller
         $file = $fileBag->get('rib');
         if ($file instanceof UploadedFile) {
             try {
-                $this->upload($client, AttachmentType::RIB, $file);
+                $bankAccountDocument = $this->upload($client, AttachmentType::RIB, $file);
             } catch (\Exception $exception) {
                 $form->get('bankAccount')->addError(new FormError($translator->trans('lender-subscription_documents-upload-files-error-message')));
             }
@@ -515,13 +516,13 @@ class LenderSubscriptionController extends Controller
             $this->validateAttachmentsLegalEntity($form, $client, $company, $fileBag);
         }
 
-        if ($form->isValid()) {
+        if ($form->isValid() && $bankAccountDocument) {
             $client->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_DOCUMENTS);
             $this->get('doctrine.orm.entity_manager')->flush();
 
             /** @var BankAccountManager $bankAccountManager */
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-            $bankAccountManager->saveBankInformation($client, $bic, $iban);
+            $bankAccountManager->saveBankInformation($client, $bic, $iban, $bankAccountDocument);
 
             /** @var ClientStatusManager $clientStatusManager */
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
