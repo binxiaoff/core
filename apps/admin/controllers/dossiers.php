@@ -3098,21 +3098,37 @@ class dossiersController extends bootstrap
      * @param array  $codes
      * @param string $formType
      * @param string $domId
+     * @param bool   $displayNegativeValue
+     * @param array  $amountsToUse
      * @return string
      */
-    protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '')
+    protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '', $displayNegativeValue = true, $amountsToUse = [])
     {
         $html           = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
         $iPreviousTotal = null;
         $iColumn        = 0;
+        $index            = 0;
+        $cumulativeAmount = [];
+
         foreach ($this->aBalanceSheets as $aBalanceSheet) {
+            $cumulativeAmount[$index] = 0;
+
             if ($formType != $aBalanceSheet['form_type']) {
                 $html .= '<td></td>';
                 if ($iColumn) {
                     $html .= '<td></td>';
                 }
             } else {
+                if (false === empty($amountsToUse[$index])) {
+                    $iTotal = $this->sumBalances($codes, $aBalanceSheet) + $amountsToUse[$index];
+            } else {
                 $iTotal = $this->sumBalances($codes, $aBalanceSheet);
+                }
+
+                if (false === $displayNegativeValue && $iTotal < 0) {
+                    $iTotal = 0;
+                }
+                $cumulativeAmount[$index] = $iTotal;
 
                 if ($iColumn) {
                     $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
@@ -3123,10 +3139,11 @@ class dossiersController extends bootstrap
                 $iPreviousTotal = $iTotal;
             }
             $iColumn++;
+            $index++;
         }
         $html .= '</tr>';
 
-        return $html;
+        return ['html' => $html, 'amounts' => $cumulativeAmount];
     }
 
     /**
@@ -3137,7 +3154,7 @@ class dossiersController extends bootstrap
      */
     protected function generateBalanceGroupHtml($totalLabel, array $code, $formType)
     {
-        return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $code, $formType);
+        return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $code, $formType)['html'];
     }
 
     /**

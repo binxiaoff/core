@@ -400,6 +400,7 @@ class ajaxController extends bootstrap
                             $companyBalanceSheetManager->saveBalanceSheetDetails($oCompanyAnnualAccounts, $box, $value);
                         }
                         $companyBalanceSheetManager->calculateDebtsAssetsFromBalance($oCompanyAnnualAccounts->id_bilan);
+                        /** @todo confirm if this is useful */
                         $companyBalanceSheetManager->getIncomeStatement($oCompanyAnnualAccounts);
                     }
                 }
