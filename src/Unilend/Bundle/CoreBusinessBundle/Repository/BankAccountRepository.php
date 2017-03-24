@@ -33,26 +33,6 @@ class BankAccountRepository extends EntityRepository
      *
      * @return BankAccount|null
      */
-    public function getGreenPointValidatedBankAccount($idClient)
-    {
-        $cb = $this->createQueryBuilder('ba');
-        $cb->innerJoin('UnilendCoreBusinessBundle:GreenpointAttachment', 'gpa', Join::WITH, 'ba.idClient = gpa.idClient')
-           ->innerJoin('UnilendCoreBusinessBundle:GreenpointAttachmentDetail', 'gpad', Join::WITH, 'gpa.idGreenpointAttachment = gpad.idGreenpointAttachment')
-           ->innerJoin('UnilendCoreBusinessBundle:Attachment', 'a', Join::WITH, 'a.id = gpa.idAttachment')
-           ->where('gpa.idClient = :idClient')
-           ->andWhere('a.idType = :idType')
-           ->andWhere('gpa.validationStatus = :status')
-           ->andWhere('gpad.bankDetailsIban = ba.iban')
-           ->setParameters(['idClient' => $idClient, 'idType' => \attachment_type::RIB, 'status' => 9]);
-
-        return $cb->getQuery()->getOneOrNullResult();
-    }
-
-    /**
-     * @param Clients|integer $idClient
-     *
-     * @return BankAccount|null
-     */
     public function getClientValidatedBankAccount($idClient)
     {
         $qb = $this->createQueryBuilder('ba');

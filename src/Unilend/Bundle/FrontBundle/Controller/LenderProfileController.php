@@ -983,13 +983,14 @@ class LenderProfileController extends Controller
             $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
         }
 
-        if ($bankAccount->getBic() !== $bic) {
-            $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-bic');
-        }
-
-        if ($bankAccount->getIban() !== $iban) {
-            $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-iban');
-            $file                       = $fileBag->get('iban-certificate');
+        if ($bankAccount->getIban() !== $iban || $bankAccount->getBic() !== $bic) {
+            if ($bankAccount->getIban() !== $iban) {
+                $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-iban');
+            }
+            if ($bankAccount->getBic() !== $bic) {
+                $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-bic');
+            }
+            $file = $fileBag->get('iban-certificate');
             if (false === $file instanceof UploadedFile) {
                $form->get('bankAccount')->addError(new FormError($translator->trans('lender-profile_rib-file-mandatory')));
             } else {

@@ -14,6 +14,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class BankAccount
 {
+    const STATUS_PENDING   = 0;
+    const STATUS_VALIDATED = 1;
+    const STATUS_ARCHIVED  = 2;
+
     /**
      * @var string
      * @ORM\Column(name="bic", type="string", length=100, nullable=false)
@@ -317,5 +321,21 @@ class BankAccount
         $this->idAttachment = $attachment;
 
         return $this;
+    }
+
+    /**
+     * Get status
+     *
+     * @return int
+     */
+    public function getStatus()
+    {
+        if (null !== $this->dateArchived) {
+            return self::STATUS_ARCHIVED;
+        } elseif (null !== $this->dateValidated) {
+            return self::STATUS_VALIDATED;
+        } else {
+            return self::STATUS_PENDING;
+        }
     }
 }

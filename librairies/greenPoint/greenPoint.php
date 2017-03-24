@@ -9,6 +9,11 @@ class greenPoint
     const TEST_URL = 'https://id-control.fr/api/';
     const PROD_URL = 'https://beprems.pro/api/';
 
+    const GP_REQUEST_TYPE_ID      = 'idcontrol';
+    const GP_REQUEST_TYPE_IBAN    = 'ibanflash';
+    const GP_REQUEST_TYPE_ADDRESS = 'addresscontrol';
+    const GP_REQUEST_TYPE_KYC     = 'kyc';
+
     /** @var string */
     private $sPassWord;
 
@@ -135,74 +140,22 @@ class greenPoint
 
     /**
      * @param array $aData
-     * @param bool $bExecute
-     * @return int|array|greenPoint
+     * @param       $type
+     * @param bool  $bExecute
+     *
+     * @return array|int|greenPoint
      */
-    public function idControl(array $aData, $bExecute = true)
-    {
+    public function send(array $aData, $type, $bExecute = true) {
         if (false === array_key_exists('files', $aData)) {
             throw new \InvalidArgumentException('no files to submit');
         }
+
+        if (false === in_array($type, [self::GP_REQUEST_TYPE_ADDRESS, self::GP_REQUEST_TYPE_ID, self::GP_REQUEST_TYPE_IBAN, self::GP_REQUEST_TYPE_KYC])) {
+            throw new \InvalidArgumentException('The Greenpoint control type is not supported');
+        }
+
         $this->setCustomOptions('POST');
-        $mResult = $this->addRequest('idcontrol', $aData, ! $bExecute);
-
-        if (true == $bExecute) {
-            $mResult = $this->sendRequests();
-        }
-        return $mResult;
-    }
-
-    /**
-     * @param array $aData
-     * @param bool $bExecute
-     * @return int|array|greenPoint
-     */
-    public function ibanFlash(array $aData, $bExecute = true)
-    {
-        if (false === array_key_exists('files', $aData)) {
-            throw new \InvalidArgumentException('no files to submit');
-        }
-        $this->setCustomOptions('POST');
-        $mResult = $this->addRequest('ibanflash', $aData, ! $bExecute);
-
-        if (true == $bExecute) {
-            $mResult = $this->sendRequests();
-        }
-        return $mResult;
-    }
-
-    /**
-     * @param array $aData
-     * @param bool $bExecute
-     * @return int|array|greenPoint
-     */
-    public function addressControl(array $aData, $bExecute = true)
-    {
-        if (false === array_key_exists('files', $aData)) {
-            throw new \InvalidArgumentException('no files to submit');
-        }
-        $mResult = $this->addRequest('addresscontrol', $aData, ! $bExecute);
-        $this->setCustomOptions('POST');
-
-        if (true == $bExecute) {
-            $mResult = $this->sendRequests();
-        }
-        return $mResult;
-    }
-
-    /**
-     * @param array $aData
-     * @param bool $bExecute
-     * @throws \InvalidArgumentException
-     * @return int|array|greenPoint
-     */
-    public function createCustomer(array $aData, $bExecute = true)
-    {
-        if (empty($aData['dossier'])) {
-            throw new \InvalidArgumentException('Missing Mandatory parameter');
-        }
-        $this->setCustomOptions('POST');
-        $mResult = $this->addRequest('kyc', $aData, ! $bExecute);
+        $mResult = $this->addRequest($type, $aData, ! $bExecute);
 
         if (true == $bExecute) {
             $mResult = $this->sendRequests();

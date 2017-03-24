@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -8,7 +9,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachmentDetail;
 use Unilend\librairies\greenPoint\greenPoint;
 use Unilend\librairies\greenPoint\greenPointStatus;
 
@@ -30,12 +31,6 @@ EOF
     {
         $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
 
-        $this->greenPointValidation($oEntityManager);
-    }
-
-
-    private function greenPointValidation(EntityManager $oEntityManager)
-    {
         /** @var \clients $oClients */
         $oClients = $oEntityManager->getRepository('clients');
         /** @var \greenpoint_kyc $oGreenPointKyc */
@@ -60,20 +55,20 @@ EOF
             AttachmentType::KBIS,
             AttachmentType::JUSTIFICATIF_FISCAL,
         ];
-        $aQueryID                 = [];
+        $groupedRequestIds        = [];
         $aClientsToCheck          = $oClients->selectLendersByLastStatus($aStatusToCheck);
 
         if (false === empty($aClientsToCheck)) {
             /** @var greenPoint $oGreenPoint */
-            $oGreenPoint             = new greenPoint($this->getContainer()->getParameter('kernel.environment'));
-            $clientRepo              = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-            $attachmentManager       = $this->getContainer()->get('unilend.service.attachment_manager');
-            $attachmentsToRevalidate = [];
+            $oGreenPoint       = new greenPoint($this->getContainer()->getParameter('kernel.environment'));
+            $clientRepo        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $attachmentManager = $this->getContainer()->get('unilend.service.attachment_manager');
+            $requests          = [];
 
-            foreach ($aClientsToCheck as $iClientId => $aClient) {
+            foreach ($aClientsToCheck as $clientId => $aClient) {
 
                 /** @var Clients $client */
-                $client      = $clientRepo->find($iClientId);
+                $client      = $clientRepo->find($clientId);
                 $attachments = $client->getAttachments();
                 foreach ($attachments as $attachment) {
                     if (false === in_array($attachment->getType()->getId(), $attachmentTypeToValidate)) {
@@ -81,17 +76,18 @@ EOF
                     }
                     $greenPointAttachment = $attachment->getGreenpointAttachment();
                     if (null === $greenPointAttachment) {
+                        $greenPointAttachment = new GreenpointAttachment();
+                        $greenPointAttachment->setIdAttachment($attachment);
+                        $entityManager->persist($greenPointAttachment);
+                    }
+                    if (null !== $greenPointAttachment->getValidationStatus()) {
                         continue;
                     }
-                    if (GreenpointAttachment::REVALIDATE_NO == $greenPointAttachment->getRevalidate()) {
-                        continue;
-                    } elseif (GreenpointAttachment::REVALIDATE_YES == $greenPointAttachment->getRevalidate()) {
-                        $attachmentsToRevalidate[$attachment->getType()->getId()] = $greenPointAttachment->getIdGreenpointAttachment();
-                    }
+
                     $sFullPath = realpath($attachmentManager->getFullPath($attachment));
 
-                    if (false == $sFullPath) {
-                        $oLogger->error('Attachment not found (ID ' . $attachment->getId() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                    if (false == file_exists($sFullPath)) {
+                        $oLogger->error('Attachment file not found (ID ' . $attachment->getId() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__]);
                         continue;
                     }
                     try {
@@ -100,41 +96,44 @@ EOF
                             case AttachmentType::CNI_PASSPORTE_VERSO:
                             case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
                             case AttachmentType::CNI_PASSPORTE_DIRIGEANT:
-                                $aData            = $this->getGreenPointData($iClientId, $attachment->getId(), $sFullPath, $aClient, 'idcontrol');
-                                $iQRID            = $oGreenPoint->idControl($aData, false);
-                                $aQueryID[$iQRID] = $attachment->getType()->getId();
+                                $type = greenPoint::GP_REQUEST_TYPE_ID;
                                 break;
                             case AttachmentType::RIB:
-                                $aData            = $this->getGreenPointData($iClientId, $attachment->getId(), $sFullPath, $aClient, 'ibanflash');
-                                $iQRID            = $oGreenPoint->ibanFlash($aData, false);
-                                $aQueryID[$iQRID] = $attachment->getType()->getId();
+                                $type = greenPoint::GP_REQUEST_TYPE_IBAN;
                                 break;
                             case AttachmentType::JUSTIFICATIF_DOMICILE:
                             case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
-                                $aData            = $this->getGreenPointData($iClientId, $attachment->getId(), $sFullPath, $aClient, 'addresscontrol');
-                                $iQRID            = $oGreenPoint->addressControl($aData, false);
-                                $aQueryID[$iQRID] = $attachment->getType()->getId();
+                                $type = greenPoint::GP_REQUEST_TYPE_ADDRESS;
                                 break;
+                            default :
+                                continue 2;
                         }
+                        $greenPointData = $this->getGreenPointData($clientId, $attachment->getId(), $sFullPath, $aClient, $type);
+                        $requestId      = $oGreenPoint->send($greenPointData, $type, false);
+                        if (is_int($requestId)) {
+                            $requests[$requestId] = $greenPointAttachment;
+                        }
+
                     } catch (\Exception $oException) {
                         $oLogger->error(
-                            'Greenpoint was unable to process data (client ' . $iClientId . ') - Message: ' . $oException->getMessage() . ' - Code: ' . $oException->getCode(),
-                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $iClientId]
+                            'Greenpoint was unable to process data (client ' . $clientId . ') - Message: ' . $oException->getMessage() . ' - Code: ' . $oException->getCode(),
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientId]
                         );
+                        continue 2;
                     }
                 }
-                if (false === empty($aQueryID) && is_array($aQueryID)) {
-                    $aResult = $oGreenPoint->sendRequests();
-                    $this->processGreenPointResponse($iClientId, $aResult, $aQueryID, $attachmentsToRevalidate, $oEntityManager);
+                if (false === empty($groupedRequestIds)) {
+                    $response = $oGreenPoint->sendRequests();
+                    $this->processGreenPointResponse($clientId, $response, $requests);
                     unset($aResult, $aQueryID);
-                    greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
+                    greenPointStatus::addCustomer($clientId, $oGreenPoint, $oGreenPointKyc);
                 }
             }
         }
     }
 
     /**
-     * @param int    $iClientId
+     * @param int    $clientId
      * @param int    $iAttachmentId
      * @param string $sPath
      * @param array  $aClient
@@ -142,11 +141,11 @@ EOF
      *
      * @return array
      */
-    private function getGreenPointData($iClientId, $iAttachmentId, $sPath, array $aClient, $sType)
+    private function getGreenPointData($clientId, $iAttachmentId, $sPath, array $aClient, $sType)
     {
         $aData = [
             'files'    => new \CURLFile($sPath),
-            'dossier'  => $iClientId,
+            'dossier'  => $clientId,
             'document' => $iAttachmentId,
             'detail'   => 1,
             'nom'      => $this->getFamilyNames($aClient['nom'], $aClient['nom_usage']),
@@ -155,17 +154,23 @@ EOF
 
         switch ($sType) {
             case 'idcontrol':
-                $this->addIdControlData($aData, $aClient);
-                return $aData;
+                $aData['date_naissance'] = $aClient['naissance'];
+                break;
             case 'ibanflash':
-                $this->addIbanData($aData, $aClient);
-                return $aData;
+                $aData['iban'] = $aClient['iban'];
+                $aData['bic']  = $aClient['bic'];
+                break;
             case 'addresscontrol':
-                $this->addAddressData($aData, $aClient);
-                return $aData;
+                $aData['adresse']     = $aClient['adresse_fiscal'];
+                $aData['code_postal'] = $aClient['cp_fiscal'];
+                $aData['ville']       = $aClient['ville_fiscal'];
+                $aData['pays']        = strtoupper($aClient['fr']);
+                break;
             default:
-                return $aData;
+                break;
         }
+
+        return $aData;
     }
 
     /**
@@ -184,100 +189,67 @@ EOF
     }
 
     /**
-     * @param array $aData
-     * @param array $aClient
+     * @param int   $clientId
+     * @param array $response
+     * @param array $requests
      */
-    private function addIdControlData(array &$aData, array $aClient)
+    private function processGreenPointResponse($clientId, array $response, array $requests)
     {
-        $aData['date_naissance'] = $aClient['naissance'];
-    }
-
-    /**
-     * @param array $aData
-     * @param array $aClient
-     */
-    private function addIbanData(array &$aData, array $aClient)
-    {
-        $aData['iban'] = $aClient['iban'];
-        $aData['bic']  = $aClient['bic'];
-    }
-
-    /**
-     * @param array $aData
-     * @param array $aClient
-     */
-    private function addAddressData(array &$aData, array $aClient)
-    {
-        $aData['adresse']     = $aClient['adresse_fiscal'];
-        $aData['code_postal'] = $aClient['cp_fiscal'];
-        $aData['ville']       = $aClient['ville_fiscal'];
-        $aData['pays']        = strtoupper($aClient['fr']);
-    }
-
-    /**
-     * @param int           $iClientId
-     * @param array         $aResponseDetail
-     * @param array         $aResponseKeys
-     * @param array         $aExistingAttachment
-     * @param EntityManager $oEntityManager
-     */
-    private function processGreenPointResponse($iClientId, array $aResponseDetail, array $aResponseKeys, array $aExistingAttachment, EntityManager $oEntityManager)
-    {
-        /** @var \greenpoint_attachment $oGreenPointAttachment */
-        $oGreenPointAttachment = $oEntityManager->getRepository('greenpoint_attachment');
-
-        /** @var \greenpoint_attachment_detail $oGreenPointAttachmentDetail */
-        $oGreenPointAttachmentDetail = $oEntityManager->getRepository('greenpoint_attachment_detail');
-
-        foreach ($aResponseKeys as $iQRID => $iAttachmentTypeId) {
-            if (false === isset($aResponseDetail[$iQRID])) {
+        /**
+         * @var  int                  $requestId
+         * @var  GreenpointAttachment $greenPointAttachment
+         */
+        foreach ($requests as $requestId => $greenPointAttachment) {
+            if (false === isset($response[$requestId])) {
                 continue;
             }
+            if (null === $greenPointAttachment) {
+                continue;
+            }
+            $attachment = $greenPointAttachment->getIdAttachment();
+            if (null === $attachment) {
+                continue;
+            }
+            $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-            if (isset($aExistingAttachment[$iAttachmentTypeId]) && $oGreenPointAttachment->get($aExistingAttachment[$iAttachmentTypeId], 'id_greenpoint_attachment')) {
-                $bUpdate = true;
+            $response = json_decode($response[$requestId]['RESPONSE'], true);
+
+            if (isset($response['resource']) && is_array($response['resource'])) {
+                $greenPointData = greenPointStatus::getGreenPointData($response['resource'], $attachment->getType()->getId(), $attachment->getId(), $clientId, $response['code']);
             } else {
-                $bUpdate = false;
-            }
-            $oGreenPointAttachment->control_level = 1;
-            $oGreenPointAttachment->revalidate    = \greenpoint_attachment::REVALIDATE_NO;
-            $oGreenPointAttachment->final_status  = \greenpoint_attachment::FINAL_STATUS_NO;
-            $iAttachmentId                        = $aResponseDetail[$iQRID]['REQUEST_PARAMS']['document'];
-            $aResponse                            = json_decode($aResponseDetail[$iQRID]['RESPONSE'], true);
-
-            if (isset($aResponse['resource']) && is_array($aResponse['resource'])) {
-                $aGreenPointData = greenPointStatus::getGreenPointData($aResponse['resource'], $iAttachmentTypeId, $iAttachmentId, $iClientId, $aResponse['code']);
-            } else {
-                $aGreenPointData = greenPointStatus::getGreenPointData([], $iAttachmentTypeId, $iAttachmentId, $iClientId, $aResponse['code']);
+                $greenPointData = greenPointStatus::getGreenPointData([], $attachment->getType()->getId(), $attachment->getId(), $clientId, $response['code']);
             }
 
-            foreach ($aGreenPointData['greenpoint_attachment'] as $sKey => $mValue) {
-                if (false === is_null($mValue)) {
-                    $oGreenPointAttachment->$sKey = $mValue;
-                }
-            }
+            $greenPointAttachment->setValidationCode($greenPointData['greenpoint_attachment']['validation_code']);
+            $greenPointAttachment->setValidationStatus($greenPointData['greenpoint_attachment']['validation_status']);
+            $greenPointAttachment->setValidationStatusLabel($greenPointData['greenpoint_attachment']['validation_status_label']);
+            $entityManager->flush($greenPointAttachment);
 
-            if ($bUpdate) {
-                $oGreenPointAttachment->update();
-                $oGreenPointAttachmentDetail->get($oGreenPointAttachment->id_greenpoint_attachment, 'id_greenpoint_attachment');
-            } else {
-                $oGreenPointAttachment->create();
-                $oGreenPointAttachmentDetail->id_greenpoint_attachment = $oGreenPointAttachment->id_greenpoint_attachment;
-            }
-
-            foreach ($aGreenPointData['greenpoint_attachment_detail'] as $sKey => $mValue) {
-                if (false === is_null($mValue)) {
-                    $oGreenPointAttachmentDetail->$sKey = $mValue;
-                }
-            }
-
-            if ($bUpdate) {
-                $oGreenPointAttachmentDetail->update();
-            } else {
-                $oGreenPointAttachmentDetail->create();
-            }
-            $oGreenPointAttachment->unsetData();
-            $oGreenPointAttachmentDetail->unsetData();
+            $greenPointAttachmentDetails = new GreenpointAttachmentDetail();
+            $greenPointAttachmentDetails->setIdGreenpointAttachment($greenPointAttachment)
+                                        ->setDocumentType($greenPointData['greenpoint_attachment_detail']['document_type'])
+                                        ->setIdentityCivility($greenPointData['greenpoint_attachment_detail']['identity_civility'])
+                                        ->setIdentityName($greenPointData['greenpoint_attachment_detail']['identity_name'])
+                                        ->setIdentitySurname($greenPointData['greenpoint_attachment_detail']['identity_surname'])
+                                        ->setIdentityExpirationDate($greenPointData['greenpoint_attachment_detail']['identity_expiration_date'])
+                                        ->setIdentityBirthdate($greenPointData['greenpoint_attachment_detail']['identity_birthdate'])
+                                        ->setIdentityMrz1($greenPointData['greenpoint_attachment_detail']['identity_mrz1'])
+                                        ->setIdentityMrz2($greenPointData['greenpoint_attachment_detail']['identity_mrz2'])
+                                        ->setIdentityMrz3($greenPointData['greenpoint_attachment_detail']['identity_mrz3'])
+                                        ->setIdentityNationality($greenPointData['greenpoint_attachment_detail']['identity_nationality'])
+                                        ->setIdentityIssuingCountry($greenPointData['greenpoint_attachment_detail']['identity_issuing_country'])
+                                        ->setIdentityIssuingAuthority($greenPointData['greenpoint_attachment_detail']['identity_issuing_authority'])
+                                        ->setIdentityDocumentNumber($greenPointData['greenpoint_attachment_detail']['identity_document_number'])
+                                        ->setIdentityDocumentTypeId($greenPointData['greenpoint_attachment_detail']['identity_document_type_id'])
+                                        ->setBankDetailsIban($greenPointData['greenpoint_attachment_detail']['bank_details_iban'])
+                                        ->setBankDetailsBic($greenPointData['greenpoint_attachment_detail']['bank_details_bic'])
+                                        ->setBankDetailsUrl($greenPointData['greenpoint_attachment_detail']['bank_details_url'])
+                                        ->setAddressAddress($greenPointData['greenpoint_attachment_detail']['address_address'])
+                                        ->setAddressPostalCode($greenPointData['greenpoint_attachment_detail']['address_postal_code'])
+                                        ->setAddressCity($greenPointData['greenpoint_attachment_detail']['address_city'])
+                                        ->setAddressCountry($greenPointData['greenpoint_attachment_detail']['address_country']);
+            $entityManager->persist($greenPointAttachmentDetails);
+            $entityManager->flush($greenPointAttachmentDetails);
         }
     }
 

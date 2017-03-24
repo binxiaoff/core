@@ -119,11 +119,13 @@
     <h2>Autre RIBs</h2>
     <table class="formColor" style="width: 775px;">
         <?php
+        use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+
         if (false === empty($this->bankAccountDocuments)) :
             foreach ($this->bankAccountDocuments as $attachment) :
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */
                 $bankAccount = $attachment->getBankAccount();
-                if (null === $bankAccount || null === $bankAccount->getDateValidated() || null !== $bankAccount->getDateArchived()) :
+                if (null === $bankAccount || BankAccount::STATUS_PENDING === $bankAccount->getStatus() || BankAccount::STATUS_ARCHIVED === $bankAccount->getStatus()) :
         ?>
         <tr>
             <td>
