@@ -49,20 +49,20 @@ class LenderProfileController extends Controller
      */
     public function personalInformationAction(Request $request)
     {
-        $client = $this->getClient();
-        $em     = $this->get('doctrine.orm.entity_manager');
+        $client        = $this->getClient();
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $client          = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        $dbClient        = clone $client;
-        $clientAddress   = $em->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client->getIdClient()]);
-        $dbClientAddress = clone $clientAddress;
+        $client                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        $unattachedClient        = clone $client;
+        $clientAddress           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client->getIdClient()]);
+        $unattachedClientAddress = clone $clientAddress;
 
         $postalAddressForm = $this->createForm(PostalAddressType::class, $clientAddress);
         $phoneForm         = $this->createForm(PersonPhoneType::class, $client);
 
         if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            $company   = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
-            $dbCompany = clone $company;
+            $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
+            $unattachedCompany = clone $company;
 
             $identityFb = $this->createFormBuilder()
                 ->add('client', LegalEntityProfileType::class, ['data' => $client])
@@ -75,9 +75,10 @@ class LenderProfileController extends Controller
             $fiscalAddressForm = $this->createForm(PersonFiscalAddressType::class, $clientAddress);
         }
 
-        $identityForm      = $identityFb->getForm();
+        $identityForm = $identityFb->getForm();
 
         if ($request->isMethod('POST')) {
+            $isValid = false;
             if (isset($request->request->get('form')['client'])) {
                 $identityForm->handleRequest($request);
 
@@ -85,9 +86,9 @@ class LenderProfileController extends Controller
                     $this->saveClientHistoryAction($client, $request, 'info perso profile');
                     if ($identityForm->isValid()) {
                         if (isset($request->request->get('form')['company'])) {
-                            $this->handleCompanyIdentity($dbClient, $client, $dbCompany, $company, $identityForm, $request->files);
+                            $isValid = $this->handleCompanyIdentity($unattachedClient, $client, $unattachedCompany, $company, $identityForm, $request->files);
                         } else {
-                            $this->handlePersonIdentity($dbClient, $client, $identityForm, $request->files);
+                            $isValid = $this->handlePersonIdentity($unattachedClient, $client, $identityForm, $request->files);
                         }
                     }
                 }
@@ -99,17 +100,18 @@ class LenderProfileController extends Controller
                 if ($fiscalAddressForm->isSubmitted()) {
                     $this->saveClientHistoryAction($client, $request, 'info perso profile');
                     if ($fiscalAddressForm->isValid()) {
-                        $this->handlePersonFiscalAddress($dbClientAddress, $clientAddress, $fiscalAddressForm, $request->files);
+                        $isValid = $this->handlePersonFiscalAddress($unattachedClientAddress, $clientAddress, $fiscalAddressForm, $request->files);
                     }
                 }
             }
+
             if (false === empty($request->request->get('company_address'))) {
                 $fiscalAddressForm->handleRequest($request);
 
                 if ($fiscalAddressForm->isSubmitted()) {
                     $this->saveClientHistoryAction($client, $request, 'info perso profile');
                     if ($fiscalAddressForm->isValid()) {
-                        $this->handleCompanyFiscalAddress($dbCompany, $company, $fiscalAddressForm);
+                        $isValid = $this->handleCompanyFiscalAddress($unattachedCompany, $company, $fiscalAddressForm);
                     }
                 }
             }
@@ -120,7 +122,7 @@ class LenderProfileController extends Controller
                 if ($postalAddressForm->isSubmitted()) {
                     $this->saveClientHistoryAction($client, $request, 'info perso profile');
                     if ($postalAddressForm->isValid()) {
-                        $this->handlePostalAddressForm($clientAddress);
+                        $isValid = $this->handlePostalAddressForm($clientAddress);
                     }
                 }
             }
@@ -129,8 +131,14 @@ class LenderProfileController extends Controller
                 $phoneForm->handleRequest($request);
                 $this->saveClientHistoryAction($client, $request, 'info perso profile');
                 if ($phoneForm->isValid()) {
-                    $this->handlePhoneForm($client);
+                    $translator = $this->get('translator');
+                    $entityManager->flush($client);
+                    $this->addFlash('phoneSuccess', $translator->trans('lender-profile_information-tab-phone-form-success-message'));
+                    $isValid = true;
                 }
+            }
+            if ($isValid) {
+                return $this->redirectToRoute('lender_profile_personal_information');
             }
         }
 
@@ -148,33 +156,33 @@ class LenderProfileController extends Controller
 
             'isLivingAbroad' => ($clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE)
         ];
-        $setting                             = $em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
+        $setting                             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
         $templateData['externalCounselList'] = json_decode($setting->getValue(), true);
-        $attachmentRepo = $em->getRepository('UnilendCoreBusinessBundle:Attachment');
+        $attachmentRepository                = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
         if (false === empty($company)) {
-            $templateData['companyIdAttachments'][AttachmentType::CNI_PASSPORTE_DIRIGEANT] = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE_DIRIGEANT);
-            $templateData['companyIdAttachments'][AttachmentType::CNI_PASSPORTE_VERSO]     = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE_VERSO);
-            $templateData['companyOtherAttachments'][AttachmentType::KBIS]                 = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::KBIS);
-            $templateData['companyOtherAttachments'][AttachmentType::DELEGATION_POUVOIR]   = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::DELEGATION_POUVOIR);
+            $templateData['companyIdAttachments'][AttachmentType::CNI_PASSPORTE_DIRIGEANT] = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE_DIRIGEANT);
+            $templateData['companyIdAttachments'][AttachmentType::CNI_PASSPORTE_VERSO]     = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE_VERSO);
+            $templateData['companyOtherAttachments'][AttachmentType::KBIS]                 = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::KBIS);
+            $templateData['companyOtherAttachments'][AttachmentType::DELEGATION_POUVOIR]   = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::DELEGATION_POUVOIR);
         } else {
-            $templateData['identityAttachments'][AttachmentType::CNI_PASSPORTE]                  = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE);
-            $templateData['identityAttachments'][AttachmentType::CNI_PASSPORTE_VERSO]            = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE_VERSO);
-            $templateData['residenceAttachments'][AttachmentType::JUSTIFICATIF_DOMICILE]         = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::JUSTIFICATIF_DOMICILE);
-            $templateData['residenceAttachments'][AttachmentType::ATTESTATION_HEBERGEMENT_TIERS] = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::ATTESTATION_HEBERGEMENT_TIERS);
-            $templateData['residenceAttachments'][AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT] = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT);
-            $templateData['residenceAttachments'][AttachmentType::JUSTIFICATIF_FISCAL]           = $attachmentRepo->findOneClientAttachmentByType($client, AttachmentType::JUSTIFICATIF_FISCAL);
+            $templateData['identityAttachments'][AttachmentType::CNI_PASSPORTE]                  = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE);
+            $templateData['identityAttachments'][AttachmentType::CNI_PASSPORTE_VERSO]            = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE_VERSO);
+            $templateData['residenceAttachments'][AttachmentType::JUSTIFICATIF_DOMICILE]         = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::JUSTIFICATIF_DOMICILE);
+            $templateData['residenceAttachments'][AttachmentType::ATTESTATION_HEBERGEMENT_TIERS] = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::ATTESTATION_HEBERGEMENT_TIERS);
+            $templateData['residenceAttachments'][AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT] = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT);
+            $templateData['residenceAttachments'][AttachmentType::JUSTIFICATIF_FISCAL]           = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::JUSTIFICATIF_FISCAL);
         }
 
         return $this->render('pages/lender_profile/personal_information.html.twig', $templateData);
     }
 
     /**
-     * @param Clients       $dbClientEntity
-     * @param Clients       $clientEntity
+     * @param Clients       $unattachedClient
+     * @param Clients       $client
      * @param FormInterface $form
      * @param FileBag       $fileBag
      */
-    private function handlePersonIdentity(Clients $dbClientEntity, Clients $clientEntity, FormInterface $form, FileBag $fileBag)
+    private function handlePersonIdentity(Clients $unattachedClient, Clients $client, FormInterface $form, FileBag $fileBag)
     {
         $translator    = $this->get('translator');
         $modifications = [];
@@ -187,7 +195,7 @@ class LenderProfileController extends Controller
         foreach ($files as $attachmentTypeId => $file) {
             if ($file instanceof UploadedFile) {
                 try {
-                    $this->upload($clientEntity, $attachmentTypeId, $file);
+                    $this->upload($client, $attachmentTypeId, $file);
                     $modifications[] = $translator->trans('projet_document-type-' . $attachmentTypeId);
                     if (AttachmentType::CNI_PASSPORTE === $attachmentTypeId) {
                         $idRectoUploaded = true;
@@ -198,18 +206,19 @@ class LenderProfileController extends Controller
             }
         }
 
-        if (false === $idRectoUploaded
-            &&  ($dbClientEntity->getIdNationalite() !== $clientEntity->getIdNationalite()
-                || $dbClientEntity->getCivilite() !== $clientEntity->getCivilite())
+        if (
+            false === $idRectoUploaded
+            &&  ($unattachedClient->getIdNationalite() !== $client->getIdNationalite()
+                || $unattachedClient->getCivilite() !== $client->getCivilite())
         ) {
             $form->get('client')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message')));
         }
 
         if ($form->isValid()) {
-            $this->get('doctrine.orm.entity_manager')->flush($clientEntity);
+            $this->get('doctrine.orm.entity_manager')->flush($client);
             $this->addFlash('identitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
 
-            $modifiedData = array_merge($modifications, $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($dbClientEntity, $clientEntity));
+            $modifiedData = array_merge($modifications, $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($unattachedClient, $client));
             if (false === empty($modifiedData)) {
                 $this->updateClientStatusAndNotifyClient($this->getClient(), $modifiedData);
             }
@@ -219,52 +228,52 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Clients       $dbClientEntity
-     * @param Clients       $clientEntity
-     * @param Companies     $dbCompanyEntity
-     * @param Companies     $companyEntity
+     * @param Clients       $unattachedClient
+     * @param Clients       $client
+     * @param Companies     $unattachedCompany
+     * @param Companies     $company
      * @param FormInterface $form
      * @param FileBag       $fileBag
      *
-     * @return RedirectResponse
+     * @return bool
      */
-    private function handleCompanyIdentity(Clients $dbClientEntity, Clients $clientEntity, Companies $dbCompanyEntity, Companies $companyEntity, FormInterface $form, FileBag $fileBag)
+    private function handleCompanyIdentity(Clients $unattachedClient, Clients $client, Companies $unattachedCompany, Companies $company, FormInterface $form, FileBag $fileBag)
     {
         $translator    = $this->get('translator');
         $modifications = [];
 
-        if ($companyEntity->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
-            if (empty($companyEntity->getStatusConseilExterneEntreprise())) {
+        if ($company->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
+            if (empty($company->getStatusConseilExterneEntreprise())) {
                 $form->get('company')->get('statusConseilExterneEntreprise')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
             }
             if (
-                Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER == $companyEntity->getStatusConseilExterneEntreprise()
-                && empty($companyEntity->getPreciserConseilExterneEntreprise())
+                Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER == $company->getStatusConseilExterneEntreprise()
+                && empty($company->getPreciserConseilExterneEntreprise())
             ) {
                 $form->get('company')->get('preciserConseilExterneEntreprise')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
             }
 
-            if (empty($companyEntity->getCiviliteDirigeant())) {
+            if (empty($company->getCiviliteDirigeant())) {
                 $form->get('company')->get('civiliteDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-form-of-address-missing')));
             }
 
-            if (empty($companyEntity->getNomDirigeant())) {
+            if (empty($company->getNomDirigeant())) {
                 $form->get('company')->get('nomDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-name-missing')));
             }
 
-            if (empty($companyEntity->getPrenomDirigeant())) {
+            if (empty($company->getPrenomDirigeant())) {
                 $form->get('company')->get('prenomDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-first-name-missing')));
             }
 
-            if (empty($companyEntity->getFonctionDirigeant())) {
+            if (empty($company->getFonctionDirigeant())) {
                 $form->get('company')->get('fonctionDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-position-missing')));
             }
 
-            if (empty($companyEntity->getPhoneDirigeant())) {
+            if (empty($company->getPhoneDirigeant())) {
                 $form->get('company')->get('phoneDirigeant')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-director-phone-missing')));
             }
 
-            if (empty($companyEntity->getEmailDirigeant())) {
+            if (empty($company->getEmailDirigeant())) {
                 $form->get('company')->get('emailDirigeant')->addError(new FormError($translator->trans('common-validator_email-address-invalid')));
             }
         }
@@ -274,14 +283,14 @@ class LenderProfileController extends Controller
             AttachmentType::CNI_PASSPORTE_VERSO     => $fileBag->get('id_verso'),
             AttachmentType::KBIS                    => $fileBag->get('company-registration'),
         ];
-        if ($companyEntity->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
+        if ($company->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
             $files[AttachmentType::DELEGATION_POUVOIR] = $fileBag->get('delegation-of-authority');
         }
 
         foreach ($files as $attachmentTypeId => $file) {
             if ($file instanceof UploadedFile) {
                 try {
-                    $this->upload($clientEntity, $attachmentTypeId, $file);
+                    $this->upload($client, $attachmentTypeId, $file);
                     $modifications[] = $translator->trans('projet_document-type-' . $attachmentTypeId);
                 } catch (\Exception $exception) {
                     $form->get('company')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
@@ -290,42 +299,42 @@ class LenderProfileController extends Controller
         }
 
         if ($form->isValid()) {
-            $this->addFiscalAddressToCompany($companyEntity);
+            $this->addFiscalAddressToCompany($company);
             $this->get('doctrine.orm.entity_manager')->flush();
             $this->addFlash('identitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
 
             $formManager         = $this->get('unilend.frontbundle.service.form_manager');
-            $modifiedDataClient  = $formManager->getModifiedContent($dbClientEntity, $clientEntity);
-            $modifiedDataCompany = $formManager->getModifiedContent($dbCompanyEntity, $companyEntity);
+            $modifiedDataClient  = $formManager->getModifiedContent($unattachedClient, $client);
+            $modifiedDataCompany = $formManager->getModifiedContent($unattachedCompany, $company);
             $modifiedData        = array_merge($modifiedDataClient, $modifiedDataCompany, $modifications);
             if (false === empty($modifiedData)) {
                 $this->updateClientStatusAndNotifyClient($this->getClient(), $modifiedData);
             }
 
-            return $this->redirectToRoute('lender_profile_personal_information');
+            return true;
         }
+        return false;
     }
 
-
     /**
-     * @param ClientsAdresses $dbClientAddressEntity
-     * @param ClientsAdresses $clientAddressEntity
+     * @param ClientsAdresses $unattachedClientAddress
+     * @param ClientsAdresses $clientAddress
      * @param FormInterface   $form
      * @param FileBag         $fileBag
      *
-     * @return RedirectResponse
+     * @return bool
      */
-    private function handlePersonFiscalAddress(ClientsAdresses $dbClientAddress, ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag)
+    private function handlePersonFiscalAddress(ClientsAdresses $unattachedClientAddress, ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag)
     {
-        $em            = $this->get('doctrine.orm.entity_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         $translator    = $this->get('translator');
-        $clientEntity  = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientAddress->getIdClient());
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientAddress->getIdClient());
         $modifications = [];
 
         if (
-            $dbClientAddress->getCpFiscal() !== $clientAddress->getCpFiscal()
+            $unattachedClientAddress->getCpFiscal() !== $clientAddress->getCpFiscal()
             && \pays_v2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal()
-            && null === $em->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])
+            && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])
         ) {
             $form->get('cpFiscal')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
         }
@@ -344,7 +353,7 @@ class LenderProfileController extends Controller
         foreach ($files as $attachmentTypeId => $file) {
             if ($file instanceof UploadedFile) {
                 try {
-                    $this->upload($clientEntity, $attachmentTypeId, $file);
+                    $this->upload($client, $attachmentTypeId, $file);
                     $modifications[] = $translator->trans('projet_document-type-' . $attachmentTypeId);
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message')));
@@ -372,68 +381,66 @@ class LenderProfileController extends Controller
                 $this->updateFiscalAndPostalAddress($clientAddress);
             }
 
-            $em->flush($clientAddress);
+            $entityManager->flush($clientAddress);
             $this->addFlash('fiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
 
-            $modifiedData = array_merge($modifications, $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($dbClientAddress, $clientAddress));
+            $modifiedData = array_merge($modifications, $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($unattachedClientAddress, $clientAddress));
             if (false === empty($modifiedData)) {
                 $this->updateClientStatusAndNotifyClient($this->getClient(), array_merge($modifiedData, $modifications));
             }
 
-            return $this->redirectToRoute('lender_profile_personal_information');
+            return true;
         }
+        return false;
     }
 
     /**
-     * @param Companies     $dbCompanyEntity
-     * @param Companies     $companyEntity
+     * @param Companies     $unattachedCompany
+     * @param Companies     $company
      * @param FormInterface $form
      *
-     * @return RedirectResponse
+     * @return bool
      */
-    private function handleCompanyFiscalAddress(Companies $dbCompanyEntity, Companies $companyEntity, FormInterface $form)
+    private function handleCompanyFiscalAddress(Companies $unattachedCompany, Companies $company, FormInterface $form)
     {
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var EntityManager $entityManager */
+        $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
-            $dbCompanyEntity->getZip() !== $companyEntity->getZip()
-            && \pays_v2::COUNTRY_FRANCE == $companyEntity->getIdPays()
-            && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $companyEntity->getZip()])
+            $unattachedCompany->getZip() !== $company->getZip()
+            && \pays_v2::COUNTRY_FRANCE == $company->getIdPays()
+            && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $company->getZip()])
         ) {
             $form->get('company_fiscal_address')->get('zip')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
         }
 
         if ($form->isValid()) {
-            $this->addFiscalAddressToCompany($companyEntity);
-            if (Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $companyEntity->getStatusAdresseCorrespondance()) {
-                $this->updateFiscalAndPostalAddress($companyEntity);
+            $this->addFiscalAddressToCompany($company);
+            if (Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $company->getStatusAdresseCorrespondance()) {
+                $this->updateFiscalAndPostalAddress($company);
             }
-            $entityManager->flush($companyEntity);
+            $entityManager->flush($company);
 
-            $modifiedData = $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($dbCompanyEntity, $companyEntity);
+            $modifiedData = $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($unattachedCompany, $company);
             if (false === empty($modifiedData)) {
                 $this->updateClientStatusAndNotifyClient($this->getClient(), $modifiedData);
             }
             $this->addFlash('fiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
 
-            return $this->redirect('lender_profile_personal_information');
+            return true;
         }
+        return false;
     }
 
     /**
      * @param ClientsAdresses $clientAddress
      *
-     * @return RedirectResponse
+     * @return bool
      */
     private function handlePostalAddressForm(ClientsAdresses $clientAddress)
     {
-        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
+        $translator    = $this->get('translator');
 
         if (in_array($clientAddress->getIdClient()->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
             $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientAddress->getIdClient()]);
@@ -447,24 +454,8 @@ class LenderProfileController extends Controller
         $entityManager->flush($clientAddress);
         $this->addFlash('postalAddressSuccess', $translator->trans('lender-profile_information-tab-postal-address-form-success-message'));
 
-        return $this->redirectToRoute('lender_profile_personal_information');
+        return true;
     }
-
-    /**
-     * @param Clients $clientEntity
-     *
-     * @return RedirectResponse
-     */
-    private function handlePhoneForm(Clients $clientEntity)
-    {
-        $translator = $this->get('translator');
-
-        $this->get('doctrine.orm.entity_manager')->flush($clientEntity);
-        $this->addFlash('phoneSuccess', $translator->trans('lender-profile_information-tab-phone-form-success-message'));
-
-        return $this->redirectToRoute('lender_profile_personal_information');
-    }
-
 
     /**
      * @Route("/profile/info-fiscal", name="lender_profile_fiscal_information")
@@ -478,8 +469,8 @@ class LenderProfileController extends Controller
         $lenderAccount = $this->getLenderAccount();
         /** @var Clients $clientEntity */
         $clientEntity   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        $dbClientEntity = clone $clientEntity;
-        /** @var BankAccount $dbBankAccount */
+        $unattachedClientEntity = clone $clientEntity;
+        /** @var BankAccount $unattachedBankAccount */
         $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($clientEntity);
 
         $form = $this->createFormBuilder()
@@ -495,7 +486,10 @@ class LenderProfileController extends Controller
         if ($form->isSubmitted()) {
             $this->saveClientHistoryAction($clientEntity, $request, 'info perso profile');
             if ($form->isValid()) {
-                $this->handleBankDetailsForm($bankAccount, $dbClientEntity, $form, $request->files);
+                $isValid = $this->handleBankDetailsForm($bankAccount, $unattachedClientEntity, $form, $request->files);
+                if ($isValid) {
+                    return $this->redirectToRoute('lender_profile_fiscal_information');
+                }
             }
         }
 
@@ -556,13 +550,14 @@ class LenderProfileController extends Controller
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->getLenderAccount();
 
-        $clientEntity   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        $dbClientEntity = clone $clientEntity;
-        $emailForm      = $this->createForm(ClientEmailType::class, $clientEntity);
-        $pwdForm        = $this->createForm(ClientPasswordType::class);
-        $questionForm   = $this->createForm(SecurityQuestionType::class, $clientEntity);
+        $clientEntity           = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        $unattachedClientEntity = clone $clientEntity;
+        $emailForm              = $this->createForm(ClientEmailType::class, $clientEntity);
+        $pwdForm                = $this->createForm(ClientPasswordType::class);
+        $questionForm           = $this->createForm(SecurityQuestionType::class, $clientEntity);
 
         if ($request->isMethod('POST')) {
+            $isValid = null;
             if (false === empty($request->request->get('client_email'))) {
                 $emailForm->handleRequest($request);
 
@@ -570,7 +565,7 @@ class LenderProfileController extends Controller
                     $this->saveClientHistoryAction($clientEntity, $request, 'info perso profile');
 
                     if ($emailForm->isValid()) {
-                        $this->handleEmailForm($dbClientEntity, $clientEntity, $emailForm);
+                        $isValid = $this->handleEmailForm($unattachedClientEntity, $clientEntity, $emailForm);
                     }
                 }
             }
@@ -581,7 +576,7 @@ class LenderProfileController extends Controller
                 if ($pwdForm->isSubmitted()) {
                     $this->saveClientHistoryAction($clientEntity, $request, 'change mdp');
                     if ($pwdForm->isValid()) {
-                        $this->handlePasswordForm($clientEntity, $pwdForm);
+                        $isValid = $this->handlePasswordForm($clientEntity, $pwdForm);
                     }
                 }
             }
@@ -592,9 +587,15 @@ class LenderProfileController extends Controller
                 if ($questionForm->isSubmitted()) {
                     $this->saveClientHistoryAction($clientEntity, $request, 'change secret question');
                     if ($questionForm->isValid()) {
-                        $this->handleQuestionForm($clientEntity);
+                        $translator = $this->get('translator');
+                        $this->get('doctrine.orm.entity_manager')->flush($client);
+                        $this->addFlash('securitySecretQuestionSuccess', $translator->trans('lender-profile_security-secret-question-section-form-success-message'));
+                        $isValid = true;
                     }
                 }
+            }
+            if ($isValid) {
+                return $this->redirectToRoute('lender_profile_security');
             }
         }
 
@@ -965,37 +966,37 @@ class LenderProfileController extends Controller
 
 
     /**
-     * @param BankAccount   $dbBankAccount
-     * @param Clients       $dbClientEntity
+     * @param BankAccount   $unattachedBankAccount
+     * @param Clients       $unattachedClient
      * @param FormInterface $form
      * @param FileBag       $fileBag
      *
-     * @return RedirectResponse
+     * @return bool
      */
-    private function handleBankDetailsForm(BankAccount $dbBankAccount, Clients $dbClientEntity, FormInterface $form, FileBag $fileBag )
+    private function handleBankDetailsForm(BankAccount $unattachedBankAccount, Clients $unattachedClient, FormInterface $form, FileBag $fileBag )
     {
         $translator               = $this->get('translator');
         $bankAccountModifications = [];
         $iban                     = $form->get('bankAccount')->get('iban')->getData();
         $bic                      = $form->get('bankAccount')->get('bic')->getData();
-        $clientEntity             = $form->get('client')->getData();
+        $client                   = $form->get('client')->getData();
 
         if ('FR' !== strtoupper(substr($iban, 0, 2))) {
             $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
         }
 
-        if ($dbBankAccount->getBic() !== $bic) {
+        if ($unattachedBankAccount->getBic() !== $bic) {
             $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-bic');
         }
 
-        if ($dbBankAccount->getIban() !== $iban) {
+        if ($unattachedBankAccount->getIban() !== $iban) {
             $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-iban');
             $file                       = $fileBag->get('iban-certificate');
             if (false === $file instanceof UploadedFile) {
                $form->get('bankAccount')->addError(new FormError($translator->trans('lender-profile_rib-file-mandatory')));
             } else {
                try {
-                   $this->upload($clientEntity, AttachmentType::RIB, $file);
+                   $this->upload($client, AttachmentType::RIB, $file);
                    $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-documents');
                } catch (\Exception $exception) {
                    $form->addError(new FormError($translator->trans('lender-profile_fiscal-tab-rib-file-error')));
@@ -1005,18 +1006,19 @@ class LenderProfileController extends Controller
 
         if ($form->isValid()) {
             $formManager              = $this->get('unilend.frontbundle.service.form_manager');
-            $clientModifications      = $formManager->getModifiedContent($dbClientEntity, $clientEntity);
+            $clientModifications      = $formManager->getModifiedContent($unattachedClient, $client);
             $dataModifications        = array_merge($clientModifications, $bankAccountModifications);
             if (false === empty($dataModifications)) {
                 $this->updateClientStatusAndNotifyClient($this->getClient(), $dataModifications);
             }
 
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-            $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban);
+            $bankAccountManager->saveBankInformation($client, $bic, $iban);
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
 
-            return $this->redirectToRoute('lender_profile_fiscal_information');
+            return true;
         }
+        return false;
     }
 
     /**
@@ -1062,21 +1064,19 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Clients       $dbClientEntity
-     * @param Clients       $clientEntity
+     * @param Clients       $unattachedClient
+     * @param Clients       $client
      * @param FormInterface $form
      *
-     * @return RedirectResponse
+     * @return bool
      */
-    private function handleEmailForm(Clients $dbClient, Clients $client, FormInterface $form)
+    private function handleEmailForm(Clients $unattachedClient, Clients $client, FormInterface $form)
     {
-        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
-        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
-            $client->getEmail() !== $dbClient->getEmail()
+            $client->getEmail() !== $unattachedClient->getEmail()
             && $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($client->getEmail())
         ) {
             $form->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
@@ -1086,26 +1086,24 @@ class LenderProfileController extends Controller
             $entityManager->flush($client);
             $this->addFlash('securityIdentificationSuccess', $translator->trans('lender-profile_security-identification-form-success-message'));
 
-            return $this->redirectToRoute('lender_profile_security');
+            return true;
         }
+        return false;
     }
 
     /**
      * @param Clients       $client
      * @param FormInterface $form
      *
-     * @return RedirectResponse
+     * @return bool
      */
     public function handlePasswordForm(Clients $client, FormInterface $form)
     {
-        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
-        /** @var UserPasswordEncoder $securityPasswordEncoder */
         $securityPasswordEncoder = $this->get('security.password_encoder');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $form->get('formerPassword')->getData())) {
             $form->get('formerPassword')->addError(new FormError($translator->trans('lender-profile_security-password-section-error-wrong-former-password')));
@@ -1121,25 +1119,9 @@ class LenderProfileController extends Controller
             $this->sendPasswordModificationEmail($this->getClient());
             $this->addFlash('securityPasswordSuccess', $translator->trans('lender-profile_security-password-section-form-success-message'));
 
-            return $this->redirectToRoute('lender_profile_security');
+            return true;
         }
-    }
-
-    /**
-     * @param Clients       $client
-     * @param FormInterface $form
-     *
-     * @return RedirectResponse
-     */
-    public function handleQuestionForm(Clients $client)
-    {
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-
-        $this->get('doctrine.orm.entity_manager')->flush($client);
-        $this->addFlash('securitySecretQuestionSuccess', $translator->trans('lender-profile_security-secret-question-section-form-success-message'));
-
-        return $this->redirectToRoute('lender_profile_security');
+        return false;
     }
 
     /**
@@ -1435,17 +1417,17 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Companies $companyEntity
+     * @param Companies $company
      */
-    private function addFiscalAddressToCompany(Companies $companyEntity)
+    private function addFiscalAddressToCompany(Companies $company)
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $companyEntity->getIdClientOwner()]);
-        $clientAddress->setAdresseFiscal($companyEntity->getAdresse1());
-        $clientAddress->setCpFiscal($companyEntity->getZip());
-        $clientAddress->setVilleFiscal($companyEntity->getCity());
-        $clientAddress->setIdPaysFiscal($companyEntity->getIdPays());
+        $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $company->getIdClientOwner()]);
+        $clientAddress->setAdresseFiscal($company->getAdresse1());
+        $clientAddress->setCpFiscal($company->getZip());
+        $clientAddress->setVilleFiscal($company->getCity());
+        $clientAddress->setIdPaysFiscal($company->getIdPays());
 
         $entityManager->flush($clientAddress);
     }
