@@ -20,13 +20,13 @@ $iOldestAnnualAccountsId = end($aAnnualAccountsYears);
     echo $this->generateBalanceLineHtml(['AA', 'AB', 'AC'], \company_tax_form_type::FORM_2035);
 
     $codeRecettes = ['AD', 'AE', 'AF'];
-    echo $this->generateBalanceGroupHtml('Total de AD à AF (case AG)', $codeRecettes, \company_tax_form_type::FORM_2035);
+    echo $this->generateBalanceGroupHtml($this->translator->trans('income-statement_2035-recettes'), $codeRecettes, \company_tax_form_type::FORM_2035);
 
     $codeDepenses = ['BA', 'BB', 'BC', 'BD', 'JY', 'BS', 'BV', 'BF', 'BG', 'BH', 'BJ', 'BK', 'BM', 'BN', 'BP'];
-    echo $this->generateBalanceGroupHtml('Total de BA à BP (case BR)', $codeDepenses, \company_tax_form_type::FORM_2035);
+    echo $this->generateBalanceGroupHtml($this->translator->trans('income-statement_2035-total-depenses'), $codeDepenses, \company_tax_form_type::FORM_2035);
 
     $codeDepensesNegative = array_map([$this, 'negative'], $codeDepenses);
-    $result               = $this->generateBalanceSubTotalLineHtml('Excédent (AG - BR) (case CA)', array_merge($codeRecettes, $codeDepensesNegative), \company_tax_form_type::FORM_2035, '', false);
+    $result               = $this->generateBalanceSubTotalLineHtml($this->translator->trans('income-statement_2035-excedent-brut'), array_merge($codeRecettes, $codeDepensesNegative), \company_tax_form_type::FORM_2035, '', false);
     $cumulativeCell['CA'] = $result['amounts'];
     echo $result['html'];
 
@@ -39,7 +39,7 @@ $iOldestAnnualAccountsId = end($aAnnualAccountsYears);
 
     $codeRecettesNegative = array_map([$this, 'negative'], $codeRecettes);
     $codeCF               = array_merge($codeDepenses, $codeRecettesNegative);
-    $result               = $this->generateBalanceSubTotalLineHtml('Insuffisance (BR - AG) (case CF)', $codeCF, \company_tax_form_type::FORM_2035, '', false);
+    $result               = $this->generateBalanceSubTotalLineHtml($this->translator->trans('income-statement_2035-insuffisance'), $codeCF, \company_tax_form_type::FORM_2035, '', false);
     $cumulativeCell['CF'] = $result['amounts'];
     echo $result['html'];
 
@@ -55,8 +55,8 @@ $iOldestAnnualAccountsId = end($aAnnualAccountsYears);
     }
     $cumulativeCell['CR'] = array_map([$this, 'negative'], $cumulativeCell['CP']);
 
-    echo $this->generateBalanceSubTotalLineHtml('Bénéfice (CE - CN) (case CP)', [], \company_tax_form_type::FORM_2035, '', false, $cumulativeCell['CP'])['html'];
-    echo $this->generateBalanceSubTotalLineHtml('Déficit (CN - CE) (case CR)', [], \company_tax_form_type::FORM_2035, '', false, $cumulativeCell['CR'])['html'];
+    echo $this->generateBalanceSubTotalLineHtml($this->translator->trans('income-statement_2035-benefice-net'), [], \company_tax_form_type::FORM_2035, '', false, $cumulativeCell['CP'])['html'];
+    echo $this->generateBalanceSubTotalLineHtml($this->translator->trans('income-statement_2035-deficit'), [], \company_tax_form_type::FORM_2035, '', false, $cumulativeCell['CR'])['html'];
     ?>
     </tbody>
 </table>

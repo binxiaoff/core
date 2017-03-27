@@ -26,6 +26,7 @@ class CompanyBalanceSheetManager
         $companyTaxFormType = $this->entityManager->getRepository('company_tax_form_type');
 
         $annualAccounts    = array();
+
         foreach ($balanceSheetIds as $balanceSheetId) {
             $companyBalance->get($balanceSheetId);
             $companyTaxFormType->get($companyBalance->id_company_tax_form_type);
@@ -210,7 +211,12 @@ class CompanyBalanceSheetManager
         }
     }
 
-    public function getIncomeStatement(\companies_bilans $companyBalanceSheet)
+    /**
+     * @param \companies_bilans $companyBalanceSheet
+     * @param bool              $excludeNonPositiveLines2035
+     * @return mixed|null
+     */
+    public function getIncomeStatement(\companies_bilans $companyBalanceSheet, $excludeNonPositiveLines2035 = false)
     {
         /** @var \company_tax_form_type $companyTaxFormType */
         $companyTaxFormType = $this->entityManager->getRepository('company_tax_form_type');
@@ -220,14 +226,20 @@ class CompanyBalanceSheetManager
             case \company_tax_form_type::FORM_2033 :
                 return $this->getIncomeStatement2033($companyBalanceSheet);
             case \company_tax_form_type::FORM_2035 :
-                return $this->getIncomeStatement2035($companyBalanceSheet);
+                return $this->getIncomeStatement2035($companyBalanceSheet, $excludeNonPositiveLines2035);
         }
 
         return null;
     }
 
-    private function getIncomeStatement2035(\companies_bilans $companyBalanceSheet)
+    /**
+     * @param \companies_bilans $companyBalanceSheet
+     * @param bool              $excludeNonPositiveLines
+     * @return mixed
+     */
+    private function getIncomeStatement2035(\companies_bilans $companyBalanceSheet, $excludeNonPositiveLines = false)
     {
+        $optionalLines                = ['income-statement_2035-excedent-brut', 'income-statement_2035-insuffisance', 'income-statement_2035-benefice-net', 'income-statement_2035-deficit'];
         $incomeStatement['form_type'] = \company_tax_form_type::FORM_2035;
 
         $balanceSheetId = $companyBalanceSheet->id_bilan;
@@ -246,6 +258,7 @@ class CompanyBalanceSheetManager
 
         $otherFinancialProduct = $balanceDetails[$balanceSheetId]['details']['CB'] + $balanceDetails[$balanceSheetId]['details']['CC'] + $balanceDetails[$balanceSheetId]['details']['CD'];
         $otherObligations      = $balanceDetails[$balanceSheetId]['details']['CG'] + $balanceDetails[$balanceSheetId]['details']['CH'] + $balanceDetails[$balanceSheetId]['details']['CK'] + $balanceDetails[$balanceSheetId]['details']['CL'] + $balanceDetails[$balanceSheetId]['details']['CM'];
+        $benefit               = $CA + $otherFinancialProduct - $otherObligations;
 
         $incomeStatement['details'] = [
             'income-statement_2035-recettes'        => $AG,
@@ -256,8 +269,18 @@ class CompanyBalanceSheetManager
             'income-statement_2035-excedent-brut'   => $CA,
             'income-statement_2035-autres-produits' => $otherFinancialProduct,
             'income-statement_2035-autres-charges'  => $otherObligations,
-            'income-statement_2035-benefice-net'    => $CA + $otherFinancialProduct - $otherObligations
+            'income-statement_2035-benefice-net'    => $benefit < 0 ? 0 : $benefit,
+            'income-statement_2035-insuffisance'    => ($AG < $BR) ? $BR - $AG : 0,
+            'income-statement_2035-deficit'         => (-$benefit) < 0 ? 0 : -$benefit
         ];
+
+        if ($excludeNonPositiveLines) {
+            foreach ($optionalLines as $label) {
+                if (isset($incomeStatement['details'][$label]) && $incomeStatement['details'][$label] <= 0) {
+                    unset($incomeStatement['details'][$label]);
+                }
+            }
+        }
 
         return $incomeStatement;
     }

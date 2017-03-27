@@ -249,6 +249,8 @@ class ajaxController extends bootstrap
     public function _valid_etapes()
     {
         $this->autoFireView = false;
+        /** @var \Symfony\Component\Translation\Translator translator */
+        $this->translator = $this->get('translator');
 
         if (isset($_POST['id_project']) && isset($_POST['etape'])) {
             $this->projects         = $this->loadData('projects');
@@ -400,8 +402,6 @@ class ajaxController extends bootstrap
                             $companyBalanceSheetManager->saveBalanceSheetDetails($oCompanyAnnualAccounts, $box, $value);
                         }
                         $companyBalanceSheetManager->calculateDebtsAssetsFromBalance($oCompanyAnnualAccounts->id_bilan);
-                        /** @todo confirm if this is useful */
-                        $companyBalanceSheetManager->getIncomeStatement($oCompanyAnnualAccounts);
                     }
                 }
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $oProject->id_project);
