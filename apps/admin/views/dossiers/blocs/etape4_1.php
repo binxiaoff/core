@@ -146,13 +146,13 @@
                 <tr>
                     <th><label>Note Infolegale</label></th>
                     <td>
-                        <?php if (false === empty($this->ratings['note_infolegale']['value'])) : ?>
+                        <?php if (isset($this->ratings['note_infolegale']['value']) && $this->ratings['note_infolegale']['value'] !== '') : ?>
                             <span class="rating-tooltip" title="note_infolegale"><?= $this->ratings['note_infolegale']['value'] ?></span>
                         <?php else : ?>-<?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
-                            <?php if (false === empty($this->targetRatings['note_infolegale']['value'])) : ?>
+                            <?php if (isset($this->targetRatings['note_infolegale']['value']) && $this->targetRatings['note_infolegale']['value'] !== '') : ?>
                                 <span class="rating-tooltip" title="target_note_infolegale"><?= $this->targetRatings['note_infolegale']['value'] ?></span>
                             <?php else : ?>-<?php endif; ?>
                         </td>
