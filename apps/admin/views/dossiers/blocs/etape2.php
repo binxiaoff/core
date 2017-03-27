@@ -40,10 +40,111 @@
                 $('.identification_prescripteur').show('slow');
             }
         });
+
+        var streetview, stretviewInit = false;
+        var initStreetView = function(lat, lng) {
+            // Init Google Street View
+            if (!stretviewInit) {
+                streetview = new google.maps.StreetViewPanorama(document.getElementById('street_view'), {
+                    position: {lat: lat, lng: lng},
+                    pov: {heading: 165, pitch: 0},
+                    zoom: 1
+                });
+                google.maps.event.addListener( streetview, 'idle', function() {
+                    stretviewInit = true;
+                });
+            }
+        }
+        var closeStreetView = function(el) {
+            var $el = el;
+            $el.animate({'padding-bottom': 0}, 200, function(){
+                $el.hide();
+            });
+        }
+
+        $("#etape2").on('click', '#btn_street_view', function(e) {
+            e.preventDefault();
+
+            $streetview = $('#street_view')
+            $streetviewContainer = $streetview.parent();
+            var lat = parseFloat($('#latitude').val());
+            var lng = parseFloat($('#longitude').val());
+
+            var offsetSpace = 50;
+            var aspectRatio = 0.5625;
+            var animationTime = 200;
+            var screenHeight = window.innerHeight;
+            var availableHeight = screenHeight - offsetSpace;
+            var streetviewContainerWidth = $streetviewContainer.width()
+            var containerRatioHeight =  streetviewContainerWidth * aspectRatio;
+
+            $streetviewContainer.show();
+
+            // Scroll window to streetview
+            $('html, body').animate({scrollTop: $streetviewContainer.offset().top - offsetSpace}, animationTime, function() {
+                var streetviewAspectRatio = '';
+                if (containerRatioHeight > availableHeight) {
+                    streetviewAspectRatio = (availableHeight / streetviewContainerWidth) * 100 +  '%';
+                } else {
+                    streetviewAspectRatio = aspectRatio * 100 + '%';
+                }
+                $streetviewContainer.animate({'padding-bottom': streetviewAspectRatio}, animationTime, function(){
+                    initStreetView(lat, lng);
+                });
+            });
+        });
+        $("#etape2").on('click', '#street_view_close', function(e) {
+            e.preventDefault();
+            var streetview = $(this).closest('.streetview-container')
+            closeStreetView(streetview)
+        });
     });
 </script>
+<style>
+    .responsive-container {
+        width: 100%;
+        height: 0;
+        position: relative;
+        background: #ECECEC;
+    }
+    .streetview-container {
+        display: none;
+        margin-bottom: 30px;
+    }
+    .streetview-container .controls {
+        position: absolute;
+        box-sizing: border-box;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        padding: 5px 10px;
+    }
+    .streetview-container .controls .btn {
+        float: right;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+    }
+    .responsive-container .iframe, .responsive-container iframe{
+        position: absolute;
+        top: 40px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+    }
+</style>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJQJHPnNXye8Hhsf7CUK6dPQ9dvD861k4"></script>
+
+
 <a class="tab_title" id="section-contact-details" href="#section-contact-details">2. Coordonnées</a>
 <div class="tab_content" id="etape2">
+    <div class="responsive-container streetview-container">
+        <div class="controls">
+            <button id="street_view_close" class="btn">X</button>
+        </div>
+        <div id="street_view" class="iframe"></div>
+    </div>
     <form method="post" id="dossier_etape2" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" onsubmit="valid_etape2(<?= $this->projects->id_project ?>); return false;">
         <table class="form" style="width: 100%;">
             <tr>
@@ -85,7 +186,7 @@
                 <td colspan="3">
                     <input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"> E
                     <?php if (false === empty($this->latitude) && false === empty($this->longitude)) : ?>
-                        <a class="btn-small btn_link" target="_blank" href="http://maps.google.com/?q=<?= $this->latitude ?>,<?= $this->longitude ?>" style="margin-left: 5px">Voir sur la carte</a>
+                        <a id="btn_street_view" class="btn-small btn_link" target="_blank" >Voir sur la carte</a>
                     <?php endif; ?>
                 </td>
             </tr>
