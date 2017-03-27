@@ -231,9 +231,9 @@ EOF
                 $greenPointData = greenPointStatus::getGreenPointData([], $attachment->getType()->getId(), $attachment->getId(), $clientId, $response['code']);
             }
 
-            $greenPointAttachment->setValidationCode($greenPointData['greenpoint_attachment']['validation_code']);
-            $greenPointAttachment->setValidationStatus($greenPointData['greenpoint_attachment']['validation_status']);
-            $greenPointAttachment->setValidationStatusLabel($greenPointData['greenpoint_attachment']['validation_status_label']);
+            $greenPointAttachment->setValidationCode($greenPointData['greenpoint_attachment']['validation_code'])
+                                 ->setValidationStatus($greenPointData['greenpoint_attachment']['validation_status'])
+                                 ->setValidationStatusLabel($greenPointData['greenpoint_attachment']['validation_status_label']);
             $entityManager->flush($greenPointAttachment);
 
             $greenPointAttachmentDetails = new GreenpointAttachmentDetail();
