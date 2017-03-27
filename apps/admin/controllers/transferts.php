@@ -581,8 +581,8 @@ class transfertsController extends bootstrap
         $mandate = $this->loadData('clients_mandats');
         /** @var \projects_pouvoir $proxy */
         $proxy = $this->loadData('projects_pouvoir');
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
             isset($_POST['validateProxy'], $_POST['id_project'])
@@ -633,7 +633,7 @@ class transfertsController extends bootstrap
                 /** @var \accepted_bids $acceptedBids */
                 $acceptedBids = $this->loadData('accepted_bids');
 
-                $em->getConnection()->beginTransaction();
+                $entityManager->getConnection()->beginTransaction();
                 try {
                     $proxy->status_remb = \projects_pouvoir::STATUS_VALIDATED;
                     $proxy->update();
@@ -643,7 +643,7 @@ class transfertsController extends bootstrap
 
                     $offset = 0;
                     $limit  = 50;
-                    $loanRepo = $em->getRepository('UnilendCoreBusinessBundle:Loans');
+                    $loanRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
                     while ($allLoans = $loanRepo->findBy(['idProject' => $_POST['id_project']], null, $limit, $offset)) {
                         foreach ($allLoans as $loan) {
                             $operationManager->loan($loan);
@@ -658,8 +658,8 @@ class transfertsController extends bootstrap
                         $borrowerManager = $this->get('unilend.service.borrower_manager');
 
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $projectEntity */
-                        $projectEntity                  = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
-                        $vatTax                         = $em->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+                        $projectEntity                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
+                        $vatTax                         = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
                         $projectLoanAmount              = $loans->sumPretsProjet($project->id_project);
                         $commissionFundsRateVATIncluded = bcmul(
                             bcadd(1, round(bcdiv($vatTax->getRate(), 100, 4), 2), 2),
@@ -671,10 +671,10 @@ class transfertsController extends bootstrap
                         $amountToRelease = bcsub($projectLoanAmount, $commission, 2);
 
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $borrowerWallet */
-                        $borrowerWallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($companies->id_client_owner, WalletType::BORROWER);
+                        $borrowerWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($companies->id_client_owner, WalletType::BORROWER);
                         //Todo: in MultiRIB, the bank account will be defined in the release funds process.
                         /** @var BankAccount $bankAccount */
-                        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($borrowerWallet->getIdClient());
+                        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($borrowerWallet->getIdClient());
 
                         $wireTransferOut = new Virements();
                         $wireTransferOut->setProject($projectEntity)
@@ -684,7 +684,7 @@ class transfertsController extends bootstrap
                                         ->setType(Virements::TYPE_BORROWER)
                                         ->setStatus(Virements::STATUS_PENDING)
                                         ->setBankAccount($bankAccount);
-                        $em->persist($wireTransferOut);
+                        $entityManager->persist($wireTransferOut);
 
                         $operationManager->withdrawBorrowerWallet($borrowerWallet, $wireTransferOut, $commission);
 
@@ -769,10 +769,10 @@ class transfertsController extends bootstrap
                         $_SESSION['freeow']['title']   = 'Déblocage des fonds';
                         $_SESSION['freeow']['message'] = 'Le déblocage a été faite avec succès';
                     }
-                    $em->flush();
-                    $em->getConnection()->commit();
+                    $entityManager->flush();
+                    $entityManager->getConnection()->commit();
                 } catch (\Exception $exception) {
-                    $em->getConnection()->rollBack();
+                    $entityManager->getConnection()->rollBack();
                     $logger->error('Release funds failed for project : ' . $project->id_project . '. The process has been rollbacked. Error : ' . $exception->getMessage());
 
                     $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
@@ -804,7 +804,7 @@ class transfertsController extends bootstrap
 
         $aProjects = $project->selectProjectsByStatus([\projects_status::FUNDE], '', [], '', '', false);
 
-        $this->aProjects = array();
+        $this->aProjects = [];
         foreach ($aProjects as $index => $aProject) {
             $this->aProjects[$index] = $aProject;
 
@@ -823,7 +823,7 @@ class transfertsController extends bootstrap
                 $this->aProjects[$index]['authority_status'] = $aProxy['status'];
             }
 
-            $projectEntity                      = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($aProject['id_project']);
+            $projectEntity                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($aProject['id_project']);
             $projectAttachments                 = $projectEntity->getAttachments();
             $this->aProjects[$index]['kbis']    = '';
             $this->aProjects[$index]['id_kbis'] = '';
@@ -913,10 +913,10 @@ class transfertsController extends bootstrap
                 if (null === $transferDocument) {
                     $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
                 }
-                /** @var \Doctrine\ORM\EntityManager $em */
-                $em = $this->get('doctrine.orm.entity_manager');
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
 
-                $em->getConnection()->beginTransaction();
+                $entityManager->getConnection()->beginTransaction();
                 try {
                     /** @var \transfer $transfer */
                     $transfer                     = $this->loadData('transfer');
@@ -925,10 +925,10 @@ class transfertsController extends bootstrap
                     $transfer->id_transfer_type   = \transfer_type::TYPE_INHERITANCE;
                     $transfer->create();
 
-                    $transferEntity = $em->getRepository('UnilendCoreBusinessBundle:Transfer')->find($transfer->id_transfer);
+                    $transferEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->find($transfer->id_transfer);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
                     $attachmentManager = $this->get('unilend.service.attachment_manager');
-                    $attachmentType    = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::TRANSFER_CERTIFICATE);
+                    $attachmentType    = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::TRANSFER_CERTIFICATE);
                     if ($attachmentType) {
                         $attachment = $attachmentManager->upload($transferEntity->getClientReceiver(), $attachmentType, $transferDocument);
                     }
@@ -966,14 +966,15 @@ class transfertsController extends bootstrap
                         $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
                     } catch (\Exception $exception) {
                         $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
+                        throw $exception;
                     }
 
                     $clientStatusManager->addClientStatus($newOwner, $_SESSION['user']['id_user'], $clientStatusManager->getLastClientStatus($newOwner),
                         'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
 
-                    $em->getConnection()->commit();
-                } catch (Exception $exception) {
-                    $em->getConnection()->rollback();
+                    $entityManager->getConnection()->commit();
+                } catch (\Exception $exception) {
+                    $entityManager->getConnection()->rollback();
                     throw $exception;
                 }
                 $_SESSION['succession']['success'] = [

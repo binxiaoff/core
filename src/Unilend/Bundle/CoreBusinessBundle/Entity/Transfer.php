@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Transfer
  *
- * @ORM\Table(name="transfer", indexes={@ORM\Index(name="id_client_origin", columns={"id_client_origin"}), @ORM\Index(name="id_client_receiver", columns={"id_client_receiver"}), @ORM\Index(name="fk_transfer_id_transfer_type", columns={"id_transfer_type"})})
+ * @ORM\Table(name="transfer", indexes={@ORM\Index(name="idx_transfer_id_client_origin", columns={"id_client_origin"}), @ORM\Index(name="idx_transfer_id_client_receiver", columns={"id_client_receiver"}), @ORM\Index(name="idx_transfer_id_transfer_type", columns={"id_transfer_type"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TransferRepository")
  * @ORM\HasLifecycleCallbacks
  */

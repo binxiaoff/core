@@ -207,7 +207,7 @@
                     if ($attachment->getType() === $attachmentType) {
                         $currentAttachment = $attachment;
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $greenPointAttachment */
-                        $greenPointAttachment = $this->greenpointAttachmentRepo->findOneBy(['idAttachment' => $currentAttachment]);
+                        $greenPointAttachment = $currentAttachment->getGreenpointAttachment();
                         break;
                     }
                     ?>

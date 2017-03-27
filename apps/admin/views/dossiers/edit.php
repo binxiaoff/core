@@ -668,8 +668,8 @@
                                         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
                                         foreach ($this->aAttachments as $projectAttachment) {
                                             $attachment = $projectAttachment->getAttachment();
-                                            if ($attachment->getType()->getId() == \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DEBTS_STATEMENT
-                                            && false === empty($attachment->getPath())) {
+                                            if (\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DEBTS_STATEMENT === $attachment->getType()->getId()
+                                                && false === empty($attachment->getPath())) {
                                                 $hasDebtsStatement = true;
                                                 break;
                                             }

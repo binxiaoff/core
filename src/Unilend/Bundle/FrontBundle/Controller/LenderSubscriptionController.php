@@ -973,9 +973,10 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Clients $client
-     * @param $attachmentTypeId
+     * @param Clients      $client
+     * @param integer      $attachmentTypeId
      * @param UploadedFile $file
+     *
      * @return Attachment
      * @throws \Exception
      */

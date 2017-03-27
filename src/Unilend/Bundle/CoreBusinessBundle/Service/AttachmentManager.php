@@ -40,7 +40,7 @@ class AttachmentManager
      * @param Clients        $client
      * @param AttachmentType $attachmentType
      * @param UploadedFile   $file
-     * @param null           $name
+     * @param null|string    $name
      *
      * @return Attachment
      */
@@ -95,15 +95,15 @@ class AttachmentManager
      */
     public function attachToProject(Attachment $attachment, Projects $project)
     {
-        $projectAttachmentRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
-        $attached              = $projectAttachmentRepo->getAttachedAttachments($project, $attachment->getType());
+        $projectAttachmentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
+        $attached                    = $projectAttachmentRepository->getAttachedAttachments($project, $attachment->getType());
 
         foreach ($attached as $attachmentToDetach) {
             $this->entityManager->remove($attachmentToDetach);
             $this->entityManager->flush($attachmentToDetach);
         }
 
-        $projectAttachment = $projectAttachmentRepo->findOneBy(['idAttachment' => $attachment, 'idProject' => $project]);
+        $projectAttachment = $projectAttachmentRepository->findOneBy(['idAttachment' => $attachment, 'idProject' => $project]);
         if (null === $projectAttachment) {
             $projectAttachment = new ProjectAttachment();
             $projectAttachment->setProject($project)
@@ -123,8 +123,8 @@ class AttachmentManager
      */
     public function attachToTransfer(Attachment $attachment, Transfer $transfer)
     {
-        $transferAttachmentRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TransferAttachment');
-        $attached               = $transferAttachmentRepo->getAttachedAttachments($transfer, $attachment->getType());
+        $transferAttachmentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TransferAttachment');
+        $attached                     = $transferAttachmentRepository->getAttachedAttachments($transfer, $attachment->getType());
 
         foreach ($attached as $attachmentToDetach) {
             $this->entityManager->remove($attachmentToDetach);
@@ -165,13 +165,13 @@ class AttachmentManager
     }
 
     /**
-     * @param bool $bIncludeOthers
+     * @param bool $includeOthers
      *
      * @return AttachmentType[]
      */
-    public function getAllTypesForProjects($bIncludeOthers = true)
+    public function getAllTypesForProjects($includeOthers = true)
     {
-        $aTypes = array(
+        $types = array(
             AttachmentType::KBIS,
             AttachmentType::RIB,
             AttachmentType::CNI_PASSPORTE_DIRIGEANT,
@@ -206,8 +206,8 @@ class AttachmentManager
             AttachmentType::PRESENTATION_ENTRERPISE
         );
 
-        if ($bIncludeOthers) {
-            $aTypes = array_merge($aTypes, [
+        if ($includeOthers) {
+            $types = array_merge($types, [
                 AttachmentType::AUTRE1,
                 AttachmentType::AUTRE2,
                 AttachmentType::AUTRE3,
@@ -215,17 +215,17 @@ class AttachmentManager
             ]);
         }
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($aTypes);
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($types);
     }
 
     /**
-     * @param bool $bIncludeOthers
+     * @param bool $includeOthers
      *
      * @return AttachmentType[]
      */
-    public function getAllTypesForLender($bIncludeOthers = true)
+    public function getAllTypesForLender($includeOthers = true)
     {
-        $aTypes = array(
+        $types = array(
             AttachmentType::CNI_PASSPORTE,
             AttachmentType::CNI_PASSPORTE_VERSO,
             AttachmentType::JUSTIFICATIF_DOMICILE,
@@ -242,8 +242,8 @@ class AttachmentManager
             AttachmentType::DISPENSE_PRELEVEMENT_2017
         );
 
-        if ($bIncludeOthers) {
-            $aTypes = array_merge($aTypes, [
+        if ($includeOthers) {
+            $types = array_merge($types, [
                 AttachmentType::AUTRE1,
                 AttachmentType::AUTRE2,
                 AttachmentType::AUTRE3,
@@ -251,6 +251,6 @@ class AttachmentManager
             ]);
         }
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($aTypes);
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($types);
     }
 }

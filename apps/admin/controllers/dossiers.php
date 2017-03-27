@@ -7,7 +7,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class dossiersController extends bootstrap
 {

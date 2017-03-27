@@ -39,7 +39,6 @@
             </thead>
             <tbody>
                 <?php
-
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
                 foreach ($this->aAttachmentTypes as $attachmentType) :
                 ?>

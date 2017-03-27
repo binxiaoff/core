@@ -23,7 +23,7 @@ class AttachmentRepository extends EntityRepository
         $qb->innerJoin('UnilendCoreBusinessBundle:ProjectAttachment', 'pa', Join::WITH, 'a.id = pa.idAttachment')
            ->where('pa.idProject = :project')
            ->andWhere('a.idType = :attachmentType')
-           ->setParameters([':project' => $project, 'attachmentType' => $attachmentType]);
+           ->setParameters(['project' => $project, 'attachmentType' => $attachmentType]);
 
         return $qb->getQuery()->getOneOrNullResult();
     }
