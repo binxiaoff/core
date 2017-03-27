@@ -156,6 +156,7 @@ class CompanyFinanceCheck
                         return true;
                     }
                 }
+
                 return false;
             }
         } catch (\Exception $exception) {
@@ -181,7 +182,6 @@ class CompanyFinanceCheck
                 if (null !== ($capitalStockPost = $this->getSummaryFinancialPost($financialSummary, 'posteSF_FPRO'))) {
                     if ($capitalStockPost->getAmountY() < 0) {
                         $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
-
                         return true;
                     }
 
@@ -192,8 +192,8 @@ class CompanyFinanceCheck
             $this->logger->error('Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
         }
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro';
 
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro';
         return true;
     }
 
@@ -211,9 +211,9 @@ class CompanyFinanceCheck
                 if (null !== ($rawOperatingIncomePost = $this->getManagementLineFinancialPost($balanceManagementLine, 'posteSIG_EBE'))) {
                     if ($rawOperatingIncomePost->getAmountY() < 0) {
                         $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
-
                         return true;
                     }
+
                     return false;
                 }
             }
@@ -221,8 +221,8 @@ class CompanyFinanceCheck
             $this->logger->error('Could not get balance management line: AltaresManager::getBalanceManagementLine(' . $siren . ', ' . $lastBalanceSheet->getBalanceSheetId() . '). Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
         }
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_ebe';
 
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_ebe';
         return true;
     }
 
@@ -233,21 +233,16 @@ class CompanyFinanceCheck
      */
     public function hasInfogreffePrivileges($siren, &$rejectionReason)
     {
-        $logContext   = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
         try {
             $privileges = $this->wsInfogreffe->getIndebtedness($siren);
 
             if (is_array($privileges)) {
                 switch ($privileges['code']) {
-                    case '006':
                     case '013':
-                    case '025':
-
                         return false;
                     default:
-                        $rejectionReason = $privileges['message'];
-                        $this->logger->warning('InfogreffeManager::getIndebtedness(' . $siren .') response: ' . json_encode($privileges), $logContext);
-
+                        $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_UNKNOWN_PRIVILEGES;
                         return true;
                 }
             }
@@ -259,7 +254,6 @@ class CompanyFinanceCheck
                     foreach ($subscription3 as $item) {
                         if (true === $item->getValid()) {
                             $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES;
-
                             return true;
                         }
                     }
@@ -270,7 +264,6 @@ class CompanyFinanceCheck
                     foreach ($subscription4 as $item) {
                         if (true === $item->getValid()) {
                             $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES;
-
                             return true;
                         }
                     }
@@ -281,8 +274,8 @@ class CompanyFinanceCheck
         } catch (\Exception $exception) {
             $this->logger->warning('Could not get infogreffe privileges: InfogreffeManager::getIndebtedness(' . $siren .'). Message: ' . $exception->getMessage(), $logContext);
         }
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
 
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
         return true;
     }
 

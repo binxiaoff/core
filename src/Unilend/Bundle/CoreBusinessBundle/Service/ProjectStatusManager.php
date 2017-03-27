@@ -86,6 +86,8 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-euler-grade');
             case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-vs-altares-score');
+            case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_UNKNOWN_PRIVILEGES:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-unknown-privileges');
             case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges');
             case \projects_status::UNEXPECTED_RESPONSE . 'altares_identity':
