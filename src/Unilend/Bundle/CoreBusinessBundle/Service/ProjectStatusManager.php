@@ -108,10 +108,9 @@ class ProjectStatusManager
                 $rejectReasons = explode(',', $motive);
                 if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
                     return $this->translator->trans('project-rejection-reason-bo_collective-proceeding');
-                } elseif (
-                    in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
-                ) {
+                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)) {
+                    return $this->translator->trans('project-rejection-reason-bo_inactive-siren');
+                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)) {
                     return $this->translator->trans('project-rejection-reason-bo_no-siren');
                 } elseif (
                     in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
