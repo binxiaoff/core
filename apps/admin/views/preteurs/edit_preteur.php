@@ -420,32 +420,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
         <table class="form" style="margin: auto;">
             <input type="hidden" value="<?= $this->currentBankAccount->getId() ?>" name="id_bank_account" id="id_bank_account">
             <tr>
-                <th><label for="bic">BIC :</label></th>
-                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->currentBankAccount->getBic() ?>"/></td>
+                <th>BIC :</th>
+                <td><?= $this->currentBankAccount->getBic() ?></td>
             </tr>
             <tr>
-                <th style="text-align: right; vertical-align: top; padding: 5px 0px 10px 5px;"><label for="iban1">IBAN :</label></th>
-                <td style="padding: 0 0 10px 0;">
-                    <table>
-                        <tr>
-                            <td><input type="text" name="iban1" id="iban1" class="input_court" value="<?= (false === empty($this->iban1)) ? $this->iban1 : '' ?>"/></td>
-                            <td><input type="text" name="iban2" id="iban2" class="input_court" value="<?= (false === empty($this->iban2)) ? $this->iban2 : '' ?>"/></td>
-                            <td><input type="text" name="iban3" id="iban3" class="input_court" value="<?= (false === empty($this->iban3)) ? $this->iban3 : '' ?>"/></td>
-                            <td><input type="text" name="iban4" id="iban4" class="input_court" value="<?= (false === empty($this->iban4)) ? $this->iban4 : '' ?>"/></td>
-                            <td><input type="text" name="iban5" id="iban5" class="input_court" value="<?= (false === empty($this->iban5)) ? $this->iban5 : '' ?>"/></td>
-                            <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= (false === empty($this->iban6)) ? $this->iban6 : '' ?>"/></td>
-                            <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= (false === empty($this->iban7)) ? $this->iban7 : '' ?>"/></td>
-                        </tr>
-                        <tr>
-                            <td colspan="5">
-                                <span class="btn" id="change_bank_account_btn">Valider les modifications sur le RIB</span>
-                            </td>
-                            <td colspan="2" valign="middle">
-                                <p><span id="iban_ok" style="margin:0px;"></span>  <span id="bic_ok" style="margin:0px;"></span></p>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
+                <th>IBAN :</th>
+                <td><?= chunk_split($this->currentBankAccount->getIban(), 4, ' ') ?></td>
             </tr>
             <?php if ($this->origine_fonds[0] != false) : ?>
                 <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) : ?>
@@ -999,62 +979,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
             $('.statut_dirigeant_e').show('slow');
             $('.statut_dirigeant_e3').show('slow');
         }
-    });
-
-    $("#change_bank_account_btn").click(function() {
-        var rib = {
-            bic: $('#bic').val(),
-            iban1: $('#iban1').val(),
-            iban2: $('#iban2').val(),
-            iban3: $('#iban3').val(),
-            iban4: $('#iban4').val(),
-            iban5: $('#iban5').val(),
-            iban6: $('#iban6').val(),
-            iban7: $('#iban7').val(),
-            id_bank_account: $('#id_bank_account').val(),
-            id_client: "<?= $this->clients->id_client ?>"
-        };
-
-        $.post(add_url + "/preteurs/change_bank_account", rib).done(function (data) {
-            oJson = JSON.parse(data);
-            var color = 'red';
-
-            if (typeof oJson.text == 'undefined' && typeof oJson.severity == 'undefined') {
-                $('#iban_ok').text('Une erreur est survenue');
-                $('#iban_ok').css("color", color);
-            } else {
-                if (typeof oJson.text.bic !== 'undefined' && typeof oJson.severity.bic !== 'undefined') {
-                    switch (oJson.severity.bic) {
-                        case 'valid':
-                            color = 'green';
-                            break;
-                        case 'warning':
-                            color = 'orange';
-                            break;
-                        case 'error':
-                            color = 'red';
-                            break;
-                    }
-                    $('#bic_ok').text(oJson.text.bic);
-                    $('#bic_ok').css("color", color);
-                }
-                if (typeof oJson.text.iban !== 'undefined' && typeof oJson.severity.iban !== 'undefined') {
-                    switch (oJson.severity.iban) {
-                        case 'valid':
-                            color = 'green';
-                            break;
-                        case 'warning':
-                            color = 'orange';
-                            break;
-                        case 'error':
-                            color = 'red';
-                            break;
-                    }
-                    $('#iban_ok').text(oJson.text.iban);
-                    $('#iban_ok').css("color", color);
-                }
-            }
-        });
     });
 
     $("#origine_des_fonds").change(function() {
