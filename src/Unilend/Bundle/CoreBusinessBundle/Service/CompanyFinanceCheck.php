@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\PaymentIncident;
@@ -72,7 +73,10 @@ class CompanyFinanceCheck
     public function isCompanySafe(\companies &$company, &$rejectionReason)
     {
         try {
-            if (null !== ($companyData = $this->wsAltares->getCompanyIdentity($company->siren))) {
+            if (
+                Companies::INVALID_SIREN_EMPTY !== $company->siren
+                && null !== ($companyData = $this->wsAltares->getCompanyIdentity($company->siren))
+            ) {
                 $company->name          = $company->name ?: $companyData->getCorporateName();
                 $company->forme         = $company->forme ?: $companyData->getCompanyForm();
                 $company->capital       = $company->capital ?: $companyData->getCapital();
@@ -101,13 +105,13 @@ class CompanyFinanceCheck
 
                 return true;
             }
-            $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
         } catch (\Exception $exception) {
             $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_identity';
             $this->logger->error('Could not get company identity: AltaresManager::getCompanyIdentity(' . $company->siren . '). Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]);
         }
 
+        $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
         return false;
     }
 

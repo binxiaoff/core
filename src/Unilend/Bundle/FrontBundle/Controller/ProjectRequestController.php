@@ -119,12 +119,11 @@ class ProjectRequestController extends Controller
             }
         }
 
-        $siren       = str_replace(' ', '', $request->request->get('siren'));
+        $siren       = str_replace(' ', '', $request->request->get('siren', ''));
         $sirenLength = strlen($siren);
 
         if (
-            empty($siren)
-            || false === filter_var($siren, FILTER_VALIDATE_INT)
+            1 !== preg_match('/^[0-9]*$/', $siren)
             || false === in_array($sirenLength, [9, 14]) // SIRET numbers also allowed
         ) {
             $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
