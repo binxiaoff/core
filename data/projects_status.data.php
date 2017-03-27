@@ -48,6 +48,7 @@ class projects_status extends projects_status_crud
     const NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE       = 'unilend_xerfi_vs_altares_score';
     const NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE                    = 'low_altares_score';
     const NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE                 = 'low_infolegale_score';
+    const NON_ELIGIBLE_REASON_EULER_WHITE_TRAFFIC_LIGHT            = 'euler_white_traffic_light';
     const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT                  = 'euler_traffic_light';
     const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE = 'euler_traffic_light_vs_altares_score';
     const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI = 'euler_traffic_light_vs_unilend_xerfi';

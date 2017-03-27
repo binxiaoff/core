@@ -74,6 +74,14 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-low-altares-score');
             case \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-low-infolegale-score');
+            case \projects_status::NON_ELIGIBLE_REASON_EULER_WHITE_TRAFFIC_LIGHT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-white-traffic-light');
+            case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light');
+            case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light-vs-altares-score');
+            case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light-vs-xerfi-score');
             case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-euler-grade');
             case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
@@ -95,7 +103,7 @@ class ProjectStatusManager
             case \projects_status::UNEXPECTED_RESPONSE . 'infolegale_score':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-score-error');
             case \projects_status::UNEXPECTED_RESPONSE . 'euler_grade':
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-eurler-grade-error');
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-error');
             default:
                 $rejectReasons = explode(',', $motive);
                 if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
