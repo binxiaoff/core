@@ -543,7 +543,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                             $greenpointLabel       = 'Non Contrôlé par GreenPoint';
                             $greenpointColor       = 'error';
                             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $greenPointAttachment */
-                            $greenPointAttachment  = $this->greenpointAttachmentRepo->findOneBy(['idAttachment' => $attachment]);
+                            $greenPointAttachment  = $attachment->getGreenpointAttachment();
                             if ($greenPointAttachment) {
                                 $greenpointLabel = $greenPointAttachment->getValidationStatusLabel();
                                 if (0 == $greenPointAttachment->getValidationStatus()) {

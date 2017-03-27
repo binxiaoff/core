@@ -128,7 +128,6 @@ class preteursController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
         $attachmentManager = $this->get('unilend.service.attachment_manager');
-        $this->greenpointAttachmentRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:GreenpointAttachment');
 
         $this->projects      = $this->loadData('projects');
         $this->transactions  = $this->loadData('transactions');
@@ -238,19 +237,20 @@ class preteursController extends bootstrap
             AttachmentType::RIB,
             AttachmentType::JUSTIFICATIF_FISCAL
         ];
-        $domicileGroup      = [
+        $fiscalAddressGroup = [
             AttachmentType::JUSTIFICATIF_DOMICILE,
             AttachmentType::ATTESTATION_HEBERGEMENT_TIERS
         ];
-        $identityTypes = [];
-        $bankAndFiscalTypes = [];
-        $habitationTypes = [];
-        $otherTypes = [];
 
-        $identityAttachments = [];
+        $identityTypes      = [];
+        $bankAndFiscalTypes = [];
+        $fiscalAddressTypes = [];
+        $otherTypes         = [];
+
+        $identityAttachments      = [];
         $bankAndFiscalAttachments = [];
-        $habitationAttachments = [];
-        $otherAttachments = [];
+        $fiscalAddressAttachments = [];
+        $otherAttachments         = [];
 
         foreach ($attachmentTypes as $attachmentType) {
             $typeId = $attachmentType->getId();
@@ -258,8 +258,8 @@ class preteursController extends bootstrap
                 $identityTypes[$typeId] = $attachmentType;
             } elseif (in_array($typeId, $bankAndFiscalGroup)) {
                 $bankAndFiscalTypes[$typeId] = $attachmentType;
-            } elseif (in_array($typeId, $domicileGroup)) {
-                $habitationTypes[$typeId] = $attachmentType;
+            } elseif (in_array($typeId, $fiscalAddressGroup)) {
+                $fiscalAddressTypes[$typeId] = $attachmentType;
             } else {
                 $otherTypes[$typeId] = $attachmentType;
             }
@@ -272,9 +272,9 @@ class preteursController extends bootstrap
             } elseif (in_array($typeId, $bankAndFiscalGroup)) {
                 unset($bankAndFiscalTypes[$typeId]);
                 $bankAndFiscalAttachments[] = $attachment;
-            } elseif (in_array($typeId, $domicileGroup)) {
-                unset($habitationTypes[$typeId]);
-                $habitationAttachments[] = $attachment;
+            } elseif (in_array($typeId, $fiscalAddressGroup)) {
+                unset($fiscalAddressTypes[$typeId]);
+                $fiscalAddressAttachments[] = $attachment;
             } else {
                 unset($otherTypes[$typeId]);
                 $otherAttachments[] = $attachment;
@@ -288,14 +288,14 @@ class preteursController extends bootstrap
                 'typeToAdd'   => $identityTypes
             ],
             [
-                'title'       => 'RIB et Jsutificatif fiscal',
+                'title'       => 'RIB et Justificatif fiscal',
                 'attachments' => $bankAndFiscalAttachments,
                 'typeToAdd'   => $bankAndFiscalTypes
             ],
             [
                 'title'       => 'Justificatif de domicile',
-                'attachments' => $habitationAttachments,
-                'typeToAdd'   => $habitationTypes
+                'attachments' => $fiscalAddressAttachments,
+                'typeToAdd'   => $fiscalAddressTypes
             ],
             [
                 'title'       => 'Autre',
@@ -415,7 +415,6 @@ class preteursController extends bootstrap
 
             $attachments     = $client->getAttachments();
             $attachmentTypes = $attachmentManager->getAllTypesForLender();
-            $this->greenpointAttachmentRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:GreenpointAttachment');
             $this->setAttachments($attachments, $attachmentTypes);
 
             $this->loadJs('default/component/add-file-input');
@@ -498,10 +497,10 @@ class preteursController extends bootstrap
                     $this->clients->update();
 
                     $this->lenders_accounts->id_company_owner = 0;
-                    $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+                    $attachmentTypeRepository                 = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
                     foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
                         if ($uploadedFile) {
-                            $attachmentType   = $attachmentTypeRepo->find($attachmentTypeId);
+                            $attachmentType   = $attachmentTypeRepository->find($attachmentTypeId);
                             if ($attachmentType) {
                                 $attachmentManager->upload($client, $attachmentType, $uploadedFile);
                             }
@@ -699,10 +698,10 @@ class preteursController extends bootstrap
                     $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
                     $this->clients->update();
 
-                    $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+                    $attachmentTypeRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
                     foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
                         if ($uploadedFile) {
-                            $attachmentType   = $attachmentTypeRepo->find($attachmentTypeId);
+                            $attachmentType   = $attachmentTypeRepository->find($attachmentTypeId);
                             if ($attachmentType) {
                                 $attachmentManager->upload($client, $attachmentType, $uploadedFile);
                             }
@@ -990,24 +989,6 @@ class preteursController extends bootstrap
         $this->sumDispoPourOffres         = $sumVirementUnilendOffres - $sumOffresTransac;
         $this->sumDispoPourOffresSelonMax = $this->montant_limit * 100 - $sumOffresTransac;
     }
-
-    /**
-     * @param Clients      $client
-     * @param UploadedFile $file
-     * @param              $attachmentTypeId
-     *
-     * @return Attachment
-     */
-    private function uploadAttachment(Clients $client, $attachmentTypeId, UploadedFile $file)
-    {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-        $attachmentManager = $this->get('unilend.service.attachment_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
-        $attachmentType    = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
-
-        return $attachmentManager->upload($client, $attachmentType, $file);
-    }
-
     public function _email_history()
     {
         $this->clients                = $this->loadData('clients');

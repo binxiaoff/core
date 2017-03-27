@@ -18,8 +18,8 @@ ini_set('log_errors', 1);
 session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
-$kernel = new AppKernel('demo', false);
-$request  = Request::createFromGlobals();
+$kernel  = new AppKernel('demo', false);
+$request = Request::createFromGlobals();
 $kernel->boot();
 
 $oDispatcher = new \Unilend\core\Dispatcher($kernel, 'admin', $request);
