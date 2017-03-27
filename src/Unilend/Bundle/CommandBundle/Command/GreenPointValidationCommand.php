@@ -32,14 +32,14 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \greenpoint_kyc $oGreenPointKyc */
-        $oGreenPointKyc = $oEntityManager->getRepository('greenpoint_kyc');
-        /** @var LoggerInterface $oLogger */
-        $oLogger       = $this->getContainer()->get('monolog.logger.console');
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var \greenpoint_kyc $greenPointKyc */
+        $greenPointKyc = $entityManagerSimulator->getRepository('greenpoint_kyc');
+        /** @var LoggerInterface $logger */
+        $logger        = $this->getContainer()->get('monolog.logger.console');
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-        $aStatusToCheck           = [
+        $statusToCheck            = [
             ClientsStatus::TO_BE_CHECKED,
             ClientsStatus::COMPLETENESS_REPLY,
             ClientsStatus::MODIFICATION
@@ -55,11 +55,11 @@ EOF
             AttachmentType::KBIS,
             AttachmentType::JUSTIFICATIF_FISCAL,
         ];
-        $clients                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($aStatusToCheck);
+        $clients                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
 
         if (false === empty($clients)) {
             /** @var greenPoint $oGreenPoint */
-            $oGreenPoint       = new greenPoint($this->getContainer()->getParameter('kernel.environment'));
+            $greenPoint        = new greenPoint($this->getContainer()->getParameter('kernel.environment'));
             $attachmentManager = $this->getContainer()->get('unilend.service.attachment_manager');
             $requests          = [];
 
@@ -80,7 +80,7 @@ EOF
                     }
 
                     if (false == file_exists(realpath($attachmentManager->getFullPath($attachment)))) {
-                        $oLogger->error('Attachment file not found (ID ' . $attachment->getId() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                        $logger->error('Attachment file not found (ID ' . $attachment->getId() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__]);
                         continue;
                     }
                     try {
@@ -102,23 +102,23 @@ EOF
                                 continue 2;
                         }
                         $greenPointData = $this->getGreenPointData($client, $attachment, $type);
-                        $requestId      = $oGreenPoint->send($greenPointData, $type, false);
+                        $requestId      = $greenPoint->send($greenPointData, $type, false);
                         if (is_int($requestId)) {
                             $requests[$requestId] = $greenPointAttachment;
                         }
-                    } catch (\Exception $oException) {
-                        $oLogger->error(
-                            'Greenpoint was unable to process data (client ' . $client->getIdClient() . ') - Message: ' . $oException->getMessage() . ' - Code: ' . $oException->getCode(),
+                    } catch (\Exception $exception) {
+                        $logger->error(
+                            'Greenpoint was unable to process data (client ' . $client->getIdClient() . ') - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(),
                             ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]
                         );
                         continue 2;
                     }
                 }
                 if (false === empty($requests)) {
-                    $response = $oGreenPoint->sendRequests();
+                    $response = $greenPoint->sendRequests();
                     $this->processGreenPointResponse($client->getIdClient(), $response, $requests);
-                    unset($aResult, $aQueryID);
-                    greenPointStatus::addCustomer($client->getIdClient(), $oGreenPoint, $oGreenPointKyc);
+                    unset($response, $requests);
+                    greenPointStatus::addCustomer($client->getIdClient(), $greenPoint, $greenPointKyc);
                 }
                 break; // \!/debug code\!/
             }
@@ -137,7 +137,7 @@ EOF
         $attachmentManager = $this->getContainer()->get('unilend.service.attachment_manager');
         $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-        $aData = [
+        $data = [
             'files'    => new \CURLFile(realpath($attachmentManager->getFullPath($attachment))),
             'dossier'  => $client->getIdClient(),
             'document' => $attachment->getId(),
@@ -148,55 +148,55 @@ EOF
 
         switch ($type) {
             case greenPoint::GP_REQUEST_TYPE_ID:
-                $aData['date_naissance'] = $client->getNaissance()->format('d/m/Y');
+                $data['date_naissance'] = $client->getNaissance()->format('d/m/Y');
                 break;
             case greenPoint::GP_REQUEST_TYPE_IBAN:
                 $bankAccount = $attachment->getBankAccount();
                 if ($bankAccount) {
-                    $aData['iban'] = $bankAccount->getIban();
-                    $aData['bic']  = $bankAccount->getBic();
+                    $data['iban'] = $bankAccount->getIban();
+                    $data['bic']  = $bankAccount->getBic();
                 }
                 break;
             case greenPoint::GP_REQUEST_TYPE_ADDRESS:
                 if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-                    $clientAddress        = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client]);
-                    $aData['adresse']     = $clientAddress->getAdresseFiscal();
-                    $aData['code_postal'] = $clientAddress->getCpFiscal();
-                    $aData['ville']       = $clientAddress->getVilleFiscal();
-                    $countryId            = $clientAddress->getIdPaysFiscal();
+                    $clientAddress       = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client]);
+                    $data['adresse']     = $clientAddress->getAdresseFiscal();
+                    $data['code_postal'] = $clientAddress->getCpFiscal();
+                    $data['ville']       = $clientAddress->getVilleFiscal();
+                    $countryId           = $clientAddress->getIdPaysFiscal();
                 } else {
-                    $company              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
-                    $aData['adresse']     = $company->getAdresse1() . ' ' . $company->getAdresse2();
-                    $aData['code_postal'] = $company->getZip();
-                    $aData['ville']       = $company->getCity();
-                    $countryId            = $company->getIdPays();
+                    $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
+                    $data['adresse']     = $company->getAdresse1() . ' ' . $company->getAdresse2();
+                    $data['code_postal'] = $company->getZip();
+                    $data['ville']       = $company->getCity();
+                    $countryId           = $company->getIdPays();
                 }
                 $country = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($countryId);
                 if (null === $country) {
                     $country = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find(PaysV2::COUNTRY_FRANCE);
                 }
-                $aData['pays'] = strtoupper($country->getFr());
+                $data['pays'] = strtoupper($country->getFr());
                 break;
             default:
                 break;
         }
 
-        return $aData;
+        return $data;
     }
 
     /**
-     * @param string $sFamilyName
-     * @param string $sUseName
+     * @param string $familyName
+     * @param string $usedName
      *
      * @return string
      */
-    private function getFamilyNames($sFamilyName, $sUseName)
+    private function getFamilyNames($familyName, $usedName)
     {
-        $sAllowedNames = $sFamilyName;
-        if (false === empty($sUseName)) {
-            $sAllowedNames .= '|' . $sUseName;
+        $allowedNames = $familyName;
+        if (false === empty($usedName)) {
+            $allowedNames .= '|' . $usedName;
         }
-        return $sAllowedNames;
+        return $allowedNames;
     }
 
     /**
