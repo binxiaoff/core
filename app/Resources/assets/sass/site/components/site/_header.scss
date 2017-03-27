@@ -479,15 +479,6 @@
           width: $height-site-header;
           height: $height-site-header;
           float: left;
-
-          // &:before {
-          //   // content: '\f08b'; // sign out
-          //   font-size: $fs-h3;
-          //   line-height: $height-site-header;
-          //   text-align: center;
-          //   vertical-align: middle;
-          // }
-
           .label {
             @include hide-accessible;
           }
@@ -559,25 +550,24 @@
 
   .site-nav-menu {
     @include inline-block-list();
-
     a {
-      @include link-states(
-        $link: (
-          color: $c-t1,
-          text-decoration: none
-        ),
-        $hover: (
-          color: $c-p1,
-          text-decoration: none
-        ),
-        $active: (
-          color: $c-p2
-        )
-      );
-
       display: block;
-      padding: 60px 1em 25px;
+      padding: 60px 1em 4px;
       font-size: 18px;
+      color: $c-t1;
+      text-decoration: none;
+      @include devices('tablet-l') {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      &:hover {
+        color: $c-p1;
+        text-decoration: none;
+      }
+      &:focus {
+        color: $c-p2;
+        text-decoration: none;
+      }
     }
   }
 
@@ -586,12 +576,6 @@
     right: 0;
     padding-top: 54px;
   }
-
-  // Site search
-  // TMA-1101 Moved out to specify certain breakpoints and conditions
-  //.site-search {
-  //  @include site-search-sm;
-  //}
 
   // Site user
   .site-user {
@@ -817,16 +801,49 @@
   }
 }
 
+.site-nav-menu {
+  li {
+    a {
+      outline: none;
+      position: relative;
+      &:after {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        margin-left: -50px;
+        width: 100px;
+        height: 2px;
+        background: $c-p1;
+      }
+    }
+    &.active {
+      a {
+        &:after {
+          content: '';
+        }
+      }
+    }
+  }
+  @media (min-width: 1024px) {
+    li {
+      a {
+        &:after {
+          bottom: -2px;
+          margin-left: -40px;
+          width: 80px;
+        }
+        &:active, &:focus {
+          color: $c-p2;
+        }
+      }
+    }
+  }
+}
+
+
 // Further modifications to the site header for medium devices
 @mixin site-header-full-md {
   @include site-header-full;
-
-  // Search
-  // TMA-1101 Moved out to specify certain breakpoints and conditions
-  // @note see `sass/site/components/site/_search.scss`
-  //.site-search {
-  //  @include site-search-md;
-  //}
 
   // Fixed header modifications
   #{$js-site-header-fixed} & {
@@ -854,17 +871,10 @@
 
   .site-nav-menu {
     a {
-      padding: 60px 1em 25px;
+      padding: 60px 1em 9px;
       font-size: 20px;
     }
   }
-
-  // TMA-1101 Moved out to specify certain breakpoints and conditions
-  // @note see `sass/site/components/site/_search.scss`
-  //.site-search {
-  //  @include site-search-md;
-  //  @include site-search-lg;
-  //}
 
   .site-user {
     .btn-site-login {
