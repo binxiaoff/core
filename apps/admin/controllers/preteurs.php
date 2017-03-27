@@ -423,10 +423,15 @@ class preteursController extends bootstrap
             $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
             $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
 
-            /** @var \greenpoint_attachment_detail $greenPointDetail */
-            $greenPointDetail            = $this->loadData('greenpoint_attachment_detail');
-            $this->lenderIdentityMRZData = $greenPointDetail->getIdentityData($this->clients->id_client, AttachmentType::CNI_PASSPORTE);
-            $this->hostIdentityMRZData   = $greenPointDetail->getIdentityData($this->clients->id_client, AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT);
+            $identityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE);
+            if ($identityDocument && $identityDocument->getGreenpointAttachment()) {
+                $this->lenderIdentityMRZData = $identityDocument->getGreenpointAttachment()->getGreenpointAttachmentDetail();
+            }
+
+            $hostIdentityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT);
+            if ($hostIdentityDocument && $hostIdentityDocument->getGreenpointAttachment()) {
+                $this->hostIdentityMRZData = $hostIdentityDocument->getGreenpointAttachment()->getGreenpointAttachmentDetail();
+            }
 
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest();

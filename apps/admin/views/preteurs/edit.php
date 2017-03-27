@@ -218,10 +218,10 @@
                 }
                 if ($greenPointAttachment) {
                     $greenpointLabel = $greenPointAttachment->getValidationStatusLabel();
-                    if (1 === $greenPointAttachment->getFinalStatus()) {
+                    if (9 === $greenPointAttachment->getValidationStatus()) {
                         $greenpointFinalStatus = 'Statut définitif';
-                    } elseif (8 > $greenPointAttachment->getFinalStatus()) {
-                        $greenpointFinalStatus = 'Attente de confirmation Green Point';
+                    } else {
+                        $greenpointFinalStatus = 'Statut peut être non définitif';
                     }
 
                     if (0 == $greenPointAttachment->getValidationStatus()) {

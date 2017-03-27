@@ -16,6 +16,9 @@ class PaysV2
     const VIGILANCE_STATUS_MEDIUM_RISK = 1;
     const VIGILANCE_STATUS_HIGH_RISK   = 2;
 
+    const ZONE_B040      = "'DE','AW','AT','BE','BQ','BG','CY','HR','CW','DK','ES','EE','FI','GR','HU','GG','JE','IM','VG','IE','IT','LV','LT','LU','MT','MS','NL','PL','PT','CZ','RO','GB','BL','SX','SE','SK','SI'";
+    const COUNTRY_FRANCE = 1;
+
     /**
      * @var string
      *

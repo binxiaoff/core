@@ -115,19 +115,19 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                             </tr>
                             <tr class="particulier">
                                 <th>Nationalité :</th>
-                                <td><?= isset($this->lenderIdentityMRZData['identity_nationality']) ? $this->lenderIdentityMRZData['identity_nationality'] : '' ?></td>
+                                <td><?= isset($this->lenderIdentityMRZData) ? $this->lenderIdentityMRZData->getIdentityNationality() : '' ?></td>
                             </tr>
                             <tr class="particulier">
                                 <th>Pays émetteur :</th>
-                                <td><?= isset($this->lenderIdentityMRZData['identity_issuing_country']) ? $this->lenderIdentityMRZData['identity_issuing_country'] : '' ?></td>
+                                <td><?= isset($this->lenderIdentityMRZData) ? $this->lenderIdentityMRZData->getIdentityIssuingCountry() : '' ?></td>
                             </tr>
                             <tr class="particulier">
                                 <th>Autorité émettrice :</th>
-                                <td><?= isset($this->lenderIdentityMRZData['identity_issuing_authority']) ? $this->lenderIdentityMRZData['identity_issuing_authority'] : '' ?></td>
+                                <td><?= isset($this->lenderIdentityMRZData) ? $this->lenderIdentityMRZData->getIdentityIssuingAuthority() : '' ?></td>
                             </tr>
                             <tr class="particulier">
                                 <th>N°. de la pièce :</th>
-                                <td><?= isset($this->lenderIdentityMRZData['identity_document_number']) ? $this->lenderIdentityMRZData['identity_document_number'] : '' ?></td>
+                                <td><?= isset($this->lenderIdentityMRZData) ? $this->lenderIdentityMRZData->getIdentityDocumentNumber() : '' ?></td>
                             </tr>
                             <?php if (false === empty($this->hostIdentityMRZData)) : ?>
                                 <tr>
@@ -135,19 +135,19 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                                 </tr>
                                 <tr class="particulier">
                                     <th>Nationalité :</th>
-                                    <td><?= isset($this->hostIdentityMRZData['identity_nationality']) ? $this->hostIdentityMRZData['identity_nationality'] : '' ?></td>
+                                    <td><?= isset($this->hostIdentityMRZData) ? $this->hostIdentityMRZData->getIdentityNationality() : '' ?></td>
                                 </tr>
                                 <tr class="particulier">
                                     <th>Pays émetteur :</th>
-                                    <td><?= isset($this->hostIdentityMRZData['identity_issuing_country']) ? $this->hostIdentityMRZData['identity_issuing_country'] : '' ?></td>
+                                    <td><?= isset($this->hostIdentityMRZData) ? $this->hostIdentityMRZData->getIdentityIssuingCountry() : '' ?></td>
                                 </tr>
                                 <tr class="particulier">
                                     <th>Autorité émettrice :</th>
-                                    <td><?= isset($this->hostIdentityMRZData['identity_issuing_authority']) ? $this->hostIdentityMRZData['identity_issuing_authority'] : '' ?></td>
+                                    <td><?= isset($this->hostIdentityMRZData) ? $this->hostIdentityMRZData->getIdentityIssuingAuthority() : '' ?></td>
                                 </tr>
                                 <tr class="particulier">
                                     <th>N°. de la pièce :</th>
-                                    <td><?= isset($this->hostIdentityMRZData['identity_document_number']) ? $this->hostIdentityMRZData['identity_document_number'] : '' ?></td>
+                                    <td><?= isset($this->hostIdentityMRZData) ? $this->hostIdentityMRZData->getIdentityDocumentNumber() : '' ?></td>
                                 </tr>
                             <?php endif; ?>
                         </table>
