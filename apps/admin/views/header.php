@@ -88,7 +88,7 @@
         <?php endif; ?>
         <?php if (in_array('emprunteurs', $this->lZonesHeader)) : ?>
             <li class="last">
-                <a href="<?= $this->lurl ?>/emprunteurs" title="emprunteurs"<?= ($this->menu_admin == 'emprunteurs' ? ' class="active"' : '') ?>>Emprunteurs</a>
+                <span<?= ($this->menu_admin == 'emprunteurs' ? ' class="active"' : '') ?>>Emprunteurs</span>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/dossiers" title="Dossiers">Dossiers</a></li>
                     <li><a href="<?= $this->lurl ?>/emprunteurs/gestion" title="Emprunteurs">Emprunteurs</a></li>
