@@ -243,14 +243,14 @@ function eventIncreaseCell (event) {
     changeBalance(cellData)
 }
 
-function setSettingsModeBasedOnButton ($button) {
+function setSettingsModeBasedOnButton () {
     // If the button interacted with was simple, set the autolend mode to simple
-    if ($button.is('#validate-simple-settings')) {
+    if ($('#validate-simple-settings').is(':visible')) {
         $('#hidden-settings-mode-input').attr('value', 'simple')
     }
 
     // If the button interacted with was expert, set the autolend mode to expert
-    if ($button.is('#validate-expert-settings')) {
+    if ($('#validate-expert-settings').is(':visible')) {
         $('#hidden-settings-mode-input').attr('value', 'expert')
     }
 }
@@ -348,14 +348,14 @@ $doc
 
     // Click a button to validate autolend values
     .on(Utility.clickEvent, 'button#validate-simple-settings, button#validate-expert-settings', function (event) {
-        setSettingsModeBasedOnButton($(this))
+        setSettingsModeBasedOnButton()
     })
 
     // Press enter on a button
     .on('keydown', 'button#validate-simple-settings, button#validate-expert-settings', function (event) {
         // Only match confirmation buttons (enter and space)
         if (event.which === 13 || event.which === 32) {
-            setSettingsModeBasedOnButton($(this))
+            setSettingsModeBasedOnButton()
         }
     })
 
