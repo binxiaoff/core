@@ -7,7 +7,6 @@
         <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Liste des Prêteurs à matcher</h1>
     <?php if (isset($this->aLenders) && count($this->aLenders) > 0) : ?>

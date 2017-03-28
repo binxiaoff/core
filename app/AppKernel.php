@@ -30,6 +30,9 @@ class AppKernel extends Kernel
             new CL\Bundle\SlackBundle\CLSlackBundle(),
             new Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle(),
             new Unilend\Bundle\StoreBundle\UnilendStoreBundle(),
+            new JMS\SerializerBundle\JMSSerializerBundle(),
+            new EightPoints\Bundle\GuzzleBundle\GuzzleBundle(),
+            new Unilend\Bundle\WSClientBundle\UnilendWSClientBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

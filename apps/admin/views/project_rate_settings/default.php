@@ -1,18 +1,3 @@
-<?php if (isset($_SESSION['freeow'])) : ?>
-    <script type="text/javascript">
-        $(function() {
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-        });
-    </script>
-    <?php unset($_SESSION['freeow']); ?>
-<?php endif ?>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Gestion de la grille de taux</h1>
     <div class="btnDroite"><a class="btn_link thickbox cboxElement" href="/project_rate_settings/warn_confirmation_box">Notifier les prêteurs</a></div>

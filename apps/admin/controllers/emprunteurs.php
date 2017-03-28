@@ -50,11 +50,12 @@ class emprunteursController extends bootstrap
         $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
         $this->clients->history  = '';
         $this->settings          = $this->loadData('settings');
-        $companySection          = $this->loadData('company_sector');
+        /** @var \company_sector $companySector */
+        $companySector = $this->loadData('company_sector');
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
-        $this->lSecteurs  = $companySection->select();
+        $this->sectors    = $companySector->select();
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
@@ -84,7 +85,7 @@ class emprunteursController extends bootstrap
 
                 $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
                 $this->companies->name    = $_POST['societe'];
-                $this->companies->sector  = $_POST['secteur'];
+                $this->companies->sector  = isset($_POST['sector']) ? $_POST['sector'] : $this->companies->sector;
                 $edited_rib               = false;
                 $sCurrentIban             = $this->companies->iban;
                 $sCurrentBic              = $this->companies->bic;

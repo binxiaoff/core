@@ -27,11 +27,14 @@ class ProjectsComments
     private $content;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     * })
      */
-    private $status;
+    private $idUser;
 
     /**
      * @var \DateTime
@@ -107,27 +110,27 @@ class ProjectsComments
     }
 
     /**
-     * Set status
+     * Set idUser
      *
-     * @param integer $status
+     * @param Users $idUser
      *
      * @return ProjectsComments
      */
-    public function setStatus($status)
+    public function setIdUser(Users $idUser)
     {
-        $this->status = $status;
+        $this->idUser = $idUser;
 
         return $this;
     }
 
     /**
-     * Get status
+     * Get idUser
      *
-     * @return integer
+     * @return Users
      */
-    public function getStatus()
+    public function getIdUser()
     {
-        return $this->status;
+        return $this->idUser;
     }
 
     /**

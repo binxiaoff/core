@@ -1,7 +1,6 @@
 <?php
 
 use Psr\Log\LoggerInterface;
-use CL\Slack\Payload\ChatPostMessagePayload;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
@@ -781,20 +780,15 @@ class transfertsController extends bootstrap
                     $_SESSION['freeow']['message'] = 'Une erreur s\'élève. Les fonds ne sont pas débloqués';
                 }
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Ekomi $ekomi */
-                $ekomi = $this->get('unilend.service.ekomi');
-                $ekomi->sendProjectEmail($project);
-
                 if ($this->getParameter('kernel.environment') === 'prod') {
-                    $payload = new ChatPostMessagePayload();
-                    $payload->setChannel('#general');
-                    $payload->setText('Fonds débloqués pour *<' . $this->furl . '/projects/detail/' . $project->slug . '|' . $project->title . '>*');
-                    $payload->setUsername('Unilend');
-                    $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/unilend.png');
-                    $payload->setAsUser(false);
-
-                    $this->get('cl_slack.api_client')->send($payload);
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Ekomi $ekomi */
+                    $ekomi = $this->get('unilend.service.ekomi');
+                    $ekomi->sendProjectEmail($project);
                 }
+
+                $slackManager = $this->container->get('unilend.service.slack_manager');
+                $message      = $slackManager->getProjectName($project) . ' - Fonds débloqués par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
+                $slackManager->sendMessage($message);
             } else {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Un remboursement est déjà en cours';

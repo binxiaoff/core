@@ -257,10 +257,6 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
             return;
         }
 
-        if (false === empty($transaction['id_backpayline'])) {
-            $this->migratePayline($transaction, $lenderWallet);
-        }
-
         $operation['id_type']             = $this->getOperationType('lender_provision');
         $operation['id_wallet_creditor']  = $lenderWallet['id'];
         $operation['amount']              = $this->calculateOperationAmount($transaction['montant']);
@@ -271,17 +267,6 @@ class DevMigrateTransactionsCommand extends ContainerAwareCommand
 
         $this->creditAvailableBalance($lenderWallet, $operation);
         $this->saveWalletBalanceHistory($lenderWallet, $operation);
-    }
-
-    private function migratePayline(array $transaction, array $wallet)
-    {
-        /** @var \backpayline $backPayline */
-        $backPayline = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('backpayline');
-        if ($backPayline->get($transaction['id_backpayline'])) {
-            $backPayline->id_wallet = $wallet['id'];
-            $backPayline->serialize_do_payment = $transaction['serialize_payline'];
-            $backPayline->update();
-        }
     }
 
     private function migrateBid(array $transaction)

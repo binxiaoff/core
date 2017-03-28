@@ -14,17 +14,6 @@
         $("#annee").change(function () {
             $('#changeDate').attr('href', "<?= $this->lurl ?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
     $(function () {
         $('#btn-show-lender-vigilance-history').click(function () {
@@ -57,12 +46,11 @@
         vertical-align: middle;
     }
 </style>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>
     <?php else : ?>
-        <div><?= $this->sClientStatusMessage ?></div>
+        <div><?= $this->clientStatusMessage ?></div>
         <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
         <div class="btnDroite">
             <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
@@ -298,7 +286,7 @@
                         <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                             <td align="center"><?= $e['id_bid'] ?></td>
                             <td>
-                                <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title_bo ?></a>
+                                <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title ?></a>
                             </td>
                             <td><?= date('d/m/Y', strtotime($e['added'])) ?></td>
                             <td align="center"><?= number_format($e['amount'] / 100, 2, '.', ' ') ?></td>
@@ -367,7 +355,7 @@
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td align="center"><?= $year ?></td>
                         <td>
-                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title_bo ?></a>
+                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title ?></a>
                         </td>
                         <td align="center"><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?></td>
                         <td align="center"><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>

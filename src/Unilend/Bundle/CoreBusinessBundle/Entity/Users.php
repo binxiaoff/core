@@ -12,15 +12,19 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Users
 {
-    const USER_ID_CRON   = -1;
-    const USER_ID_FRONT  = -2;
+    const USER_ID_CRON  = -1;
+    const USER_ID_FRONT = -2;
+
     const STATUS_ONLINE  = 1;
     const STATUS_OFFLINE = 0;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes
      *
-     * @ORM\Column(name="id_user_type", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_type", referencedColumnName="id_user_type")
+     * })
      */
     private $idUserType;
 
@@ -62,6 +66,13 @@ class Users
     /**
      * @var string
      *
+     * @ORM\Column(name="slack", type="string", length=191, nullable=false)
+     */
+    private $slack;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="password", type="string", length=191, nullable=false)
      */
     private $password;
@@ -79,13 +90,6 @@ class Users
      * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="default_analyst", type="integer", nullable=false)
-     */
-    private $defaultAnalyst;
 
     /**
      * @var \DateTime
@@ -122,11 +126,11 @@ class Users
     /**
      * Set idUserType
      *
-     * @param integer $idUserType
+     * @param UsersTypes $idUserType
      *
      * @return Users
      */
-    public function setIdUserType($idUserType)
+    public function setIdUserType(UsersTypes $idUserType)
     {
         $this->idUserType = $idUserType;
 
@@ -136,7 +140,7 @@ class Users
     /**
      * Get idUserType
      *
-     * @return integer
+     * @return UsersTypes
      */
     public function getIdUserType()
     {
@@ -264,6 +268,30 @@ class Users
     }
 
     /**
+     * Set slack
+     *
+     * @param string $slack
+     *
+     * @return Users
+     */
+    public function setSlack($slack)
+    {
+        $this->slack = $slack;
+
+        return $this;
+    }
+
+    /**
+     * Get slack
+     *
+     * @return string
+     */
+    public function getSlack()
+    {
+        return $this->slack;
+    }
+
+    /**
      * Set password
      *
      * @param string $password
@@ -333,30 +361,6 @@ class Users
     public function getStatus()
     {
         return $this->status;
-    }
-
-    /**
-     * Set defaultAnalyst
-     *
-     * @param integer $defaultAnalyst
-     *
-     * @return Users
-     */
-    public function setDefaultAnalyst($defaultAnalyst)
-    {
-        $this->defaultAnalyst = $defaultAnalyst;
-
-        return $this;
-    }
-
-    /**
-     * Get defaultAnalyst
-     *
-     * @return integer
-     */
-    public function getDefaultAnalyst()
-    {
-        return $this->defaultAnalyst;
     }
 
     /**
