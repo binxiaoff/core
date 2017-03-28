@@ -64,7 +64,7 @@ class apiController extends Controller
             }
         }
         if (false === empty($aAllowedIPSettings['min_range']) && false === empty($aAllowedIPSettings['max_range'])) {
-            for ($iSuffix = (int)$aAllowedIPSettings['min_range']; $iSuffix <= $aAllowedIPSettings['max_range']; $iSuffix++) {
+            for ($iSuffix = (int) $aAllowedIPSettings['min_range']; $iSuffix <= $aAllowedIPSettings['max_range']; $iSuffix++) {
                 $aAllowedIP[] = $aAllowedIPSettings['root'] . $iSuffix;
             }
         }

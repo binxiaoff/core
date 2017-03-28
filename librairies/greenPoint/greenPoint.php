@@ -139,13 +139,14 @@ class greenPoint
     }
 
     /**
-     * @param array $aData
-     * @param       $type
-     * @param bool  $bExecute
+     * @param array  $aData
+     * @param string $type
+     * @param bool   $bExecute
      *
      * @return array|int|greenPoint
      */
-    public function send(array $aData, $type, $bExecute = true) {
+    public function send(array $aData, $type, $bExecute = true)
+    {
         if (false === array_key_exists('files', $aData)) {
             throw new \InvalidArgumentException('no files to submit');
         }

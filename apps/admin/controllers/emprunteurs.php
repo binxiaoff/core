@@ -140,7 +140,7 @@ class emprunteursController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $companies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idClientOwner' => $client->getIdClient()]);
+        $companies     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idClientOwner' => $client->getIdClient()]);
         foreach ($companies as $company) {
             $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
             foreach ($projects as $project) {
@@ -271,8 +271,14 @@ class emprunteursController extends bootstrap
                 }
 
                 if ($this->request->isMethod('POST')) {
-                    if ($_POST['iban1'] && $_POST['iban2'] && $_POST['iban3'] && $_POST['iban4'] && $_POST['iban5'] && $_POST['iban6'] && $_POST['iban7'] && $this->request->request->get('bic')) {
-                        $iban = $_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7'];
+                    $iban = $this->request->request->get('iban1')
+                        . $this->request->request->get('iban2')
+                        . $this->request->request->get('iban3')
+                        . $this->request->request->get('iban4')
+                        . $this->request->request->get('iban5')
+                        . $this->request->request->get('iban6')
+                        . $this->request->request->get('iban7');
+                    if (trim($iban) && $this->request->request->get('bic')) {
                         try {
                             $bankAccountManager->saveBankInformation($this->attachment->getClient(), $_POST['bic'], $iban, $this->attachment);
                         } catch (Exception $exception) {
@@ -298,13 +304,13 @@ class emprunteursController extends bootstrap
 
     public function _validate_rib()
     {
-        if ($this->request->isMethod('POST') && false === empty($_POST['id_bank_account'])) {
+        if ($this->request->isMethod('POST') && $this->request->request->get('id_bank_account')) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var BankAccount $bankAccount */
             $entityManager->beginTransaction();
             try {
-                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($_POST['id_bank_account']);
+                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($this->request->request->get('id_bank_account'));
                 if ($bankAccount) {
                     $currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccount->getIdClient());
                     $currentIban        = '';
@@ -339,8 +345,8 @@ class emprunteursController extends bootstrap
         if (false === empty($this->params[0]) && false === empty($this->params[1])) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $projectId = filter_var($this->params[1], FILTER_VALIDATE_INT);
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            $projectId     = filter_var($this->params[1], FILTER_VALIDATE_INT);
+            $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
             if ($project) {
                 $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
                 switch ($this->params[0]) {

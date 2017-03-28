@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Psr\Log\LoggerInterface;
@@ -118,7 +117,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $clientStatusManager = $this->getContainer()->get('unilend.service.client_status_manager');
 
         /** @var BankAccountRepository $bankAccountRepository */
-        $bankAccountRepository  = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount');
+        $bankAccountRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount');
         if (null === $bankAccountRepository->getClientValidatedBankAccount($client->id_client)) {
             /** @var BankAccount $bankAccount */
             $bankAccount = $bankAccountRepository->findOneBy(['idClient' => $client->id_client, 'dateArchived' => null, 'dateValidated' => null]);
