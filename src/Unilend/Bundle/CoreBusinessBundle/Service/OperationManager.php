@@ -187,7 +187,7 @@ class OperationManager
 
         $transaction->id_client        = $wallet->getIdClient()->getIdClient();
         $transaction->id_langue        = 'fr';
-        $transaction->date_transaction = date('Y-m-d h:i:s');
+        $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;
         if ($origin instanceof Backpayline) {
             $amountInCent                = $origin->getAmount();
