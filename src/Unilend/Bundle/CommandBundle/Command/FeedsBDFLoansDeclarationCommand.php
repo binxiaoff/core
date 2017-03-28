@@ -258,7 +258,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             $amount = bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);
             $return = ['unpaid_amount' => $amount, 'owed_capital' => $amount];
         } else {
-            $date         = \DateTime::createFromFormat('Ymd', $this->declarationDate->format('Ymt'));
+            $date         = \DateTime::createFromFormat('Ymd H:i:s', $this->declarationDate->format('Ymt 23:59:59'));
             $unpaidAmount = $repayment->getUnpaidAmountAtDate($data['id_project'], $date);
             $owedCapital  = $repayment->getTotalComingCapitalByProject($data['id_project'], $date);
             $return       = ['unpaid_amount' => $unpaidAmount, 'owed_capital' => bcadd($unpaidAmount, $owedCapital, 2)];

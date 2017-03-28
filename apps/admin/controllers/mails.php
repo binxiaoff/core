@@ -119,26 +119,27 @@ class mailsController extends bootstrap
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->lurl;
 
-        /** @var \mail_queue $oMailQueue */
-        $oMailQueue = $this->loadData('mail_queue');
+        if (false === empty($this->params[0])) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue $mailQueue */
+            $mailQueue = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($this->params[0]);
+            if ($mailQueue instanceof \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue) {
+                /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oEmail */
+                $oMailQueueManager = $this->get('unilend.service.mail_queue');
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $oEmail */
+                $oEmail = $oMailQueueManager->getMessage($mailQueue);
 
-        if (isset($this->params[0]) && $oMailQueue->get($this->params[0])) {
-            /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oEmail */
-            $oMailQueueManager = $this->get('unilend.service.mail_queue');
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $oEmail */
-            $oEmail = $oMailQueueManager->getMessage($oMailQueue);
+                $iDate = $oEmail->getDate();
+                $aFrom = $oEmail->getFrom();
+                $aTo   = $oEmail->getTo();
 
-            $iDate = $oEmail->getDate();
-            $aFrom = $oEmail->getFrom();
-            $aTo   = $oEmail->getTo();
-
-            $this->aEmail = array(
-                'date'    => date('d/m/Y H:i', $iDate),
-                'from'    => array_shift($aFrom),
-                'to'      => array_shift($aTo),
-                'subject' => $oEmail->getSubject(),
-                'body'    => $oEmail->getBody()
-            );
+                $this->aEmail = array(
+                    'date'    => date('d/m/Y H:i', $iDate),
+                    'from'    => array_shift($aFrom),
+                    'to'      => array_shift($aTo),
+                    'subject' => $oEmail->getSubject(),
+                    'body'    => $oEmail->getBody()
+                );
+            }
         }
     }
 

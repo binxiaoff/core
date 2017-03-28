@@ -318,13 +318,13 @@ class LenderDashboardController extends Controller
 
         while ($firstDateTime->format('Y-m') <= $lastDateTime->format('Y-m')) {
             $paddingData[$firstDateTime->format('Y-m')] = [
-                'month'        => $firstDateTime->format('Y-m'),
-                'quarter'      => ceil($firstDateTime->format('n') / 3),
-                'year'         => $firstDateTime->format('Y'),
-                'capital'      => 0,
-                'rawInterests' => 0,
-                'netInterests' => 0,
-                'taxes'        => 0
+                'month'          => $firstDateTime->format('Y-m'),
+                'quarter'        => ceil($firstDateTime->format('n') / 3),
+                'year'           => $firstDateTime->format('Y'),
+                'capital'        => 0,
+                'grossInterests' => 0,
+                'netInterests'   => 0,
+                'taxes'          => 0
             ];
             $firstDateTime->add($interval);
         }

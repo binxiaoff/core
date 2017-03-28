@@ -3,7 +3,6 @@
 
 {% block siteContent %}
     <article id="homepre" class="page">
-
         <section id="homepre-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
             <div class="video-hero-wrapper">
                 <div class="video-hero" style="background-image: url('{{ completeTestimonialUrl(featureLender.feature_image, 'image') }}')">
@@ -69,7 +68,7 @@
                 </div><!-- /.row -->
                 <div class="row">
                     <div class="btn-toolbar">
-                        <a href="{{ path('lender_faq') }}" class="btn-default ui-open-site-search">{% trans %} home-lender_question-button {% endtrans %}</a>
+                        <a href="{{ path('lender_faq') }}" class="btn-default">{% trans %} home-lender_question-button {% endtrans %}</a>
                         <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} home-lender_create-account-button {% endtrans %}</a>
                     </div><!-- /.btn-toolbar -->
                     {% if showWelcomeOffer == true %}
@@ -150,5 +149,8 @@
         </section><!-- /.promos -->
 
         {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
+
+        {% include 'partials/site/scroll-more.html.twig' %}
+
     </article>
 {% endblock %}
