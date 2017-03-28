@@ -1,31 +1,20 @@
 <script type="text/javascript">
     $(function() {
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
+
         <?php foreach ($this->lLangues as $key => $lng) : ?>
-        $("#datepik_<?= $key ?>").datepicker({
-            showOn: 'both',
-            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-            buttonImageOnly: true,
-            changeMonth: true,
-            changeYear: true,
-            yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
-        });
+            $("#datepik_<?= $key ?>").datepicker({
+                showOn: 'both',
+                buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                buttonImageOnly: true,
+                changeMonth: true,
+                changeYear: true,
+                yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
+            });
         <?php endforeach; ?>
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (count($this->lLangues) > 1) : ?>
         <div id="onglets">

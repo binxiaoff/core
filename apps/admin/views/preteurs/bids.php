@@ -21,7 +21,6 @@
         });
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>

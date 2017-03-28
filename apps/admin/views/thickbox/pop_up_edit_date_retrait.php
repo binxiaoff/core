@@ -8,36 +8,34 @@
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
-            minDate: new Date(<?=date('Y')?>, <?=date('m')?>-1, <?=date('d')?>)
+            minDate: 0
         });
     });
 </script>
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
-    <form method="post" name="form_date_retrait" id="form_date_retrait" enctype="multipart/form-data" action="" target="_parent">
-        <h1>Date de retrait</h1>
+    <form method="post" enctype="multipart/form-data" action="" target="_parent">
+        <h1>Modifier la date de retrait</h1>
         <fieldset>
             <table class="form">
                 <tr>
                     <td><label for="date_de_retrait">Date de retrait</label></td>
                     <td>
-                        <input type="text" name="date_de_retrait" id="date_de_retrait" class="input_dp" value="<?= $this->date_retrait ?>"/>
-                        &agrave;
-                        <select name="date_retrait_heure" class="selectMini">
-                            <?php for ($h = 0; $h < 24; $h++) : ?>
-                                <option value="<?= (strlen($h) < 2 ? '0' . $h : $h) ?>"<?= ($this->heure_date_retrait == $h ? ' selected="selected"' : '') ?>><?= (strlen($h) < 2 ? '0' . $h : $h) ?></option>
+                        <input type="text" name="date_de_retrait" id="date_de_retrait" class="input_dp" value="<?= $this->date_retrait ?>">
+                        <select name="date_retrait_heure" class="selectMini" title="Heure">
+                            <?php for ($hour = 0; $hour < 24; $hour++) : ?>
+                                <option value="<?= sprintf('%02d', $hour) ?>"<?= ($this->heure_date_retrait == $hour ? ' selected' : '') ?>><?= sprintf('%02d', $hour) ?></option>
                             <?php endfor; ?>
-                        </select>h
-
-                        <select name="date_retrait_minute" class="selectMini">
-                            <?php for ($m = 0; $m < 60; $m++) : ?>
-                                <option value="<?= (strlen($m) < 2 ? '0' . $m : $m) ?>"<?= ($this->minute_date_retrait == $m ? ' selected="selected"' : '') ?>><?= (strlen($m) < 2 ? '0' . $m : $m) ?></option>
+                        </select>&nbsp;h
+                        <select name="date_retrait_minute" class="selectMini" title="Minute">
+                            <?php for ($minute = 0; $minute < 60; $minute += 5) : ?>
+                                <option value="<?= sprintf('%02d', $minute) ?>"<?= ($this->minute_date_retrait == $minute ? ' selected' : '') ?>><?= sprintf('%02d', $minute) ?></option>
                             <?php endfor; ?>
-                        </select>
+                        </select>&nbsp;m
                     </td>
                     <td>
-                        <input type="hidden" name="send_form_date_retrait" id="send_form_date_retrait"/>
-                        <input type="submit" value="Valider" title="Valider" name="modifier" id="modifier" class="btn"/>
+                        <input type="hidden" name="send_form_date_retrait">
+                        <input type="submit" name="modifier" value="Valider" class="btn">
                     </td>
                 </tr>
             </table>

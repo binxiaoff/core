@@ -100,7 +100,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                 $client->get($company->id_client_owner, 'id_client');
                             }
 
-                            if (false === empty($client->email) && 0 == $project->stop_relances) {
+                            if (filter_var($client->email, FILTER_VALIDATE_EMAIL)) {
                                 $projectStatusHistory->loadLastProjectHistory($project->id_project);
 
                                 $oSubmissionDate = new \DateTime($project->added);
@@ -115,9 +115,9 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     }
                                 }
 
-                                if (in_array($iStatus, array(7, 8))) {
-                                    $oCompletenessDate                       = $projectStatusHistory->getDateProjectStatus($project->id_project, \projects_status::COMPLETUDE_ETAPE_2, true);
-                                    $aReplacements['date_completude_etape2'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
+                                if (in_array($iStatus, [\projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {
+                                    $oCompletenessDate                       = $projectStatusHistory->getDateProjectStatus($project->id_project, \projects_status::INCOMPLETE_REQUEST, true);
+                                    $aReplacements['date_demande'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
                                 }
 
                                 $aReplacements['liste_pieces']            = $projectStatusHistory->content;
@@ -146,8 +146,8 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                             /**
                              * When project is pending documents, abort status is not automatic and must be set manually in BO
                              */
-                            if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                $oProjectManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::ABANDON, $project, $iReminderIndex, $projectStatusHistory->content);
+                            if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::COMMERCIAL_REVIEW) {
+                                $oProjectManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::ABANDONED, $project, $iReminderIndex, $projectStatusHistory->content);
                             } else {
                                 $oProjectManager->addProjectStatus(Users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);
                             }

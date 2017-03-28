@@ -41,7 +41,7 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
             $liste_remb .= '
                 <tr>
                     <td>' . $l['id_project'] . '</td>
-                    <td>' . $projects->title_bo . '</td>
+                    <td>' . $projects->title . '</td>
                     <td>' . $l['ordre'] . '</td>
                     <td>' . $l['date_echeance'] . '</td>
 

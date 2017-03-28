@@ -13,6 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Companies
 {
+    const INVALID_SIREN_EMPTY  = '000000000';
+    const NAF_CODE_NO_ACTIVITY = '0000Z';
+
     /**
      * @var integer
      *
@@ -110,13 +113,6 @@ class Companies
      * @ORM\Column(name="activite", type="string", length=191, nullable=true)
      */
     private $activite;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="lieu_exploi", type="string", length=191, nullable=true)
-     */
-    private $lieuExploi;
 
     /**
      * @var float
@@ -278,13 +274,6 @@ class Companies
      * @ORM\Column(name="code_naf", type="string", length=5, nullable=true)
      */
     private $codeNaf;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="libelle_naf", type="string", length=130, nullable=true)
-     */
-    private $libelleNaf;
 
     /**
      * @var \DateTime
@@ -645,30 +634,6 @@ class Companies
     public function getActivite()
     {
         return $this->activite;
-    }
-
-    /**
-     * Set lieuExploi
-     *
-     * @param string $lieuExploi
-     *
-     * @return Companies
-     */
-    public function setLieuExploi($lieuExploi)
-    {
-        $this->lieuExploi = $lieuExploi;
-
-        return $this;
-    }
-
-    /**
-     * Get lieuExploi
-     *
-     * @return string
-     */
-    public function getLieuExploi()
-    {
-        return $this->lieuExploi;
     }
 
     /**
@@ -1224,30 +1189,6 @@ class Companies
     }
 
     /**
-     * Set libelleNaf
-     *
-     * @param string $libelleNaf
-     *
-     * @return Companies
-     */
-    public function setLibelleNaf($libelleNaf)
-    {
-        $this->libelleNaf = $libelleNaf;
-
-        return $this;
-    }
-
-    /**
-     * Get libelleNaf
-     *
-     * @return string
-     */
-    public function getLibelleNaf()
-    {
-        return $this->libelleNaf;
-    }
-
-    /**
      * Set added
      *
      * @param \DateTime $added
@@ -1367,6 +1308,10 @@ class Companies
      */
     public function setSectorAccordingToNaf()
     {
+        if ($this->codeNaf == self::NAF_CODE_NO_ACTIVITY) {
+            return;
+        }
+
         if (in_array(substr($this->codeNaf, 0, 2), ['01', '02', '03'])) {
             $this->sector = 1;
         }
@@ -1423,5 +1368,4 @@ class Companies
             $this->sector = 15;
         }
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use CL\Slack\Payload\ChatPostMessagePayload;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -120,12 +119,11 @@ class ProjectRequestController extends Controller
             }
         }
 
-        $siren       = str_replace(' ', '', $request->request->get('siren'));
+        $siren       = str_replace(' ', '', $request->request->get('siren', ''));
         $sirenLength = strlen($siren);
 
         if (
-            empty($siren)
-            || false === filter_var($siren, FILTER_VALIDATE_INT)
+            1 !== preg_match('/^[0-9]*$/', $siren)
             || false === in_array($sirenLength, [9, 14]) // SIRET numbers also allowed
         ) {
             $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
@@ -212,7 +210,7 @@ class ProjectRequestController extends Controller
             $em->commit();
         } catch (\Exception $exception) {
             $em->getConnection()->rollBack();
-            $this->get('logger')->error('An error occurred while creating client', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
         if (empty($this->client->getIdClient())) {
@@ -235,9 +233,12 @@ class ProjectRequestController extends Controller
         $this->project->ca_declara_client                    = 0;
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
-        $this->project->status                               = \projects_status::DEMANDE_SIMULATEUR;
+        $this->project->status                               = \projects_status::INCOMPLETE_REQUEST;
         $this->project->id_partner                           = $partnerId;
         $this->project->create();
+
+        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::INCOMPLETE_REQUEST, $this->project);
 
         return $this->start();
     }
@@ -269,78 +270,13 @@ class ProjectRequestController extends Controller
      */
     private function start()
     {
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        $settingsAltaresStatus = $entityManager->getRepository('settings');
-        $settingsAltaresStatus->get('Altares status', 'type');
-        $altaresStatus = $settingsAltaresStatus->value;
-
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-
-        try {
-            $altares = $this->get('unilend.service.altares');
-            $result  = $altares->isEligible($this->project);
-            $altares->setCompanyData($this->company);
-            $altares->setProjectData($this->project);
-
-            if (false === $result['eligible']) {
-                $projectManager = $this->get('unilend.service.project_manager');
-                $motif          = implode(',', $result['reason']);
-                $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $this->project, 0, $motif);
-
-                return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
-            }
-
-            $altares->setCompanyBalance($this->company);
-
-            /** @var \companies_bilans $companyAccount */
-            $companyAccount = $entityManager->getRepository('companies_bilans');
-            $balanceSheets  = $companyAccount->select('id_company = ' . $this->company->getIdCompany(), 'cloture_exercice_fiscal DESC', 0, 1);
-
-            if (isset($balanceSheets[0]['id_bilan'])) {
-                $this->project->id_dernier_bilan = $balanceSheets[0]['id_bilan'];
-                $this->project->update();
-            }
-        } catch (\Exception $exception) {
-            if ($altaresStatus) {
-                $settingsAltaresStatus->value = '0';
-                $settingsAltaresStatus->update();
-
-                $logger->error(
-                    $exception->getMessage(),
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->getSiren()]
-                );
-                if ($this->getParameter('kernel.environment') === 'prod') {
-                    $payload = new ChatPostMessagePayload();
-                    $payload->setChannel('#it-monitoring');
-                    $payload->setText("Altares is down  :skull_and_crossbones:\n> " . $exception->getMessage());
-                    $payload->setUsername('Altares');
-                    $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
-                    $payload->setAsUser(false);
-
-                    $this->get('cl_slack.api_client')->send($payload);
-                }
-            }
+        if (null === $projectRequestManager->checkProjectRisk($this->project, Users::USER_ID_FRONT)) {
+            return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::INCOMPLETE_REQUEST);
         }
 
-        if (! $altaresStatus) {
-            $settingsAltaresStatus->value = '1';
-            $settingsAltaresStatus->update();
-            if ($this->getParameter('kernel.environment') === 'prod') {
-                $payload = new ChatPostMessagePayload();
-                $payload->setChannel('#it-monitoring');
-                $payload->setText('Altares is up  :white_check_mark:');
-                $payload->setUsername('Altares');
-                $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
-                $payload->setAsUser(false);
-
-                $this->get('cl_slack.api_client')->send($payload);
-            }
-        }
-
-        return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);
+        return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
     }
 
     /**
@@ -384,7 +320,7 @@ class ProjectRequestController extends Controller
 
         /** @var \borrowing_motive $borrowingMotive */
         $borrowingMotive               = $entityManager->getRepository('borrowing_motive');
-        $template['borrowing_motives'] = $borrowingMotive->select();
+        $template['borrowing_motives'] = $borrowingMotive->select('rank');
 
         $settings->get('Durée des prêts autorisées', 'type');
         $template['loan_periods'] = explode(',', $settings->value);
@@ -617,13 +553,13 @@ class ProjectRequestController extends Controller
             }
 
             if (empty($products)) {
-                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
             }
         } catch (\Exception $exception) {
             $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
         }
 
-        return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETUDE_ETAPE_3);
+        return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETE_REQUEST);
     }
 
     /**
@@ -825,31 +761,28 @@ class ProjectRequestController extends Controller
         }
 
         if (isset($values['dl']) && $values['dl'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
         }
 
         if (isset($values['fl']) && $values['fl'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if (isset($values['gg']) && $values['gg'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
         }
 
         if (isset($values['ag_2035']) && $values['ag_2035'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if ('true' === $request->request->get('extra_files')) {
-            $this->project->process_fast = 1;
-            $this->project->update();
-
             return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $this->project->hash]);
         }
 
         $this->sendSubscriptionConfirmationEmail();
 
-        return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::A_TRAITER);
+        return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $this->project->hash]);
     }
 
     /**
@@ -1023,7 +956,7 @@ class ProjectRequestController extends Controller
 
         $this->sendSubscriptionConfirmationEmail();
 
-        return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::A_TRAITER);
+        return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::COMPLETE_REQUEST);
     }
 
     /**
@@ -1151,6 +1084,7 @@ class ProjectRequestController extends Controller
 
         /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
+
         /** @var \attachment $attachment */
         $attachment     = $entityManager->getRepository('attachment');
         $partnerManager = $this->get('unilend.service.partner_manager');
@@ -1237,35 +1171,24 @@ class ProjectRequestController extends Controller
         $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
 
         switch ($this->project->status) {
-            case \projects_status::ABANDON:
+            case \projects_status::ABANDONED:
                 $message  = $translator->trans('project-request_end-page-aborted-message');
                 $title    = $translator->trans('project-request_end-page-aborted-title');
                 $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
                 break;
-            CASE \projects_status::PAS_3_BILANS:
-                $message  = $translator->trans('project-request_end-page-not-3-annual-accounts-message');
-                $title    = $translator->trans('project-request_end-page-aborted-title');
-                $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
-                break;
-            case \projects_status::REVUE_ANALYSTE:
-            case \projects_status::COMITE:
+            case \projects_status::ANALYSIS_REVIEW:
+            case \projects_status::COMITY_REVIEW:
             case \projects_status::PREP_FUNDING:
                 $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
                 $title    = $translator->trans('project-request_end-page-processing-title');
                 $subtitle = $translator->trans('project-request_end-page-processing-subtitle');
                 break;
-            case \projects_status::COMPLETUDE_ETAPE_3:
-            case \projects_status::A_TRAITER:
-            case \projects_status::EN_ATTENTE_PIECES:
+            case \projects_status::COMPLETE_REQUEST:
+            case \projects_status::COMMERCIAL_REVIEW:
                 $addMoreFiles = true;
-
-                if (1 == $this->project->process_fast) {
-                    $message = $translator->trans('project-request_end-page-fast-process-message');
-                } else {
-                    $message = $translator->trans('project-request_end-page-main-content');
-                }
+                $message      = $translator->trans('project-request_end-page-main-content');
                 break;
-            case \projects_status::NOTE_EXTERNE_FAIBLE:
+            case \projects_status::NOT_ELIGIBLE:
                 $title    = $translator->trans('project-request_end-page-rejection-title');
                 $subtitle = $translator->trans('project-request_end-page-rejection-subtitle');
 
@@ -1327,10 +1250,8 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        $this->project->stop_relances = 1;
-        $this->project->update();
-
-        $this->sendCommercialEmail('notification-stop-relance-dossier');
+        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'client_not_interested');
 
         return $this->render('pages/project_request/emails.html.twig');
     }
@@ -1517,38 +1438,33 @@ class ProjectRequestController extends Controller
         }
 
         switch ($this->project->status) {
-            case \projects_status::DEMANDE_SIMULATEUR:
-                if ($route !== self::PAGE_ROUTE_SIMULATOR_START) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_SIMULATOR_START, ['hash' => $hash]);
-                }
-                break;
-            case \projects_status::NOTE_EXTERNE_FAIBLE:
+            case \projects_status::NOT_ELIGIBLE:
+            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_PROSPECT])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }
                 break;
-            case \projects_status::COMPLETUDE_ETAPE_2:
-                if ($route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
+            case \projects_status::INCOMPLETE_REQUEST:
+                if (empty($this->project->id_company_rating_history) && $route !== self::PAGE_ROUTE_SIMULATOR_START) {
+                    return $this->redirectToRoute(self::PAGE_ROUTE_SIMULATOR_START, ['hash' => $hash]);
+                } elseif (false === empty($this->project->id_company_rating_history) && $route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
-                } elseif ($route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {
+                } elseif (false === empty($this->project->id_company_rating_history) && $route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $hash]);
                 }
                 break;
-            case \projects_status::COMPLETUDE_ETAPE_3:
-                if ($this->project->process_fast == 1 && false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $hash]);
-                } elseif ($this->project->process_fast == 0 && $route !== self::PAGE_ROUTE_FINANCE) {
+            case \projects_status::COMPLETE_REQUEST:
+                if (false === in_array($route, [self::PAGE_ROUTE_FINANCE, self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $hash]);
                 }
                 break;
-            case \projects_status::A_TRAITER:
-            case \projects_status::EN_ATTENTE_PIECES:
-            case \projects_status::ATTENTE_ANALYSTE:
+            case \projects_status::COMMERCIAL_REVIEW:
+            case \projects_status::PENDING_ANALYSIS:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $hash]);
                 }
                 break;
-            case \projects_status::ABANDON:
+            case \projects_status::ABANDONED:
             default: // Should correspond to "Revue analyste" and above
                 if ($route !== self::PAGE_ROUTE_END) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);

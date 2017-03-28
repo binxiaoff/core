@@ -17,17 +17,27 @@ class WsCall
     /**
      * @MongoDB\Field(type="string")
      */
-    protected $service;
+    protected $provider;
 
     /**
      * @MongoDB\Field(type="string")
      */
-    protected $method;
+    protected $resource;
+
+    /**
+     * @MongoDB\Field(type="string")
+     */
+    protected $siren;
 
     /**
      * @MongoDB\Field(type="string")
      */
     protected $response;
+
+    /**
+     * @MongoDB\Field(type="date")
+     */
+    protected $added;
 
     /**
      * Get id
@@ -42,12 +52,12 @@ class WsCall
     /**
      * Set service
      *
-     * @param string $service
+     * @param string $provider
      * @return $this
      */
-    public function setService($service)
+    public function setProvider($provider)
     {
-        $this->service = $service;
+        $this->provider = $provider;
         return $this;
     }
 
@@ -56,20 +66,20 @@ class WsCall
      *
      * @return string $service
      */
-    public function getService()
+    public function getProvider()
     {
-        return $this->service;
+        return $this->provider;
     }
 
     /**
      * Set method
      *
-     * @param string $method
+     * @param string $resource
      * @return $this
      */
-    public function setMethod($method)
+    public function setResource($resource)
     {
-        $this->method = $method;
+        $this->resource = $resource;
         return $this;
     }
 
@@ -78,9 +88,9 @@ class WsCall
      *
      * @return string $method
      */
-    public function getMethod()
+    public function getResource()
     {
-        return $this->method;
+        return $this->resource;
     }
 
     /**
@@ -103,5 +113,37 @@ class WsCall
     public function getResponse()
     {
         return $this->response;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSiren()
+    {
+        return $this->siren;
+    }
+
+    /**
+     * @param mixed $siren
+     */
+    public function setSiren($siren)
+    {
+        $this->siren = $siren;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAdded()
+    {
+        return $this->added;
+    }
+
+    /**
+     * @param mixed $added
+     */
+    public function setAdded($added)
+    {
+        $this->added = $added;
     }
 }

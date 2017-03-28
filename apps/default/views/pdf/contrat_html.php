@@ -41,7 +41,7 @@
                         <div class="col-small"><?= $this->companiesEmprunteur->activite ?></div>
                     </li>
                     <li>Lieu d'exploitation
-                        <div class="col-small"><?= $this->companiesEmprunteur->lieu_exploi ?></div>
+                        <div class="col-small"><?= $this->companiesEmprunteur->city ?></div>
                     </li>
                 </ul>
             </div>

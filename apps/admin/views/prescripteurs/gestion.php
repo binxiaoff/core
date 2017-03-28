@@ -14,16 +14,6 @@
             $("#company_name").val('');
             $('#status option[value="choisir"]').prop('selected', true);
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
 <style>
@@ -36,7 +26,6 @@
         padding: 5px;
     }
 </style>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (isset($_POST['form_search_prescripteur'])) : ?>
         <h1>Résultats de la recherche d'un prescripteur <?= count($this->aPrescripteurs) > 0 ? '(' . count($this->aPrescripteurs) . ')' : '' ?></h1>
