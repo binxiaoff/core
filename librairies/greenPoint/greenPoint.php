@@ -9,10 +9,10 @@ class greenPoint
     const TEST_URL = 'https://id-control.fr/api/';
     const PROD_URL = 'https://beprems.pro/api/';
 
-    const GP_REQUEST_TYPE_ID      = 'idcontrol';
-    const GP_REQUEST_TYPE_IBAN    = 'ibanflash';
-    const GP_REQUEST_TYPE_ADDRESS = 'addresscontrol';
-    const GP_REQUEST_TYPE_KYC     = 'kyc';
+    const REQUEST_TYPE_ID      = 'idcontrol';
+    const REQUEST_TYPE_IBAN    = 'ibanflash';
+    const REQUEST_TYPE_ADDRESS = 'addresscontrol';
+    const REQUEST_TYPE_KYC     = 'kyc';
 
     /** @var string */
     private $sPassWord;
@@ -151,7 +151,7 @@ class greenPoint
             throw new \InvalidArgumentException('no files to submit');
         }
 
-        if (false === in_array($type, [self::GP_REQUEST_TYPE_ADDRESS, self::GP_REQUEST_TYPE_ID, self::GP_REQUEST_TYPE_IBAN, self::GP_REQUEST_TYPE_KYC])) {
+        if (false === in_array($type, [self::REQUEST_TYPE_ADDRESS, self::REQUEST_TYPE_ID, self::REQUEST_TYPE_IBAN, self::REQUEST_TYPE_KYC])) {
             throw new \InvalidArgumentException('The Greenpoint control type is not supported');
         }
 

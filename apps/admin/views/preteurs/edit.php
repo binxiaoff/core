@@ -218,10 +218,10 @@
                 }
                 if ($greenPointAttachment) {
                     $greenpointLabel = $greenPointAttachment->getValidationStatusLabel();
-                    if (9 === $greenPointAttachment->getValidationStatus()) {
+                    if (\Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
                         $greenpointFinalStatus = 'Statut définitif';
                     } else {
-                        $greenpointFinalStatus = 'Statut peut être non définitif';
+                        $greenpointFinalStatus = 'Statut peut être modifié par un retour asychrone';
                     }
 
                     if (0 == $greenPointAttachment->getValidationStatus()) {

@@ -1495,12 +1495,7 @@ class Clients
      */
     public function isBorrower()
     {
-        $isBorrower = false;
-        if (false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::BORROWER) {
-            $isBorrower = true;
-        }
-
-        return $isBorrower;
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::BORROWER;
     }
 
     /**
@@ -1510,11 +1505,6 @@ class Clients
      */
     public function isLender()
     {
-        $isLender = false;
-        if (false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::LENDER) {
-            $isLender = true;
-        }
-
-        return $isLender;
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::LENDER;
     }
 }

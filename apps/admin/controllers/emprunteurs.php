@@ -147,25 +147,25 @@ class emprunteursController extends bootstrap
                 if (in_array($project->getStatus(), [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
                     continue;
                 }
-                $mandats = $project->getMandats();
-                if (false === empty($mandats)) {
-                    foreach ($mandats as $mandat) {
-                        if (! $mandat instanceof ClientsMandats || $mandat->getStatus() === ClientsMandats::STATUS_ARCHIVED) {
+                $mandates = $project->getMandats();
+                if (false === empty($mandates)) {
+                    foreach ($mandates as $mandate) {
+                        if (! $mandate instanceof ClientsMandats || $mandate->getStatus() === ClientsMandats::STATUS_ARCHIVED) {
                             continue;
                         }
-                        if (ClientsMandats::STATUS_SIGNED == $mandat->getStatus()) {
-                            $nouveauNom    = str_replace('mandat', 'mandat-' . $mandat->getIdMandat(), $mandat->getName());
-                            $chemin        = $this->path . 'protected/pdf/mandat/' . $mandat->getName();
+                        if (ClientsMandats::STATUS_SIGNED == $mandate->getStatus()) {
+                            $nouveauNom    = str_replace('mandat', 'mandat-' . $mandate->getIdMandat(), $mandate->getName());
+                            $chemin        = $this->path . 'protected/pdf/mandat/' . $mandate->getName();
                             $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
 
                             if (file_exists($chemin)) {
                                 rename($chemin, $nouveauChemin);
                             }
 
-                            $mandat->setName($nouveauNom);
+                            $mandate->setName($nouveauNom);
                         }
-                        $mandat->setStatus(ClientsMandats::STATUS_ARCHIVED);
-                        $entityManager->flush($mandat);
+                        $mandate->setStatus(ClientsMandats::STATUS_ARCHIVED);
+                        $entityManager->flush($mandate);
                     }
                     // No need to create the new mandat, it will be created in pdf::_mandat()
 
@@ -333,7 +333,7 @@ class emprunteursController extends bootstrap
                 $_SESSION['freeow']['message'] = $exception->getMessage();
             }
             header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $bankAccount->getIdClient()->getIdClient());
-            exit;
+            return;
         }
         header('Location: ' . $this->lurl);
     }

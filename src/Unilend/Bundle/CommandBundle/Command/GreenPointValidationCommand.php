@@ -89,14 +89,14 @@ EOF
                             case AttachmentType::CNI_PASSPORTE_VERSO:
                             case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
                             case AttachmentType::CNI_PASSPORTE_DIRIGEANT:
-                                $type = greenPoint::GP_REQUEST_TYPE_ID;
+                                $type = greenPoint::REQUEST_TYPE_ID;
                                 break;
                             case AttachmentType::RIB:
-                                $type = greenPoint::GP_REQUEST_TYPE_IBAN;
+                                $type = greenPoint::REQUEST_TYPE_IBAN;
                                 break;
                             case AttachmentType::JUSTIFICATIF_DOMICILE:
                             case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
-                                $type = greenPoint::GP_REQUEST_TYPE_ADDRESS;
+                                $type = greenPoint::REQUEST_TYPE_ADDRESS;
                                 break;
                             default :
                                 continue 2;
@@ -128,7 +128,7 @@ EOF
     /**
      * @param Clients    $client
      * @param Attachment $attachment
-     * @param            $type
+     * @param string     $type
      *
      * @return array
      */
@@ -147,17 +147,17 @@ EOF
         ];
 
         switch ($type) {
-            case greenPoint::GP_REQUEST_TYPE_ID:
+            case greenPoint::REQUEST_TYPE_ID:
                 $data['date_naissance'] = $client->getNaissance()->format('d/m/Y');
                 break;
-            case greenPoint::GP_REQUEST_TYPE_IBAN:
+            case greenPoint::REQUEST_TYPE_IBAN:
                 $bankAccount = $attachment->getBankAccount();
                 if ($bankAccount) {
                     $data['iban'] = $bankAccount->getIban();
                     $data['bic']  = $bankAccount->getBic();
                 }
                 break;
-            case greenPoint::GP_REQUEST_TYPE_ADDRESS:
+            case greenPoint::REQUEST_TYPE_ADDRESS:
                 if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                     $clientAddress       = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client]);
                     $data['adresse']     = $clientAddress->getAdresseFiscal();

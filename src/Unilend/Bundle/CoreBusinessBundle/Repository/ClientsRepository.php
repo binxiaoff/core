@@ -173,7 +173,7 @@ class ClientsRepository extends EntityRepository
                )
            )
            ->andWhere('wt.label = :lender')
-           ->andWhere('cs.status in (:status)')
+           ->andWhere('cs.status IN (:status)')
            ->setParameter(':lender', WalletType::LENDER)
            ->setParameter('status', $status, Connection::PARAM_INT_ARRAY);
         return $qb->getQuery()->getResult();

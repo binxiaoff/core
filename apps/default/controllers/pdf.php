@@ -185,7 +185,6 @@ class pdfController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-
         if (
             $this->clients->get($this->params[0], 'hash')
             && $project->get($this->params[1], 'id_project')

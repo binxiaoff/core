@@ -89,46 +89,43 @@
 
     <h2>RIB emprunteur en vigueur</h2>
     <?php if ($this->bankAccount) : ?>
-    <table class="tablesorter" style="width: 775px;margin:auto;">
-        <tr>
-            <td><label for="iban">Document :</label></td>
-            <td>
-                <?php if ($this->bankAccount->getAttachment()) : ?>
-                    <a href="<?= $this->url ?>/attachment/download/id/<?= $this->bankAccount->getAttachment()->getId() ?>/file/<?= urlencode($this->bankAccount->getAttachment()->getPath()) ?>"><?= $this->bankAccount->getAttachment()->getPath() ?></a>
-                <?php else : ?>
-                    pas de document fourni.
-                <?php endif; ?>
-            </td>
-        </tr>
-        <tr>
-            <td><label for="iban">IBAN :</label></td>
-            <td>
-                <?= chunk_split($this->bankAccount->getIban(), 4, ' '); ?>
-            </td>
-        </tr>
-        <tr>
-            <td><label for="bic">BIC :</label></td>
-            <td><?= $this->bankAccount->getBic() ?></td>
-        </tr>
-    </table>
+        <table class="tablesorter" style="width: 775px;margin:auto;">
+            <tr>
+                <td>Document</td>
+                <td>
+                    <?php if ($this->bankAccount->getAttachment()) : ?>
+                        <a href="<?= $this->url ?>/attachment/download/id/<?= $this->bankAccount->getAttachment()->getId() ?>/file/<?= urlencode($this->bankAccount->getAttachment()->getPath()) ?>"><?= $this->bankAccount->getAttachment()->getPath() ?></a>
+                    <?php else : ?>
+                        pas de document fourni.
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <tr>
+                <td>IBAN</td>
+                <td>
+                    <?= chunk_split($this->bankAccount->getIban(), 4, ' '); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>BIC</td>
+                <td><?= $this->bankAccount->getBic() ?></td>
+            </tr>
+        </table>
     <?php else : ?>
-    Pas de RIB en vigueur.
+        Pas de RIB en vigueur.
     <?php endif; ?>
-    <br /><br />
+    <br><br>
 
     <h2>Autre RIBs</h2>
     <table class="formColor" style="width: 775px;">
-        <?php
-        use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-
-        if (false === empty($this->bankAccountDocuments)) :
-            foreach ($this->bankAccountDocuments as $attachment) :
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */
-                $bankAccount = $attachment->getBankAccount();
-                if (null === $bankAccount || BankAccount::STATUS_PENDING === $bankAccount->getStatus() || BankAccount::STATUS_ARCHIVED === $bankAccount->getStatus()) :
-        ?>
+        <?php use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount; ?>
+        <?php if (false === empty($this->bankAccountDocuments)) : ?>
+            <?php foreach ($this->bankAccountDocuments as $attachment) : ?>
+                <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */ ?>
+                <?php $bankAccount = $attachment->getBankAccount(); ?>
+                <?php if (null === $bankAccount || BankAccount::STATUS_PENDING === $bankAccount->getStatus() || BankAccount::STATUS_ARCHIVED === $bankAccount->getStatus()) :  ?>
         <tr>
-            <td>
+            <td style="padding-bottom:20px">
                 <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>"><?= $attachment->getPath() ?></a>
             </td>
             <td>
@@ -142,17 +139,13 @@
                 <?php else : ?>
                     <a href="/emprunteurs/extraction_rib_lightbox/<?= $attachment->getId(); ?>" class="btn_link thickbox cboxElement">Extraire</a>
                 <?php endif; ?>
-                <br>
-                <br>
             </td>
         </tr>
-        <?php
-                endif;
-            endforeach;
-        endif;
-        ?>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </table>
-    <br /><br />
+    <br><br>
 
     <h2>Liste des projets</h2>
     <?php if (count($this->lprojects) > 0) : ?>
@@ -179,13 +172,13 @@
                     <td>
                         <?php if ($this->projects_pouvoir->get($aProject['id_project'], 'id_project')) : ?>
                             <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a>
-                        <?php elseif ($aProject['id_project']  > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
+                        <?php elseif ($aProject['status'] > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
                             <a href="/emprunteurs/link_ligthbox/pouvoir/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">POUVOIR</a>
                         <?php endif; ?>
                         &nbsp;&nbsp;
                         <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
                             <a href="<?= $this->lurl ?>/protected/mandats/<?= $this->clients_mandats->name ?>">MANDAT</a>
-                        <?php elseif ($aProject['id_project']  > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
+                        <?php elseif ($aProject['status']  > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
                             <a href="/emprunteurs/link_ligthbox/mandat/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">MANDAT</a>
                         <?php endif; ?>
                     </td>
