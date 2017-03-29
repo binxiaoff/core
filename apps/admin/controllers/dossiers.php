@@ -3346,25 +3346,25 @@ class dossiersController extends bootstrap
      */
     protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '', $displayNegativeValue = true, $amountsToUse = [])
     {
-        $html           = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
-        $iPreviousTotal = null;
-        $iColumn        = 0;
+        $html             = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
+        $iPreviousTotal   = null;
+        $iColumn          = 0;
         $index            = 0;
         $cumulativeAmount = [];
 
-        foreach ($this->aBalanceSheets as $aBalanceSheet) {
+        foreach ($this->aBalanceSheets as $balanceSheet) {
             $cumulativeAmount[$index] = 0;
 
-            if ($formType != $aBalanceSheet['form_type']) {
+            if ($formType != $balanceSheet['form_type']) {
                 $html .= '<td></td>';
                 if ($iColumn) {
                     $html .= '<td></td>';
                 }
             } else {
                 if (false === empty($amountsToUse[$index])) {
-                    $iTotal = $this->sumBalances($codes, $aBalanceSheet) + $amountsToUse[$index];
-            } else {
-                $iTotal = $this->sumBalances($codes, $aBalanceSheet);
+                    $iTotal = $this->sumBalances($codes, $balanceSheet) + $amountsToUse[$index];
+                } else {
+                    $iTotal = $this->sumBalances($codes, $balanceSheet);
                 }
 
                 if (false === $displayNegativeValue && $iTotal < 0) {
@@ -3374,10 +3374,10 @@ class dossiersController extends bootstrap
 
                 if ($iColumn) {
                     $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
-                    $html .= '<td>' . $movement . '</td>';
+                    $html     .= '<td>' . $movement . '</td>';
                 }
-                $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
-                $html .= '<td id="' . $domId . '" data-total="' . $iTotal . '">' . $formatedValue . '</td>';
+                $formattedValue  = $this->ficelle->formatNumber($iTotal, 0);
+                $html           .= '<td id="' . $domId . '" data-total="' . $iTotal . '">' . $formattedValue . '</td>';
                 $iPreviousTotal = $iTotal;
             }
             $iColumn++;

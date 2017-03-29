@@ -345,8 +345,6 @@ class CompanyBalanceSheetManager
                         }
                     }
                 }
-
-                $this->getIncomeStatement($companyAnnualAccounts);
                 $this->calculateDebtsAssetsFromBalance($companyAnnualAccounts->id_bilan);
             }
 
