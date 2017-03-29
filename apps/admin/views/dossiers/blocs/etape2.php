@@ -41,19 +41,29 @@
             }
         });
 
-        var streetview, stretviewInit = false;
         var initStreetView = function(lat, lng) {
             // Init Google Street View
-            if (!stretviewInit) {
-                streetview = new google.maps.StreetViewPanorama(document.getElementById('street_view'), {
-                    position: {lat: lat, lng: lng},
-                    pov: {heading: 165, pitch: 0},
-                    zoom: 1
-                });
-                google.maps.event.addListener( streetview, 'idle', function() {
-                    stretviewInit = true;
-                });
-            }
+            var sv = new google.maps.StreetViewService();
+            var location = {lat: lat, lng: lng};
+            var svElm = document.getElementById('street_view');
+            var streetview;
+
+            // Set the initial Street View camera to the center of the map
+            sv.getPanorama({location}, function(data, status) {
+                if (status !== google.maps.StreetViewStatus.OK) {
+                    streetview = {};
+                    $(svElm).html('');
+                    console.error('Street View data not found for this location.');
+                    $(svElm).parent().append($('<div class="streetview-error-message">Les coordonnées GPS ne sont pas valides. Veuillez saisir des coordonnées valides et réessayer.</div>'))
+                } else {
+                    streetview = new google.maps.StreetViewPanorama(svElm, {
+                        position: location,
+                        pov: {heading: 165, pitch: 0},
+                        zoom: 1
+                    });
+                    $(svElm).parent().find('.streetview-error-message').remove();
+                }
+            });
         }
         var closeStreetView = function(el) {
             var $el = el;
@@ -110,6 +120,15 @@
     .streetview-container {
         display: none;
         margin-bottom: 30px;
+    }
+    .streetview-error-message {
+        position: absolute;
+        z-index: 10;
+        top: 50%;
+        left: 30px;
+        right: 30px;
+        text-align: center;
+        font-size: 24px;
     }
     .streetview-container .controls {
         position: absolute;
