@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -181,11 +180,24 @@ class VigilanceRuleManager
      */
     private function processInactiveWalletDetection(array $inactiveWallets, VigilanceRule $vigilanceRule)
     {
+        $clientAtypicalOperationRepository = $this->em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation');
+
         foreach ($inactiveWallets as $wallet) {
             try {
                 $client            = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($wallet['idClient']);
+                $atypicalOperation = $clientAtypicalOperationRepository->findOneBy(['client' => $client, 'rule' => $vigilanceRule], ['added' => 'DESC']);
+
+                if (null !== $atypicalOperation) {
+                    $lenderWallet    = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->find($wallet['walletId']);
+                    $lenderOperation = $this->em->getRepository('UnilendCoreBusinessBundle:Operation')->getWithdrawAndProvisionOperationByDateAndWallet($lenderWallet, $atypicalOperation->getAdded());
+
+                    if (true === empty($lenderOperation)) {
+                        continue;
+                    }
+                }
+
                 $comment           = 'Le client a un solde inactif d\'un montant de ' . number_format($wallet['availableBalance'], 2, ',', ' ') . ' €. Dernière opération le ' . \DateTime::createFromFormat('Y-m-d H:i:s', $wallet['lastOperationDate'])->format('d/m/Y H:i:s');
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $wallet['availableBalance'], null, $comment, true);
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $wallet['availableBalance'], null, $comment);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
                 $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $wallet['idClient'] .
