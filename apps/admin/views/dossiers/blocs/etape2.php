@@ -153,7 +153,7 @@
         bottom: 10px;
     }
 </style>
-<script async defer src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyBJQJHPnNXye8Hhsf7CUK6dPQ9dvD861k4"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJQJHPnNXye8Hhsf7CUK6dPQ9dvD861k4"></script>
 
 
 <a class="tab_title" id="section-contact-details" href="#section-contact-details">2. Coordonnées</a>
