@@ -104,6 +104,8 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-score-error');
             case \projects_status::UNEXPECTED_RESPONSE . 'infolegale_score':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-score-error');
+            case \projects_status::UNEXPECTED_RESPONSE . 'euler_traffic_light_score':
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light-error');
             case \projects_status::UNEXPECTED_RESPONSE . 'euler_grade':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-error');
             default:

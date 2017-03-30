@@ -33,7 +33,7 @@ class CompanyFinanceCheck
     private $wsInfogreffe;
 
     /**
-     * @param EntityManager     $entityManager
+     * @param EntityManager              $entityManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
      * @param ProjectManager             $projectManager
      * @param CacheItemPoolInterface     $cacheItemPool
@@ -68,15 +68,18 @@ class CompanyFinanceCheck
      *
      * @param \companies $company
      * @param string     $rejectionReason
+     *
      * @return bool
      */
     public function isCompanySafe(\companies &$company, &$rejectionReason)
     {
+        if (Companies::INVALID_SIREN_EMPTY === $company->siren) {
+            $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
+            return false;
+        }
+
         try {
-            if (
-                Companies::INVALID_SIREN_EMPTY !== $company->siren
-                && null !== ($companyData = $this->wsAltares->getCompanyIdentity($company->siren))
-            ) {
+            if (null !== ($companyData = $this->wsAltares->getCompanyIdentity($company->siren))) {
                 $company->name          = $company->name ?: $companyData->getCorporateName();
                 $company->forme         = $company->forme ?: $companyData->getCompanyForm();
                 $company->capital       = $company->capital ?: $companyData->getCapital();
@@ -106,9 +109,13 @@ class CompanyFinanceCheck
                 return true;
             }
         } catch (\Exception $exception) {
+            $this->logger->error(
+                'Could not get company identity: AltaresManager::getCompanyIdentity(' . $company->siren . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]
+            );
+
             $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_identity';
-            $this->logger->error('Could not get company identity: AltaresManager::getCompanyIdentity(' . $company->siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]);
+            return false;
         }
 
         $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
@@ -117,6 +124,7 @@ class CompanyFinanceCheck
 
     /**
      * @param string $siren
+     *
      * @return null|BalanceSheetList
      */
     public function getBalanceSheets($siren)
@@ -124,8 +132,10 @@ class CompanyFinanceCheck
         try {
             return $this->wsAltares->getBalanceSheets($siren);
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
+            $this->logger->error(
+                'Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]
+            );
         }
 
         return null;
@@ -136,6 +146,7 @@ class CompanyFinanceCheck
      *
      * @param string $siren
      * @param string $rejectionReason
+     *
      * @return bool
      */
     public function hasCodinfPaymentIncident($siren, &$rejectionReason)
@@ -164,8 +175,10 @@ class CompanyFinanceCheck
                 return false;
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get incident list: CodinfManager::getIncidentList(' . $siren . ') for 1 year. Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
+            $this->logger->error(
+                'Could not get incident list: CodinfManager::getIncidentList(' . $siren . ') for 1 year. Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
+            );
         }
 
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident';
@@ -176,6 +189,7 @@ class CompanyFinanceCheck
      * @param BalanceSheetList $balanceSheetList
      * @param string           $siren
      * @param string           $rejectionReason
+     *
      * @return bool
      */
     public function hasNegativeCapitalStock(BalanceSheetList $balanceSheetList, $siren, &$rejectionReason)
@@ -203,8 +217,9 @@ class CompanyFinanceCheck
 
     /**
      * @param BalanceSheetList $balanceSheetList
-     * @param string $siren
-     * @param $rejectionReason
+     * @param string           $siren
+     * @param string           $rejectionReason
+     *
      * @return bool
      */
     public function hasNegativeRawOperatingIncomes(BalanceSheetList $balanceSheetList, $siren, &$rejectionReason)
@@ -233,6 +248,7 @@ class CompanyFinanceCheck
     /**
      * @param string $siren
      * @param string $rejectionReason
+     *
      * @return bool
      */
     public function hasInfogreffePrivileges($siren, &$rejectionReason)
@@ -243,7 +259,7 @@ class CompanyFinanceCheck
 
             if (is_array($privileges)) {
                 switch ($privileges['code']) {
-                    case '013':
+                    case InfogreffeManager::RETURN_CODE_NO_DEBTOR:
                         return false;
                     default:
                         $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_UNKNOWN_PRIVILEGES;
@@ -285,6 +301,7 @@ class CompanyFinanceCheck
 
     /**
      * @param \DateTime $date
+     *
      * @return int
      */
     private function numberOfMonthsAgo(\DateTime $date)
@@ -297,6 +314,7 @@ class CompanyFinanceCheck
     /**
      * @param FinancialSummary[] $postList
      * @param string             $postType
+     *
      * @return null|FinancialSummary
      */
     private function getSummaryFinancialPost(array $postList, $postType)
@@ -313,6 +331,7 @@ class CompanyFinanceCheck
     /**
      * @param FinancialSummary[] $postList
      * @param string             $postType
+     *
      * @return null|FinancialSummary
      */
     private function getManagementLineFinancialPost(array $postList, $postType)

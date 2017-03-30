@@ -63,6 +63,7 @@ class CompanyScoringCheck
 
     /**
      * @param string $siren
+     *
      * @return null|AltaresCompanyRating
      */
     public function getAltaresScore($siren)
@@ -84,6 +85,7 @@ class CompanyScoringCheck
      * @param string                       $rejectionReason
      * @param null|\company_rating_history $companyRatingHistory
      * @param null|\company_rating         $companyRating
+     *
      * @return bool
      */
     public function isAltaresScoreLow($altaresScore, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
@@ -105,7 +107,6 @@ class CompanyScoringCheck
         }
 
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_score';
-
         return true;
     }
 
@@ -114,6 +115,7 @@ class CompanyScoringCheck
      * @param string                       $rejectionReason
      * @param null|\company_rating_history $companyRatingHistory
      * @param null|\company_rating         $companyRating
+     *
      * @return bool
      */
     public function isXerfiUnilendOk($codeNaf, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
@@ -150,6 +152,7 @@ class CompanyScoringCheck
      * @param AltaresCompanyRating $altaresScore
      * @param string               $codeNaf
      * @param string               $rejectionReason
+     *
      * @return bool
      */
     public function combineAltaresScoreAndUnilendXerfi(AltaresCompanyRating $altaresScore, $codeNaf, &$rejectionReason)
@@ -172,6 +175,7 @@ class CompanyScoringCheck
      * @param \company_rating_history $companyRatingHistory
      * @param \company_rating         $companyRating
      * @param string                  $rejectionReason
+     *
      * @return bool
      */
     public function combineEulerTrafficLightXerfiAltaresScore(AltaresCompanyRating $altaresScore, \companies $company, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
@@ -225,6 +229,7 @@ class CompanyScoringCheck
      * @param string                       $rejectionReason
      * @param null|\company_rating_history $companyRatingHistory
      * @param null|\company_rating         $companyRating
+     *
      * @return bool
      */
     public function isInfolegaleScoreLow($siren, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
@@ -237,7 +242,6 @@ class CompanyScoringCheck
 
                 if ($infolegaleScore->getScore() < 5) {
                     $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE;
-
                     return true;
                 }
 
@@ -251,7 +255,6 @@ class CompanyScoringCheck
         }
 
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infolegale_score';
-
         return true;
     }
 
@@ -261,6 +264,7 @@ class CompanyScoringCheck
      * @param string                       $rejectionReason
      * @param null|\company_rating_history $companyRatingHistory
      * @param null|\company_rating         $companyRating
+     *
      * @return bool
      */
     public function combineEulerGradeUnilendXerfiAltaresScore(AltaresCompanyRating $altaresScore, \companies $company, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)

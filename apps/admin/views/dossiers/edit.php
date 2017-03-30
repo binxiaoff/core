@@ -432,7 +432,7 @@
                         <?php endif; ?>
                         <tr>
                             <th>Date de la demande</th>
-                            <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y') ?></td>
+                            <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y H:i') ?></td>
                         </tr>
                         <tr>
                             <th><label for="source">Source</label></th>
