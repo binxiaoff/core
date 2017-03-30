@@ -3347,8 +3347,8 @@ class dossiersController extends bootstrap
     protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '', $displayNegativeValue = true, $amountsToUse = [])
     {
         $html             = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
-        $iPreviousTotal   = null;
-        $iColumn          = 0;
+        $previousTotal    = null;
+        $column           = 0;
         $index            = 0;
         $cumulativeAmount = [];
 
@@ -3357,30 +3357,30 @@ class dossiersController extends bootstrap
 
             if ($formType != $balanceSheet['form_type']) {
                 $html .= '<td></td>';
-                if ($iColumn) {
+                if ($column) {
                     $html .= '<td></td>';
                 }
             } else {
                 if (false === empty($amountsToUse[$index])) {
-                    $iTotal = $this->sumBalances($codes, $balanceSheet) + $amountsToUse[$index];
+                    $total = $this->sumBalances($codes, $balanceSheet) + $amountsToUse[$index];
                 } else {
-                    $iTotal = $this->sumBalances($codes, $balanceSheet);
+                    $total = $this->sumBalances($codes, $balanceSheet);
                 }
 
-                if (false === $displayNegativeValue && $iTotal < 0) {
-                    $iTotal = 0;
+                if (false === $displayNegativeValue && $total < 0) {
+                    $total = 0;
                 }
-                $cumulativeAmount[$index] = $iTotal;
+                $cumulativeAmount[$index] = $total;
 
-                if ($iColumn) {
-                    $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
+                if ($column) {
+                    $movement = empty($total) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $total) / abs($total) * 100) . '&nbsp;%';
                     $html     .= '<td>' . $movement . '</td>';
                 }
-                $formattedValue  = $this->ficelle->formatNumber($iTotal, 0);
-                $html           .= '<td id="' . $domId . '" data-total="' . $iTotal . '">' . $formattedValue . '</td>';
-                $iPreviousTotal = $iTotal;
+                $formattedValue = $this->ficelle->formatNumber($total, 0);
+                $html           .= '<td id="' . $domId . '" data-total="' . $total . '">' . $formattedValue . '</td>';
+                $previousTotal  = $total;
             }
-            $iColumn++;
+            $column++;
             $index++;
         }
         $html .= '</tr>';
@@ -3408,28 +3408,30 @@ class dossiersController extends bootstrap
      */
     protected function generateBalanceTotalLineHtml($label, array $codes, $formType, $domId = '')
     {
-        $html           = '<tr><th colspan="2">' . $label . '</th>';
-        $iPreviousTotal = null;
-        $iIndex         = 0;
-        $iColumn        = 0;
-        foreach ($this->aBalanceSheets as $aBalanceSheet) {
-            if ($formType != $aBalanceSheet['form_type']) {
+        $html          = '<tr><th colspan="2">' . $label . '</th>';
+        $previousTotal = null;
+        $index         = 0;
+        $column        = 0;
+
+        foreach ($this->aBalanceSheets as $balanceSheet) {
+            if ($formType != $balanceSheet['form_type']) {
                 $html .= '<th></th>';
-                if ($iColumn) {
+
+                if ($column) {
                     $html .= '<th></th>';
                 }
             } else {
-                $iTotal = $this->sumBalances($codes, $aBalanceSheet);
+                $total = $this->sumBalances($codes, $balanceSheet);
 
-                if ($iColumn) {
-                    $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
-                    $html .= '<th>' . $movement . '</th>';
+                if ($column) {
+                    $movement = empty($total) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $total) / abs($total) * 100) . '&nbsp;%';
+                    $html     .= '<th>' . $movement . '</th>';
                 }
-                $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
-                $html .= '<th id="' . $domId . $iIndex++ . '" data-total="' . $iTotal . '">' . $formatedValue . '</th>';
-                $iPreviousTotal = $iTotal;
+                $formattedValue = $this->ficelle->formatNumber($total, 0);
+                $html           .= '<th id="' . $domId . $index++ . '" data-total="' . $total . '">' . $formattedValue . '</th>';
+                $previousTotal  = $total;
             }
-            $iColumn++;
+            $column++;
         }
         $html .= '</tr>';
 
