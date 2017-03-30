@@ -741,6 +741,8 @@ class dossiersController extends bootstrap
             }
 
             $this->loadEarlyRepaymentInformation();
+            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
+            $this->legalDocument  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
