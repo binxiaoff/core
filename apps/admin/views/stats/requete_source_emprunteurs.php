@@ -2,7 +2,7 @@
     $(function() {
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 
-        <?php if($this->nb_lignes != '') : ?>
+        <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
 
@@ -23,17 +23,6 @@
             changeYear: true,
             yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
 <style>
@@ -58,11 +47,8 @@
         /*width: 25%;*/
     }
 </style>
-
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Sources Emprunteurs</h1>
-
     <form method="post" name="recupCSV">
         <input type="hidden" name="extraction_csv"/>
         <input type="hidden" name="dateStart" value="<?= (false === empty($_POST['dateStart']) ? $_POST['dateStart'] : '' ) ?>"/>
@@ -72,7 +58,6 @@
     <div class="csv">
         <a onclick="document.forms['recupCSV'].submit();" class="btn colorAdd">Recuperation du CSV</a>
     </div>
-
     <div class="datepicker_table">
         <form method="post" name="date_select">
             <fieldset>

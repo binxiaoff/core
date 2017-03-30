@@ -8,7 +8,7 @@
 
 {% block dashboardContent %}
     {# Disable default form validation. See: http://stackoverflow.com/a/22148483/1421162 #}
-    <form id="form-user-autolend" action="{{ path('autolend') }}" method="post" class="form-user-autolend" novalidate autocomplete="off">
+    <form id="form-user-autolend" action="{{ path('autolend') }}" method="post" class="form-user-autolend" novalidate autocomplete="off" onSubmit="return false;">
         <section class="panel panel-autolend">
             <header class="panel-header">
                 <h3>{% trans %} autolend_page-title {% endtrans %}</h3>

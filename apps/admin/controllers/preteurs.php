@@ -1330,37 +1330,39 @@ class preteursController extends bootstrap
     private function getMessageAboutClientStatus()
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
-        $clientStatusManager= $this->get('unilend.service.client_status_manager');
-        $sTimeCreate                = strtotime($this->clients->added);
-        $this->sClientStatusMessage = '';
-        $currentStatus = $clientStatusManager->getLastClientStatus($this->clients);
+        $clientStatusManager       = $this->get('unilend.service.client_status_manager');
+        $currentStatus             = $clientStatusManager->getLastClientStatus($this->clients);
+        $creationTime              = strtotime($this->clients->added);
+        $this->clientStatusMessage = '';
 
         switch ($currentStatus) {
             case \clients_status::TO_BE_CHECKED :
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $sTimeCreate) . '</div>';
+                $this->clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $creationTime) . '</div>';
                 break;
             case \clients_status::COMPLETENESS :
             case \clients_status::COMPLETENESS_REMINDER:
             case \clients_status::COMPLETENESS_REPLY:
-                $this->sClientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $sTimeCreate) . ' </div>';
+                $this->clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $creationTime) . ' </div>';
                 break;
             case \clients_status::MODIFICATION:
-                $this->sClientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $sTimeCreate) . '</div>';
+                $this->clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $creationTime) . '</div>';
                 break;
             case \clients_status::CLOSED_LENDER_REQUEST:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
+                $this->clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
                 break;
             case \clients_status::CLOSED_BY_UNILEND:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
+                $this->clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
                 break;
             case \clients_status::VALIDATED:
-                $this->sClientStatusMessage = '';
+                $this->clientStatusMessage = '';
                 break;
             case \clients_status::CLOSED_DEFINITELY:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
+                $this->clientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
                 break;
-            default;
-                trigger_error('Unknown Client Status : ' . $currentStatus, E_USER_NOTICE);
+            default:
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->warning('Unknown client status "' . $currentStatus . '"', ['client' => $this->clients->id_client]);
                 break;
         }
     }

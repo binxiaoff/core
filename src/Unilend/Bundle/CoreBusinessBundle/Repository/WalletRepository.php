@@ -25,13 +25,13 @@ class WalletRepository extends EntityRepository
             ->where('wt.label IN (:taxWallets)')
             ->setParameter(
                 'taxWallets', [
-                WalletType::TAX_RETENUES_A_LA_SOURCE,
-                WalletType::TAX_CONTRIBUTIONS_ADDITIONNELLES,
-                WalletType::TAX_CRDS,
-                WalletType::TAX_CSG,
-                WalletType::TAX_PRELEVEMENTS_DE_SOLIDARITE,
-                WalletType::TAX_PRELEVEMENTS_OBLIGATOIRES,
-                WalletType::TAX_PRELEVEMENTS_SOCIAUX
+                WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE,
+                WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
+                WalletType::TAX_FR_CRDS,
+                WalletType::TAX_FR_CSG,
+                WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS,
+                WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS,
+                WalletType::TAX_FR_SOCIAL_DEDUCTIONS
             ], Connection::PARAM_INT_ARRAY);
         $query = $cb->getQuery();
 

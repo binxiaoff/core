@@ -2,48 +2,54 @@
 
 class project_need extends project_need_crud
 {
-    public function __construct($oDatabase, $aParameters = '')
+    /**
+     * @todo we should prefer using labels but we don't have some for the moment
+     */
+    const PARENT_TYPE_TRANSACTION = 36;
+
+    public function __construct($database, $parameters = '')
     {
-        parent::project_need($oDatabase, $aParameters);
+        parent::project_need($database, $parameters);
     }
 
-    public function select($sWhere = null, $sOrder = null)
+    public function select($where = null, $order = null)
     {
-        $sQuery = 'SELECT * FROM project_need';
+        $query = 'SELECT * FROM project_need';
 
-        if (null !== $sWhere) {
-            $sQuery .= ' WHERE ' . $sWhere;
+        if (null !== $where) {
+            $query .= ' WHERE ' . $where;
         }
 
-        if (null !== $sOrder) {
-            $sQuery .= ' ORDER BY ' . $sOrder;
+        if (null !== $order) {
+            $query .= ' ORDER BY ' . $order;
         }
 
-        $aResult = array();
-        $rResult = $this->bdd->query($sQuery);
-        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
-            $aResult[] = $aRecord;
+        $result    = [];
+        $statement = $this->bdd->query($query);
+        while ($record = $this->bdd->fetch_assoc($statement)) {
+            $result[] = $record;
         }
-        return $aResult;
+        return $result;
     }
 
     /**
      * Retrieve 2 levels tree of available project needs
+     *
      * @return array
      */
     public function getTree()
     {
-        $aTree = array();
+        $tree = [];
 
-        foreach ($this->select(null, 'id_parent ASC, rank ASC') as $aNeed) {
-            if (0 == $aNeed['id_parent']) {
-                $aTree[$aNeed['id_project_need']] = $aNeed;
-                $aTree[$aNeed['id_project_need']]['children'] = array();
+        foreach ($this->select(null, 'id_parent ASC, rank ASC') as $need) {
+            if (0 == $need['id_parent']) {
+                $tree[$need['id_project_need']]             = $need;
+                $tree[$need['id_project_need']]['children'] = [];
             } else {
-                $aTree[$aNeed['id_parent']]['children'][] = $aNeed;
+                $tree[$need['id_parent']]['children'][] = $need;
             }
         }
 
-        return $aTree;
+        return $tree;
     }
 }

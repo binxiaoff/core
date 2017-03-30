@@ -57,13 +57,14 @@ class emprunteursController extends bootstrap
         $this->clients_mandats   = $this->loadData('clients_mandats');
         $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
         $this->settings          = $this->loadData('settings');
-        $companySection          = $this->loadData('company_sector');
+        /** @var \company_sector $companySector */
+        $companySector = $this->loadData('company_sector');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager           = $this->get('doctrine.orm.entity_manager');
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
-        $this->lSecteurs  = $companySection->select();
+        $this->sectors    = $companySector->select();
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
@@ -100,7 +101,7 @@ class emprunteursController extends bootstrap
 
                 $this->clients->telephone       = str_replace(' ', '', $_POST['telephone']);
                 $this->companies->name          = $_POST['societe'];
-                $this->companies->sector        = $_POST['secteur'];
+                $this->companies->sector        = isset($_POST['sector']) ? $_POST['sector'] : $this->companies->sector;
                 $this->companies->email_facture = trim($_POST['email_facture']);
 
                 if ($this->companies->status_adresse_correspondance == 1) {

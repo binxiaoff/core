@@ -14,20 +14,10 @@
             event.preventDefault()
 
             var $popup = $('#popup-content').clone()
-                $popup.find('.btn_link.validate').attr('href', event.target.href)
+            $popup.find('.btn_link.validate').attr('href', event.target.href)
 
             $.colorbox({html: $popup.html()})
         })
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
 <style>
@@ -36,7 +26,6 @@
     .manual_repayment_action {display: block; margin: auto; width: 225px;}
     #popup-content {display: none;}
 </style>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="popup-content">
     <div id="popup">
         <a onclick="parent.$.fn.colorbox.close();" class="closeBtn" title="Fermer"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a><br>
@@ -48,7 +37,7 @@
     </div>
 </div>
 <div id="contenu">
-    <h1>Remboursement <?= $this->companies->name ?> - <?= $this->projects->title_bo ?></h1>
+    <h1>Remboursement <?= $this->companies->name ?> - <?= $this->projects->title ?></h1>
     <div class="btnDroite">
         <a style="margin-right:10px;" target="_blank" href="<?= $this->lurl ?>/dossiers/echeancier_emprunteur/<?= $this->projects->id_project ?>" class="btn_link">Echeancier Emprunteur</a>
         <a target="_blank" href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>" class="btn_link">Voir le dossier</a>
@@ -58,7 +47,7 @@
             <td colspan="7"><h2>Informations projet</h2></td>
         </tr>
         <tr>
-            <td colspan="2"><b><?= $this->companies->name ?> - <?= $this->projects->title_bo ?></b></td>
+            <td colspan="2"><b><?= $this->companies->name ?> - <?= $this->projects->title ?></b></td>
             <td><?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>&nbsp;€ - <?= $this->projects->period ?> mois</td>
             <th>Risques :</th>
             <td><?= $this->companies->risk ?></td>
@@ -145,7 +134,7 @@
         <?php endif; ?>
     </table>
     <br/><br/>
-    <div style="border: 1px solid #b10366; height: 60px; padding: 5px; width: 280px;">
+    <div style="border: 1px solid #b20066; height: 60px; padding: 5px; width: 280px;">
         <form action="" method="post">
             <b>Remboursement automatique : </b>
             <input type="radio" name="remb_auto" value="0"<?= ($this->projects->remb_auto == 0 ? ' checked' : '') ?>>Oui
@@ -167,7 +156,7 @@
     </div>
     <br/><br/>
     <h2>Remboursement anticipé / Information</h2>
-    <table class="form" style="width: 538px; border: 1px solid #B10366;">
+    <table class="form" style="width: 538px; border: 1px solid #b20066;">
         <tr>
             <th>Statut :</th>
             <td>

@@ -19,25 +19,13 @@
             changeYear: true,
             yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>
     <?php else : ?>
-        <div><?= $this->sClientStatusMessage ?></div>
+        <div><?= $this->clientStatusMessage ?></div>
         <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
         <div class="btnDroite">
             <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>

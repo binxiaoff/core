@@ -1,30 +1,4 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
 
 class companies extends companies_crud
 {
@@ -166,10 +140,10 @@ class companies extends companies_crud
     public function getProjectsBySIREN()
     {
         if (empty($this->id_company)) {
-            return array();
+            return [];
         }
-        $aProjects = array();
-        $rResult   = $this->bdd->query('
+        $projects = [];
+        $result   = $this->bdd->query('
             SELECT 1 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
             FROM companies current_company
             INNER JOIN companies c ON current_company.siren = c.siren
@@ -188,7 +162,7 @@ class companies extends companies_crud
             INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE p.status >= ' . \projects_status::EN_ATTENTE_PIECES . ' AND p.status < ' . \projects_status::EN_FUNDING . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status >= ' . \projects_status::COMMERCIAL_REVIEW . ' AND p.status < ' . \projects_status::EN_FUNDING . ' AND current_company.id_company = ' . $this->id_company . '
 
             UNION
 
@@ -199,13 +173,13 @@ class companies extends companies_crud
             INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE p.status < ' . \projects_status::EN_ATTENTE_PIECES . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status < ' . \projects_status::COMMERCIAL_REVIEW . ' AND current_company.id_company = ' . $this->id_company . '
             ORDER BY rank ASC, added DESC'
         );
-        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
-            $aProjects[] = $aRecord;
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $projects[] = $record;
         }
-        return $aProjects;
+        return $projects;
     }
 
     /**
@@ -291,6 +265,9 @@ class companies extends companies_crud
      */
     public function setSectorAccordingToNaf()
     {
+        if ($this->code_naf == \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::NAF_CODE_NO_ACTIVITY) {
+            return;
+        }
 
         if (in_array(substr($this->code_naf, 0, 2), ['01', '02', '03'])) {
             $this->sector = 1;
@@ -416,5 +393,28 @@ class companies extends companies_crud
 
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param int $siren
+     * @return array
+     */
+    public function searchCompanyBySIREN($siren)
+    {
+        $statement = $this->bdd->createQueryBuilder()
+            ->select('c.*')
+            ->from('companies', 'c')
+            ->innerJoin('c', 'projects', 'p', 'c.id_company = p.id_company')
+            ->where('c.siren = :siren')
+            ->setParameter('siren', $siren)
+            ->orderBy('p.status', 'DESC')
+            ->orderBy('c.added', 'ASC')
+            ->groupBy('c.id_company')
+            ->execute();
+
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $result;
     }
 }

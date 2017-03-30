@@ -233,7 +233,7 @@ class clients extends clients_crud
             FROM clients c
             INNER JOIN companies co ON c.id_client = co.id_client_owner
             WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
-                AND c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) .')
+                AND (c.type IS NULL OR c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) .'))
             GROUP BY c.id_client
             ORDER BY c.id_client DESC
            LIMIT 100';

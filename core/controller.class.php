@@ -5,6 +5,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class Controller implements ContainerAwareInterface
 {
+    /** @var array */
+    public $params;
     /** @var Command */
     public $Command;
     /** @var string */

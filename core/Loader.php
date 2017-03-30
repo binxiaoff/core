@@ -79,10 +79,10 @@ class Loader
             $cvalues        = '';
             $id             = array();
             while ($record = $db->fetch_assoc($result)) {
-                $declaration .= "\tpublic \$" . $record['Field'] . ";\r\n";
-                $initialisation .= "\t\t\$this->" . $record['Field'] . " = '';\r\n";
-                $remplissage .= "\t\t\t\$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
-                $escapestring .= "\t\t\$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
+                $declaration    .= "    public \$" . $record['Field'] . ";\r\n";
+                $initialisation .= "        \$this->" . $record['Field'] . " = '';\r\n";
+                $remplissage    .= "            \$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
+                $escapestring   .= "        \$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
 
                 if ($record['Key'] == 'PRI') {
                     $id[] = $record['Field'];
@@ -90,7 +90,7 @@ class Loader
                 if ($record['Key'] != 'PRI' && $record['Field'] != 'updated') {
                     $updatefields .= "`" . $record['Field'] . "`=\"'.\$this->" . $record['Field'] . ".'\",";
                 } elseif ($record['Field'] == 'updated') {
-                    $updatefields .= "`" . $record['Field'] . "`=NOW(),";
+                    $updatefields .= "`" . $record['Field'] . "` = NOW(),";
                 }
 
                 if ($record['Field'] == 'slug') {
@@ -108,7 +108,7 @@ class Loader
                     } elseif ($record['Field'] == 'updated' || $record['Field'] == 'added') {
                         $cvalues .= "NOW(),";
                     } elseif ($record['Field'] == 'hash') {
-                        $cvalues .= "md5(UUID()),";
+                        $cvalues .= "MD5(UUID()),";
                     }
                 } else {
                     $clist .= "`" . $record['Field'] . "`,";
@@ -131,11 +131,11 @@ class Loader
                 $dao = file_get_contents($path . 'core/crud.sample.php');
 
                 if ($slug) {
-                    $controleslug      = "\$this->bdd->controlSlug('--table--',\$this->slug,'--id--',\$this->--id--);";
-                    $controleslugmulti = "\$this->bdd->controlSlugMultiLn('--table--',\$this->slug,\$this->--id--,\$list_field_value,\$this->id_langue);";
+                    $controleslug      = "\$this->bdd->controlSlug('--table--', \$this->slug, '--id--', \$this->--id--);";
+                    $controleslugmulti = "\$this->bdd->controlSlugMultiLn('--table--', \$this->slug, \$this->--id--, \$list_field_value, \$this->id_langue);";
                 } else {
-                    $controleslug      = "";
-                    $controleslugmulti = "";
+                    $controleslug      = '';
+                    $controleslugmulti = '';
                 }
 
                 $dao = str_replace('--controleslug--', $controleslug, $dao);
@@ -144,9 +144,9 @@ class Loader
                 $dao = file_get_contents($path . 'core/crud2.sample.php');
 
                 if ($slug) {
-                    $controleslugmulti = "\$this->bdd->controlSlugMultiLn('--table--',\$this->slug,\$this->--id--,\$list_field_value,\$this->id_langue);";
+                    $controleslugmulti = "\$this->bdd->controlSlugMultiLn('--table--', \$this->slug, \$this->--id--, \$list_field_value, \$this->id_langue);";
                 } else {
-                    $controleslugmulti = "";
+                    $controleslugmulti = '';
                 }
 
                 $dao = str_replace('--controleslugmulti--', $controleslugmulti, $dao);

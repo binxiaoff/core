@@ -3,6 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 
 class CompanyBalanceSheetManager
 {
@@ -176,8 +177,10 @@ class CompanyBalanceSheetManager
         $companyBalanceDetails = $this->entityManager->getRepository('company_balance');
 
         if ($companyBalanceDetailsType->get($box, 'id_company_tax_form_type = ' . $companyBalanceSheet->id_company_tax_form_type . ' AND code')) {
-            if ($companyBalanceDetails->exist('id_balance_type = ' . $companyBalanceDetailsType->id_balance_type . ' AND id_bilan = ' . $companyBalanceSheet->id_bilan)){
-                $companyBalanceDetails->get($companyBalanceDetailsType->id_balance_type, 'id_bilan = ' . $companyBalanceSheet->id_bilan . ' AND id_balance_type');
+            $companyBalanceValues = $companyBalanceDetails->select('id_balance_type = ' . $companyBalanceDetailsType->id_balance_type . ' AND id_bilan = ' . $companyBalanceSheet->id_bilan, 'id_balance DESC', 0, 1);
+
+            if (count($companyBalanceValues) > 0) {
+                $companyBalanceDetails->get($companyBalanceValues[0]['id_balance']);
                 $companyBalanceDetails->value = $value;
                 $companyBalanceDetails->update();
             } else {
@@ -260,5 +263,80 @@ class CompanyBalanceSheetManager
         ];
 
         return $incomeStatement;
+    }
+
+    /**
+     * Set company balance sheets
+     * @param \companies       $company
+     * @param BalanceSheetList $balanceSheetList
+     * @param \projects        $project
+     */
+    public function setCompanyBalance(\companies $company, BalanceSheetList $balanceSheetList, \projects &$project = null)
+    {
+        $taxFormType = $this->detectTaxFormType($company);
+
+        if ($taxFormType) {
+            /** @var \companies_actif_passif $companyAssetsDebts */
+            $companyAssetsDebts = $this->entityManager->getRepository('companies_actif_passif');
+            /** @var \companies_bilans $companyAnnualAccounts */
+            $companyAnnualAccounts = $this->entityManager->getRepository('companies_bilans');
+            /** @var \company_balance $companyBalance */
+            $companyBalance = $this->entityManager->getRepository('company_balance');
+            /** @var \company_balance_type $companiesBalanceTypes */
+            $companiesBalanceTypes = $this->entityManager->getRepository('company_balance_type');
+
+            $aCodes = $companiesBalanceTypes->getAllByCode($taxFormType->id_type);
+
+            foreach ($balanceSheetList->getBalanceSheets() as $balanceSheet) {
+                $aCompanyBalances = [];
+                $annualAccounts   = $companyAnnualAccounts->select('id_company = ' . $company->id_company . ' AND cloture_exercice_fiscal = "' . $balanceSheet->getCloseDate()->format('Y-m-d') . '"');
+
+                if (empty($annualAccounts)) {
+                    $companyAnnualAccounts->id_company               = $company->id_company;
+                    $companyAnnualAccounts->id_company_tax_form_type = $taxFormType->id_type;
+                    $companyAnnualAccounts->cloture_exercice_fiscal  = $balanceSheet->getCloseDate()->format('Y-m-d');
+                    $companyAnnualAccounts->duree_exercice_fiscal    = $balanceSheet->getDuration();
+                    $companyAnnualAccounts->create();
+
+                    $companyAssetsDebts->id_bilan = $companyAnnualAccounts->id_bilan;
+                    $companyAssetsDebts->create();
+                } else {
+                    $companyAnnualAccounts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
+
+                    foreach ($companyBalance->select('id_bilan = ' . $companyAnnualAccounts->id_bilan) as $aBalance) {
+                        $aCompanyBalances[$aBalance['id_balance_type']] = $aBalance;
+                    }
+                }
+
+                foreach ($balanceSheet->getPostList() as $balance) {
+                    $postLabel = $balance->getPostLabel();
+
+                    if (isset($aCodes[$postLabel])) {
+                        if (false === isset($aCompanyBalances[$aCodes[$postLabel]['id_balance_type']])) {
+                            $companyBalance->id_bilan        = $companyAnnualAccounts->id_bilan;
+                            $companyBalance->id_balance_type = $aCodes[$postLabel]['id_balance_type'];
+                            $companyBalance->value           = $balance->getPostValue();
+                            $companyBalance->create();
+                        } elseif ($aCompanyBalances[$aCodes[$postLabel]['id_balance_type']]['value'] != $balance->getPostValue()) {
+                            $companyBalance->get($aCompanyBalances[$aCodes[$postLabel]['id_balance_type']]['id_balance'], 'id_balance');
+                            $companyBalance->value = $balance->getPostValue();
+                            $companyBalance->update();
+                        }
+                    }
+                }
+
+                $this->getIncomeStatement($companyAnnualAccounts);
+                $this->calculateDebtsAssetsFromBalance($companyAnnualAccounts->id_bilan);
+            }
+
+            /** @var \companies_bilans $companyAccount */
+            $companyAccount = $this->entityManager->getRepository('companies_bilans');
+            $balanceId      = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
+
+            if (null !== $project) {
+                $project->id_dernier_bilan = $balanceId;
+                $project->update();
+            }
+        }
     }
 }

@@ -187,7 +187,7 @@ class OperationManager
 
         $transaction->id_client        = $wallet->getIdClient()->getIdClient();
         $transaction->id_langue        = 'fr';
-        $transaction->date_transaction = date('Y-m-d h:i:s');
+        $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;
         if ($origin instanceof Backpayline) {
             $amountInCent                = $origin->getAmount();
@@ -757,26 +757,26 @@ class OperationManager
     public function withdrawTaxWallet(Wallet $wallet, $amount)
     {
         switch ($wallet->getIdType()->getLabel()) {
-            case WalletType::TAX_CONTRIBUTIONS_ADDITIONNELLES:
-                $type = OperationType::TAX_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW;
+            case WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS:
+                $type = OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_WITHDRAW;
                 break;
-            case WalletType::TAX_CRDS:
-                $type = OperationType::TAX_CRDS_WITHDRAW;
+            case WalletType::TAX_FR_CRDS:
+                $type = OperationType::TAX_FR_CRDS_WITHDRAW;
                 break;
-            case WalletType::TAX_CSG:
-                $type = OperationType::TAX_CSG_WITHDRAW;
+            case WalletType::TAX_FR_CSG:
+                $type = OperationType::TAX_FR_CSG_WITHDRAW;
                 break;
-            case WalletType::TAX_PRELEVEMENTS_DE_SOLIDARITE:
-                $type = OperationType::TAX_PRELEVEMENTS_DE_SOLIDARITE_WITHDRAW;
+            case WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS:
+                $type = OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_WITHDRAW;
                 break;
-            case WalletType::TAX_PRELEVEMENTS_OBLIGATOIRES:
-                $type = OperationType::TAX_PRELEVEMENTS_OBLIGATOIRES_WITHDRAW;
+            case WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS:
+                $type = OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_WITHDRAW;
                 break;
-            case WalletType::TAX_PRELEVEMENTS_SOCIAUX:
-                $type = OperationType::TAX_PRELEVEMENTS_SOCIAUX_WITHDRAW;
+            case WalletType::TAX_FR_SOCIAL_DEDUCTIONS:
+                $type = OperationType::TAX_FR_SOCIAL_DEDUCTIONS_WITHDRAW;
                 break;
-            case WalletType::TAX_RETENUES_A_LA_SOURCE:
-                $type = OperationType::TAX_RETENUES_A_LA_SOURCE_WITHDRAW;
+            case WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE:
+                $type = OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_WITHDRAW;
                 break;
             default:
                 throw new \InvalidArgumentException('Unsupported wallet type : ' . $wallet->getIdType()->getLabel());
@@ -817,32 +817,32 @@ class OperationManager
             $walletType    = '';
             switch ($type) {
                 case TaxType::TYPE_INCOME_TAX :
-                    $operationType = OperationType::TAX_PRELEVEMENTS_OBLIGATOIRES;
-                    $walletType    = WalletType::TAX_PRELEVEMENTS_OBLIGATOIRES;
+                    $operationType = OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS;
+                    $walletType    = WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS;
                     break;
                 case TaxType::TYPE_CSG :
-                    $operationType = OperationType::TAX_CSG;
-                    $walletType    = WalletType::TAX_CSG;
+                    $operationType = OperationType::TAX_FR_CSG;
+                    $walletType    = WalletType::TAX_FR_CSG;
                     break;
                 case TaxType::TYPE_SOCIAL_DEDUCTIONS :
-                    $operationType = OperationType::TAX_PRELEVEMENTS_SOCIAUX;
-                    $walletType    = WalletType::TAX_PRELEVEMENTS_SOCIAUX;
+                    $operationType = OperationType::TAX_FR_SOCIAL_DEDUCTIONS;
+                    $walletType    = WalletType::TAX_FR_SOCIAL_DEDUCTIONS;
                     break;
                 case TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS :
-                    $operationType = OperationType::TAX_CONTRIBUTIONS_ADDITIONNELLES;
-                    $walletType    = WalletType::TAX_CONTRIBUTIONS_ADDITIONNELLES;
+                    $operationType = OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS;
+                    $walletType    = WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS;
                     break;
                 case TaxType::TYPE_SOLIDARITY_DEDUCTIONS :
-                    $operationType = OperationType::TAX_PRELEVEMENTS_DE_SOLIDARITE;
-                    $walletType    = WalletType::TAX_PRELEVEMENTS_DE_SOLIDARITE;
+                    $operationType = OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS;
+                    $walletType    = WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS;
                     break;
                 case TaxType::TYPE_CRDS :
-                    $operationType = OperationType::TAX_CRDS;
-                    $walletType    = WalletType::TAX_CRDS;
+                    $operationType = OperationType::TAX_FR_CRDS;
+                    $walletType    = WalletType::TAX_FR_CRDS;
                     break;
                 case TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE :
-                    $operationType = OperationType::TAX_RETENUES_A_LA_SOURCE;
-                    $walletType    = WalletType::TAX_RETENUES_A_LA_SOURCE;
+                    $operationType = OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE;
+                    $walletType    = WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE;
                     break;
                 default :
                     continue;

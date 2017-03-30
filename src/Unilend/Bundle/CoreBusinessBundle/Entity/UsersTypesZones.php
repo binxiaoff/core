@@ -7,22 +7,28 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * UsersTypesZones
  *
- * @ORM\Table(name="users_types_zones", indexes={@ORM\Index(name="id_user_type", columns={"id_user_type"}), @ORM\Index(name="id_zone", columns={"id_zone"})})
+ * @ORM\Table(name="users_types_zones", indexes={@ORM\Index(name="id_user_type", columns={"id_user_type"}), @ORM\Index(name="id_zone", columns={"id_zone"}), @ORM\Index(name="id_user_type", columns={"id_user_type"})})
  * @ORM\Entity
  */
 class UsersTypesZones
 {
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes
      *
-     * @ORM\Column(name="id_user_type", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_type", referencedColumnName="id_user_type")
+     * })
      */
     private $idUserType;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Zones
      *
-     * @ORM\Column(name="id_zone", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Zones")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_zone", referencedColumnName="id_zone")
+     * })
      */
     private $idZone;
 
@@ -50,15 +56,14 @@ class UsersTypesZones
     private $idUserTypeZone;
 
 
-
     /**
      * Set idUserType
      *
-     * @param integer $idUserType
+     * @param UsersTypes $idUserType
      *
      * @return UsersTypesZones
      */
-    public function setIdUserType($idUserType)
+    public function setIdUserType(UsersTypes $idUserType)
     {
         $this->idUserType = $idUserType;
 
@@ -68,7 +73,7 @@ class UsersTypesZones
     /**
      * Get idUserType
      *
-     * @return integer
+     * @return UsersTypes
      */
     public function getIdUserType()
     {
@@ -78,11 +83,11 @@ class UsersTypesZones
     /**
      * Set idZone
      *
-     * @param integer $idZone
+     * @param Zones $idZone
      *
      * @return UsersTypesZones
      */
-    public function setIdZone($idZone)
+    public function setIdZone(Zones $idZone)
     {
         $this->idZone = $idZone;
 
@@ -92,7 +97,7 @@ class UsersTypesZones
     /**
      * Get idZone
      *
-     * @return integer
+     * @return Zones
      */
     public function getIdZone()
     {
