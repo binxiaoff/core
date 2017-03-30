@@ -151,7 +151,7 @@ class emprunteursController extends bootstrap
                 $mandates = $project->getMandats();
                 if (false === empty($mandates)) {
                     foreach ($mandates as $mandate) {
-                        if (! $mandate instanceof ClientsMandats || $mandate->getStatus() === ClientsMandats::STATUS_ARCHIVED) {
+                        if ($mandate->getStatus() === ClientsMandats::STATUS_ARCHIVED) {
                             continue;
                         }
                         if (ClientsMandats::STATUS_SIGNED == $mandate->getStatus()) {
@@ -288,6 +288,7 @@ class emprunteursController extends bootstrap
                         }
                     }
                     header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->attachment->getClient()->getIdClient());
+                    die;
                 }
             }
         }
@@ -334,9 +335,10 @@ class emprunteursController extends bootstrap
                 $_SESSION['freeow']['message'] = $exception->getMessage();
             }
             header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $bankAccount->getIdClient()->getIdClient());
-            return;
+            die;
         }
         header('Location: ' . $this->lurl);
+        die;
     }
 
     public function _link_ligthbox()
