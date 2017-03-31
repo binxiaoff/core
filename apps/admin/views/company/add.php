@@ -1,5 +1,5 @@
 <script type="text/javascript">
-  $(function() {
+  $(function () {
     $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
     $(".listeMandats").tablesorter();
     $(".mandats").tablesorter({headers: {}});
@@ -13,54 +13,51 @@
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Création de société</h1>
-    <form method="post" name="edit_company" id="edit_company" enctype="multipart/form-data" action="/company/add" target="_parent">
+    <form method="post" name="edit_company" id="edit_company" enctype="multipart/form-data" action="company/add" target="_parent">
         <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
                 <th><label for="email_facture">SIREN*</label></th>
-                <td colspan="3"><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->siren ?>" required></td>
-            </tr>
-            <tr>
-                <th><label for="corporate_name">Raison sociale*</label></th>
-                <td><input type="text" name="corporate_name" id="corporate_name" class="input_large" required></td>
-                <th><label for="sector">Secteur</label></th>
-                <td>
-                    <select name="sector" id="sector" class="select">
-                        <option value=""></option>
-                        <?php
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanySector $sector */
-                        foreach ($this->sectors as $sector) : ?>
-                            <option value="<?= $sector->getIdCompanySector() ?>">
-                                <?= $this->translator->trans('company-sector_sector-' . $sector->getIdCompanySector()) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                <td><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->siren ?>" required></td>
+                <td colspan="2">
+                    <button name="fetch" id="fetch" class="btn">Remplir les champs par WS externe</button>
                 </td>
             </tr>
             <tr>
-                <th><label for="nom">Nom*</label></th>
-                <td><input type="text" name="nom" id="nom" class="input_large" required></td>
-                <th><label for="prenom">Prénom*</label></th>
-                <td><input type="text" name="prenom" id="prenom" class="input_large" required></td>
+                <th><label for="corporate_name">Raison sociale*</label></th>
+                <td colspan="2"><input type="text" name="corporate_name" id="corporate_name" class="input_large" required></td>
+            </tr>
+            <tr>
+                <th>Civilite :</th>
+                <td colspan="3">
+                    <input type="radio" name="title" id="title1" value="Mme"><label for="civilite1">Madame</label>
+                    <input type="radio" name="title" id="title2" checked value="M."><label for="civilite2">Monsieur</label>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="name">Nom*</label></th>
+                <td><input type="text" name="name" id="name" class="input_large" required></td>
+                <th><label for="firstname">Prénom*</label></th>
+                <td><input type="text" name="firstname" id="firstname" class="input_large" required></td>
             </tr>
             <tr>
                 <th><label for="email">Email*</label></th>
                 <td><input type="text" name="email" id="email" class="input_large" required></td>
-                <th><label for="telephone">Téléphone*</label></th>
-                <td><input type="text" name="telephone" id="telephone" class="input_large" required></td>
+                <th><label for="phone">Téléphone*</label></th>
+                <td><input type="text" name="phone" id="phone" class="input_large" required></td>
             </tr>
             <tr>
-                <th><label for="adresse">Adresse*</label></th>
-                <td colspan="3"><input type="text" name="adresse" id="adresse" style="width: 610px;" class="input_big" required></td>
+                <th><label for="address">Adresse*</label></th>
+                <td colspan="3"><input type="text" name="address" id="address" style="width: 610px;" class="input_big" required></td>
             </tr>
             <tr>
-                <th><label for="cp">Code postal*</label></th>
-                <td><input type="text" name="cp" id="cp" class="input_large" required></td>
-                <th><label for="ville">Ville*</label></th>
-                <td><input type="text" name="ville" id="ville" class="input_large" required></td>
+                <th><label for="postCode">Code postal*</label></th>
+                <td><input type="text" name="postCode" id="postCode" class="input_large" required></td>
+                <th><label for="city">Ville*</label></th>
+                <td><input type="text" name="city" id="city" class="input_large" required></td>
             </tr>
             <tr>
-                <th><label for="email_facture">Email de facturation</label></th>
-                <td colspan="3"><input type="text" name="email_facture" id="email_facture" class="input_large"></td>
+                <th><label for="invoice_email">Email de facturation</label></th>
+                <td colspan="3"><input type="text" name="invoice_email" id="invoice_email" class="input_large"></td>
             </tr>
             <tr>
                 <th><label for="iban1">IBAN</label></th>
@@ -86,11 +83,38 @@
             </tr>
             <tr>
                 <th colspan="4">
-                    <input type="submit" value="Valider" title="Valider" class="btn" />
+                    <input type="submit" value="Valider" title="Valider" class="btn"/>
                 </th>
             </tr>
         </table>
     </form>
-    <br /><br />
+    <br/><br/>
     * Champ obligatoire
 </div>
+<script>
+  $('#fetch').click(function (event) {
+    event.preventDefault();
+    var siren = $('input#siren').val();
+    if (0 === siren.length) {
+      alert('Merci de saisir le SIREN');
+    } else {
+      $.ajax({
+        method: 'GET',
+        url: '/company/fetch_details_ajax/' + siren,
+        dataType: 'json'
+      }).done(function (companyIdentity) {
+        $('#corporate_name').val(companyIdentity.corporateName);
+        $('#name').val(companyIdentity.ownerName);
+        $('#firstname').val(companyIdentity.ownerFirstName);
+        $('#phone').val(companyIdentity.phoneNumber);
+        $('#address').val(companyIdentity.address);
+        $('#postCode').val(companyIdentity.postCode);
+        $('#city').val(companyIdentity.city);
+        if ('Mme' === companyIdentity.title) {
+          $("#title1").prop("checked", true)
+        }
+      })
+    }
+
+  })
+</script>
