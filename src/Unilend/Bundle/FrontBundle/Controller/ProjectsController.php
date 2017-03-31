@@ -269,7 +269,8 @@ class ProjectsController extends Controller
         $isConnectedButNotValidated = ($user instanceof UserLender && false === in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]));
 
         if ($isFullyConnectedUser) {
-            $template['finance']        = $projectDisplayManager->getProjectFinancialData($project);
+
+            $template['finance']        = $projectDisplayManager->getProjectFinancialData($project, true);
             $template['financeColumns'] = [
                 'income_statement' => [],
                 'assets'           => [],
