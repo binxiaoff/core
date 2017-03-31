@@ -53,7 +53,7 @@
                         <div class="site-admin-nav">
                             <a href="{{ path('mentions-legales') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a> |
                             <a href="{{ path('conditions-generales-dutilisation') }}">{% trans %} footer_small-mandatory-menu-terms {% endtrans %}</a> |
-                            <a href="/search{{ path('conditions-generales-de-vente') }}">{% trans %} footer_small-mandatory-menu-selling-terms {% endtrans %}</a> |
+                            <a href="{{ path('search_result', {'query' : 'conditions+generales+de+vente'}) }}">{% trans %} footer_small-mandatory-menu-selling-terms {% endtrans %}</a> |
                             <a href="{{ path('securite') }}">{% trans %} footer_small-mandatory-menu-security {% endtrans %}</a> |
                             <a href="{{ path('sitemap') }}">{% trans %} footer_small-mandatory-menu-sitemap {% endtrans %}</a>
                         </div>
