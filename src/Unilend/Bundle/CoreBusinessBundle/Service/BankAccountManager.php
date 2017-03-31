@@ -14,27 +14,30 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 
 class BankAccountManager
 {
-    /**
-     * @var  EntityManager
-     */
+    /** @var EntityManager */
     private $entityManager;
-    /**
-     * @var  EntityManagerSimulator
-     */
+
+    /** @var  EntityManagerSimulator */
     private $entityManagerSimulator;
-    /**
-     * @var  LenderManager
-     */
+
+    /** @var  LenderManager */
     private $lenderManager;
-    /**
-     * @var  LoggerInterface
-     */
+
+    /** @var  LoggerInterface */
     private $logger;
-    /**
-     * @var ValidatorInterface
-     */
+
+    /** @var ValidatorInterface */
     private $validator;
 
+    /**
+     * BankAccountManager constructor.
+     *
+     * @param EntityManager          $entityManager
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param LenderManager          $lenderManager
+     * @param LoggerInterface        $logger
+     * @param ValidatorInterface     $validator
+     */
     public function __construct(
         EntityManager $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
