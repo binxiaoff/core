@@ -1,6 +1,6 @@
 <div class="content_cgv_accept">
     <h2>Acceptation CGV</h2>
-    <?php if (count($this->legalDocument) > 0) : ?>
+    <?php if (count($this->legalDocuments) > 0) : ?>
         <table class="tablesorter cgv_accept">
             <thead>
                 <tr>
@@ -11,16 +11,15 @@
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($this->legalDocument as $item) :
-                $tree = $this->treeRepository->findOneBy(['idTree' => $item->getIdLegalDoc(), 'idLangue' => $this->language]);
-                ?>
+            <?php foreach ($this->legalDocuments as $legalDocument) : ?>
+                <?php $tree = $this->treeRepository->findOneBy(['idTree' => $legalDocument->getIdLegalDoc(), 'idLangue' => $this->language]); ?>
                 <tr>
                     <td><?= $tree->getAdded()->format('d/m/Y') ?></td>
                     <td><?= $tree->getTitle() ?></td>
                     <td>
                         <a target="_blank" href="<?= $this->furl . '/' . $tree->getSlug() ?>"><?= $this->furl . '/' . $tree->getSlug() ?></a>
                     </td>
-                    <td><?= $item->getAdded()->format('d/m/Y H:i:s') ?></td>
+                    <td><?= $legalDocument->getAdded()->format('d/m/Y H:i:s') ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

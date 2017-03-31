@@ -394,7 +394,7 @@ class preteursController extends bootstrap
             $this->loadJs('default/component/add-file-input');
 
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
-            $this->legalDocument  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
+            $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
             /** @var \greenpoint_attachment_detail $greenPointDetail */
             $greenPointDetail            = $this->loadData('greenpoint_attachment_detail');

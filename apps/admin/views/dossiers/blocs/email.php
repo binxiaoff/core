@@ -79,7 +79,5 @@
         </div>
     </div>
     <br><br>
-    <?php
-        $this->fireView('../blocs/acceptedLegalDocumentList');
-    ?>
+    <?php $this->fireView('../blocs/acceptedLegalDocumentList'); ?>
 </div>
