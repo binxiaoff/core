@@ -1,6 +1,11 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 
 class statsController extends bootstrap
 {
@@ -139,12 +144,8 @@ class statsController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        /** @var \clients $clients */
-        $clients = $this->loadData('clients');
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->loadData('clients_adresses');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->loadData('lenders_accounts');
         /** @var \companies $company */
         $company = $this->loadData('companies');
         /** @var \pays_v2 $countries */
@@ -155,8 +156,6 @@ class statsController extends bootstrap
         $inseeCountries = $this->loadData('insee_pays');
         /** @var \tax_type $taxTypes */
         $taxTypes = $this->loadData('tax_type');
-        /** @var \transactions $transactions */
-        $transactions = $this->loadData('transactions');
 
         if (in_array(date('m'), ['01', '02', '03'])) {
             $year = (date('Y')-1);
@@ -164,18 +163,25 @@ class statsController extends bootstrap
             $year = date('Y');
         }
 
-        $clientList = $transactions->getClientsWithLoanRelatedTransactions($year);
+        $operationTypes       = [
+            OperationType::LENDER_LOAN,
+            OperationType::CAPITAL_REPAYMENT,
+            OperationType::GROSS_INTEREST_REPAYMENT
+        ];
+        /** @var WalletRepository $walletRepository */
+        $walletRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
 
         $filename = 'requete_beneficiaires' . date('Ymd');
         $headers = ['id_client', 'Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
 
-        foreach ($clientList as $client) {
-            $clients->get($client['id_client']);
-            $clientAddress->get($clients->id_client, 'id_client');
-            $lenderAccount->get($clients->id_client, 'id_client_owner');
+        /** @var Wallet $wallet */
+        foreach ($walletsWithMovements as $wallet) {
+            $clientEntity = $wallet->getIdClient();
+            $clientAddress->get($clientEntity->getIdClient(), 'id_client');
             $fiscalAndLocationData = [];
 
-            if (in_array($clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
+            if (in_array($clientEntity->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $fiscalAndLocationData = [
                     'address'    => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->adresse_fiscal) ? trim($clientAddress->adresse1) : trim($clientAddress->adresse_fiscal),
                     'zip'        => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->cp_fiscal) ? trim($clientAddress->cp) : trim($clientAddress->cp_fiscal),
@@ -191,7 +197,7 @@ class statsController extends bootstrap
                 $fiscalAndLocationData['isoFiscal'] = $countries->iso;
                 $countries->unsetData();
 
-                if ($fiscalAndLocationData['id_country'] > \pays_v2::COUNTRY_FRANCE) {
+                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE) {
                     $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
                     $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
@@ -209,27 +215,27 @@ class statsController extends bootstrap
                     $fiscalAndLocationData['location']  = ''; //commune fiscal
                 }
 
-                $fiscalAndLocationData['birth_country'] = (0 == $clients->id_pays_naissance) ? 1 : $clients->id_pays_naissance;
+                $fiscalAndLocationData['birth_country'] = (0 == $clientEntity->getIdPaysNaissance()) ? PaysV2::COUNTRY_FRANCE : $clientEntity->getIdPaysNaissance();
                 $countries->get($fiscalAndLocationData['birth_country'], 'id_pays');
                 $fiscalAndLocationData['isoBirth'] = $countries->iso;
                 $countries->unsetData();
 
-                if (\pays_v2::COUNTRY_FRANCE >= $fiscalAndLocationData['birth_country']) {
-                    $fiscalAndLocationData['birthPlace'] = $clients->ville_naissance;
+                if (PaysV2::COUNTRY_FRANCE >= $fiscalAndLocationData['birth_country']) {
+                    $fiscalAndLocationData['birthPlace'] = $clientEntity->getVilleNaissance();
                     $fiscalAndLocationData['inseeBirth'] = '00000';
                 } else {
-                    $countries->get($clients->id_pays_naissance, 'id_pays');
+                    $countries->get($clientEntity->getIdPaysNaissance(), 'id_pays');
                     $fiscalAndLocationData['birthPlace'] = $countries->fr;
                     $countries->unsetData();
 
-                    if (empty($clients->insee_birth)) {
+                    if (empty($clientEntity->getInseeBirth())) {
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $locationManager */
                         $locationManager = $this->get('unilend.service.location_manager');
-                        $cityList = $locationManager->getCities($clients->ville_naissance, true);
+                        $cityList = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
                         if (1 < count($cityList)) {
                             $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
                         } else {
-                            $cities->get($clients->ville_naissance, 'ville');
+                            $cities->get($clientEntity->getVilleNaissance(), 'ville');
                             $fiscalAndLocationData['inseeBirth'] = empty($cities->insee) ? '00000': $cities->insee;
                         }
                         $cities->unsetData();
@@ -239,36 +245,37 @@ class statsController extends bootstrap
                 $fiscalAndLocationData['deductedAtSource'] = '';
 
                 unset($fiscalAndLocationData['birth_country']);
-                $this->addPersonLineToBeneficiaryQueryData($data, $lenderAccount, $clients, $fiscalAndLocationData);
+                $this->addPersonLineToBeneficiaryQueryData($data, $wallet, $fiscalAndLocationData);
             }
 
-            if ($company->get($clients->id_client, 'id_client_owner') && in_array($clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if ($company->get($clientEntity->getIdClient(), 'id_client_owner') && in_array($clientEntity->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $company->id_pays = (0 == $company->id_pays) ? 1 : $company->id_pays;
                 $countries->get($company->id_pays, 'id_pays');
                 $fiscalAndLocationData['isoFiscal']   = $countries->iso;
                 $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($company->zip, $company->city);
-                $this->addLegalEntityLineToBeneficiaryQueryData($data, $company, $lenderAccount, $clients, $fiscalAndLocationData);
+                $this->addLegalEntityLineToBeneficiaryQueryData($data, $company, $wallet, $fiscalAndLocationData);
             }
         }
 
         $this->exportCSV($data, $filename, $headers);
     }
 
-    private function addPersonLineToBeneficiaryQueryData(&$data, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
+    private function addPersonLineToBeneficiaryQueryData(&$data, Wallet $wallet, $fiscalAndLocationData)
     {
-        /** @var \DateTime $birthDate */
-        $birthDate = \DateTime::createFromFormat('Y-m-d', $clients->naissance);
+        $client      = $wallet->getIdClient();
+        /** @var BankAccount $bankAccount */
+        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->getIdClient());
 
         $data[] = [
-            $clients->id_client,
-            $clients->getLenderPattern($clients->id_client),
-            $clients->nom,
-            $clients->civilite,
-            $clients->nom,
-            $clients->prenom,
-            $birthDate->format('d/m/Y'),
-            empty($clients->insee_birth) ? substr($fiscalAndLocationData['inseeBirth'], 0, 2) : substr($clients->insee_birth, 0, 2),
-            empty($clients->insee_birth) ? $fiscalAndLocationData['inseeBirth'] : $clients->insee_birth,
+            $client->getIdClient(),
+            $wallet->getWireTransferPattern(),
+            $client->getNom(),
+            $client->getCivilite(),
+            $client->getNom(),
+            $client->getPrenom(),
+            $client->getNaissance()->format('d/m/Y'),
+            empty($client->getInseeBirth()) ? substr($fiscalAndLocationData['inseeBirth'], 0, 2) : substr($client->getInseeBirth(), 0, 2),
+            empty($client->getInseeBirth()) ? $fiscalAndLocationData['inseeBirth'] : $client->getInseeBirth(),
             $fiscalAndLocationData['birthPlace'],
             '',
             '',
@@ -284,20 +291,24 @@ class statsController extends bootstrap
             'X',
             $fiscalAndLocationData['deductedAtSource'],
             'N',
-            $clients->telephone,
+            $client->getTelephone(),
             '',
-            $lenderAccount->iban,
-            $lenderAccount->bic,
-            $clients->email,
+            $bankAccount->getIban(),
+            $bankAccount->getBic(),
+            $client->getEmail(),
             ''
         ];
     }
 
-    private function addLegalEntityLineToBeneficiaryQueryData(&$data, \companies $company, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
+    private function addLegalEntityLineToBeneficiaryQueryData(&$data, \companies $company, Wallet $wallet, $fiscalAndLocationData)
     {
+        $client      = $wallet->getIdClient();
+        /** @var BankAccount $bankAccount */
+        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->getIdClient());
+
         $data[] = [
-            $clients->id_client,
-            $clients->getLenderPattern($clients->id_client),
+            $client->getIdClient(),
+            $wallet->getWireTransferPattern(),
             $company->name,
             '',
             '',
@@ -322,9 +333,9 @@ class statsController extends bootstrap
             'N',
             $company->phone,
             '',
-            $lenderAccount->iban,
-            $lenderAccount->bic,
-            $clients->email,
+            $bankAccount->getIban(),
+            $bankAccount->getBic(),
+            $client->getEmail(),
             ''
         ];
     }

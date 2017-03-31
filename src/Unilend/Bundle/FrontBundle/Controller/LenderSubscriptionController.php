@@ -121,7 +121,7 @@ class LenderSubscriptionController extends Controller
             $form->get('client')->get('naissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-age')));
         }
 
-        if (\pays_v2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal() && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])) {
+        if (PaysV2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal() && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])) {
             $form->get('fiscalAddress')->get('cpFiscal')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
@@ -135,13 +135,13 @@ class LenderSubscriptionController extends Controller
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-country')));
         }
 
-        if (\pays_v2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && empty($client->getInseeBirth())) {
+        if (PaysV2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && empty($client->getInseeBirth())) {
             $countryCheck = false;
             $form->get('client')->get('villeNaissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-place')));
         }
 
         if ($countryCheck) {
-            if (\pays_v2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
+            if (PaysV2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
                 /** @var Villes $cityByInsee */
                 $cityByInsee = $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByInsee($client->getInseeBirth());
 
@@ -274,7 +274,7 @@ class LenderSubscriptionController extends Controller
 
         if (
             false === empty($company->getIdPays())
-            && \pays_v2::COUNTRY_FRANCE == $company->getIdPays()
+            && PaysV2::COUNTRY_FRANCE == $company->getIdPays()
             && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByCp($company->getZip())
         ) {
             $form->get('fiscalAddress')->get('zip')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
@@ -457,7 +457,7 @@ class LenderSubscriptionController extends Controller
 
         $template = [
             'client'         => $client,
-            'isLivingAbroad' => $clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE,
+            'isLivingAbroad' => $clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE,
             'fundsOrigin'    => $this->getFundsOrigin($client->getType()),
             'form'           => $form->createView()
         ];
@@ -553,7 +553,7 @@ class LenderSubscriptionController extends Controller
             AttachmentType::CNI_PASSPORTE_VERSO => $fileBag->get('id_verso'),
             AttachmentType::JUSTIFICATIF_DOMICILE => $fileBag->get('housing-certificate'),
         ];
-        if ($clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE) {
+        if ($clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if (false === empty($form->get('housedByThirdPerson')->getData())){
@@ -1101,7 +1101,7 @@ class LenderSubscriptionController extends Controller
         if ($request->isXmlHttpRequest()) {
             $get = $request->query->all();
 
-            if (false === empty($get['country']) && \pays_v2::COUNTRY_FRANCE != $get['country']) {
+            if (false === empty($get['country']) && PaysV2::COUNTRY_FRANCE != $get['country']) {
                 return $this->json(['status' => true]);
             }
 
@@ -1131,7 +1131,7 @@ class LenderSubscriptionController extends Controller
             $country = $request->query->get('country');
             $inseeCode = $request->query->get('insee');
 
-            if (false === empty($country) && \pays_v2::COUNTRY_FRANCE != $country) {
+            if (false === empty($country) && PaysV2::COUNTRY_FRANCE != $country) {
                 return $this->json(['status' => true]);
             }
 

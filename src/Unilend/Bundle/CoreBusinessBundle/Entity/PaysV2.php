@@ -18,6 +18,8 @@ class PaysV2
 
     const COUNTRY_FRANCE = 1;
 
+    public static $europeanEconomicArea = [6, 14, 21, 31, 41, 50, 52, 60, 61, 65, 70, 79, 84, 87, 98, 103, 104, 111, 139, 142, 143, 148, 150, 151, 165, 166, 171];
+
     /**
      * @var string
      *
