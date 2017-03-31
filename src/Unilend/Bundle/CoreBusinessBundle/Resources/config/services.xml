@@ -80,7 +80,6 @@
             <argument type="service" id="unilend.service.loan_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
             <argument type="service" id="unilend.service.email_manager"/>
-            <argument type="service" id="unilend.service.lender_manager"/>
             <argument type="service" id="unilend.service.project_rate_settings_manager"/>
             <argument type="service" id="unilend.service_product.product_manager"/>
             <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
@@ -98,6 +97,7 @@
 
         <service id="unilend.service.irr_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\IRRManager">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="logger"/>
         </service>
 

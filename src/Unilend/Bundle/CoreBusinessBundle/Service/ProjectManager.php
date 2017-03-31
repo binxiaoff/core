@@ -799,15 +799,6 @@ class ProjectManager
             case \projects_status::PRET_REFUSE:
                 $this->cancelProxyAndMandate($project);
                 break;
-            case \projects_status::REMBOURSEMENT:
-            case \projects_status::PROBLEME:
-            case \projects_status::PROBLEME_J_X:
-            case \projects_status::RECOUVREMENT:
-            case \projects_status::PROCEDURE_SAUVEGARDE:
-            case \projects_status::REDRESSEMENT_JUDICIAIRE:
-            case \projects_status::LIQUIDATION_JUDICIAIRE:
-                $this->lenderManager->addLendersToLendersAccountsStatQueue($project->getLoansAndLendersForProject($project->id_project));
-                break;
         }
     }
 

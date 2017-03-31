@@ -102,7 +102,7 @@ class StatisticsManager
             'averageNumberOfLenders'          => $projects->getAverageNumberOfLendersForProject(),
             'averageProjectAmount'            => $projects->getAverageAmount(),
             'averageLoanAmount'               => $loans->getAverageLoanAmount(),
-            'unilendIRR'                      => $this->IRRManager->getLastUnilendIRR()['value'],
+            'unilendIRR'                      => $this->IRRManager->getLastUnilendIRR()->getValue(),
             'lendersByType'                   => $this->getLendersByType(),
             'lendersByRegion'                 => $this->locationManager->getLendersByRegion(),
             'borrowersByRegion'               => $this->locationManager->getProjectsByRegion(),
@@ -292,7 +292,7 @@ class StatisticsManager
 
     private function addTotalToData(&$data, $problematicCompanies, $countFundedCompanies)
     {
-        $data['IRR']['total'] = $this->IRRManager->getLastUnilendIRR()['value'];
+        $data['IRR']['total'] = $this->IRRManager->getLastUnilendIRR()->getValue();
 
         foreach($data as $type => $numbers) {
             if (false === in_array($type, ['pct', 'IRR'])){

@@ -12,18 +12,18 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 class LenderManager
 {
     /** @var EntityManagerSimulator */
-    private $oEntityManager;
+    private $entityManagerSimulator;
     /** @var EntityManager */
-    private $em;
+    private $entityManager;
 
     public function __construct
     (
-        EntityManagerSimulator $oEntityManager,
-        EntityManager $em
+        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager
     )
     {
-        $this->oEntityManager = $oEntityManager;
-        $this->em             = $em;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
     }
 
     /**
@@ -34,7 +34,7 @@ class LenderManager
     public function canBid(\lenders_accounts $oLenderAccount)
     {
         /** @var \clients $oClient */
-        $oClient = $this->oEntityManager->getRepository('clients');
+        $oClient = $this->entityManagerSimulator->getRepository('clients');
 
         if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == Clients::STATUS_ONLINE
             && $this->isValidated($oClient)
@@ -42,25 +42,6 @@ class LenderManager
             return true;
         }
         return false;
-    }
-
-    /**
-     * @param array $aLenders
-     */
-    public function addLendersToLendersAccountsStatQueue(array $aLenders)
-    {
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
-        /** @var \lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
-        $oLendersAccountsStatsQueue = $this->oEntityManager->getRepository('lenders_accounts_stats_queue');
-
-        foreach ($aLenders as $aLender) {
-            if (array_key_exists('id_lender', $aLender) && $oLenderAccount->get($aLender['id_lender'], 'id_lender_account')
-                || array_key_exists('id_lender_account', $aLender) && $oLenderAccount->get($aLender['id_lender_account'], 'id_lender_account')
-            ) {
-                $oLendersAccountsStatsQueue->addLenderToQueue($oLenderAccount);
-            }
-        }
     }
 
     /**
@@ -108,11 +89,11 @@ class LenderManager
     public function getBadAutoBidSettings(\lenders_accounts $lender, $projectRates = null)
     {
         /** @var \autobid $autoBid */
-        $autoBid = $this->oEntityManager->getRepository('autobid');
+        $autoBid = $this->entityManagerSimulator->getRepository('autobid');
 
         if ($projectRates == null) {
             /** @var \project_rate_settings $projectRateSettings */
-            $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+            $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
             $projectRates        = $projectRateSettings->getSettings();
         }
 
@@ -149,9 +130,9 @@ class LenderManager
     public function hasTransferredLoans(\lenders_accounts $lender)
     {
         /** @var \transfer $transfer */
-        $transfer = $this->oEntityManager->getRepository('transfer');
+        $transfer = $this->entityManagerSimulator->getRepository('transfer');
         /** @var \loan_transfer $loanTransfer */
-        $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
+        $loanTransfer = $this->entityManagerSimulator->getRepository('loan_transfer');
         $transfersWithLenderInvolved = $transfer->select('id_client_origin = ' . $lender->id_client_owner . ' OR id_client_receiver = ' . $lender->id_client_owner);
 
         foreach ($transfersWithLenderInvolved as $transfer) {
@@ -185,10 +166,25 @@ class LenderManager
     public function isValidated(\clients $client)
     {
         /** @var \clients_status $lastClientStatus */
-        $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
+        $lastClientStatus = $this->entityManagerSimulator->getRepository('clients_status');
         $lastClientStatus->getLastStatut($client->id_client);
         return $lastClientStatus->status == \clients_status::VALIDATED;
     }
 
+    /**
+     * @param \lenders_accounts $lender
+     *
+     * @return null|string
+     */
+    public function getLossRate(\lenders_accounts $lender)
+    {
+        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $lostAmount                  = $repaymentScheduleRepository->getLostCapitalForLender($lender->id_lender_account);
+        $remainingDueCapital         = round(bcdiv($lostAmount, 100, 3), 2);
+        $sumOfLoans                  = $lender->sumLoansOfProjectsInRepayment($lender->id_lender_account);
 
+        $lossRate = $sumOfLoans > 0 ? bcmul(round(bcdiv($remainingDueCapital, $sumOfLoans, 3), 2), 100) : null ;
+
+        return $lossRate;
+    }
 }

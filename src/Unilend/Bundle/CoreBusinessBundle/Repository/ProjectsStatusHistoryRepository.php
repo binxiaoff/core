@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use DateTime;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -35,5 +36,32 @@ class ProjectsStatusHistoryRepository extends EntityRepository
         $query = $qb->getQuery();
 
         return $query->getOneOrNullResult();
+    }
+
+    /**
+     * @param DateTime $dateAdded
+     * @param array    $projectStatus
+     *
+     * @return array|bool
+     */
+    public function getProjectStatusChangesOnDate(\DateTime $dateAdded, $projectStatus)
+    {
+        if (empty($dateAdded)) {
+            return false;
+        }
+
+        if (empty($projectStatus) || false === is_array($projectStatus)) {
+            return false;
+        }
+
+        $qb = $this->createQueryBuilder('psh');
+        $qb->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
+            ->andWhere('DATE(psh.added) = :date')
+            ->andWhere('ps.status IN (:status)')
+            ->setParameter(':date', $dateAdded->format('Y-m-d'))
+            ->setParameter(':status', $projectStatus,\Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+        $query = $qb->getQuery();
+
+        return $query->getResult();
     }
 }

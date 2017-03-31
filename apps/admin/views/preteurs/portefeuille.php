@@ -14,11 +14,11 @@
             <h2>Portefeuille</h2>
 
             <h3>TRI du portefeuille :
-                <?php if(empty($this->IRR)) : ?>
+                <?php if(null === $this->IRR) : ?>
                     Ce prêteur est trop récent. Son TRI n'a pas encore été calculé.
                 <?php else : ?>
-                    <?= $this->IRR['status'] == \lenders_account_stats::STAT_VALID_OK ? $this->IRR['value'] . '%'  : 'TRI non valide'?>
-                    <?= (is_null($this->IRR['date'])) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRR['date']) . ')' ?>
+                    <?= \Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic::STAT_VALID_OK === $this->IRR->getStatus() ? $this->IRR->getValue() . '%'  : 'TRI non valide'?>
+                    <?= (is_null($this->IRR->getAdded())) ? '' : '(calculé le ' . $this->IRR->getAdded()->format('Y-m-d') . ')' ?>
                 <?php endif; ?>
             </h3>
             <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>

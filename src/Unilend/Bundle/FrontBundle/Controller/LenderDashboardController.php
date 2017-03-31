@@ -8,6 +8,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 
@@ -23,8 +28,12 @@ class LenderDashboardController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \lenders_account_stats $oLenderAccountStats */
-        $oLenderAccountStats = $entityManager->getRepository('lenders_account_stats');
+        /** @var LenderStatisticRepository $lenderStatisticsRepository */
+        $lenderStatisticsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
+        /** @var WalletRepository $walletRepository */
+        $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        /** @var LenderManager $lenderManager */
+        $lenderManager = $this->get('unilend.service.lender_manager');
         /** @var \loans $loan */
         $loan = $entityManager->getRepository('loans');
         /** @var \echeanciers $lenderRepayment */
@@ -44,6 +53,7 @@ class LenderDashboardController extends Controller
 
         $client->get($this->getUser()->getClientId());
         $lender->get($client->id_client, 'id_client_owner');
+        $wallet = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
 
         $balance         = $this->getUser()->getBalance();
         $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30);
@@ -62,16 +72,17 @@ class LenderDashboardController extends Controller
         $hasIRR                 = false;
 
         if ($this->getUser()->getLevel() > 0) {
-            $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
-            if ($aLastIRR && $aLastIRR['status'] == \lenders_account_stats::STAT_VALID_OK) {
-                $irr                = $aLastIRR['value'];
+            /** @var LenderStatistic $lastIRR */
+            $lastIRR = $lenderStatisticsRepository->getLastIRRForLender($wallet);
+            if (null !== $lastIRR && LenderStatistic::STAT_VALID_OK === $lastIRR->getStatus()) {
+                $irr                = $lastIRR->getValue();
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
                 $hasIRR             = true;
             } else {
-                $fLossRate = $oLenderAccountStats->getLossRate($lender->id_lender_account, $lender);
+                $lossRate = $lenderManager->getLossRate($lender);
 
-                if ($fLossRate > 0) {
-                    $irr                = -$fLossRate;
+                if ($lossRate > 0) {
+                    $irr                = -$lossRate;
                     $irrTranslationType = 'not-calculable';
                 } else {
                     $irrTranslationType = 'not-calculated-yet';
