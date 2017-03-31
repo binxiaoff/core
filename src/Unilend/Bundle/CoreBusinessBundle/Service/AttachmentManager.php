@@ -15,20 +15,22 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\TransferAttachment;
 
 class AttachmentManager
 {
-
-    /**
-     * @var EntityManager
-     */
+    /**  @var EntityManager */
     private $entityManager;
-    /**
-     * @var string
-     */
+
+    /** @var string */
     private $uploadRootDir;
-    /**
-     * @var Filesystem
-     */
+
+    /** @var Filesystem */
     private $filesystem;
 
+    /**
+     * AttachmentManager constructor.
+     *
+     * @param EntityManager $entityManager
+     * @param Filesystem    $filesystem
+     * @param               $uploadRootDir
+     */
     public function __construct(EntityManager $entityManager, Filesystem $filesystem, $uploadRootDir)
     {
         $this->entityManager = $entityManager;

@@ -1,22 +1,23 @@
 <div id="popup">
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
     <h2>Êtes vous certain de vouloir mettre en vigueur ce RIB ?</h2>
     <?php if ($this->bankAccount) : ?>
         <form method="post" enctype="multipart/form-data" action="/emprunteurs/validate_rib">
             <table class="formColor" style="width: 775px;margin:auto;">
                 <tr>
-                    <th>IBAN :</th>
+                    <th>IBAN</th>
                     <td><?= $this->bankAccount->getIban() ?></td>
                 </tr>
                 <tr>
-                    <th>BIC :</th>
+                    <th>BIC</th>
                     <td><?= $this->bankAccount->getBic() ?></td>
                 </tr>
             </table>
             <input type="hidden" name="id_bank_account" value="<?= $this->bankAccount->getId() ?>">
-            <center>
+            <div style="margin-top: 15px; text-align: right">
                 <input type="submit" class="btn" value="Valider">
-                <button onclick="parent.$.fn.colorbox.close();" class='btn' style="margin-left:15px;">Fermer</button>
-            </center>
+                <a href="javascript:parent.$.fn.colorbox.close()" class="btn btn_link btnDisabled">Annuler</a>
+            </div>
         </form>
     <?php endif; ?>
 </div>
