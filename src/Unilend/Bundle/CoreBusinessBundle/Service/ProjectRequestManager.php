@@ -312,7 +312,7 @@ class ProjectRequestManager
                 || false === $this->companyScoringCheck->combineEulerTrafficLightXerfiAltaresScore($altaresScore, $company, $rejectionReason, $companyRatingHistory, $companyRating)
                 || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $rejectionReason, $companyRatingHistory, $companyRating)
                 || false === $this->companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $rejectionReason, $companyRatingHistory, $companyRating)
-                || true === $this->companyFinanceCheck->hasInfogreffePrivileges($company->siren, $rejectionReason)
+                || true === $this->companyFinanceCheck->hasInfogreffePrivileges($company->siren, $rejectionReason, $companyRatingHistory, $companyRating)
             ) {
                 return $rejectionReason;
             }

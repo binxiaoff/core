@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\PaymentIncident;
+use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 use Unilend\Bundle\WSClientBundle\Service\CodinfManager;
 use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
@@ -246,28 +247,32 @@ class CompanyFinanceCheck
     }
 
     /**
-     * @param string $siren
-     * @param string $rejectionReason
+     * @param string                       $siren
+     * @param string                       $rejectionReason
+     * @param \company_rating_history|null $companyRatingHistory
+     * @param \company_rating|null         $companyRating
      *
      * @return bool
      */
-    public function hasInfogreffePrivileges($siren, &$rejectionReason)
+    public function hasInfogreffePrivileges($siren, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
     {
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
         try {
             $privileges = $this->wsInfogreffe->getIndebtedness($siren);
 
-            if (is_array($privileges)) {
-                switch ($privileges['code']) {
-                    case InfogreffeManager::RETURN_CODE_NO_DEBTOR:
-                        return false;
-                    default:
-                        $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_UNKNOWN_PRIVILEGES;
-                        return true;
+            if (
+                is_array($privileges)
+                && isset($privileges['code'])
+                && in_array($privileges['code'], [InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, InfogreffeManager::RETURN_CODE_NO_DEBTOR])
+            ) {
+                if (null !== $companyRatingHistory && null !== $companyRating) {
+                    $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_INFOGREFFE_RETURN_CODE, $privileges['code']);
                 }
+
+                return false;
             }
 
-            if (null !== $privileges) {
+            if ($privileges instanceof CompanyIndebtedness) {
                 $subscription3 = $privileges->getSubscription3();
 
                 if (count($subscription3) > 0) {
@@ -293,10 +298,12 @@ class CompanyFinanceCheck
             }
         } catch (\Exception $exception) {
             $this->logger->warning('Could not get infogreffe privileges: InfogreffeManager::getIndebtedness(' . $siren .'). Message: ' . $exception->getMessage(), $logContext);
+
+            $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
+            return true;
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
-        return true;
+        return false;
     }
 
     /**
@@ -343,5 +350,19 @@ class CompanyFinanceCheck
         }
 
         return null;
+    }
+
+    /**
+     * @param \company_rating_history $companyRatingHistory
+     * @param \company_rating         $companyRating
+     * @param string                  $ratingType
+     * @param mixed                   $ratingValue
+     */
+    private function setRatingData(\company_rating_history $companyRatingHistory, \company_rating $companyRating, $ratingType, $ratingValue)
+    {
+        $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
+        $companyRating->type                      = $ratingType;
+        $companyRating->value                     = $ratingValue;
+        $companyRating->create();
     }
 }

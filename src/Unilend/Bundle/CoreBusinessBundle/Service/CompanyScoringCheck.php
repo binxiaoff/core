@@ -186,9 +186,8 @@ class CompanyScoringCheck
                     $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_EULER_HERMES_TRAFFIC_LIGHT, $eulerTrafficLight->getColor());
                 }
 
-                if ($eulerTrafficLight->getColor() === EulerCompanyRating::COLOR_WHITE) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_WHITE_TRAFFIC_LIGHT;
-                    return false;
+                if (in_array($eulerTrafficLight->getColor(), [EulerCompanyRating::COLOR_WHITE, EulerCompanyRating::COLOR_GREEN, EulerCompanyRating::COLOR_YELLOW])) {
+                    return true;
                 }
 
                 if ($eulerTrafficLight->getColor() === EulerCompanyRating::COLOR_BLACK) {
@@ -220,7 +219,6 @@ class CompanyScoringCheck
         }
 
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'euler_traffic_light_score';
-
         return false;
     }
 

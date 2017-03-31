@@ -88,6 +88,11 @@
         text-decoration: none;
     }
 
+    #contenu_etape4_1 > table td.warning {
+        background-color: #b20066;
+        color: #fff;
+    }
+
     table.form .section-title th {
         font-size: 14px;
         text-align: center;

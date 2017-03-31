@@ -100,15 +100,15 @@
                 <tbody>
                 <tr>
                     <th style="width: 300px"><label>Grade Euler-Hermes</label></th>
-                    <td style="width: 250px">
+                    <td style="width: 250px"<?php if (false === empty($this->ratings['grade_euler_hermes']['value']) && -1 == $this->ratings['grade_euler_hermes']['value']) : ?> class="warning"<?php endif; ?>>
                         <?php if (false === empty($this->ratings['grade_euler_hermes']['value'])) : ?>
-                            <span class="rating-tooltip" title="grade_euler_hermes"><?= $this->ratings['grade_euler_hermes']['value'] ?></span>
+                            <span class="rating-tooltip" title="grade_euler_hermes"><?= -1 == $this->ratings['grade_euler_hermes']['value'] ? 'N/A' : $this->ratings['grade_euler_hermes']['value'] ?></span>
                         <?php else : ?>-<?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td style="width: 250px">
                             <?php if (false === empty($this->targetRatings['grade_euler_hermes']['value'])) : ?>
-                                <span class="rating-tooltip" title="target_grade_euler_hermes"><?= $this->targetRatings['grade_euler_hermes']['value'] ?></span>
+                                <span class="rating-tooltip" title="target_grade_euler_hermes"><?= -1 == $this->targetRatings['grade_euler_hermes']['value'] ? 'N/A' : $this->targetRatings['grade_euler_hermes']['value'] ?></span>
                             <?php else : ?>-<?php endif; ?>
                         </td>
                     <?php endif; ?>
@@ -173,6 +173,25 @@
                         </td>
                     <?php endif; ?>
                 </tr>
+                <?php use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager; ?>
+                <?php if (
+                    isset($this->ratings['infogreffe_code']) && InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS == $this->ratings['infogreffe_code']['value']
+                    || isset($this->targetRatings['infogreffe_code']) && InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS == $this->targetRatings['infogreffe_code']['value']
+                ) : ?>
+                    <tr>
+                        <th><label>Relevé des privilèges Infogreffe</label></th>
+                        <?php if (isset($this->ratings['infogreffe_code']) && InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS == $this->ratings['infogreffe_code']['value']) : ?>
+                            <td class="warning"><span class="rating-tooltip" title="infogreffe_code">SIREN non référencé</span></td>
+                        <?php else : ?>
+                            <td></td>
+                        <?php endif; ?>
+                        <?php if (isset($this->targetRatings['infogreffe_code']) && InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS == $this->targetRatings['infogreffe_code']['value']) : ?>
+                            <td class="warning"><span class="rating-tooltip" title="target_infogreffe_code">SIREN non référencé</span></td>
+                        <?php elseif (isset($this->targetRatings)) : ?>
+                            <td></td>
+                        <?php endif; ?>
+                    </tr>
+                <?php endif; ?>
                 <tr>
                     <th><label>Présence de RPC < 6 mois *</label></th>
                     <td>
