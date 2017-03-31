@@ -104,7 +104,7 @@ class ProjectRequestController extends Controller
         if (empty($request->request->get('amount'))) {
             $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
         } else {
-            $amount = str_replace(' ', '', $request->request->get('amount'));
+            $amount = str_replace([' ', '€'], '', $request->request->get('amount'));
 
             $settings->get('Somme à emprunter min', 'type');
             $minimumAmount = $settings->value;
