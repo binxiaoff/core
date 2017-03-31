@@ -103,7 +103,7 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
     public function getNotif($id_client, $id_notif, $champ)
     {
         if (false === empty($id_client)
-            && false === empty($id_client)
+            && false === empty($id_notif)
             && false === empty($champ)
             && $this->counter('id_client = ' . $id_client . ' AND id_notif = ' . $id_notif . ' AND ' . $champ . ' = 1') > 0) {
             return true;
