@@ -175,17 +175,17 @@
                 </tr>
                 <?php use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager; ?>
                 <?php if (
-                    isset($this->ratings['infogreffe_code']) && InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS == $this->ratings['infogreffe_code']['value']
-                    || isset($this->targetRatings['infogreffe_code']) && InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS == $this->targetRatings['infogreffe_code']['value']
+                    isset($this->ratings['infogreffe_code']) && in_array($this->ratings['infogreffe_code']['value'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS])
+                    || isset($this->targetRatings['infogreffe_code']) && in_array($this->targetRatings['infogreffe_code']['value'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS])
                 ) : ?>
                     <tr>
                         <th><label>Relevé des privilèges Infogreffe</label></th>
-                        <?php if (isset($this->ratings['infogreffe_code']) && InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS == $this->ratings['infogreffe_code']['value']) : ?>
+                        <?php if (isset($this->ratings['infogreffe_code']) && in_array($this->ratings['infogreffe_code']['value'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS])) : ?>
                             <td class="warning"><span class="rating-tooltip" title="infogreffe_code">SIREN non référencé</span></td>
                         <?php else : ?>
                             <td></td>
                         <?php endif; ?>
-                        <?php if (isset($this->targetRatings['infogreffe_code']) && InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS == $this->targetRatings['infogreffe_code']['value']) : ?>
+                        <?php if (isset($this->targetRatings['infogreffe_code']) && in_array($this->targetRatings['infogreffe_code']['value'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS])) : ?>
                             <td class="warning"><span class="rating-tooltip" title="target_infogreffe_code">SIREN non référencé</span></td>
                         <?php elseif (isset($this->targetRatings)) : ?>
                             <td></td>

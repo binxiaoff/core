@@ -15,6 +15,7 @@ class InfogreffeManager
 
     const RESOURCE_INDEBTEDNESS                = 'get_indebtedness_infogreffe';
 
+    const RETURN_CODE_UNKNOWN_SIREN            = '006';
     const RETURN_CODE_UNAVAILABLE_INDEBTEDNESS = '009';
     const RETURN_CODE_NO_DEBTOR                = '013';
 
@@ -65,6 +66,8 @@ class InfogreffeManager
      * @param string $siren
      *
      * @return null|array|CompanyIndebtedness
+     *
+     * @throws \Exception
      */
     public function getIndebtedness($siren)
     {
@@ -93,7 +96,7 @@ class InfogreffeManager
 
                 $this->client->__soapCall($wsResource->resource_name, [$request->asXML()]);
             } catch (\SoapFault $exception) {
-                $this->logger->error('Calling infogreffe Indebtedness SIREN: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
+                $this->logger->error('Calling Infogreffe Indebtedness SIREN: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
             }
 
             call_user_func($callBack, $this->client->__getLastResponse());
@@ -101,10 +104,14 @@ class InfogreffeManager
             $result   = $this->extractResponse($response, $logContext);
         }
 
-        $monitoring = $this->isValidResult($result) ? 'up' : 'down';
-        $extraInfo  = is_array($result) && isset($result['message']) ? $result['message'] : '';
+        if (false === $this->isValidResult($result)) {
+            $extraInfo  = is_array($result) && isset($result['message']) ? $result['message'] : '';
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $extraInfo);
 
-        $this->callHistoryManager->sendMonitoringAlert($wsResource, $monitoring, $extraInfo);
+            throw new \Exception('Invalid response from Infogreffe');
+        }
+
+        $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
         return $result;
     }
 
@@ -156,7 +163,7 @@ class InfogreffeManager
     {
         return (
             $response instanceof CompanyIndebtedness
-            || is_array($response) && in_array($response['code'], [self::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, self::RETURN_CODE_NO_DEBTOR])
+            || is_array($response) && in_array($response['code'], [self::RETURN_CODE_UNKNOWN_SIREN, self::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, self::RETURN_CODE_NO_DEBTOR])
         );
     }
 
