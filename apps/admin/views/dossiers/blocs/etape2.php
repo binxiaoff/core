@@ -115,7 +115,7 @@
         }
         $("#etape2").on('click', '#streetview_close', function(e) {
             e.preventDefault();
-            var streetview = $(this).closest('.streetview_container')
+            var streetview = $(this).closest('#streetview_container')
             closeStreetView(streetview)
         });
     });
