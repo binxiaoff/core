@@ -171,7 +171,6 @@ class MainController extends Controller
     {
         if ($request->isXmlHttpRequest()) {
             $period   = $request->request->getInt('period');
-            $amount   = $request->request->getInt('amount');
             $motiveId = $request->request->getInt('motiveId');
 
             /** @var ProjectRequestManager $projectRequestManager */
@@ -183,15 +182,10 @@ class MainController extends Controller
             /** @var \ficelle $ficelle */
             $ficelle = Loader::loadLib('ficelle');
 
-            $projectPeriods   = $projectManager->getPossibleProjectPeriods();
-            $projectAmountMax = $projectManager->getMaxProjectAmount();
-            $projectAmountMin = $projectManager->getMinProjectAmount();
+            $projectPeriods = $projectManager->getPossibleProjectPeriods();
+            $amount         = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT, ['options' => ['min_range' => $projectManager->getMinProjectAmount(), 'max_range' => $projectManager->getMaxProjectAmount()]]);
 
-            if (
-                in_array($period, $projectPeriods)
-                && $amount >= $projectAmountMin
-                && $amount <= $projectAmountMax
-            ){
+            if (in_array($period, $projectPeriods) && $amount){
                 $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
                 $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
                 $estimatedFundingDuration                = $projectManager->getAverageFundingDuration($amount);
@@ -222,19 +216,19 @@ class MainController extends Controller
      */
     public function projectSimulatorStepTwoAction(Request $request)
     {
-        $aFormData = $request->request->get('esim');
+        $formData = $request->request->get('esim');
 
         try {
             /** @var ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $project               = $projectRequestManager->saveSimulatorRequest($aFormData);
+            $project               = $projectRequestManager->saveSimulatorRequest($formData);
 
             $session = $request->getSession();
             $session->set('esim/project_id', $project->id_project);
 
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
         } catch (\Exception $exception) {
-            $this->get('logger')->error('Could not save project : ' . $exception->getMessage() . 'form data = ' . json_encode($aFormData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->get('logger')->error('Could not save project : ' . $exception->getMessage() . 'form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return $this->redirectToRoute('home_borrower');
         }
     }
