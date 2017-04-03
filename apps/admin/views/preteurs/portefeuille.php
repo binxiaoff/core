@@ -5,10 +5,10 @@
         <div><?= $this->clientStatusMessage ?></div>
         <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
         <div class="btnDroite">
-            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
-            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
-            <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
-            <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
+            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn_link">Enchères</a>
+            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->clients->id_client ?>" class="btn_link">Consulter Prêteur</a>
+            <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->clients->id_client ?>" class="btn_link">Modifier Prêteur</a>
+            <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->clients->id_client ?>" class="btn_link">Historique des emails</a>
         </div>
         <div>
             <h2>Portefeuille</h2>
@@ -164,7 +164,7 @@
                                     <?php if ($this->loan->get($aProjectLoans['id_loan_if_one_loan']) && false === empty($this->loan->id_transfer)) :
                                         /** @var \lenders_accounts $formerOwner */
                                         $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
-                                        <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                                        <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_client_owner ?>"><?= $formerOwner->id_client_owner ?></a>
                                     <?php endif; ?>
                                 </td>
                                 <?php endif; ?>
@@ -201,7 +201,7 @@
                                                 $this->loan->get($aLoan['id_loan']);
                                                 /** @var \lenders_accounts $formerOwner */
                                                 $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
-                                                <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                                                <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_client_owner ?>"><?= $formerOwner->id_client_owner ?></a>
                                             <?php endif; ?>
                                         </td>
                                     <?php endif; ?>

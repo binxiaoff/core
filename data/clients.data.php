@@ -289,7 +289,6 @@ class clients extends clients_crud
 
         $sql = "
             SELECT
-                la.id_lender_account as id_lender_account,
                 c.id_client as id_client,
                 c.status as status,
                 c.email as email,
@@ -313,15 +312,14 @@ class clients extends clients_crud
                     WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
                     ELSE ''
                 END as nom_usage
-            FROM lenders_accounts la
-            LEFT JOIN clients c ON c.id_client = la.id_client_owner
+            FROM clients c
                 LEFT JOIN companies co ON co.id_company = la.id_company_owner
             " . $where . "
-            GROUP BY la.id_lender_account
-            ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            GROUP BY c.id_client
+            ORDER BY c.id_client DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result   = array();
+        $result   = [];
 
         $i = 0;
         while ($record = $this->bdd->fetch_array($resultat)) {
