@@ -234,7 +234,7 @@ class MainController extends Controller
 
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
         } catch (\Exception $exception) {
-            $this->get('logger')->error('Could not save project : ' . $exception->getMessage() . 'form data = ' . json_encode($aFormData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->get('logger')->warning('Could not save project : ' . $exception->getMessage() . 'form data = ' . json_encode($aFormData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return $this->redirectToRoute('home_borrower');
         }
     }

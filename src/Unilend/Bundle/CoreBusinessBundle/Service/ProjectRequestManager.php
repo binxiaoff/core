@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -100,7 +99,9 @@ class ProjectRequestManager
 
     /**
      * @param $aFormData
+     *
      * @return \projects
+     * @throws \Exception
      */
     public function saveSimulatorRequest($aFormData)
     {
@@ -160,9 +161,10 @@ class ProjectRequestManager
             $this->entityManager->flush();
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
             $this->entityManager->commit();
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
             $this->logger->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            throw $exception;
         }
 
         $project->id_company                           = $company->getIdCompany();
