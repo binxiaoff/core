@@ -410,27 +410,27 @@
             </tr>
             <tr>
                 <th style="text-align: right; vertical-align: top; padding: 5px 0px 10px 5px;"><label for="iban1">IBAN :</label></th>
-                <td style="padding: 0 0 10px 0;">
-                    <table>
-                        <tr>
-                            <td><input type="text" name="iban1" id="iban1" class="input_court" value="<?= (false === empty($this->iban1)) ? $this->iban1 : '' ?>"/></td>
-                            <td><input type="text" name="iban2" id="iban2" class="input_court" value="<?= (false === empty($this->iban2)) ? $this->iban2 : '' ?>"/></td>
-                            <td><input type="text" name="iban3" id="iban3" class="input_court" value="<?= (false === empty($this->iban3)) ? $this->iban3 : '' ?>"/></td>
-                            <td><input type="text" name="iban4" id="iban4" class="input_court" value="<?= (false === empty($this->iban4)) ? $this->iban4 : '' ?>"/></td>
-                            <td><input type="text" name="iban5" id="iban5" class="input_court" value="<?= (false === empty($this->iban5)) ? $this->iban5 : '' ?>"/></td>
-                            <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= (false === empty($this->iban6)) ? $this->iban6 : '' ?>"/></td>
-                            <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= (false === empty($this->iban7)) ? $this->iban7 : '' ?>"/></td>
-                        </tr>
-                        <tr>
-                            <td colspan="5">
-                                <span class="btn" id="change_bank_account_btn">Valider les modifications sur le RIB</span>
-                            </td>
-                            <td colspan="2" valign="middle">
-                                <p><span id="iban_ok" style="margin:0px;"></span>  <span id="bic_ok" style="margin:0px;"></span></p>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
+            <td style="padding: 0 0 10px 0;">
+                <table>
+                    <tr>
+                        <td><input type="text" name="iban1" id="iban1" class="input_court" value="<?= (false === empty($this->iban1)) ? $this->iban1 : '' ?>"/></td>
+                        <td><input type="text" name="iban2" id="iban2" class="input_court" value="<?= (false === empty($this->iban2)) ? $this->iban2 : '' ?>"/></td>
+                        <td><input type="text" name="iban3" id="iban3" class="input_court" value="<?= (false === empty($this->iban3)) ? $this->iban3 : '' ?>"/></td>
+                        <td><input type="text" name="iban4" id="iban4" class="input_court" value="<?= (false === empty($this->iban4)) ? $this->iban4 : '' ?>"/></td>
+                        <td><input type="text" name="iban5" id="iban5" class="input_court" value="<?= (false === empty($this->iban5)) ? $this->iban5 : '' ?>"/></td>
+                        <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= (false === empty($this->iban6)) ? $this->iban6 : '' ?>"/></td>
+                        <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= (false === empty($this->iban7)) ? $this->iban7 : '' ?>"/></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <span class="btn" id="change_bank_account_btn">Valider les modifications sur le RIB</span>
+                        </td>
+                        <td colspan="2" valign="middle">
+                            <p><span id="iban_ok" style="margin:0px;"></span>  <span id="bic_ok" style="margin:0px;"></span></p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
             </tr>
             <?php if ($this->origine_fonds[0] != false) : ?>
                 <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) : ?>
@@ -947,35 +947,7 @@
             </div>
             <div class="clear"></div>
             <br/><br/>
-            <div class="content_cgv_accept">
-                <h2>Acceptation CGV</h2>
-                <?php if (count($this->lAcceptCGV) > 0) : ?>
-                    <table class="tablesorter cgv_accept">
-                        <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Version</th>
-                            <th>URL</th>
-                            <th>Date validation</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($this->lAcceptCGV as $a) :
-                            $this->tree->get(array('id_tree' => $a['id_legal_doc'], 'id_langue' => $this->language));
-                            ?>
-                            <tr>
-                                <td><?= date('d/m/Y', strtotime($this->tree->added)) ?></td>
-                                <td><?= $this->tree->title ?></td>
-                                <td><a target="_blank" href="<?= $this->furl . '/' . $this->tree->slug ?>"><?= $this->furl . '/' . $this->tree->slug ?></a></td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($a['added'])) ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php else : ?>
-                    <p style="text-align:center;" >Aucun CGV signé</p>
-                <?php endif; ?>
-            </div>
+            <?php $this->fireView('../blocs/acceptedLegalDocumentList'); ?>
             <br/><br/><br/><br/>
             <input type="hidden" name="statut_valider_preteur" id="statut_valider_preteur" value="0"/>
             <input type="hidden" name="send_edit_preteur" id="send_edit_preteur"/>
