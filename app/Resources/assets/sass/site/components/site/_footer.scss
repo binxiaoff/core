@@ -107,7 +107,7 @@ footer > .disclaimer {
         width: 60px;
         height: 60px;
         background-image: url('../images/awards/partners.png');
-        background-size: 240px auto;
+        background-size: 180px auto;
         background-repeat: no-repeat;
       }
       &:nth-child(2) {
@@ -120,11 +120,6 @@ footer > .disclaimer {
           background-position: -120px 0;
         }
       }
-      &:nth-child(4) {
-        a {
-          background-position: -180px 0;
-        }
-      }
     }
     @include devices('lg') {
       > li {
@@ -135,7 +130,7 @@ footer > .disclaimer {
         a {
           width: 90px;
           height: 90px;
-          background-size: 360px auto;
+          background-size: 270px auto;
         }
         &:nth-child(2) {
           a {
@@ -145,11 +140,6 @@ footer > .disclaimer {
         &:nth-child(3) {
           a {
             background-position: -180px 0;
-          }
-        }
-        &:nth-child(4) {
-          a {
-            background-position: -270px 0;
           }
         }
       }
