@@ -98,6 +98,8 @@
                     <li><a href="<?= $this->lurl ?>/dossiers/no_remb" title="Erreurs remboursements">Erreurs remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/status" title="Suivi statuts projets">Suivi statuts projets</a></li>
                     <li><a href="<?= $this->lurl ?>/product" title="Produits">Produits</a></li>
+                    <li><a href="<?= $this->lurl ?>/company" title="Produits">Sociétés</a></li>
+                    <li><a href="<?= $this->lurl ?>/partner" title="Produits">Partenaires</a></li>
                 </ul>
             </li>
         <?php endif; ?>

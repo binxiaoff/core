@@ -1,19 +1,7 @@
-<script type="text/javascript">
-  $(function () {
-    $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
-    $(".listeMandats").tablesorter();
-    $(".mandats").tablesorter({headers: {}});
-
-      <?php if ($this->nb_lignes != '') : ?>
-    $(".listeProjets").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
-    $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
-      <?php endif; ?>
-  });
-</script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Création de société</h1>
-    <form method="post" name="edit_company" id="edit_company" enctype="multipart/form-data" action="company/add" target="_parent">
+    <form method="post" name="edit_company" id="edit_company" enctype="multipart/form-data" action="<?= $this->url ?>/company/add">
         <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
                 <th><label for="email_facture">SIREN*</label></th>
@@ -36,8 +24,8 @@
             <tr>
                 <th><label for="name">Nom*</label></th>
                 <td><input type="text" name="name" id="name" class="input_large" required></td>
-                <th><label for="firstname">Prénom*</label></th>
-                <td><input type="text" name="firstname" id="firstname" class="input_large" required></td>
+                <th><label for="firstName">Prénom*</label></th>
+                <td><input type="text" name="firstName" id="firstName" class="input_large" required></td>
             </tr>
             <tr>
                 <th><label for="email">Email*</label></th>
@@ -105,7 +93,7 @@
       }).done(function (companyIdentity) {
         $('#corporate_name').val(companyIdentity.corporateName);
         $('#name').val(companyIdentity.ownerName);
-        $('#firstname').val(companyIdentity.ownerFirstName);
+        $('#firstName').val(companyIdentity.ownerFirstName);
         $('#phone').val(companyIdentity.phoneNumber);
         $('#address').val(companyIdentity.address);
         $('#postCode').val(companyIdentity.postCode);

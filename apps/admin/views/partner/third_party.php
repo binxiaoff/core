@@ -24,7 +24,7 @@
         <h1>Liste des tiers</h1>
         <div class="btnDroite">
             <input type="text" name="siren" id="search-siren" class="input_moy" placeholder="SIREN" pattern="[0-9]{9}" required>
-            <a href="#" id="third-party-add-link" class="btn_link">Ajouter un tier</a>
+            <a href="#" id="third-party-add-link" class="btn_link">Ajouter un tiers</a>
         </div>
         <?php if (count($thirdParties) > 0) : ?>
             <table class="tablesorter">
@@ -66,7 +66,7 @@
                 </table>
             <?php endif; ?>
         <?php else : ?>
-            <p>Il n'y a aucune tier pour le moment.</p>
+            <p>Il n'y a aucune tiers pour le moment.</p>
         <?php endif; ?>
     <?php endif; ?>
 </div>

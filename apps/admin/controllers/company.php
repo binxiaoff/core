@@ -2,6 +2,9 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentity;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 
 class companyController extends bootstrap
 {
@@ -14,6 +17,16 @@ class companyController extends bootstrap
 
         $this->menu_admin = 'emprunteurs';
         $this->translator = $this->get('translator');
+    }
+
+    public function _default()
+    {
+        if ($this->request->request->get('siren')) {
+            $siren = filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING);
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager   = $this->get('doctrine.orm.entity_manager');
+            $this->companies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren], ['idCompany' => 'DESC']);
+        }
     }
 
     public function _add()
@@ -36,7 +49,7 @@ class companyController extends bootstrap
             $corporateName       = filter_var($this->request->request->get('corporate_name'), FILTER_SANITIZE_STRING);
             $title               = filter_var($this->request->request->get('title'), FILTER_SANITIZE_STRING);
             $name                = filter_var($this->request->request->get('name'), FILTER_SANITIZE_STRING);
-            $firstname           = filter_var($this->request->request->get('firstname'), FILTER_SANITIZE_STRING);
+            $firstName           = filter_var($this->request->request->get('firstname'), FILTER_SANITIZE_STRING);
             $email               = filter_var($this->request->request->get('email'), FILTER_SANITIZE_EMAIL);
             $phone               = filter_var($this->request->request->get('phone'), FILTER_SANITIZE_STRING);
             $address             = filter_var($this->request->request->get('address'), FILTER_SANITIZE_STRING);
@@ -64,8 +77,9 @@ class companyController extends bootstrap
                        ->setStatus(Clients::STATUS_ONLINE)
                        ->setCivilite($title)
                        ->setNom($name)
-                       ->setPrenom($firstname);
+                       ->setPrenom($firstName);
                 $entityManager->persist($client);
+                $entityManager->flush($client);
 
                 $company = new Companies();
                 $company->setSiren($siren)
@@ -79,20 +93,33 @@ class companyController extends bootstrap
                         ->setCity($city)
                         ->setPhone($phone);
                 $entityManager->persist($company);
+                $entityManager->flush($company);
 
-                $attachmentTypeRib = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::RIB);
-                $attachmentRib     = $attachmentManager->upload($client, $attachmentTypeRib, $bankAccountDocument);
-                $bankAccount       = $bankAccountManager->saveBankInformation($client, $bic, $iban, $attachmentRib);
-                $bankAccountManager->validateBankAccount($bankAccount);
+                if ($iban && $bic && $bankAccountDocument) {
+                    $attachmentTypeRib = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::RIB);
+                    $attachmentRib     = $attachmentManager->upload($client, $attachmentTypeRib, $bankAccountDocument);
+                    $bankAccount       = $bankAccountManager->saveBankInformation($client, $bic, $iban, $attachmentRib);
+                    $bankAccountManager->validateBankAccount($bankAccount);
+                }
+                if ($registryForm) {
+                    $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::KBIS);
+                    $attachmentManager->upload($client, $attachmentTypeKbis, $registryForm);
+                }
 
-                $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::KBIS);
-                $attachmentManager->upload($client, $attachmentTypeKbis, $registryForm);
-
-                $entityManager->flush();
                 $entityManager->commit();
+
+                $_SESSION['freeow']['title']   = 'Société créée.';
+                $_SESSION['freeow']['message'] = 'La Société est bien créée !';
+                header('Location: ' . $this->url . '/company');
             } catch (\Exception $exception) {
+                var_dump($exception->getMessage());
+                die;
                 $entityManager->getConnection()->rollBack();
+                $_SESSION['freeow']['title']   = 'Une erreur survenue !';
+                $_SESSION['freeow']['message'] = 'La Société n\'est pas créée !';
+                header('Location: ' . $this->url . '/company/add' . (isset($this->params[0]) ? '/' . $this->params[0] : ''));
             }
+            die;
         }
     }
 
@@ -106,21 +133,30 @@ class companyController extends bootstrap
             /** @var \Unilend\Bundle\WSClientBundle\Service\InfolegaleManager $infoLegale */
             $infoLegale = $this->get('unilend.service.ws_client.infolegale_manager');
 
-            $altaresIdentity    = $altares->getCompanyIdentity($siren);
-            $infoLegaleIdentity = $infoLegale->getIdentity($siren);
+            $altaresCompanyIdentity       = $altares->getCompanyIdentity($siren);
+            $altaresEstablishmentIdentity = $altares->getEstablishmentIdentity($siren);
+            $infoLegaleIdentity           = $infoLegale->getIdentity($siren);
+            $companyIdentity              = [];
+            if ($altaresCompanyIdentity instanceof CompanyIdentity) {
+                $companyIdentity = [
+                    'corporateName' => $altaresCompanyIdentity->getCorporateName(),
+                    'address'       => $altaresCompanyIdentity->getAddress(),
+                    'postCode'      => $altaresCompanyIdentity->getPostCode(),
+                    'city'          => $altaresCompanyIdentity->getCity(),
+                ];
+            }
+            if ($altaresEstablishmentIdentity instanceof EstablishmentIdentity) {
+                $companyIdentity['phoneNumber'] = $altaresEstablishmentIdentity->getPhoneNumber();
+            }
+            if (false === empty($infoLegaleIdentity->dirigeants->dirigeant)) {
+                $companyIdentity['title']          = (string) $infoLegaleIdentity->dirigeants->dirigeant->civilite;
+                $companyIdentity['ownerName']      = (string) $infoLegaleIdentity->dirigeants->dirigeant->nom;
+                $companyIdentity['ownerFirstName'] = (string) $infoLegaleIdentity->dirigeants->dirigeant->prenom;
+            }
 
-            $companyIdentity = [
-                'corporateName'  => $altaresIdentity->getCorporateName(),
-                'title'          => (string) $infoLegaleIdentity->dirigeants->dirigeant->civilite,
-                'ownerName'      => (string) $infoLegaleIdentity->dirigeants->dirigeant->nom,
-                'ownerFirstName' => (string) $infoLegaleIdentity->dirigeants->dirigeant->prenom,
-                'phoneNumber'    => $altares->getEstablishmentIdentity($siren)->getPhoneNumber(),
-                'address'        => $altaresIdentity->getAddress(),
-                'postCode'       => $altaresIdentity->getPostCode(),
-                'city'           => $altaresIdentity->getCity(),
-            ];
             /** @var \JMS\Serializer\Serializer $serializer */
             $serializer = $this->get('jms_serializer');
+
             echo $serializer->serialize($companyIdentity, 'json');
         }
     }
