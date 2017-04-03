@@ -2,10 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -42,11 +42,15 @@ class ClientsRepository extends EntityRepository
     public function getClientByAgeAndSubscriptionDate(\DateTime $birthDate, \DateTime $subscriptionDate)
     {
         $qb = $this->createQueryBuilder('c')
-            ->innerJoin('UnilendCoreBusinessBundle:LendersAccounts', 'la', Join::WITH, 'c.idClient = la.idClientOwner')
-            ->where('c.naissance <= :naissance')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType AND wt.label = :lender')
+            ->where('c.naissance <= :birthDate')
             ->andWhere('c.added >= :added')
-            ->setParameter('naissance', $birthDate)
-            ->setParameter('added', $subscriptionDate);
+            ->andWhere('c.type IN (:physicalPerson)')
+            ->setParameter('birthDate', $birthDate)
+            ->setParameter('added', $subscriptionDate)
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('physicalPerson', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], Connection::PARAM_INT_ARRAY);
 
         return $qb->getQuery()->getResult();
     }
@@ -98,7 +102,7 @@ class ClientsRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:BankAccount', 'ba', Join::WITH, 'ba.idClient = w.idClient')
             ->where('wt.label = :lender')
             ->setParameter('lender', WalletType::LENDER)
-            ->andWhere('ba.added >= :fromDate')
+            ->andWhere('ba.dateValidated >= :fromDate')
             ->setParameter('fromDate', $fromDate)
             ->groupBy('c.idClient')
             ->having('nbRibChange >= :maxRibChange')

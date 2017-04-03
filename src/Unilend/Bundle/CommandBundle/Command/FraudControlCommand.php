@@ -17,12 +17,12 @@ class FraudControlCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $em                   = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $entityManager        = $this->getContainer()->get('doctrine.orm.entity_manager');
         $vigilanceRuleManager = $this->getContainer()->get('unilend.service.vigilance_rule_manager');
         $stopWatch            = $this->getContainer()->get('debug.stopwatch');
         $logger               = $this->getContainer()->get('logger');
         /** @var VigilanceRule[] $vigilanceRules */
-        $vigilanceRules = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findAll();
+        $vigilanceRules = $entityManager->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findAll();
 
         foreach ($vigilanceRules as $rule) {
             $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_rule' => $rule->getId()];

@@ -74,7 +74,7 @@ class WalletRepository extends EntityRepository
     public function getInactiveLenderWalletOnPeriod(\DateTime $inactiveSince, $minAvailableBalance = null)
     {
         $qb = $this->createQueryBuilder('w')
-            ->select('MAX(wbh.added) AS lastOperationDate, IDENTITY(w.idClient) AS idClient, w.availableBalance')
+            ->select('MAX(wbh.added) AS lastOperationDate, IDENTITY(w.idClient) AS idClient, w.availableBalance, w.id AS walletId')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
             ->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
