@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
@@ -127,13 +128,13 @@ class BorrowerAccountController extends Controller
                 $project->fonds_propres_declara_client         = 0;
                 $project->comments                             = $formData['message'];
                 $project->period                               = $formData['duration'];
-                $project->status                               = \projects_status::A_TRAITER;
+                $project->status                               = \projects_status::COMPLETE_REQUEST;
                 $project->id_partner                           = $partnerManager->getDefaultPartner()->id;
                 $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
                 $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
                 $project->create();
 
-                $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $project);
+                $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::COMPLETE_REQUEST, $project);
 
                 $this->addFlash('success', $translator->trans('borrower-demand_success'));
 
@@ -673,31 +674,31 @@ class BorrowerAccountController extends Controller
     private function getProjectsPreFunding()
     {
         $statusPreFunding   = array(
-            \projects_status::A_FUNDER,
-            \projects_status::A_TRAITER,
-            \projects_status::COMITE,
-            \projects_status::EN_ATTENTE_PIECES,
+            \projects_status::COMPLETE_REQUEST,
+            \projects_status::COMMERCIAL_REVIEW,
+            \projects_status::COMMERCIAL_REJECTION,
+            \projects_status::ANALYSIS_REVIEW,
+            \projects_status::COMITY_REVIEW,
+            \projects_status::ANALYSIS_REJECTION,
+            \projects_status::COMITY_REJECTION,
             \projects_status::PREP_FUNDING,
-            \projects_status::REJETE,
-            \projects_status::REJET_ANALYSTE,
-            \projects_status::REJET_COMITE,
-            \projects_status::REVUE_ANALYSTE
+            \projects_status::A_FUNDER
         );
         $projectsPreFunding = $this->getCompany()->getProjectsForCompany(null, $statusPreFunding);
 
         foreach ($projectsPreFunding as $key => $project) {
             switch ($project['status']) {
-                case \projects_status::EN_ATTENTE_PIECES:
-                case \projects_status::A_TRAITER:
+                case \projects_status::COMPLETE_REQUEST:
+                case \projects_status::COMMERCIAL_REVIEW:
                     $projectsPreFunding[$key]['project_status_label'] = 'waiting-for-documents';
                     break;
-                case \projects_status::REVUE_ANALYSTE:
-                case \projects_status::COMITE:
+                case \projects_status::ANALYSIS_REVIEW:
+                case \projects_status::COMITY_REVIEW:
                     $projectsPreFunding[$key]['project_status_label'] = 'analyzing';
                     break;
-                case \projects_status::REJET_ANALYSTE:
-                case \projects_status::REJET_COMITE:
-                case \projects_status::REJETE:
+                case \projects_status::COMMERCIAL_REJECTION:
+                case \projects_status::ANALYSIS_REJECTION:
+                case \projects_status::COMITY_REJECTION:
                     $projectsPreFunding[$key]['project_status_label'] = 'refused';
                     break;
                 case \projects_status::PREP_FUNDING:

@@ -1,5 +1,3 @@
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
-
 <div id="contenu">
     <div id="errors" style="background-color: #fadfe4; font-size: 14px; line-height: 1.3em; text-align: center; margin-top: 20px; margin-bottom: 20px; ">
         <?php if (false === empty($_SESSION['succession']['error'])) : ?>

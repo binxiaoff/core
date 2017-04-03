@@ -1,14 +1,14 @@
 <?php
 
+use \Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+
 class usersController extends bootstrap
 {
-    var $Command;
-
     public function initialize()
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->catchAll   = true;
         $this->menu_admin = 'admin';
 
         $this->users_zones       = $this->loadData('users_zones');
@@ -47,10 +47,11 @@ class usersController extends bootstrap
             $this->users->phone        = $_POST['phone'];
             $this->users->mobile       = $_POST['mobile'];
             $this->users->email        = $_POST['email'];
+            $this->users->slack        = $_POST['slack'];
             $this->users->status       = $_POST['status'];
             $this->users->id_user_type = $_POST['id_user_type'];
             $this->users->password     = password_hash($newPassword, PASSWORD_DEFAULT);
-            $this->users->id_user      = $this->users->create();
+            $this->users->create();
 
             /** @var \users_zones $usersZones */
             $usersZones = $this->loadData('users_zones');
@@ -81,6 +82,7 @@ class usersController extends bootstrap
             $this->users->phone     = $_POST['phone'];
             $this->users->mobile    = $_POST['mobile'];
             $this->users->email     = $_POST['email'];
+            $this->users->slack     = $_POST['slack'];
 
             if ($this->users->checkAccess('admin')) {
                 /** @var \users_zones $usersZones */
@@ -138,9 +140,9 @@ class usersController extends bootstrap
             die;
         }
 
-        $onlineUsers  = $this->users->select('id_user != 1 AND status = ' . \users::STATUS_ONLINE, 'name ASC');
-        $offlineUsers = $this->users->select('id_user != 1 AND status = ' . \users::STATUS_OFFLINE, 'name ASC');
-        $this->users  = [\users::STATUS_ONLINE => $onlineUsers, \users::STATUS_OFFLINE => $offlineUsers];
+        $onlineUsers  = $this->users->select('id_user != 1 AND status = ' . Users::STATUS_ONLINE, 'name ASC');
+        $offlineUsers = $this->users->select('id_user != 1 AND status = ' . Users::STATUS_OFFLINE, 'name ASC');
+        $this->users  = [Users::STATUS_ONLINE => $onlineUsers, Users::STATUS_OFFLINE => $offlineUsers];
     }
 
     public function _edit()
@@ -210,12 +212,11 @@ class usersController extends bootstrap
 
                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
                 $this->loggin_connection_admin->id_user        = $this->users->id_user;
-                $this->loggin_connection_admin->nom_user       = $this->users->firstname . " " . $this->users->name;
+                $this->loggin_connection_admin->nom_user       = $this->users->firstname . ' ' . $this->users->name;
                 $this->loggin_connection_admin->email          = $this->users->email;
                 $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
-                $this->loggin_connection_admin->ip             = $_SERVER["REMOTE_ADDR"];
-                $country_code                                  = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-                $this->loggin_connection_admin->pays           = $country_code;
+                $this->loggin_connection_admin->ip             = $_SERVER['REMOTE_ADDR'];
+                $this->loggin_connection_admin->pays           = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
                 $this->loggin_connection_admin->statut         = 2;
                 $this->loggin_connection_admin->create();
 

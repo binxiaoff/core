@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns:ilg="Infolegale/Webservices/Main" xmlns:sc="Infolegale/Webservices/searchCompany"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="Infolegale/Webservices/searchCompany">
+    <import namespace="Infolegale/Webservices/Main" schemaLocation="main.xsd"/>
+
+    <!-- START TYPE DESCRIPTION -->
+    <complexType name="societeType">
+        <sequence>
+            <element name="siren" type="ilg:sirenType" minOccurs="0"/>
+            <element name="raisonSociale" type="ilg:alphaNumType" minOccurs="0"/>
+            <element name="enseigne" type="ilg:alphaNumType" minOccurs="0"/>
+            <element name="adresse" type="ilg:adresseType" minOccurs="0"/>
+            <element name="activite" type="ilg:alphaNumType" minOccurs="0"/>
+            <element name="dirigeant" type="ilg:dirigeantType" minOccurs="0"/>
+        </sequence>
+    </complexType>
+    <!-- START TYPE DESCRIPTION -->
+
+    <element name="service">
+        <complexType>
+            <sequence>
+                <element ref="ilg:errors"/>
+                <element ref="ilg:request"/>
+                <element name="content">
+                    <complexType>
+                        <!-- START CONTENT DESCRIPTION -->
+                        <sequence>
+                            <element name="societes" minOccurs="0">
+                                <complexType>
+                                    <sequence>
+                                        <element name="societe" type="sc:societeType" minOccurs="0"
+                                                 maxOccurs="unbounded"/>
+                                    </sequence>
+                                    <attribute name="total" type="ilg:numType"/>
+                                </complexType>
+                            </element>
+                            <element name="societesParDirigeants" minOccurs="0">
+                                <complexType>
+                                    <sequence>
+                                        <element name="societe" type="sc:societeType" minOccurs="0"
+                                                 maxOccurs="unbounded"/>
+                                    </sequence>
+                                    <attribute name="total" type="ilg:numType"/>
+                                </complexType>
+                            </element>
+                        </sequence>
+                        <!-- END CONTENT DESCRIPTION -->
+                    </complexType>
+                </element>
+                <element ref="ilg:response"/>
+            </sequence>
+        </complexType>
+    </element>
+
+</schema>

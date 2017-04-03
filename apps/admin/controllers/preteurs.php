@@ -4,6 +4,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 
 class preteursController extends bootstrap
 {
@@ -234,6 +235,7 @@ class preteursController extends bootstrap
             }
 
             $this->getMessageAboutClientStatus();
+            $this->setClientVigilanceStatusData();
         }
     }
 
@@ -391,8 +393,8 @@ class preteursController extends bootstrap
 
             $this->loadJs('default/component/add-file-input');
 
-            $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-            $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
+            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
+            $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
             /** @var \greenpoint_attachment_detail $greenPointDetail */
             $greenPointDetail            = $this->loadData('greenpoint_attachment_detail');
@@ -1397,39 +1399,96 @@ class preteursController extends bootstrap
     private function getMessageAboutClientStatus()
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
-        $clientStatusManager= $this->get('unilend.service.client_status_manager');
-        $sTimeCreate                = strtotime($this->clients->added);
-        $this->sClientStatusMessage = '';
-        $currentStatus = $clientStatusManager->getLastClientStatus($this->clients);
+        $clientStatusManager       = $this->get('unilend.service.client_status_manager');
+        $currentStatus             = $clientStatusManager->getLastClientStatus($this->clients);
+        $creationTime              = strtotime($this->clients->added);
+        $this->clientStatusMessage = '';
 
         switch ($currentStatus) {
             case \clients_status::TO_BE_CHECKED :
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $sTimeCreate) . '</div>';
+                $this->clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $creationTime) . '</div>';
                 break;
             case \clients_status::COMPLETENESS :
             case \clients_status::COMPLETENESS_REMINDER:
             case \clients_status::COMPLETENESS_REPLY:
-                $this->sClientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $sTimeCreate) . ' </div>';
+                $this->clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $creationTime) . ' </div>';
                 break;
             case \clients_status::MODIFICATION:
-                $this->sClientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $sTimeCreate) . '</div>';
+                $this->clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $creationTime) . '</div>';
                 break;
             case \clients_status::CLOSED_LENDER_REQUEST:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
+                $this->clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
                 break;
             case \clients_status::CLOSED_BY_UNILEND:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
+                $this->clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
                 break;
             case \clients_status::VALIDATED:
-                $this->sClientStatusMessage = '';
+                $this->clientStatusMessage = '';
                 break;
             case \clients_status::CLOSED_DEFINITELY:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
+                $this->clientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
                 break;
-            default;
-                trigger_error('Unknown Client Status : ' . $currentStatus, E_USER_NOTICE);
+            default:
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->warning('Unknown client status "' . $currentStatus . '"', ['client' => $this->clients->id_client]);
                 break;
         }
+    }
+
+    private function setClientVigilanceStatusData()
+    {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
+
+        $client                       = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
+        $this->vigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $client], ['id' => 'DESC']);
+
+        if (empty($this->vigilanceStatusHistory)) {
+            $this->vigilanceStatus = [
+                'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
+                'message' => 'Vigilance standard'
+            ];
+            $this->userEntity      = $em->getRepository('UnilendCoreBusinessBundle:Users');
+            $this->lendersAccount  = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
+
+            return;
+        }
+        $this->clientAtypicalOperations = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $client], ['added' => 'DESC']);
+
+        switch ($this->vigilanceStatusHistory[0]->getVigilanceStatus()) {
+            case VigilanceRule::VIGILANCE_STATUS_LOW:
+                $this->vigilanceStatus = [
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
+                    'message' => 'Vigilance standard. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
+                $this->vigilanceStatus = [
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_MEDIUM,
+                    'message' => 'Vigilance intermédiaire. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            case VigilanceRule::VIGILANCE_STATUS_HIGH:
+                $this->vigilanceStatus = [
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_HIGH,
+                    'message' => 'Vigilance Renforcée. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            case VigilanceRule::VIGILANCE_STATUS_REFUSE:
+                $this->vigilanceStatus = [
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_REFUSE,
+                    'message' => 'Vigilance Refus. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            default:
+                trigger_error('Unknown vigilance status :' . $this->vigilanceStatusHistory[0]->getVigilanceStatus(), E_USER_NOTICE);
+        }
+        /** @var \Symfony\Component\Translation\Translator translator */
+        $this->translator                   = $this->get('translator');
+        $this->userEntity                   = $em->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->lendersAccount               = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
+        $this->clientVigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
     }
 
     public function _saveBetaTesterSetting()

@@ -141,7 +141,7 @@
                     </li>
                     <li>
                         <div class="col-long">Lieu d'exploitation</div>
-                        <div class="col-small"><?= $this->companiesEmprunteur->lieu_exploi ?></div>
+                        <div class="col-small"><?= $this->companiesEmprunteur->city ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                 </ul>
@@ -149,9 +149,7 @@
             <h5>Désignation du prêteur</h5>
             <div class="list">
                 <ul>
-                    <?php
-                    if ($this->clients->type == 1) : // particulier
-                    ?>
+                    <?php if (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) : ?>
                         <li>Nom
                             <div class="col-small"><?= $this->clients->nom ?></div>
                         </li>
@@ -170,9 +168,7 @@
                         <li>Ville
                             <div class="col-small"><?= $this->clients_adresses->ville ?></div>
                         </li>
-                    <?php
-                    else : //morale
-                    ?>
+                    <?php else : ?>
                         <li>Raison sociale
                             <div class="col-small"><?= $this->companiesPreteur->name ?></div>
                         </li>
@@ -197,9 +193,7 @@
                         <li>R.C.S.
                             <div class="col-small"><?= $this->companiesPreteur->siren ?></div>
                         </li>
-                    <?php
-                    endif;
-                    ?>
+                    <?php endif; ?>
                 </ul>
                 <p>En présence de :</p>
                 <?= $this->bloc_pdf_contrat['description-unilend'] ?>

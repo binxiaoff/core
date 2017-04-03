@@ -102,7 +102,10 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
     // permet de savoir si un prêteur a coché la case d'un type de notif
     public function getNotif($id_client, $id_notif, $champ)
     {
-        if ($this->counter('id_client = ' . $id_client . ' AND id_notif = ' . $id_notif . ' AND ' . $champ . ' = 1') > 0) {
+        if (false === empty($id_client)
+            && false === empty($id_notif)
+            && false === empty($champ)
+            && $this->counter('id_client = ' . $id_client . ' AND id_notif = ' . $id_notif . ' AND ' . $champ . ' = 1') > 0) {
             return true;
         } else {
             return false;

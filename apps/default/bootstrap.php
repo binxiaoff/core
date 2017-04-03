@@ -249,7 +249,6 @@ class bootstrap extends Controller
     public function handlePartenaire($params)
     {
         $partenaires       = $this->loadData('partenaires');
-        $promotions        = $this->loadData('promotions');
         $partenaires_clics = $this->loadData('partenaires_clics');
 
         // On check les params pour voir si on a un partenaire
@@ -269,7 +268,6 @@ class bootstrap extends Controller
 
                     $indexPart = $i + 1;
 
-
                     // On regarde si on trouve un partenaire
                     if ($partenaires->get($params[ $indexPart ], 'hash')) {
                         // on controle qu'on a pas un double clique
@@ -288,20 +286,7 @@ class bootstrap extends Controller
                                 $partenaires_clics->create(array('id_partenaire' => $partenaires->id_partenaire, 'date' => date('Y-m-d')));
                             }
                         }
-
-                        // On met le partenaire en session
                         $_SESSION['partenaire']['id_partenaire'] = $partenaires->id_partenaire;
-
-                        // On regarde si on a un code promo actif
-                        if ($promotions->get($partenaires->id_code, 'id_code')) {
-                            // On ajoute le code en session
-                            $_SESSION['partenaire']['code_promo'] = $promotions->code;
-                            $_SESSION['partenaire']['id_promo']   = $promotions->id_code;
-                        } else {
-                            unset($_SESSION['partenaire']['code_promo']);
-                            unset($_SESSION['partenaire']['id_promo']);
-                        }
-
 
                         // On enregistre le partenaire en cookie
                         setcookie('izicom_partenaire', $partenaires->hash, time() + 3153600, '/');
@@ -333,86 +318,6 @@ class bootstrap extends Controller
                 }
             }
         }
-    }
-
-    private function loginLender()
-    {
-       //generation des notifs si pas deja existants dans le eventSubscriber
-
-        if ($_SESSION['client']['etape_inscription_preteur'] < 3) {
-            // redirect subscription page
-        } else {
-            $this->clients_status->getLastStatut($_SESSION['client']['id_client']);
-            if (in_array($this->clients_status->status, array(clients_status::COMPLETENESS, clients_status::COMPLETENESS_REMINDER))) {
-                //redirect completeness form
-            } else {
-                // check CVG in clientManager
-                if (!in_array($this->lienConditionsGenerales, $listeAccept)) {
-                    // missing CGV will add message in LoginAuthenticator
-                } else {
-                    // redirect URL done
-                }
-            }
-        }
-    }
-
-    private function loginBorrower()
-    {
-        $this->bDisplayHeaderBorrower = true;
-        $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
-
-        $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
-
-        if ($aAllCompanyProjects[0]['status'] >= projects_status::A_TRAITER && $aAllCompanyProjects[0]['status'] < projects_status::PREP_FUNDING) {
-            header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects[0]['hash']);
-            die;
-        } else {
-            header('Location:' . $this->lurl . '/espace_emprunteur');
-            die;
-        }
-    }
-
-    private function getDataLender()
-    {
-        if ($this->clients->type == clients::TYPE_PERSON) {
-            $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
-            $this->lienConditionsGenerales = $this->settings->value;
-        } else {
-            $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
-            $this->lienConditionsGenerales = $this->settings->value;
-        }
-
-        $contenu = $this->tree_elements->select('id_tree = "' . $this->lienConditionsGenerales . '" AND id_langue = "' . $this->language . '"');
-        foreach ($contenu as $elt) {
-            $this->elements->get($elt['id_element']);
-            $this->contentCGU[ $this->elements->slug ]    = $elt['value'];
-            $this->complementCGU[ $this->elements->slug ] = $elt['complement'];
-        }
-
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->notifications    = $this->loadData('notifications');
-        $this->bids             = $this->loadData('bids');
-        $this->projects_notifs  = $this->loadData('projects');
-        $this->companies_notifs = $this->loadData('companies');
-        $this->loans            = $this->loadData('loans');
-
-        $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', 'fr_FR', $this->App);
-        $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', 'fr_FR', $this->App);
-
-        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-        $this->nbNotifdisplay      = 10;
-        $this->lNotifHeader        = $this->notifications->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'added DESC', 0, $this->nbNotifdisplay);
-        $this->NbNotifHeader       = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0');
-        $this->NbNotifHeaderEnTout = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account);
-
-        $this->solde = $this->transactions->getSolde($this->clients->id_client);
-    }
-
-    private function getDataBorrower()
-    {
-        $this->oCompanyDisplay = $this->loadData('companies');
-        $this->oCompanyDisplay->get($this->clients->id_client, 'id_client_owner');
     }
 
     /**

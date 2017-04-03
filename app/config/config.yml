@@ -2,6 +2,7 @@ imports:
     - { resource: parameters.yml }
     - { resource: security.yml }
     - { resource: parameters_extended.yml, ignore_errors: true }
+    - { resource: dql_mysql_functions.yml, ignore_errors: true }
 
 framework:
     secret: "%secret%"
@@ -99,7 +100,8 @@ doctrine_mongodb:
                 ssl:           true
                 password:      "%mongodb_password%"
                 username:      "%mongodb_username%"
-    default_database: testing
+                readPreference:   secondaryPreferred
+    default_database: 'ws_call_%kernel.environment%'
     document_managers:
         default:
             auto_mapping: true
@@ -252,3 +254,28 @@ knp_mailjet:
     api_key:    "%mailjet.api_key%"
     secret_key: "%mailjet.api_secret%"
     event_endpoint_token: yclrcchxk0p3lujy82
+
+guzzle:
+    clients:
+        euler:
+            base_url: "%euler.url%"
+            options:
+                timeout: 8
+                http_errors: false
+
+        codinf:
+            base_url: "%codinf.url%"
+            options:
+                http_errors: false
+
+        infolegale:
+            base_url: "%infolegale.url%"
+            options:
+                http_errors: false
+
+jms_serializer:
+    enable_short_alias: false
+
+cl_slack:
+    api_token: "%slack.token%"
+    test:      false

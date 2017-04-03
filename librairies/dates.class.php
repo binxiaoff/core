@@ -3,9 +3,34 @@
 class dates
 {
     public $today;
-    public $tableauJours;
-    public $tableauMois;
-    public $limitMois;
+    public $tableauJours = [
+        'fr' => [
+            'Dimanche',
+            'Lundi',
+            'Mardi',
+            'Mercredi',
+            'Jeudi',
+            'Vendredi',
+            'Samedi'
+        ]
+    ];
+    public $tableauMois = [
+        'fr' => [
+            '',
+            'janvier',
+            'février',
+            'mars',
+            'avril',
+            'mai',
+            'juin',
+            'juillet',
+            'août',
+            'septembre',
+            'octobre',
+            'novembre',
+            'décembre'
+        ]
+    ];
 
     public function dates($today = '')
     {
@@ -14,15 +39,9 @@ class dates
         } else {
             $this->today = $today;
         }
-
-        $this->tableauJours['fr']  = array('Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche');
-        $this->tableauJours2['fr'] = array('Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi');
-        // tous les mois commencent pas une minuscule (Note BT 16614)
-        $this->tableauMois['fr'] = array('', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre');
-        $this->limitMois         = array(1 => 31, 3 => 31, 4 => 30, 5 => 31, 6 => 30, 7 => 31, 8 => 31, 9 => 30, 10 => 31, 11 => 30, 12 => 31);
     }
 
-    // Renvoi d'une date format� comme on le souhaite
+    // Renvoi d'une date formatée comme on le souhaite
     public function formatDate($date, $format = 'Y-m-d')
     {
         return date($format, strtotime($date));
@@ -32,8 +51,8 @@ class dates
     // CONVERTISSEUR --------------------------------------------------------------------------
     //-----------------------------------------------------------------------------------------
 
-    /*
-     * converti une date mysql au format fr
+    /**
+     * Convertit une date SQL au format fr
      */
     public function formatDateMysqltoFr($date)
     {
@@ -51,7 +70,7 @@ class dates
     }
 
     /**
-     * converti une date mysql au format fr en supprimant l'heure
+     * Convertit une date SQL au format fr en supprimant l'heure
      **/
     public function formatDateMysqltoFr_HourOut($date)
     {
@@ -61,91 +80,32 @@ class dates
     }
 
     /**
-     * converti une date mysql au format fr avec le mois et le jour de la semaine correspondant au format alphabetique
-     **/
-    public function formatDateComplete($date, $ln = "fr")
+     * Convertit une date SQL au format fr avec le mois et le jour de la semaine correspondant au format alphabetique
+     * @param string $date
+     * @param string $ln
+     * @return string
+     */
+    public function formatDateComplete($date, $ln = 'fr')
     {
         $d   = explode('-', $date);
         $d1  = explode(' ', $d[2]);
         $m   = (int) ($d[1]);
         $day = (int) ($d1[0]);
-        $j   = date("w", mktime(0, 0, 0, $m, $day, $d[0]));
+        $j   = date('w', mktime(0, 0, 0, $m, $day, $d[0]));
 
-        $ladate = $this->tableauJours2[$ln][$j] . ' ' . $day . ' ' . $this->tableauMois[$ln][$m] . ' ' . $d[0];
-        return $ladate;
+        return $this->tableauJours[$ln][$j] . ' ' . $day . ' ' . $this->tableauMois[$ln][$m] . ' ' . $d[0];
     }
 
     /**
-     * converti une date mysql en timestamp
+     * Convertit une date SQL en timestamp
      **/
     public function formatDateMySqlToTimeStamp($datetime)
     {
-
         list($date, $time) = explode(' ', $datetime);
         list($year, $month, $day) = explode('-', $date);
         list($hour, $minute, $second) = explode(':', $time);
 
-        $timestamp = mktime($hour, $minute, $second, $month, $day, $year);
-
-        return $timestamp;
-    }
-
-    //-----------------------------------------------------------------------------------------
-    // SELECT HTML ----------------------------------------------------------------------------
-    //-----------------------------------------------------------------------------------------
-
-    /**
-     * affiche un selecteur de date dont les ann�es disponible defilent en ordre d�croissant
-     * @property year : aujourd'hui � -120
-     */
-    public function selectDateYearDesc($default = '', $name = 'date', $class = '')
-    {
-
-        $var = '';
-        $d   = explode('-', $default);
-
-        $var .= '<select class="' . $class . '" name="' . $name . '-jour">';
-
-        for ($i = 1; $i < 32; $i++) {
-            $selected = '';
-            if ($d[2] == $i) {
-                $selected = 'selected';
-            }
-            if ($i < 10) {
-                $var .= '<option value="' . $i . '" ' . $selected . '>0' . $i . '</option>';
-            } else {
-                $var .= '<option value="' . $i . '" ' . $selected . '>' . $i . '</option>';
-            }
-        }
-        $var .= '</select>';
-
-        $var .= '<select class="' . $class . '" name="' . $name . '-mois">';
-
-        for ($i = 1; $i < 13; $i++) {
-            $selected = '';
-            if ($d[1] == $i) {
-                $selected = 'selected';
-            }
-            if ($i < 10) {
-                $var .= '<option value="' . $i . '" ' . $selected . '>0' . $i . '</option>';
-            } else {
-                $var .= '<option value="' . $i . '" ' . $selected . '>' . $i . '</option>';
-            }
-        }
-        $var .= '</select>';
-
-        $var .= '<select class="' . $class . '" name="' . $name . '-annee">';
-
-        for ($i = date("Y"); $i > date("Y") - 120; $i--) {
-            $selected = '';
-            if ($d[0] == $i) {
-                $selected = 'selected';
-            }
-            $var .= '<option value="' . $i . '" ' . $selected . '>' . $i . '</option>';
-        }
-        $var .= '</select>';
-
-        return $var;
+        return mktime($hour, $minute, $second, $month, $day, $year);
     }
 
     //-----------------------------------------------------------------------------------------
@@ -153,13 +113,14 @@ class dates
     //-----------------------------------------------------------------------------------------
 
     /**
-     * retourne le nombre d'ann�e entre aujourdhui et la date donn�e
-     * @param $date au format mysql
+     * Retourne le nombre d'années entre aujourd'hui et la date donnée
+     * @param string $date au format SQL
+     * @return int
      */
     public function age($date)
     {
         $d = explode('-', $date);
-        $y = date("Y");
+        $y = date('Y');
 
         return $y - $d[0];
     }
@@ -253,76 +214,6 @@ class dates
         $diff['mois']     = (int) ($diff_date / (60 * 60 * 24 * 30));
 
         return $diff;
-    }
-
-    /**
-     * retourne le nbre de jour entre deux dates donn�es
-     * @param $deb_jour
-     * @param $deb_mois
-     * @param $deb_annee
-     * @param $fin_jour
-     * @param $fin_mois
-     * @param $fin_annee
-     * @return $nb_jours
-     */
-    public function intervalleJours($deb_jour, $deb_mois, $deb_annee, $fin_jour, $fin_mois, $fin_annee)
-    {
-        $nb_jours = 0;
-        for ($annee = $deb_annee; $annee <= $fin_annee; $annee++) {
-            if ($annee == $deb_annee) {
-                $from_mois = $deb_mois;
-            } else {
-                $from_mois = 1;
-            }
-
-            if ($annee == $fin_annee) {
-                $to_mois = $fin_mois;
-            } else {
-                $to_mois = 12;
-            }
-
-            for ($mois = $from_mois; $mois <= $to_mois; $mois++) {
-                if (($mois == $deb_mois) && ($annee == $deb_annee)) {
-                    $from_jour = $deb_jour;
-                } else {
-                    $from_jour = 1;
-                }
-
-                if (($mois == $fin_mois) && ($annee == $fin_annee)) {
-                    $to_jour = $fin_jour;
-                } else {
-                    $to_jour = $this->nb_jour_dans_mois($mois, $annee);
-                }
-
-                $nb_jours += $to_jour - $from_jour + 1;
-            }
-        }
-        return $nb_jours;
-    }
-
-    public function nbJours($debut, $fin)
-    {
-        return round((strtotime($fin) - strtotime($debut)) / (60 * 60 * 24));
-    }
-
-    public function dateDiff($date1, $date2)
-    {
-        $diff   = abs($date1 - $date2);
-        $retour = array();
-
-        $tmp              = $diff;
-        $retour['second'] = $tmp % 60;
-
-        $tmp              = floor(($tmp - $retour['second']) / 60);
-        $retour['minute'] = $tmp % 60;
-
-        $tmp            = floor(($tmp - $retour['minute']) / 60);
-        $retour['hour'] = $tmp % 24;
-
-        $tmp           = floor(($tmp - $retour['hour']) / 24);
-        $retour['day'] = $tmp;
-
-        return $retour;
     }
 
     // add mois a partir du nombre de jour dans chaque mois

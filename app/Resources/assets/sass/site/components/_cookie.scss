@@ -1,33 +1,45 @@
 .cookie-box {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 10px 30px;
   display: none;
-
-  position: fixed;
-  bottom: 0;
+  width: 100%;
   z-index: $depth-site-header - 1;
-
   background-color: fade-out($c-bg3, .1);
   color: $c-t1;
-  font-size: 14px;
-  line-height: 1.2em;
-
-  .fleft {
-    width: 80%;
-    line-height: 40px;
-
-    p {
-      margin: 0;
+  .inner {
+    display: table;
+    padding: 5px 0 5px 10px;
+    max-width: 920px;
+    min-height: 32px;
+    margin: 0 auto;
+  }
+  p, .icon {
+    display: table-cell;
+    vertical-align: middle;
+  }
+  p {
+    font-size: 12px;
+    line-height: 1;
+    margin: 0;
+    padding-right: 5px;
+  }
+  .icon {
+    cursor: pointer;
+    padding: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: none;
+    color: $c-t3;
+    &:hover {
+      color: $c-bg3;
+      background: $c-p1;
+    }
+    &:active {
+      color: $c-p1;
+      background: transparent;
     }
   }
-
-  .fright {
-    width: 20%;
-    text-align: right;
-
-    p {
-      margin: 0;
+  @media (min-width: 768px) {
+    .inner {
+      padding: 0;
     }
   }
 }

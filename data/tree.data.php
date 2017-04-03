@@ -1,30 +1,6 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 
 class tree extends tree_crud
 {
@@ -91,7 +67,7 @@ class tree extends tree_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
     // Definition des types d'éléments
-    public $typesElements = array('Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox', 'Boolean', 'SVG');
+    public $typesElements = ['Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox', 'Boolean', 'SVG', 'Partner'];
 
     // Affichage des elements de formulaire en fonction du type d'élément
     public function displayFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
@@ -351,11 +327,32 @@ class tree extends tree_crud
                 case 'Boolean':
                     echo '
                     <tr>
-                        <th>
+                        <th style="padding-top:10px">
                             <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
                             <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
                                 <option value="0"' . ($this->params['tree_elements']->value == 0 ? ' selected' : '') . '>Non</option>
                                 <option value="1"' . ($this->params['tree_elements']->value == 1 ? ' selected' : '') . '>Oui</option>
+                            </select>
+                        </th>
+                    </tr>';
+                    break;
+
+                case 'Partner':
+                    $partner  = new \partner($this->bdd);
+                    $partners = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
+
+                    echo '
+                    <tr>
+                        <th style="padding-top:10px">
+                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                                <option value=""></option>';
+
+                    foreach ($partners as $partner) {
+                        echo '<option value="' . $partner['id'] . '"' . ($this->params['tree_elements']->value == $partner['id'] ? ' selected' : '') . '>' . $partner['name'] . '</option>';
+                    }
+
+                    echo '
                             </select>
                         </th>
                     </tr>';

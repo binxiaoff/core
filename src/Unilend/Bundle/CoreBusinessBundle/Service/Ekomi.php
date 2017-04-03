@@ -44,6 +44,10 @@ class Ekomi
      */
     public function sendProjectEmail(\projects $project)
     {
+        if (empty($this->shopId) || empty($this->password)) {
+            return false;
+        }
+
         /** @var \companies $company */
         $company = $this->entityManager->getRepository('companies');
         $company->get($project->id_company);

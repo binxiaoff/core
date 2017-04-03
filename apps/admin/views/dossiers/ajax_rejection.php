@@ -23,7 +23,7 @@
     $('#rejection_reason_form').submit(function(e) {
         <?php if (1 == $this->iStep) : ?>
             e.preventDefault();
-            check_status_dossier(<?= \projects_status::REJETE ?>, <?= $this->iProjectId ?>);
+            check_status_dossier(<?= \projects_status::COMMERCIAL_REJECTION ?>, <?= $this->iProjectId ?>);
         <?php elseif (0 < $this->iStep) : ?>
             e.preventDefault();
             valid_rejete_etape<?= $this->iStep ?>(2, <?= $this->iProjectId ?>);

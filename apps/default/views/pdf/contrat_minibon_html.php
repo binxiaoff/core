@@ -64,7 +64,7 @@
                     </li>
                     <li>
                         <div class="col-long">Lieu d’exploitation</div>
-                        <div class="col-small"><?= $this->companiesEmprunteur->lieu_exploi ?></div>
+                        <div class="col-small"><?= $this->companiesEmprunteur->city ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                 </ul>

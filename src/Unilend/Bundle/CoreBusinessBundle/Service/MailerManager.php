@@ -1961,7 +1961,7 @@ class MailerManager
         $template = [
             '$surl'         => $this->sSUrl,
             '$id_projet'    => $project->id_project,
-            '$nomProjet'    => $project->title_bo,
+            '$nomProjet'    => $project->title,
             '$nomCompany'   => $company->name,
             '$lien_pouvoir' => $proxy->url_pdf,
             '$lien_mandat'  => $mandate->url_pdf

@@ -244,63 +244,80 @@ function activeUserZone(id_user, id_zone, zone) {
     xhr_object.send(null);
 }
 
-function addMemo(id, type) {
-    var content_memo = $('#content_memo').val();
-    var val = {content_memo: content_memo, id: id, type: type};
-    $.post(add_url + '/ajax/addMemo', val).done(function (data) {
-        $("#table_memo").html(data);
+function editMemo(projectId, commentId) {
+    $.ajax({
+        url: add_url + '/dossiers/memo',
+        method: 'POST',
+        dataType: 'html',
+        data: {
+            projectId: projectId,
+            commentId: commentId,
+            content: $('#content_memo').val()
+        },
+        success: function(response) {
+            $('#table_memo').html(response)
+            $.fn.colorbox.close()
+        }
     });
 }
 
-function deleteMemo(id_project_comment, id_project) {
-    if (confirm('Etes vous sur de vouloir supprimer ?') == true) {
-        var memoRows = $("#table_memo .tablesorter tbody tr");
-        var targetedMemoRow = event.target;
-        var val = {id_project_comment: id_project_comment, id_project: id_project};
-        $.post(add_url + '/ajax/deleteMemo', val).done(function() {
-            if(memoRows.length == 1) {
-                 $("#table_memo *").remove();
+function deleteMemo(projectId, commentId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer le mémo ?')) {
+        var memoRows = $('#table_memo .tablesorter tbody tr'),
+            targetedMemoRow = event.target
+
+        $.ajax({
+            url: add_url + '/dossiers/memo/' + projectId + '/' + commentId,
+            method: 'DELETE',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success != undefined && response.success) {
+                    if (memoRows.length == 1) {
+                        $('#table_memo *').remove()
+                    } else {
+                        $(targetedMemoRow).closest('tr').remove()
+                    }
+                } else {
+                    if (response.error != undefined && response.error) {
+                        if (response.message != undefined) {
+                            alert(response.message)
+                        } else {
+                            alert('Erreur inconnue')
+                        }
+                    }
+                }
             }
-            else {
-                $(targetedMemoRow).closest("tr").remove();
-            }
-        });
+        })
     }
 }
 
 function valid_etape1(id_project) {
+    $('#dossier_etape1').find('.btn_link').hide();
+
     var val = {
-        montant_etape1: $("#montant_etape1").val(),
-        duree_etape1: $("#duree_etape1").val(),
-        siren_etape1: $("#siren_etape1").val(),
-        source_etape1: $("#source_etape1").val(),
-        partner_etape1: $("#partner_etape1").val(),
-        id_project: id_project,
-        etape: 1
+        montant_etape1: $('#montant_etape1').val(),
+        duree_etape1:   $('#duree_etape1').val(),
+        siren_etape1:   $('#siren_etape1').val(),
+        source_etape1:  $('#source_etape1').val(),
+        partner_etape1: $('#partner_etape1').val(),
+        id_project:     id_project,
+        etape:          1
     };
+
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
-        $("#siren").val($("#siren_etape1").val());
-        $("#montant").val($("#montant_etape1").val());
-        $('#duree option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
+        var response = jQuery.parseJSON(data);
 
-        $("#montant_etape3").val($("#montant_etape1").val());
-        $('#duree_etape3 option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
-
-        $("#valid_etape1").slideDown();
-
-        if (0 == $("#duree_etape1").val()) {
-            $("#status").css('display', 'none');
-            $("#msgProject").css('display', 'none');
-            $("#displayPeriodHS").css('display', 'block');
-            $("#msgProjectPeriodHS").css('display', 'block');
-        } else {
-            $("#status").css('display', 'block');
-            $("#msgProject").css('display', 'block');
-            $("#displayPeriodHS").css('display', 'none');
-            $("#msgProjectPeriodHS").css('display', 'none');
+        if (response.success) {
+            $(location).attr('href', add_url + '/dossiers/edit/' + id_project);
+            return;
         }
+
+        $('#dossier_etape1').find('.btn_link').show();
+        $('#error_etape1').html(response.error ? response.error : 'Erreur inconnue');
+        $('#error_etape1').slideDown();
+
         setTimeout(function () {
-            $("#valid_etape1").slideUp();
+            $('#error_etape1').slideUp();
         }, 3000);
 
     });
@@ -378,34 +395,6 @@ function valid_etape2(id_project) {
     });
 }
 
-function valid_etape3(id_project) {
-    var val = {
-        montant_etape3:      $("#montant_etape3").val(),
-        duree_etape3:        $("#duree_etape3").val(),
-        titre_etape3:        $("#titre_etape3").val(),
-        objectif_etape3:     $("#objectif_etape3").val(),
-        presentation_etape3: $("#presentation_etape3").val(),
-        moyen_etape3:        $("#moyen_etape3").val(),
-        comments_etape3:     $("#comments_etape3").val(),
-        id_project:          id_project,
-        etape:               3
-    };
-
-    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
-        $("#montant").val($("#montant_etape3").val());
-        $("#montant_etape1").val($("#montant_etape3").val());
-        $('#duree option[value="' + $("#duree_etape3").val() + '"]').prop('selected', true);
-        $('#duree_etape1 option[value="' + $("#duree_etape3").val() + '"]').prop('selected', true);
-        $("#title").val($("#titre_etape3").val());
-        $("#valid_etape3").slideDown();
-
-        setTimeout(function () {
-            $("#valid_etape3").slideUp();
-        }, 3000);
-
-    });
-}
-
 function valid_etape4_1(id_project) {
     var val = 'id_project=' + id_project + '&etape=4.1&' + $('#dossier_etape4_1').serialize();
 
@@ -436,14 +425,12 @@ function generer_le_mdp(id_client) {
 }
 
 function send_email_borrower_area(id_client, type) {
-
     var val = {
         id_client: id_client,
         type: type
     };
     $.post(add_url + '/ajax/send_email_borrower_area', val).done(function (data) {
         if (data != 'nok') {
-
             $(".reponse_email").slideDown();
 
             setTimeout(function () {
@@ -454,7 +441,7 @@ function send_email_borrower_area(id_client, type) {
 }
 
 function check_status_dossier(status, id_project) {
-    if (status == 25) {
+    if (status == 30) {
         var isNotBalanced = false;
 
         if ($('#total_actif_0').data('total') != $('#total_passif_0').data('total')) {
@@ -477,43 +464,35 @@ function check_status_dossier(status, id_project) {
 
         if (isNotBalanced) {
             alert('Certains comptes ne sont pas équilibrés');
-            $('#status option[value="' + previous_status + '"]').prop('selected', true);
+            location.hash = '#section-balance-sheets'
             return;
         }
     }
 
-    if (status == 25) {
+    if (status == 30) {
         var message = 'passer en revue';
-    } else if (status == 30) {
+    } else if (status == 25) {
         var message = 'rejeter';
     } else {
-        console.log('Valeur inconnue');
+        console.log('Valeur inconnue', status);
         return;
     }
 
-    if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
+    if (confirm('Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
         $.post(add_url + '/ajax/check_status_dossier', {
             status: status,
             id_project: id_project,
             rejection_reason: $('#rejection_reason option:selected').val()
         }).done(function (data) {
             if (data != 'nok') {
-                var obj = jQuery.parseJSON(data),
-                    liste = obj.liste,
-                    etape_6 = obj.etape_6;
-
-                $('#analysts-row').show();
-                $('#current_statut').html(liste);
-                $('#status_dossier').remove();
-                $('#content_etape6').html(etape_6);
+                location.reload()
             } else if (data == 'nok') {
-                alert('Tous les critères obligatoires n\'ont pas été rentrés');
+                alert('Tous les critères obligatoires n\'ont pas été rentrés')
             }
-            parent.$.fn.colorbox.close();
-        });
+            parent.$.fn.colorbox.close()
+        })
     }
 }
-
 
 function nodizaines(val, id) {
     val = parseFloat(val.replace(',', '.'));
@@ -529,7 +508,7 @@ function valid_rejete_etape6(status, id_project) {
     else if (status == 2) var message = 'rejeter';
     else if (status == 3) var message = 'sauvegarder';
 
-    if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
+    if (confirm('Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
         var structure                       = parseFloat($('#structure').val().replace(',', '.')),
             rentabilite                     = parseFloat($('#rentabilite').val().replace(',', '.')),
             tresorerie                      = parseFloat($('#tresorerie').val().replace(',', '.')),
@@ -541,8 +520,7 @@ function valid_rejete_etape6(status, id_project) {
             indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique').val().replace(',', '.')),
             avis                            = ckedAvis.getData(),
             rejection_reason                = $('#rejection_reason option:selected').val(),
-            form_ok = true;
-
+            form_ok                         = true;
 
         if (isNaN(structure) != false && structure || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
             form_ok = false;
@@ -561,6 +539,20 @@ function valid_rejete_etape6(status, id_project) {
         else if (status == 2 && rejection_reason == '') {
             form_ok = false;
             alert('Vous devez renseigner le motif de rejet');
+        } else if (
+            status == 1
+            && (
+                undefined === $('input[name="ratings[rpc_6mois]"]:checked').val()
+                || undefined === $('input[name="ratings[rpc_12mois]"]:checked').val()
+                || ! $('input[name="ratings[cotation_fiben]"]').val()
+                || ! $('input[name="ratings[date_tresorerie]"]').val()
+                || ! $('input[name="ratings[montant_tresorerie]"]').val()
+                || ! $('input[name="ratings[delais_paiement_altares]"]').val()
+                || ! $('input[name="ratings[delais_paiement_secteur]"]').val()
+            )
+        ) {
+            form_ok = false
+            alert('Toutes les données obligatoires de notation externe doivent être remplies')
         }
 
         if (form_ok == true) {
@@ -578,44 +570,23 @@ function valid_rejete_etape6(status, id_project) {
                 indicateur_risque_dynamique: indicateur_risque_dynamique,
                 avis: avis,
                 rejection_reason: rejection_reason
-            }).done(function (data) {
-                if (data != 'nok') {
-                    $('#structure').val(Math.round(structure * 10) / 10);
-                    $('#rentabilite').val(Math.round(rentabilite * 10) / 10);
-                    $('#tresorerie').val(Math.round(tresorerie * 10) / 10);
-                    $('#global').val(Math.round(global * 10) / 10);
-                    $('#individuel').val(Math.round(individuel * 10) / 10);
-                    $('#performance_fianciere').html(Math.round(performance_fianciere * 10) / 10);
-                    $('#marche_opere').html(Math.round(marche_opere * 10) / 10);
-                    $('#dirigeance').val(Math.round(dirigeance * 10) / 10);
-                    $('#indicateur_risque_dynamique').val(Math.round(indicateur_risque_dynamique * 10) / 10);
+            }).done(function(data) {
+                var response = jQuery.parseJSON(data)
 
-                    var obj     = jQuery.parseJSON(data),
-                        liste   = obj.liste,
-                        etape_7 = obj.etape_7;
+                if (response.success) {
+                    if (status == 3) {
+                        $('#valid_etape6').slideDown()
 
-                    $('#valid_etape6').slideDown();
-
-                    setTimeout(function () {
-                        $("#valid_etape6").slideUp();
-                    }, 3000);
-
-                    $('#current_statut').html(liste);
-
-                    if (status != 3) {
-                        $('.btnValid_rejet_etape6').remove();
-
-                        if (status == 1) {
-                            if ($('#content_etape7').html() == '') {
-                                $('#content_etape7').html(etape_7);
-                            } else {
-                                $('#content_etape7').show();
-                                $('.btnValid_rejet_etape7').show();
-                            }
-                        } else if (status == 2) {
-                            parent.$.fn.colorbox.close();
-                        }
+                        setTimeout(function() {
+                            $('#valid_etape6').slideUp()
+                        }, 3000)
+                    } else {
+                        location.reload()
                     }
+                } else if (response.error) {
+                    alert(response.error)
+                } else {
+                    alert('Une erreur est survenue')
                 }
             });
         }
@@ -638,9 +609,8 @@ function valid_rejete_etape7(status, id_project) {
     }
     else if (status == 2) var message = 'rejeter';
     else if (status == 3) var message = 'sauvegarder';
-    else if (status == 4) var message = 'vouloir plus d\'informations sur';
 
-    if (confirm(validation_message + 'Etes vous sur de ' + message + ' le dossier ?') == true) {
+    if (confirm(validation_message + 'Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
         var structure                       = parseFloat($('#structure_comite').val().replace(',', '.')),
             rentabilite                     = parseFloat($('#rentabilite_comite').val().replace(',', '.')),
             tresorerie                      = parseFloat($('#tresorerie_comite').val().replace(',', '.')),
@@ -698,42 +668,25 @@ function valid_rejete_etape7(status, id_project) {
                 dirigeance_comite: dirigeance,
                 indicateur_risque_dynamique_comite: indicateur_risque_dynamique,
                 rejection_reason: rejection_reason
-            }).done(function (data) {
-                if (data != 'nok') {
-                    var obj        = jQuery.parseJSON(data),
-                        liste      = obj.liste,
-                        btn_etape6 = obj.btn_etape6,
-                        risk        = obj.content_risk;
-                    if (typeof obj.error != 'undefined') {
-                        alert(obj.error);
-                        return;
-                    }
-                    $('#valid_etape7').slideDown();
+            }).done(function(data) {
+                var response = jQuery.parseJSON(data)
 
-                    setTimeout(function () {
-                        $("#valid_etape7").slideUp();
-                    }, 3000);
+                if (response.success) {
+                    if (status == 3) {
+                        $('#valid_etape7').slideDown()
 
-                    $('#current_statut').html(liste);
-
-                    if (status != 3) {
-                        if (status == 4)$('.btnValid_rejet_etape7').hide();
-                        else $('.btnValid_rejet_etape7').remove();
-
-                        $('.btnValid_rejet_etape6').remove();
+                        setTimeout(function() {
+                            $('#valid_etape7').slideUp()
+                        }, 3000)
+                    } else {
+                        location.reload()
                     }
-                    if (status == 4) {
-                        $('#content_etape7').hide();
-                        $('.listBtn_etape6').html(btn_etape6);
-                    }
-                    else if (status == 1) {
-                        location.reload();
-                    }
-                    else if (status == 2) {
-                        parent.$.colorbox.close();
-                    }
+                } else if (response.error) {
+                    alert(response.error)
+                } else {
+                    alert('Une erreur est survenue')
                 }
-            });
+            })
         }
     }
 }
@@ -754,7 +707,6 @@ function check_force_pass() {
     // Si la reponse est OK on balance l'ajax
     document.getElementById('indicateur_force').innerHTML = reponse;
 }
-
 
 /* Fonction qui check si une autre compagnie possede deja cet iban */
 function CheckIfIbanExistDeja(iban, bic, id_client) {

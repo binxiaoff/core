@@ -8,12 +8,11 @@ use Doctrine\ORM\Mapping as ORM;
  * Backpayline
  *
  * @ORM\Table(name="backpayline", indexes={@ORM\Index(name="idx_backpayline_token", columns={"token"}), @ORM\Index(name="idx_id_wallet", columns={"id_wallet"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BackpaylineRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Backpayline
 {
-
     const WS_DEFAULT_VERSION = 3;
 
     const CODE_TRANSACTION_APPROVED = '00000';
@@ -79,6 +78,13 @@ class Backpayline
     private $code;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="card_number", type="string", length=16, nullable=true)
+     */
+    private $cardNumber;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -110,7 +116,7 @@ class Backpayline
      *
      * @return Backpayline
      */
-    public function setWallet(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWallet = null)
+    public function setWallet(Wallet $idWallet = null)
     {
         $this->idWallet = $idWallet;
 
@@ -359,7 +365,7 @@ class Backpayline
      */
     public function setAddedValue()
     {
-        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
@@ -370,5 +376,45 @@ class Backpayline
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return Wallet
+     */
+    public function getIdWallet()
+    {
+        return $this->idWallet;
+    }
+
+    /**
+     * @param Wallet $idWallet
+     *
+     * @return Backpayline
+     */
+    public function setIdWallet($idWallet)
+    {
+        $this->idWallet = $idWallet;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCardNumber()
+    {
+        return $this->cardNumber;
+    }
+
+    /**
+     * @param string $cardNumber
+     *
+     * @return Backpayline
+     */
+    public function setCardNumber($cardNumber)
+    {
+        $this->cardNumber = $cardNumber;
+
+        return $this;
     }
 }

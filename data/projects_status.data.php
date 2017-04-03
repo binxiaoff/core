@@ -1,81 +1,67 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
 
 class projects_status extends projects_status_crud
 {
-    const DEMANDE_SIMULATEUR      = 4;
-    const NOTE_EXTERNE_FAIBLE     = 5;
-    const PAS_3_BILANS            = 6;
-    const COMPLETUDE_ETAPE_2      = 7;
-    const COMPLETUDE_ETAPE_3      = 8;
-    const ABANDON                 = 9;
-    const A_TRAITER               = 10;
-    const EN_ATTENTE_PIECES       = 20;
-    const ATTENTE_ANALYSTE        = 25;
-    const REJETE                  = 30;
-    const REVUE_ANALYSTE          = 31;
-    const REJET_ANALYSTE          = 32;
-    const COMITE                  = 33;
-    const REJET_COMITE            = 34;
-    const PREP_FUNDING            = 35;
-    const A_FUNDER                = 40;
-    const AUTO_BID_PLACED         = 45;
-    const EN_FUNDING              = 50;
-    const BID_TERMINATED          = 55;
-    const FUNDE                   = 60;
-    const FUNDING_KO              = 70;
-    const PRET_REFUSE             = 75;
-    const REMBOURSEMENT           = 80;
-    const REMBOURSE               = 90;
-    const REMBOURSEMENT_ANTICIPE  = 95;
-    const PROBLEME                = 100;
-    const PROBLEME_J_X            = 110;
-    const RECOUVREMENT            = 120;
-    const PROCEDURE_SAUVEGARDE    = 130;
-    const REDRESSEMENT_JUDICIAIRE = 140;
-    const LIQUIDATION_JUDICIAIRE  = 150;
-    const DEFAUT                  = 160;
+    const IMPOSSIBLE_AUTO_EVALUATION = 1;
+    const NOT_ELIGIBLE               = 2;
+    const INCOMPLETE_REQUEST         = 5;
+    const COMPLETE_REQUEST           = 10;
+    const ABANDONED                  = 15;
+    const POSTPONED                  = 19;
+    const COMMERCIAL_REVIEW          = 20;
+    const COMMERCIAL_REJECTION       = 25;
+    const PENDING_ANALYSIS           = 30;
+    const ANALYSIS_REVIEW            = 31;
+    const ANALYSIS_REJECTION         = 32;
+    const COMITY_REVIEW              = 33;
+    const COMITY_REJECTION           = 34;
+    const PREP_FUNDING               = 35;
+    const A_FUNDER                   = 40;
+    const AUTO_BID_PLACED            = 45;
+    const EN_FUNDING                 = 50;
+    const BID_TERMINATED             = 55;
+    const FUNDE                      = 60;
+    const FUNDING_KO                 = 70;
+    const PRET_REFUSE                = 75;
+    const REMBOURSEMENT              = 80;
+    const REMBOURSE                  = 90;
+    const REMBOURSEMENT_ANTICIPE     = 95;
+    const PROBLEME                   = 100;
+    const PROBLEME_J_X               = 110;
+    const RECOUVREMENT               = 120;
+    const PROCEDURE_SAUVEGARDE       = 130;
+    const REDRESSEMENT_JUDICIAIRE    = 140;
+    const LIQUIDATION_JUDICIAIRE     = 150;
+    const DEFAUT                     = 160;
 
-    const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND              = 'product_not_found';
-    const NON_ELIGIBLE_REASON_INACTIVE                       = 'entity_inactive';
-    const NON_ELIGIBLE_REASON_UNKNOWN_SIREN                  = 'unknown_siren';
-    const NON_ELIGIBLE_REASON_PROCEEDING                     = 'in_proceeding';
-    const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES = 'negative_raw_operating_incomes';
-    const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK         = 'negative_capital_stock';
-    const NON_ELIGIBLE_REASON_LOW_SCORE                      = 'low_score';
-    const NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL        = 'negative_equity_capital';
-    const NON_ELIGIBLE_REASON_LOW_TURNOVER                   = 'low_turnover';
+    const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND                    = 'product_not_found';
+    const NON_ELIGIBLE_REASON_INACTIVE                             = 'entity_inactive';
+    const NON_ELIGIBLE_REASON_UNKNOWN_SIREN                        = 'unknown_siren';
+    const NON_ELIGIBLE_REASON_PROCEEDING                           = 'in_proceeding';
+    const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES       = 'negative_raw_operating_incomes';
+    const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK               = 'negative_capital_stock';
+    const NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL              = 'negative_equity_capital';
+    const NON_ELIGIBLE_REASON_LOW_TURNOVER                         = 'low_turnover';
+    const NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT            = 'too_much_payment_incident';
+    const NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT         = 'non_allowed_payment_incident';
+    const NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE      = 'unilend_xerfi_elimination_score';
+    const NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE       = 'unilend_xerfi_vs_altares_score';
+    const NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE                    = 'low_altares_score';
+    const NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE                 = 'low_infolegale_score';
+    const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT                  = 'euler_traffic_light';
+    const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE = 'euler_traffic_light_vs_altares_score';
+    const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI = 'euler_traffic_light_vs_unilend_xerfi';
+    const NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI         = 'euler_grade_vs_unilend_xerfi';
+    const NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE         = 'euler_grade_vs_altares_score';
+    const NON_ELIGIBLE_REASON_INFOGREFFE_UNKNOWN_PRIVILEGES        = 'unknown_infogreffe_privileges';
+    const NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES                = 'has_infogreffe_privileges';
+    const UNEXPECTED_RESPONSE                                      = 'unexpected_response_from_';
 
     /**
      * List of projects with pending repayments
      * @var array $runningRepayment
      */
-    public static $runningRepayment = array(
+    public static $runningRepayment = [
         self::REMBOURSEMENT,
         self::PROBLEME,
         self::PROBLEME_J_X,
@@ -83,13 +69,13 @@ class projects_status extends projects_status_crud
         self::PROCEDURE_SAUVEGARDE,
         self::REDRESSEMENT_JUDICIAIRE,
         self::LIQUIDATION_JUDICIAIRE
-    );
+    ];
 
     /**
      * List of project status after repayment
      * @var array
      */
-    public static $afterRepayment = array(
+    public static $afterRepayment = [
         self::REMBOURSEMENT,
         self::REMBOURSE,
         self::REMBOURSEMENT_ANTICIPE,
@@ -100,7 +86,44 @@ class projects_status extends projects_status_crud
         self::REDRESSEMENT_JUDICIAIRE,
         self::LIQUIDATION_JUDICIAIRE,
         self::DEFAUT
-    );
+    ];
+
+    /**
+     * List of project status when project should be assigned to a commercial
+     * @var array
+     */
+    public static $saleTeam = [
+        self::POSTPONED,
+        self::COMMERCIAL_REVIEW,
+        self::PENDING_ANALYSIS,
+        self::ANALYSIS_REVIEW,
+        self::COMITY_REVIEW,
+        self::PREP_FUNDING,
+        self::A_FUNDER,
+        self::AUTO_BID_PLACED,
+        self::EN_FUNDING,
+        self::BID_TERMINATED,
+        self::FUNDE
+    ];
+
+    /**
+     * List of project status when project is considered as part of the commercial team pipe
+     * @var array
+     */
+    public static $upcomingSaleTeam = [
+        self::INCOMPLETE_REQUEST,
+        self::COMPLETE_REQUEST
+    ];
+
+    /**
+     * List of project status when project is considered as part of the risk team pipe
+     * @var array
+     */
+    public static $riskTeam = [
+        self::PENDING_ANALYSIS,
+        self::ANALYSIS_REVIEW,
+        self::COMITY_REVIEW
+    ];
 
     public function __construct($bdd, $params = '')
     {
@@ -131,7 +154,7 @@ class projects_status extends projects_status_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `projects_status` ' . $where;
+        $sql = 'SELECT COUNT(*) FROM `projects_status` ' . $where;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0));
@@ -170,10 +193,5 @@ class projects_status extends projects_status_crud
         $id_project_statut = (int)($this->bdd->result($result, 0, 0));
 
         return parent::get($id_project_statut, 'id_project_status');
-    }
-
-    public function getNextStatus($iStatus)
-    {
-        return (int) $this->bdd->result($this->bdd->query('SELECT status FROM projects_status WHERE status > ' . $iStatus . ' ORDER BY status ASC LIMIT 1'));
     }
 }

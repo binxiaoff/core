@@ -10,32 +10,38 @@ PHPExcel_Settings::setCacheStorageMethod(
     array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
 );
 
-$oDocument    = new PHPExcel();
-$oActiveSheet = $oDocument->setActiveSheetIndex(0);
-$oActiveSheet->setCellValueByColumnAndRow(0, 1, 'ID');
-$oActiveSheet->setCellValueByColumnAndRow(1, 1, 'Motif');
-$oActiveSheet->setCellValueByColumnAndRow(2, 1, 'Montant');
-$oActiveSheet->setCellValueByColumnAndRow(3, 1, 'Attribution');
-$oActiveSheet->setCellValueByColumnAndRow(4, 1, 'ID client');
-$oActiveSheet->setCellValueByColumnAndRow(5, 1, 'Date');
+$document    = new PHPExcel();
+$activeSheet = $document->setActiveSheetIndex(0);
+$activeSheet->setCellValueByColumnAndRow(0, 1, 'ID');
+$activeSheet->setCellValueByColumnAndRow(1, 1, 'Motif');
+$activeSheet->setCellValueByColumnAndRow(2, 1, 'Montant');
+$activeSheet->setCellValueByColumnAndRow(3, 1, 'Attribution');
+$activeSheet->setCellValueByColumnAndRow(5, 1, 'Date');
 
-foreach ($this->aOperations as $iRowIndex => $aRow) {
-    $iColIndex = 0;
-    $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $aRow['id_reception']);
-    $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $aRow['motif']);
-    $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $aRow['montant'] / 100);
+foreach ($this->receptions as $index => $reception) {
+    $colIndex = 0;
+    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdReception());
+    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getMotif());
+    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, str_replace('.', ',', bcdiv($reception->getMontant(), 100, 2)));
 
-    if (1 == $aRow['status_bo'] && isset($this->aUsers[$aRow['id_user']])) {
-        $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $this->aUsers[$aRow['id_user']]['firstname'] . ' ' . $this->aUsers[$aRow['id_user']]['name'] . ' - ' . date('d/m/Y H:i:s', strtotime($aRow['assignment_date'])));
+    if (1 == $reception->getStatusBo() && $reception->getIdUser()) {
+        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . ' - ' . $reception->getAssignmentDate()->format('d/m/Y à H:i:s'));
     } else {
-        $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $this->statusOperations[$aRow['status_bo']]);
+        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $this->statusOperations[$reception->getStatusBo()]);
     }
 
-    $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $aRow['id_client']);
-    $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, date('d/m/Y', strtotime($aRow['added'])));
+    if (null === $reception->getIdProject()) {
+        $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID client');
+        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdClient()->getIdClient());
+    } else {
+        $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID projet');
+        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdProject()->getIdProject());
+    }
+
+    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getAdded()->format('d/m/Y'));
 }
 
-/** @var \PHPExcel_Writer_CSV $oWriter */
-$oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
-$oWriter->setDelimiter(';');
-$oWriter->save('php://output');
+/** @var \PHPExcel_Writer_CSV $writer */
+$writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
+$writer->setDelimiter(';');
+$writer->save('php://output');
