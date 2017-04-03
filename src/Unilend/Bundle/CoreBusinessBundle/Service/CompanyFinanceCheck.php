@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\PaymentIncident;
+use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 use Unilend\Bundle\WSClientBundle\Service\CodinfManager;
 use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
@@ -33,7 +34,7 @@ class CompanyFinanceCheck
     private $wsInfogreffe;
 
     /**
-     * @param EntityManager     $entityManager
+     * @param EntityManager              $entityManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
      * @param ProjectManager             $projectManager
      * @param CacheItemPoolInterface     $cacheItemPool
@@ -68,15 +69,18 @@ class CompanyFinanceCheck
      *
      * @param \companies $company
      * @param string     $rejectionReason
+     *
      * @return bool
      */
     public function isCompanySafe(\companies &$company, &$rejectionReason)
     {
+        if (Companies::INVALID_SIREN_EMPTY === $company->siren) {
+            $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
+            return false;
+        }
+
         try {
-            if (
-                Companies::INVALID_SIREN_EMPTY !== $company->siren
-                && null !== ($companyData = $this->wsAltares->getCompanyIdentity($company->siren))
-            ) {
+            if (null !== ($companyData = $this->wsAltares->getCompanyIdentity($company->siren))) {
                 $company->name          = $company->name ?: $companyData->getCorporateName();
                 $company->forme         = $company->forme ?: $companyData->getCompanyForm();
                 $company->capital       = $company->capital ?: $companyData->getCapital();
@@ -106,9 +110,13 @@ class CompanyFinanceCheck
                 return true;
             }
         } catch (\Exception $exception) {
+            $this->logger->error(
+                'Could not get company identity: AltaresManager::getCompanyIdentity(' . $company->siren . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]
+            );
+
             $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_identity';
-            $this->logger->error('Could not get company identity: AltaresManager::getCompanyIdentity(' . $company->siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]);
+            return false;
         }
 
         $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
@@ -117,6 +125,7 @@ class CompanyFinanceCheck
 
     /**
      * @param string $siren
+     *
      * @return null|BalanceSheetList
      */
     public function getBalanceSheets($siren)
@@ -124,8 +133,10 @@ class CompanyFinanceCheck
         try {
             return $this->wsAltares->getBalanceSheets($siren);
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
+            $this->logger->error(
+                'Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]
+            );
         }
 
         return null;
@@ -136,6 +147,7 @@ class CompanyFinanceCheck
      *
      * @param string $siren
      * @param string $rejectionReason
+     *
      * @return bool
      */
     public function hasCodinfPaymentIncident($siren, &$rejectionReason)
@@ -164,8 +176,10 @@ class CompanyFinanceCheck
                 return false;
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get incident list: CodinfManager::getIncidentList(' . $siren . ') for 1 year. Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
+            $this->logger->error(
+                'Could not get incident list: CodinfManager::getIncidentList(' . $siren . ') for 1 year. Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
+            );
         }
 
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident';
@@ -176,6 +190,7 @@ class CompanyFinanceCheck
      * @param BalanceSheetList $balanceSheetList
      * @param string           $siren
      * @param string           $rejectionReason
+     *
      * @return bool
      */
     public function hasNegativeCapitalStock(BalanceSheetList $balanceSheetList, $siren, &$rejectionReason)
@@ -203,8 +218,9 @@ class CompanyFinanceCheck
 
     /**
      * @param BalanceSheetList $balanceSheetList
-     * @param string $siren
-     * @param $rejectionReason
+     * @param string           $siren
+     * @param string           $rejectionReason
+     *
      * @return bool
      */
     public function hasNegativeRawOperatingIncomes(BalanceSheetList $balanceSheetList, $siren, &$rejectionReason)
@@ -231,27 +247,32 @@ class CompanyFinanceCheck
     }
 
     /**
-     * @param string $siren
-     * @param string $rejectionReason
+     * @param string                       $siren
+     * @param string                       $rejectionReason
+     * @param \company_rating_history|null $companyRatingHistory
+     * @param \company_rating|null         $companyRating
+     *
      * @return bool
      */
-    public function hasInfogreffePrivileges($siren, &$rejectionReason)
+    public function hasInfogreffePrivileges($siren, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
     {
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
         try {
             $privileges = $this->wsInfogreffe->getIndebtedness($siren);
 
-            if (is_array($privileges)) {
-                switch ($privileges['code']) {
-                    case '013':
-                        return false;
-                    default:
-                        $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_UNKNOWN_PRIVILEGES;
-                        return true;
+            if (
+                is_array($privileges)
+                && isset($privileges['code'])
+                && in_array($privileges['code'], [InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, InfogreffeManager::RETURN_CODE_NO_DEBTOR])
+            ) {
+                if (null !== $companyRatingHistory && null !== $companyRating) {
+                    $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_INFOGREFFE_RETURN_CODE, $privileges['code']);
                 }
+
+                return false;
             }
 
-            if (null !== $privileges) {
+            if ($privileges instanceof CompanyIndebtedness) {
                 $subscription3 = $privileges->getSubscription3();
 
                 if (count($subscription3) > 0) {
@@ -277,14 +298,17 @@ class CompanyFinanceCheck
             }
         } catch (\Exception $exception) {
             $this->logger->warning('Could not get infogreffe privileges: InfogreffeManager::getIndebtedness(' . $siren .'). Message: ' . $exception->getMessage(), $logContext);
+
+            $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
+            return true;
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
-        return true;
+        return false;
     }
 
     /**
      * @param \DateTime $date
+     *
      * @return int
      */
     private function numberOfMonthsAgo(\DateTime $date)
@@ -297,6 +321,7 @@ class CompanyFinanceCheck
     /**
      * @param FinancialSummary[] $postList
      * @param string             $postType
+     *
      * @return null|FinancialSummary
      */
     private function getSummaryFinancialPost(array $postList, $postType)
@@ -313,6 +338,7 @@ class CompanyFinanceCheck
     /**
      * @param FinancialSummary[] $postList
      * @param string             $postType
+     *
      * @return null|FinancialSummary
      */
     private function getManagementLineFinancialPost(array $postList, $postType)
@@ -324,5 +350,19 @@ class CompanyFinanceCheck
         }
 
         return null;
+    }
+
+    /**
+     * @param \company_rating_history $companyRatingHistory
+     * @param \company_rating         $companyRating
+     * @param string                  $ratingType
+     * @param mixed                   $ratingValue
+     */
+    private function setRatingData(\company_rating_history $companyRatingHistory, \company_rating $companyRating, $ratingType, $ratingValue)
+    {
+        $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
+        $companyRating->type                      = $ratingType;
+        $companyRating->value                     = $ratingValue;
+        $companyRating->create();
     }
 }

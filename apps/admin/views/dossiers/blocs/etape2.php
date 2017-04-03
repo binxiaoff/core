@@ -41,42 +41,45 @@
             }
         });
 
-        var initStreetView = function(lat, lng) {
-            // Init Google Street View
-            var sv = new google.maps.StreetViewService();
-            var location = {lat: lat, lng: lng};
-            var svElm = document.getElementById('street_view');
-            var streetview;
+        var initMap = function(location) {
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: location,
+                zoom: 16
+            });
+        }
+        var initStreetView = function(location) {
+            var sv = new google.maps.StreetViewPanorama(document.getElementById('streetview'), {
+                position: location,
+                pov: {heading: 165, pitch: 0},
+                zoom: 1
+            });
+        }
 
-            // Set the initial Street View camera to the center of the map
-            sv.getPanorama({location}, function(data, status) {
+        var validateCoordinates = function(lat, lng, streetview, container) {
+
+            var location = {lat: lat, lng: lng};
+            var svService = new google.maps.StreetViewService();
+
+            svService.getPanorama({location}, function(data, status) {
                 if (status !== google.maps.StreetViewStatus.OK) {
-                    streetview = {};
-                    $(svElm).html('');
-                    console.error('Street View data not found for this location.');
-                    $(svElm).parent().append($('<div class="streetview-error-message">Les coordonnées GPS ne sont pas valides. Veuillez saisir des coordonnées valides et réessayer.</div>'))
+                    console.log('Street View data not found for this exact location.');
+                    $(container).addClass('no-streetview');
+                    initMap(location)
                 } else {
-                    streetview = new google.maps.StreetViewPanorama(svElm, {
-                        position: location,
-                        pov: {heading: 165, pitch: 0},
-                        zoom: 1
-                    });
-                    $(svElm).parent().find('.streetview-error-message').remove();
+                    console.log('Street View data found.');
+                    if ($(container).is('.no-streetview')) {
+                        $(container).removeClass('no-streetview');
+                    }
+                    initStreetView(location)
                 }
             });
         }
-        var closeStreetView = function(el) {
-            var $el = el;
-            $el.animate({'padding-bottom': 0}, 200, function(){
-                $el.hide();
-            });
-        }
 
-        $("#etape2").on('click', '#btn_street_view', function(e) {
+        $("#etape2").on('click', '#btn_streetview', function(e) {
             e.preventDefault();
 
-            $streetview = $('#street_view')
-            $streetviewContainer = $streetview.parent();
+            var streetview = document.getElementById('streetview')
+            var container = document.getElementById('streetview_container')
             var lat = parseFloat($('#latitude').val());
             var lng = parseFloat($('#longitude').val());
 
@@ -85,52 +88,48 @@
             var animationTime = 200;
             var screenHeight = window.innerHeight;
             var availableHeight = screenHeight - offsetSpace;
-            var streetviewContainerWidth = $streetviewContainer.width()
+            var streetviewContainerWidth = $(container).width()
             var containerRatioHeight =  streetviewContainerWidth * aspectRatio;
 
-            $streetviewContainer.show();
+            $(container).show();
 
             // Scroll window to streetview
-            $('html, body').animate({scrollTop: $streetviewContainer.offset().top - offsetSpace}, animationTime, function() {
+            $('html, body').animate({scrollTop: $(container).offset().top - offsetSpace}, animationTime, function() {
                 var streetviewAspectRatio = '';
                 if (containerRatioHeight > availableHeight) {
                     streetviewAspectRatio = (availableHeight / streetviewContainerWidth) * 100 +  '%';
                 } else {
                     streetviewAspectRatio = aspectRatio * 100 + '%';
                 }
-                $streetviewContainer.animate({'padding-bottom': streetviewAspectRatio}, animationTime, function(){
-                    initStreetView(lat, lng);
+                $(container).animate({'padding-bottom': streetviewAspectRatio}, animationTime, function(){
+                    validateCoordinates(lat, lng, streetview, container);
                 });
             });
         });
-        $("#etape2").on('click', '#street_view_close', function(e) {
+
+        var closeStreetView = function(el) {
+            var $el = el;
+            $el.animate({'padding-bottom': 0}, 200, function(){
+                $el.hide();
+            });
+        }
+        $("#etape2").on('click', '#streetview_close', function(e) {
             e.preventDefault();
-            var streetview = $(this).closest('.streetview-container')
+            var streetview = $(this).closest('.streetview_container')
             closeStreetView(streetview)
         });
     });
 </script>
 <style>
-    .responsive-container {
+    #streetview_container {
         width: 100%;
         height: 0;
         position: relative;
         background: #ECECEC;
-    }
-    .streetview-container {
         display: none;
         margin-bottom: 30px;
     }
-    .streetview-error-message {
-        position: absolute;
-        z-index: 10;
-        top: 50%;
-        left: 30px;
-        right: 30px;
-        text-align: center;
-        font-size: 24px;
-    }
-    .streetview-container .controls {
+    #streetview_container .controls {
         position: absolute;
         box-sizing: border-box;
         top: 0;
@@ -139,18 +138,32 @@
         height: 40px;
         padding: 5px 10px;
     }
-    .streetview-container .controls .btn {
+    #streetview_container .controls .btn {
         float: right;
         width: 30px;
         height: 30px;
         text-align: center;
     }
-    .responsive-container .iframe, .responsive-container iframe{
+    #streetview_container .iframe {
         position: absolute;
         top: 40px;
         left: 10px;
         right: 10px;
         bottom: 10px;
+    }
+    #streetview-error {
+        line-height: 50px;
+        float: left;
+        color: #999;
+    }
+    #streetview-error img {
+        height: 20px;
+    }
+    #map, #streetview-error, .no-streetview #streetview {
+        display: none;
+    }
+    .no-streetview #map, .no-streetview #streetview-error {
+        display: block;
     }
 </style>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJQJHPnNXye8Hhsf7CUK6dPQ9dvD861k4"></script>
@@ -158,11 +171,13 @@
 
 <a class="tab_title" id="section-contact-details" href="#section-contact-details">2. Coordonnées</a>
 <div class="tab_content" id="etape2">
-    <div class="responsive-container streetview-container">
+    <div id="streetview_container">
         <div class="controls">
-            <button id="street_view_close" class="btn">X</button>
+            <div id="streetview-error">Faites glisser l’icône <img src="<?= $this->surl ?>/images/admin/googleIcon.png" alt=""> pour trouver la Streetview la plus proche disponible.</div>
+            <button id="streetview_close" class="btn">X</button>
         </div>
-        <div id="street_view" class="iframe"></div>
+        <div id="map" class="iframe"></div>
+        <div id="streetview" class="iframe"></div>
     </div>
     <form method="post" id="dossier_etape2" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" onsubmit="valid_etape2(<?= $this->projects->id_project ?>); return false;">
         <table class="form" style="width: 100%;">
@@ -205,7 +220,7 @@
                 <td colspan="3">
                     <input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"> E
                     <?php if (false === empty($this->latitude) && false === empty($this->longitude)) : ?>
-                        <a id="btn_street_view" class="btn-small btn_link" target="_blank" >Voir sur la carte</a>
+                        <a id="btn_streetview" class="btn-small btn_link" target="_blank" >Voir sur la carte</a>
                     <?php endif; ?>
                 </td>
             </tr>

@@ -10,15 +10,19 @@ use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 
 class InfogreffeManager
 {
-    const PRIVILEGES_SECU_REGIMES_COMPLEMENT = '03';
-    const PRIVILEGES_TRESOR_PUBLIC           = '04';
-    const RESOURCE_INDEBTEDNESS              = 'get_indebtedness_infogreffe';
+    const PRIVILEGES_SECU_REGIMES_COMPLEMENT   = '03';
+    const PRIVILEGES_TRESOR_PUBLIC             = '04';
 
-    /** @var  string */
+    const RESOURCE_INDEBTEDNESS                = 'get_indebtedness_infogreffe';
+
+    const RETURN_CODE_UNAVAILABLE_INDEBTEDNESS = '009';
+    const RETURN_CODE_NO_DEBTOR                = '013';
+
+    /** @var string */
     private $login;
-    /** @var  string */
+    /** @var string */
     private $password;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
     /** @var CallHistoryManager */
     private $callHistoryManager;
@@ -26,22 +30,27 @@ class InfogreffeManager
     private $client;
     /** @var Serializer */
     private $serializer;
-    /** @var bool */
-    private $monitoring;
     /** @var ResourceManager */
     private $resourceManager;
 
     /**
-     * InfogreffeManager constructor.
-     * @param string $login
-     * @param string $password
-     * @param LoggerInterface $logger
+     * @param string             $login
+     * @param string             $password
+     * @param LoggerInterface    $logger
      * @param CallHistoryManager $callHistoryManager
-     * @param SoapClient $client
-     * @param Serializer $serializer
+     * @param SoapClient         $client
+     * @param Serializer         $serializer
      * @param ResourceManager $resourceManager
      */
-    public function __construct($login, $password, LoggerInterface $logger, CallHistoryManager $callHistoryManager, SoapClient $client, Serializer $serializer, ResourceManager $resourceManager)
+    public function __construct(
+        $login,
+        $password,
+        LoggerInterface $logger,
+        CallHistoryManager $callHistoryManager,
+        SoapClient $client,
+        Serializer $serializer,
+        ResourceManager $resourceManager
+    )
     {
         $this->login              = $login;
         $this->password           = $password;
@@ -53,15 +62,8 @@ class InfogreffeManager
     }
 
     /**
-     * @param boolean $activate
-     */
-    public function setMonitoring($activate)
-    {
-        $this->monitoring = $activate;
-    }
-
-    /**
      * @param string $siren
+     *
      * @return null|array|CompanyIndebtedness
      */
     public function getIndebtedness($siren)
@@ -69,72 +71,100 @@ class InfogreffeManager
         if (true === empty($siren)) {
             throw new \InvalidArgumentException('SIREN is missing');
         }
-        $alertType  = 'up';
-        $extraInfo  = '';
-        $result     = null;
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
-        $xml        = new \SimpleXMLElement('<xml/>');
-        $request    = $this->addRequestHeader($xml, 'PN', 'XL');
-        $order      = $request->addChild('commande');
-        $order->addChild('num_siren', $siren);
-        $order->addChild('type_inscription', self::PRIVILEGES_SECU_REGIMES_COMPLEMENT . self::PRIVILEGES_TRESOR_PUBLIC);
-        $wsResource = $this->resourceManager->getResource(self::RESOURCE_INDEBTEDNESS);
 
-        if (false === $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
+        $wsResource = $this->resourceManager->getResource(self::RESOURCE_INDEBTEDNESS);
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
+
+        $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren);
+        $result   = $this->extractResponse($response);
+
+        if (false === $this->isValidResult($result)) {
             /** @var callable $callBack */
             $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
+
             try {
+                $xml     = new \SimpleXMLElement('<xml/>');
+                $request = $this->addRequestHeader($xml, 'PN', 'XL');
+                $order   = $request->addChild('commande');
+                $order->addChild('num_siren', $siren);
+                $order->addChild('type_inscription', self::PRIVILEGES_SECU_REGIMES_COMPLEMENT . self::PRIVILEGES_TRESOR_PUBLIC);
+
                 ini_set('default_socket_timeout', 8);
+
                 $this->client->__soapCall($wsResource->resource_name, [$request->asXML()]);
-                $alertType = 'up';
             } catch (\SoapFault $exception) {
-                $alertType = 'down';
-                $this->logger->warning('Calling infogreffe Indebtedness SIREN: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
+                $this->logger->error('Calling infogreffe Indebtedness SIREN: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
             }
+
             call_user_func($callBack, $this->client->__getLastResponse());
             $response = $this->client->__getLastResponse();
-        } else {
-            $this->setMonitoring(false);
+            $result   = $this->extractResponse($response, $logContext);
         }
+
+        $monitoring = $this->isValidResult($result) ? 'up' : 'down';
+        $extraInfo  = is_array($result) && isset($result['message']) ? $result['message'] : '';
+
+        $this->callHistoryManager->sendMonitoringAlert($wsResource, $monitoring, $extraInfo);
+        return $result;
+    }
+
+    /**
+     * @param string     $response
+     * @param null|array $logContext
+     *
+     * @return null|array|CompanyIndebtedness
+     */
+    private function extractResponse($response, $logContext = null)
+    {
         try {
             $xmlResponse = new \SimpleXMLElement($response);
             /** @var \SimpleXMLElement[] $indebtedness */
             $indebtedness = $xmlResponse->xpath('//return');
         } catch (\Exception $exception) {
-            $this->logger->error('Unrecognized response from Infogreffe getProduitsWebServicesXML, could not create XML object. SIREN: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
-            return $result;
+            if ($logContext) {
+                $this->logger->error('Unrecognized response from Infogreffe getProduitsWebServicesXML, could not create XML object. Message: ' . $exception->getMessage(), $logContext);
+            }
         }
 
         if (isset($indebtedness[0]) && preg_match('/(^\d{3}) (.*)/', $indebtedness[0], $matches)) {
             if (isset($matches[1], $matches[2])) {
-                if (true === in_array($matches[1], ['010', '012', '014', '999'])) {
-                    $alertType = 'down';
-                    $extraInfo = $matches[2];
-                }
-                $result = ['code' => $matches[1], 'message' => $matches[2]];
+                return [
+                    'code'    => $matches[1],
+                    'message' => $matches[2]
+                ];
             }
         } elseif (isset($indebtedness[0])) {
             try {
                 $responseArray = $this->xml2array($indebtedness[0]);
-
-                $result = $this->serializer->deserialize($this->getSubscription_3_4($responseArray), CompanyIndebtedness::class, 'json');
-                $alertType = 'up';
+                return $this->serializer->deserialize($this->getSubscription_3_4($responseArray), CompanyIndebtedness::class, 'json');
             } catch (\Exception $exception) {
-                $this->logger->error('Could not deserialize response from Infogreffe getProduitsWebServicesXML to get Indebtedness. SIREN: ' . $siren . '. Message: ' . $exception->getMessage(), $logContext);
+                if ($logContext) {
+                    $this->logger->error('Could not deserialize response from Infogreffe getProduitsWebServicesXML to get Indebtedness. Message: ' . $exception->getMessage(), $logContext);
+                }
             }
         }
 
-        if ($this->monitoring) {
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, $alertType, $extraInfo);
-        }
+        return null;
+    }
 
-        return $result;
+    /**
+     * @param null|array|CompanyIndebtedness $response
+     *
+     * @return bool
+     */
+    private function isValidResult($response)
+    {
+        return (
+            $response instanceof CompanyIndebtedness
+            || is_array($response) && in_array($response['code'], [self::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, self::RETURN_CODE_NO_DEBTOR])
+        );
     }
 
     /**
      * @param \SimpleXMLElement $xml
-     * @param $documentType
-     * @param $responseType
+     * @param string            $documentType
+     * @param string            $responseType
+     *
      * @return \SimpleXMLElement
      */
     private function addRequestHeader(\SimpleXMLElement $xml, $documentType, $responseType)
@@ -158,6 +188,7 @@ class InfogreffeManager
 
     /**
      * @param mixed $xml
+     *
      * @return array
      */
     private function xml2array($xml)
@@ -172,6 +203,7 @@ class InfogreffeManager
 
     /**
      * @param array $data
+     *
      * @return mixed|string
      */
     private function getSubscription_3_4(array $data)
