@@ -358,14 +358,16 @@ class clients extends clients_crud
                 clsh.id_client_status_history,
                 l.id_company_owner as id_company,
                 l.type_transfert as type_transfert,
-                l.motif as motif,
+                w.wire_transfer_pattern as motif,
                 l.fonds,
-                l.id_lender_account as id_lender
+                l.id_lender_account as id_lender,
+                w.available_balance as balance
             FROM clients c
             INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history FROM clients_status_history GROUP BY id_client) clsh ON c.id_client = clsh.id_client
             INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
             INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
             INNER JOIN lenders_accounts l ON c.id_client = l.id_client_owner
+            INNER JOIN wallet w ON c.id_client = w.id_client
             ' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);

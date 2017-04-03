@@ -47,8 +47,6 @@
                             $sBGColor      = '';
                         }
 
-                        $solde = $this->transactions->getSolde($c['id_client']);
-
                         if ($this->companies->get($c['id_client'], 'id_client_owner')) {
                             if ($this->companies->status_client != 1) {
                                 $prenom = $this->companies->prenom_dirigeant . ' ' . $this->companies->nom_dirigeant;
@@ -65,7 +63,7 @@
                         if ($c['type_transfert'] == 1) {
                             $val = 'Virement';
                         } else {
-                            $val = $this->ficelle->formatNumber($solde) . ' €';
+                            $val = $this->ficelle->formatNumber($c['balance']) . ' €';
                         }
                     ?>
                     <tr class="<?= ($iRow % 2 == 1 ? '' : 'odd') ?> ">

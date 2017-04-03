@@ -2,19 +2,23 @@
 
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class UserProvider implements UserProviderInterface
 {
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
     /** @var EntityManager */
     private $entityManager;
     /** @var ClientManager */
@@ -23,24 +27,26 @@ class UserProvider implements UserProviderInterface
     private $notificationDisplayManager;
     /** @var LenderManager */
     private $lenderManager;
-    /** @var  ClientStatusManager */
+    /** @var ClientStatusManager */
     private $clientStatusManager;
 
     /**
      * @inheritDoc
      */
     public function __construct(
+        EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         ClientManager $clientManager,
         NotificationDisplayManager $notificationDisplayManager,
         LenderManager $lenderManager,
         ClientStatusManager $clientStatusManager
     ) {
-        $this->entityManager = $entityManager;
-        $this->clientManager = $clientManager;
+        $this->entityManagerSimulator     = $entityManagerSimulator;
+        $this->entityManager              = $entityManager;
+        $this->clientManager              = $clientManager;
         $this->notificationDisplayManager = $notificationDisplayManager;
-        $this->lenderManager = $lenderManager;
-        $this->clientStatusManager = $clientStatusManager;
+        $this->lenderManager              = $lenderManager;
+        $this->clientStatusManager        = $clientStatusManager;
     }
 
     /**
@@ -49,14 +55,13 @@ class UserProvider implements UserProviderInterface
     public function loadUserByUsername($username)
     {
         /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
+        $client = $this->entityManagerSimulator->getRepository('clients');
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
+        $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \clients_history $clientHistory */
-        $clientHistory = $this->entityManager->getRepository('clients_history');
+        $clientHistory = $this->entityManagerSimulator->getRepository('clients_history');
 
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL) && $client->get($username, 'status = ' . Clients::STATUS_ONLINE. ' AND email')) {
-            $balance  = $this->clientManager->getClientBalance($client);
             $initials = $this->clientManager->getClientInitials($client);
             $isActive = $this->clientManager->isActive($client);
             $roles    = ['ROLE_USER'];
@@ -69,6 +74,7 @@ class UserProvider implements UserProviderInterface
 
             if ($this->clientManager->isLender($client)) {
                 $lenderAccount->get($client->id_client, 'id_client_owner');
+                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
 
                 $roles[]                 = 'ROLE_LENDER';
                 $clientStatus            = $this->clientStatusManager->getLastClientStatus($client);
@@ -85,7 +91,7 @@ class UserProvider implements UserProviderInterface
                     $isActive,
                     $client->id_client,
                     $client->hash,
-                    $balance,
+                    $wallet->getAvailableBalance(),
                     $initials,
                     $client->prenom,
                     $client->nom,
@@ -100,7 +106,7 @@ class UserProvider implements UserProviderInterface
 
             if ($this->clientManager->isBorrower($client)) {
                 /** @var \companies $company */
-                $company = $this->entityManager->getRepository('companies');
+                $company = $this->entityManagerSimulator->getRepository('companies');
                 $company->get($client->id_client, 'id_client_owner');
                 $roles[] = 'ROLE_BORROWER';
                 return new UserBorrower(

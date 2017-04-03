@@ -1642,8 +1642,10 @@ class dossiersController extends bootstrap
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->settings                      = $this->loadData('settings');
         $operationManager                    = $this->get('unilend.service.operation_manager');
-        $repaymentScheduleRepo               = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $paymentScheduleRepo                 = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $repaymentScheduleRepository         = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $paymentScheduleRepository           = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository $walletRepository */
+        $walletRepository                    = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
@@ -1774,13 +1776,14 @@ class dossiersController extends bootstrap
                             $repaymentNb ++;
                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
                             $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                            $lenderWallet = $walletRepository->getWalletByType($this->clients->id_client, WalletType::LENDER);
 
                             $lenderRepayment->id_lender  = $e['id_lender'];
                             $lenderRepayment->id_company = $this->projects->id_company;
                             $lenderRepayment->amount     = $e['montant'];
                             $lenderRepayment->create();
 
-                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
+                            $repaymentSchedule = $repaymentScheduleRepository->find($e['id_echeancier']);
                             $operationManager->repayment($repaymentSchedule);
 
                             $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
@@ -1863,9 +1866,9 @@ class dossiersController extends bootstrap
                                     'cab_recouvrement' => $sRecoveryCompany,
                                     'mensualite_p'     => $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100, 2)),
                                     'nom_entreprise'   => $this->companies->name,
-                                    'solde_p'          => $this->transactions->getSolde($this->clients->id_client),
+                                    'solde_p'          => $lenderWallet->getAvailableBalance(),
                                     'link_echeancier'  => $this->furl,
-                                    'motif_virement'   => $this->clients->getLenderPattern($this->clients->id_client),
+                                    'motif_virement'   => $lenderWallet->getWireTransferPattern(),
                                     'lien_fb'          => $lien_fb,
                                     'lien_tw'          => $lien_tw
                                 );
@@ -1890,7 +1893,7 @@ class dossiersController extends bootstrap
                                     $euros = ' euro';
                                 }
                                 $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100, 2)) . $euros;
-                                $balance      = $this->transactions->getSolde($this->clients->id_client);
+                                $balance      = $lenderWallet->getAvailableBalance();
 
                                 if ($balance >= 2) {
                                     $euros = ' euros';
@@ -1910,7 +1913,7 @@ class dossiersController extends bootstrap
                                     'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                                     'nbre_prets'            => $nbpret,
                                     'solde_p'               => $this->ficelle->formatNumber($balance) . $euros,
-                                    'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
+                                    'motif_virement'        => $lenderWallet->getWireTransferPattern(),
                                     'lien_fb'               => $lien_fb,
                                     'lien_tw'               => $lien_tw
                                 );
@@ -1940,7 +1943,7 @@ class dossiersController extends bootstrap
                                     $euros = ' euro';
                                 }
                                 $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100, 2)) . $euros;
-                                $balance      = $this->transactions->getSolde($this->clients->id_client);
+                                $balance      = $lenderWallet->getAvailableBalance();
 
                                 if ($balance >= 2) {
                                     $euros = ' euros';
@@ -1960,7 +1963,7 @@ class dossiersController extends bootstrap
                                     'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                                     'nbre_prets'            => $nbpret,
                                     'solde_p'               => $this->ficelle->formatNumber($balance) . $euros,
-                                    'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
+                                    'motif_virement'        => $lenderWallet->getWireTransferPattern(),
                                     'lien_fb'               => $lien_fb,
                                     'lien_tw'               => $lien_tw
                                 );
@@ -2025,7 +2028,7 @@ class dossiersController extends bootstrap
                     $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
 
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur $paymentSchedule */
-                    $paymentSchedule = $paymentScheduleRepo->find($RembEmpr['id_echeancier_emprunteur']);
+                    $paymentSchedule = $paymentScheduleRepository->find($RembEmpr['id_echeancier_emprunteur']);
                     $operationManager->repaymentCommission($paymentSchedule);
 
                     // MAIL FACTURE REMBOURSEMENT EMPRUNTEUR //

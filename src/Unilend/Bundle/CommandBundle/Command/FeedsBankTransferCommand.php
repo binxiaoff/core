@@ -6,6 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class FeedsBankTransferCommand extends ContainerAwareCommand
 {
@@ -70,7 +71,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 
             if (\DateTime::createFromFormat('Y-m-d H:i:s', $transaction->date_transaction) < new \DateTime('today')) {
                 $bankAccount = $pendingBankTransfer->getBankAccount();
-                $client = $pendingBankTransfer->getClient();
+                $client      = $pendingBankTransfer->getClient();
                 if ($client) {
                     if (null === $bankAccount) {
                         // todo: for backward compatibility only, can be replaced by an error message in the next release.
@@ -95,7 +96,8 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     $recipientBic  = $bankAccount->getBic();
                     $recipientName = $company->getName();
                 } else {
-                    $balance = $transaction->getSolde($pendingBankTransfer->getClient()->getIdClient());
+                    $wallet  = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                    $balance = $wallet->getAvailableBalance();
                     if ($balance < 0) {
                         $negativeBalanceError[] = ['id_client' => $pendingBankTransfer->getClient()->getIdClient(), 'balance' => $balance];
                         continue;

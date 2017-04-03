@@ -7,7 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class preteursController extends bootstrap
 {
@@ -138,6 +138,7 @@ class preteursController extends bootstrap
 
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->lenders_accounts->id_client_owner);
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
             $this->clients_adresses = $this->loadData('clients_adresses');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
@@ -209,7 +210,7 @@ class preteursController extends bootstrap
                 \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
             ];
 
-            $this->solde        = $this->transactions->getSolde($this->clients->id_client);
+            $this->solde        = $wallet->getAvailableBalance();
             $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_WITHDRAWAL . ' AND id_client = ' . $this->clients->id_client, 'montant');
             $this->soldeRetrait = abs($this->soldeRetrait / 100);
             $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
