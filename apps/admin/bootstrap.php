@@ -143,9 +143,6 @@ class bootstrap extends Controller
                     }
                 }
 
-                // DEBUG
-                //$this->duree_waiting = 1;
-
                 $this->error_login = "Le couple d'identifiant n'est pas correct";
 
                 $this->loggin_connection_admin        = $this->loadData('loggin_connection_admin');
