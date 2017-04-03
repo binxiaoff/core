@@ -255,7 +255,7 @@ $doc.ready(function ($) {
           url: '/simulateur-projet-etape1',
           data: {
             period: period,
-            amount: amount.replace(/(\s+|€)/g, ''),
+            amount: amount,
             motiveId: motiveId
           },
           success: function(response) {

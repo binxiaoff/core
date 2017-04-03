@@ -171,7 +171,6 @@ class MainController extends Controller
     {
         if ($request->isXmlHttpRequest()) {
             $period   = $request->request->getInt('period');
-            $amount   = $request->request->getInt('amount');
             $motiveId = $request->request->getInt('motiveId');
 
             /** @var ProjectRequestManager $projectRequestManager */
@@ -183,15 +182,10 @@ class MainController extends Controller
             /** @var \ficelle $ficelle */
             $ficelle = Loader::loadLib('ficelle');
 
-            $projectPeriods   = $projectManager->getPossibleProjectPeriods();
-            $projectAmountMax = $projectManager->getMaxProjectAmount();
-            $projectAmountMin = $projectManager->getMinProjectAmount();
+            $projectPeriods = $projectManager->getPossibleProjectPeriods();
+            $amount         = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT, ['options' => ['min_range' => $projectManager->getMinProjectAmount(), 'max_range' => $projectManager->getMaxProjectAmount()]]);
 
-            if (
-                in_array($period, $projectPeriods)
-                && $amount >= $projectAmountMin
-                && $amount <= $projectAmountMax
-            ){
+            if (in_array($period, $projectPeriods) && $amount){
                 $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
                 $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
                 $estimatedFundingDuration                = $projectManager->getAverageFundingDuration($amount);
