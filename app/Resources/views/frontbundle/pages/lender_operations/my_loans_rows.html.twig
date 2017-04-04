@@ -90,15 +90,15 @@
         </td>
     {% endif %}
     <td class="table-myloans-item-controls">
-        <a href="javascript:;" title="{{ 'lender-operations_loans-table-project-activity'|trans|e('html_attr') }}" class="ui-show-table-myloans-item-activity btn-default btn-shape-sq-sm">
+        <a href="javascript:;" title="{% trans %} lender-operations_info-tab-activity {% endtrans %}" class="ui-show-table-myloans-item-activity btn-default btn-shape-sq-sm" data-toggle="tooltip">
             <span class="icon fa-info-circle"></span>
-            <span class="sr-only">{% trans %} lender-operations_loans-table-project-activity {% endtrans %}</span>
+            <span class="sr-only">{% trans %} lender-operations_info-tab-activity {% endtrans %}</span>
             {% if loan.activity.unread_count > 0 %}
                 <span class="pip"><span class="pip-number">{{ loan.activity.unread_count }}</span></span>
             {% endif %}
         </a>
-        <a href="javascript:;" title="{{ 'lender-operations_loans-table-project-documents'|trans|e('html_attr') }}"  class="ui-show-table-myloans-item-docs loan-doc {% if loan.status == 'problem' or  loan.status == 'defaulted' %} loan-doc-declaration {% endif %}" data-toggle="tooltip">
-            <span class="sr-only">{% trans %} lender-operations_loans-table-project-documents {% endtrans %}</span>
+        <a href="javascript:;" title="{% trans %} lender-operations_info-tab-documents {% endtrans %}"  class="ui-show-table-myloans-item-docs loan-doc {% if loan.status == 'problem' or  loan.status == 'defaulted' %} loan-doc-declaration {% endif %}" data-toggle="tooltip">
+            <span class="sr-only">{% trans %} lender-operations_info-tab-documents {% endtrans %}</span>
             {% set docCount = 0 %}
             {% for docType, totalCount in loan.count if totalCount > 0 %}
                 {% set docCount = docCount + 1 %}
