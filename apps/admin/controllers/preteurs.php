@@ -158,7 +158,7 @@ class preteursController extends bootstrap
             try {
                 $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange($this->lenders_accounts->id_lender_account, (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'));
             } catch (\Exception $exception) {
-                $logger->error('Could not get next repayment amount (id_lender = ' . $this->lenders_accounts->id_lender_account . ')', ['class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->lenders_accounts->id_lender_account ]);
+                $logger->error('Could not get next repayment amount (id_client = ' . $this->clients->id_client . ')', ['class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->lenders_accounts->id_lender_account ]);
                 $this->nextRemb = 0;
             }
 
@@ -331,7 +331,7 @@ class preteursController extends bootstrap
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $lenderAccount->get($this->params[0], 'id_client_owner');
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
+            $client = $wallet->getIdClient();
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
