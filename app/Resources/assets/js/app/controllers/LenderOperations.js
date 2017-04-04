@@ -71,7 +71,6 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
       }
     }
   } else {
-
     event.preventDefault()
 
     // My operations details & My operations borrower details
@@ -140,7 +139,6 @@ $doc.on('Sortable:sort:before', 'table.table-myoperations', function (event, ele
 
 // Handling my loans items details before/after sorting
 $doc.on('Sortable:sort:before', 'table.table-myloans', function () {
-
   var $table = $(this).find('tbody').first()
   $table.children('.ui-details-open').removeClass('ui-details-open')
   if ($table.parent().is('.ui-items-closed-grayscale')) $table.parent().removeClass('ui-items-closed-grayscale')
@@ -170,6 +168,3 @@ $doc.on('MyLoansActivity:visible', '.table-myloans-view-details', function () {
   $list.uiPaginate()
   $list.trigger('UI:visible')
 })
-
-
-

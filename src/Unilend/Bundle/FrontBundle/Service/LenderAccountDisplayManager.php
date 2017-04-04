@@ -80,18 +80,11 @@ class LenderAccountDisplayManager
     {
         /** @var \loans $loans */
         $loans = $this->entityManager->getRepository('loans');
-        /** @var \echeanciers $repaymentSchedule */
-        $repaymentSchedule = $this->entityManager->getRepository('echeanciers');
 
-        $loanInfo                          = [];
-        $loanInfo['amountAlreadyPaidBack'] = $repaymentSchedule->getRepaidAmount(['id_lender' => $lenderAccount->id_lender_account, 'id_project' => $projectId]);
-        $loanInfo['remainingToBeRepaid']   = $repaymentSchedule->getOwedAmount(['id_lender' => $lenderAccount->id_lender_account, 'id_project' => $projectId]);
-        $loanInfo['remainingMonths']       = $repaymentSchedule->counterPeriodRestantes($lenderAccount->id_lender_account, $projectId);
-        $loanInfo['myLoanOnProject']       = $loans->getBidsValid($projectId, $lenderAccount->id_lender_account);
-        $loanInfo['myAverageLoanRate']     = round($loans->getAvgLoansPreteur($projectId, $lenderAccount->id_lender_account), 2);
-        $loanInfo['percentageRecovered']   = $loanInfo['myLoanOnProject']['solde'] > 0 ? $loanInfo['amountAlreadyPaidBack'] / $loanInfo['myLoanOnProject']['solde'] * 100 : 0;
-
-        return $loanInfo;
+        return [
+            'myLoanOnProject'   => $loans->getBidsValid($projectId, $lenderAccount->id_lender_account),
+            'myAverageLoanRate' => round($loans->getAvgLoansPreteur($projectId, $lenderAccount->id_lender_account), 2)
+        ];
     }
 
     /**
