@@ -53,7 +53,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $settings->get('Retrait Unilend - Titulaire du compte', 'type');
         $unilendAccountHolder = utf8_decode($settings->value);
 
-        $pendingBankTransfers      = $em->getRepository('UnilendCoreBusinessBundle:Virements')->findBy(['status' => Virements::STATUS_PENDING, 'addedXml' => null]);
+        $pendingBankTransfers      = $em->getRepository('UnilendCoreBusinessBundle:Virements')->findBy(['status' => Virements::STATUS_VALIDATED, 'addedXml' => null]);
         $pendingBankTransfersCount = 0;
         $totalAmount               = 0;
         $counterId                 = $counter->counter('type = 1') + 1;
