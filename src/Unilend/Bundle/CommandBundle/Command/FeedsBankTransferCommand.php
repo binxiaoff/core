@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -70,19 +71,16 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 
             if (\DateTime::createFromFormat('Y-m-d H:i:s', $transaction->date_transaction) < new \DateTime('today')) {
                 $bankAccount = $pendingBankTransfer->getBankAccount();
-                $client = $pendingBankTransfer->getClient();
-                if ($client) {
+                $client      = $pendingBankTransfer->getClient();
+                if ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
                     if (null === $bankAccount) {
-                        // todo: for backward compatibility only, can be replaced by an error message in the next release.
-                        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($pendingBankTransfer->getClient());
-                        if (null === $bankAccount) {
-                            $logger->error('The bank account is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
-                            continue;
-                        }
+                        $logger->error('The bank account is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
+                        continue;
                     }
-                } elseif ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
-                    $logger->error('The client is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
-                    continue;
+                    if (null === $client) {
+                        $logger->error('The client is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
+                        continue;
+                    }
                 }
 
                 if ($pendingBankTransfer->getType() == Virements::TYPE_UNILEND) {
@@ -151,7 +149,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 </RmtInf>
             </CdtTrfTxInf>';
 
-                $pendingBankTransfersCount ++;
+                $pendingBankTransfersCount++;
             }
         }
 
