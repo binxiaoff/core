@@ -1481,7 +1481,6 @@ class dossiersController extends bootstrap
             } else {
                 $companyEntity = $this->createBlankCompany();
             }
-
             $this->createProject($companyEntity, $defaultPartner->id);
 
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
@@ -1538,16 +1537,16 @@ class dossiersController extends bootstrap
 
         try {
             $em->persist($clientEntity);
-            $em->flush();
+            $em->flush($clientEntity);
 
-            $clientAddressEntity->setIdClient($clientEntity->getIdClient());
+            $clientAddressEntity->setIdClient($clientEntity);
             $em->persist($clientAddressEntity);
 
             $companyEntity->setSiren($siren);
             $companyEntity->setIdClientOwner($clientEntity->getIdClient());
             $companyEntity->setStatusAdresseCorrespondance(1);
             $em->persist($companyEntity);
-            $em->flush();
+            $em->flush($companyEntity);
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
             $em->commit();
