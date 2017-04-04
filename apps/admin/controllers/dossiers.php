@@ -469,7 +469,10 @@ class dossiersController extends bootstrap
                     $publicationLimitationDate      = new \DateTime('NOW + 5 minutes');
                     $endOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
 
-                    if ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate) {
+                    if (
+                        $publicationDate->format('Y-m-d H:i:s') !== $this->projects->date_publication
+                        && ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate)
+                    ) {
                         $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
 
                         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -617,7 +620,7 @@ class dossiersController extends bootstrap
                     && 1 === preg_match('#[0-9]{2}/[0-9]{2}/[0-9]{8}#', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute'])
                     && $this->projects->status <= \projects_status::EN_FUNDING
                 ) {
-                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_de_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
+                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
 
                     if ($endOfPublicationDate > new \DateTime()) {
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');

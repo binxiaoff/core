@@ -12,36 +12,41 @@ class CodinfManager
 {
     const RESOURCE_INCIDENT_LIST = 'get_incident_list_codinf';
 
-    /** @var  Client */
+    /** @var Client */
     private $client;
     /** @var string */
     private $user;
     /** @var string */
     private $password;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
     /** @var CallHistoryManager */
     private $callHistoryManager;
     /** @var Serializer */
     private $serializer;
-    /** @var  bool */
-    private $monitoring;
     /** @var ResourceManager */
     private $resourceManager;
 
     /**
-     * CodinfManager constructor.
-     *
-     * @param ClientInterface $client
-     * @param $user
-     * @param $password
-     * @param $baseUrl
-     * @param LoggerInterface $logger
+     * @param ClientInterface    $client
+     * @param string             $user
+     * @param string             $password
+     * @param string             $baseUrl
+     * @param LoggerInterface    $logger
      * @param CallHistoryManager $callHistoryManager
-     * @param Serializer $serializer
-     * @param ResourceManager $resourceManager;
+     * @param Serializer         $serializer
+     * @param ResourceManager    $resourceManager
      */
-    public function __construct(ClientInterface $client, $user, $password, $baseUrl, LoggerInterface $logger, CallHistoryManager $callHistoryManager, Serializer $serializer, ResourceManager $resourceManager)
+    public function __construct(
+        ClientInterface $client,
+        $user,
+        $password,
+        $baseUrl,
+        LoggerInterface $logger,
+        CallHistoryManager $callHistoryManager,
+        Serializer $serializer,
+        ResourceManager $resourceManager
+    )
     {
         $this->client             = $client;
         $this->user               = $user;
@@ -53,30 +58,25 @@ class CodinfManager
     }
 
     /**
-     * @param boolean $activate
-     */
-    public function setMonitoring($activate)
-    {
-        $this->monitoring = $activate;
-    }
-
-    /**
-     * @param $siren
+     * @param string         $siren
      * @param \DateTime|null $startDate
      * @param \DateTime|null $endDate
-     * @param bool $includeRegularized
+     * @param bool           $includeRegularized
+     *
      * @return null|IncidentList
      */
     public function getIncidentList($siren, \DateTime $startDate = null, \DateTime $endDate = null, $includeRegularized = false)
     {
-        if (true === empty($siren)) {
-            throw new \InvalidArgumentException('siren is missing');
+        if (empty($siren)) {
+            throw new \InvalidArgumentException('SIREN is missing');
         }
 
-        $query['siren']      = $siren;
-        $query['allcomites'] = 1;
-        $query['usr']        = $this->user;
-        $query['pswd']       = $this->password;
+        $query = [
+            'siren'      => $siren,
+            'allcomites' => 1,
+            'usr'        => $this->user,
+            'pswd'       => $this->password
+        ];
 
         if (null !== $startDate && $startDate instanceof \DateTime) {
             $query['dd'] = $startDate->format('Y-m-d');
@@ -89,65 +89,59 @@ class CodinfManager
         if (false !== $includeRegularized) {
             $query['inc_reg'] = 1;
         }
-        $data       = null;
+
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
 
         try {
             $incidents = $this->sendRequest(self::RESOURCE_INCIDENT_LIST, $query, $siren);
 
-            if (null !== $incidents = preg_replace('/(<\?xml .*\?>).*/', '', $incidents)) {
+            if (null !== $incidents && 1 === preg_match('/^<\?xml .*\?>(.*)$/s', $incidents, $matches)) {
                 try {
-                    $data = $this->serializer->deserialize('<incidentList>' . $incidents . '</incidentList>', IncidentList::class, 'xml');
+                    $this->callHistoryManager->sendMonitoringAlert($this->resourceManager->getResource(self::RESOURCE_INCIDENT_LIST), 'up');
+                    return $this->serializer->deserialize('<incidentList>' . $matches[1] . '</incidentList>', IncidentList::class, 'xml');
                 } catch (\Exception $exception) {
-                    $this->logger->error('Could not deserialize response: ' . $exception->getMessage() . ' siren: ' . $siren, $logContext);
+                    $this->logger->error('Could not deserialize response: ' . $exception->getMessage() . ' SIREN: ' . $siren, $logContext);
                 }
             }
         } catch (\Exception $exception) {
             $this->logger->error('Call to get_list_v2 using params: ' . json_encode($query) . ' Error message: ' . $exception->getMessage(), $logContext);
         }
 
-        return $data;
+        $this->callHistoryManager->sendMonitoringAlert($this->resourceManager->getResource(self::RESOURCE_INCIDENT_LIST), 'down');
+        return null;
     }
 
     /**
      * @param string $resourceLabel
-     * @param array $query
+     * @param array  $query
      * @param string $siren
+     *
      * @return null|string
      */
     private function sendRequest($resourceLabel, array $query, $siren)
     {
-        $alertType  = 'up';
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
-        $content    = null;
         $wsResource = $this->resourceManager->getResource($resourceLabel);
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
 
         try {
-            if (false === $content = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
+            if (false === ($content = $this->callHistoryManager->getStoredResponse($wsResource, $siren))) {
                 $response = $this->client->get($wsResource->resource_name, [
                     'query'    => $query,
                     'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
                 ]);
 
                 if (200 === $response->getStatusCode()) {
-                    $content   = $response->getBody()->getContents();
-                    $alertType = 'up';
+                    return $response->getBody()->getContents();
                 } else {
-                    $alertType = 'down';
-                    $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Response: ' . $content, $logContext);
+                    $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Response: ' . $response->getBody()->getContents(), $logContext);
                 }
             } else {
-                $this->setMonitoring(false);
+                return $content;
             }
         } catch (\Exception $exception) {
-            $alertType = 'down';
             $this->logger->error('Call to ' . $wsResource->resource_name . 'using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage(), $logContext);
         }
 
-        if ($this->monitoring) {
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, $alertType);
-        }
-
-        return $content;
+        return null;
     }
 }

@@ -93,10 +93,12 @@
     }
 </script>
 <div id="contenu">
-    <?php if (isset($_POST['form_search_client'])) : ?>
-        <h1>Résultats de la recherche de dossiers <?= (count($this->lProjects) > 0 ? '(' . count($this->lProjects) . ')' : '') ?></h1>
-    <?php else : ?>
-        <h1>Liste des <?= (isset($this->iCountProjects)) ? $this->iCountProjects : 0 ?> dossiers</h1>
+    <?php if (isset($this->iCountProjects) && $this->iCountProjects == 0) : ?>
+        <h1>Aucun dossier trouvé</h1>
+    <?php elseif (isset($this->iCountProjects) && $this->iCountProjects == 1) : ?>
+        <h1>1 dossier trouvé</h1>
+    <?php elseif (isset($this->iCountProjects) && $this->iCountProjects > 0) : ?>
+        <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> dossiers trouvés</h1>
     <?php endif; ?>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/add/create" class="btn_link">Créer un dossier</a></div>
     <style>
@@ -109,22 +111,24 @@
                 <table class="formColor">
                     <tr>
                         <td>
-                            <label for="id">ID :</label><br/>
-                            <input type="text" name="id" id="id" class="input_court" title="id" value="<?= (isset($_POST['id'])) ? $_POST['id'] : '' ?>"/>
-                            <input type="hidden" name="nbLignePagination" id="nbLignePagination" value="<?= (isset($_POST['nbLignePagination'])) ? $_POST['nbLignePagination'] : 0 ?>"/>
-                            <input type="hidden" name="pageActive" id="pageActive" value="<?= (isset($_POST['pageActive'])) ? $_POST['pageActive'] : 1 ?>"/>
+                            <label for="id">ID</label><br>
+                            <input type="text" name="id" id="id" class="input_court" title="id" value="<?= isset($_POST['id']) ? $_POST['id'] : '' ?>">
+                            <input type="hidden" name="nbLignePagination" id="nbLignePagination" value="<?= isset($_POST['nbLignePagination']) ? $_POST['nbLignePagination'] : 0 ?>">
+                            <input type="hidden" name="pageActive" id="pageActive" value="<?= isset($_POST['pageActive']) ? $_POST['pageActive'] : 1 ?>">
                         </td>
                         <td>
-                            <label for="siren">Siren :</label><br/><input type="text" name="siren" id="siren" class="input_moy" style="width:100px;" title="siren" value="<?= (isset($_POST['siren'])) ? $_POST['siren'] : '' ?>"/>
+                            <label for="siren">SIREN</label><br>
+                            <input type="text" name="siren" id="siren" class="input_moy" style="width:100px;" title="siren" value="<?= isset($_POST['siren']) ? $_POST['siren'] : '' ?>">
                         </td>
                         <td>
-                            <label for="siren">Raison sociale :</label><br/><input type="text" name="raison-sociale" id="raison-sociale" class="input_moy" title="Raison sociale" value="<?= (isset($_POST['raison-sociale'])) ? $_POST['raison-sociale'] : '' ?>"/>
+                            <label for="raison-sociale">Raison sociale</label><br>
+                            <input type="text" name="raison-sociale" id="raison-sociale" class="input_moy" title="Raison sociale" value="<?= isset($_POST['raison-sociale']) ? $_POST['raison-sociale'] : '' ?>">
                         </td>
                         <td style="padding-top:23px;">
-                            <input type="text" name="date1" id="datepik_1" class="input_dp" value="<?= (isset($_POST['date1'])) ? $_POST['date1'] : '' ?>"/>
+                            <input type="text" name="date1" id="datepik_1" class="input_dp" value="<?= isset($_POST['date1']) ? $_POST['date1'] : '' ?>">
                         </td>
                         <td style="padding-top:23px;">
-                            <input type="text" name="date2" id="datepik_2" class="input_dp" value="<?= (isset($_POST['date2'])) ? $_POST['date2'] : '' ?>"/>
+                            <input type="text" name="date2" id="datepik_2" class="input_dp" value="<?= isset($_POST['date2']) ? $_POST['date2'] : '' ?>">
                         </td>
                         <td style="padding-top:23px;">
                             <select name="projectNeed" id="projectNeed" class="select" style="width:80px;">
@@ -142,16 +146,16 @@
                             <select name="duree" id="duree" class="select" style="width:80px;">
                                 <option value="">Durée</option>
                                 <?php foreach ($this->fundingTimeValues as $sFundingtime) : ?>
-                                    <option <?= (isset($_POST['duree']) && $_POST['duree'] == $sFundingtime ? 'selected' : '') ?> value="<?= $sFundingtime ?>"><?= $sFundingtime ?> mois</option>
+                                    <option <?= isset($_POST['duree']) && $_POST['duree'] == $sFundingtime ? 'selected' : '' ?> value="<?= $sFundingtime ?>"><?= $sFundingtime ?> mois</option>
                                 <?php endforeach; ?>
-                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '1000000' ? 'selected' : '') ?> value="1000000">je ne sais pas</option>
+                                <option <?= isset($_POST['duree']) && $_POST['duree'] == '1000000' ? 'selected' : '' ?> value="1000000">je ne sais pas</option>
                             </select>
                         </td>
                         <td style="padding-top:23px;">
                             <select name="status" id="status" class="select" style="width:80px;">
                                 <option value="">Statut</option>
                                 <?php foreach ($this->lProjects_status as $s) : ?>
-                                    <option <?= (isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>">
+                                    <option <?= isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '' ?> value="<?= $s['status'] ?>">
                                         <?= $s['label'] ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -161,7 +165,7 @@
                             <select name="commercial" id="commercial" class="select">
                                 <option value="0">Commercial</option>
                                 <?php foreach ($this->aSalesPersons as $aSalesPerson) : ?>
-                                    <option <?= (isset($_POST['commercial']) && $_POST['commercial'] == $aSalesPerson['id_user'] ? 'selected' : '') ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
+                                    <option <?= isset($_POST['commercial']) && $_POST['commercial'] == $aSalesPerson['id_user'] ? 'selected' : '' ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </td>
@@ -169,16 +173,16 @@
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Analyste</option>
                                 <?php foreach ($this->aAnalysts as $aAnalyst) : ?>
-                                    <option <?= (isset($_POST['analyste']) && $_POST['analyste'] == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
+                                    <option <?= isset($_POST['analyste']) && $_POST['analyste'] == $aAnalyst['id_user'] ? 'selected' : '' ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </td>
                     </tr>
                     <tr>
                         <th colspan="10" style="text-align:center;">
-                            <input type="hidden" name="form_search_dossier" id="form_search_dossier"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn"/>
-                            <input style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" type="button" value="Reset" title="Reset" name="Reset" id="Reset" class="btn"/>
+                            <input type="hidden" name="form_search_dossier" id="form_search_dossier">
+                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn">
+                            <input style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" type="button" value="Reset" title="Reset" name="Reset" id="Reset" class="btn">
                         </th>
                     </tr>
                 </table>
@@ -220,11 +224,11 @@
                         <td><?= $p['label'] ?></td>
                         <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
                         <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
-                        <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
+                        <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur">' : '' ?></td>
                         <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] && $p['comments'] != '' ? $p['comments'] : '' ?>"><?= $p['comments'] && $p['comments'] != '' ? 'oui' : 'non' ?></td>
                         <td align="center">
                             <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>">
                             </a>
                         </td>
                     </tr>
@@ -236,11 +240,11 @@
             <table>
                 <tr>
                     <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first" onclick="paginationDossiers('first');"/>
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev" onclick="paginationDossiers('prev');"/>
+                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first" onclick="paginationDossiers('first');">
+                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev" onclick="paginationDossiers('prev');">
                         <span id="displayPager"></span>
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next" onclick="paginationDossiers('next');"/>
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last" onclick="paginationDossiers('last');"/>
+                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next" onclick="paginationDossiers('next');">
+                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last" onclick="paginationDossiers('last');">
                         <select class="pagesize">
                             <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
                         </select>

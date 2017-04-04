@@ -29,11 +29,7 @@
     }
 </style>
 <div id="contenu">
-    <?php if (isset($_POST['form_search_client'])) : ?>
-        <h1>Résultats de la recherche d'emprunteurs <?= (count($this->lClients) > 0 ? '(' . count($this->lClients) . ')' : '') ?></h1>
-    <?php else : ?>
-        <h1>Liste des <?= (isset($this->lClients)) ? count($this->lClients) : 0 ?> derniers emprunteurs</h1>
-    <?php endif; ?>
+    <h1>Liste des <?= isset($this->lClients) ? count($this->lClients) : 0 ?> derniers emprunteurs</h1>
     <div class="form-container">
         <form method="post" name="search_emprunteurs" id="search_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/gestion" target="_parent">
             <fieldset>

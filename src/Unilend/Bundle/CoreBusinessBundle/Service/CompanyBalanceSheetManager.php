@@ -257,11 +257,14 @@ class CompanyBalanceSheetManager
             + $balanceDetails[$balanceSheetId]['details']['BS'] + $balanceDetails[$balanceSheetId]['details']['BV'] + $balanceDetails[$balanceSheetId]['details']['JY'];
 
         $CA = $AG - $BR;
-        $CA = $CA < 0 ? 0 : $CA;
+        $CF = -$CA;
+        $CA = ($CA < 0) ? 0 : $CA;
 
         $otherFinancialProduct = $balanceDetails[$balanceSheetId]['details']['CB'] + $balanceDetails[$balanceSheetId]['details']['CC'] + $balanceDetails[$balanceSheetId]['details']['CD'];
+        $CE                    = $CA + $otherFinancialProduct;
         $otherObligations      = $balanceDetails[$balanceSheetId]['details']['CG'] + $balanceDetails[$balanceSheetId]['details']['CH'] + $balanceDetails[$balanceSheetId]['details']['CK'] + $balanceDetails[$balanceSheetId]['details']['CL'] + $balanceDetails[$balanceSheetId]['details']['CM'];
-        $benefit               = $CA + $otherFinancialProduct - $otherObligations;
+        $CN                    = ($CF > 0) ? $CF + $otherObligations : $otherObligations;
+        $benefit               = ($CE > $CN) ? $CE - $CN : 0;
 
         $incomeStatement['details'] = [
             'income-statement_2035-recettes'        => $AG,
@@ -271,10 +274,10 @@ class CompanyBalanceSheetManager
             'income-statement_2035-total-depenses'  => $BR,
             'income-statement_2035-excedent-brut'   => $CA,
             'income-statement_2035-autres-produits' => $otherFinancialProduct,
+            'income-statement_2035-insuffisance'    => ($CF > 0) ? $CF : 0,
             'income-statement_2035-autres-charges'  => $otherObligations,
             'income-statement_2035-benefice-net'    => $benefit < 0 ? 0 : $benefit,
-            'income-statement_2035-insuffisance'    => ($AG < $BR) ? $BR - $AG : 0,
-            'income-statement_2035-deficit'         => (-$benefit) < 0 ? 0 : -$benefit
+            'income-statement_2035-deficit'         => ($CE < $CN) ?  $CN - $CE : 0
         ];
 
         if ($excludeNonPositiveLines) {

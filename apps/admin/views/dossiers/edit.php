@@ -88,6 +88,11 @@
         text-decoration: none;
     }
 
+    #contenu_etape4_1 > table td.warning {
+        background-color: #b20066;
+        color: #fff;
+    }
+
     table.form .section-title th {
         font-size: 14px;
         text-align: center;
@@ -432,7 +437,7 @@
                         <?php endif; ?>
                         <tr>
                             <th>Date de la demande</th>
-                            <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y') ?></td>
+                            <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y H:i') ?></td>
                         </tr>
                         <tr>
                             <th><label for="source">Source</label></th>
