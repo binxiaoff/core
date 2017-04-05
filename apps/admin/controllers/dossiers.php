@@ -694,13 +694,13 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \partner $partner */
-            $partner = $this->loadData('partner');
+            /** @var \partner $partnerData */
+            $partnerData = $this->loadData('partner');
 
             $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
             $this->selectedProduct  = $product;
             $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
+            $this->partnerList      = $partnerData->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
             $this->partnerProduct   = $this->loadData('partner_product');
 
             if (false === empty($this->projects->id_product)) {
@@ -730,6 +730,10 @@ class dossiersController extends bootstrap
             $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
             $partnerAttachments                   = $partner->getAttachmentTypes(true);
             $this->isFundsCommissionRateEditable  = $this->isFundsCommissionRateEditable();
+            $this->lastBalanceSheet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+                'idClient' => $project->getIdCompany()->getIdClientOwner(),
+                'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
+            ]);
 
             $this->aMandatoryAttachmentTypes      = [];
             foreach ($partnerAttachments as $partnerAttachment) {
