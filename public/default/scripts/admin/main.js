@@ -6,6 +6,22 @@
 $(document).ready(function()
 {
     $(".thickbox").colorbox();
+
+    $('#extract_rib_btn').colorbox({
+        inline : true,
+        onComplete : function() {
+            var $colorBox = $('#colorbox');
+            var $img = $colorBox.find('img')
+            if ($img.length) {
+                var tmpImg = new Image();
+                tmpImg.src = $img.attr('src');
+                tmpImg.onload = function() {
+                    var newHeight = $img.height() + 240;
+                    $(this).colorbox.resize({height: newHeight + 'px'});
+                };
+            }
+        }
+    });
 });
 
 /* Changer l'onglet de la langue */
