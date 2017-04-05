@@ -73,7 +73,7 @@ class OperationRepository extends EntityRepository
     /**
      * @param Wallet $creditorWallet
      * @param array  $operationTypes
-     * @param string $year
+     * @param int    $year
      *
      * @return mixed
      */
@@ -86,16 +86,16 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.idWalletCreditor = :idWallet')
             ->andWhere('YEAR(o.added) = :year')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idWallet', $creditorWallet->getId())
+            ->setParameter('idWallet', $creditorWallet)
             ->setParameter('year', $year);
 
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     /***
-     * @param Wallet $creditorWallet
+     * @param Wallet $debtorWallet
      * @param array  $operationTypes
-     * @param string $year
+     * @param int    $year
      *
      * @return mixed
      */
@@ -108,7 +108,7 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.idWalletDebtor = :idWallet')
             ->andWhere('YEAR(o.added) = :year')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idWallet', $debtorWallet->getId())
+            ->setParameter('idWallet', $debtorWallet)
             ->setParameter('year', $year);
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -116,7 +116,7 @@ class OperationRepository extends EntityRepository
 
     /**
      * @param Wallet $wallet
-     * @param string $year
+     * @param int $year
      *
      * @return bool|string
      */
@@ -144,11 +144,11 @@ class OperationRepository extends EntityRepository
         $bind  = [
             'year'         => $year,
             'idWallet'     => $wallet->getId(),
-            'eeaCountries' => PaysV2::$europeanEconomicArea
+            'eeaCountries' => PaysV2::EUROPEAN_ECONOMIC_AREA
         ];
-        $types = ['year'         => \PDO::PARAM_STR,
-                  'idWallet'     => \PDO::PARAM_STR,
-                  'eeaCountries' => Connection::PARAM_STR_ARRAY
+        $types = ['year'         => \PDO::PARAM_INT,
+                  'idWallet'     => \PDO::PARAM_INT,
+                  'eeaCountries' => Connection::PARAM_INT_ARRAY
         ];
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $types)->fetchColumn();
@@ -156,7 +156,7 @@ class OperationRepository extends EntityRepository
 
     /**
      * @param Wallet $wallet
-     * @param string $year
+     * @param int    $year
      *
      * @return bool|string
      */
@@ -202,13 +202,13 @@ class OperationRepository extends EntityRepository
             'year'          => $year,
             'idWallet'      => $wallet->getId(),
             'taxOperations' => $taxTypes,
-            'eeaCountries'  => PaysV2::$europeanEconomicArea
+            'eeaCountries'  => PaysV2::EUROPEAN_ECONOMIC_AREA
         ];
         $types = [
-            'year'          => \PDO::PARAM_STR,
-            'idWallet'      => \PDO::PARAM_STR,
+            'year'          => \PDO::PARAM_INT,
+            'idWallet'      => \PDO::PARAM_INT,
             'taxOperations' => Connection::PARAM_STR_ARRAY,
-            'eeaCountries'  => Connection::PARAM_STR_ARRAY
+            'eeaCountries'  => Connection::PARAM_INT_ARRAY
         ];
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $types)->fetchColumn();
@@ -216,7 +216,7 @@ class OperationRepository extends EntityRepository
 
     /**
      * @param Wallet $wallet
-     * @param string $year
+     * @param int    $year
      *
      * @return bool|string
      */

@@ -95,7 +95,7 @@ class WalletRepository extends EntityRepository
 
     /**
      * @param array  $operationTypes
-     * @param string $year
+     * @param int    $year
      *
      * @return array Wallet[]
      */
@@ -106,13 +106,12 @@ class WalletRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
-            ->where('wt.label = :walletType')
+            ->where('wt.label = :lender')
             ->andWhere('ot.label IN (:operationTypes)')
             ->andWhere('YEAR(o.added) = :year')
-            ->setParameter('walletType', WalletType::LENDER)
+            ->setParameter('lender', WalletType::LENDER)
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_INT_ARRAY)
-            ->setParameter('year', $year)
-            ->setMaxResults(1000);
+            ->setParameter('year', $year);
 
         return $qb->getQuery()->getResult();
     }
