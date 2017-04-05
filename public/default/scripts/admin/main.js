@@ -8,7 +8,6 @@ $(document).ready(function()
     $(".thickbox").colorbox();
 
     $('#extract_rib_btn').colorbox({
-        inline : true,
         onComplete : function() {
             var $colorBox = $('#colorbox');
             var $img = $colorBox.find('img')
