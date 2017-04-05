@@ -7,7 +7,7 @@ $(document).ready(function()
 {
     $(".thickbox").colorbox();
 
-    $('#extract_rib_btn').colorbox({
+    $('.extract_rib_btn').colorbox({
         onComplete : function() {
             var $colorBox = $('#colorbox');
             var $img = $colorBox.find('img')
