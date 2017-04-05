@@ -923,4 +923,16 @@ class LenderOperationsController extends Controller
 
         return $filters;
     }
+
+    /**
+     * @Route("/operations/pdf", name="lender_operations_pdf")
+     * @Security("has_role('ROLE_LENDER')")
+     * @param Request $request
+     * @return Response
+     */
+    public function downloadOperationPDF(Request $request)
+    {
+
+        return $this->render('pdf/lender_operations.html.twig');
+    }
 }
