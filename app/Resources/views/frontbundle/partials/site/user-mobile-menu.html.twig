@@ -70,37 +70,72 @@
                     </li>
                 {% elseif is_granted('ROLE_BORROWER') %}
                     <li role="presentation" class="user-nav-major user-nav-dashboard {% if app.request.get('_route') == 'borrower_account_projects' or app.request.get('_route') == 'borrower_account_new_demand' %} active {% endif %}">
-                        <a href="{{ path('borrower_account_projects') }}">
+                        <a href="{{ path('partner_project_request') }}">
                             <span class="icon fa-project-u"></span>
-                            <div class="label">{{ 'borrower-account-nav_your-projects'|trans }}</div>
+                            <div class="label">{% trans %} borrower-account-nav_your-projects {% endtrans %}</div>
                         </a>
                     </li>
 
                     <li role="presentation" class="user-nav-major user-nav-operations {% if app.request.get('_route') == 'borrower_account_operations' %} active {% endif %}">
                         <a href="{{ path('borrower_account_operations') }}">
                             <span class="icon fa-operations-u"></span>
-                            <div class="label">{{ 'borrower-account-nav_your-operations'|trans }}</div>
+                            <div class="label">{% trans %} borrower-account-nav_your-operations {% endtrans %}</div>
                         </a>
                     </li>
 
                     <li role="presentation" class="user-nav-major user-nav-profile{% if app.request.get('_route') == 'borrower_account_profile' %} active {% endif %}">
                         <a href="{{ path('borrower_account_profile') }}">
                             <span class="icon fa-profile-u"></span>
-                            <div class="label">{{ 'borrower-account-nav_profile'|trans }}</div>
+                            <div class="label">{% trans %} borrower-account-nav_profile {% endtrans %}</div>
                         </a>
                     </li>
 
                     <li role="presentation" class="user-nav-major user-nav-contact{% if app.request.get('_route') == 'borrower_account_contact' %} active{% endif %}">
                         <a href="{{ path('borrower_account_contact') }}">
                             <span class="icon fa-pen-u"></span>
-                            <div class="label">{{ 'borrower-account-nav_contact'|trans }}</div>
+                            <div class="label">{% trans %} borrower-account-nav_contact {% endtrans %}</div>
                         </a>
                     </li>
 
                     <li role="presentation" class="user-nav-minor">
                         <a href="{{ path(constant('\\Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_BORROWER_FAQ')) }}">
                             <span class="icon fa-question-circle-o"></span>
-                            <div class="label">{{ 'borrower-account-nav_faq'|trans }}</div>
+                            <div class="label">{% trans %} borrower-account-nav_faq {% endtrans %}</div>
+                        </a>
+                    </li>
+                {% elseif is_granted('ROLE_PARTNER') %}
+                    <li role="presentation" class="user-nav-major user-nav-project-request {% if app.request.get('_route') == 'partner_project_request' %} active{% endif %}">
+                        <a href="{{ path('partner_project_request') }}">
+                            <span class="icon fa-pen-u"></span>
+                            <div class="label">{% trans %} mobile-navigation_partner-project-request {% endtrans %}</div>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="user-nav-major user-nav-project {% if app.request.get('_route') == 'borrower_account_operations' %} active{% endif %}">
+                        <a href="{{ path('partner_projects_list') }}">
+                            <span class="icon fa-project-u"></span>
+                            <div class="label">{% trans %} mobile-navigation_partner-projects-list {% endtrans %}</div>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="user-nav-major user-nav-users{% if app.request.get('_route') == 'borrower_account_profile' %} active{% endif %}">
+                        <a href="{{ path('partner_users') }}">
+                            <span class="icon fa-profile-u"></span>
+                            <div class="label">{% trans %} mobile-navigation_partner-users {% endtrans %}</div>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="user-nav-major user-nav-statistics{% if app.request.get('_route') == 'borrower_account_profile' %} active{% endif %}">
+                        <a href="{{ path('partner_statistics') }}">
+                            <span class="icon fa-linegraph-u"></span>
+                            <div class="label">{% trans %} mobile-navigation_partner-statistics {% endtrans %}</div>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="user-nav-major user-nav-contact{% if app.request.get('_route') == 'borrower_account_contact' %} active{% endif %}">
+                        <a href="{{ path('partner_contact') }}">
+                            <span class="icon fa-question-circle-o"></span>
+                            <div class="label">{% trans %} mobile-navigation_partner-contact {% endtrans %}</div>
                         </a>
                     </li>
                 {% endif %}

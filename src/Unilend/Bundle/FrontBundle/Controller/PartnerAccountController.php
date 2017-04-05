@@ -4,12 +4,15 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
 class PartnerAccountController extends Controller
 {
     /**
      * @Route("partenaire/depot", name="partner_project_request")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
      * @return Response
      */
     public function projectRequestAction()
@@ -19,6 +22,8 @@ class PartnerAccountController extends Controller
 
     /**
      * @Route("partenaire/emprunteurs", name="partner_projects_list")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
      * @return Response
      */
     public function projectsListAction()
@@ -28,6 +33,8 @@ class PartnerAccountController extends Controller
 
     /**
      * @Route("partenaire/utilisateurs", name="partner_users")
+     * @Security("has_role('ROLE_PARTNER_ADMIN')")
+     *
      * @return Response
      */
     public function usersAction()
@@ -37,6 +44,8 @@ class PartnerAccountController extends Controller
 
     /**
      * @Route("partenaire/performance", name="partner_statistics")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
      * @return Response
      */
     public function statisticsAction()
@@ -46,6 +55,8 @@ class PartnerAccountController extends Controller
 
     /**
      * @Route("partenaire/contact", name="partner_contact")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
      * @return Response
      */
     public function contactAction()

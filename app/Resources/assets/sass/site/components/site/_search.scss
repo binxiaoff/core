@@ -355,8 +355,9 @@
     }
 
     // User logged in, so show the compact site search
+    #{$js-user-type-borrower} &,
     #{$js-user-type-lender} &,
-    #{$js-user-type-borrower} & {
+    #{$js-user-type-partner} & {
       @include devices('md') {
         @include site-search-compact;
       }

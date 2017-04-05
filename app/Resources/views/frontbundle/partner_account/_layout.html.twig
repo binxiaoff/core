@@ -12,11 +12,36 @@
                     <nav class="dashboard-nav">
                         {% block dashboardNav %}
                             <ul>
-                                <li role="presentation" class="dashboard-nav-project-request{% if app.request.get('_route') == 'partner_project_request' %} active{% endif %}"><a href="{{ path('partner_project_request') }}"><span class="icon fa-pen-u"></span><span class="label">{% trans %} partner-account-nav_project-request {% endtrans %}</span></a></li>
-                                <li role="presentation" class="dashboard-nav-projects-list{% if app.request.get('_route') == 'partner_projects_list' %} active{% endif %}"><a href="{{ path('partner_projects_list') }}"><span class="icon fa-project-u"></span><span class="label">{% trans %} partner-account-nav_projects-list {% endtrans %}</span></a></li>
-                                <li role="presentation" class="dashboard-nav-users{% if app.request.get('_route') == 'partner_users' %} active{% endif %}"><a href="{{ path('partner_users') }}"><span class="icon fa-profile-u"></span><span class="label">{% trans %} partner-account-nav_users {% endtrans %}</span></a></li>
-                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'partner_statistics' %} active{% endif %}"><a href="{{ path('partner_statistics') }}"><span class="icon fa-linegraph-u"></span><span class="label">{% trans %} partner-account-nav_statistics {% endtrans %}</span></a></li>
-                                <li role="presentation" class="dashboard-nav-contact{% if app.request.get('_route') == 'partner_contact' %} active{% endif %}"><a href="{{ path('partner_contact') }}"><span class="icon fa-question-circle-o"></span><span class="label">{% trans %} partner-account-nav_contact {% endtrans %}</span></a></li>
+                                <li role="presentation" class="dashboard-nav-project-request{% if app.request.get('_route') == 'partner_project_request' %} active{% endif %}">
+                                    <a href="{{ path('partner_project_request') }}">
+                                        <span class="icon fa-pen-u"></span>
+                                        <span class="label">{% trans %} partner-account-nav_project-request {% endtrans %}</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-projects-list{% if app.request.get('_route') == 'partner_projects_list' %} active{% endif %}">
+                                    <a href="{{ path('partner_projects_list') }}">
+                                        <span class="icon fa-project-u"></span>
+                                        <span class="label">{% trans %} partner-account-nav_projects-list {% endtrans %}</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-users{% if app.request.get('_route') == 'partner_users' %} active{% endif %}">
+                                    <a href="{{ path('partner_users') }}">
+                                        <span class="icon fa-profile-u"></span>
+                                        <span class="label">{% trans %} partner-account-nav_users {% endtrans %}</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'partner_statistics' %} active{% endif %}">
+                                    <a href="{{ path('partner_statistics') }}">
+                                        <span class="icon fa-linegraph-u"></span>
+                                        <span class="label">{% trans %} partner-account-nav_statistics {% endtrans %}</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-contact{% if app.request.get('_route') == 'partner_contact' %} active{% endif %}">
+                                    <a href="{{ path('partner_contact') }}">
+                                        <span class="icon fa-question-circle-o"></span>
+                                        <span class="label">{% trans %} partner-account-nav_contact {% endtrans %}</span>
+                                    </a>
+                                </li>
                             </ul>
                         {% endblock %}
                     </nav>

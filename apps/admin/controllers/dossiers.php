@@ -1453,7 +1453,7 @@ class dossiersController extends bootstrap
                 $em = $this->get('doctrine.orm.entity_manager');
                 /** @var Clients $clientEntity */
                 $clientEntity = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
-                if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)){
+                if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
                     $companyEntity = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
                 } else {
                     $_SESSION['freeow']['title']   = 'La création n\' pas abouti';
