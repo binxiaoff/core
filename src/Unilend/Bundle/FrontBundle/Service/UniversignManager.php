@@ -6,8 +6,15 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Routing\RouterInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager;
+use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use PhpXmlRpc\Client;
 use PhpXmlRpc\Request;
@@ -15,6 +22,8 @@ use PhpXmlRpc\Value;
 
 class UniversignManager
 {
+    const DOCUMENT_TYPE_WIRE_TRANSFER_OUT = 'wire_transfer_out';
+
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
     /** @var  EntityManager */
@@ -31,6 +40,8 @@ class UniversignManager
     private $universignURL;
     /** @var MailerManager */
     private $mailerManager;
+    /** @var WireTransferOutManager */
+    private $wireTransferOutManager;
 
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -41,7 +52,8 @@ class UniversignManager
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         $universignURL,
-        $rootDir
+        $rootDir,
+        WireTransferOutManager $wireTransferOutManager
     ) {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
@@ -52,17 +64,18 @@ class UniversignManager
         $this->mailer                 = $mailer;
         $this->universignURL          = $universignURL;
         $this->rootDir                = $rootDir;
+        $this->wireTransferOutManager = $wireTransferOutManager;
     }
 
     /**
-     * @param \projects_pouvoir $proxy
+     * @param ProjectsPouvoir $proxy
      *
      * @return bool
      */
-    public function createProxy(\projects_pouvoir $proxy)
+    public function createProxy(ProjectsPouvoir $proxy)
     {
         try {
-            $pdfParameters = $this->getPdfParameters('proxy', $proxy->id_pouvoir);
+            $pdfParameters = $this->getParameters($proxy);
         } catch (\Exception $universignException) {
             return false;
         }
@@ -72,15 +85,15 @@ class UniversignManager
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
-            $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
+            $this->notifyError($proxy->getId(), 'proxy', $soapResult);
 
             return false;
         }
-        $resultValue           = $soapResult->value();
-        $proxy->id_universign  = $resultValue['id']->scalarVal();
-        $proxy->url_universign = $resultValue['url']->scalarVal();
-        $proxy->status         = \projects_pouvoir::STATUS_PENDING;
-        $proxy->update();
+        $resultValue = $soapResult->value();
+        $proxy->setIdUniversign($resultValue['id']->scalarVal())
+              ->setUrlUniversign($resultValue['url']->scalarVal())
+              ->setStatus(ProjectsPouvoir::STATUS_PENDING);
+        $this->entityManager->flush($proxy);
 
         return true;
     }
@@ -95,7 +108,7 @@ class UniversignManager
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
-            $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
+            $this->notifyError($proxy->id_pouvoir, 'proxy', $soapResult);
         } else {
             $resultValue     = $soapResult->value()[0];
             $documentName    = $resultValue['name']->scalarVal();
@@ -114,14 +127,14 @@ class UniversignManager
     }
 
     /**
-     * @param \clients_mandats $mandate
+     * @param ClientsMandats $mandate
      *
      * @return bool
      */
-    public function createMandate(\clients_mandats $mandate)
+    public function createMandate(ClientsMandats $mandate)
     {
         try {
-            $pdfParameters = $this->getPdfParameters('mandate', $mandate->id_mandat);
+            $pdfParameters = $this->getParameters($mandate);
         } catch (\Exception $universignException) {
             return false;
         }
@@ -131,7 +144,7 @@ class UniversignManager
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
-            $this->notifyError($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
+            $this->notifyError($mandate->getId(), 'mandate', $soapResult);
 
             return false;
         }
@@ -140,19 +153,19 @@ class UniversignManager
         $url         = $resultValue['url']->scalarVal();
         $id          = $resultValue['id']->scalarVal();
 
-        $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($mandate->id_client);
+        $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($mandate->getIdClient());
         if (null === $bankAccount) {
-            $this->logger->warning('No validated bank account found for mandat : ' . $mandate->id_mandat . ' of client : ' . $mandate->id_client, ['function' => __FUNCTION__]);
+            $this->logger->warning('No validated bank account found for mandat : ' . $mandate->getId() . ' of client : ' . $mandate->getIdClient()->getIdClient(), ['function' => __FUNCTION__]);
 
             return false;
         }
 
-        $mandate->id_universign  = $id;
-        $mandate->url_universign = $url;
-        $mandate->status         = \clients_mandats::STATUS_PENDING;
-        $mandate->bic            = $bankAccount->getBic();
-        $mandate->iban           = $bankAccount->getIban();
-        $mandate->update();
+        $mandate->setIdUniversign($id)
+                ->setUrlUniversign($url)
+                ->setStatus(ClientsMandats::STATUS_PENDING)
+                ->setBic($bankAccount->getBic())
+                ->setIban($bankAccount->getIban());
+        $this->entityManager->flush($mandate);
 
         return true;
     }
@@ -167,7 +180,7 @@ class UniversignManager
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
-            $this->notifyError($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
+            $this->notifyError($mandate->id_mandat, 'mandate', $soapResult);
         } else {
             $resultValue     = $soapResult->value()[0];
             $documentName    = $resultValue['name']->scalarVal();
@@ -191,14 +204,14 @@ class UniversignManager
     }
 
     /**
-     * @param \project_cgv $tos
+     * @param ProjectCgv $tos
      *
      * @return bool
      */
-    public function createTOS(\project_cgv $tos)
+    public function createTOS(ProjectCgv $tos)
     {
         try {
-            $pdfParameters = $this->getPdfParameters('tos', $tos->id);
+            $pdfParameters = $this->getParameters($tos);
         } catch (\Exception $universignException) {
             return false;
         }
@@ -208,15 +221,16 @@ class UniversignManager
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
-            $this->notifyError($tos->id_mandat, 'tos', $tos->id_project, $soapResult);
+            $this->notifyError($tos->getId(), 'tos', $soapResult);
 
             return false;
         }
 
-        $resultValue         = $soapResult->value();
-        $tos->id_universign  = $resultValue['id']->scalarVal();
-        $tos->url_universign = $resultValue['url']->scalarVal();
-        $tos->update();
+        $resultValue = $soapResult->value();
+        $tos->setIdUniversign($resultValue['id']->scalarVal())
+            ->setUrlUniversign($resultValue['url']->scalarVal())
+            ->setStatus(ProjectCgv::STATUS_NO_SIGN);
+        $this->entityManager->flush($tos);
 
         return true;
     }
@@ -231,7 +245,7 @@ class UniversignManager
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
-            $this->notifyError($tos->id, 'tos', $tos->id_project, $soapResult);
+            $this->notifyError($tos->id, 'tos', $soapResult);
         } else {
             $resultValue     = $soapResult->value()[0];
             $documentName    = $resultValue['name']->scalarVal();
@@ -243,82 +257,106 @@ class UniversignManager
         }
     }
 
+    public function createWireTransferOutRequest(Virements $wireTransferOut)
+    {
+        $universign = $wireTransferOut->getUniversign();
+        if (null === $universign) {
+            $universign = new WireTransferOutUniversign();
+            $universign->setIdWireTransferOut($wireTransferOut)
+                       ->setStatus(WireTransferOutUniversign::STATUS_PENDING)
+                       ->setName($this->wireTransferOutManager->getDocumentName($wireTransferOut));
+            $this->entityManager->persist($universign);
+        }
+        $pdfParameters = $this->getParameters($universign);
+
+        $soapClient  = new Client($this->universignURL);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
+        $soapResult  = $soapClient->send($soapRequest);
+
+        if ($soapResult->faultCode()) {
+            $this->notifyError($universign->getId(), 'wire_transfer_out', $soapResult);
+
+            return false;
+        }
+
+        $resultValue = $soapResult->value();
+        $universign->setIdUniversign($resultValue['id']->scalarVal())
+                   ->setUrlUniversign($resultValue['url']->scalarVal());
+        $this->entityManager->flush($universign);
+
+        return $universign;
+    }
+
     /**
-     * @param string $documentType
-     * @param string $documentId
+     * @param UniversignEntityInterface $universign
      *
      * @return array
      * @throws \Exception
      */
-    private function getPdfParameters($documentType, $documentId)
+    private function getParameters(UniversignEntityInterface $universign)
     {
-        /** @var \clients $client */
-        $client = $this->entityManagerSimulator->getRepository('clients');
-        /** @var \projects $project */
-        $project = $this->entityManagerSimulator->getRepository('projects');
-        /** @var \companies $company */
-        $company = $this->entityManagerSimulator->getRepository('companies');
+        $documentName  = $universign->getName();
+        $documentId    = $universign->getId();
+        $signPositionX = 255;
+        $signPositionY = 314;
 
-        switch ($documentType) {
-            case 'mandate':
-                /** @var \clients_mandats $mandate */
-                $mandate = $this->entityManagerSimulator->getRepository('clients_mandats');
-                $mandate->get($documentId);
-                $client->get($mandate->id_client, 'id_client');
-                $documentName = $mandate->name;
-                $routeName    = 'mandate_signature_status';
-                $doc_name     = $this->rootDir . '/../protected/pdf/mandat/' . $documentName;
+        switch (get_class($universign)) {
+            case ClientsMandats::class:
+                /** @var ClientsMandats $universign */
+                $client           = $universign->getIdClient();
+                $routeName        = 'mandate_signature_status';
+                $documentFullPath = $this->rootDir . '/../protected/pdf/mandat/' . $documentName;
                 break;
-            case 'proxy':
-                /** @var \projects_pouvoir $proxy */
-                $proxy = $this->entityManagerSimulator->getRepository('projects_pouvoir');
-                $proxy->get($documentId);
-                $project->get($proxy->id_project);
-                $company->get($project->id_company);
-                $client->get($company->id_client_owner, 'id_client');
-                $documentName = $proxy->name;
-                $routeName    = 'proxy_signature_status';
-                $doc_name     = $this->rootDir . '/../protected/pdf/pouvoir/' . $documentName;
+            case ProjectsPouvoir::class:
+                /** @var ProjectsPouvoir $universign */
+                $clientId         = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
+                $client           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                $routeName        = 'proxy_signature_status';
+                $documentFullPath = $this->rootDir . '/../protected/pdf/pouvoir/' . $documentName;
                 break;
-            case 'tos':
-                /** @var \project_cgv $tos */
-                $tos = $this->entityManagerSimulator->getRepository('project_cgv');
-                $tos->get($documentId);
-                $project->get($tos->id_project);
-                $company->get($project->id_company);
-                $client->get($company->id_client_owner, 'id_client');
-                $documentName = $tos->name;
-                $routeName    = 'tos_signature_status';
-                $doc_name     = $this->rootDir . '/../protected/pdf/cgv_emprunteurs/' . $documentName;
+            case ProjectCgv::class:
+                /** @var ProjectCgv $universign */
+                $clientId         = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
+                $client           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                $routeName        = 'tos_signature_status';
+                $documentFullPath = $this->rootDir . '/../protected/pdf/cgv_emprunteurs/' . $documentName;
+                $signPositionX    = 430;
+                $signPositionY    = 750;
+                break;
+            case WireTransferOutUniversign::class:
+                /** @var WireTransferOutUniversign $universign */
+                $client           = $universign->getIdWireTransferOut()->getClient();
+                $routeName        = 'wire_transfer_out_signature_status';
+                $documentFullPath = $this->rootDir . '/../protected/pdf/wire_transfer_out/' . $documentName;
                 break;
             default:
-                $this->logger->error('Unknown Universign document type : ' . $documentType . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);
-                throw new \Exception('Unknown Universign document type : ' . $documentType . '  id : ' . $documentId);
+                $this->logger->error('Unknown Universign document type : ' . get_class($universign) . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                throw new \Exception('Unknown Universign document type : ' . get_class($universign) . '  id : ' . $documentId);
         }
 
         $returnPage = [
-            'success' => $this->router->generate($routeName, ['status' => 'success', 'documentId' => $documentId, 'clientHash' => $client->hash], 0),
-            'fail'    => $this->router->generate($routeName, ['status' => 'fail', 'documentId' => $documentId, 'clientHash' => $client->hash], 0),
-            'cancel'  => $this->router->generate($routeName, ['status' => 'cancel', 'documentId' => $documentId, 'clientHash' => $client->hash], 0)
+            'success' => $this->router->generate($routeName, ['status' => 'success', 'documentId' => $documentId, 'clientHash' => $client->getHash()], 0),
+            'fail'    => $this->router->generate($routeName, ['status' => 'fail', 'documentId' => $documentId, 'clientHash' => $client->getHash()], 0),
+            'cancel'  => $this->router->generate($routeName, ['status' => 'cancel', 'documentId' => $documentId, 'clientHash' => $client->getHash()], 0)
         ];
 
         $docSignatureField = [
             'page'        => new Value(1, 'int'),
-            'x'           => new Value($documentType == 'tos' ? 430 : 255, 'int'),
-            'y'           => new Value($documentType == 'tos' ? 750 : 314, 'int'),
+            'x'           => new Value($signPositionX, 'int'),
+            'y'           => new Value($signPositionY, 'int'),
             'signerIndex' => new Value(0, 'int'),
             'label'       => new Value('Unilend', 'string')
         ];
 
         $signer = [
-            'firstname'    => new Value($client->prenom, 'string'),
-            'lastname'     => new Value($client->nom, 'string'),
-            'phoneNum'     => new Value(str_replace(' ', '', $client->telephone), 'string'),
-            'emailAddress' => new Value($client->email, 'string')
+            'firstname'    => new Value($client->getPrenom(), 'string'),
+            'lastname'     => new Value($client->getNom(), 'string'),
+            'phoneNum'     => new Value(str_replace(' ', '', $client->getTelephone()), 'string'),
+            'emailAddress' => new Value($client->getEmail(), 'string')
         ];
 
         $doc = [
-            'content'         => new Value(file_get_contents($doc_name), 'base64'),
+            'content'         => new Value(file_get_contents($documentFullPath), 'base64'),
             'name'            => new Value($documentName, 'string'),
             'signatureFields' => new Value([new Value($docSignatureField, 'struct')], 'array')
         ];
@@ -339,10 +377,9 @@ class UniversignManager
     /**
      * @param string              $documentId
      * @param string              $documentType
-     * @param string              $projectId
      * @param \PhpXmlRpc\Response $soapResult
      */
-    private function notifyError($documentId, $documentType, $projectId, $soapResult)
+    private function notifyError($documentId, $documentType, $soapResult)
     {
         /** @var \settings $settings */
         $settings = $this->entityManagerSimulator->getRepository('settings');
@@ -360,8 +397,8 @@ class UniversignManager
         $message->setTo($settings->value);
         $this->mailer->send($message);
 
-        $this->logger->error('Return Universign ' . $documentType . ' NOK (project ' . $projectId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(),
-            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectId]);
+        $this->logger->error('Return Universign ' . $documentType . ' NOK (id: ' . $documentId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(),
+            ['class' => __CLASS__, 'function' => __FUNCTION__]);
     }
 
     /**

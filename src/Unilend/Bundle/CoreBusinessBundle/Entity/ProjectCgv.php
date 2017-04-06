@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
 
 /**
  * ProjectCgv
@@ -10,12 +11,21 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="project_cgv", uniqueConstraints={@ORM\UniqueConstraint(name="id_project", columns={"id_project"})}, indexes={@ORM\Index(name="id_project_2", columns={"id_project"})})
  * @ORM\Entity
  */
-class ProjectCgv
+class ProjectCgv implements UniversignEntityInterface
 {
+    const STATUS_NO_SIGN         = 0;
+    const STATUS_SIGN_FO         = 1;
+    const STATUS_SIGN_UNIVERSIGN = 2;
+    const STATUS_SIGN_FAILED     = 3;
+    const STATUS_SIGN_CANCELLED  = 4;
+
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="termOfUser")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -77,16 +87,14 @@ class ProjectCgv
      */
     private $id;
 
-
-
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ProjectCgv
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -96,7 +104,7 @@ class ProjectCgv
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {

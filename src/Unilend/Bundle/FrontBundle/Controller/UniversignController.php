@@ -1,10 +1,16 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\UniversignManager;
 
@@ -19,8 +25,9 @@ class UniversignController extends Controller
      *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
      * )
      * @param string $status
-     * @param int $documentId
+     * @param int    $documentId
      * @param string $clientHash
+     *
      * @return Response
      */
     public function proxySignatureStatusAction($status, $documentId, $clientHash)
@@ -62,7 +69,8 @@ class UniversignController extends Controller
                     $proxy->update();
                     break;
                 default:
-                    $logger->warning('Unknown proxy status (' . $status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
+                    $logger->warning('Unknown proxy status (' . $status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')',
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
                     return $this->redirectToRoute('home');
             }
 
@@ -92,8 +100,9 @@ class UniversignController extends Controller
      *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
      * )
      * @param string $status
-     * @param int $documentId
+     * @param int    $documentId
      * @param string $clientHash
+     *
      * @return Response
      */
     public function mandateSignatureStatusAction($status, $documentId, $clientHash)
@@ -128,7 +137,8 @@ class UniversignController extends Controller
                     $mandate->update();
                     break;
                 default:
-                    $logger->warning('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
+                    $logger->warning('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')',
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
                     return $this->redirectToRoute('home');
             }
 
@@ -158,8 +168,9 @@ class UniversignController extends Controller
      *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
      * )
      * @param string $status
-     * @param int $documentId
+     * @param int    $documentId
      * @param string $clientHash
+     *
      * @return Response
      */
     public function tosSignatureStatusAction($status, $documentId, $clientHash)
@@ -235,20 +246,18 @@ class UniversignController extends Controller
      *
      * @param int         $proxyId
      * @param null|string $universignUpdate
+     *
      * @return Response
      */
     public function createProxyAction($proxyId, $universignUpdate = null)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \projects_pouvoir $proxy */
-        $proxy = $entityManager->getRepository('projects_pouvoir');
-        /** @var UniversignManager $universignManager */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        $proxy             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($proxyId);
 
-        if ($proxy->get($proxyId) && $proxy->status == \projects_pouvoir::STATUS_PENDING) {
-            if ($universignUpdate == 'NoUpdateUniversign' && false === empty($proxy->url_universign) || $universignManager->createProxy($proxy)) {
-                return $this->redirect($proxy->url_universign);
+        if ($proxy && ProjectsPouvoir::STATUS_PENDING === $proxy->getStatus()) {
+            if ($universignUpdate == 'NoUpdateUniversign' && false === empty($proxy->getUrlUniversign()) || $universignManager->createProxy($proxy)) {
+                return $this->redirect($proxy->getUrlUniversign());
             }
         }
 
@@ -259,20 +268,18 @@ class UniversignController extends Controller
      * @Route("/universign/mandat/{mandateId}", name="mandate_generation", requirements={"mandateId":"\d+"})
      *
      * @param int $mandateId
+     *
      * @return Response
      */
     public function createMandateAction($mandateId)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \clients_mandats $mandate */
-        $mandate = $entityManager->getRepository('clients_mandats');
-        /** @var \Unilend\Bundle\FrontBundle\Service\UniversignManager $universignManager */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        $mandate           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->find($mandateId);
 
-        if ($mandate->get($mandateId) && $mandate->status == \clients_mandats::STATUS_PENDING) {
-            if (false === empty($mandate->url_universign) || $universignManager->createMandate($mandate)) {
-                return $this->redirect($mandate->url_universign);
+        if ($mandate && $mandate->getStatus() == ClientsMandats::STATUS_PENDING) {
+            if (false === empty($mandate->getUrlUniversign()) || $universignManager->createMandate($mandate)) {
+                return $this->redirect($mandate->getUrlUniversign());
             }
         }
 
@@ -284,21 +291,49 @@ class UniversignController extends Controller
      *
      * @param int    $tosId
      * @param string $tosName
+     *
      * @return Response
      */
     public function createTosAction($tosId, $tosName)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \project_cgv $tos */
-        $tos = $entityManager->getRepository('project_cgv');
-        /** @var \Unilend\Bundle\FrontBundle\Service\UniversignManager $universignManager */
-        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
 
-        if ($tos->get($tosId) && $tos->status == \project_cgv::STATUS_NO_SIGN && $tosName === $tos->name) {
-            $tosLastUpdateDate = \DateTime::createFromFormat('Y-m-d H:i:s', $tos->updated);
-            if ($tosLastUpdateDate->format('Y-m-d') === date('Y-m-d') && false === empty($tos->url_universign) || $universignManager->createTos($tos)) {
-                return $this->redirect($tos->url_universign);
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        /** @var ProjectCgv $tos */
+        $tos = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->find($tosId);
+
+        if ($tos && $tos->getStatus() == ProjectCgv::STATUS_NO_SIGN && $tosName === $tos->getName()) {
+            $tosLastUpdateDate = $tos->getUpdated();
+            if ($tosLastUpdateDate->format('Y-m-d') === date('Y-m-d') && false === empty($tos->getUrlUniversign()) || $universignManager->createTos($tos)) {
+                return $this->redirect($tos->getUrlUniversign());
+            }
+        }
+
+        return $this->redirectToRoute('home');
+    }
+
+    /**
+     * @Route("/universign/cgv_emprunteurs/{wireTransferOutId}", name="wire_transfer_out_request_generation", requirements={"wireTransferOutId":"\d+"})
+     *
+     * @param int $wireTransferOutId
+     *
+     * @return Response
+     */
+    public function createWireTransferOutRequestAction($wireTransferOutId)
+    {
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        $wireTransferOut   = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($wireTransferOutId);
+        if ($wireTransferOut instanceof Virements) {
+            if (Virements::STATUS_PENDING === $wireTransferOut->getStatus()) {
+                try {
+                    $universign = $universignManager->createWireTransferOutRequest($wireTransferOut);
+                    if ($universign instanceof WireTransferOutUniversign) {
+                        return $this->redirect($universign->getUrlUniversign());
+                    }
+                } catch (\Exception $exception) {
+                    return $this->redirectToRoute('home');
+                }
             }
         }
 
@@ -307,6 +342,7 @@ class UniversignController extends Controller
 
     /**
      * @param \projects_pouvoir $proxy
+     *
      * @return null|string
      */
     private function getProxyStatusLabel(\projects_pouvoir $proxy)
@@ -323,13 +359,15 @@ class UniversignController extends Controller
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown proxy status (' . $proxy->status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
+                $logger->warning('Unknown proxy status (' . $proxy->status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
                 return null;
         }
     }
 
     /**
      * @param \clients_mandats $mandate
+     *
      * @return null|string
      */
     private function getMandateStatusLabel(\clients_mandats $mandate)
@@ -346,13 +384,15 @@ class UniversignController extends Controller
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
+                $logger->warning('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
                 return null;
         }
     }
 
     /**
      * @param \project_cgv $tos
+     *
      * @return null|string
      */
     private function getTosStatusLabel(\project_cgv $tos)
@@ -370,7 +410,8 @@ class UniversignController extends Controller
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown tos status (' . $tos->status . ') - Cannot create PDF for Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
+                $logger->warning('Unknown tos status (' . $tos->status . ') - Cannot create PDF for Universign (project ' . $tos->id_project . ')',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
                 return null;
         }
     }

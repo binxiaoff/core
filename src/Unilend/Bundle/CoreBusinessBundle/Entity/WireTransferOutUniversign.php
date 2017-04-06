@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
 
 /**
  * WireTransferOutUniversign
@@ -11,14 +12,19 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class WireTransferOutUniversign
+class WireTransferOutUniversign implements UniversignEntityInterface
 {
+    const STATUS_PENDING  = 0;
+    const STATUS_SIGNED   = 1;
+    const STATUS_CANCELED = 2;
+    const STATUS_FAILED   = 3;
+
     /**
      * @var integer
      *
-     * @ORM\Column(name="file_name", type="integer", nullable=false)
+     * @ORM\Column(name="name", type="integer", nullable=false)
      */
-    private $fileName;
+    private $name;
 
     /**
      * @var string
@@ -67,7 +73,7 @@ class WireTransferOutUniversign
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Virements
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Virements")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Virements", inversedBy="universign")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_wire_transfer_out", referencedColumnName="id_virement")
      * })
@@ -78,13 +84,13 @@ class WireTransferOutUniversign
     /**
      * Set fileName
      *
-     * @param integer $fileName
+     * @param integer $name
      *
      * @return WireTransferOutUniversign
      */
-    public function setFileName($fileName)
+    public function setName($name)
     {
-        $this->fileName = $fileName;
+        $this->fileName = $name;
 
         return $this;
     }
@@ -94,9 +100,9 @@ class WireTransferOutUniversign
      *
      * @return integer
      */
-    public function getFileName()
+    public function getName()
     {
-        return $this->fileName;
+        return $this->name;
     }
 
     /**

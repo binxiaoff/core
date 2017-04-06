@@ -356,6 +356,20 @@ class Projects
     private $mandats;
 
     /**
+     * @var ProjectsPouvoir
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir", mappedBy="idProject")
+     */
+    private $proxy;
+
+    /**
+     * @var ProjectCgv
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv", mappedBy="idProject")
+     */
+    private $termOfUser;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
@@ -1448,5 +1462,25 @@ class Projects
     public function getMandats()
     {
         return $this->mandats;
+    }
+
+    /**
+     * Get project proxy
+     *
+     * @return ProjectsPouvoir
+     */
+    public function getProxy()
+    {
+        return $this->proxy;
+    }
+
+    /**
+     * Get project term of user
+     *
+     * @return ProjectCgv
+     */
+    public function getTermOfUser()
+    {
+        return $this->termOfUser;
     }
 }

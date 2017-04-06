@@ -152,7 +152,12 @@ class Virements
      */
     private $idVirement;
 
-
+    /**
+     * @var WireTransferOutUniversign
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign", mappedBy="idWireTransferOut")
+     */
+    private $universign;
 
     /**
      * Set idClient
@@ -540,5 +545,15 @@ class Virements
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * Get universign
+     *
+     * @return WireTransferOutUniversign
+     */
+    public function getUniversign()
+    {
+        return $this->universign;
     }
 }

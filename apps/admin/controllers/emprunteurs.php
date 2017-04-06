@@ -155,7 +155,7 @@ class emprunteursController extends bootstrap
                             continue;
                         }
                         if (ClientsMandats::STATUS_SIGNED == $mandate->getStatus()) {
-                            $nouveauNom    = str_replace('mandat', 'mandat-' . $mandate->getIdMandat(), $mandate->getName());
+                            $nouveauNom    = str_replace('mandat', 'mandat-' . $mandate->getId(), $mandate->getName());
                             $chemin        = $this->path . 'protected/pdf/mandat/' . $mandate->getName();
                             $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
 

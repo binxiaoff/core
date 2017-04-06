@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
 
 /**
  * ClientsMandats
@@ -11,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class ClientsMandats
+class ClientsMandats implements UniversignEntityInterface
 {
     const STATUS_PENDING  = 0;
     const STATUS_SIGNED   = 1;
@@ -376,12 +377,7 @@ class ClientsMandats
         return $this->added;
     }
 
-    /**
-     * Get idMandat
-     *
-     * @return integer
-     */
-    public function getIdMandat()
+    public function getId()
     {
         return $this->idMandat;
     }
