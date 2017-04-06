@@ -1,0 +1,75 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block cssFiles %}
+    {{ parent() }}
+    <style>
+        body {
+            font-size: 14px;
+            line-height: 22px;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+        }
+        h3 {
+            font-size: 16px;
+        }
+        header {
+            text-align: center;
+            margin:
+        }
+        header > h1 {
+            font-size: 24px;
+            margin: 1em 0;
+        }
+        header > .subtite {
+            color: #b20066;
+            font-weight: 400;
+            line-height: 14px;
+        }
+        table, tr, td, th, tbody, thead, tfoot {
+            font-size: 12px !important;
+            page-break-inside: avoid !important;
+        }
+        .rib-nom, .rib-iban {
+            text-transform: uppercase;
+        }
+        .rib-nom {
+            padding-bottom:
+        }
+        #universign-wrap {
+            padding: 10px;
+            background: #eceaed;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <header>
+        <h1>Demande de versement sur un compte tiers</h1>
+    </header>
+    <div class="row" style="page-break-after: always;">
+        <p>Je soussigné, //Prénom du gérant// //Nom du gérant//, en ma qualité de // Fonction du gérant// de //Raison sociale//, autorise le versement de // montant du virement de fonds initié // euros de mon compte Unilend-bénéficiaire vers le compte tiers suivant :</p>
+
+        <table class="table">
+            <tbody>
+            <tr>
+                <td class="rib-nom">Banque de France</td>
+            </tr>
+            <tr>
+                <td class="rib-iban">FR7630001007941234567890185</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <br><br>
+
+        <p><b style="text-decoration: underline">Signature</b></p>
+
+        <div id="universign-wrap" class="block">
+            Universign signature widget goes here
+        </div>
+    </div>
+{% endblock %}
