@@ -88,17 +88,16 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             return $targetPath;
         }
 
-        // @todo replace with ROLE_PARTNER
-        if (in_array('ROLE_LENDER', $user->getRoles())) {
-            return $this->router->generate('partner_project_request');
-        }
-
         if (in_array('ROLE_LENDER', $user->getRoles())) {
             return $this->router->generate('lender_dashboard');
         }
 
         if (in_array('ROLE_BORROWER', $user->getRoles())) {
             return $this->router->generate('borrower_account_projects');
+        }
+
+        if (in_array('ROLE_PARTNER', $user->getRoles())) {
+            return $this->router->generate('partner_project_request');
         }
 
         return $this->router->generate('home');
