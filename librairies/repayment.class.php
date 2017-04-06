@@ -72,30 +72,4 @@ class repayment
             'vat_amount_total'            => $fVATAmountTotal,
         );
     }
-
-    /**
-     * @param       $fAmount
-     * @param       $iMonthNb
-     * @param       $fRate
-     * @param       $fCommissionRate
-     * @param float $fVAT
-     *
-     * @return array
-     */
-    public static function getRepaymentScheduleWithCommission($fAmount, $iMonthNb, $fRate, $fCommissionRate, $fVAT)
-    {
-        $aCommission = self::getRepaymentCommission($fAmount, $iMonthNb, $fCommissionRate, $fVAT);
-        $aSchedule   = self::getRepaymentSchedule($fAmount, $iMonthNb, $fRate);
-        foreach ($aSchedule as &$aOrder) {
-            $aOrder['commission']                    = $aCommission['commission_monthly'];
-            $aOrder['commission_incl_tax']           = $aCommission['commission_monthly_incl_tax'];
-            $aOrder['repayment_commission_incl_tax'] = $aOrder['repayment'] + $aCommission['commission_monthly_incl_tax'];
-            $aOrder['vat_amount']                    = $aCommission['vat_amount_monthly'];
-        }
-
-        return array(
-            'commission'         => $aCommission,
-            'repayment_schedule' => $aSchedule
-        );
-    }
 }

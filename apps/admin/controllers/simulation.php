@@ -28,6 +28,8 @@ class simulationController extends bootstrap
         parent::initialize();
 
         $this->catchAll = true;
+
+        $this->users->checkAccess('simulator');
     }
 
     public function _default()
@@ -101,7 +103,6 @@ class simulationController extends bootstrap
                         $days = $_POST['nbDaysAgo'];
                     }
                     $date = (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
-                    var_dump($_POST, $date);
                     $this->result = $wsCallHistory->fetchLatestDataFromMongo($_POST['siren'], $wsResource->provider_name, $wsResource->resource_name, $date);
                 } else {
                     $this->result = 'Please give a siren and a valid resource from the drop down list';

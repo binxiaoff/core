@@ -28,7 +28,11 @@
     <ul id="menu_deroulant">
         <?php if (in_array('dashboard', $this->lZonesHeader)) : ?>
             <li>
-                <a href="<?= $this->lurl ?>" title="Dashboard"<?= ($this->menu_admin == 'dashboard' ? ' class="active"' : '') ?>>Dashboard</a>
+                <?php if (in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL]) || in_array($_SESSION['user']['id_user'], [23, 26])) : ?>
+                    <a href="<?= $this->lurl ?>" title="Mon flux"<?= ($this->menu_admin == 'dashboard' ? ' class="active"' : '') ?>>Mon flux</a>
+                <?php else : ?>
+                    <a href="<?= $this->lurl ?>" title="Dashboard"<?= ($this->menu_admin == 'dashboard' ? ' class="active"' : '') ?>>Dashboard</a>
+                <?php endif; ?>
             </li>
         <?php endif; ?>
         <?php if (in_array('edition', $this->lZonesHeader)) : ?>

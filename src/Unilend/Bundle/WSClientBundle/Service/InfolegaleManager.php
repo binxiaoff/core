@@ -26,8 +26,6 @@ class InfolegaleManager
     private $callHistoryManager;
     /** @var Serializer */
     private $serializer;
-    /** @var boolean */
-    private $monitoring;
     /** @var ResourceManager */
     private $resourceManager;
 
@@ -49,13 +47,9 @@ class InfolegaleManager
         $this->resourceManager    = $resourceManager;
     }
 
-    public function setMonitoring($validate)
-    {
-        $this->monitoring = $validate;
-    }
-
     /**
      * @param string $siren
+     *
      * @return null|ScoreDetails
      */
     public function getScore($siren)
@@ -69,6 +63,7 @@ class InfolegaleManager
 
     /**
      * @param string $siren
+     *
      * @return null|\SimpleXMLElement
      */
     public function searchCompany($siren)
@@ -78,6 +73,7 @@ class InfolegaleManager
 
     /**
      * @param string $siren
+     *
      * @return null|\SimpleXMLElement
      */
     public function getIdentity($siren)
@@ -87,6 +83,7 @@ class InfolegaleManager
 
     /**
      * @param string $siren
+     *
      * @return null|\SimpleXMLElement
      */
     public function getListAnnonceLegale($siren)
@@ -98,6 +95,7 @@ class InfolegaleManager
      * @param string $resourceLabel
      * @param string $siren
      * @param string $method
+     *
      * @return null|\SimpleXMLElement
      */
     private function sendRequest($resourceLabel, $siren, $method = 'get')
@@ -106,15 +104,20 @@ class InfolegaleManager
             throw new \InvalidArgumentException('SIREN is missing');
         }
 
-        $query['token'] = $this->token;
-        $query['siren'] = $siren;
-        $logContext     = ['class' => __CLASS__, 'function' => __FUNCTION__, 'SIREN' => $siren];
-        $result         = null;
-        $alertType      = 'down';
-        $wsResource     = $this->resourceManager->getResource($resourceLabel);
+        $result     = null;
+        $monitoring = 'down';
+        $wsResource = $this->resourceManager->getResource($resourceLabel);
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
+
+        $query = [
+            'token' => $this->token,
+            'siren' => $siren
+        ];
 
         try {
-            if (false === ($content = $this->callHistoryManager->getStoredResponse($wsResource, $siren))) {
+            $content = $this->callHistoryManager->getStoredResponse($wsResource, $siren);
+
+            if (false === simplexml_load_string($content)) {
                 /** @var ResponseInterface $response */
                 $response = $this->client->$method($wsResource->resource_name, [
                     'query'    => $query,
@@ -122,33 +125,26 @@ class InfolegaleManager
                 ]);
 
                 if (200 === $response->getStatusCode()) {
-                    $alertType = 'up';
-                    $content   = $response->getBody()->getContents();
+                    $content = $response->getBody()->getContents();
                 } else {
                     $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Response status code: ' . $response->getStatusCode(), $logContext);
                 }
-            } else {
-                $this->setMonitoring(false);
             }
 
             if (false === empty($content)) {
-                $xml    = new \SimpleXMLElement($content);
-                $result = $xml->content[0];
+                $xml        = new \SimpleXMLElement($content);
+                $result     = $xml->content[0];
+                $monitoring = 'up';
             }
         } catch (\Exception $exception) {
-            $alertType = 'down';
-            $message   = 'Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage();
+            $message = 'Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage();
             if (isset($content)) {
                 $message .= $content;
             }
             $this->logger->error($message, $logContext);
-            $this->setMonitoring(true);
         }
 
-        if ($this->monitoring) {
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, $alertType);
-        }
-
+        $this->callHistoryManager->sendMonitoringAlert($wsResource, $monitoring);
         return $result;
     }
 }

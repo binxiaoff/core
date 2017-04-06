@@ -48,13 +48,18 @@ class AttachmentManager
      */
     public function upload(Clients $client, AttachmentType $attachmentType, UploadedFile $file, $name = null)
     {
-        $destination = $this->getUploadDestination($client);
-        $fileName    = ($name === null ? md5(uniqid()) : $name) . '.' . $file->getClientOriginalExtension();
-        if (file_exists($destination . DIRECTORY_SEPARATOR . $fileName)) {
-            $fileName = md5(uniqid()) . $fileName;
+        $destination         = $this->getUploadDestination($client);
+        $destinationAbsolute = $this->getUploadRootDir() . $destination;
+        if (false === is_dir($destinationAbsolute)) {
+            $this->filesystem->mkdir($destinationAbsolute);
         }
-        $file = $file->move($destination, $fileName);
-        $path = ltrim($file->getPathname(), $this->getUploadRootDir());
+
+        $fileName     = ($name === null ? md5(uniqid()) : $name);
+        $fileFullName = $this->sanitizer($fileName) . '.' . $file->getClientOriginalExtension();
+        if (file_exists($destinationAbsolute . DIRECTORY_SEPARATOR . $fileFullName)) {
+            $fileFullName = $this->sanitizer($fileName . '_' . md5(uniqid())) . '.' . $file->getClientOriginalExtension();
+        }
+        $file->move($destinationAbsolute, $fileFullName);
 
         $attachmentsToArchive = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy(['idClient' => $client, 'idType' => $attachmentType, 'archived' => null]);
         foreach ($attachmentsToArchive as $toArchive) {
@@ -62,7 +67,7 @@ class AttachmentManager
         }
 
         $attachment = new Attachment();
-        $attachment->setPath($path)
+        $attachment->setPath($destination . DIRECTORY_SEPARATOR . $fileFullName)
                    ->setClient($client)
                    ->setType($attachmentType);
         $this->entityManager->persist($attachment);
@@ -86,7 +91,7 @@ class AttachmentManager
      */
     private function getUploadRootDir()
     {
-        return $this->uploadRootDir . (substr($this->uploadRootDir, -1) === '/' ? '' : '/');
+        return realpath($this->uploadRootDir . (substr($this->uploadRootDir, -1) === '/' ? '' : '/'));
     }
 
     /**
@@ -146,6 +151,8 @@ class AttachmentManager
     }
 
     /**
+     * Get relative client attachment path
+     *
      * @param Clients $client
      *
      * @return string
@@ -155,13 +162,8 @@ class AttachmentManager
         if (empty($client->getIdClient())) {
             throw new \InvalidArgumentException('Cannot find the upload destination. The client id is empty.');
         }
-
         $hash        = hash('sha256', $client->getIdClient());
-        $destination = $this->getUploadRootDir() . $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . DIRECTORY_SEPARATOR . $client->getIdClient();
-
-        if (false === is_dir($destination)) {
-            $this->filesystem->mkdir($destination);
-        }
+        $destination = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . DIRECTORY_SEPARATOR . $client->getIdClient();
 
         return $destination;
     }
@@ -254,5 +256,17 @@ class AttachmentManager
         }
 
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($types);
+    }
+
+    private function sanitizer($fileName)
+    {
+        // Remove anything which isn't a word, whitespace, number or any of the following caracters -_~,;[]().
+        $fileName = mb_ereg_replace('([^\w\s\d\-_~,;\[\]\(\).])', '', $fileName);
+        // Remove any runs of periods
+        $fileName = mb_ereg_replace('([\.]{2,})', '', $fileName);
+        // Limit the length of the file name.
+        $fileName = substr($fileName, 0, 255);
+
+        return $fileName;
     }
 }

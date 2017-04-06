@@ -109,9 +109,8 @@
     <form id="last-annual-accounts-form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" class="balance-form">
         <h2>
             Dernier bilan
-            <?php if (in_array(\attachment_type::DERNIERE_LIASSE_FISCAL, array_column($this->aAttachments, 'id_type'))) : ?>
-                <?php $lastBalanceSheet = $this->aAttachments[\attachment_type::DERNIERE_LIASSE_FISCAL]; ?>
-                <a href="<?= $this->url ?>/attachment/download/id/<?= $lastBalanceSheet['id'] ?>/file/<?= urlencode($lastBalanceSheet['path']) ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="Dernière liasse fiscale"></a>
+            <?php if ($this->lastBalanceSheet) : ?>
+                <a href="<?= $this->url ?>/attachment/download/id/<?= $this->lastBalanceSheet->getId() ?>/file/<?= urlencode($this->lastBalanceSheet->getPath()) ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="Dernière liasse fiscale"></a>
             <?php endif; ?>
         </h2>
         <?php if (empty($this->aAllAnnualAccounts)) : ?>
