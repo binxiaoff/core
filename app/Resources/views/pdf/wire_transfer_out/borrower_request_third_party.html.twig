@@ -6,6 +6,7 @@
         body {
             font-size: 14px;
             line-height: 22px;
+            max-width: 760px;
         }
         h1 {
             font-size: 24px;
@@ -22,25 +23,22 @@
         }
         header > h1 {
             font-size: 24px;
-            margin: 1em 0;
+            margin: 1.25em 0 1em;
         }
-        header > .subtite {
-            color: #b20066;
-            font-weight: 400;
-            line-height: 14px;
-        }
-        table, tr, td, th, tbody, thead, tfoot {
+        table, tr, td {
             font-size: 12px !important;
             page-break-inside: avoid !important;
-        }
-        .rib-nom, .rib-iban {
             text-transform: uppercase;
+            background: #eceaed;
         }
-        .rib-nom {
-            padding-bottom:
+        .rib-nom-th, .rib-iban-th {
+            width: 120px;
+            color: #787679;
+        }
+        .rib-nom-td, .rib-iban-td {
         }
         #universign-wrap {
-            padding: 10px;
+            padding: 10px 30px;
             background: #eceaed;
         }
     </style>
@@ -51,15 +49,17 @@
         <h1>Demande de versement sur un compte tiers</h1>
     </header>
     <div class="row" style="page-break-after: always;">
-        <p>Je soussigné, //Prénom du gérant// //Nom du gérant//, en ma qualité de // Fonction du gérant// de //Raison sociale//, autorise le versement de // montant du virement de fonds initié // euros de mon compte Unilend-bénéficiaire vers le compte tiers suivant :</p>
+        <p style="margin-bottom: 2em">Je soussigné, <b>//Prénom du gérant// //Nom du gérant//</b>, en ma qualité de <b>// Fonction du gérant//</b> de <b>//Raison sociale//</b>, autorise le versement de <b>// montant du virement de fonds initié //</b> euros de mon compte Unilend-bénéficiaire vers le compte tiers suivant:</p>
 
         <table class="table">
             <tbody>
             <tr>
-                <td class="rib-nom">Banque de France</td>
+                <td class="rib-nom-th">Titulaire</td>
+                <td class="rib-nom-td">NOM, Prenom</td>
             </tr>
             <tr>
-                <td class="rib-iban">FR7630001007941234567890185</td>
+                <td class="rib-iban-th">IBAN</td>
+                <td class="rib-iban-td">FR7630001007941234567890185</td>
             </tr>
             </tbody>
         </table>
@@ -68,7 +68,7 @@
 
         <p><b style="text-decoration: underline">Signature</b></p>
 
-        <div id="universign-wrap" class="block">
+        <div id="universign-wrap">
             Universign signature widget goes here
         </div>
     </div>
