@@ -15,6 +15,7 @@ class Virements
 {
     const STATUS_PENDING          = 0;
     const STATUS_CLIENT_VALIDATED = 10;
+    const STATUS_CLIENT_DENIED    = 15;
     const STATUS_VALIDATED        = 20;
     const STATUS_SENT             = 30;
     const STATUS_DENIED           = 40;

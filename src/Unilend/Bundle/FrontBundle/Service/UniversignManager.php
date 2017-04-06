@@ -9,11 +9,9 @@ use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager;
 use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use PhpXmlRpc\Client;
@@ -40,8 +38,6 @@ class UniversignManager
     private $universignURL;
     /** @var MailerManager */
     private $mailerManager;
-    /** @var WireTransferOutManager */
-    private $wireTransferOutManager;
 
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -52,8 +48,7 @@ class UniversignManager
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         $universignURL,
-        $rootDir,
-        WireTransferOutManager $wireTransferOutManager
+        $rootDir
     ) {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
@@ -64,7 +59,6 @@ class UniversignManager
         $this->mailer                 = $mailer;
         $this->universignURL          = $universignURL;
         $this->rootDir                = $rootDir;
-        $this->wireTransferOutManager = $wireTransferOutManager;
     }
 
     /**
@@ -257,17 +251,18 @@ class UniversignManager
         }
     }
 
-    public function createWireTransferOutRequest(Virements $wireTransferOut)
+    /**
+     * @param WireTransferOutUniversign $universign
+     *
+     * @return bool
+     */
+    public function createWireTransferOutRequest(WireTransferOutUniversign $universign)
     {
-        $universign = $wireTransferOut->getUniversign();
-        if (null === $universign) {
-            $universign = new WireTransferOutUniversign();
-            $universign->setIdWireTransferOut($wireTransferOut)
-                       ->setStatus(WireTransferOutUniversign::STATUS_PENDING)
-                       ->setName($this->wireTransferOutManager->getDocumentName($wireTransferOut));
-            $this->entityManager->persist($universign);
+        try {
+            $pdfParameters = $this->getParameters($universign);
+        } catch (\Exception $universignException) {
+            return false;
         }
-        $pdfParameters = $this->getParameters($universign);
 
         $soapClient  = new Client($this->universignURL);
         $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
@@ -284,7 +279,7 @@ class UniversignManager
                    ->setUrlUniversign($resultValue['url']->scalarVal());
         $this->entityManager->flush($universign);
 
-        return $universign;
+        return true;
     }
 
     /**
