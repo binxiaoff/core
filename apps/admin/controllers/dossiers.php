@@ -689,13 +689,13 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \partner $partner */
-            $partner = $this->loadData('partner');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
+            $partnerManager = $this->get('unilend.service.partner_manager');
 
             $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
             $this->selectedProduct  = $product;
             $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
+            $this->partnerList      = $partnerManager->getPartnersSortedByName(Partner::STATUS_VALIDATED);
             $this->partnerProduct   = $this->loadData('partner_product');
 
             if (false === empty($this->projects->id_product)) {
@@ -714,9 +714,6 @@ class dossiersController extends bootstrap
                     $this->rate_max = $rateRange['rate_max'];
                 }
             }
-
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-            $partnerManager = $this->get('unilend.service.partner_manager');
 
             $this->attachment_type               = $this->loadData('attachment_type');
             $this->aAttachments                  = $this->projects->getAttachments();
@@ -1432,7 +1429,7 @@ class dossiersController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
         $partnerManager    = $this->get('unilend.service.partner_manager');
         $defaultPartner    = $partnerManager->getDefaultPartner();
-        $this->partnerList = $defaultPartner->select('', 'name ASC');
+        $this->partnerList = $partnerManager->getPartnersSortedByName(Partner::STATUS_VALIDATED);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
         $clientManager = $this->get('unilend.service.client_manager');
