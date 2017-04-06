@@ -33,6 +33,8 @@ class InfogreffeManager
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
+    /** @var bool */
+    private $useCache = true;
 
     /**
      * @param string             $login
@@ -63,6 +65,18 @@ class InfogreffeManager
     }
 
     /**
+     * @param bool $useCache
+     *
+     * @return InfogreffeManager
+     */
+    public function setUseCache($useCache)
+    {
+        $this->useCache = $useCache;
+
+        return $this;
+    }
+
+    /**
      * @param string $siren
      *
      * @return null|array|CompanyIndebtedness
@@ -78,12 +92,12 @@ class InfogreffeManager
         $wsResource = $this->resourceManager->getResource(self::RESOURCE_INDEBTEDNESS);
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
 
-        $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren);
-        $result   = $this->extractResponse($response);
+        $response = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
+        $result   = $response ? $this->extractResponse($response) : false;
 
         if (false === $this->isValidResult($result)) {
             /** @var callable $callBack */
-            $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
+            $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
 
             try {
                 $xml     = new \SimpleXMLElement('<xml/>');

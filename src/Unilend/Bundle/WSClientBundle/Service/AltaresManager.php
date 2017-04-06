@@ -38,6 +38,8 @@ class AltaresManager
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
+    /** @var bool */
+    private $useCache = true;
 
     /**
      * @param string             $login
@@ -68,6 +70,18 @@ class AltaresManager
         $this->riskClient         = $riskClient;
         $this->serializer         = $serializer;
         $this->resourceManager    = $resourceManager;
+    }
+
+    /**
+     * @param bool $useCache
+     *
+     * @return AltaresManager
+     */
+    public function setUseCache($useCache)
+    {
+        $this->useCache = $useCache;
+
+        return $this;
     }
 
     /**
@@ -178,10 +192,10 @@ class AltaresManager
         $siren      = $params[$this->getSirenKey($wsResource->resource_name)];
 
         try {
-            $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren);
+            $response = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
 
             if (false === $this->isValidResponse($response)) {
-                $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
+                $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
                 ini_set('default_socket_timeout', 8);
 
                 $soapClient = $this->{$client . 'Client'};

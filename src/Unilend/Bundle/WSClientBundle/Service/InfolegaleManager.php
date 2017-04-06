@@ -28,6 +28,8 @@ class InfolegaleManager
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
+    /** @var bool */
+    private $useCache = true;
 
     /**
      * @param ClientInterface    $client
@@ -37,7 +39,14 @@ class InfolegaleManager
      * @param Serializer         $serializer
      * @param ResourceManager    $resourceManager
      */
-    public function __construct(ClientInterface $client, $token, LoggerInterface $logger, CallHistoryManager $callHistoryManager, Serializer $serializer, ResourceManager $resourceManager)
+    public function __construct(
+        ClientInterface $client,
+        $token,
+        LoggerInterface $logger,
+        CallHistoryManager $callHistoryManager,
+        Serializer $serializer,
+        ResourceManager $resourceManager
+    )
     {
         $this->client             = $client;
         $this->token              = $token;
@@ -45,6 +54,18 @@ class InfolegaleManager
         $this->callHistoryManager = $callHistoryManager;
         $this->serializer         = $serializer;
         $this->resourceManager    = $resourceManager;
+    }
+
+    /**
+     * @param bool $useCache
+     *
+     * @return InfolegaleManager
+     */
+    public function setUseCache($useCache)
+    {
+        $this->useCache = $useCache;
+
+        return $this;
     }
 
     /**
@@ -115,13 +136,13 @@ class InfolegaleManager
         ];
 
         try {
-            $content = $this->callHistoryManager->getStoredResponse($wsResource, $siren);
+            $content = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
 
-            if (false === simplexml_load_string($content)) {
+            if (false === $content || false === simplexml_load_string($content)) {
                 /** @var ResponseInterface $response */
                 $response = $this->client->$method($wsResource->resource_name, [
                     'query'    => $query,
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache)
                 ]);
 
                 if (200 === $response->getStatusCode()) {

@@ -33,6 +33,8 @@ class EulerHermesManager
     private $accountEmail;
     /** @var ResourceManager */
     private $resourceManager;
+    /** @var bool */
+    private $useCache = true;
 
     /**
      * @param Client             $client
@@ -66,6 +68,18 @@ class EulerHermesManager
         $this->accountPassword    = $accountPassword;
         $this->accountEmail       = $accountEmail;
         $this->resourceManager    = $resourceManager;
+    }
+
+    /**
+     * @param bool $useCache
+     *
+     * @return EulerHermesManager
+     */
+    public function setUseCache($useCache)
+    {
+        $this->useCache = $useCache;
+
+        return $this;
     }
 
     /**
@@ -151,10 +165,12 @@ class EulerHermesManager
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
 
         try {
-            if (false === ($result = $this->callHistoryManager->getStoredResponse($wsResource, $siren))) {
+            $result = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
+
+            if (false === $result) {
                 $response = $this->client->get($wsResource->resource_name . $uri, [
                     'headers'  => ['apikey' => $apiKey],
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache)
                 ]);
 
                 if (200 === $response->getStatusCode()) {

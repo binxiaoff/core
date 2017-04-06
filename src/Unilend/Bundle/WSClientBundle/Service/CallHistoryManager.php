@@ -59,15 +59,17 @@ class CallHistoryManager
 
     /**
      * @param \ws_external_resource $wsResource
-     * @param string $siren
+     * @param string                $siren
+     * @param bool                  $useCache
+     *
      * @return \Closure
      */
-    public function addResourceCallHistoryLog($wsResource, $siren)
+    public function addResourceCallHistoryLog($wsResource, $siren, $useCache)
     {
         if (false !== $wsResource) {
             $this->stopwatch->start($wsResource->id_resource);
 
-            return function ($stats = null) use ($wsResource, $siren) {
+            return function ($stats = null) use ($wsResource, $siren, $useCache) {
                 try {
                     $event        = $this->stopwatch->stop($wsResource->id_resource);
                     $transferTime = $event->getDuration() / 1000;
@@ -75,21 +77,25 @@ class CallHistoryManager
                     if ($stats instanceof TransferStats && null != $stats && $stats->hasResponse()) {
                         $statusCode = $stats->getResponse()->getStatusCode();
                         $stream     = $stats->getResponse()->getBody();
-                        // getContents returns the remaining contents, so that a second call returns nothing unless we seek the position of the stream with rewind
                         $stream->rewind();
+                        // getContents returns the remaining contents, so that a second call returns nothing unless we seek the position of the stream with rewind
                         $result = $stream->getContents();
                     } else {
                         $statusCode = null;
                         $result     = $stats;
                     }
-                    $this->createLog($wsResource->id_resource, $siren, $transferTime, $statusCode);
-                    $this->storeResponse($wsResource, $siren, $result);
+
+                    if ($useCache) {
+                        $this->createLog($wsResource->id_resource, $siren, $transferTime, $statusCode);
+                        $this->storeResponse($wsResource, $siren, $result);
+                    }
                 } catch (\Exception $exception) {
                     $this->logger->error('Unable to log response time into database. Error message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
                     unset($exception);
                 }
             };
         }
+
         return function () {
 
         };
