@@ -87,7 +87,7 @@
                                                 <div class="form-field form-field-multi{% if form.errors.contact.civility is defined %} ui-formvalidation-error{% endif %}">
                                                     <div class="field-label">
                                                         <label>
-                                                            {% trans %} common_form-of-address {% endtrans %}
+                                                            {% trans %} common_title {% endtrans %}
                                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                         </label>
                                                     </div>
@@ -95,13 +95,13 @@
                                                         <li>
                                                             <label>
                                                                 <input type="radio" name="contact[civility]" value="Mme"{% if 'Mme' == form.values.contact.civility %} checked{% endif %}/>
-                                                                {% trans %} common_form-of-address-female {% endtrans %}
+                                                                {% trans %} common_title {% endtrans %}
                                                             </label>
                                                         </li>
                                                         <li>
                                                             <label>
                                                                 <input type="radio" name="contact[civility]" value="M."{% if 'M.' == form.values.contact.civility %} checked{% endif %}/>
-                                                                {% trans %} common_form-of-address-male {% endtrans %}
+                                                                {% trans %} common_title {% endtrans %}
                                                             </label>
                                                         </li>
                                                     </ul>
@@ -219,8 +219,21 @@
                                                             <div class="col-lg-6 col-md-6">
                                                                 <select name="files[extra__NUM__]" class="input-field">
                                                                     <option value="">{% trans %} project-request_files-select-label {% endtrans %}</option>
-                                                                    {% for attachment in attachment_types  %}
-                                                                        <option value="{{ attachment.id }}">{{ attachment.label }}</option>
+                                                                    {% for attachmentType in attachmentTypes  %}
+                                                                        {% set translationLabel = 'projet_document-type-' ~ attachmentType.getId() %}
+                                                                        <option value="{{ attachmentType.getId() }}">
+                                                                            {% set year = 'now'|date('Y') %}
+                                                                            {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DERNIERE_LIASSE_FISCAL') %}
+                                                                                {% set year = year - 1 %}
+                                                                            {% endif %}
+                                                                            {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::LIASSE_FISCAL_N_1') %}
+                                                                                {% set year = year - 2 %}
+                                                                            {% endif %}
+                                                                            {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::LIASSE_FISCAL_N_2') %}
+                                                                                {% set year = year - 3 %}
+                                                                            {% endif %}
+                                                                            {{ translationLabel|trans({'%year%': year}) }}
+                                                                        </option>
                                                                     {% endfor %}
                                                                 </select>
                                                             </div>
@@ -245,8 +258,21 @@
                                                             <div class="col-lg-6 col-md-6">
                                                                 <select name="files[file]" class="input-field">
                                                                     <option value="">{% trans %} project-request_files-select-label {% endtrans %}</option>
-                                                                    {% for attachment in attachment_types  %}
-                                                                        <option value="{{ attachment.id }}">{{ attachment.label }}</option>
+                                                                    {% for attachmentType in attachmentTypes  %}
+                                                                        {% set translationLabel = 'projet_document-type-' ~ attachmentType.getId() %}
+                                                                        <option value="{{ attachmentType.getId() }}">
+                                                                            {% set year = 'now'|date('Y') %}
+                                                                            {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DERNIERE_LIASSE_FISCAL') %}
+                                                                                {% set year = year - 1 %}
+                                                                            {% endif %}
+                                                                            {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::LIASSE_FISCAL_N_1') %}
+                                                                                {% set year = year - 2 %}
+                                                                            {% endif %}
+                                                                            {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::LIASSE_FISCAL_N_2') %}
+                                                                                {% set year = year - 3 %}
+                                                                            {% endif %}
+                                                                            {{ translationLabel|trans({'%year%': year}) }}
+                                                                        </option>
                                                                     {% endfor %}
                                                                 </select>
                                                             </div>

@@ -3,12 +3,11 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * BankAccount
  *
- * @ORM\Table(name="bank_account", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_iban_UNIQUE", columns={"id_client", "iban"})}, indexes={@ORM\Index(name="fk_bank_account_id_client_idx", columns={"id_client"})})
+ * @ORM\Table(name="bank_account", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_iban_UNIQUE", columns={"id_client", "iban"})}, indexes={@ORM\Index(name="fk_bank_account_id_client_idx", columns={"id_client"}), @ORM\Index(name="idx_id_attachment", columns={"id_attachment"})})
  * @ORM\Entity
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository")
  * @ORM\HasLifecycleCallbacks
@@ -21,14 +20,12 @@ class BankAccount
 
     /**
      * @var string
-     * @Assert\Bic()
      * @ORM\Column(name="bic", type="string", length=100, nullable=false)
      */
     private $bic;
 
     /**
      * @var string
-     * @Assert\Iban()
      * @ORM\Column(name="iban", type="string", length=100, nullable=false)
      */
     private $iban;
@@ -67,13 +64,6 @@ class BankAccount
     private $idClient;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="status", type="integer", nullable=false)
-     */
-    private $status;
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(name="date_pending", type="datetime", nullable=false)
@@ -93,6 +83,16 @@ class BankAccount
      * @ORM\Column(name="date_archived", type="datetime", nullable=true)
      */
     private $dateArchived;
+
+    /**
+     * @var Attachment
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", inversedBy="bankAccount")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
+     * })
+     */
+    private $idAttachment;
 
     /**
      * Set bic
@@ -227,10 +227,14 @@ class BankAccount
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedAndPendingValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->added->getTimestamp()) {
             $this->added = new \DateTime();
+        }
+
+        if (! $this->datePending instanceof \DateTime || 1 > $this->datePending->getTimestamp()) {
+            $this->datePending = new \DateTime();
         }
     }
 
@@ -243,30 +247,6 @@ class BankAccount
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return BankAccount
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
-     *
-     * @return integer
-     */
-    public function getStatus()
-    {
-        return $this->status;
-    }
-
-    /**
      * @return \DateTime
      */
     public function getDatePending()
@@ -276,10 +256,14 @@ class BankAccount
 
     /**
      * @param \DateTime $datePending
+     *
+     * @return BankAccount
      */
-    public function setDatePending($datePending)
+    public function setDatePending(\DateTime $datePending)
     {
         $this->datePending = $datePending;
+
+        return $this;
     }
 
     /**
@@ -292,10 +276,14 @@ class BankAccount
 
     /**
      * @param \DateTime $dateValidated
+     *
+     * @return BankAccount
      */
     public function setDateValidated($dateValidated)
     {
         $this->dateValidated = $dateValidated;
+
+        return $this;
     }
 
     /**
@@ -308,10 +296,46 @@ class BankAccount
 
     /**
      * @param \DateTime $dateArchived
+     *
+     * @return BankAccount
      */
     public function setDateArchived($dateArchived)
     {
         $this->dateArchived = $dateArchived;
+
+        return $this;
     }
 
+    public function getAttachment()
+    {
+        return $this->idAttachment;
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return $this
+     */
+    public function setAttachment(Attachment $attachment)
+    {
+        $this->idAttachment = $attachment;
+
+        return $this;
+    }
+
+    /**
+     * Get status
+     *
+     * @return int
+     */
+    public function getStatus()
+    {
+        if (null !== $this->dateArchived) {
+            return self::STATUS_ARCHIVED;
+        } elseif (null !== $this->dateValidated) {
+            return self::STATUS_VALIDATED;
+        } else {
+            return self::STATUS_PENDING;
+        }
+    }
 }

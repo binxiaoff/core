@@ -28,7 +28,7 @@ class ProjectsPrePublishCommand extends ContainerAwareCommand
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
 
-        $projectsToFund = $project->selectProjectsByStatus([\projects_status::A_FUNDER], "AND p.date_publication <= (NOW() + INTERVAL 15 MINUTE)", [], '', '', false);
+        $projectsToFund = $project->selectProjectsByStatus([\projects_status::A_FUNDER], "AND p.date_publication <= (NOW() + INTERVAL 15 MINUTE)", [], '', 1, false);
 
         foreach ($projectsToFund as $projectTable) {
             if ($project->get($projectTable['id_project'])) {

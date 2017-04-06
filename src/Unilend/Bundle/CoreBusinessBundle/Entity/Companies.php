@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+
 /**
  * Companies
  *
@@ -15,6 +16,19 @@ class Companies
 {
     const INVALID_SIREN_EMPTY  = '000000000';
     const NAF_CODE_NO_ACTIVITY = '0000Z';
+
+    const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
+    const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
+
+    const CLIENT_STATUS_MANAGER             = 1;
+    const CLIENT_STATUS_DELEGATION_OF_POWER = 2;
+    const CLIENT_STATUS_EXTERNAL_CONSULTANT = 3;
+
+    /** Warning, these constants are also setting , but added as constants for more clarity in the code*/
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_ACCOUNTANT    = 1;
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_CREDIT_BROKER = 2;
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
 
     /**
      * @var integer
@@ -71,20 +85,6 @@ class Companies
      * @ORM\Column(name="siret", type="string", length=14, nullable=true)
      */
     private $siret;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="iban", type="string", length=28, nullable=true)
-     */
-    private $iban;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="bic", type="string", length=100, nullable=true)
-     */
-    private $bic;
 
     /**
      * @var integer
@@ -490,54 +490,6 @@ class Companies
     public function getSiret()
     {
         return $this->siret;
-    }
-
-    /**
-     * Set iban
-     *
-     * @param string $iban
-     *
-     * @return Companies
-     */
-    public function setIban($iban)
-    {
-        $this->iban = $iban;
-
-        return $this;
-    }
-
-    /**
-     * Get iban
-     *
-     * @return string
-     */
-    public function getIban()
-    {
-        return $this->iban;
-    }
-
-    /**
-     * Set bic
-     *
-     * @param string $bic
-     *
-     * @return Companies
-     */
-    public function setBic($bic)
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    /**
-     * Get bic
-     *
-     * @return string
-     */
-    public function getBic()
-    {
-        return $this->bic;
     }
 
     /**

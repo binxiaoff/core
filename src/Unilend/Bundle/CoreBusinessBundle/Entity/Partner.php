@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -38,9 +39,9 @@ class Partner
     private $logo;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -77,7 +78,19 @@ class Partner
      */
     private $type;
 
+    /**
+     * @var PartnerProjectAttachment[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProjectAttachment", mappedBy="idPartner")
+     */
+    private $attachmentTypes;
 
+    /**
+     * Projects constructor.
+     */
+    public function __construct() {
+        $this->attachmentTypes = new ArrayCollection();
+    }
 
     /**
      * Set name
@@ -154,7 +167,7 @@ class Partner
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Partner
      */
@@ -168,7 +181,7 @@ class Partner
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
@@ -255,5 +268,28 @@ class Partner
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * Get attachmentTypes
+     *
+     * @param bool $mandatoryOnly
+     *
+     * @return PartnerProjectAttachment[]
+     */
+    public function getAttachmentTypes($mandatoryOnly = false)
+    {
+        if ($mandatoryOnly) {
+            $attachmentTypes = [];
+            foreach ($this->attachmentTypes as $attachmentType) {
+                if ($attachmentType->getMandatory()) {
+                    $attachmentTypes[] = $attachmentType;
+                }
+            }
+
+            return $attachmentTypes;
+        }
+
+        return $this->attachmentTypes;
     }
 }

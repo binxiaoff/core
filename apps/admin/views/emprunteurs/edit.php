@@ -1,15 +1,4 @@
 <script type="text/javascript">
-    function jumpIBAN(field) {
-        if (field.id == 'iban7') {
-            field.value = field.value.substring(0, 3);
-        }
-
-        if (field.value.length == 4) {
-            field.nextElementSibling.value = '';
-            field.nextElementSibling.focus();
-        }
-    }
-
     $(function() {
         $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
         $(".listeMandats").tablesorter();
@@ -21,9 +10,7 @@
         <?php endif; ?>
     });
 </script>
-<style>
-    #infos_client{display:none; border:1px solid #2F86B2; padding:15px;}
-</style>
+<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Detail emprunteur : <?= $this->clients->nom . ' ' . $this->clients->prenom ?></h1>
     <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>
@@ -74,23 +61,7 @@
                 <td><input type="text" name="ville" id="ville" class="input_large" value="<?= $this->clients_adresses->ville ?>"/></td>
             </tr>
             <tr>
-                <th><label for="iban">IBAN</label></th>
-                <td colspan="3">
-                    <input type="text" name="iban1" id="iban1" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 0, 4) ?>" />
-                    <input type="text" name="iban2" id="iban2" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 4, 4) ?>" />
-                    <input type="text" name="iban3" id="iban3" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 8, 4) ?>" />
-                    <input type="text" name="iban4" id="iban4" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 12, 4) ?>" />
-                    <input type="text" name="iban5" id="iban5" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 16, 4) ?>" />
-                    <input type="text" name="iban6" id="iban6" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 20, 4) ?>" />
-                    <input type="text" name="iban7" id="iban7" onkeyup="jumpIBAN(this)" style="width: 53px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 24, 3) ?>" />
-                </td>
-            </tr>
-            <tr>
-                <th><label for="bic">BIC</label></th>
-                <td colspan="3"><input type="text" name="bic" id="bic" style="width: 620px;" class="input_big" value="<?= $this->companies->bic ?>" onKeyUp="verif(this.id, 1);"/></td>
-            </tr>
-            <tr>
-                <th><label for="email_facture">Email de facturation</label></th>
+                <th><label for="email_facture">Email de facturation :</label></th>
                 <td colspan="3"><input type="text" name="email_facture" id="email_facture" class="input_large" value="<?= $this->companies->email_facture ?>"/></td>
             </tr>
             <tr>
@@ -102,39 +73,74 @@
                <td><span style="margin-left:5px;color:green; display:none;" class="reponse_email" >Email Envoyé</span></td>
             </tr>
             <tr>
-                <th><label for="cni_passeport">CNI/Passeport</label></th>
-                <td>
-                    <?= $this->clients->cni_passeport ?><br>
-                    <input type="file" name="cni_passeport" id="cni_passeport" value="<?= $this->clients->cni_passeport ?>"/>
-                </td>
-                <th><label for="signature">Signature</label></th>
-                <td>
-                    <?= $this->clients->signature ?><br>
-                    <input type="file" name="signature" id="signature" value="<?= $this->clients->signature ?>"/>
-                </td>
-            </tr>
-            <tr>
                 <th colspan="4">
                     <input type="hidden" name="form_edit_emprunteur" id="form_edit_emprunteur" />
-                    <input type="submit" value="Valider" title="Valider" name="send_edit_emprunteur" onclick="return RIBediting();" id="send_edit_emprunteur" class="btn" />
+                    <input type="submit" value="Valider" title="Valider" name="send_edit_emprunteur" id="send_edit_emprunteur" class="btn" />
                 </th>
             </tr>
         </table>
     </form>
-
     <br /><br />
 
-    <?php if ($this->clients->history != '') : ?>
-        <div id="edit_history" >
-            <h2>Historique</h2>
-            <table class="histo_status_client tablesorter">
-                <tbody>
-                    <?= $this->clients->history ?>
-                </tbody>
-            </table>
-        </div>
-        <br /><br />
+    <h2>RIB emprunteur en vigueur</h2>
+    <?php if ($this->bankAccount) : ?>
+        <table class="tablesorter" style="width: 775px;margin:auto;">
+            <tr>
+                <td>Document</td>
+                <td>
+                    <?php if ($this->bankAccount->getAttachment()) : ?>
+                        <a href="<?= $this->url ?>/attachment/download/id/<?= $this->bankAccount->getAttachment()->getId() ?>/file/<?= urlencode($this->bankAccount->getAttachment()->getPath()) ?>"><?= $this->bankAccount->getAttachment()->getPath() ?></a>
+                    <?php else : ?>
+                        pas de document fourni.
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <tr>
+                <td>IBAN</td>
+                <td>
+                    <?= chunk_split($this->bankAccount->getIban(), 4, ' '); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>BIC</td>
+                <td><?= $this->bankAccount->getBic() ?></td>
+            </tr>
+        </table>
+    <?php else : ?>
+        Pas de RIB en vigueur.
     <?php endif; ?>
+    <br><br>
+
+    <h2>Autre RIBs</h2>
+    <table class="formColor" style="width: 775px;">
+        <?php use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount; ?>
+        <?php if (false === empty($this->bankAccountDocuments)) : ?>
+            <?php foreach ($this->bankAccountDocuments as $attachment) : ?>
+                <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */ ?>
+                <?php $bankAccount = $attachment->getBankAccount(); ?>
+                <?php if (null === $bankAccount || BankAccount::STATUS_PENDING === $bankAccount->getStatus() || BankAccount::STATUS_ARCHIVED === $bankAccount->getStatus()) :  ?>
+        <tr>
+            <td style="padding-bottom:20px">
+                <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>"><?= $attachment->getPath() ?></a>
+            </td>
+            <td>
+                <?php if ($bankAccount) : ?>
+                    <?= chunk_split($bankAccount->getIban(), 4, ' '); ?>
+                <?php endif; ?>
+            </td>
+            <td>
+                <?php if ($bankAccount) : ?>
+                    <a href="/emprunteurs/validate_rib_lightbox/<?= $bankAccount->getId(); ?>" class="btn_link thickbox cboxElement">Mettre en vigueur</a>
+                <?php else : ?>
+                    <a href="/emprunteurs/extraction_rib_lightbox/<?= $attachment->getId(); ?>" class="btn_link extract_rib_btn">Extraire</a>
+                <?php endif; ?>
+            </td>
+        </tr>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </table>
+    <br><br>
 
     <h2>Liste des projets</h2>
     <?php if (count($this->lprojects) > 0) : ?>
@@ -161,10 +167,14 @@
                     <td>
                         <?php if ($this->projects_pouvoir->get($aProject['id_project'], 'id_project')) : ?>
                             <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a>
+                        <?php elseif ($aProject['status'] > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
+                            <a href="/emprunteurs/link_ligthbox/pouvoir/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">POUVOIR</a>
                         <?php endif; ?>
                         &nbsp;&nbsp;
                         <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
-                            <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>">MANDAT</a>
+                            <a href="<?= $this->lurl ?>/protected/mandats/<?= $this->clients_mandats->name ?>">MANDAT</a>
+                        <?php elseif ($aProject['status']  > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
+                            <a href="/emprunteurs/link_ligthbox/mandat/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">MANDAT</a>
                         <?php endif; ?>
                     </td>
                     <td align="center">
@@ -217,7 +227,7 @@
                     <td><?= $aMoneyOrder['id_project'] ?></td>
                     <td><?= $aMoneyOrder['iban'] ?></td>
                     <td><?= $aMoneyOrder['bic'] ?></td>
-                    <td><a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
+                    <td><a href="<?= $this->lurl ?>/protected/mandats/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
                     <td>
                         <?php
                             switch ($aMoneyOrder['status']) {
@@ -248,86 +258,3 @@
         </tbody>
     </table>
 </div>
-
-<script>
-    function RIBediting() {
-        var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val(),
-            bic = $('#bic').val();
-
-        if (iban == '') {
-            return true;
-        }
-        if (validateIban(iban) == false) {
-            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_iban_lightbox/'});
-            return false;
-        }
-        if (check_bic(bic) == false) {
-            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_bic_lightbox/'});
-            return false;
-        }
-        // si on a deja les memes infos deja 'enregistré on valide
-        if (iban == "<?= $this->companies->iban ?>" && bic == "<?= $this->companies->bic ?>") {
-            return true;
-        }
-
-        List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, bic, <?= $this->clients->id_client ?>);
-
-        if (List_compagnie_meme_iban != 'none') {
-            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
-            return false;
-        }
-        if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0) {
-            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox_no_prelev/<?= $this->clients->id_client ?>'});
-            return false;
-        }
-        if (<?= count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0) {
-            return true;
-        }
-
-        $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
-        return false;
-    };;
-    function verif(id, champ) {
-        // Bic
-        if (champ == 1) {
-            if (check_bic($('#' + id).val()) == false) {
-                $('#' + id).css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            } else {
-                $('#' + id).css('border', '1px solid #A1A5A7').css('color', '#b20066').css('background-color', '#ECECEC');
-            }
-        }
-
-        // IBAN
-        if (champ == 2) {
-            var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
-
-            if (validateIban($('#' + id).val()) == false) {
-                $('#' + id).css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            } else {
-                $('#' + id).css('border', '1px solid #A1A5A7').css('color', '#b20066').css('background-color', '#ECECEC');
-            }
-        }
-    }
-
-    $(function() {
-        $('#edit_emprunteur').submit(function(event) {
-            if ($('#bic').val() != '' && check_bic($('#bic').val()) == false) {
-                event.preventDefault();
-                $('#bic').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            }
-
-            var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() + $('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
-
-            if (iban != '' && validateIban(iban) == false) {
-                event.preventDefault();
-                $('#iban1').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-                $('#iban2').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-                $('#iban3').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-                $('#iban4').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-                $('#iban5').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-                $('#iban6').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-                $('#iban7').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            }
-        });
-    });
-</script>

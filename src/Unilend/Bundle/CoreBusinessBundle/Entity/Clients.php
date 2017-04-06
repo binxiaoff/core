@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
@@ -26,6 +27,11 @@ class Clients
     const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
     const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
     const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
+
+    const TITLE_MISS      = 'Mme';
+    const TITLE_MISTER    = 'M.';
+    const TITLE_UNDEFINED = '';
+
     /**
      * @var string
      *
@@ -246,20 +252,6 @@ class Clients
     /**
      * @var string
      *
-     * @ORM\Column(name="cni_passeport", type="string", length=191, nullable=true)
-     */
-    private $cniPasseport;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="signature", type="string", length=191, nullable=true)
-     */
-    private $signature;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="source", type="string", length=191, nullable=true)
      */
     private $source;
@@ -343,7 +335,28 @@ class Clients
      */
     private $idClient;
 
+    /**
+     * @var Attachment[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", mappedBy="idClient")
+     */
+    private $attachments;
 
+    /**
+     * @var Wallet[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet", mappedBy="idClient")
+     */
+    private $wallets;
+
+    /**
+     * Clients constructor.
+     */
+    public function __construct()
+    {
+        $this->attachments = new ArrayCollection();
+        $this->wallets     = new ArrayCollection();
+    }
 
     /**
      * Set hash
@@ -934,7 +947,7 @@ class Clients
      */
     public function setSecreteReponse($secreteReponse)
     {
-        $this->secreteReponse = $secreteReponse;
+        $this->secreteReponse = md5($secreteReponse);
 
         return $this;
     }
@@ -1043,54 +1056,6 @@ class Clients
     public function getStatusPreEmp()
     {
         return $this->statusPreEmp;
-    }
-
-    /**
-     * Set cniPasseport
-     *
-     * @param string $cniPasseport
-     *
-     * @return Clients
-     */
-    public function setCniPasseport($cniPasseport)
-    {
-        $this->cniPasseport = $cniPasseport;
-
-        return $this;
-    }
-
-    /**
-     * Get cniPasseport
-     *
-     * @return string
-     */
-    public function getCniPasseport()
-    {
-        return $this->cniPasseport;
-    }
-
-    /**
-     * Set signature
-     *
-     * @param string $signature
-     *
-     * @return Clients
-     */
-    public function setSignature($signature)
-    {
-        $this->signature = $signature;
-
-        return $this;
-    }
-
-    /**
-     * Get signature
-     *
-     * @return string
-     */
-    public function getSignature()
-    {
-        return $this->signature;
     }
 
     /**
@@ -1393,7 +1358,7 @@ class Clients
         if (is_null($this->hash)) {
             try {
                 $this->hash = $this->generateHash();
-            } catch (UnsatisfiedDependencyException $exception){
+            } catch (UnsatisfiedDependencyException $exception) {
                 $this->hash = md5(uniqid());
             }
         }
@@ -1414,7 +1379,7 @@ class Clients
         } else {
             $tabName = explode('-', $name);
             $newName = '';
-            $i      = 0;
+            $i       = 0;
             foreach ($tabName as $name) {
                 $newName .= ($i == 0 ? '' : '-') . ucwords($name);
                 $i++;
@@ -1488,5 +1453,58 @@ class Clients
     {
         $uuid4 = Uuid::uuid4();
         return $uuid4->toString();
+    }
+
+    /**
+     * Get client attachments
+     *
+     * @param boolean $includeArchived
+     *
+     * @return Attachment[]
+     */
+    public function getAttachments($includeArchived = false)
+    {
+        if (false === $includeArchived) {
+            $attachments = [];
+            foreach ($this->attachments as $attachment) {
+                if (null === $attachment->getArchived()) {
+                    $attachments[] = $attachment;
+                }
+            }
+
+            return $attachments;
+        }
+
+        return $this->attachments;
+    }
+
+    /**
+     * Get wallets
+     *
+     * @return Wallet[]
+     */
+    public function getWallets()
+    {
+        return $this->wallets;
+    }
+
+    /**
+     * Dose client has a borrower wallet. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isBorrower()
+    {
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::BORROWER;
+    }
+
+    /**
+     * Dose client has a lender wallet. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isLender()
+    {
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::LENDER;
     }
 }
