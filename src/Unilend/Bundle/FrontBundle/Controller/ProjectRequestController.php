@@ -565,6 +565,10 @@ class ProjectRequestController extends Controller
             $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
         }
 
+        if (\projects_status::IMPOSSIBLE_AUTO_EVALUATION == $this->project->status) {
+            return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $this->project->hash]);
+        }
+
         return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETE_REQUEST);
     }
 
