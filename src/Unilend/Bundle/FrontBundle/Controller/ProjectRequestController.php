@@ -65,6 +65,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function indexAction($hash, Request $request)
@@ -82,6 +83,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/etape1", name="project_request_landing_page_start")
      *
      * @param Request $request
+     *
      * @return Response
      */
     public function landingPageStartAction(Request $request)
@@ -248,6 +250,7 @@ class ProjectRequestController extends Controller
      * @Method("GET")
      *
      * @param Request $request
+     *
      * @return Response
      */
     public function simulatorStartAction(Request $request)
@@ -271,12 +274,13 @@ class ProjectRequestController extends Controller
     private function start()
     {
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $projectRequestManager->checkProjectRisk($this->project, Users::USER_ID_FRONT);
 
-        if (null === $projectRequestManager->checkProjectRisk($this->project, Users::USER_ID_FRONT)) {
-            return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::INCOMPLETE_REQUEST);
+        if (\projects_status::NOT_ELIGIBLE == $this->project->status) {
+            return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
         }
 
-        return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
+        return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $this->project->hash]);
     }
 
     /**
@@ -285,6 +289,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function contactAction($hash, Request $request)
@@ -375,6 +380,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function contactFormAction($hash, Request $request)
@@ -568,6 +574,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function financeAction($hash, Request $request)
@@ -642,6 +649,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function financeFormAction($hash, Request $request)
@@ -791,6 +799,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function partnerAction($hash, Request $request)
@@ -865,6 +874,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function partnerFormAction($hash, Request $request)
@@ -965,6 +975,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function prospectAction($hash, Request $request)
@@ -1006,6 +1017,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function prospectFormAction($hash, Request $request)
@@ -1063,6 +1075,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function filesAction($hash, Request $request)
@@ -1123,6 +1136,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function filesFormAction($hash, Request $request)
@@ -1152,6 +1166,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function endAction($hash, Request $request)
@@ -1163,32 +1178,39 @@ class ProjectRequestController extends Controller
         }
 
         /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-
+        $translator   = $this->get('translator');
         $addMoreFiles = false;
-        $message      = $translator->trans('project-request_end-page-not-entitled-message');
-        $title        = $translator->trans('project-request_end-page-success-title');
-        $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
 
         switch ($this->project->status) {
             case \projects_status::ABANDONED:
-                $message  = $translator->trans('project-request_end-page-aborted-message');
                 $title    = $translator->trans('project-request_end-page-aborted-title');
                 $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
+                $message  = $translator->trans('project-request_end-page-aborted-message');
                 break;
             case \projects_status::ANALYSIS_REVIEW:
             case \projects_status::COMITY_REVIEW:
             case \projects_status::PREP_FUNDING:
-                $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
                 $title    = $translator->trans('project-request_end-page-processing-title');
                 $subtitle = $translator->trans('project-request_end-page-processing-subtitle');
+                $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
+                break;
+            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
+                $addMoreFiles = true;
+                $title        = $translator->trans('project-request_end-page-impossible-auto-evaluation-title');
+                $subtitle     = $translator->trans('project-request_end-page-impossible-auto-evaluation-subtitle');
+                $message      = $translator->trans('project-request_end-page-impossible-auto-evaluation-message');
                 break;
             case \projects_status::COMPLETE_REQUEST:
+            case \projects_status::POSTPONED:
             case \projects_status::COMMERCIAL_REVIEW:
+            case \projects_status::PENDING_ANALYSIS:
                 $addMoreFiles = true;
+                $title        = $translator->trans('project-request_end-page-success-title');
+                $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
                 $message      = $translator->trans('project-request_end-page-main-content');
                 break;
             case \projects_status::NOT_ELIGIBLE:
+            default:
                 $title    = $translator->trans('project-request_end-page-rejection-title');
                 $subtitle = $translator->trans('project-request_end-page-rejection-subtitle');
 
@@ -1240,6 +1262,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function emailsAction($hash, Request $request)
@@ -1378,6 +1401,7 @@ class ProjectRequestController extends Controller
     /**
      * @param string $fieldName
      * @param int    $attachmentType
+     *
      * @return bool
      */
     private function uploadAttachment($fieldName, $attachmentType)
@@ -1410,9 +1434,11 @@ class ProjectRequestController extends Controller
     /**
      * Check that hash is present in URL and valid
      * If hash is valid, check status and redirect to appropriate page
+     *
      * @param string  $route
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response|null
      */
     private function checkProjectHash($route, $hash, Request $request)
@@ -1431,7 +1457,7 @@ class ProjectRequestController extends Controller
         }
 
         $this->company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->project->id_company);
-        $this->client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
+        $this->client  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
 
         if (self::PAGE_ROUTE_EMAILS === $route) {
             return null;
@@ -1439,7 +1465,6 @@ class ProjectRequestController extends Controller
 
         switch ($this->project->status) {
             case \projects_status::NOT_ELIGIBLE:
-            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_PROSPECT])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }
@@ -1458,6 +1483,12 @@ class ProjectRequestController extends Controller
                     return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $hash]);
                 }
                 break;
+            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
+                if (false === in_array($route, [self::PAGE_ROUTE_CONTACT, self::PAGE_ROUTE_FINANCE, self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
+                    return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
+                }
+                break;
+            case \projects_status::POSTPONED:
             case \projects_status::COMMERCIAL_REVIEW:
             case \projects_status::PENDING_ANALYSIS:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
@@ -1477,9 +1508,11 @@ class ProjectRequestController extends Controller
 
     /**
      * Redirect to corresponding route and update status
+     *
      * @param string $route
      * @param int    $projectStatus
      * @param string $message
+     *
      * @return Response
      */
     private function redirectStatus($route, $projectStatus, $message = '')
@@ -1496,6 +1529,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @param string $email
+     *
      * @return string
      */
     private function removeEmailSuffix($email)
