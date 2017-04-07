@@ -31,6 +31,18 @@ class LenderStatisticRepository extends EntityRepository
         UNION ALL
 
             SELECT
+              e.date_echeance_reel AS date,
+              CASE WHEN e.status_ra = 1 THEN e.capital_rembourse ELSE e.capital_rembourse + e.interets_rembourses END AS amount
+            FROM
+              echeanciers e
+              INNER JOIN projects p ON e.id_project = p.id_project
+            WHERE
+              e.id_lender = :idLender
+              AND e.status = ' . \echeanciers::STATUS_REPAID . '
+
+        UNION ALL
+
+            SELECT
                 e.date_echeance AS date,
                 e.capital + e.interets AS amount
             FROM echeanciers e
@@ -100,24 +112,17 @@ class LenderStatisticRepository extends EntityRepository
 
         UNION ALL
         
-        (
-            SELECT
+            (SELECT
                 o_capital.added AS date,
                 ROUND(
                     IF(
-                        o_interest.amount IS NOT NULL,
-                        (o_capital.amount + o_interest.amount),
-                        IF(o_recovery.id IS NOT NULL,
+                      o_recovery.id IS NOT NULL,
                            (o_capital.amount - o_recovery.amount),
-                           o_capital.amount))*100) AS amount
+                           o_capital.amount)*100) AS amount
             FROM operation o_capital
-            INNER JOIN operation_type ot_capital ON o_capital.id_type = ot_capital.id
-              LEFT JOIN operation o_interest ON o_capital.id_repayment_schedule = o_interest.id_repayment_schedule 
-              INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '"
-              LEFT JOIN operation o_recovery ON o_capital.id_project = o_recovery.id_project AND o_capital.id_wallet_creditor = o_recovery.id_wallet_debtor 
-              INNER JOIN operation_type ot_recovery ON o_recovery.id_type = ot_recovery.id AND ot_recovery.label = "' . OperationType::COLLECTION_COMMISSION_LENDER . '"
+                INNER JOIN operation o_recovery ON o_capital.id_project = o_recovery.id_project AND o_capital.id_wallet_creditor = o_recovery.id_wallet_debtor AND o_recovery.id_type = (SELECT id from operation_type WHERE label = "' . OperationType::COLLECTION_COMMISSION_LENDER . '") AND DATE(o_capital.added) = DATE(o_recovery.added)
             WHERE
-              o_capital.id_type = "' . OperationType::CAPITAL_REPAYMENT . '"
+                o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
               AND (
                 o_capital.id_wallet_creditor IN (SELECT
                                                  DISTINCT(transfer.id_client_origin)
@@ -146,11 +151,11 @@ class LenderStatisticRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('ls');
         $qb->where('ls.idWallet = :idWallet')
-            ->andWhere('ls.typeStat = ":typeStat"' )
+            ->andWhere('ls.typeStat = :irr' )
             ->orderBy('ls.added', 'DESC')
             ->setMaxResults(1)
             ->setParameter('idWallet', $wallet)
-            ->setParameter('typeStat', LenderStatistic::TYPE_STAT_IRR);
+            ->setParameter('irr', LenderStatistic::TYPE_STAT_IRR);
 
         return $qb->getQuery()->getOneOrNullResult();
     }

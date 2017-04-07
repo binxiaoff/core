@@ -16,12 +16,12 @@ class UnilendStatsRepository extends EntityRepository
     {
         $query = '
             SELECT
-                o_withdraw.added AS date,
-                ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount
+                - ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount,
+                o_withdraw.added AS date
             FROM operation o_withdraw
-                INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = ' . OperationType::BORROWER_WITHDRAW . '
+                INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
                 INNER JOIN operation o_comission ON o_withdraw.id_wallet_debtor = o_comission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_comission.added)
-                INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND  ot_comission.label = ' . OperationType::BORROWER_COMMISSION . '
+                INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::BORROWER_COMMISSION . '"
             GROUP BY o_withdraw.id
 
         UNION ALL
@@ -76,7 +76,7 @@ class UnilendStatsRepository extends EntityRepository
         UNION ALL
 
             SELECT
-                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS montant,
+                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS amount,
                 (
                     SELECT e.date_echeance
                     FROM echeanciers e
@@ -174,9 +174,9 @@ class UnilendStatsRepository extends EntityRepository
               ROUND(o_recovery.amount * 100) AS amount,
               o_recovery.added               AS date
             FROM operation o_recovery
-              INNER JOIN operation_type ot_recovery ON o_recovery.id_type = ot_recovery.id AND ot_recovery.label = ' . OperationType::BORROWER_PROVISION . '
+              INNER JOIN operation_type ot_recovery ON o_recovery.id_type = ot_recovery.id AND ot_recovery.label = "' . OperationType::BORROWER_PROVISION . '"
               INNER JOIN operation o_comission ON o_recovery.id_wallet_creditor = o_comission.id_wallet_creditor AND o_recovery.id_project = o_comission.id_project AND DATE(o_recovery.added) = DATE(o_comission.added)
-              INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = ' . OperationType::COLLECTION_COMMISSION_PROVISION . '
+              INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::COLLECTION_COMMISSION_PROVISION . '"
             GROUP BY o_recovery.id';
 
         $values = $this->getEntityManager()->getConnection()->executeQuery($query)->fetchAll(\PDO::FETCH_ASSOC);
@@ -194,12 +194,12 @@ class UnilendStatsRepository extends EntityRepository
     {
         $query = '
             SELECT
-                o_withdraw.added AS date,
-                ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount
+                -ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount,
+                o_withdraw.added AS date
             FROM operation o_withdraw
-                INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = ' . OperationType::BORROWER_WITHDRAW . '
+                INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
                 INNER JOIN operation o_comission ON o_withdraw.id_wallet_debtor = o_comission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_comission.added)
-                INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND  ot_comission.label = ' . OperationType::BORROWER_COMMISSION . '
+                INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND  ot_comission.label = "' . OperationType::BORROWER_COMMISSION . '"
             AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
                   WHERE psh.id_project = o_withdraw.id_project
                   ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate
@@ -208,7 +208,7 @@ class UnilendStatsRepository extends EntityRepository
         UNION ALL
 
             SELECT
-                CASE WHEN ee.status_ra = 1 THEN ee.capital ELSE ee.capital + ee.interets END AS montant,
+                CASE WHEN ee.status_ra = 1 THEN ee.capital ELSE ee.capital + ee.interets END AS amount,
                 (
                     SELECT CASE WHEN e.status = 1 THEN e.date_echeance_reel ELSE e.date_echeance END
                     FROM echeanciers e
@@ -234,7 +234,7 @@ class UnilendStatsRepository extends EntityRepository
         UNION ALL
 
             SELECT
-                ee.capital + ee.interets AS montant,
+                ee.capital + ee.interets AS amount,
                 (
                     SELECT e.date_echeance
                     FROM echeanciers e
@@ -263,7 +263,7 @@ class UnilendStatsRepository extends EntityRepository
         UNION ALL
 
             SELECT
-                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS montant,
+                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS amount,
                 (
                     SELECT e.date_echeance
                     FROM echeanciers e
@@ -304,7 +304,7 @@ class UnilendStatsRepository extends EntityRepository
                         ORDER BY psh2.added DESC
                         LIMIT 1
                     )
-                ) > 180 THEN "0" ELSE ee.capital + ee.interets END END AS montant,
+                ) > 180 THEN "0" ELSE ee.capital + ee.interets END END AS amount,
                 (
                     SELECT e.date_echeance
                     FROM echeanciers e
@@ -333,7 +333,7 @@ class UnilendStatsRepository extends EntityRepository
         UNION ALL
 
             SELECT
-                0 AS montant,
+                0 AS amount,
                 (
                     SELECT e.date_echeance
                     FROM echeanciers e
@@ -370,9 +370,9 @@ class UnilendStatsRepository extends EntityRepository
                   ROUND(o_recovery.amount * 100) AS amount,
                   o_recovery.added               AS date
                 FROM operation o_recovery
-                  INNER JOIN operation_type ot_recovery ON o_recovery.id_type = ot_recovery.id AND ot_recovery.label = ' . OperationType::BORROWER_PROVISION . '
+                  INNER JOIN operation_type ot_recovery ON o_recovery.id_type = ot_recovery.id AND ot_recovery.label = "' . OperationType::BORROWER_PROVISION . '"
                   INNER JOIN operation o_comission ON o_recovery.id_wallet_creditor = o_comission.id_wallet_creditor AND o_recovery.id_project = o_comission.id_project AND DATE(o_recovery.added) = DATE(o_comission.added)
-                  INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = ' . OperationType::COLLECTION_COMMISSION_PROVISION . '
+                  INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::COLLECTION_COMMISSION_PROVISION . '"
                   WHERE (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
                   WHERE psh.id_project = o_recovery.id_project
                   ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate 

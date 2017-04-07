@@ -1127,24 +1127,23 @@ class preteursController extends bootstrap
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->echeanciers             = $this->loadData('echeanciers');
         $this->tax                     = $this->loadData('tax');
-        /** @var underlying_contract contract */
-        $this->contract                = $this->loadData('underlying_contract');
-        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
-        $this->translator              = $this->get('translator');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
-        $this->loanManager = $this->get('unilend.service.loan_manager');
         /** @var \loans loan */
         $this->loan = $this->loadData('loans');
+        /** @var underlying_contract contract */
+        $this->contract  = $this->loadData('underlying_contract');
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator  = $this->get('translator');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        $this->loanManager = $this->get('unilend.service.loan_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
         $lenderManager = $this->get('unilend.service.lender_manager');
-
         /** @var LenderStatisticRepository $lenderStatisticsRepository */
         $lenderStatisticsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
         /** @var WalletRepository $walletRepository */
         $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $wallet           = $walletRepository->getWalletByType($this->clients->id_client, WalletType::LENDER);
 
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
+            $wallet = $walletRepository->getWalletByType($this->clients->id_client, WalletType::LENDER);
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {

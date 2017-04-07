@@ -32,9 +32,9 @@ class LenderStatistic
     private $value;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -117,7 +117,7 @@ class LenderStatistic
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return LenderStatistic
      */
@@ -131,7 +131,7 @@ class LenderStatistic
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {

@@ -88,7 +88,9 @@ class IRRManager
     }
 
     /**
+     * @param Wallet $wallet
      * @param $lenderId
+     *
      * @return string
      */
     public function calculateIRRForLender(Wallet $wallet, $lenderId)

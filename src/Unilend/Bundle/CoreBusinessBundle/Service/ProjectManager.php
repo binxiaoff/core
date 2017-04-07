@@ -28,8 +28,6 @@ class ProjectManager
     private $notificationManager;
     /** @var MailerManager */
     private $mailerManager;
-    /** @var LenderManager */
-    private $lenderManager;
     /** @var ProjectRateSettingsManager */
     private $projectRateSettingsManager;
     /** @var ProductManager */
@@ -54,7 +52,6 @@ class ProjectManager
         LoanManager $loanManager,
         NotificationManager $notificationManager,
         MailerManager $mailerManager,
-        LenderManager $lenderManager,
         ProjectRateSettingsManager $projectRateSettingsManager,
         ProductManager $productManager,
         ContractAttributeManager $contractAttributeManager,
@@ -67,7 +64,6 @@ class ProjectManager
         $this->loanManager                = $loanManager;
         $this->notificationManager        = $notificationManager;
         $this->mailerManager              = $mailerManager;
-        $this->lenderManager              = $lenderManager;
         $this->projectRateSettingsManager = $projectRateSettingsManager;
         $this->productManager             = $productManager;
         $this->contractAttributeManager   = $contractAttributeManager;
