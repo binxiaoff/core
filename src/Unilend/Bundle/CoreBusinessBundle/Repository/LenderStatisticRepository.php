@@ -22,7 +22,7 @@ class LenderStatisticRepository extends EntityRepository
         $query = '
             SELECT
               o.added AS date,
-              -ROUND(o.amount*100, 0) AS amount,
+              -ROUND(o.amount*100, 0) AS amount
             FROM operation o
               INNER JOIN operation_type ot ON o.id_type = ot.id
               INNER JOIN loans l ON o.id_loan = l.id_loan
