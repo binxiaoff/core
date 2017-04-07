@@ -21,12 +21,13 @@ class LenderStatisticRepository extends EntityRepository
     {
         $query = '
             SELECT
-              added AS date,
-              -ROUND(amount*100, 0) AS amount
+              o.added AS date,
+              -ROUND(o.amount*100, 0) AS amount,
             FROM operation o
-            INNER JOIN operation_type ot ON o.id_type = ot.id
+              INNER JOIN operation_type ot ON o.id_type = ot.id
+              INNER JOIN loans l ON o.id_loan = l.id_loan
             WHERE ot.label = "' . OperationType::LENDER_LOAN . '"
-                  AND id_wallet_debtor = :idWallet
+              AND l.id_lender = :idLender
 
         UNION ALL
 
@@ -35,9 +36,9 @@ class LenderStatisticRepository extends EntityRepository
               CASE WHEN e.status_ra = 1 THEN e.capital_rembourse ELSE e.capital_rembourse + e.interets_rembourses END AS amount
             FROM
               echeanciers e
-              INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-              e.id_lender = :idLender
+              l.id_lender = :idLender
               AND e.status = ' . \echeanciers::STATUS_REPAID . '
 
         UNION ALL
@@ -125,11 +126,12 @@ class LenderStatisticRepository extends EntityRepository
                 o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
               AND (
                 o_capital.id_wallet_creditor IN (SELECT
-                                                 DISTINCT(transfer.id_client_origin)
-                                               FROM loans l
-                                                 LEFT JOIN loan_transfer lt ON l.id_transfer = lt.id_loan_transfer
-                                                 LEFT JOIN transfer ON lt.id_transfer = transfer.id_transfer
-                                               WHERE l.id_lender = :idLender)
+                                        DISTINCT(wallet.id)
+                                      FROM loans l
+                                        LEFT JOIN loan_transfer lt ON l.id_transfer = lt.id_loan_transfer
+                                        LEFT JOIN transfer ON lt.id_transfer = transfer.id_transfer
+                                        INNER JOIN wallet ON transfer.id_client_origin = wallet.id_client
+                                      WHERE l.id_lender = :idLender)
                 OR o_capital.id_wallet_creditor = :idWallet)
             GROUP BY IF(o_capital.id_repayment_schedule IS NOT NULL, o_capital.id_repayment_schedule, o_capital.id)
         )';
