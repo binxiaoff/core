@@ -106,8 +106,6 @@ class ProjectRequestManager
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
-        /** @var \clients $clientRepository */
-        $clientRepository = $this->entityManagerSimulator->getRepository('clients');
 
         if (empty($formData['email']) || false === filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email');
@@ -131,13 +129,13 @@ class ProjectRequestManager
             throw new \InvalidArgumentException('Invalid reason');
         }
 
-        $email = $clientRepository->existEmail($formData['email']) ? $formData['email'] . '-' . time() : $formData['email'];
+        $email = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($formData['email']) ? $formData['email'] . '-' . time() : $formData['email'];
 
         $client = new Clients();
         $client
             ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(\clients::STATUS_ONLINE)
+            ->setStatus(Clients::STATUS_ONLINE)
             ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($this->sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))
@@ -156,13 +154,13 @@ class ProjectRequestManager
         $this->entityManager->beginTransaction();
         try {
             $this->entityManager->persist($client);
-            $this->entityManager->flush($client);
             $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($client->getIdClient());
+            $clientAddress->setIdClient($client);
             $this->entityManager->persist($clientAddress);
+            $this->entityManager->flush($clientAddress);
             $company->setIdClientOwner($client->getIdClient());
             $this->entityManager->persist($company);
-            $this->entityManager->flush();
+            $this->entityManager->flush($company);
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
             $this->entityManager->commit();
         } catch (Exception $exception) {

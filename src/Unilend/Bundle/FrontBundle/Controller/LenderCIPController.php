@@ -4,17 +4,13 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Knp\Snappy\GeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 
 class LenderCIPController extends Controller
 {
@@ -127,7 +123,7 @@ class LenderCIPController extends Controller
             }
 
             if ($lastQuestion->isBooleanType($lastQuestion->type)) {
-                $template['lenderType'] = in_array($this->getClient()->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 'physical' : 'moral';
+                $template['lenderType'] = in_array($this->getClient()->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'physical' : 'moral';
 
                 if (\lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS === $lastQuestion->type) {
                     $template['question']['valid_answer']   = \lender_questionnaire_question::VALUE_BOOLEAN_FALSE;

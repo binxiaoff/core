@@ -1,7 +1,7 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
-use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -142,6 +142,8 @@ class dossiersController extends bootstrap
         $this->translator = $this->get('translator');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->taxFormTypes    = $companyTaxFormType->select();
@@ -467,7 +469,10 @@ class dossiersController extends bootstrap
                     $publicationLimitationDate      = new \DateTime('NOW + 5 minutes');
                     $endOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
 
-                    if ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate) {
+                    if (
+                        $publicationDate->format('Y-m-d H:i:s') !== $this->projects->date_publication
+                        && ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate)
+                    ) {
                         $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
 
                         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -615,7 +620,7 @@ class dossiersController extends bootstrap
                     && 1 === preg_match('#[0-9]{2}/[0-9]{2}/[0-9]{8}#', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute'])
                     && $this->projects->status <= \projects_status::EN_FUNDING
                 ) {
-                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_de_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
+                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
 
                     if ($endOfPublicationDate > new \DateTime()) {
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
@@ -715,23 +720,25 @@ class dossiersController extends bootstrap
                 }
             }
 
-            $this->attachment_type               = $this->loadData('attachment_type');
-            $this->aAttachments                  = $this->projects->getAttachments();
-            $this->aAttachmentTypes              = $this->attachment_type->getAllTypesForProjects($this->language);
-            $this->aMandatoryAttachmentTypes     = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
-            $this->isFundsCommissionRateEditable = $this->isFundsCommissionRateEditable();
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $this->completude_wording = [];
-            $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
+            $project                              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $partner                              = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->projects->id_partner);
+            $this->aAttachments                   = $project->getAttachments();
+            $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
+            $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
+            $partnerAttachments                   = $partner->getAttachmentTypes(true);
+            $this->isFundsCommissionRateEditable  = $this->isFundsCommissionRateEditable();
+            $this->lastBalanceSheet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+                'idClient' => $project->getIdCompany()->getIdClientOwner(),
+                'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
+            ]);
 
-            foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
-                if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
-                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
-                } else {
-                    $this->completude_wording[] = $aAttachment['label'];
-                }
+            $this->aMandatoryAttachmentTypes      = [];
+            foreach ($partnerAttachments as $partnerAttachment) {
+                $this->aMandatoryAttachmentTypes[] = $partnerAttachment->getAttachmentType();
             }
-            $this->completude_wording[] = $this->translator->trans('projet_completude-charge-affaires');
 
             if ($this->isTakeover()) {
                 $this->loadTargetCompany();
@@ -1376,22 +1383,41 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        $this->projects = $this->loadData('projects');
+        if (isset($_POST['send_etape5']) && isset($this->params[0])) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\AttachmentTypeRepository $attachmentTypeRepo */
+            $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+            $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
-        if (isset($_POST['send_etape5']) && isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             // Histo user //
             $serialize = serialize(array('id_project' => $this->params[0], 'files' => $_FILES));
             $this->users_history->histo(9, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
 
             $this->tablResult = array();
 
-            foreach ($_FILES as $field => $file) {
-                //We made the field name = attachment type id
-                $iAttachmentType = $field;
-                if ('' !== $file['name'] && $this->uploadAttachment($this->projects->id_project, $field, $iAttachmentType)) {
-                    $this->tablResult['fichier_' . $iAttachmentType] = 'ok';
+            foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
+                if ($uploadedFile) {
+                    $attachment        = null;
+                    $projectAttachment = null;
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+                    $attachmentType = $attachmentTypeRepo->find($attachmentTypeId);
+                    if ($attachmentType) {
+                        $attachment = $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                    }
+                    if ($attachment) {
+                        $projectAttachment = $attachmentManager->attachToProject($attachment, $project);
+                    }
+                    if ($projectAttachment) {
+                        $this->tablResult['fichier_' . $attachmentTypeId] = 'ok';
+                    }
                 }
             }
+
             $this->result = json_encode($this->tablResult);
         }
     }
@@ -1405,12 +1431,15 @@ class dossiersController extends bootstrap
 
         $aResult = array();
 
-        if (isset($_POST['attachment_id'])) {
-            $iAttachmentId = $_POST['attachment_id'];
-
-            if ($this->removeAttachment($iAttachmentId)) {
-                $aResult[$iAttachmentId] = 'ok';
+        if (isset($_POST['project_attachment_id'])) {
+            $entityManager =  $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['project_attachment_id']);
+            if ($projectAttachment) {
+                $entityManager->remove($projectAttachment);
+                $entityManager->flush($projectAttachment);
             }
+            $aResult[$_POST['project_attachment_id']] = 'ok';
         }
 
         echo json_encode($aResult);
@@ -1446,12 +1475,12 @@ class dossiersController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] === 'create_etape2') {
             if (isset($this->params[1]) && is_numeric($this->params[1])) {
-                /** @var \Doctrine\ORM\EntityManager $em */
-                $em = $this->get('doctrine.orm.entity_manager');
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
                 /** @var Clients $clientEntity */
-                $clientEntity = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
+                $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
                 if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
-                    $companyEntity = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
+                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
                 } else {
                     $_SESSION['freeow']['title']   = 'La création n\' pas abouti';
                     $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
@@ -1518,16 +1547,16 @@ class dossiersController extends bootstrap
 
         try {
             $em->persist($clientEntity);
-            $em->flush();
+            $em->flush($clientEntity);
 
-            $clientAddressEntity->setIdClient($clientEntity->getIdClient());
+            $clientAddressEntity->setIdClient($clientEntity);
             $em->persist($clientAddressEntity);
 
             $companyEntity->setSiren($siren);
             $companyEntity->setIdClientOwner($clientEntity->getIdClient());
             $companyEntity->setStatusAdresseCorrespondance(1);
             $em->persist($companyEntity);
-            $em->flush();
+            $em->flush($companyEntity);
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
             $em->commit();
@@ -2755,63 +2784,6 @@ class dossiersController extends bootstrap
             'lien_stop_relance'      => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
             'link_compte_emprunteur' => $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG)
         );
-    }
-
-    /**
-     * @param integer $iOwnerId
-     * @param integer $field
-     * @param integer $iAttachmentType
-     * @return bool
-     */
-    private function uploadAttachment($iOwnerId, $field, $iAttachmentType)
-    {
-        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
-            $this->upload = $this->loadLib('upload');
-        }
-
-        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
-            $this->attachment = $this->loadData('attachment');
-        }
-
-        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
-            $this->attachment_type = $this->loadData('attachment_type');
-        }
-
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
-        }
-
-        //add the new name for each file
-        $sNewName = '';
-        if (isset($_FILES[$field]['name']) && $aFileInfo = pathinfo($_FILES[$field]['name'])) {
-            $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
-        }
-
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->upload, $sNewName);
-
-        return $resultUpload;
-    }
-
-    /**
-     * @param $iAttachmentId
-     *
-     * @return mixed
-     */
-    private function removeAttachment($iAttachmentId)
-    {
-        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
-            $this->attachment = $this->loadData('attachment');
-        }
-
-        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
-            $this->attachment_type = $this->loadData('attachment_type');
-        }
-
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));
-        }
-
-        return $this->attachmentHelper->remove($iAttachmentId);
     }
 
     private function selectEmailCompleteness($iClientId)

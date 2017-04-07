@@ -3,6 +3,7 @@
 use \Doctrine\DBAL\Statement;
 use \Unilend\Bridge\Doctrine\DBAL\Connection;
 use \Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class projects extends projects_crud
 {
@@ -1129,12 +1130,12 @@ class projects extends projects_crud
                 \projects_status::REMBOURSEMENT_ANTICIPE
             ],
             'client_type_person'       => [
-                \clients::TYPE_PERSON,
-                \clients::TYPE_PERSON_FOREIGNER
+                Clients::TYPE_PERSON,
+                Clients::TYPE_PERSON_FOREIGNER
             ],
             'client_type_legal_entity' => [
-                \clients::TYPE_LEGAL_ENTITY,
-                \clients::TYPE_LEGAL_ENTITY_FOREIGNER
+                Clients::TYPE_LEGAL_ENTITY,
+                Clients::TYPE_LEGAL_ENTITY_FOREIGNER
             ]
         ];
         $type = [

@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Routing\RouterInterface;
@@ -15,6 +16,8 @@ use PhpXmlRpc\Value;
 class UniversignManager
 {
     /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
+    /** @var  EntityManager */
     private $entityManager;
     /** @var Router */
     private $router;
@@ -30,7 +33,8 @@ class UniversignManager
     private $mailerManager;
 
     public function __construct(
-        EntityManagerSimulator $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager,
         MailerManager $mailerManager,
         RouterInterface $router,
         LoggerInterface $logger,
@@ -38,20 +42,21 @@ class UniversignManager
         \Swift_Mailer $mailer,
         $universignURL,
         $rootDir
-    )
-    {
-        $this->entityManager   = $entityManager;
-        $this->mailerManager   = $mailerManager;
-        $this->router          = $router;
-        $this->logger          = $logger;
-        $this->messageProvider = $messageProvider;
-        $this->mailer          = $mailer;
-        $this->universignURL   = $universignURL;
-        $this->rootDir         = $rootDir;
+    ) {
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->mailerManager          = $mailerManager;
+        $this->router                 = $router;
+        $this->logger                 = $logger;
+        $this->messageProvider        = $messageProvider;
+        $this->mailer                 = $mailer;
+        $this->universignURL          = $universignURL;
+        $this->rootDir                = $rootDir;
     }
 
     /**
      * @param \projects_pouvoir $proxy
+     *
      * @return bool
      */
     public function createProxy(\projects_pouvoir $proxy)
@@ -101,8 +106,8 @@ class UniversignManager
             $proxy->update();
 
             /** @var \clients_mandats $mandate */
-            $mandate = $this->entityManager->getRepository('clients_mandats');
-            if ($mandate->get($proxy->id_project, ' status = '. \clients_mandats::STATUS_SIGNED . ' AND id_project')) {
+            $mandate = $this->entityManagerSimulator->getRepository('clients_mandats');
+            if ($mandate->get($proxy->id_project, ' status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_project')) {
                 $this->mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
             }
         }
@@ -110,6 +115,7 @@ class UniversignManager
 
     /**
      * @param \clients_mandats $mandate
+     *
      * @return bool
      */
     public function createMandate(\clients_mandats $mandate)
@@ -134,15 +140,18 @@ class UniversignManager
         $url         = $resultValue['url']->scalarVal();
         $id          = $resultValue['id']->scalarVal();
 
-        /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
-        $company->get($mandate->id_client, 'id_client_owner');
+        $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($mandate->id_client);
+        if (null === $bankAccount) {
+            $this->logger->warning('No validated bank account found for mandat : ' . $mandate->id_mandat . ' of client : ' . $mandate->id_client, ['function' => __FUNCTION__]);
+
+            return false;
+        }
 
         $mandate->id_universign  = $id;
         $mandate->url_universign = $url;
         $mandate->status         = \clients_mandats::STATUS_PENDING;
-        $mandate->bic            = $company->bic;
-        $mandate->iban           = $company->iban;
+        $mandate->bic            = $bankAccount->getBic();
+        $mandate->iban           = $bankAccount->getIban();
         $mandate->update();
 
         return true;
@@ -173,7 +182,7 @@ class UniversignManager
             }
 
             /** @var \projects_pouvoir $proxy */
-            $proxy = $this->entityManager->getRepository('projects_pouvoir');
+            $proxy = $this->entityManagerSimulator->getRepository('projects_pouvoir');
 
             if ($proxy->get($mandate->id_project, 'id_project') && $proxy->status == \projects_pouvoir::STATUS_SIGNED) {
                 $this->mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
@@ -183,6 +192,7 @@ class UniversignManager
 
     /**
      * @param \project_cgv $tos
+     *
      * @return bool
      */
     public function createTOS(\project_cgv $tos)
@@ -236,22 +246,23 @@ class UniversignManager
     /**
      * @param string $documentType
      * @param string $documentId
+     *
      * @return array
      * @throws \Exception
      */
     private function getPdfParameters($documentType, $documentId)
     {
         /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
+        $client = $this->entityManagerSimulator->getRepository('clients');
         /** @var \projects $project */
-        $project = $this->entityManager->getRepository('projects');
+        $project = $this->entityManagerSimulator->getRepository('projects');
         /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
+        $company = $this->entityManagerSimulator->getRepository('companies');
 
         switch ($documentType) {
             case 'mandate':
                 /** @var \clients_mandats $mandate */
-                $mandate = $this->entityManager->getRepository('clients_mandats');
+                $mandate = $this->entityManagerSimulator->getRepository('clients_mandats');
                 $mandate->get($documentId);
                 $client->get($mandate->id_client, 'id_client');
                 $documentName = $mandate->name;
@@ -260,7 +271,7 @@ class UniversignManager
                 break;
             case 'proxy':
                 /** @var \projects_pouvoir $proxy */
-                $proxy = $this->entityManager->getRepository('projects_pouvoir');
+                $proxy = $this->entityManagerSimulator->getRepository('projects_pouvoir');
                 $proxy->get($documentId);
                 $project->get($proxy->id_project);
                 $company->get($project->id_company);
@@ -271,7 +282,7 @@ class UniversignManager
                 break;
             case 'tos':
                 /** @var \project_cgv $tos */
-                $tos = $this->entityManager->getRepository('project_cgv');
+                $tos = $this->entityManagerSimulator->getRepository('project_cgv');
                 $tos->get($documentId);
                 $project->get($tos->id_project);
                 $company->get($project->id_company);
@@ -326,15 +337,15 @@ class UniversignManager
     }
 
     /**
-     * @param string $documentId
-     * @param string $documentType
-     * @param string $projectId
+     * @param string              $documentId
+     * @param string              $documentType
+     * @param string              $projectId
      * @param \PhpXmlRpc\Response $soapResult
      */
     private function notifyError($documentId, $documentType, $projectId, $soapResult)
     {
         /** @var \settings $settings */
-        $settings = $this->entityManager->getRepository('settings');
+        $settings = $this->entityManagerSimulator->getRepository('settings');
         $settings->get('DebugMailIt', 'type');
 
         $varMail = [
@@ -349,7 +360,8 @@ class UniversignManager
         $message->setTo($settings->value);
         $this->mailer->send($message);
 
-        $this->logger->error('Return Universign ' . $documentType . ' NOK (project ' . $projectId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectId]);
+        $this->logger->error('Return Universign ' . $documentType . ' NOK (project ' . $projectId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(),
+            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectId]);
     }
 
     /**
@@ -358,7 +370,7 @@ class UniversignManager
     private function updateDirectDebit(\clients_mandats $activeMandate)
     {
         /** @var \receptions $directDebit */
-        $directDebit        = $this->entityManager->getRepository('prelevements');
+        $directDebit        = $this->entityManagerSimulator->getRepository('prelevements');
         $futureDirectDebits = $directDebit->select('id_client = ' . $activeMandate->id_client . ' AND id_project = ' . $activeMandate->id_project . ' AND status = ' . \prelevements::STATUS_PENDING);
 
         if (false === empty($futureDirectDebits)) {

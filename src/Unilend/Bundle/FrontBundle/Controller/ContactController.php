@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\SearchService;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
@@ -34,7 +35,7 @@ class ContactController extends Controller
             $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
             $client->get($user->getClientId());
 
-            if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]) || $user instanceof UserBorrower) {
+            if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]) || $user instanceof UserBorrower) {
                 /** @var \companies $company */
                 $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
                 $company->get($client->id_client, 'id_client_owner');

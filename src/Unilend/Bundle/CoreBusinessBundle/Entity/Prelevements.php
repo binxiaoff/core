@@ -12,6 +12,15 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Prelevements
 {
+    const STATUS_PENDING             = 0;
+    const STATUS_SENT                = 1;
+    const STATUS_VALID               = 2;
+    const STATUS_TERMINATED          = 3;
+    const STATUS_TEMPORARILY_BLOCKED = 4;
+
+    const CLIENT_TYPE_LENDER   = 1;
+    const CLIENT_TYPE_BORROWER = 2;
+
     /**
      * @var integer
      *

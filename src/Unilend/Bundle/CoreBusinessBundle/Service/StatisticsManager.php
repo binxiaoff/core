@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\librairies\CacheKeys;
 
@@ -143,9 +144,9 @@ class StatisticsManager
         /** @var \lenders_accounts $lenders */
         $lenders = $this->entityManager->getRepository('lenders_accounts');
         /** @var int $lendersPerson */
-        $lendersPerson = $lenders->countLendersByClientType([\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]);
+        $lendersPerson = $lenders->countLendersByClientType([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
         /** @var int $lendersLegalEntity */
-        $lendersLegalEntity = $lenders->countLendersByClientType([\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
+        $lendersLegalEntity = $lenders->countLendersByClientType([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
         /** @var int $totalLenders */
         $totalLenders = bcadd($lendersPerson, $lendersLegalEntity);
 

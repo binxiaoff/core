@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use \Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+
 class echeanciers extends echeanciers_crud
 {
     const STATUS_PENDING                  = 0;
@@ -806,8 +808,8 @@ class echeanciers extends echeanciers_crud
             SELECT
                 l.id_type_contract,
                 CASE c.type
-                    WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' THEN "legal_entity"
-                    WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER . ' THEN "person"
+                    WHEN ' . Clients::TYPE_LEGAL_ENTITY . ' THEN "legal_entity"
+                    WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN "person"
                 END AS client_type,
                 CASE IFNULL(
                     (SELECT resident_etranger
@@ -875,7 +877,7 @@ class echeanciers extends echeanciers_crud
      */
     public function getForeignersRepaymentsInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate)
     {
-        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER], 2, true);
+        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], 2, true);
     }
 
     /**
@@ -1184,7 +1186,7 @@ class echeanciers extends echeanciers_crud
                     0                               AS repaidTaxes,
                     CASE c.type
                         -- Natural person
-                        WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER . ' THEN
+                        WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN
                             CASE lih.resident_etranger
                                 -- FR fiscal resident
                                 WHEN 0 THEN 
@@ -1198,7 +1200,7 @@ class echeanciers extends echeanciers_crud
                                     SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_foreigner_lender)) / 100, 2))
                             END
                         -- Legal entity
-                        WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' OR ' . \clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
+                        WHEN ' . Clients::TYPE_LEGAL_ENTITY . ' OR ' . Clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
                             SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2))
                     END                           AS upcomingTaxes
                 FROM echeanciers e

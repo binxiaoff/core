@@ -11,11 +11,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -45,18 +50,6 @@ class ProjectRequestController extends Controller
 
     /** @var \projects */
     private $project;
-
-    /** @var \upload */
-    private $upload;
-
-    /** @var \attachment */
-    private $attachment;
-
-    /** @var \attachment_type */
-    private $attachmentType;
-
-    /** @var \attachment_helper */
-    private $attachmentHelper;
 
     /**
      * @Route("/depot_de_dossier/{hash}", name="project_request_index", requirements={"hash": "[0-9a-f-]{32,36}"})
@@ -167,10 +160,10 @@ class ProjectRequestController extends Controller
             );
         }
 
-        /** @var \clients $clientRepository */
-        $clientRepository = $entityManager->getRepository('clients');
+        /** @var EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
 
-        if ($clientRepository->existEmail($email)) {
+        if ($em->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($email)) {
             $email .= '-' . time();
         }
 
@@ -180,7 +173,7 @@ class ProjectRequestController extends Controller
         $this->client
             ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(\clients::STATUS_ONLINE)
+            ->setStatus(Clients::STATUS_ONLINE)
             ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
@@ -194,18 +187,16 @@ class ProjectRequestController extends Controller
             ->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        /** @var EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
         $em->beginTransaction();
         try {
             $em->persist($this->client);
-            $em->flush();
             $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($this->client->getIdClient());
+            $clientAddress->setIdClient($this->client);
             $em->persist($clientAddress);
+            $em->flush($clientAddress);
             $this->company->setIdClientOwner($this->client->getIdClient());
             $em->persist($this->company);
-            $em->flush();
+            $em->flush($this->company);
             $this->get('unilend.service.wallet_creation_manager')->createWallet($this->client, WalletType::BORROWER);
             $em->commit();
         } catch (\Exception $exception) {
@@ -395,7 +386,7 @@ class ProjectRequestController extends Controller
 
         $errors = [];
 
-        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [\clients::TITLE_MISS, \clients::TITLE_MISTER])) {
+        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
             $errors['contact']['civility'] = true;
         }
         if (empty($request->request->get('contact')['lastname'])) {
@@ -426,7 +417,7 @@ class ProjectRequestController extends Controller
             $errors['project']['description'] = true;
         }
         if ('no' === $request->request->get('manager')) {
-            if (empty($request->request->get('advisor')['civility']) || false === in_array($request->request->get('advisor')['civility'], [\clients::TITLE_MISS, \clients::TITLE_MISTER])) {
+            if (empty($request->request->get('advisor')['civility']) || false === in_array($request->request->get('advisor')['civility'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
                 $errors['advisor']['civility'] = true;
             }
             if (empty($request->request->get('advisor')['lastname'])) {
@@ -480,9 +471,13 @@ class ProjectRequestController extends Controller
                 $advisorClient->get($advisor->id_client);
             }
 
+            /** @var ClientsRepository $clientRepo */
+            $clientRepo = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
             $email = $request->request->get('advisor')['email'];
-
-            if ($advisorClient->existEmail($email) && $this->removeEmailSuffix($advisorClient->email) !== $email) {
+            if (
+                $clientRepo->existEmail($email)
+                && $this->removeEmailSuffix($advisorClient->email) !== $email
+            ) {
                 $email = $email . '-' . time();
             }
 
@@ -579,18 +574,22 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \companies_actif_passif $companyAssetsDebts */
         $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
         /** @var \companies_bilans $annualAccountsEntity */
         $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
-        $partnerManager       = $this->get('unilend.service.partner_manager');
+        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var Partner $partner */
+        $partner = $em->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->project->id_partner);
 
-        $this->attachmentType         = $entityManager->getRepository('attachment_type');
-        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
-        $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
-
+        $template['attachmentTypes'] = [];
+        if ($partner) {
+            $partnerAttachmentTypes = $partner->getAttachmentTypes(true);
+            foreach($partnerAttachmentTypes as $partnerAttachmentType) {
+                $template['attachmentTypes'][] = $partnerAttachmentType->getAttachmentType();
+            }
+        }
         $altaresCapitalStock     = 0;
         $altaresOperationIncomes = 0;
         $altaresRevenue          = 0;
@@ -652,13 +651,15 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager     = $this->get('unilend.service.entity_manager');
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $em                = $this->get('doctrine.orm.entity_manager');
+        $logger            = $this->get('logger');
 
-        $errors = [];
-        $values = $request->request->get('finance');
-        $values = is_array($values) ? $values : [];
-        $files  = $request->files->all();
+        $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
+        $errors  = [];
+        $values  = $request->request->get('finance');
+        $values  = is_array($values) ? $values : [];
 
         if (empty($this->company->getRcs())) {
             if (false === isset($values['ag_2035']) || $values['ag_2035'] === '') {
@@ -675,13 +676,18 @@ class ProjectRequestController extends Controller
                 $errors['gg'] = true;
             }
         }
-
-        if (empty($files['accounts']) || false === ($files['accounts'] instanceof UploadedFile)) {
+        $taxReturnFile = $request->files->get('accounts');
+        if ($taxReturnFile instanceof UploadedFile && $this->client instanceof Clients) {
+            try {
+                $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DERNIERE_LIASSE_FISCAL);
+                $attachment     = $attachmentManager->upload($this->client, $attachmentType, $taxReturnFile);
+                $attachmentManager->attachToProject($attachment, $project);
+            } catch (\Exception $exception) {
+                $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                $errors['accounts'] = true;
+            }
+        } else {
             $errors['accounts'] = true;
-        } elseif (false === $this->uploadAttachment('accounts', \attachment_type::DERNIERE_LIASSE_FISCAL)) {
-            $errors['accounts'] = [
-                'message' => $this->upload->getErrorType()
-            ];
         }
 
         if (false === empty($errors)) {
@@ -694,9 +700,19 @@ class ProjectRequestController extends Controller
         }
 
         if ('true' === $request->request->get('extra_files')) {
-            foreach ($files as $fileName => $file) {
-                if ('accounts' !== $fileName && $file instanceof UploadedFile && false === empty($request->request->get('files')[$fileName])) {
-                    $this->uploadAttachment($fileName, $request->request->get('files')[$fileName]);
+            $files = $request->files->all();
+            $fileTypes = $request->request->get('files', []);
+            foreach ($files as $inputName =>  $file) {
+                if ('accounts' !== $inputName && $file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
+                    $attachmentTypeId = $fileTypes[$inputName];
+                    try {
+                        $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                        $attachment     = $attachmentManager->upload($this->client, $attachmentType, $file);
+                        $attachmentManager->attachToProject($attachment, $project);
+                    } catch (\Exception $exception) {
+                        $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                        continue;
+                    }
                 }
             }
         }
@@ -806,12 +822,19 @@ class ProjectRequestController extends Controller
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings       = $entityManager->getRepository('settings');
-        $partnerManager = $this->get('unilend.service.partner_manager');
+        $em             = $this->get('doctrine.orm.entity_manager');
+        /** @var Projects $project */
+        $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
 
-        $this->attachmentType         = $entityManager->getRepository('attachment_type');
-        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
-        $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
-        array_multisort(array_column($template['attachment_types'], 'label'), SORT_ASC, $template['attachment_types']);
+        $partnerAttachments = $project->getPartner()->getAttachmentTypes();
+        $template['attachmentTypes']    = [];
+        $labels    = [];
+        foreach ($partnerAttachments as $partnerAttachment) {
+            $template['attachmentTypes'][] = $partnerAttachment->getAttachmentType();
+            $labels[] = $partnerAttachment->getAttachmentType()->getLabel();
+        }
+
+        array_multisort($labels, SORT_ASC, $template['attachmentTypes']);
 
         $settings->get('Lien conditions generales depot dossier', 'type');
 
@@ -875,8 +898,10 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager     = $this->get('unilend.service.entity_manager');
+        $em                = $this->get('doctrine.orm.entity_manager');
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $logger            = $this->get('logger');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
 
@@ -946,11 +971,20 @@ class ProjectRequestController extends Controller
         $this->project->comments = $request->request->get('project')['description'];
         $this->project->update();
 
-        $files = $request->request->get('files', []);
-
-        foreach ($request->files->all() as $fileName => $file) {
-            if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
-                $this->uploadAttachment($fileName, $files[$fileName]);
+        $files     = $request->files->all();
+        $fileTypes = $request->request->get('files', []);
+        $project   = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
+        foreach ($files as $inputName => $file) {
+            if ($file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
+                $attachmentTypeId = $fileTypes[$inputName];
+                try {
+                    $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                    $attachment     = $attachmentManager->upload($this->client, $attachmentType, $file);
+                    $attachmentManager->attachToProject($attachment, $project);
+                } catch (\Exception $exception) {
+                    $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                    continue;
+                }
             }
         }
 
@@ -1082,24 +1116,22 @@ class ProjectRequestController extends Controller
             ]
         ];
 
-        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
+$em            = $this->get('doctrine.orm.entity_manager');        /** @var Projects $project */
+        $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find( $this->project->id_project);
 
-        /** @var \attachment $attachment */
-        $attachment     = $entityManager->getRepository('attachment');
-        $partnerManager = $this->get('unilend.service.partner_manager');
-
-        $attachments          = array_column($attachment->select('type_owner = "' . \attachment::PROJECT . '" AND id_owner = ' . $this->project->id_project), 'id_type');
-        $this->attachmentType = $entityManager->getRepository('attachment_type');
-        $attachmentTypes      = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
-
-        foreach ($attachmentTypes as $attachmentIndex => $attachmentType) {
-            if (in_array($attachmentType['id'], $attachments)) {
-                unset($attachmentTypes[$attachmentIndex]);
-            }
+        $projectAttachments = $project->getAttachments();
+        $partnerAttachments = $project->getPartner()->getAttachmentTypes();
+        $attachmentTypes    = [];
+        foreach ($partnerAttachments as $partnerAttachment) {
+            $attachmentTypes[] = $partnerAttachment->getAttachmentType();
+        }
+        foreach ($projectAttachments as $projectAttachment) {
+            $index = array_search($projectAttachment->getAttachment()->getType(), $attachmentTypes);
+            unset($attachmentTypes[$index]);
         }
 
-        $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
+        $template['attachment_types'] = $attachmentTypes;
 
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $entityManager->getRepository('projects_status_history');
@@ -1133,11 +1165,25 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        $files = $request->request->get('files', []);
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $logger            = $this->get('logger');
 
-        foreach ($request->files->all() as $fileName => $file) {
-            if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
-                $this->uploadAttachment($fileName, $files[$fileName]);
+        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
+
+        $files = $request->files->all();
+        $fileTypes = $request->request->get('files', []);
+        foreach ($files as $inputName => $file) {
+            if ($file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
+                $attachmentTypeId = $fileTypes[$inputName];
+                try {
+                    $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                    $attachment     = $attachmentManager->upload($this->client, $attachmentType, $file);
+                    $attachmentManager->attachToProject($attachment, $project);
+                } catch (\Exception $exception) {
+                    $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                    continue;
+                }
             }
         }
 
@@ -1376,38 +1422,6 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @param string $fieldName
-     * @param int    $attachmentType
-     * @return bool
-     */
-    private function uploadAttachment($fieldName, $attachmentType)
-    {
-        if (false === ($this->attachment instanceof \attachment)) {
-            $this->attachment = $this->get('unilend.service.entity_manager')->getRepository('attachment');
-        }
-
-        if (false === ($this->attachmentType instanceof \attachment_type)) {
-            $this->attachmentType = $this->get('unilend.service.entity_manager')->getRepository('attachment_type');
-        }
-
-        if (false === ($this->upload instanceof \upload)) {
-            $this->upload = Loader::loadLib('upload');
-        }
-
-        if (false === ($this->attachmentHelper instanceof \attachment_helper)) {
-            $this->attachmentHelper = Loader::loadLib('attachment_helper', [$this->attachment, $this->attachmentType, $this->getParameter('kernel.root_dir') . '/../']);
-        }
-
-        $resultUpload = false;
-        if (isset($_FILES[$fieldName]['name']) && $fileInfo = pathinfo($_FILES[$fieldName]['name'])) {
-            $fileName     = $fileInfo['filename'] . '_' . $this->project->id_project;
-            $resultUpload = $this->attachmentHelper->upload($this->project->id_project, \attachment::PROJECT, $attachmentType, $fieldName, $this->upload, $fileName);
-        }
-
-        return $resultUpload;
-    }
-
-    /**
      * Check that hash is present in URL and valid
      * If hash is valid, check status and redirect to appropriate page
      * @param string  $route
@@ -1431,7 +1445,7 @@ class ProjectRequestController extends Controller
         }
 
         $this->company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->project->id_company);
-        $this->client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
+        $this->client  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
 
         if (self::PAGE_ROUTE_EMAILS === $route) {
             return null;
@@ -1516,8 +1530,9 @@ class ProjectRequestController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        /** @var \clients $clientRepository */
-        $clientRepository = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $em =  $this->get('doctrine.orm.entity_manager');
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $em->getRepository('UnilendCoreBusinessBundle:Clients');
         if ($clientRepository->existEmail($email) && $this->removeEmailSuffix($this->client->getEmail()) !== $email) {
             $email = $email . '-' . time();
         }
@@ -1534,6 +1549,6 @@ class ProjectRequestController extends Controller
         $this->company->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        $this->get('doctrine.orm.entity_manager')->flush();
+        $em->flush();
     }
 }

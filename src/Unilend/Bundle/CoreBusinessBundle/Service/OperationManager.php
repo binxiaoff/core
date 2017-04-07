@@ -948,8 +948,8 @@ class OperationManager
      */
     public function lenderTransfer(Transfer $transfer, $amount)
     {
-        $debtor   = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($transfer->getIdClientOrigin(), WalletType::LENDER);
-        $creditor = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($transfer->getIdClientReceiver(), WalletType::LENDER);
+        $debtor   = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($transfer->getClientOrigin(), WalletType::LENDER);
+        $creditor = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($transfer->getClientReceiver(), WalletType::LENDER);
         if (null === $debtor || null === $creditor) {
             return false;
         }
@@ -970,7 +970,7 @@ class OperationManager
         /** @var \transactions $transaction */
         $transaction = $this->entityManager->getRepository('transactions');
 
-        $transaction->id_client        = $transfer->getIdClientOrigin();
+        $transaction->id_client        = $transfer->getClientOrigin()->getIdClient();
         $transaction->montant          = -$amount * 100;
         $transaction->status           = \transactions::STATUS_VALID;
         $transaction->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
@@ -981,7 +981,7 @@ class OperationManager
 
         $transaction->unsetData();
 
-        $transaction->id_client        = $transfer->getIdClientReceiver();
+        $transaction->id_client        = $transfer->getClientReceiver()->getIdClient();
         $transaction->montant          = $amount * 100;
         $transaction->status           = \transactions::STATUS_VALID;
         $transaction->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;

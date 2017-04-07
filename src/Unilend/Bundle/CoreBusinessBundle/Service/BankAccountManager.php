@@ -1,81 +1,125 @@
 <?php
 
-
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
-
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Validator\Constraints\Bic;
+use Symfony\Component\Validator\Constraints\Iban;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class BankAccountManager
 {
-    /** @var  EntityManager */
-    private $em;
-    /** @var  EntityManagerSimulator */
+    /** @var EntityManager */
     private $entityManager;
+
+    /** @var  EntityManagerSimulator */
+    private $entityManagerSimulator;
+
     /** @var  LenderManager */
     private $lenderManager;
+
     /** @var  LoggerInterface */
     private $logger;
 
+    /** @var ValidatorInterface */
+    private $validator;
+
+    /**
+     * BankAccountManager constructor.
+     *
+     * @param EntityManager          $entityManager
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param LenderManager          $lenderManager
+     * @param LoggerInterface        $logger
+     * @param ValidatorInterface     $validator
+     */
     public function __construct(
-        EntityManager $em,
-        EntityManagerSimulator $entityManager,
+        EntityManager $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
         LenderManager $lenderManager,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        ValidatorInterface $validator
     ) {
-        $this->em            = $em;
-        $this->entityManager = $entityManager;
-        $this->lenderManager = $lenderManager;
-        $this->logger        = $logger;
+        $this->entityManager          = $entityManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->lenderManager          = $lenderManager;
+        $this->logger                 = $logger;
+        $this->validator              = $validator;
     }
 
 
     /**
-     * @param Clients $clientEntity
-     * @param string  $bic
-     * @param string  $iban
+     * When we save a different IBAN (or no bank information) for a client, we archive the old one, and create the new on.
+     * Otherwise (if IBAN is the same), we update the existing bank information, and if the bic is modified, we put the bank information in "pending".
      *
-     * @return mixed
+     * When we create a new line in bank_account, the default status is "pending".
+     * And before the creation, we archive all other "pending" belong to the client.
+     *
+     * When we update a line, if the BIC is changed, we put it in "pending", to validate it again.
+     *
+     * @param Clients         $client
+     * @param string          $bic
+     * @param string          $iban
+     * @param Attachment|null $attachment
+     *
+     * @return BankAccount
      *
      * @throws \Exception
      */
-    public function saveBankInformation(Clients $clientEntity, $bic, $iban)
+    public function saveBankInformation(Clients $client, $bic, $iban, Attachment $attachment = null)
     {
-        /** @var BankAccountRepository $bankAccountRepository */
-        $bankAccountRepository = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount');
-
-        /** @var BankAccount $bankAccount */
-        $bankAccount = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->findOneBy(['idClient' => $clientEntity, 'iban' => $iban]);
-
-        if (null !== $bankAccount) {
-            if ($bic !== $bankAccount->getBic()) {
-                $bankAccount->setBic($bic);
-                $bankAccount->setStatus(BankAccount::STATUS_PENDING);
-                $bankAccount->setDatePending(new \DateTime('NOW'));
-                $this->updateLegacyBankAccount($clientEntity, $bankAccount);
-                $this->em->flush($bankAccount);
-                return $bankAccount;
-            }
-        }
-
-        $this->em->getConnection()->beginTransaction();
+        $this->entityManager->getConnection()->beginTransaction();
         try {
+            $iban           = strtoupper(preg_replace('/\s+/', '', $iban));
+            $bic            = strtoupper(preg_replace('/\s+/', '', $bic));
+            $ibanViolations = $this->validator->validate($iban, new Iban());
+            if (0 < $ibanViolations->count()) {
+                throw new \InvalidArgumentException('IBAN is not valid');
+            }
+            $bicViolations = $this->validator->validate($bic, new Bic());
+            if (0 < $bicViolations->count()) {
+                throw new \InvalidArgumentException('BIC is not valid');
+            }
 
-            $newBankAccount = $bankAccountRepository->saveBankAccount($clientEntity->getIdClient(), $bic, $iban);
-            $this->updateLegacyBankAccount($clientEntity, $newBankAccount);
+            $bankAccountRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+            $bankAccount           = $bankAccountRepository->findOneBy(['idClient' => $client, 'iban' => $iban]);
+            if ($bankAccount instanceof BankAccount) {
+                if ($bic !== $bankAccount->getBic()) {
+                    $bankAccount->setDateValidated(null);
+                    $bankAccount->setDatePending(new \DateTime());
+                    $this->updateLegacyBankAccount($client, $bankAccount);
+                }
+                $bankAccount->setBic($bic);
+                $bankAccount->setAttachment($attachment);
+                $bankAccount->setDateArchived(null);
+                $this->entityManager->flush($bankAccount);
+            } else {
+                $pendingBankAccount = $bankAccountRepository->findBy(['idClient' => $client, 'dateValidated' => null, 'dateArchived' => null]);
+                foreach ($pendingBankAccount as $bankAccountToArchive) {
+                    $bankAccountToArchive->setDateArchived(new \DateTime());
+                    $this->entityManager->flush($bankAccountToArchive);
+                }
+                $bankAccount = new BankAccount();
+                $bankAccount->setIdClient($client)
+                            ->setIban($iban)
+                            ->setBic($bic)
+                            ->setAttachment($attachment);
+                $this->entityManager->persist($bankAccount);
+                $this->entityManager->flush($bankAccount);
 
-            $this->em->flush($newBankAccount);
-            $this->em->getConnection()->commit();
-            return $newBankAccount;
+                $this->updateLegacyBankAccount($client, $bankAccount);
+            }
+            $this->entityManager->getConnection()->commit();
 
-        } catch (\Exception $e) {
-            $this->em->getConnection()->rollBack();
-            throw $e;
+            return $bankAccount;
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollBack();
+            throw $exception;
         }
     }
 
@@ -86,7 +130,7 @@ class BankAccountManager
     private function updateLegacyBankAccount(Clients $client, BankAccount $bankAccount)
     {
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
+        $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
         $lenderAccount->get($client->getIdClient(), 'id_client_owner');
         $lenderAccount->bic   = $bankAccount->getBic();
         $lenderAccount->iban  = $bankAccount->getIban();
@@ -95,29 +139,28 @@ class BankAccountManager
     }
 
     /**
-     * @param BankAccount $newBankAccount
+     * @param BankAccount $bankAccount
+     *
+     * @throws \Exception
      */
-    public function validateBankAccount(BankAccount $newBankAccount)
+    public function validateBankAccount(BankAccount $bankAccount)
     {
-        $now = new \DateTime('NOW');
-
-        if (BankAccount::STATUS_PENDING == $newBankAccount->getStatus()) {
-            $newBankAccount->setStatus(BankAccount::STATUS_VALIDATED);
-            $newBankAccount->setDateValidated($now);
-        }
-
-        /** @var BankAccount[] $existingBankAccounts */
-        $existingBankAccounts = $this->em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getPreviousBankAccounts($newBankAccount->getDatePending(), $newBankAccount->getIdClient());
-
-        if (false === empty($existingBankAccounts)) {
-            foreach ($existingBankAccounts as $bankAccount) {
-                if ($bankAccount !== $newBankAccount && $bankAccount->getStatus() !== BankAccount::STATUS_ARCHIVED) {
-                    $bankAccount->setStatus(BankAccount::STATUS_ARCHIVED);
-                    $bankAccount->setDateArchived($now);
+        $this->entityManager->getConnection()->beginTransaction();
+        try {
+            $previousValidBankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccount->getIdClient());
+            if ($previousValidBankAccount !== $bankAccount) {
+                if ($previousValidBankAccount) {
+                    $previousValidBankAccount->setDateArchived(new \DateTime());
+                    $this->entityManager->flush($previousValidBankAccount);
                 }
+                $bankAccount->setDateValidated(new \DateTime());
+                $bankAccount->setDateArchived(null);
+                $this->entityManager->flush($bankAccount);
             }
+            $this->entityManager->getConnection()->commit();
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollBack();
+            throw $exception;
         }
-
-        $this->em->flush();
     }
 }

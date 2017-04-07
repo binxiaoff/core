@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -1145,18 +1146,16 @@ class ProjectsController extends Controller
      */
     private function getDIRSProject(\projects $project)
     {
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager     = $this->get('unilend.service.entity_manager');
+        $em                = $this->get('doctrine.orm.entity_manager');
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
         /** @var \companies $company */
         $company = $entityManager->getRepository('companies');
         $company->get($project->id_company);
 
-        /** @var \attachment $attachment */
-        $attachment = $entityManager->getRepository('attachment');
-        /** @var \attachment_type $attachmentType */
-        $attachmentType = $entityManager->getRepository('attachment_type');
-        /** @var \attachment_helper $attachmentHelper */
-        $attachmentHelper = Loader::loadLib('attachment_helper', [$attachment, $attachmentType, $this->getParameter('kernel.root_dir') . '/../']);
-        $attachment->get($project->id_project, 'type_owner = "projects" AND id_type = ' . \attachment_type::DEBTS_STATEMENT . ' AND id_owner');
+        $projectEntity  = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DEBTS_STATEMENT);
+        $attachment     = $em->getRepository('UnilendCoreBusinessBundle:Attachment')->getProjectAttachmentByType($projectEntity, $attachmentType);
 
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $entityManager->getRepository('project_rate_settings');
@@ -1185,7 +1184,7 @@ class ProjectsController extends Controller
             'end_date'            => $endDate,
             'signature_date'      => $signatureDate,
             'released_funds'      => $company->getLastYearReleasedFundsBySIREN($company->siren),
-            'debts_statement_img' => base64_encode(file_get_contents($attachmentHelper->getFullPath($attachment->type_owner, $attachment->id_type) . $attachment->path)),
+            'debts_statement_img' => base64_encode(file_get_contents($attachmentManager->getFullPath($attachment))),
             'repayment_schedule'  => $repaymentSchedule
         ];
     }

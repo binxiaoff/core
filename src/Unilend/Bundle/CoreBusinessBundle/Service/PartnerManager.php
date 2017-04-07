@@ -23,36 +23,6 @@ class PartnerManager
     }
 
     /**
-     * @param int  $partnerId
-     * @param bool $onlyMandatory
-     *
-     * @return array
-     */
-    public function getAttachmentTypesByPartner($partnerId, $onlyMandatory = false)
-    {
-        /** @var \partner_project_attachment $partnerProjectAttachment */
-        $partnerProjectAttachment = $this->entityManagerSimulator->getRepository('partner_project_attachment');
-        $attachmentId             = [];
-        $where                    = '';
-
-        if ($onlyMandatory) {
-            $where = ' AND mandatory = ' . \partner_project_attachment::MANDATORY_ATTACHMENT;
-        }
-
-        $attachmentList = $partnerProjectAttachment->select('id_partner = ' . $partnerId . $where);
-
-        if (empty($attachmentList)) {
-            return [];
-        }
-
-        foreach ($attachmentList as $attachment) {
-            $attachmentId[] = $attachment['id_attachment_type'];
-        }
-
-        return $attachmentId;
-    }
-
-    /**
      * @return \partner
      */
     public function getDefaultPartner()

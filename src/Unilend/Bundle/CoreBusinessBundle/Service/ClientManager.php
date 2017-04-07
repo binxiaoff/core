@@ -137,7 +137,7 @@ class ClientManager
             $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
-        if (in_array($client->getType(), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+        if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
             $type = 'Lien conditions generales inscription preteur particulier';
         } else {
             $type = 'Lien conditions generales inscription preteur societe';

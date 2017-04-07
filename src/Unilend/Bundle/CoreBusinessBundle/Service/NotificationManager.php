@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class NotificationManager
@@ -138,10 +139,17 @@ class NotificationManager
     }
 
     /**
-     * @param \clients $client
+     * @param \clients|Clients $client
      */
-    public function generateDefaultNotificationSettings(\clients $client)
+    public function generateDefaultNotificationSettings($client)
     {
+        if ($client instanceof Clients) {
+            $clientEntity = $client;
+            $client = $this->entityManager->getRepository('clients');
+            $client->get($clientEntity->getIdClient());
+            unset($clientEntity);
+        }
+
         $notificationTypes = $this->getNotificationTypes();
         /** @var \clients_gestion_notifications $clientNotificationSettings */
         $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
