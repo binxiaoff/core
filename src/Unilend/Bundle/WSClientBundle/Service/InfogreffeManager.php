@@ -110,7 +110,9 @@ class InfogreffeManager
 
                 $this->client->__soapCall($wsResource->resource_name, [$request->asXML()]);
             } catch (\SoapFault $exception) {
-                $this->logger->error('Calling Infogreffe Indebtedness SIREN: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
+                if (0 != $exception->getCode()) {
+                    $this->logger->error('Calling Infogreffe Indebtedness SIREN: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
+                }
             }
 
             call_user_func($callBack, $this->client->__getLastResponse());
