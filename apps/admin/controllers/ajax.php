@@ -322,6 +322,7 @@ class ajaxController extends bootstrap
                 }
                 $address->update();
 
+                $this->clients = $this->loadData('clients');
                 $this->clients->get($company->id_client_owner, 'id_client');
                 $this->clients->email     = $_POST['email_etape2'];
                 $this->clients->civilite  = $_POST['civilite_etape2'];

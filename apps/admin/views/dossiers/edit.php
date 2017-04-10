@@ -88,6 +88,11 @@
         text-decoration: none;
     }
 
+    #contenu_etape4_1 > table td.warning {
+        background-color: #b20066;
+        color: #fff;
+    }
+
     table.form .section-title th {
         font-size: 14px;
         text-align: center;
@@ -432,7 +437,7 @@
                         <?php endif; ?>
                         <tr>
                             <th>Date de la demande</th>
-                            <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y') ?></td>
+                            <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y H:i') ?></td>
                         </tr>
                         <tr>
                             <th><label for="source">Source</label></th>
@@ -824,11 +829,19 @@
                                 $blockingPublishingError = 'Veuillez sélectionner une durée de prêt';
                             }
 
-                            if (
-                                in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)
-                                && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
-                            ) {
-                                $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                            if (in_array(\Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)) {
+                                $hasDebtsStatement = false;
+                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+                                foreach ($this->aAttachments as $projectAttachment) {
+                                    $attachment = $projectAttachment->getAttachment();
+                                    if (\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DEBTS_STATEMENT === $attachment->getType()->getId()) {
+                                        $hasDebtsStatement = true;
+                                        break;
+                                    }
+                                }
+                                if (false === $hasDebtsStatement) {
+                                    $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                }
                             }
 
                             if (false === $this->isProductUsable) {
