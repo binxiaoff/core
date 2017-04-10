@@ -107,7 +107,8 @@ class clients extends clients_crud
 
             $query =  '
             UPDATE clients
-            SET lastlogin = :lastLogin
+            SET lastlogin = :lastLogin,
+            updated = NOW()
             WHERE id_client = :id_client';
             $this->bdd->executeUpdate($query, $bind, $type);
         }
@@ -130,7 +131,8 @@ class clients extends clients_crud
     {
         $this->bdd->query('
             UPDATE ' . $this->userTable . '
-            SET ' . $this->userPass . ' = "' . password_hash($pass, PASSWORD_DEFAULT) . '"
+            SET ' . $this->userPass . ' = "' . password_hash($pass, PASSWORD_DEFAULT) . '",
+            updated = NOW()
             WHERE ' . $this->userMail . ' = "' . $email . '"'
         );
     }
