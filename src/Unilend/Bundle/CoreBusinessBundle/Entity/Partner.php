@@ -86,6 +86,13 @@ class Partner
     private $attachmentTypes;
 
     /**
+     * @var PartnerThirdParty[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdParty", mappedBy="idPartner")
+     */
+    private $partnerThirdParties;
+
+    /**
      * Projects constructor.
      */
     public function __construct() {
@@ -291,5 +298,10 @@ class Partner
         }
 
         return $this->attachmentTypes;
+    }
+
+    public function getPartnerThirdParties()
+    {
+        return $this->partnerThirdParties;
     }
 }

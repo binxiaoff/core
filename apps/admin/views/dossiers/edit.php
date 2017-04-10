@@ -829,11 +829,19 @@
                                 $blockingPublishingError = 'Veuillez sélectionner une durée de prêt';
                             }
 
-                            if (
-                                in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)
-                                && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
-                            ) {
-                                $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                            if (in_array(\Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)) {
+                                $hasDebtsStatement = false;
+                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+                                foreach ($this->aAttachments as $projectAttachment) {
+                                    $attachment = $projectAttachment->getAttachment();
+                                    if (\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DEBTS_STATEMENT === $attachment->getType()->getId()) {
+                                        $hasDebtsStatement = true;
+                                        break;
+                                    }
+                                }
+                                if (false === $hasDebtsStatement) {
+                                    $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                }
                             }
 
                             if (false === $this->isProductUsable) {

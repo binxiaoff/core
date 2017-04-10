@@ -132,7 +132,7 @@
                 <?php if ($bankAccount) : ?>
                     <a href="/emprunteurs/validate_rib_lightbox/<?= $bankAccount->getId(); ?>" class="btn_link thickbox cboxElement">Mettre en vigueur</a>
                 <?php else : ?>
-                    <a href="/emprunteurs/extraction_rib_lightbox/<?= $attachment->getId(); ?>" class="btn_link thickbox cboxElement">Extraire</a>
+                    <a href="/emprunteurs/extraction_rib_lightbox/<?= $attachment->getId(); ?>" class="btn_link extract_rib_btn">Extraire</a>
                 <?php endif; ?>
             </td>
         </tr>
