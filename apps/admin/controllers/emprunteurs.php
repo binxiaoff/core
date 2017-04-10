@@ -3,9 +3,9 @@
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Symfony\Component\HttpFoundation\File\File;
 
 class emprunteursController extends bootstrap
@@ -151,10 +151,10 @@ class emprunteursController extends bootstrap
                 $mandates = $project->getMandats();
                 if (false === empty($mandates)) {
                     foreach ($mandates as $mandate) {
-                        if ($mandate->getStatus() === ClientsMandats::STATUS_ARCHIVED) {
+                        if ($mandate->getStatus() === UniversignEntityInterface::STATUS_ARCHIVED) {
                             continue;
                         }
-                        if (ClientsMandats::STATUS_SIGNED == $mandate->getStatus()) {
+                        if (UniversignEntityInterface::STATUS_SIGNED == $mandate->getStatus()) {
                             $nouveauNom    = str_replace('mandat', 'mandat-' . $mandate->getId(), $mandate->getName());
                             $chemin        = $this->path . 'protected/pdf/mandat/' . $mandate->getName();
                             $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
@@ -165,7 +165,7 @@ class emprunteursController extends bootstrap
 
                             $mandate->setName($nouveauNom);
                         }
-                        $mandate->setStatus(ClientsMandats::STATUS_ARCHIVED);
+                        $mandate->setStatus(UniversignEntityInterface::STATUS_ARCHIVED);
                         $entityManager->flush($mandate);
                     }
                     // No need to create the new mandat, it will be created in pdf::_mandat()

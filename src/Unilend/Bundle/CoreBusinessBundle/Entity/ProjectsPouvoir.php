@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
 
 /**
  * ProjectsPouvoir
@@ -13,11 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
  */
 class ProjectsPouvoir implements UniversignEntityInterface
 {
-    const STATUS_PENDING   = 0;
-    const STATUS_SIGNED    = 1;
-    const STATUS_CANCELLED = 2;
-    const STATUS_FAILED    = 3;
-
     const STATUS_PENDING_VALIDATION = 0;
     const STATUS_VALIDATED          = 1;
 

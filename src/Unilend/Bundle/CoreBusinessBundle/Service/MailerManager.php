@@ -5,6 +5,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\core\Loader;
@@ -1939,37 +1941,31 @@ class MailerManager
     }
 
     /**
-     * @param \projects_pouvoir $proxy
-     * @param \clients_mandats $mandate
+     * @param ProjectsPouvoir $proxy
+     * @param ClientsMandats $mandate
      */
-    public function sendProxyAndMandateSigned(\projects_pouvoir $proxy, \clients_mandats $mandate)
+    public function sendProxyAndMandateSigned(ProjectsPouvoir $proxy, ClientsMandats $mandate)
     {
-        /** @var \projects $project */
-        $project = $this->oEntityManager->getRepository('projects');
-        $project->get($proxy->id_project, 'id_project');
-        /** @var \companies $company */
-        $company = $this->oEntityManager->getRepository('companies');
-        $company->get($project->id_company, 'id_company');
-        /** @var \clients $client */
-        $client = $this->oEntityManager->getRepository('clients');
-        $client->get($company->id_client_owner, 'id_client');
-        /** @var \settings $setting */
-        $setting = $this->oEntityManager->getRepository('settings');
-        $setting->get('Adresse notification pouvoir mandat signe', 'type');
-        $destinataire = $setting->value;
+        if ($proxy->getIdProject() && $proxy->getIdProject()->getIdCompany()) {
 
-        $template = [
-            '$surl'         => $this->sSUrl,
-            '$id_projet'    => $project->id_project,
-            '$nomProjet'    => $project->title,
-            '$nomCompany'   => $company->name,
-            '$lien_pouvoir' => $proxy->url_pdf,
-            '$lien_mandat'  => $mandate->url_pdf
-        ];
+            /** @var \settings $setting */
+            $setting = $this->oEntityManager->getRepository('settings');
+            $setting->get('Adresse notification pouvoir mandat signe', 'type');
+            $destinataire = $setting->value;
 
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('notification-pouvoir-mandat-signe', $template, false);
-        $message->setTo(explode(';', $destinataire));
-        $this->mailer->send($message);
+            $template = [
+                '$surl'         => $this->sSUrl,
+                '$id_projet'    => $proxy->getIdProject()->getIdProject(),
+                '$nomProjet'    => $proxy->getIdProject()->getTitle(),
+                '$nomCompany'   => $proxy->getIdProject()->getIdCompany()->getName(),
+                '$lien_pouvoir' => $proxy->getUrlPdf(),
+                '$lien_mandat'  => $mandate->getUrlPdf()
+            ];
+
+            /** @var TemplateMessage $message */
+            $message = $this->messageProvider->newMessage('notification-pouvoir-mandat-signe', $template, false);
+            $message->setTo(explode(';', $destinataire));
+            $this->mailer->send($message);
+        }
     }
 }

@@ -171,7 +171,7 @@
                             <a href="/emprunteurs/link_ligthbox/pouvoir/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">POUVOIR</a>
                         <?php endif; ?>
                         &nbsp;&nbsp;
-                        <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
+                        <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED . ' AND id_client')) : ?>
                             <a href="<?= $this->lurl ?>/protected/mandats/<?= $this->clients_mandats->name ?>">MANDAT</a>
                         <?php elseif ($aProject['status']  > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
                             <a href="/emprunteurs/link_ligthbox/mandat/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">MANDAT</a>
@@ -231,19 +231,19 @@
                     <td>
                         <?php
                             switch ($aMoneyOrder['status']) {
-                                case \clients_mandats::STATUS_PENDING:
+                                case \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_PENDING:
                                     echo 'En attente de signature';
                                     break;
-                                case \clients_mandats::STATUS_SIGNED:
+                                case \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED:
                                     echo 'Signé';
                                     break;
-                                case \clients_mandats::STATUS_CANCELED:
+                                case \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_CANCELED:
                                     echo 'Annulé';
                                     break;
-                                case \clients_mandats::STATUS_FAILED:
+                                case \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_FAILED:
                                     echo 'Echec';
                                     break;
-                                case \clients_mandats::STATUS_ARCHIVED:
+                                case \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_ARCHIVED:
                                     echo 'Archivé';
                                     break;
                                 default:

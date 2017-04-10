@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
@@ -975,7 +976,7 @@ class ProjectManager
         $client = new soapClient($this->universignUrl);
 
         if ($mandate->get($project->id_project, 'id_project')) {
-            $mandate->status = \clients_mandats::STATUS_CANCELED;
+            $mandate->status = UniversignEntityInterface::STATUS_CANCELED;
             $mandate->update();
 
             $request          = new soapRequest('requester.cancelTransaction', array(new documentId($mandate->id_universign, "string")));
@@ -991,7 +992,7 @@ class ProjectManager
         }
 
         if ($proxy->get($project->id_project, 'id_project')) {
-            $proxy->status = \projects_pouvoir::STATUS_CANCELLED;
+            $proxy->status = UniversignEntityInterface::STATUS_CANCELED;
             $proxy->update();
 
             $request          = new soapRequest('requester.cancelTransaction', array(new documentId($proxy->id_universign, "string")));

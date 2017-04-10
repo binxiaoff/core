@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
 
 /**
  * ClientsMandats
@@ -14,12 +13,6 @@ use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
  */
 class ClientsMandats implements UniversignEntityInterface
 {
-    const STATUS_PENDING  = 0;
-    const STATUS_SIGNED   = 1;
-    const STATUS_CANCELED = 2;
-    const STATUS_FAILED   = 3;
-    const STATUS_ARCHIVED = 4;
-
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *

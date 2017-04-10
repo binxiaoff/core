@@ -7,6 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 
 class transfertsController extends bootstrap
 {
@@ -584,8 +585,8 @@ class transfertsController extends bootstrap
         if (
             isset($_POST['validateProxy'], $_POST['id_project'])
             && $project->get($_POST['id_project'])
-            && $mandate->get($_POST['id_project'] . '" AND status = "' . \clients_mandats::STATUS_SIGNED, 'id_project')
-            && $proxy->get($_POST['id_project'] . '" AND status = "' . \projects_pouvoir::STATUS_SIGNED, 'id_project')
+            && $mandate->get($_POST['id_project'] . '" AND status = "' . UniversignEntityInterface::STATUS_SIGNED, 'id_project')
+            && $proxy->get($_POST['id_project'] . '" AND status = "' . UniversignEntityInterface::STATUS_SIGNED, 'id_project')
         ) {
             /** @var \companies $companies */
             $companies = $this->loadData('companies');
@@ -632,7 +633,7 @@ class transfertsController extends bootstrap
 
                 $entityManager->getConnection()->beginTransaction();
                 try {
-                    $proxy->status_remb = \projects_pouvoir::STATUS_VALIDATED;
+                    $proxy->status_remb = \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_VALIDATED;
                     $proxy->update();
 
                     $paymentInspectionStopped->value = 0;
@@ -685,7 +686,7 @@ class transfertsController extends bootstrap
 
                         $operationManager->withdrawBorrowerWallet($borrowerWallet, $wireTransferOut, $commission);
 
-                        $aMandate = $mandate->select('id_project = ' . $project->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1);
+                        $aMandate = $mandate->select('id_project = ' . $project->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . UniversignEntityInterface::STATUS_SIGNED, 'id_mandat DESC', 0, 1);
                         $aMandate = array_shift($aMandate);
 
                         /** @var \prelevements $prelevements */
@@ -800,7 +801,7 @@ class transfertsController extends bootstrap
         foreach ($aProjects as $index => $aProject) {
             $this->aProjects[$index] = $aProject;
 
-            $aMandate = $mandate->select('id_project = ' . $this->aProjects[$index]['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'added DESC', 0, 1);
+            $aMandate = $mandate->select('id_project = ' . $this->aProjects[$index]['id_project'] . ' AND status = ' . UniversignEntityInterface::STATUS_SIGNED, 'added DESC', 0, 1);
             if ($aMandate = array_shift($aMandate)) {
                 $this->aProjects[$index]['bic']           = $aMandate['bic'];
                 $this->aProjects[$index]['iban']          = $aMandate['iban'];
@@ -808,7 +809,7 @@ class transfertsController extends bootstrap
                 $this->aProjects[$index]['status_mandat'] = $aMandate['status'];
             }
 
-            $aProxy = $proxy->select('id_project = ' . $this->aProjects[$index]['id_project'] . ' AND status = ' . \projects_pouvoir::STATUS_SIGNED, 'added DESC', 0, 1);
+            $aProxy = $proxy->select('id_project = ' . $this->aProjects[$index]['id_project'] . ' AND status = ' . UniversignEntityInterface::STATUS_SIGNED, 'added DESC', 0, 1);
             if ($aProxy = array_shift($aProxy)) {
                 $this->aProjects[$index]['url_pdf']          = $aProxy['name'];
                 $this->aProjects[$index]['status_remb']      = $aProxy['status_remb'];

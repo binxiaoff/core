@@ -7,6 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 
 class dossiersController extends bootstrap
 {
@@ -2547,7 +2548,7 @@ class dossiersController extends bootstrap
             $oProjectCgv->id_project = $oProjects->id_project;
             $oProjectCgv->id_tree    = $iTreeId;
             $oProjectCgv->name       = $oProjectCgv->generateFileName();
-            $oProjectCgv->status     = project_cgv::STATUS_NO_SIGN;
+            $oProjectCgv->status     = UniversignEntityInterface::STATUS_PENDING;
             $oProjectCgv->id         = $oProjectCgv->create();
             $sCgvLink                = $this->surl . $oProjectCgv->getUrlPath();
         }

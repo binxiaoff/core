@@ -56,9 +56,9 @@
                         <form method="post" name="deblocage" onsubmit="return confirm('Voulez-vous vraiment débloquer les fonds pour le projet <?= $aProject['id_project'] ?> ?');">
                             <?php if (
                                 isset($aProject['status_remb'], $aProject['status_mandat'], $aProject['authority_status'])
-                                && $aProject['status_remb'] == \projects_pouvoir::STATUS_PENDING_VALIDATION
-                                && $aProject['status_mandat'] == \clients_mandats::STATUS_SIGNED
-                                && $aProject['authority_status'] == \projects_pouvoir::STATUS_SIGNED
+                                && $aProject['status_remb'] == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_PENDING_VALIDATION
+                                && $aProject['status_mandat'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
+                                && $aProject['authority_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                             ) : ?>
                                 <input type="submit" name="validateProxy" class="btn" value="Débloquer les fonds" />
                                 <input type="hidden" name="id_project" value="<?= $aProject['id_project'] ?>"/>

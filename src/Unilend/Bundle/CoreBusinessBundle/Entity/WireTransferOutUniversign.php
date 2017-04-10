@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
 
 /**
  * WireTransferOutUniversign
@@ -14,15 +13,10 @@ use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
  */
 class WireTransferOutUniversign implements UniversignEntityInterface
 {
-    const STATUS_PENDING  = 0;
-    const STATUS_SIGNED   = 1;
-    const STATUS_CANCELED = 2;
-    const STATUS_FAILED   = 3;
-
     /**
-     * @var integer
+     * @var string
      *
-     * @ORM\Column(name="name", type="integer", nullable=false)
+     * @ORM\Column(name="name", type="string", length=191, nullable=false)
      */
     private $name;
 
@@ -82,23 +76,23 @@ class WireTransferOutUniversign implements UniversignEntityInterface
 
 
     /**
-     * Set fileName
+     * Set name
      *
-     * @param integer $name
+     * @param string $name
      *
      * @return WireTransferOutUniversign
      */
     public function setName($name)
     {
-        $this->fileName = $name;
+        $this->name = $name;
 
         return $this;
     }
 
     /**
-     * Get fileName
+     * Get name
      *
-     * @return integer
+     * @return string
      */
     public function getName()
     {

@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
 
 /**
  * ProjectCgv
@@ -13,12 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\UniversignEntityInterface;
  */
 class ProjectCgv implements UniversignEntityInterface
 {
-    const STATUS_NO_SIGN         = 0;
-    const STATUS_SIGN_FO         = 1;
-    const STATUS_SIGN_UNIVERSIGN = 2;
-    const STATUS_SIGN_FAILED     = 3;
-    const STATUS_SIGN_CANCELLED  = 4;
-
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
@@ -287,5 +280,15 @@ class ProjectCgv implements UniversignEntityInterface
     public function getId()
     {
         return $this->id;
+    }
+
+    public function generateFileName()
+    {
+        return 'cgv-unilend-' . sha1($this->idProject->getIdProject() . '_' . $this->idTree) . '.pdf';
+    }
+
+    public function getUrlPath()
+    {
+        return '/pdf/cgv_emprunteurs/' . $this->idProject->getIdProject() . '/' . $this->generateFileName();
     }
 }

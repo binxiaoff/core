@@ -36,10 +36,6 @@
         }
         .rib-nom-td, .rib-iban-td {
         }
-        #universign-wrap {
-            padding: 10px 30px;
-            background: #eceaed;
-        }
     </style>
 {% endblock %}
 
@@ -48,27 +44,21 @@
         <h1>Demande de versement sur un compte tiers</h1>
     </header>
     <div class="row" style="page-break-after: always;">
-        <p style="margin-bottom: 2em">Je soussigné, <b>//Prénom du gérant// //Nom du gérant//</b>, en ma qualité de <b>// Fonction du gérant//</b> de <b>//Raison sociale//</b>, autorise le versement de <b>// montant du virement de fonds initié //</b> euros de mon compte Unilend-bénéficiaire vers le compte tiers suivant:</p>
+        <p style="margin-bottom: 2em">Je soussigné, <b>{{ companyManagerFirstName }} {{ companyManagerName }}</b>
+            , en ma qualité de <b>{{ companyManagerFunction }}</b> de <b>{{ companyName }}</b>
+            , autorise le versement de <b>{{ amount }}</b> de mon compte Unilend-bénéficiaire vers le compte tiers suivant:</p>
 
         <table class="table">
             <tbody>
             <tr>
                 <td class="rib-nom-th">Titulaire</td>
-                <td class="rib-nom-td">NOM, Prenom</td>
+                <td class="rib-nom-td">{{ destinationFirstName }} {{ destinationName }}</td>
             </tr>
             <tr>
                 <td class="rib-iban-th">IBAN</td>
-                <td class="rib-iban-td">FR7630001007941234567890185</td>
+                <td class="rib-iban-td">{{ iban|split('', 4)|join(' ') }}</td>
             </tr>
             </tbody>
         </table>
-
-        <br><br>
-
-        <p><b style="text-decoration: underline">Signature</b></p>
-
-        <div id="universign-wrap">
-            Universign signature widget goes here
-        </div>
     </div>
 {% endblock %}
