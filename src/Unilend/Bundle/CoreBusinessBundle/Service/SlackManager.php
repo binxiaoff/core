@@ -7,6 +7,8 @@ use CL\Slack\Payload\PayloadResponseInterface;
 use CL\Slack\Transport\ApiClientInterface;
 use Symfony\Component\Asset\Packages;
 use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class SlackManager
 {
@@ -79,14 +81,17 @@ class SlackManager
     }
 
     /**
-     * @param \projects $project
+     * @param \projects|Projects $project
      * @return string
      */
-    public function getProjectName(\projects $project)
+    public function getProjectName($project)
     {
-        $title   = $project->title;
-        $backUrl = $this->backUrl . '/dossiers/edit/' . $project->id_project;
-        $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
+        if ($project instanceof \projects) {
+            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        }
+        $title   = $project->getTitle();
+        $backUrl = $this->backUrl . '/dossiers/edit/' . $project->getIdProject();
+        $company = $project->getIdCompany();
 
         if (empty($title)) {
             $title = $company->getName();
@@ -96,10 +101,10 @@ class SlackManager
             $title = $company->getSiren();
         }
 
-        if ($project->status >= \projects_status::EN_FUNDING) {
-            return '*<' . $this->frontUrl . '/projects/detail/' . $project->slug . '|' . $title . '>* (<' . $backUrl . '|' . $project->id_project . '>)';
+        if ($project->getStatus() >= ProjectsStatus::EN_FUNDING) {
+            return '*<' . $this->frontUrl . '/projects/detail/' . $project->getSlug() . '|' . $title . '>* (<' . $backUrl . '|' . $project->getIdProject() . '>)';
         }
 
-        return '*' . $title . '* (<' . $backUrl . '|' . $project->id_project . '>)';
+        return '*' . $title . '* (<' . $backUrl . '|' . $project->getIdProject() . '>)';
     }
 }

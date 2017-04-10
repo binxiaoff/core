@@ -3,7 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class Ekomi
 {
@@ -39,31 +41,35 @@ class Ekomi
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
+     *
      * @return bool
      */
-    public function sendProjectEmail(\projects $project)
+    public function sendProjectEmail(Projects $project)
     {
         if (empty($this->shopId) || empty($this->password)) {
             return false;
         }
 
-        /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
-        $company->get($project->id_company);
+        $company = $project->getIdCompany();
+        if (null === $company) {
+            $this->logProjectAlert($project, 'Unable to find project\'s company');
+            return false;
+        }
 
-        /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
-        $client->get($company->id_client_owner);
+        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+        if (null === $client) {
+            $this->logProjectAlert($project, 'Unable to find company owner');
+            return false;
+        }
 
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->entityManager->getRepository('projects_status');
-        $projectStatus->get(\projects_status::FUNDE, 'status');
+        $projectStatus        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status', ProjectsStatus::FUNDE]);
+        $projectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findOneBy([
+            'idProjectStatus' => $projectStatus->getIdProjectStatus(),
+            'idProject'       => $project->getIdProject()
+        ]);
 
-        /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
-
-        if (false === $projectStatusHistory->get($project->id_project, 'id_project_status = ' . $projectStatus->id_project_status . ' AND id_project')) {
+        if (null === $projectStatusHistory) {
             $this->logProjectAlert($project, 'Unable to find project funding date');
             return false;
         }
@@ -79,13 +85,13 @@ class Ekomi
                 'recipient_type'   => 'email',
                 'shop_id'          => $this->shopId,
                 'password'         => $this->password,
-                'first_name'       => $client->prenom,
-                'last_name'        => $client->nom,
-                'email'            => $client->email,
-                'transaction_id'   => $project->id_project,
-                'telephone'        => $client->telephone,
+                'first_name'       => $client->getPrenom(),
+                'last_name'        => $client->getNom(),
+                'email'            => $client->getEmail(),
+                'transaction_id'   => $project->getIdProject(),
+                'telephone'        => $client->getTelephone(),
                 'has_products'     => 0,
-                'transaction_time' => \DateTime::createFromFormat('Y-m-d H:i:s', $projectStatusHistory->added)->format('d-m-Y H:i:s'),
+                'transaction_time' => $projectStatusHistory->getAdded()->format('d-m-Y H:i:s'),
                 'days_of_deletion' => 60
             ])
         ]);
@@ -114,10 +120,11 @@ class Ekomi
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
+     * @param  string  $message
      */
-    private function logProjectAlert(\projects $project, $message)
+    private function logProjectAlert(Projects $project, $message)
     {
-        $this->logger->alert($message, ['class' => __CLASS__, 'function' => __FUNCTION__, 'projectId' => $project->id_project]);
+        $this->logger->alert($message, ['class' => __CLASS__, 'function' => __FUNCTION__, 'projectId' => $project->getIdProject()]);
     }
 }
