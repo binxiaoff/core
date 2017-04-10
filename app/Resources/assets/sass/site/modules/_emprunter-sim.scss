@@ -90,14 +90,14 @@
       display: none;
     }
 
-    .btn-submit, .btn-prospect, .btn-cancel {
-      display: inline-block;
+    .btn-submit {
+      display: block;
     }
 
   }
 }
 
-.emprunter-sim-content-partner {
+.emprunter-sim-partner {
   dl {
     margin-bottom: 20px;
     dd {
@@ -107,21 +107,20 @@
 }
 .emprunter-sim-actions-partner {
   text-align: right;
-  .btn-submit, .btn-prospect, .btn-cancel {
+  .btn-submit, .btn-prospect {
     display: none;
   }
   .btn-continue {
     display: inline-block;
   }
 }
-
 .ui-emprunter-sim-estimate-show {
   .emprunter-sim-actions-partner {
     text-align: center;
     .btn-continue {
       display: none;
     }
-    .btn-submit, .btn-prospect, .btn-cancel {
+    .btn-submit, .btn-prospect {
       display: inline-block;
     }
   }

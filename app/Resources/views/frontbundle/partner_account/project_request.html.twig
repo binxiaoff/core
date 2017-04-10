@@ -24,7 +24,6 @@ loanPeriods = {
 }
 %}
 
-
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -34,20 +33,20 @@ loanPeriods = {
                         <h3>{% trans %} partner-project-request_title {% endtrans %}</h3>
                     </header>
 
-                    <form action="{{ path('project_simulator_form') }}" method="post" class="emprunter-sim tabs ui-tabs-progress">
+                    <form action="{{ path('project_simulator_form') }}" method="post" class="emprunter-sim emprunter-sim-partner tabs ui-tabs-progress">
                         <div class="emprunter-sim-nav">
                             <ul class="nav nav-steps" role="tablist">
                                 <li role="presentation" class="active">
-                                    <a href="#esim1-partner" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a>
+                                    <a href="#esim1" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a>
                                 </li>
                                 <li role="presentation">
-                                    <a href="#esim2-partner" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-2 {% endtrans %}</a>
+                                    <a href="#esim2" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-2 {% endtrans %}</a>
                                 </li>
                             </ul>
                         </div><!-- /.emprunter-sim-nav -->
 
-                        <div class="tab-content emprunter-sim-content emprunter-sim-content-partner">
-                            <div id="esim1-partner" role="tabpanel" class="tab-pane active">
+                        <div class="tab-content emprunter-sim-content">
+                            <div id="esim1" role="tabpanel" class="tab-pane active">
                                 <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                                     <div class="form-validation-notifications"></div>
                                     <div class="row row-multicol-computer">
@@ -99,7 +98,7 @@ loanPeriods = {
                                 </fieldset><!-- /.emprunter-sim-pane-inner -->
                             </div><!-- /.tab-pane -->
 
-                            <div id="esim2-partner" role="tabpanel" class="tab-pane">
+                            <div id="esim2" role="tabpanel" class="tab-pane">
                                 <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                                     <div class="form-validation-notifications"></div>
                                     <div class="row">
@@ -147,17 +146,14 @@ loanPeriods = {
                             <div class="emprunter-sim-pane-inner">
                                 <div class="row">
                                     <div class="col-xs-4 col-sm-8 col-md-12 col-lg-12">
-                                        <a href="#esim2-partner" role="tab" data-toggle="tab" class="btn-continue btn-primary">
+                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-primary">
                                             {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
                                         </a>
-                                        <button class="btn-cancel btn-default btn-shape-sm">
-                                            Abandonner
-                                        </button>
-                                        <button class="btn-prospect btn-alternate btn-shape-sm">
+                                        <a role="button" class="btn-prospect btn-alternate" data-prospect-btn data-equal-width>
                                             Prospecter
-                                        </button>
-                                        <button class="btn-submit btn-primary btn-shape-sm" data-spinnerbutton>
-                                            Déposer le dossier
+                                        </a>
+                                        <button class="btn-submit btn-primary" data-equal-width data-spinnerbutton>
+                                            Déposer
                                         </button>
                                     </div>
                                 </div>
@@ -165,7 +161,44 @@ loanPeriods = {
                         </div><!-- /.emprunter-sim-estimate -->
                     </form><!-- /.emprunter-sim -->
                 </div>
+
             </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+
+    <div id="modal-partner-prospect" data-modal>
+        <header class="modal-header text-align-center">
+            <h3>Prospect ajouté</h3>
+        </header>
+        <div class="modal-body">
+            <p>La société "Company Name" a été ajoutée dans votre <a href="{{ path('partner_projects_list') }}"  data-prospect-lnk>liste de prospects</a>.</p>
+        </div>
+        <footer class="modal-footer">
+            <div class="btn-controls">
+                <a href="javascript:;" class="btn-primary" data-modal-doactionclose>
+                    OK
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <div id="modal-partner-prospect-error" data-modal>
+        <header class="modal-header text-align-center">
+            <h3>Erreur</h3>
+        </header>
+        <div class="modal-body">
+            <p>Une erreur s'est produite. Veuillez réessayer ou contacter notre support technique.</p>
+        </div>
+        <footer class="modal-footer">
+            <div class="btn-controls">
+                <a href="javascript:;" class="btn-primary" data-modal-doactionclose>
+                    OK
+                </a>
+            </div>
+        </footer>
+    </div>
+
 {% endblock %}

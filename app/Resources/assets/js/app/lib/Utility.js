@@ -1319,6 +1319,20 @@ var Utility = {
   },
 
   /*
+   * Equal Width
+   * Sets multiple elements to be the equal (maximum) width
+   */
+  setEqualWidths: function () {
+    var maxEqualWidth = 0
+    // Iterate over items with [data-equal-width] attribute
+    $('[data-equal-width]').each(function (i, elem) {
+      var $elem = $(elem)
+      if ($elem.width() > maxEqualWidth) { maxEqualWidth = $elem.width() }
+      $elem.width(maxEqualWidth)
+    })
+  },
+
+  /*
    * Update Window
    */
   // Manual debouncing instead of using requestAnimationFrame
@@ -1351,6 +1365,9 @@ var Utility = {
 
     // Update equal heights
     Utility.setEqualHeights()
+
+    // Update equal heights
+    Utility.setEqualWidths()
 
     // @trigger doc `WatchScroll:refresh` [targetElem]
     $doc.trigger('WatchScroll:refresh', [window])

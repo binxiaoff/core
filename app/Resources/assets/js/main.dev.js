@@ -239,50 +239,72 @@ $doc.ready(function ($) {
    */
   $doc
     // Step 1
-    .on('FormValidation:validate:error', '#esim1, #esim1-partner', function (event) {
+    .on('FormValidation:validate:error', '#esim1', function (event) {
       // Hide the continue button
       $('.emprunter-sim').removeClass('ui-emprunter-sim-estimate-show')
       event.stopPropagation()
     })
     .on('shown.bs.tab', '[href="#esim2"]', function () {
+
+      // Slightly different behaviour for partners
+      var isPartner = false, siren = false
+      if ($(this).closest('.emprunter-sim').is('.emprunter-sim-partner')) {
+        isPartner = true
+      }
+
       var period = $("input[id^='esim-input-duration-']:checked").val()
       var amount = $("#esim-input-amount").val()
       var motiveId = $("#esim-input-reason > option:selected").val()
+      var ajaxData = { period: period, amount: amount, motiveId: motiveId }
+
+      if (isPartner) {
+        siren = $('#esim-input-siren').val()
+        ajaxData.siren = siren
+      }
 
       if (! $(".form-validation-notifications .message-error").length) {
         $.ajax({
           type: 'POST',
           url: '/simulateur-projet-etape1',
-          data: {
-            period: period,
-            amount: amount,
-            motiveId: motiveId
-          },
+          data: ajaxData,
           success: function(response) {
             // Show the continue button
             $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
 
-            $('#esim-input-siren').focus()
+
+            if (!isPartner) {
+              // Siren is unknown yet
+              $('#esim-input-siren').focus()
+            } else {
+              // Siren is part of the 1st step in Partners
+              // TODO - add the below in the response data
+              var responseCompany = 'Television Francaise';
+              var responseSiren = siren;
+              $('.ui-esim-output-company').html(responseCompany); // Replace with response.company
+              $('.ui-esim-output-siren').html(responseSiren); // Replace with response.siren
+            }
 
             $(".ui-esim-output-cost").prepend(response.amount);
             $('.ui-esim-output-duration').prepend(response.period)
             $('.ui-esim-funding-duration-output').html(response.estimatedFundingDuration)
             $('.ui-esim-monthly-output').html(response.estimatedMonthlyRepayment)
 
-            if (!response.motiveSentenceComplementToBeDisplayed) {
-              $('p[data-borrower-motive]').show()
-              while ($('.ui-esim-output-duration')[0].nextSibling != null) {
-                $('.ui-esim-output-duration')[0].nextSibling.remove()
+            if (!isPartner) {
+              if (!response.motiveSentenceComplementToBeDisplayed) {
+                $('p[data-borrower-motive]').show()
+                while ($('.ui-esim-output-duration')[0].nextSibling != null) {
+                  $('.ui-esim-output-duration')[0].nextSibling.remove()
+                }
+                $('#esim2 > fieldset > div:nth-child(2) > div > p:nth-child(1)').append('.')
               }
-              $('#esim2 > fieldset > div:nth-child(2) > div > p:nth-child(1)').append('.')
-            }
-            else {
-              var text = $('p[data-borrower-motive]').html()
-              text = text.replace(/\.$/g, '')
+              else {
+                var text = $('p[data-borrower-motive]').html()
+                text = text.replace(/\.$/g, '')
 
-              $('p[data-borrower-motive]')
-                .show()
-                .html(text + response.translationComplement + '.')
+                $('p[data-borrower-motive]')
+                    .show()
+                    .html(text + response.translationComplement + '.')
+              }
             }
           },
           error: function() {
@@ -292,64 +314,47 @@ $doc.ready(function ($) {
 
         $('a[href*="esim1"]')
           .removeAttr("href data-toggle aria-expanded")
-          .attr("nohref", "nohref")
       }
     })
-    .on('shown.bs.tab', '[href="#esim2-partner"]', function () {
-        var period = $("input[id^='esim-input-duration-']:checked").val()
-        var amount = $("#esim-input-amount").val()
-        var motiveId = $("#esim-input-reason > option:selected").val()
-        var siren = $('#esim-input-siren').val()
+    .on(Utility.clickEvent, '[data-prospect-btn]:not(:disabled)', function () {
 
-        if (! $(".form-validation-notifications .message-error").length) {
-          $.ajax({
-            type: 'POST',
-            url: '/simulateur-projet-etape1',
-            data: {
-              period: period,
-              amount: amount,
-              motiveId: motiveId,
-              siren: siren
-            },
-            success: function(response) {
-              // Show the continue button
-              $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
+      var period = $("input[id^='esim-input-duration-']:checked").val()
+      var amount = $("#esim-input-amount").val()
+      var motiveId = $("#esim-input-reason > option:selected").val()
+      var siren = $('#esim-input-siren').val()
 
-              var responseCompany = 'Television Francaise';
-              $('.ui-esim-output-company').html(responseCompany); // Replace with response.company
-              $('.ui-esim-output-siren').html(siren); // Replace with response.siren
 
-              $(".ui-esim-output-cost").prepend(response.amount);
-              $('.ui-esim-output-duration').prepend(response.period)
-              $('.ui-esim-funding-duration-output').html(response.estimatedFundingDuration)
-              $('.ui-esim-monthly-output').html(response.estimatedMonthlyRepayment)
+      // TODO Line below should be removed after uncommenting the AJAX below
+      $('#modal-partner-prospect').uiModal('open')
 
-              if (!response.motiveSentenceComplementToBeDisplayed) {
-                // $('p[data-borrower-motive]').show()
-                // while ($('.ui-esim-output-duration')[0].nextSibling != null) {
-                //   $('.ui-esim-output-duration')[0].nextSibling.remove()
-                // }
-                // $('#esim2 > fieldset > div:nth-child(2) > div > p:nth-child(1)').append('.')
-              }
-              else {
-                // var text = $('p[data-borrower-motive]').html()
-                // text = text.replace(/\.$/g, '')
-                //
-                // $('p[data-borrower-motive]')
-                //     .show()
-                //     .html(text + response.translationComplement + '.')
-              }
-            },
-            error: function() {
-              console.log("error retrieving data");
-            }
-          });
+      // TODO Add Prospecting AJAX URL
+      var ajaxData = { period: period, amount: amount, motiveId: motiveId, siren: siren }
+      var ajaxUrl  = ''
 
-          $('a[href*="esim1"]')
-              .removeAttr("href data-toggle aria-expanded")
-              .attr("nohref", "nohref")
-        }
-      })
+      // TODO Ucomment below
+      // $.ajax({
+      //   type: 'POST',
+      //   url: ajaxUrl,
+      //   data: ajaxData,
+      //   success: function(response) {
+      //     if (response.text === 'OK') {
+      //       $('#modal-partner-prospect').uiModal('open')
+      //     }
+      //   },
+      //   error: function() {
+      //     $('#modal-partner-prospect-error').uiModal('open')
+      //     console.log("error retrieving data");
+      //   }
+      // })
+    })
+    .on(Utility.clickEvent, '[data-prospect-lnk]', function () {
+      $('#modal-partner-prospect').uiModal('close')
+    })
+    $('#modal-partner-prospect').uiModal({
+      onclose: function() {
+        $('[data-prospect-btn]').prop('disabled', true).attr('disabled', true);
+      }
+    })
 
   /*
    * Smooth scrolling to point on screen or specific element
