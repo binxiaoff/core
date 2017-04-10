@@ -57,13 +57,13 @@ EOF
 
     private function provision(InputInterface $input, OutputInterface $output)
     {
-        $receptionId   = $input->getOption('reception-id');
-        $projectId     = $input->getOption('project-id');
-        $commission    = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $clientRepo    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $walletRepo    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $reception     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId);
+        $receptionId      = $input->getOption('reception-id');
+        $projectId        = $input->getOption('project-id');
+        $commission       = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $reception        = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId);
         if (null === $reception) {
             $output->writeln('Reception id: ' . $receptionId . ' not found.');
             return;
@@ -73,12 +73,12 @@ EOF
             $output->writeln('Project id: ' . $projectId . ' not found.');
             return;
         }
-        $client = $clientRepo->find($project->getIdCompany()->getIdClientOwner());
+        $client = $clientRepository->find($project->getIdCompany()->getIdClientOwner());
         if (null === $client) {
             $output->writeln('Client id: ' . $project->getIdCompany()->getIdClientOwner() . ' not found.');
             return;
         }
-        $borrower = $walletRepo->getWalletByType($client->getIdClient(), WalletType::BORROWER);
+        $borrower = $walletRepository->getWalletByType($client->getIdClient(), WalletType::BORROWER);
         if (null === $borrower) {
             $output->writeln('Borrower with client id : ' . $project->getIdCompany()->getIdClientOwner() . ' not found.');
             return;
@@ -88,7 +88,7 @@ EOF
             $output->writeln('Collector not found.');
             return;
         }
-        $collector = $walletRepo->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
+        $collector = $walletRepository->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
         if (null === $collector) {
             $output->writeln('Collector\'s wallet not found.');
             return;
@@ -119,7 +119,7 @@ EOF
     {
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
-        $walletRepo       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $projectId        = $input->getOption('project-id');
         $commission       = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
@@ -128,7 +128,7 @@ EOF
             $output->writeln('Project id: ' . $projectId . ' not found.');
             return;
         }
-        $borrower = $walletRepo->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrower = $walletRepository->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         if (null === $borrower) {
             $output->writeln('Borrower with client id : ' . $project->getIdCompany()->getIdClientOwner() . ' not found.');
             return;
@@ -138,7 +138,7 @@ EOF
             $output->writeln('Collector not found.');
             return;
         }
-        $collector = $walletRepo->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
+        $collector = $walletRepository->getWalletByType($clientCollector->getIdClient(), WalletType::DEBT_COLLECTOR);
         if (null === $collector) {
             $output->writeln('Collector\'s wallet not found.');
             return;
@@ -173,7 +173,7 @@ EOF
             while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
                 $clientId = $aRow[0];
                 $amount   = str_replace(',', '.', $aRow[1]);
-                $lender   = $walletRepo->findOneBy(['idClient' => $clientId]);
+                $lender   = $walletRepository->findOneBy(['idClient' => $clientId]);
                 if ($lender) {
                     $commissionLender = 0;
                     if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
@@ -203,8 +203,8 @@ EOF
      */
     private function getCollector(InputInterface $input, OutputInterface $output)
     {
-        $clientRepo    = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-        $collectorName = $input->getOption('collector');
+        $clientRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $collectorName    = $input->getOption('collector');
         switch (strtoupper($collectorName)) {
             case 'MCS':
                 $clientHash = self::CLIENT_HASH_MCS;
@@ -216,6 +216,6 @@ EOF
                 $output->writeln('Debt collector : ' . $collectorName . 'is not supported');
                 return null;
         }
-        return $clientRepo->findOneBy(['hash' => $clientHash]);
+        return $clientRepository->findOneBy(['hash' => $clientHash]);
     }
 }
