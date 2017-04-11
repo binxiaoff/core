@@ -37,10 +37,10 @@ loanPeriods = {
                         <div class="emprunter-sim-nav">
                             <ul class="nav nav-steps" role="tablist">
                                 <li role="presentation" class="active">
-                                    <a href="#esim1" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a>
+                                    <a href="#esim1" role="tab" data-toggle="tab">{% trans %} partner-dashboard_simulator-step-1 {% endtrans %}</a>
                                 </li>
                                 <li role="presentation">
-                                    <a href="#esim2" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-2 {% endtrans %}</a>
+                                    <a href="#esim2" role="tab" data-toggle="tab">{% trans %} partner-dashboard_simulator-step-2 {% endtrans %}</a>
                                 </li>
                             </ul>
                         </div><!-- /.emprunter-sim-nav -->
@@ -51,19 +51,19 @@ loanPeriods = {
                                     <div class="form-validation-notifications"></div>
                                     <div class="row row-multicol-computer">
                                         <div class="form-field col-lg-6 col-md-6">
-                                            <label for="esim-input-amount">{% trans %} home-borrower_simulator-amount-field-title {% endtrans %}
-                                                <span class="c-t3">{% trans %} home-borrower_simulator-amount-field-addition {% endtrans %}</span>
+                                            <label for="esim-input-amount">{% trans %} partner-dashboard_simulator-amount-field-title {% endtrans %}
+                                                <span class="c-t3">{% trans %} partner-dashboard_simulator-amount-field-addition {% endtrans %}</span>
                                             </label>
                                             <input id="esim-input-amount" type="text" step="any" name="esim[amount]" value=""
-                                                   placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
+                                                   placeholder="{% trans %} partner-dashboard_simulator-amount-field-placeholder {% endtrans %}"
                                                    class="input-field"
                                                    data-formvalidation-minvalue="{{ projectAmountMin }}" data-formvalidation-maxvalue="{{ projectAmountMax }}" data-formvalidation-input
                                                    data-formvalidation-required="true">
                                         </div>
                                         <div class="form-field col-lg-6 col-md-6">
-                                            <label for="esim-input-reason">{% trans %} home-borrower_simulator-borrowing-motif-title {% endtrans %}</label>
+                                            <label for="esim-input-reason">{% trans %} partner-dashboard_simulator-borrowing-motif-title {% endtrans %}</label>
                                             <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="motive">
-                                                <option value="">{% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}</option>
+                                                <option value="">{% trans %} partner-dashboard_simulator-borrowing-motif-select {% endtrans %}</option>
                                                 {% for motive in borrowingMotives %}
                                                     <option value="{{ motive.id_motive }}">{{ ('borrowing-motive_motive-' ~ motive.id_motive)|trans }}</option>
                                                 {% endfor %}
@@ -72,7 +72,7 @@ loanPeriods = {
                                     </div>
                                     <div class="row row-multicol-computer">
                                         <div class="form-field col-lg-12 col-md-12">
-                                            <label>{% trans %} home-borrower_simulator-borrowing-period-title {% endtrans %}</label>
+                                            <label>{% trans %} partner-dashboard_simulator-borrowing-period-title {% endtrans %}</label>
                                             <div class="custom-input-duration" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
                                                 {% for period in loanPeriods %}
                                                     <label>
@@ -85,11 +85,11 @@ loanPeriods = {
                                     </div>
                                     <div class="row row-multicol-computer">
                                         <div class="form-field col-lg-6 col-md-6">
-                                            <label for="esim-input-siren">{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
+                                            <label for="esim-input-siren">{% trans %} partner-dashboard_simulator-siren-field-label {% endtrans %}</label>
                                             <input type="text" id="esim-input-siren" name="esim[siren]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siren">
                                         </div><!-- /.form-field -->
                                         <div class="form-field col-lg-6 col-md-6">
-                                            <label for="i_esim_5">{% trans %} home-borrower_simulator-email-field-label {% endtrans %}</label>
+                                            <label for="i_esim_5">{% trans %} partner-dashboard_simulator-email-field-label {% endtrans %}</label>
                                             <div class="input-group">
                                                 <input type="email" id="esim-input-email" name="esim[email]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
                                             </div><!-- /.input-group -->
@@ -102,26 +102,27 @@ loanPeriods = {
                                 <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                                     <div class="form-validation-notifications"></div>
                                     <div class="row">
-                                        <h4>Synthèse de votre besoin</h4>
+                                        <h4>{% trans %} partner-dashboard_simulator-step-2-title {% endtrans %}</h4>
+
                                         </div>
                                     <div class="row">
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
-                                            <dt>Nom de la societe</dt>
+                                            <dt>{% trans %} partner-dashboard_simulator-company-field-label {% endtrans %}</dt>
                                             <dd><strong class="ui-esim-output-company"></strong></dd>
                                         </dl>
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
-                                            <dt>SIREN</dt>
+                                            <dt>{% trans %} partner-dashboard_simulator-siren-field-label {% endtrans %}</dt>
                                             <dd><strong class="ui-esim-output-siren"></strong></dd>
                                         </dl>
                                     </div>
                                     <div class="spacer"></div>
                                     <div class="row">
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
-                                            <dt>Somme à emprunter</dt>
+                                            <dt>{% trans %} partner-dashboard_simulator-amount-field-label {% endtrans %}</dt>
                                             <dd><strong class="ui-esim-output-cost"></strong></dl>
                                         </dl>
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
-                                            <dt>Duration</dt>
+                                            <dt>{% trans %} partner-dashboard_simulator-duration-field-label {% endtrans %}</dt>
                                             <dd><strong class="ui-esim-output-duration"></strong></dd>
                                         </dl>
                                     </div>
@@ -130,14 +131,14 @@ loanPeriods = {
                                 <div class="emprunter-sim-pane-inner bg-p1 c-bg5">
                                     <div class="row">
                                         <div class="col-xs-4">
-                                            <span>Temps de financement estimé:</span>
+                                            <span>{% trans %} partner-dashboard_simulator-footer-funding-duration-label {% endtrans %}</span>
                                             <strong class="ui-esim-funding-duration-output"></strong>
                                         </div>
                                     </div>
                                 </div>
 
-                                {#<p data-borrower-motive>{% trans %} home-borrower_simulator-step-2-text-for-motive {% endtrans %}</p>#}
-                                {#<p>{% trans %} home-borrower_simulator-step-2-text-fill-field {% endtrans %}</p>#}
+                                {#<p data-borrower-motive>{% trans %} partner-dashboard_simulator-step-2-text-for-motive {% endtrans %}</p>#}
+                                {#<p>{% trans %} partner-dashboard_simulator-step-2-text-fill-field {% endtrans %}</p>#}
 
                             </div><!-- /.tab-pane -->
                         </div><!-- /.tab-content -->
@@ -147,13 +148,13 @@ loanPeriods = {
                                 <div class="row">
                                     <div class="col-xs-4 col-sm-8 col-md-12 col-lg-12">
                                         <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-primary">
-                                            {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
+                                            {% trans %} partner-dashboard_simulator-footer-continue-button {% endtrans %}
                                         </a>
                                         <a role="button" class="btn-prospect btn-alternate" data-prospect-btn data-equal-width>
-                                            Prospecter
+                                            {% trans %} partner-dashboard_simulator-footer-prospect-button {% endtrans %}
                                         </a>
                                         <button class="btn-submit btn-primary" data-equal-width data-spinnerbutton>
-                                            Déposer
+                                            {% trans %} partner-dashboard_simulator-footer-submit-button {% endtrans %}
                                         </button>
                                     </div>
                                 </div>
@@ -171,15 +172,15 @@ loanPeriods = {
 
     <div id="modal-partner-prospect" data-modal>
         <header class="modal-header text-align-center">
-            <h3>Prospect ajouté</h3>
+            {% trans %} partner-dashboard_popup-prospect-added-title {% endtrans %}
         </header>
         <div class="modal-body">
-            <p>La société "Company Name" a été ajoutée dans votre <a href="{{ path('partner_projects_list') }}"  data-prospect-lnk>liste de prospects</a>.</p>
+            {% trans %} partner-dashboard_popup-prospect-added-message {% endtrans %}
         </div>
         <footer class="modal-footer">
             <div class="btn-controls">
                 <a href="javascript:;" class="btn-primary" data-modal-doactionclose>
-                    OK
+                    {% trans %} partner-dashboard_popup-prospect-added-button {% endtrans %}
                 </a>
             </div>
         </footer>
@@ -187,15 +188,15 @@ loanPeriods = {
 
     <div id="modal-partner-prospect-error" data-modal>
         <header class="modal-header text-align-center">
-            <h3>Erreur</h3>
+            {% trans %} partner-dashboard_popup-prospect-not-added-title {% endtrans %}
         </header>
         <div class="modal-body">
-            <p>Une erreur s'est produite. Veuillez réessayer ou contacter notre support technique.</p>
+            {% trans %} partner-dashboard_popup-prospect-not-added-message {% endtrans %}
         </div>
         <footer class="modal-footer">
             <div class="btn-controls">
                 <a href="javascript:;" class="btn-primary" data-modal-doactionclose>
-                    OK
+                    {% trans %} partner-dashboard_popup-prospect-not-added-button {% endtrans %}
                 </a>
             </div>
         </footer>
