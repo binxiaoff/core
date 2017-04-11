@@ -54,7 +54,7 @@ loanPeriods = {
                             <div id="esim1" role="tabpanel" class="tab-pane active">
                                 <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                                     <div class="form-validation-notifications"></div>
-                                    <div class="row row-multicol-computer">
+                                    <div class="row">
                                         <div class="form-field col-lg-6 col-md-6">
                                             <label for="esim-input-amount">{% trans %} partner-project-request_simulator-amount-field-title {% endtrans %}
                                                 <span class="c-t3">{% trans %} partner-project-request_simulator-amount-field-addition {% endtrans %}</span>
@@ -75,7 +75,7 @@ loanPeriods = {
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="row row-multicol-computer">
+                                    <div class="row">
                                         <div class="form-field col-lg-12 col-md-12">
                                             <label>
                                                 {% trans %} partner-project-request_simulator-borrowing-period-title {% endtrans %}
@@ -91,7 +91,7 @@ loanPeriods = {
                                             </div><!-- /.custom-input-duration -->
                                         </div><!-- /.form-field -->
                                     </div>
-                                    <div class="row row-multicol-computer">
+                                    <div class="row">
                                         <div class="form-field col-lg-6 col-md-6">
                                             <label for="esim-input-siren">{% trans %} partner-project-request_simulator-siren-field-label {% endtrans %}</label>
                                             <input type="text" id="esim-input-siren" name="esim[siren]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siren">
@@ -143,10 +143,7 @@ loanPeriods = {
                                             <strong class="ui-esim-funding-duration-output"></strong>
                                         </div>
                                     </div>
-                                </div>
-
-                                {#<p data-borrower-motive>{% trans %} partner-project-request_simulator-step-2-text-for-motive {% endtrans %}</p>#}
-                                {#<p>{% trans %} partner-project-request_simulator-step-2-text-fill-field {% endtrans %}</p>#}
+                                </div><!-- /.emprunter-sim-pane-inner -->
 
                             </div><!-- /.tab-pane -->
                         </div><!-- /.tab-content -->
@@ -197,7 +194,7 @@ loanPeriods = {
                 </a>
             </div>
         </footer>
-    </div>
+    </div><!-- /#modal-partner-prospect -->
 
     <div id="modal-partner-prospect-error" data-modal>
         <header class="modal-header text-align-center">
@@ -213,6 +210,6 @@ loanPeriods = {
                 </a>
             </div>
         </footer>
-    </div>
+    </div><!-- /#modal-partner-prospect-error -->
 
 {% endblock %}
