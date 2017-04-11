@@ -2364,7 +2364,7 @@ class dossiersController extends bootstrap
     //utilisé pour récup les infos affichées dans le cadre
     private function loadEarlyRepaymentInformation()
     {
-        if ($this->projects->status == \projects_status::REMBOURSEMENT) {
+        if ($this->projects->status >= \projects_status::REMBOURSEMENT) {
             $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
             $this->echeanciers            = $this->loadData('echeanciers');
             $oBusinessDays                = $this->loadLib('jours_ouvres');
@@ -2377,7 +2377,7 @@ class dossiersController extends bootstrap
             $sBusinessDaysOrderDate = '';
 
             // Date 4 jours ouvrés avant $sLastOrderDate
-            if ($iLastOrderDate != "" && isset($iLastOrderDate)) {
+            if ($iLastOrderDate != '' && isset($iLastOrderDate)) {
                 $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
             }
 

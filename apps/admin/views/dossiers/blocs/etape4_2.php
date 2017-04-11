@@ -94,17 +94,17 @@
 <a class="tab_title" id="section-balance-sheets" href="#section-balance-sheets">4.2. Bilans</a>
 <div class="tab_content" id="etape4_2">
     <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" style="float:right">
+        <h2>Ajouter un bilan</h2>
         <input type="hidden" name="add_annual_accounts" value="1">
-        <label for="tax-form-type">Ajouter un bilan
-            <select id="tax-form-type" name="tax_form_type" onchange="">
+        <label for="tax-form-type">
+            <select id="tax-form-type" name="tax_form_type" onchange="" class="select">
                 <option value="">Type de liasse</option>
                 <?php foreach ($this->taxFormTypes as $type) : ?>
                     <option value="<?= $type['id_type'] ?>"><?= $type['label'] ?></option>
                 <?php endforeach; ?>
             </select>
         </label>
-        <br><br>
-        <input id="add-balance-submit" type="submit" class="btn-small btn_link" value="Ajouter un bilan" disabled style="float:right">
+        <input id="add-balance-submit" type="submit" class="btn-small btn_link" value="Ajouter" disabled style="float:right">
     </form>
     <form id="last-annual-accounts-form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" class="balance-form">
         <h2>
@@ -117,7 +117,7 @@
         <?php if (empty($this->aAllAnnualAccounts)) : ?>
             Aucun bilan saisi actuellement
         <?php else : ?>
-            <select id="last-annual-accounts" name="last_annual_accounts" title="Dernier bilan">
+            <select id="last-annual-accounts" name="last_annual_accounts" title="Dernier bilan" class="select">
             <?php foreach ($this->aAllAnnualAccounts as $aAnnualAccounts) : ?>
                 <option value="<?= $aAnnualAccounts['id_bilan'] ?>"<?= $aAnnualAccounts['id_bilan'] == $this->projects->id_dernier_bilan ? ' selected' : '' ?>><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</option>
             <?php endforeach; ?>
@@ -126,9 +126,25 @@
     </form>
     <form id="balance-count-form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" class="balance-form">
         <h2><label for="balance-count">Nombre de bilans</label></h2>
-        <input type="text" name="balance_count" id="balance-count" value="<?= empty($this->projects->balance_count) ? '' : $this->projects->balance_count ?>">
+        <input type="text" name="balance_count" id="balance-count" value="<?= empty($this->projects->balance_count) ? '' : $this->projects->balance_count ?>" class="input_moy">
         <input type="submit" class="btn-small btn_link" value="Modifier">
     </form>
+    <br>
+    <hr style="border: 1px solid #b20066;">
+    <br>
+    <h1>Déclaration client</h1>
+    <table class="form">
+        <tbody>
+        <tr>
+            <th style="width: 17%;"><label for="ca_declara_client">Chiffe d'affaires declaré</label></th>
+            <td style="width: 17%;"><?= $this->ficelle->formatNumber($this->projects->ca_declara_client, 0) ?>&nbsp;€</td>
+            <th style="width: 16%;"><label for="resultat_exploitation_declara_client">Résultat d'exploitation declaré</label></th>
+            <td style="width: 16%;"><?= $this->ficelle->formatNumber($this->projects->resultat_exploitation_declara_client, 0) ?>&nbsp;€</td>
+            <th style="width: 17%;"><label for="fonds_propres_declara_client">Fonds propres declarés</label></th>
+            <td style="width: 17%;"><?= $this->ficelle->formatNumber($this->projects->fonds_propres_declara_client, 0) ?>&nbsp;€</td>
+        </tr>
+        </tbody>
+    </table>
     <br>
     <form id="dossier_etape4_2" action="/ajax/valid_etapes" method="post">
         <input type="hidden" name="id_project" value="<?= $this->projects->id_project ?>">

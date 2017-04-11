@@ -99,6 +99,21 @@
                 <?php endif; ?>
                 <tbody>
                 <tr>
+                    <th style="width: 300px"><label>Traffic Light Euler-Hermes</label></th>
+                    <td style="width: 250px">
+                        <?php if (false === empty($this->ratings['traffic_light_euler_hermes']['value'])) : ?>
+                            <span class="rating-tooltip" title="traffic_light_euler_hermes"><?= $this->ratings['traffic_light_euler_hermes']['value'] ?></span>
+                        <?php else : ?>-<?php endif; ?>
+                    </td>
+                    <?php if (isset($this->targetRatings)) : ?>
+                        <td style="width: 250px">
+                            <?php if (false === empty($this->targetRatings['traffic_light_euler_hermes']['value'])) : ?>
+                                <span class="rating-tooltip" title="target_traffic_light_euler_hermes"><?= $this->targetRatings['traffic_light_euler_hermes']['value'] ?></span>
+                            <?php else : ?>-<?php endif; ?>
+                        </td>
+                    <?php endif; ?>
+                </tr>
+                <tr>
                     <th style="width: 300px"><label>Grade Euler-Hermes</label></th>
                     <td style="width: 250px"<?php if (false === empty($this->ratings['grade_euler_hermes']['value']) && -1 == $this->ratings['grade_euler_hermes']['value']) : ?> class="warning"<?php endif; ?>>
                         <?php if (false === empty($this->ratings['grade_euler_hermes']['value'])) : ?>
@@ -106,7 +121,7 @@
                         <?php else : ?>-<?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
-                        <td style="width: 250px">
+                        <td style="width: 250px"<?php if (false === empty($this->targetRatings['grade_euler_hermes']['value']) && -1 == $this->targetRatings['grade_euler_hermes']['value']) : ?> class="warning"<?php endif; ?>>
                             <?php if (false === empty($this->targetRatings['grade_euler_hermes']['value'])) : ?>
                                 <span class="rating-tooltip" title="target_grade_euler_hermes"><?= -1 == $this->targetRatings['grade_euler_hermes']['value'] ? 'N/A' : $this->targetRatings['grade_euler_hermes']['value'] ?></span>
                             <?php else : ?>-<?php endif; ?>
