@@ -5,6 +5,9 @@
     classNames: 'partner-account'
 } %}
 
+
+{# TODO - variables/objects below aren't real #}
+
 {% set
 projectAmountMin = '0'
 %}
@@ -23,6 +26,8 @@ loanPeriods = {
     period : '3'
 }
 %}
+
+{# TODO END #}
 
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
@@ -178,7 +183,12 @@ loanPeriods = {
             {% trans %} partner-project-request_popup-prospect-added-title {% endtrans %}
         </header>
         <div class="modal-body">
-            {% trans %} partner-project-request_popup-prospect-added-message {% endtrans %}
+            {# TODO The translation below needs to be added #}
+            {# I am not sure if this is correct and don't know how to pass the parameters in the SQL query #}
+            {# Also, since companyName is generated using AJAX on step 2, there is a JS which will look for <span class="companyName"></span> #}
+            {# and will replace it with the AJAX response. #}
+            <p>{% trans with {'%prospectsPath%': path('partner_projects_list'), '%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-request_popup-prospect-added-message {% endtrans %}</p>
+            {# TODO END #}
         </div>
         <footer class="modal-footer">
             <div class="btn-controls">

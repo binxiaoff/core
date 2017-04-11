@@ -273,15 +273,17 @@ $doc.ready(function ($) {
 
 
             if (!isPartner) {
-              // Siren is unknown yet
+              // Siren is unknown yet, so focus the user input
               $('#esim-input-siren').focus()
             } else {
-              // Siren is part of the 1st step in Partners
-              // TODO - add the below in the response data
+              // TODO
+              // Add Siren and Company Name as part of the response
+              // For now they are simulated using vars
               var responseCompany = 'Television Francaise';
               var responseSiren = siren;
-              $('.ui-esim-output-company').html(responseCompany); // Replace with response.company
+              $('.ui-esim-output-company, .ui-modal-output-company').html(responseCompany); // Replace with response.company
               $('.ui-esim-output-siren').html(responseSiren); // Replace with response.siren
+              // TODO END
             }
 
             $(".ui-esim-output-cost").prepend(response.amount);
@@ -323,15 +325,11 @@ $doc.ready(function ($) {
       var motiveId = $("#esim-input-reason > option:selected").val()
       var siren = $('#esim-input-siren').val()
 
-
-      // TODO Line below should be removed after uncommenting the AJAX below
-      $('#modal-partner-prospect').uiModal('open')
-
-      // TODO Add Prospecting AJAX URL
-      var ajaxData = { period: period, amount: amount, motiveId: motiveId, siren: siren }
-      var ajaxUrl  = ''
-
-      // TODO Ucomment below
+      // TODO
+      // Uncomment below
+      // var ajaxData = { period: period, amount: amount, motiveId: motiveId, siren: siren }
+      // Add url for posting to Prospects
+      // var ajaxUrl  = ''
       // $.ajax({
       //   type: 'POST',
       //   url: ajaxUrl,
@@ -346,6 +344,10 @@ $doc.ready(function ($) {
       //     console.log("error retrieving data");
       //   }
       // })
+      // Remove this line
+      $('#modal-partner-prospect').uiModal('open')
+      // TODO END
+
     })
     .on(Utility.clickEvent, '[data-prospect-lnk]', function () {
       $('#modal-partner-prospect').uiModal('close')
