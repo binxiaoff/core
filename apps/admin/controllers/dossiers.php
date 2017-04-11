@@ -171,7 +171,13 @@ class dossiersController extends bootstrap
             $this->projects_status->get($this->projects->status, 'status');
             $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
-            if ($this->projects->status <= \projects_status::COMMERCIAL_REVIEW && empty($this->projects->id_commercial) && empty($this->companies->phone) && false === empty($this->companies->siren)) {
+            if (
+                $this->projects->status <= \projects_status::COMMERCIAL_REVIEW
+                && empty($this->projects->id_commercial)
+                && empty($this->companies->phone)
+                && false === empty($this->companies->siren)
+                && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN !== $this->projects_status_history->content
+            ) {
                 /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
                 $establishmentIdentity  = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
 

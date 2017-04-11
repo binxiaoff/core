@@ -85,8 +85,9 @@ class CallHistoryManager
                         $result     = $stats;
                     }
 
+                    $this->createLog($wsResource->id_resource, $siren, $transferTime, $statusCode);
+
                     if ($useCache) {
-                        $this->createLog($wsResource->id_resource, $siren, $transferTime, $statusCode);
                         $this->storeResponse($wsResource, $siren, $result);
                     }
                 } catch (\Exception $exception) {
