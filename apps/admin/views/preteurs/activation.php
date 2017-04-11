@@ -5,20 +5,8 @@
         <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Activation prêteurs</h1>
     <?php if (count($this->lPreteurs) > 0) : ?>
@@ -117,10 +105,6 @@
             </table>
         <?php endif; ?>
     <?php else : ?>
-        <?php if (isset($_POST['form_search_client'])) : ?>
-            <p>Il n'y a aucun prêteur pour cette recherche.</p>
-        <?php else : ?>
-            <p>Il n'y a aucun prêteur pour le moment.</p>
-        <?php endif; ?>
+        <p>Il n'y a aucun prêteur pour le moment.</p>
     <?php endif; ?>
 </div>

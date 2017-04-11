@@ -2,6 +2,8 @@
 
 class company_balance extends company_balance_crud
 {
+    const MAX_COMPANY_BALANCE_DATE = 450;
+
     public function __construct($bdd, $params = '')
     {
         parent::company_balance($bdd, $params);

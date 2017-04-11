@@ -232,11 +232,12 @@ class ProjectDisplayManager
 
     /**
      * @param \projects $project
+     * @param boolean   $excludeNonPositiveLines2035
      * @return array
      */
-    public function getProjectFinancialData(\projects $project)
+    public function getProjectFinancialData(\projects $project, $excludeNonPositiveLines2035 = false)
     {
-        $finance = [];
+        $finance    = [];
         $cachedItem = $this->cachePool->getItem(__FUNCTION__ . $project->id_project);
 
         if (false === $cachedItem->isHit()) {
@@ -257,10 +258,11 @@ class ProjectDisplayManager
                         'assets'        => [],
                         'debts'         => [],
                     ];
-                    $finance[$balanceSheet['id_bilan']]['income_statement'] = $this->companyBalanceSheetManager->getIncomeStatement($balanceSheetEntity);
+                    $finance[$balanceSheet['id_bilan']]['income_statement'] = $this->companyBalanceSheetManager->getIncomeStatement($balanceSheetEntity, $excludeNonPositiveLines2035);
 
                     foreach ($finance[$balanceSheet['id_bilan']]['income_statement']['details'] as $label => &$value) {
                         $value = [$value];
+
                         if (null !== $previousBalanceSheetId) {
                             $finance[$previousBalanceSheetId]['income_statement']['details'][$label][1] = empty($value[0]) ? null : round(($finance[$previousBalanceSheetId]['income_statement']['details'][$label][0] - $finance[$balanceSheet['id_bilan']]['income_statement']['details'][$label][0]) / abs($finance[$balanceSheet['id_bilan']]['income_statement']['details'][$label][0]) * 100, 1);
 

@@ -1,7 +1,6 @@
 <?php
 
 use Psr\Log\LoggerInterface;
-use CL\Slack\Payload\ChatPostMessagePayload;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
@@ -187,10 +186,6 @@ class transfertsController extends bootstrap
 
         /** @var \clients $preteurs */
         $preteurs = $this->loadData('clients');
-        /** @var \receptions $receptions */
-        $receptions = $this->loadData('receptions');
-        /** @var \lenders_accounts $lenders */
-        $lenders = $this->loadData('lenders_accounts');
         /** @var \transactions $transactions */
         $transactions = $this->loadData('transactions');
         /** @var \notifications notifications */
@@ -209,7 +204,7 @@ class transfertsController extends bootstrap
             && $_SESSION['controlDoubleAttr'] == md5($_SESSION['user']['id_user'])
         ) {
             unset($_SESSION['controlDoubleAttr']);
-
+            /** @var \Doctrine\ORM\EntityManager $em */
             $em = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
             $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
@@ -217,7 +212,9 @@ class transfertsController extends bootstrap
             $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($_POST['id_client'], WalletType::LENDER);
 
             if (null !== $reception && null !== $wallet) {
-                $user = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+                $user  = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+                $match = $em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet]);
+
                 $reception->setIdClient($wallet->getIdClient())
                           ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
                           ->setRemb(1)
@@ -229,11 +226,11 @@ class transfertsController extends bootstrap
 
                 if ($result) {
                     $this->notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
-                    $this->notifications->id_lender = $lenders->id_lender_account;
-                    $this->notifications->amount    = $receptions->montant;
+                    $this->notifications->id_lender = $match->getIdLenderAccount()->getIdLenderAccount();
+                    $this->notifications->amount    = $reception->getMontant();
                     $this->notifications->create();
 
-                    $this->clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
+                    $this->clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
                     $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
                     $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
@@ -246,7 +243,7 @@ class transfertsController extends bootstrap
                         $preteurs->update();
                     }
 
-                    if ($this->clients_gestion_notifications->getNotif($lenders->id_client_owner, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement') == true) {
+                    if ($this->clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement') == true) {
                         $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                         $this->clients_gestion_mails_notif->immediatement = 1;
                         $this->clients_gestion_mails_notif->update();
@@ -261,8 +258,8 @@ class transfertsController extends bootstrap
                             'surl'            => $this->surl,
                             'url'             => $this->furl,
                             'prenom_p'        => html_entity_decode($preteurs->prenom, null, 'UTF-8'),
-                            'fonds_depot'     => $this->ficelle->formatNumber($receptions->montant / 100),
-                            'solde_p'         => $this->ficelle->formatNumber($transactions->getSolde($receptions->id_client)),
+                            'fonds_depot'     => $this->ficelle->formatNumber($reception->getMontant() / 100),
+                            'solde_p'         => $this->ficelle->formatNumber($transactions->getSolde($reception->getIdClient()->getIdClient())),
                             'motif_virement'  => $preteurs->getLenderPattern($preteurs->id_client),
                             'projets'         => $this->furl . '/projets-a-financer',
                             'gestion_alertes' => $this->furl . '/profile',
@@ -277,7 +274,7 @@ class transfertsController extends bootstrap
                         $mailer->send($message);
                     }
 
-                    echo $receptions->id_client;
+                    echo $reception->getIdClient()->getIdClient();
                 }
             }
         }
@@ -781,20 +778,15 @@ class transfertsController extends bootstrap
                     $_SESSION['freeow']['message'] = 'Une erreur s\'élève. Les fonds ne sont pas débloqués';
                 }
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Ekomi $ekomi */
-                $ekomi = $this->get('unilend.service.ekomi');
-                $ekomi->sendProjectEmail($project);
-
                 if ($this->getParameter('kernel.environment') === 'prod') {
-                    $payload = new ChatPostMessagePayload();
-                    $payload->setChannel('#general');
-                    $payload->setText('Fonds débloqués pour *<' . $this->furl . '/projects/detail/' . $project->slug . '|' . $project->title . '>*');
-                    $payload->setUsername('Unilend');
-                    $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/unilend.png');
-                    $payload->setAsUser(false);
-
-                    $this->get('cl_slack.api_client')->send($payload);
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Ekomi $ekomi */
+                    $ekomi = $this->get('unilend.service.ekomi');
+                    $ekomi->sendProjectEmail($project);
                 }
+
+                $slackManager = $this->container->get('unilend.service.slack_manager');
+                $message      = $slackManager->getProjectName($project) . ' - Fonds débloqués par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
+                $slackManager->sendMessage($message);
             } else {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Un remboursement est déjà en cours';

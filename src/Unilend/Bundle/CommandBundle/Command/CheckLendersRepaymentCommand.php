@@ -39,7 +39,7 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
             $repaymentsTable .= '
                 <tr>
                     <td>' . $repayment['id_project'] . '</td>
-                    <td>' . $project->title_bo . '</td>
+                    <td>' . $project->title . '</td>
                     <td>' . $repayment['ordre'] . '</td>
                     <td>' . $repayment['nb_repayment'] . '</td>
                     <td>' . $repayment['nb_repayment_paid'] . '</td>

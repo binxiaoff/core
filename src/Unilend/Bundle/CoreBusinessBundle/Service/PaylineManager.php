@@ -184,11 +184,11 @@ class PaylineManager
             }
             $this->em->flush($backPayline);
 
-            if ($backPayline->getAmount() != $response['payment']['amount']) {
+            if ($response['result']['code'] === Backpayline::CODE_TRANSACTION_APPROVED && $backPayline->getAmount() != $response['payment']['amount']) {
                 $errorMsg = 'Payline amount for wallet id : '
                     . $backPayline->getWallet()->getId()
-                    . 'is not the same between the response (' . $response['payment']['amount'] . ') and database (' . $backPayline->getAmount() . ') ';
-                $this->logger->error($errorMsg);
+                    . ' is not the same between the response (' . $response['payment']['amount'] . ') and database (' . $backPayline->getAmount() . ') ';
+                $this->logger->error($errorMsg, ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
                 return false;
             }

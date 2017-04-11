@@ -62,22 +62,21 @@ class rootController extends bootstrap
         $this->users->handleLogout();
     }
 
-    public function _indexation()
-    {
-        $this->users->checkAccess('edition');
-
-        $this->menu_admin = 'edition';
-
-        $_SESSION['freeow']['title']   = 'Indexation du site';
-        $_SESSION['freeow']['message'] = 'Le site a bien &eacute;t&eacute; index&eacute; !';
-
-        header('Location:' . $this->lurl . '/tree');
-        die;
-    }
-
     public function _default()
     {
         $this->users->checkAccess('dashboard');
+
+        /** @var \users $user */
+        $user = $this->loadData('users');
+        $user->get($_SESSION['user']['id_user']);
+
+        if (
+            in_array($user->id_user_type, [\users_types::TYPE_COMMERCIAL, \users_types::TYPE_RISK])
+            || in_array($user->id_user, [23, 28])
+        ) {
+            header('Location: ' . $this->lurl . '/dashboard');
+            die;
+        }
 
         $this->menu_admin = 'dashboard';
 

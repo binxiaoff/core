@@ -58,12 +58,12 @@ EOF
 
         $this->oLogger = $this->getContainer()->get('monolog.logger.console');
 
-        $aReceivedTransfersStatus = array(05, 18, 45, 13);
-        $aEmittedTransfersStatus  = array(06, 21);
-        $aRejectedTransfersStatus = array(12);
+        $aReceivedTransfersStatus = [05, 18, 45, 13];
+        $aEmittedTransfersStatus  = [06, 21];
+        $aRejectedTransfersStatus = [12];
 
-        $aEmittedLeviesStatus  = array(23, 25, 'A1', 'B1');
-        $aRejectedLeviesStatus = array(10, 27, 'A3', 'B3');
+        $aEmittedLeviesStatus  = [23, 25, 'A1', 'B1'];
+        $aRejectedLeviesStatus = [10, 27, 'A3', 'B3'];
 
         $sReceptionPath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/receptions/';
         $sFileContent   = @file_get_contents($sReceptionPath . self::FILE_ROOT_NAME . date('Ymd') . '.txt');
@@ -162,6 +162,9 @@ EOF
                             }
                         }
                     }
+
+                    $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
+                    $slackManager->sendMessage('SFPMEI - ' . count($aReceivedData) . ' opérations réceptionnées');
                 }
                 break;
             }

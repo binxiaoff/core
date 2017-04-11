@@ -1,0 +1,101 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="unilend.service.ws_client.call_history_handler" class="Unilend\Bundle\WSClientBundle\Service\CallHistoryManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="debug.stopwatch"/>
+            <argument type="service" id="unilend.service.slack_manager"/>
+            <argument>%slack.monitoring_channel%</argument>
+            <argument type="service" id="assets.packages" />
+            <argument type="service" id="logger" />
+            <argument type="service" id="doctrine_mongodb"/>
+        </service>
+
+        <service id="unilend.service.ws_client.soap_client.infogreffe" class="SoapClient">
+            <argument>%infogreffe.wsdl_url%</argument>
+            <argument type="collection">
+                <argument key="location">%infogreffe.url%</argument>
+                <argument key="exception">1</argument>
+                <argument key="trace">1</argument>
+            </argument>
+        </service>
+
+        <service id="unilend.service.ws_client.soap_client.altares_identity" class="SoapClient">
+            <argument>%altares.wsdl_url_identity%</argument>
+            <argument type="collection">
+                <argument key="exception">1</argument>
+                <argument key="trace">1</argument>
+            </argument>
+        </service>
+
+        <service id="unilend.service.ws_client.soap_client.altares_risque" class="SoapClient">
+            <argument>%altares.wsdl_url_risk%</argument>
+            <argument type="collection">
+                <argument key="exception">1</argument>
+                <argument key="trace">1</argument>
+            </argument>
+        </service>
+
+        <service id="unilend.service.ws_client.resource_manager" class="Unilend\Bundle\WSClientBundle\Service\ResourceManager">
+            <call method="setEntityManager">
+                <argument type="service" id="unilend.service.entity_manager"/>
+            </call>
+        </service>
+
+        <service id="unilend.service.ws_client.euler_manager" class="Unilend\Bundle\WSClientBundle\Service\EulerHermesManager">
+            <argument type="service" id="guzzle.client.euler"/>
+            <argument>%euler.grading_key%</argument>
+            <argument>%euler.account_key%</argument>
+            <argument>%euler.password%</argument>
+            <argument>%euler.email%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
+            <argument type="service" id="jms_serializer"/>
+            <argument type="service" id="unilend.service.ws_client.resource_manager"/>
+        </service>
+
+        <service id="unilend.service.ws_client.codinf_manager" class="Unilend\Bundle\WSClientBundle\Service\CodinfManager">
+            <argument type="service" id="guzzle.client.codinf"/>
+            <argument>%codinf.user%</argument>
+            <argument>%codinf.password%</argument>
+            <argument>%codinf.url%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
+            <argument type="service" id="jms_serializer"/>
+            <argument type="service" id="unilend.service.ws_client.resource_manager"/>
+        </service>
+
+        <service id="unilend.service.ws_client.infolegale_manager" class="Unilend\Bundle\WSClientBundle\Service\InfolegaleManager">
+            <argument type="service" id="guzzle.client.infolegale"/>
+            <argument>%infolegale.token%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
+            <argument type="service" id="jms_serializer"/>
+            <argument type="service" id="unilend.service.ws_client.resource_manager"/>
+        </service>
+
+        <service id="unilend.service.ws_client.infogreffe_manager" class="Unilend\Bundle\WSClientBundle\Service\InfogreffeManager">
+            <argument>%infogreffe.login%</argument>
+            <argument>%infogreffe.password%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
+            <argument type="service" id="unilend.service.ws_client.soap_client.infogreffe"/>
+            <argument type="service" id="jms_serializer"/>
+            <argument type="service" id="unilend.service.ws_client.resource_manager"/>
+        </service>
+
+        <service id="unilend.service.ws_client.altares_manager" class="Unilend\Bundle\WSClientBundle\Service\AltaresManager" >
+            <argument>%altares.login%</argument>
+            <argument>%altares.password%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
+            <argument type="service" id="unilend.service.ws_client.soap_client.altares_identity"/>
+            <argument type="service" id="unilend.service.ws_client.soap_client.altares_risque"/>
+            <argument type="service" id="jms_serializer"/>
+            <argument type="service" id="unilend.service.ws_client.resource_manager"/>
+        </service>
+    </services>
+</container>

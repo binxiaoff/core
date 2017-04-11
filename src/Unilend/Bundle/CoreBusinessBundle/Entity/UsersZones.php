@@ -13,16 +13,22 @@ use Doctrine\ORM\Mapping as ORM;
 class UsersZones
 {
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     * })
      */
     private $idUser;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Zones
      *
-     * @ORM\Column(name="id_zone", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Zones")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_zone", referencedColumnName="id_zone")
+     * })
      */
     private $idZone;
 
@@ -54,11 +60,11 @@ class UsersZones
     /**
      * Set idUser
      *
-     * @param integer $idUser
+     * @param Users $idUser
      *
      * @return UsersZones
      */
-    public function setIdUser($idUser)
+    public function setIdUser(Users $idUser)
     {
         $this->idUser = $idUser;
 
@@ -68,7 +74,7 @@ class UsersZones
     /**
      * Get idUser
      *
-     * @return integer
+     * @return Users
      */
     public function getIdUser()
     {
@@ -78,11 +84,11 @@ class UsersZones
     /**
      * Set idZone
      *
-     * @param integer $idZone
+     * @param Zones $idZone
      *
      * @return UsersZones
      */
-    public function setIdZone($idZone)
+    public function setIdZone(Zones $idZone)
     {
         $this->idZone = $idZone;
 
@@ -92,7 +98,7 @@ class UsersZones
     /**
      * Get idZone
      *
-     * @return integer
+     * @return Zones
      */
     public function getIdZone()
     {

@@ -10,3 +10,13 @@ framework:
 web_profiler:
     toolbar: true
     intercept_redirects: false
+
+monolog:
+    handlers:
+        site_handler:
+            type: rotating_file
+            level: info
+            path: "%kernel.logs_dir%/site.%kernel.environment%.log"
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Y-m-d'

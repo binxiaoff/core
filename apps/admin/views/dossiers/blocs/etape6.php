@@ -1,11 +1,11 @@
-<div id="content_etape6">
-    <?php if (
-        $this->projects->status >= \projects_status::REVUE_ANALYSTE
-        || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::REVUE_ANALYSTE)
-    ) : ?>
+<?php if (
+    $this->projects->status >= \projects_status::ANALYSIS_REVIEW
+    || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::ANALYSIS_REVIEW)
+) : ?>
+    <div id="content_etape6">
         <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
-        <div class="tab_title" id="title_etape6">Etape 6</div>
-        <div class="tab_content" id="etape6">
+        <a class="tab_title" id="section-risk-analysis" href="#section-risk-analysis">6. Analyse risque</a>
+        <div class="tab_content<?php if (\users_types::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape6">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>
                     <th><label for="performance_fianciere">Performance financière</label></th>
@@ -13,48 +13,75 @@
                     <th><label for="marche_opere">Marché opéré</label></th>
                     <td><span id="marche_opere"><?= $this->projects_notes->marche_opere ?></span> / 10</td>
                     <th><label for="dirigeance">Dirigeance</label></th>
-                    <td><input tabindex="6" id="dirigeance" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->dirigeance ?>" name="dirigeance" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
-                    <th><label for="indicateur_risque_dynamique">Indicateur de risque dynamique</label></th>
-                    <td><input tabindex="7" id="indicateur_risque_dynamique" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->indicateur_risque_dynamique ?>" name="indicateur_risque_dynamique" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : ''; ?> /> / 10</td>
+                    <td>
+                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                            <input id="dirigeance" name="dirigeance" value="<?= $this->projects_notes->dirigeance ?>" type="text" maxlength="4" tabindex="6" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
+                        <?php else : ?>
+                            <?= $this->projects_notes->dirigeance ?> / 10
+                        <?php endif; ?>
+                    </td>
+                    <th><label for="indicateur_risque_dynamique">Indicateur risque dynamique</label></th>
+                    <td>
+                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                            <input id="indicateur_risque_dynamique" name="indicateur_risque_dynamique" value="<?= $this->projects_notes->indicateur_risque_dynamique ?>" type="text" maxlength="4" tabindex="7" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
+                        <?php else : ?>
+                            <?= $this->projects_notes->indicateur_risque_dynamique ?> / 10
+                        <?php endif; ?>
+                    </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="vertical-align:top;">
-                        <table>
-                            <tr>
-                                <th><label for="structure">Structure</label></th>
-                                <td><input tabindex="1" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure ?>" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
-                            </tr>
-                            <tr>
-                                <th><label for="rentabilite">Rentabilité</label></th>
-                                <td><input tabindex="2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
-                            </tr>
-                            <tr>
-                                <th><label for="tresorerie">Trésorerie</label></th>
-                                <td><input tabindex="3" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
-                            </tr>
-                        </table>
+                    <th><label for="structure">Structure</label></th>
+                    <td>
+                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                            <input id="structure" name="structure" value="<?= $this->projects_notes->structure ?>" type="text" maxlength="4" tabindex="1" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
+                        <?php else : ?>
+                            <?= $this->projects_notes->structure ?> / 10
+                        <?php endif; ?>
                     </td>
-                    <td colspan="2" style="vertical-align:top;">
-                        <table>
-                            <tr>
-                                <th><label for="global">Global</label></th>
-                                <td><input tabindex="4" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
-                            </tr>
-                            <tr>
-                                <th><label for="individuel">Individuel</label></th>
-                                <td><input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
-                            </tr>
-                        </table>
+                    <th><label for="global">Global</label></th>
+                    <td colspan="5">
+                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                            <input id="global" name="global" value="<?= $this->projects_notes->global ?>" type="text" maxlength="4" tabindex="4" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
+                        <?php else : ?>
+                            <?= $this->projects_notes->global ?> / 10
+                        <?php endif; ?>
                     </td>
-                    <td colspan="4"></td>
+                </tr>
+                <tr>
+                    <th><label for="rentabilite">Rentabilité</label></th>
+                    <td>
+                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                            <input id="rentabilite" name="rentabilite" value="<?= $this->projects_notes->rentabilite ?>" type="text" maxlength="4" tabindex="2" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
+                        <?php else : ?>
+                            <?= $this->projects_notes->rentabilite ?> / 10
+                        <?php endif; ?>
+                    </td>
+                    <th><label for="individuel">Individuel</label></th>
+                    <td>
+                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                            <input id="individuel" name="individuel" value="<?= $this->projects_notes->individuel ?>" type="text" maxlength="4" tabindex="5" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
+                        <?php else : ?>
+                            <?= $this->projects_notes->individuel ?> / 10
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="tresorerie">Trésorerie</label></th>
+                    <td colspan="7">
+                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                            <input id="tresorerie" name="tresorerie" value="<?= $this->projects_notes->tresorerie ?>" type="text" maxlength="4" tabindex="3" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
+                        <?php else : ?>
+                            <?= $this->projects_notes->tresorerie ?> / 10
+                        <?php endif; ?>
+                    </td>
                 </tr>
                 <tr class="lanote">
                     <th colspan="8" style="text-align:center;">Note : <span class="moyenneNote"><?= $moyenne ?> / 10</span></th>
                 </tr>
                 <tr>
-                    <td colspan="8" style="text-align:center;">
-                        <?php if (false === $this->bReadonlyRiskNote) : ?>
-                            <label for="avis" style="text-align:left;display: block;">Avis :</label><br/>
+                    <td colspan="8">
+                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                            <label for="avis" style="text-align:left;display: block;">Avis</label><br>
                             <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"><?= $this->projects_notes->avis ?></textarea>
                             <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
                         <?php else : ?>
@@ -63,17 +90,14 @@
                     </td>
                 </tr>
             </table>
-            <br/><br/>
-            <div id="valid_etape6" class="valid_etape">Données sauvegardées</div>
-            <div class="btnDroite listBtn_etape6">
-                <?php if(false === $this->bReadonlyRiskNote) : ?>
+            <div id="valid_etape6" class="valid_etape"><br><br>Données sauvegardées</div>
+            <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                <div class="btnDroite listBtn_etape6">
                     <input type="button" onclick="valid_rejete_etape6(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
-                <?php endif; ?>
-                <?php if ($this->projects->status == \projects_status::REVUE_ANALYSTE) : ?>
-                    <input type="button" onclick="valid_rejete_etape6(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
                     <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/6/<?= $this->projects->id_project ?>" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
-                <?php endif; ?>
-            </div>
+                    <input type="button" onclick="valid_rejete_etape6(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
+                </div>
+            <?php endif; ?>
         </div>
         <script type="text/javascript">
             $(".cal_moyen").keyup(function () {
@@ -108,5 +132,5 @@
                 $(".moyenneNote").html(moyenne + " / 10");
             });
         </script>
-    <?php endif; ?>
-</div>
+    </div>
+<?php endif; ?>

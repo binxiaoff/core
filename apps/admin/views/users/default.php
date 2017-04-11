@@ -1,26 +1,14 @@
 <script type="text/javascript">
     $(function() {
-        $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
+        $(".tablesorter").tablesorter({headers: {7: {sorter: false}}});
 
         <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <h1>Gestion des utilisateurs</h1>
+    <h1>Utilisateurs</h1>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/users/add" class="btn_link thickbox">Ajouter un utilisateur</a>
     </div>

@@ -18,7 +18,7 @@
                 <?php $this->projects->get($e['id_project'], 'id_project'); ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td align="center"><?= $e['id_bid'] ?></td>
-                    <td><?= $this->projects->title_bo ?></td>
+                    <td><?= $this->projects->title ?></td>
                     <td><?= date('d/m/Y', strtotime($e['added'])) ?></td>
                     <td align="center"><?= number_format($e['amount'] / 100, 2, '.', ' ') ?></td>
                     <td align="center"><?= number_format($e['rate'], 2, '.', ' ') ?> %</td>

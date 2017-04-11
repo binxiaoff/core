@@ -7,25 +7,14 @@
         <?php endif; ?>
 
         $("#Reset").click(function() {
-            $("#siret").val('');
+            $("#siren").val('');
             $("#nom").val('');
             $("#societe").val('');
             $("#prenom").val('');
             $("#email").val('');
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title, message, opts, container;
-            title = "<?= $_SESSION['freeow']['title'] ?>";
-            message = "<?= $_SESSION['freeow']['message'] ?>";
-            opts = {};
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-
 <style>
     .form-container {
         width: 697px;
@@ -39,20 +28,14 @@
         width: 697px;
     }
 </style>
-
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <?php if (isset($_POST['form_search_client'])) : ?>
-        <h1>Résultats de la recherche d'emprunteurs <?= (count($this->lClients) > 0 ? '(' . count($this->lClients) . ')' : '') ?></h1>
-    <?php else : ?>
-        <h1>Liste des <?= (isset($this->lClients)) ? count($this->lClients) : 0 ?> derniers emprunteurs</h1>
-    <?php endif; ?>
+    <h1>Liste des <?= isset($this->lClients) ? count($this->lClients) : 0 ?> derniers emprunteurs</h1>
     <div class="form-container">
         <form method="post" name="search_emprunteurs" id="search_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/gestion" target="_parent">
             <fieldset>
                 <table class="formColor">
                     <tr>
-                        <th><label for="siret">SIREN :</label></th>
+                        <th><label for="siren">SIREN :</label></th>
                         <td>
                             <input type="text" name="siren" id="siren" class="input_large" value="<?= isset($_POST['siren']) ? $_POST['siren'] : '' ?>"/>
                         </td>

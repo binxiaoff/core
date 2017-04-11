@@ -20,6 +20,13 @@ class BorrowingMotive
     private $motive;
 
     /**
+     * @var integer
+     *
+     * @ORM\Column(name="rank", type="integer", nullable=false)
+     */
+    private $rank;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -66,6 +73,30 @@ class BorrowingMotive
     public function getMotive()
     {
         return $this->motive;
+    }
+
+    /**
+     * Set rank
+     *
+     * @param string $rank
+     *
+     * @return BorrowingMotive
+     */
+    public function setRank($rank)
+    {
+        $this->rank = $rank;
+
+        return $this;
+    }
+
+    /**
+     * Get rank
+     *
+     * @return string
+     */
+    public function getRank()
+    {
+        return $this->rank;
     }
 
     /**
