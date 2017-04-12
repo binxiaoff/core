@@ -9,22 +9,26 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="projects_comments")
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectsComments
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
-     */
-    private $idProject;
-
     /**
      * @var string
      *
      * @ORM\Column(name="content", type="text", length=16777215, nullable=false)
      */
     private $content;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
+     */
+    private $idProject;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
@@ -64,7 +68,7 @@ class ProjectsComments
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ProjectsComments
      */
@@ -78,7 +82,7 @@ class ProjectsComments
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -189,5 +193,23 @@ class ProjectsComments
     public function getIdProjectComment()
     {
         return $this->idProjectComment;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

@@ -13,22 +13,22 @@
         <?php foreach ($this->projectComments as $comment) : ?>
             <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
                 <td>
-                    <?= $this->dates->formatDate($comment['added'], 'd/m/Y H:i') ?>
-                    <?php if ($comment['added'] !== $comment['updated']) : ?>
-                        <br/>
-                        <em style="font-size: 11px" title="Date de dernière modification"><?= $this->dates->formatDate($comment['updated'], 'd/m/Y H:i') ?></em>
+                    <?= $comment->getAdded()->format('d/m/Y H:i') ?>
+                    <?php if ($comment->getUpdated()) : ?>
+                        <br>
+                        <em style="font-size: 11px" title="Date de dernière modification"><?= $comment->getUpdated()->format('d/m/Y H:i') ?></em>
                     <?php endif; ?>
                 </td>
                 <td>
-                    <?php if (false === empty($comment['id_user']) && $this->users->get($comment['id_user'])) : ?>
+                    <?php if (false === empty($comment->getIdUser()->getIdUser()) && $this->users->get($comment->getIdUser()->getIdUser())) : ?>
                         <?= $this->users->firstname ?> <?= $this->users->name ?>
                     <?php endif; ?>
                 </td>
-                <td><?= nl2br($comment['content']) ?></td>
+                <td><?= nl2br($comment->getContent()) ?></td>
                 <td align="center">
-                    <?php if ($comment['id_user'] == $_SESSION['user']['id_user']) : ?>
-                        <a href="<?= $this->lurl ?>/dossiers/memo/<?= $comment['id_project'] ?>/<?= $comment['id_project_comment'] ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>
-                        <img style="cursor:pointer;" onclick="deleteMemo(<?= $comment['id_project'] ?>, <?= $comment['id_project_comment'] ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
+                    <?php if ($comment->getIdUser()->getIdUser() == $_SESSION['user']['id_user']) : ?>
+                        <a href="<?= $this->lurl ?>/dossiers/memo/<?= $comment->getIdProject()->getIdProject() ?>/<?= $comment->getIdProjectComment() ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"></a>
+                        <img style="cursor:pointer;" onclick="deleteMemo(<?= $comment->getIdProject()->getIdProject() ?>, <?= $comment->getIdProjectComment() ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">
                     <?php endif; ?>
                 </td>
             </tr>
