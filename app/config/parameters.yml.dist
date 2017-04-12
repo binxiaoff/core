@@ -44,8 +44,8 @@ parameters:
     infolegale.token:               VCDju3hCKiMV8x0TllLV1gplHGkDC6bo
     infolegale.url:                 'https://wspreprod.infolegale.fr/'
 
-    infogreffe.login:               '85000387'
-    infogreffe.password:            65877
+    infogreffe.login:               '85000371'
+    infogreffe.password:            1234567
     infogreffe.url:                 'https://qual.infogreffe.fr:443/WSContextInfogreffe/INFOGREFFE'
     infogreffe.wsdl_url:            'https://qual.infogreffe.fr/InfogreffeWs/wsdl.jsp'
 
