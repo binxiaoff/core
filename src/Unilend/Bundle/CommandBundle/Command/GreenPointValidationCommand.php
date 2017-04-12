@@ -120,7 +120,6 @@ EOF
                     unset($response, $requests);
                     greenPointStatus::addCustomer($client->getIdClient(), $greenPoint, $greenPointKyc);
                 }
-                break; // \!/debug code\!/
             }
         }
     }
