@@ -28,12 +28,22 @@ class transfertsController extends bootstrap
             3 => 'Rejeté',
             4 => 'Rejet'
         );
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator = $this->get('translator');
     }
 
     public function _default()
     {
-        header('Location: /transferts/preteurs');
-        die;
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                                              = $this->get('doctrine.orm.entity_manager');
+        $wireTransferOutRepository                                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements');
+        $this->bankAccountRepository                                = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+        $this->companyRepository                                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $this->currencyFormatter                                    = new \NumberFormatter('fr', \NumberFormatter::CURRENCY);
+
+        $this->wireTransferOuts[Virements::STATUS_CLIENT_VALIDATED] = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_CLIENT_VALIDATED]);
+        $this->wireTransferOuts[Virements::STATUS_PENDING]          = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_PENDING]);
+        $this->wireTransferOuts[Virements::STATUS_VALIDATED]        = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_VALIDATED]);
     }
 
     public function _preteurs()
@@ -1155,18 +1165,62 @@ class transfertsController extends bootstrap
 
     public function _refuse_lightbox()
     {
+        $wireTransferOut = $this->prepareDisplayWireTransferOut();
+        if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $wireTransferOut) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager               = $this->get('doctrine.orm.entity_manager');
+            $forbiddenStatus = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_VALIDATED, Virements::STATUS_SENT];
+            if (false === in_array($wireTransferOut->getStatus(), $forbiddenStatus)) {
+                $wireTransferOut->setStatus(Virements::STATUS_DENIED);
+                $entityManager->flush($wireTransferOut);
+                $_SESSION['freeow']['title']   = 'Refus de transfer de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfer de fonds a été refusé avec succès ';
+            } else {
+                $_SESSION['freeow']['title']   = 'Refus de transfer de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a été refusé.';
+            }
+            if (false === empty($this->params[1]) && 'project' === $this->params[1]) {
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $wireTransferOut->getProject()->getIdProject());
+            } else {
+                header('Location: ' . $this->lurl . '/transferts');
+            }
+            die;
+        }
+    }
+
+    public function _validate_lightbox()
+    {
+        $wireTransferOut = $this->prepareDisplayWireTransferOut();
+        if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $wireTransferOut) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager               = $this->get('doctrine.orm.entity_manager');
+            if (in_array($wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_VALIDATED])) {
+                $wireTransferOut->setStatus(Virements::STATUS_VALIDATED);
+                $entityManager->flush($wireTransferOut);
+                $_SESSION['freeow']['title']   = 'Transfer de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfer de fonds a été validé avec succès ';
+            } else {
+                $_SESSION['freeow']['title']   = 'Transfer de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a été validé.';
+            }
+
+            header('Location: ' . $this->lurl . '/transferts');
+            die;
+        }
+    }
+
+    private function prepareDisplayWireTransferOut()
+    {
         $this->hideDecoration();
         if (false === empty($this->params[0])) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $this->wireTransferOut = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($this->params[0]);
-            if ($this->request->isMethod('POST') && $this->wireTransferOut) {
-                $this->wireTransferOut->setStatus(Virements::STATUS_DENIED);
-                $entityManager->flush($this->wireTransferOut);
-
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->wireTransferOut->getProject()->getIdProject());
-                die;
-            }
+            $entityManager               = $this->get('doctrine.orm.entity_manager');
+            $this->wireTransferOut       = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($this->params[0]);
+            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+            $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->currencyFormatter     = new \NumberFormatter('fr', \NumberFormatter::CURRENCY);
         }
+
+        return $this->wireTransferOut;
     }
 }

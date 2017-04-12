@@ -8,9 +8,9 @@ $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $b
 ?>
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
-    <h1>Refus du transfert</h1>
-    <p>Voulez-vous rejeter le transfert ci-dessus :
-    <form method="post" enctype="multipart/form-data" action="/transferts/refuse_lightbox/<?= $this->params[0] ?>/<?= $this->params[1] ?>">
+    <h1>Validation du transfert</h1>
+    <p>Voulez-vous valider le transfert ci-dessus :
+    <form method="post" enctype="multipart/form-data" action="/transferts/validate_lightbox/<?= $this->params[0] ?>">
         <table class="tablesorter">
             <thead>
             <tr>
@@ -38,7 +38,7 @@ $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $b
         <br>
         <br>
         <div style="text-align: center">
-            <input type="submit" class="btn" value="Rejeter">
+            <input type="submit" class="btn" value="Valider">
             <a href="javascript:parent.$.fn.colorbox.close()" class="btn btn_link btnDisabled">Annuler</a>
         </div>
     </form>
