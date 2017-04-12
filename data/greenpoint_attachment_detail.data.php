@@ -91,7 +91,7 @@ class greenpoint_attachment_detail extends greenpoint_attachment_detail_crud
             FROM greenpoint_attachment_detail gad
             INNER JOIN greenpoint_attachment ga ON ga.id_greenpoint_attachment = gad.id_greenpoint_attachment
             INNER JOIN attachment a ON a.id = ga.id_attachment AND a.id_type =  ' . $documentType . '
-            WHERE ga.id_client = :id_client
+            WHERE a.id_client = :id_client
         ';
         /** @var \Doctrine\DBAL\Driver\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, ['id_client' => $clientId], ['id_client' => \PDO::PARAM_INT]);

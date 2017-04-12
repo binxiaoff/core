@@ -1140,7 +1140,7 @@ class clients extends clients_crud
           c.id_client,
           gpa.id_attachment,
           a.id_type,
-          (SELECT group_concat(validation_status SEPARATOR '') FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND a.id_type IN (:attachment_type_id) WHERE ga.id_client = c.id_client) AS global_status
+          (SELECT group_concat(validation_status SEPARATOR '') FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND a.id_type IN (:attachment_type_id) WHERE a.id_client = c.id_client) AS global_status
         FROM clients_status_history csh
           INNER JOIN greenpoint_attachment gpa ON gpa.id_client = csh.id_client
           INNER JOIN attachment a ON a.id = gpa.id_attachment AND a.id_type IN (:attachment_type_id)
