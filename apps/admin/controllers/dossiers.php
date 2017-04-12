@@ -1341,12 +1341,10 @@ class dossiersController extends bootstrap
 
                 $entityManager->flush($projectCommentEntity);
             } else {
-                $userEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->findOneBy(['idUser' => $_SESSION['user']['id_user']]);
-
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity->setIdProject($projectEntity);
                 $projectCommentEntity->setContent($_POST['content']);
-                $projectCommentEntity->setIdUser($userEntity);
+                $projectCommentEntity->setIdUser($this->userEntity);
 
                 $entityManager->persist($projectCommentEntity);
                 $entityManager->flush();
@@ -3015,7 +3013,7 @@ class dossiersController extends bootstrap
             $entityManager        = $this->get('doctrine.orm.entity_manager');
             $projectCommentEntity = new ProjectsComments();
             $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
-            $projectCommentEntity->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']));
+            $projectCommentEntity->setIdUser($this->userEntity);
             $projectCommentEntity->setContent("Projet reporté\n--\n" . $_POST['comment']);
 
             $entityManager->persist($projectCommentEntity);
@@ -3054,7 +3052,7 @@ class dossiersController extends bootstrap
                 $entityManager        = $this->get('doctrine.orm.entity_manager');
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
-                $projectCommentEntity->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']));
+                $projectCommentEntity->setIdUser($this->userEntity);
                 $projectCommentEntity->setContent("Abandon projet\n--\n" . $_POST['comment']);
 
                 $entityManager->persist($projectCommentEntity);
@@ -3152,7 +3150,7 @@ class dossiersController extends bootstrap
             $entityManager        = $this->get('doctrine.orm.entity_manager');
             $projectCommentEntity = new ProjectsComments();
             $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
-            $projectCommentEntity->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']));
+            $projectCommentEntity->setIdUser($this->userEntity);
             $projectCommentEntity->setContent("Retour à l'analyse\n--\n" . $_POST['comment']);
 
             $entityManager->persist($projectCommentEntity);
