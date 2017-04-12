@@ -210,7 +210,7 @@ class dossiersController extends bootstrap
 
             $this->aAnnualAccountsDates = array();
             $this->aAnalysts            = $this->users->select('(status = 1 AND id_user_type = 2) OR id_user = ' . $this->projects->id_analyste);
-            $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = ' . $this->projects->id_commercial);
+            $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = 23 OR id_user = ' . $this->projects->id_commercial); // ID user 23 corresponds to Arnaud
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_user > 0 AND id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC');
             $this->projectComments      = $this->loadData('projects_comments')->select('id_project = ' . $this->projects->id_project, 'added DESC');
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
@@ -2389,7 +2389,7 @@ class dossiersController extends bootstrap
     //utilisé pour récup les infos affichées dans le cadre
     private function loadEarlyRepaymentInformation()
     {
-        if ($this->projects->status == \projects_status::REMBOURSEMENT) {
+        if ($this->projects->status >= \projects_status::REMBOURSEMENT) {
             $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
             $this->echeanciers            = $this->loadData('echeanciers');
             $oBusinessDays                = $this->loadLib('jours_ouvres');
@@ -2402,7 +2402,7 @@ class dossiersController extends bootstrap
             $sBusinessDaysOrderDate = '';
 
             // Date 4 jours ouvrés avant $sLastOrderDate
-            if ($iLastOrderDate != "" && isset($iLastOrderDate)) {
+            if ($iLastOrderDate != '' && isset($iLastOrderDate)) {
                 $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
             }
 

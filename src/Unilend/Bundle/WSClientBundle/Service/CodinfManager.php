@@ -26,6 +26,8 @@ class CodinfManager
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
+    /** @var bool */
+    private $useCache = true;
 
     /**
      * @param ClientInterface    $client
@@ -55,6 +57,18 @@ class CodinfManager
         $this->callHistoryManager = $callHistoryManager;
         $this->serializer         = $serializer;
         $this->resourceManager    = $resourceManager;
+    }
+
+    /**
+     * @param bool $useCache
+     *
+     * @return CodinfManager
+     */
+    public function setUseCache($useCache)
+    {
+        $this->useCache = $useCache;
+
+        return $this;
     }
 
     /**
@@ -124,10 +138,12 @@ class CodinfManager
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
 
         try {
-            if (false === ($content = $this->callHistoryManager->getStoredResponse($wsResource, $siren))) {
+            $content = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
+
+            if (false === $content) {
                 $response = $this->client->get($wsResource->resource_name, [
                     'query'    => $query,
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
+                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache)
                 ]);
 
                 if (200 === $response->getStatusCode()) {
