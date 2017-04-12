@@ -21,6 +21,17 @@ class PartnerAccountController extends Controller
     }
 
     /**
+     * @Route("partenaire/depot/details", name="partner_project_success_request")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @return Response
+     */
+    public function projectRequestResultAction()
+    {
+        return $this->render('/partner_account/project_request_details.html.twig');
+    }
+
+    /**
      * @Route("partenaire/emprunteurs", name="partner_projects_list")
      * @Security("has_role('ROLE_PARTNER')")
      *

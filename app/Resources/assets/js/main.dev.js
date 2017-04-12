@@ -358,6 +358,93 @@ $doc.ready(function ($) {
       }
     })
 
+  $('#modal-partner-prospect-cancel').uiModal({
+    onconfirm: function(event) {
+      var $prospect = $('#' + $('#modal-partner-prospect-cancel').data('prospect-id'))
+
+      var $select = $('#prospect-cancel-motif')
+      if ($select.val() !== '0') {
+        $prospect.remove()
+        if (!$('.table-prospects-item').length) {
+          $('#partner-prospects-panel .table-scroll').remove()
+          $('#partner-prospects-panel .message-info').show()
+        }
+      } else {
+        $select.parent().addClass('ui-formvalidation-error')
+        $select.change(function(){
+          if ($(this).val() !== 0) {
+            $(this).parent().removeClass('ui-formvalidation-error')
+          }
+        })
+        event.stopPropagation()
+      }
+
+      var formData = {
+        prospectId : $prospect.attr('id'),
+        motif : $select.val()
+      }
+
+      console.log(formData)
+
+      // TODO - Move lines above inside AJAX Success
+      // $.ajax({
+      //   type: 'POST',
+      //   url: '',
+      //   data: formData,
+      //   success: function(response) {
+      //     if (response.text === 'OK') {
+      //       $prospect.remove()
+      //       if (!$('.table-prospects-item').length) {
+      //         $('#partner-prospects').remove()
+      //       }
+      //       console.log('Delete prospect ' + prospectId)
+      //     }
+      //   },
+      //   error: function() {
+      //     console.log("error retrieving data");
+      //   }
+      // })
+      // TODO END
+    }
+  })
+
+  $('#modal-partner-prospect-submit').uiModal({
+    onconfirm: function() {
+      var $prospect = $('#' + $('#modal-partner-prospect-submit').data('prospect-id'))
+      console.log($prospect.attr('id'))
+      var $form = $('#submit-partner-prospect')
+      var siren = $prospect.data('sortable-siren')
+      var company = $prospect.data('sortable-borrower')
+      var amount = $prospect.data('sortable-amount')
+      var duration = $prospect.data('sortable-duration')
+      var motif = $prospect.data('sortable-motif')
+
+      // @Debug data
+      console.log('siren: ' + siren + ' | company: ' + company + ' | amount: ' + amount + ' | duration: ' + duration + ' | motif: ' + motif)
+
+      $form.find('[name="esim[siren]"]').val(siren)
+      $form.find('[name="esim[company]"]').val(company)
+      $form.find('[name="esim[amount]"]').val(amount)
+      $form.find('[name="esim[duration]"]').val(duration)
+      $form.find('[name="esim[motif]"]').val(motif)
+      $form.submit();
+
+      console.log('Submit prospect ' + $prospect.attr('id'))
+    }
+  })
+
+  $doc
+    .on(Utility.clickEvent, '.table-prospects [data-action]', function() {
+      // TODO - ADD AJAX URL FOR DELETING A PROSPECT
+      var $prospect = $(this).closest('tr')
+      var action = $(this).data('action')
+      var $modal = $('#modal-partner-prospect-' + action)
+
+      $modal.data('prospect-id', $prospect.attr('id'))
+      console.log($modal.data('prospect-id'))
+      $modal.uiModal('open')
+    })
+
   /*
    * Smooth scrolling to point on screen or specific element
    * @todo refactor into General controller

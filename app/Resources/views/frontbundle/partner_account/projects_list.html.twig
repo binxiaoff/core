@@ -5,16 +5,348 @@
     classNames: 'partner-account'
 } %}
 
+{% set partnerProspects = [
+    {
+        id: '12033',
+        siren: '326300159',
+        borrower: 'Télévision Française 1',
+        applicant: {
+            firstName: 'Sébastien',
+            lastName: 'JIRA',
+            agency: 'AXA Nancy'
+        },
+        motif: {
+            value: '1',
+            general: 'Travaux',
+            details: 'Agrandissement du local de venter'
+        },
+        amount: '40000',
+        duration: '3 mois'
+    },
+    {
+        id: '12034',
+        siren: '326300153',
+        borrower: 'Télévision Française 2',
+        applicant: {
+            firstName: 'Lauren',
+            lastName: 'JIRA',
+            agency: 'AXA Nancy'
+        },
+        motif: {
+            value: '1',
+            general: 'Travaux',
+            details: 'Agrandissement du local de venter'
+        },
+        amount: '40000',
+        duration: '12 mois'
+    }
+] %}
+
+{% set partnerProjects = [
+    {
+        id: '12033',
+        siren: '326300159',
+        borrower: 'Télévision Française 1',
+        applicant: {
+            firstName: 'Lauren',
+            lastName: 'JIRA',
+            agency: 'AXA Nancy'
+        },
+        motif: {
+            value: 1,
+            general: 'Travaux',
+            details: 'Agrandissement du local de venter'
+        },
+        memos: {
+            memo: {
+                text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.',
+                time: '14th February',
+                author: 'Unilend'
+            }
+        },
+        status: 'En attente de piece',
+        amount: '40000',
+        duration: '3 mois'
+    }
+]  %}
+
 {% block dashboardContent %}
+    <style>
+        .table-prospects td, .table-prospects th, .table-projects td, .table-projects th {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        .table-prospects td, .table-projects td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .table-prospects-item-action {
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+        .table-prospects-item-action a {
+            display: inline-block;
+            box-sizing: border-box;
+            width: 30px;
+            height: 30px;
+            padding: 7px;
+        }
+        .table-prospects-item-borrower, .table-projects-item-borrower {
+            width: 20%;
+        }
+        .table-prospects-item-applicant, .table-prospects-item-amount,
+        .table-projects-item-applicant, .table-projects-item-amount {
+            width: 18%;
+        }
+        .table-prospects-item-amount, .table-projects-item-amount {
+            width: 14%;
+        }
+        .table-prospects-item-duration, .table-projects-item-duration {
+            width: 10%;
+        }
+        .table-prospects-item-action, .table-projects-item-memos {
+            text-align: center;
+            width: 11%;
+        }
+        .table-projects-item-memos .icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            transition: transform 150ms;
+        }
+        .ui-details-open .table-projects-item-memos .icon {
+            transform: rotate(90deg);
+        }
+        .table-projects-details > td {
+            padding: 0;
+        }
+        .table-projects-details td {
+            font-size: 14px;
+        }
+        .details-memo-date, .details-memo-author {
+            width: 10%;
+            padding-right: 0;
+        }
+        #prospect-cancel-motif {
+            max-width: 290px;
+            margin: 0 auto;
+        }
+    </style>
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
             <article class="dashboard-tab-pane">
                 <div class="panel">
                     <header class="panel-header">
-                        <h3>{% trans %} partner-project-request_title {% endtrans %}</h3>
+                        <h3>{% trans %} partner-project-list_title {% endtrans %}</h3>
                     </header>
-                </div>
-            </article><!-- /.panel -->
+                    <div class="panel-content">
+                        <div id="partner-prospects-panel">
+                            <h3>{% trans %} partner-project-list_prospects-title {% endtrans %}</h3>
+                            {% if partnerProspects|length > 0 %}
+                                <form id="submit-partner-prospect" action="/partenaire/depot/details" method="post" style="visibility: hidden">
+                                    <input type="hidden" name="esim[siren]" value="">
+                                    <input type="hidden" name="esim[amount]" value="">
+                                    <input type="hidden" name="esim[duration]" value="">
+                                    <input type="hidden" name="esim[motif]" value="">
+                                    <input type="hidden" name="esim[email]" value="">
+                                </form>
+                                <div class="table-scroll">
+                                    <table class="table table-prospects" data-sortable>
+                                        <thead class="table-sortable-columns">
+                                        <tr>
+                                            <th class="table-prospects-item-borrower" data-sortable-by="borrower" colspan="2">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-borrower'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_prospects-table-borrower {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-prospects-item-applicant" data-sortable-by="applicant">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-applicant'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_prospects-table-applicant {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-prospects-item-amount" data-sortable-by="amount">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_prospects-table-amount {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-prospects-item-duration" data-sortable-by="duration">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-duration'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_prospects-table-duration {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-prospects-item-motif" data-sortable-by="motif" colspan="2">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-motif'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_prospects-table-motif {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-prospects-item-action">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-action'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_prospects-table-action {% endtrans %}
+                                                </span>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody data-sortable-content>
+                                        {% for i, pr in partnerProspects %}
+                                            <tr id="prospect-{{ pr.id }}" class="table-prospects-item"
+                                                data-sortable-siren="{{ pr.siren }}"
+                                                data-sortable-borrower="{{ pr.borrower }}"
+                                                data-sortable-applicant="{{ pr.applicant.lastName }}"
+                                                data-sortable-motif="{{ pr.motif.general }}"
+                                                data-sortable-motif-id="{{ pr.motif.value }}"
+                                                data-sortable-amount="{{ pr.amount }}"
+                                                data-sortable-duration="{{ pr.duration }}">
+                                                <td class="table-prospects-item-borrower" title="{{ pr.borrower }}" data-toggle="tooltip" colspan="2">{{ pr.borrower }}</td>
+                                                <td class="table-prospects-item-applicant" title="{{ pr.applicant.lastName }} {{ pr.applicant.firstName }} {% if pr.applicant.agency|length %}- {{ pr.applicant.agency }}{% endif %}" data-toggle="tooltip">{{ pr.applicant.lastName }} {{ pr.applicant.firstName }} {% if pr.applicant.agency|length %}- {{ pr.applicant.agency }}{% endif %}</td>
+                                                <td class="table-prospects-item-amount">{{ pr.amount|localizedcurrency('EUR') }}</td>
+                                                <td class="table-prospects-item-duration">{{ pr.duration }}</td>
+                                                <td class="table-prospects-item-motif" colspan="2" title="{{ pr.motif.general }} {% if pr.motif.details|length %}- {{ pr.motif.details }}{% endif %}" data-toggle="tooltip">{{ pr.motif.general }} {% if pr.motif.details|length %}- {{ pr.motif.details }}{% endif %}></td>
+                                                <td class="table-prospects-item-action">
+                                                    <a role="button" title="{{ 'partner-project-list_prospects-table-action-cancel'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="cancel"><span class="icon fa-ban-u16"></span></a>
+                                                    <a role="button" title="{{ 'partner-project-list_prospects-table-action-submit'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="submit"><span class="icon fa-check-u16"></span></a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table><!-- /.table-prospects -->
+                                </div><!-- /.table-scroll -->
+                                <div class="message-info after" style="display: none;">{{ 'partner-project-list_prospects-not-found-message'|trans }}</div>
+                            {% else %}
+                                <div class="message-info after">{{ 'partner-project-list_prospects-not-found-message'|trans }}</div>
+                            {% endif %}
+                        </div><!-- /#partner-prospects-panel -->
+                        <div id="partner-projects-panel">
+                            {% if partnerProjects|length > 0 %}
+                                <h3>{% trans %} partner-project-list_projects-title {% endtrans %}</h3>
+                                <div class="table-scroll">
+                                    <table class="table table-projects" data-sortable>
+                                        <thead class="table-sortable-columns">
+                                        <tr>
+                                            <th class="table-projects-item-borrower" data-sortable-by="borrower" colspan="2">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-borrower'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_projects-table-borrower {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-applicant" data-sortable-by="applicant">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-applicant'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_projects-table-applicant {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-amount" data-sortable-by="amount">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_projects-table-amount {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-duration" data-sortable-by="duration">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-duration'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_projects-table-duration {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-motif" data-sortable-by="motif">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-motif'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_projects-table-motif {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-status" data-sortable-by="status">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-status'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_projects-table-status {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-memos" data-sortable-by="memos">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-memos'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_projects-table-memos {% endtrans %}
+                                                </span>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody data-sortable-content>
+                                        {% for i, pr in partnerProjects %}
+                                            <tr id="project-{{ pr.id }}" class="table-projects-item" data-details
+                                                data-sortable-borrower="{{ pr.borrower }}"
+                                                data-sortable-applicant="{{ pr.applicant.lastName }}"
+                                                data-sortable-motif="{{ pr.motif.general }}"
+                                                data-sortable-amount="{{ pr.amount }}"
+                                                data-sortable-duration="{{ pr.duration }}"
+                                                data-sortable-status="{{ pr.status }}">
+                                                <td class="table-projects-item-borrower" title="{{ pr.borrower }}" data-toggle="tooltip" colspan="2">{{ pr.borrower }}</td>
+                                                <td class="table-projects-item-applicant" title="{{ pr.applicant.lastName }} {{ pr.applicant.firstName }} {% if pr.applicant.agency|length %}- {{ pr.applicant.agency }}{% endif %}" data-toggle="tooltip">{{ pr.applicant.lastName }} {{ pr.applicant.firstName }} {% if pr.applicant.agency|length %}- {{ pr.applicant.agency }}{% endif %}</td>
+                                                <td class="table-projects-item-amount">{{ pr.amount|localizedcurrency('EUR') }}</td>
+                                                <td class="table-projects-item-duration">{{ pr.duration }}</td>
+                                                <td class="table-projects-item-motif" title="{{ pr.motif.general }} {% if pr.motif.details|length %}- {{ pr.motif.details }}{% endif %}" data-toggle="tooltip">{{ pr.motif.general }} {% if pr.motif.details|length %}- {{ pr.motif.details }}{% endif %}</td>
+                                                <td class="table-projects-item-status">
+                                                    <span class="ui-project-status" title="{{ pr.status }}" data-toggle="tooltip">{{ pr.status }}</span>
+                                                </td>
+                                                <td class="table-projects-item-memos">
+                                                    <a role="button"><span class="icon fa-angle-r-u16"></span></a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table><!-- /.table-projects -->
+                                </div><!-- /.table-scroll -->
+                            {% else %}
+                                <div class="message-info after">{{ 'partner-project-list_projects-not-found-message'|trans }}</div>
+                            {% endif %}
+                        </div><!-- /#partner-projects-panel -->
+                    </div><!-- /.panel-content -->
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+
+    <div id="modal-partner-prospect-cancel" data-modal>
+        <div class="modal-body text-align-center">
+            {# TODO The translation below needs to be added #}
+            {# I am not sure if this is correct and don't know how to pass the parameters in the SQL query #}
+            {# Also, since companyName is generated using AJAX on step 2, there is a JS which will look for <span class="companyName"></span> #}
+            {# and will replace it with the AJAX response. #}
+            <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-cancel-message {% endtrans %}</p>
+            {# TODO END #}
+            <div class="form-field">
+                <select name="prospect-cancel-motif" id="prospect-cancel-motif" class="input-field">
+                    <option value="0">Sélectionnez</option>
+                    <option value="1">Option 1</option>
+                    <option value="2">Option 2</option>
+                    <option value="3">Option 3</option>
+                    <option value="4">Option 4</option>
+                </select>
+            </div>
+        </div>
+        <footer class="modal-footer">
+            <div class="btn-controls">
+                <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
+                    {% trans %} partner-project-list_popup-prospect-cancel-ko {% endtrans %}
+                </a>
+                <a href="javascript:;" class="btn-primary" data-modal-doactionconfirm>
+                    {% trans %} partner-project-list_popup-prospect-cancel-ok {% endtrans %}
+                </a>
+            </div>
+        </footer>
+    </div><!-- /#modal-partner-prospect-cancel -->
+
+    <div id="modal-partner-prospect-submit" data-modal>
+        <div class="modal-body text-align-center">
+            {# TODO The translation below needs to be added #}
+            {# I am not sure if this is correct and don't know how to pass the parameters in the SQL query #}
+            {# Also, since companyName is generated using AJAX on step 2, there is a JS which will look for <span class="companyName"></span> #}
+            {# and will replace it with the AJAX response. #}
+            <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-submit-message {% endtrans %}</p>
+            {# TODO END #}
+        </div>
+        <footer class="modal-footer">
+            <div class="btn-controls">
+                <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
+                    {% trans %} partner-project-list_popup-prospect-submit-ko {% endtrans %}
+                </a>
+                <a href="javascript:;" class="btn-primary" data-modal-doactionconfirm>
+                    {% trans %} partner-project-list_popup-prospect-submit-ok {% endtrans %}
+                </a>
+            </div>
+        </footer>
+    </div><!-- /#modal-partner-prospect -->
+
 {% endblock %}
