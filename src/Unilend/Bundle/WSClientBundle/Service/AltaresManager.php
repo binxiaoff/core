@@ -109,6 +109,9 @@ class AltaresManager
     public function getBalanceSheets($siren, $balanceSheetsCount = 3)
     {
         if (null !== ($response = $this->soapCall('identity', self::RESOURCE_BALANCE_SHEET, ['siren' => $siren, 'nbBilans' => $balanceSheetsCount]))) {
+            if (isset($response->nbBilan) && 1 === $response->nbBilan) {
+                $response->bilans = [$response->bilans];
+            }
             return $this->serializer->deserialize(json_encode($response), BalanceSheetList::class, 'json');
         }
 

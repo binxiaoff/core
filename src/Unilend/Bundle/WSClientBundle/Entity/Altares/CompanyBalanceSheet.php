@@ -59,6 +59,7 @@ class CompanyBalanceSheet
      */
     public function getCloseDate()
     {
+        $this->closeDate->setTime(0, 0, 0);
         return $this->closeDate;
     }
 
