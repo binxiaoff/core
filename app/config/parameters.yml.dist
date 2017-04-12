@@ -61,7 +61,7 @@ parameters:
     dbal_wrapper_class:              Unilend\Bridge\Doctrine\DBAL\Connection
     dbal_driver_class:               Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
 
-    mongodb_server:                  mongodb://uld-mdb-admin:cyPKA2c0C6hq3JLp@datalake-shard-00-00-lnres.mongodb.net:27017,datalake-shard-00-01-lnres.mongodb.net:27017,datalake-shard-00-02-lnres.mongodb.net:27017/uld-mdb-admin?ssl=true&replicaSet=DataLake-shard-0&authSource=admin
+    mongodb_server:                  mongodb://uld-mdb-admin:cyPKA2c0C6hq3JLp@datalake-shard-00-00-lnres.mongodb.net:27017,datalake-shard-00-01-lnres.mongodb.net:27017,datalake-shard-00-02-lnres.mongodb.net:27017/ws_call_%kernel.environment%?ssl=true&replicaSet=DataLake-shard-0&authSource=admin
     mongodb_username:                uld-mdb-admin
     mongodb_password:                cyPKA2c0C6hq3JLp
 
