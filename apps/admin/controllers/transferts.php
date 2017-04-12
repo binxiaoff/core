@@ -34,16 +34,8 @@ class transfertsController extends bootstrap
 
     public function _default()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager                                              = $this->get('doctrine.orm.entity_manager');
-        $wireTransferOutRepository                                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements');
-        $this->bankAccountRepository                                = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
-        $this->companyRepository                                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-        $this->currencyFormatter                                    = new \NumberFormatter('fr', \NumberFormatter::CURRENCY);
-
-        $this->wireTransferOuts[Virements::STATUS_CLIENT_VALIDATED] = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_CLIENT_VALIDATED]);
-        $this->wireTransferOuts[Virements::STATUS_PENDING]          = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_PENDING]);
-        $this->wireTransferOuts[Virements::STATUS_VALIDATED]        = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_VALIDATED]);
+        header('Location: /transferts/preteurs');
+        die;
     }
 
     public function _preteurs()
@@ -1182,7 +1174,7 @@ class transfertsController extends bootstrap
             if (false === empty($this->params[1]) && 'project' === $this->params[1]) {
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $wireTransferOut->getProject()->getIdProject());
             } else {
-                header('Location: ' . $this->lurl . '/transferts');
+                header('Location: ' . $this->lurl . '/transferts/virement_emprunteur');
             }
             die;
         }
@@ -1204,7 +1196,7 @@ class transfertsController extends bootstrap
                 $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a été validé.';
             }
 
-            header('Location: ' . $this->lurl . '/transferts');
+            header('Location: ' . $this->lurl . '/transferts/virement_emprunteur');
             die;
         }
     }
@@ -1222,5 +1214,19 @@ class transfertsController extends bootstrap
         }
 
         return $this->wireTransferOut;
+    }
+
+    public function _virement_emprunteur()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                                              = $this->get('doctrine.orm.entity_manager');
+        $wireTransferOutRepository                                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements');
+        $this->bankAccountRepository                                = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+        $this->companyRepository                                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $this->currencyFormatter                                    = new \NumberFormatter('fr', \NumberFormatter::CURRENCY);
+
+        $this->wireTransferOuts[Virements::STATUS_CLIENT_VALIDATED] = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_CLIENT_VALIDATED]);
+        $this->wireTransferOuts[Virements::STATUS_PENDING]          = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_PENDING]);
+        $this->wireTransferOuts[Virements::STATUS_VALIDATED]        = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_VALIDATED]);
     }
 }
