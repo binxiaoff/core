@@ -1034,7 +1034,9 @@
                                 <td><?= $this->translator->trans('wire-transfer-out_status-' . $wireTransferOut->getStatus()) ?></td>
                                 <td>
                                     <?php if (false === in_array($wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED])) : ?>
-                                        <img src="<?= $this->surl ?>/images/admin/delete.png">
+                                        <a href="<?= $this->lurl ?>/transferts/refuse_lightbox/<?= $wireTransferOut->getIdVirement() ?>" class="thickbox cboxElement">
+                                            <img src="<?= $this->surl ?>/images/admin/delete.png">
+                                        </a>
                                     <?php endif; ?>
                                 </td>
                             </tr>

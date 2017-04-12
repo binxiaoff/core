@@ -1152,4 +1152,21 @@ class transfertsController extends bootstrap
             $mailer->send($message);
         }
     }
+
+    public function _refuse_lightbox()
+    {
+        $this->hideDecoration();
+        if (false === empty($this->params[0])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $this->wireTransferOut = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($this->params[0]);
+            if ($this->request->isMethod('POST') && $this->wireTransferOut) {
+                $this->wireTransferOut->setStatus(Virements::STATUS_DENIED);
+                $entityManager->flush($this->wireTransferOut);
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->wireTransferOut->getProject()->getIdProject());
+                die;
+            }
+        }
+    }
 }
