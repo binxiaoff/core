@@ -215,8 +215,6 @@ class CallHistoryManager
             $this->logger->warning('Unable to fetch data from mongoDB: ' . $exception->getMessage(), $logContext);
         }
 
-        $this->logger->info('Data fetch from mongo DB took ' . $this->stopwatch->stop(__FUNCTION__ . $time)->getDuration() . ' ms', $logContext);
-
         return $wsCall;
     }
 
