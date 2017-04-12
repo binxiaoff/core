@@ -82,8 +82,8 @@
                             <div class="col-lg-6 col-md-6 col-sm-4">
                                 <select name="filter[project]" class="input-field">
                                     <option value="">{% trans %} lender-operations_operations-table-project-filter-placeholder {% endtrans %}</option>
-                                    {% for project in projectsFundedByLender if project.title is not empty %}
-                                        <option {% if project.id_project == currentFilters.project %} selected="selected"{% endif %} value="{{ project.id_project }}">{{ project.title }}</option>
+                                    {% for id, title in projectsFundedByLender if title is not empty %}
+                                        <option {% if id == currentFilters.project %} selected="selected"{% endif %} value="{{ id }}">{{ title }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -119,41 +119,24 @@
                     </thead>
                     <tbody data-sortable-content>
                     {% for i, op in lenderOperations %}
-                        {% set classAmount = op.libelle_operation != 'lender-operations_operation-label-accepted-offer'|trans ? op.montant_operation >= 0 ? 'ui-amount-positive' : 'ui-amount-negative' : '' %}
-                        {% set classBalance = op.libelle_operation != 'lender-operations_operation-label-accepted-offer'|trans ? op.solde > 0 ? 'ui-balance-positive' : 'ui-balance-negative' : '' %}
-                        {% if op.type_transaction in detailedOperations %}
-                            {% set operationDetails = {
-                                "label": 'lender-operations_operations-table-repayment-collapse-details'|trans,
-                                "items": [
-                                    {
-                                        "label": repaidCapitalLabel,
-                                        "value": op.montant_capital
-                                    },{
-                                        "label": repaidInterestsLabel,
-                                        "value": op.montant_interet
-                                    },{
-                                        "label": op.libelle_prelevement,
-                                        "value": op.montant_prelevement
-                                    }
-                                ]
-                            } %}
-                        {% endif %}
+                        {% set classAmount = op.label != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN') ? op.amount >= 0 ? 'ui-amount-positive' : 'ui-amount-negative' : '' %}
+                        {% set classBalance = op.label != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN') ? op.available_balance >= 0 ? 'ui-balance-positive' : 'ui-balance-negative' : '' %}
                         <tr id="operation-{{ op.id }}" class="table-myoperations-item {{ classAmount }} {{ classBalance }}"
-                            {% if op.type_transaction in detailedOperations %} data-details='{{ operationDetails|json_encode|escape('html_attr') }}'{% endif %}
-                            data-sortable-type="{{ op.libelle_operation }}"
-                            data-sortable-contract="{{ op.bdc }}"
-                            data-sortable-project="{{ op.id_projet }}"
-                            data-sortable-date="{{ op.date_operation|date('U') }}"
-                            data-sortable-amount="{{ op.montant_operation }}"
-                            data-sortable-balance="{{ op.solde }}">
-                            <td class="table-myoperations-item-type">{{ op.libelle_operation }}</td>
-                            <td class="table-myoperations-item-contract">{{ op.bdc }}</td>
+                            {% if op.label in ['repayment', 'recovery-repayment']  %} data-details='{{ op.detail|json_encode|escape('html_attr') }}'{% endif %}
+                            data-sortable-type="{{ op.label }}"
+                            data-sortable-contract="{{ op.id_loan }}"
+                            data-sortable-project="{{ op.id_project }}"
+                            data-sortable-date="{{ op.date|date('U') }}"
+                            data-sortable-amount="{{ op.amount }}"
+                            data-sortable-balance="{{ op.available_balance }}">
+                            <td class="table-myoperations-item-type">{{ ('lender-operations_operation-label-'~op.label)|trans }}</td>
+                            <td class="table-myoperations-item-contract">{{ op.id_loan }}</td>
                             <td class="table-myoperations-item-project">
-                                <div class="text-crop">{{ op.libelle_projet }}</div>
+                                <div class="text-crop">{{ op.title }}</div>
                             </td>
-                            <td class="table-myoperations-item-date">{{ op.date_operation|date('d/m/y') }}</td>
-                            <td class="table-myoperations-item-amount">{{ op.montant_operation|localizedcurrency('EUR') }}</td>
-                            <td class="table-myoperations-item-balance">{{ op.solde|localizedcurrency('EUR') }}</td>
+                            <td class="table-myoperations-item-date">{{ op.date|date('d/m/y') }}</td>
+                            <td class="table-myoperations-item-amount">{{ op.amount|localizedcurrency('EUR') }}</td>
+                            <td class="table-myoperations-item-balance">{{ op.available_balance|localizedcurrency('EUR') }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>

@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -11,7 +12,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 
@@ -73,43 +77,38 @@ class LenderOperationsController extends Controller
      */
     public function indexAction(Request $request)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \projects_status $projectStatus */
-        $projectStatus = $entityManager->getRepository('projects_status');
-        /** @var \indexage_vos_operations $lenderOperationsIndex */
-        $lenderOperationsIndex = $entityManager->getRepository('indexage_vos_operations');
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManager->getRepository('lenders_accounts');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $projectStatus = $entityManagerSimulator->getRepository('projects_status');
 
-        $client->get($this->getUser()->getClientId());
-        $lender->get($client->id_client, 'id_client_owner');
-        $this->lenderOperationIndexing($lenderOperationsIndex, $lender);
+        /** @var EntityManager $entityManager */
+        $entityManager= $this->get('doctrine.orm.entity_manager');
+        /** @var LenderOperationsManager $lenderOperationsManager */
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-        $filters = $this->getOperationFilters($request);
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $match  = $entityManager->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet->getId()]);
 
-        $lenderOperations       = $lenderOperationsIndex->getLenderOperations(self::$transactionTypeList[$filters['operation']], $this->getUser()->getClientId(), $filters['startDate']->format('Y-m-d'), $filters['endDate']->format('Y-m-d'));
-        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('id_client = ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . $filters['startDate']->format('Y-m-d') . '" AND DATE(date_operation) <= "' . $filters['endDate']->format('Y-m-d') . '"');
+        $filters                = $this->getOperationFilters($request);
+        $operations             = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
+        $lenderOperations       = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
+        $projectsFundedByLender = array_combine(array_column($lenderOperations, 'id_project'), array_column($lenderOperations, 'title'));
 
-        $loans = $this->commonLoans($request, $lender);
+        $loans = $this->commonLoans($request, $wallet);
 
         return $this->render(
             '/pages/lender_operations/layout.html.twig',
             [
-                'clientId'               => $lender->id_client_owner,
+                'clientId'               => $wallet->getIdClient()->getIdClient(),
                 'hash'                   => $this->getUser()->getHash(),
                 'lenderOperations'       => $lenderOperations,
                 'projectsFundedByLender' => $projectsFundedByLender,
-                'detailedOperations'     => [self::TYPE_REPAYMENT_TRANSACTION],
                 'loansStatusFilter'      => $projectStatus->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC'),
-                'firstLoanYear'          => $entityManager->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
+                'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($match->getIdLenderAccount()->getIdLenderAccount()),
                 'lenderLoans'            => $loans['lenderLoans'],
                 'loanStatus'             => $loans['loanStatus'],
                 'seriesData'             => $loans['seriesData'],
-                'repaidCapitalLabel'     => $this->get('translator')->trans('lender-operations_operations-table-repaid-capital-amount-collapse-details'),
-                'repaidInterestsLabel'   => $this->get('translator')->trans('lender-operations_operations-table-repaid-interests-amount-collapse-details'),
                 'currentFilters'         => $filters
             ]
         );
@@ -159,18 +158,15 @@ class LenderOperationsController extends Controller
     public function filterOperationsAction(Request $request)
     {
         /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager= $this->get('doctrine.orm.entity_manager');
+        /** @var LenderOperationsManager $lenderOperationsManager */
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-        $filters = $this->getOperationFilters($request);
-
-        $transactionListFilter = self::$transactionTypeList[$filters['operation']];
-        $startDate             = $filters['startDate']->format('Y-m-d');
-        $endDate               = $filters['endDate']->format('Y-m-d');
-
-        /** @var \indexage_vos_operations $lenderOperationsIndex */
-        $lenderOperationsIndex  = $entityManager->getRepository('indexage_vos_operations');
-        $lenderOperations       = $lenderOperationsIndex->getLenderOperations($transactionListFilter, $this->getUser()->getClientId(), $startDate, $endDate, $filters['project']);
-        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('type_transaction IN (' . implode(',', $transactionListFilter) . ') AND id_client = ' . $this->getUser()->getClientId() . ' AND LEFT(date_operation, 10) >= "' . $startDate . '" AND LEFT(date_operation, 10) <= "' . $endDate . '"');
+        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $filters                = $this->getOperationFilters($request);
+        $operations             = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
+        $lenderOperations       = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
+        $projectsFundedByLender = array_combine(array_column($lenderOperations, 'id_project'), array_column($lenderOperations, 'title'));
 
         return $this->json(
             [
@@ -179,11 +175,8 @@ class LenderOperationsController extends Controller
                     [
                         'clientId'               => $this->getUser()->getClientId(),
                         'hash'                   => $this->getUser()->getHash(),
-                        'detailedOperations'     => [self::TYPE_REPAYMENT_TRANSACTION],
                         'projectsFundedByLender' => $projectsFundedByLender,
                         'lenderOperations'       => $lenderOperations,
-                        'repaidCapitalLabel'     => $this->get('translator')->trans('lender-operations_operations-table-repaid-capital-amount-collapse-details'),
-                        'repaidInterestsLabel'   => $this->get('translator')->trans('lender-operations_operations-table-repaid-interests-amount-collapse-details'),
                         'currentFilters'         => $filters
                     ])->getContent()
             ]
@@ -204,18 +197,18 @@ class LenderOperationsController extends Controller
             return $this->redirectToRoute('lender_operations');
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \tax $tax */
-        $tax = $entityManager->getRepository('tax');
+        $tax = $entityManagerSimulator->getRepository('tax');
         /** @var \tax_type $taxType */
-        $taxType = $entityManager->getRepository('tax_type');
+        $taxType = $entityManagerSimulator->getRepository('tax_type');
         /** @var \tax_type $aTaxType */
         $aTaxType = $taxType->select('id_tax_type !=' . \tax_type::TYPE_VAT);
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
         /** @var \indexage_vos_operations $lenderIndexedOperations */
-        $lenderIndexedOperations = $entityManager->getRepository('indexage_vos_operations');
+        $lenderIndexedOperations = $entityManagerSimulator->getRepository('indexage_vos_operations');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
@@ -528,17 +521,17 @@ class LenderOperationsController extends Controller
      */
     private function lenderOperationIndexing(\indexage_vos_operations $lenderOperationsIndex, \lenders_accounts $lender)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \transactions $transaction */
-        $transaction = $entityManager->getRepository('transactions');
+        $transaction = $entityManagerSimulator->getRepository('transactions');
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $client = $entityManagerSimulator->getRepository('clients');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         /** @var \lender_tax_exemption $taxExemption */
-        $taxExemption = $entityManager->getRepository('lender_tax_exemption');
+        $taxExemption = $entityManagerSimulator->getRepository('lender_tax_exemption');
 
         $client->get($this->getUser()->getClientId());
 
@@ -611,11 +604,14 @@ class LenderOperationsController extends Controller
 
     /**
      * @param Request $request
-     * @param \lenders_accounts $lender
+     * @param Wallet $wallet
+     *
      * @return array
      */
-    private function commonLoans(Request $request, \lenders_accounts $lender)
+    private function commonLoans(Request $request, Wallet $wallet)
     {
+        $match  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet->getId()]);
+
         /** @var \loans $loanEntity */
         $loanEntity = $this->get('unilend.service.entity_manager')->getRepository('loans');
         /** @var \projects $project */
@@ -660,7 +656,7 @@ class LenderOperationsController extends Controller
         $filters        = $request->request->get('filter', []);
         $year           = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
         $status         = isset($filters['status']) && false !== filter_var($filters['status'], FILTER_VALIDATE_INT) ? $filters['status'] : null;
-        $lenderLoans    = $loanEntity->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
+        $lenderLoans    = $loanEntity->getSumLoansByProject($match->getIdLenderAccount()->getIdLenderAccount(), $sOrderBy, $year, $status);
         $loanStatus     = [
             'no-problem'            => 0,
             'late-repayment'        => 0,
@@ -765,7 +761,7 @@ class LenderOperationsController extends Controller
                     )
                 ];
             } else {
-                $projectLoans                            = $loanEntity->select('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']);
+                $projectLoans                            = $loanEntity->select('id_lender = ' . $match->getIdLenderAccount()->getIdLenderAccount() . ' AND id_project = ' . $aProjectLoans['id_project']);
                 $lenderLoans[$loanIndex]['contracts']    = [];
                 $lenderLoans[$loanIndex]['loan_details'] = [];
 
@@ -873,7 +869,7 @@ class LenderOperationsController extends Controller
             $end        = isset($filters['end']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filters['end']) ? $filters['end'] : $defaultValues['end'];
             $slide      = isset($filters['slide']) && in_array($filters['slide'], [1, 3, 6, 12]) ? $filters['slide'] : $defaultValues['slide'];
             $year       = isset($filters['year']) && false !== filter_var($filters['year'], FILTER_VALIDATE_INT) ? $filters['year'] : $defaultValues['year'];
-            $operation  = isset($filters['operation']) && array_key_exists($filters['operation'], self::$transactionTypeList) ? $filters['operation'] : $defaultValues['operation'];
+            $operation  = isset($filters['operation']) && array_key_exists($filters['operation'], LenderOperationsManager::ALL_TYPES) ? $filters['operation'] : $defaultValues['operation'];
             $project    = isset($filters['project']) && false !== filter_var($filters['project'], FILTER_VALIDATE_INT) ? $filters['project'] : $defaultValues['project'];
             $lastAction = isset($filters['id_last_action']) ? $filters['id_last_action'] : $defaultValues['id_last_action'];
             $filters    = [

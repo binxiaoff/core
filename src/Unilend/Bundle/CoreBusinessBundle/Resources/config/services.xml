@@ -353,5 +353,10 @@
             <argument type="service" id="filesystem" />
             <argument>%path.protected%attachments</argument>
         </service>
+
+        <service id="unilend.service.lender_operations_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="translator.default" />
+        </service>
     </services>
 </container>
