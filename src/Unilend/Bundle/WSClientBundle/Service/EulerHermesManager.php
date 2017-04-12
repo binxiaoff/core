@@ -120,7 +120,7 @@ class EulerHermesManager
         /** @var CompanyIdentity $company */
         $company = $this->searchCompany($siren, $countryCode);
 
-        if (null !== $company) {
+        if (null !== $company && null !== $company->getSingleInvoiceId()) {
             if (null !== $result = $this->sendRequest(self::RESOURCE_TRAFFIC_LIGHT, $company->getSingleInvoiceId(), $this->gradingApiKey, $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
@@ -142,7 +142,7 @@ class EulerHermesManager
         /** @var CompanyIdentity $company */
         $company = $this->searchCompany($siren, $countryCode);
 
-        if (null !== $company) {
+        if (null !== $company && null !== $company->getSingleInvoiceId()) {
             if (null !== $result = $this->sendRequest(self::RESOURCE_EULER_GRADE, $company->getSingleInvoiceId(), $this->gradingApiKey, $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
@@ -167,27 +167,43 @@ class EulerHermesManager
         try {
             $result = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
 
-            if (false === $result) {
-                $response = $this->client->get($wsResource->resource_name . $uri, [
-                    'headers'  => ['apikey' => $apiKey],
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache)
-                ]);
-
-                if (200 === $response->getStatusCode()) {
-                    $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-                    return $response->getBody()->getContents();
-                } else {
-                    $this->logger->error('Call to ' . $wsResource->resource_name . '. Result: ' . $response->getBody()->getContents(), $logContext);
-                }
-            } else {
+            if ($this->isValidResponse($result)) {
                 return $result;
             }
+
+            $response = $this->client->get($wsResource->resource_name . $uri, [
+                'headers'  => ['apikey' => $apiKey],
+                'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache)
+            ]);
+
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+
+            if (200 === $response->getStatusCode()) {
+                return $response->getBody()->getContents();
+            }
+
+            $this->logger->error('Call to ' . $wsResource->resource_name . '. Result: ' . $response->getBody()->getContents(), $logContext);
+            return null;
         } catch (\Exception $exception) {
-            $this->logger->error('Call to ' . $wsResource->resource_name . '. Error message: ' . $exception->getMessage(), $logContext);
         }
 
-        $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
+        $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $exception->getMessage());
         return null;
+    }
+
+    /**
+     * @param mixed $response
+     *
+     * @return bool
+     */
+    private function isValidResponse($response)
+    {
+        return (
+            false !== $response
+            && $response = json_decode($response)
+            && isset($response->code)
+            && 200 === $response->code
+        );
     }
 
     /**

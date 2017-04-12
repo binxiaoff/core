@@ -44,7 +44,7 @@ class simulationController extends bootstrap
         /** @var \ws_external_resource $wsResource */
         $wsResource      = $this->loadData('ws_external_resource');
         $this->resources = $wsResource->select('', 'provider_name ASC, resource_name ASC');
-        $this->result    = [];
+        $this->result    = false;
 
         try {
             if (isset($_POST['send'], $_POST['siren'])) {

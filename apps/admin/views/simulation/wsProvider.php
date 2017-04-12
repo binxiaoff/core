@@ -55,6 +55,8 @@
     </form>
     <?php if (false === empty($this->result)) : ?>
         <pre><?php var_export($this->result); ?></pre>
+    <?php elseif (false !== $this->result) : ?>
+        <h1>Erreur du WS, voir les logs</h1>
     <?php endif; ?>
 </body>
 </html>
