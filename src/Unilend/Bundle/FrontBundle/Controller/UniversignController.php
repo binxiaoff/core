@@ -109,10 +109,9 @@ class UniversignController extends Controller
                 break;
             case WireTransferOutUniversign::class :
                 if ($universign->getIdWireTransferOut() instanceof Virements
-                    && $universign->getIdWireTransferOut()->getProject() instanceof Projects
-                    && $universign->getIdWireTransferOut()->getProject()->getIdCompany() instanceof Companies
+                    && $universign->getIdWireTransferOut()->getClient() instanceof Clients
                 ) {
-                    $clientIdUniversign = $universign->getIdWireTransferOut()->getProject()->getIdCompany()->getIdClientOwner();
+                    $clientIdUniversign = $universign->getIdWireTransferOut()->getClient()->getIdClient();
                 }
                 break;
         }
@@ -262,17 +261,15 @@ class UniversignController extends Controller
             $company           = $wireTransferOut->getProject()->getIdCompany();
             $companyManager    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
             $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
-            $destination       = $wireTransferOut->getClient();
-            $bankAccount       = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($destination);
-
+            $bankAccount       = $wireTransferOut->getBankAccount();
             $pdfContent = $this->renderView('/pdf/wire_transfer_out/borrower_request_third_party.html.twig', [
                 'companyManagerName'      => $companyManager->getNom(),
                 'companyManagerFirstName' => $companyManager->getPrenom(),
                 'companyManagerFunction'  => $companyManager->getFonction(),
                 'companyName'             => $company->getName(),
-                'amount'                  => $currencyFormatter->formatCurrency(round(bcdiv($wireTransferOut->getMontant(), 2, 4), 2), 'EUR'),
-                'destinationName'         => $destination->getNom(),
-                'destinationFirstName'    => $destination->getPrenom(),
+                'amount'                  => $currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
+                'destinationName'         => $bankAccount->getIdClient()->getNom(),
+                'destinationFirstName'    => $bankAccount->getIdClient()->getPrenom(),
                 'iban'                    => $bankAccount->getIban(),
             ]);
             $snappy     = $this->get('knp_snappy.pdf');

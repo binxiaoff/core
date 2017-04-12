@@ -8,6 +8,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class dossiersController extends bootstrap
 {
@@ -748,9 +750,33 @@ class dossiersController extends bootstrap
             $this->loadEarlyRepaymentInformation();
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
             $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
+
+            $this->transferFunds($project);
+
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
+        }
+    }
+
+    private function transferFunds(Projects $project)
+    {
+        if ($project->getStatus() >= ProjectsStatus::REMBOURSEMENT) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager              = $this->get('unilend.service.project_manager');
+            $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+            $this->currencyFormatter     = new \NumberFormatter('fr', \NumberFormatter::CURRENCY);
+
+            $restFunds                   = $projectManager->getRestOfFundsToRelease($project, true);
+            $this->wireTransferOuts      = $project->getWireTransferOuts();
+            $this->restFunds             = $this->currencyFormatter->formatCurrency($restFunds, 'EUR');
+            $this->displayAddButton      = false;
+            if ($restFunds > 0) {
+                $this->displayAddButton = true;
+            }
         }
     }
 
@@ -1391,7 +1417,7 @@ class dossiersController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\AttachmentTypeRepository $attachmentTypeRepo */
             $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
+            /** @var Projects $project */
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
             $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
@@ -1456,10 +1482,12 @@ class dossiersController extends bootstrap
         $this->companies = $this->loadData('companies');
         /** @var projects projects */
         $this->projects = $this->loadData('projects');
+        /** @var \partner $partnerData */
+        $partnerData    = $this->loadData('partner');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
         $partnerManager    = $this->get('unilend.service.partner_manager');
         $defaultPartner    = $partnerManager->getDefaultPartner();
-        $this->partnerList = $defaultPartner->select('', 'name ASC');
+        $this->partnerList = $partnerData->select('', 'name ASC');
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
         $clientManager = $this->get('unilend.service.client_manager');
@@ -1491,13 +1519,13 @@ class dossiersController extends bootstrap
             } else {
                 $companyEntity = $this->createBlankCompany();
             }
-            $this->createProject($companyEntity, $defaultPartner->id);
+            $this->createProject($companyEntity, $defaultPartner->getId());
 
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
         } elseif (isset($this->params[0], $this->params[1]) && $this->params[0] === 'siren' && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])) {
             $companyEntity = $this->createBlankCompany($this->params[1]);
-            $this->createProject($companyEntity, $defaultPartner->id);
+            $this->createProject($companyEntity, $defaultPartner->getId());
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');

@@ -14,11 +14,11 @@ use Doctrine\ORM\Mapping as ORM;
 class Virements
 {
     const STATUS_PENDING          = 0;
-    const STATUS_CLIENT_VALIDATED = 10;
-    const STATUS_CLIENT_DENIED    = 15;
-    const STATUS_VALIDATED        = 20;
+    const STATUS_CLIENT_DENIED    = 10;
+    const STATUS_DENIED           = 15;
+    const STATUS_CLIENT_VALIDATED = 20;
+    const STATUS_VALIDATED        = 25;
     const STATUS_SENT             = 30;
-    const STATUS_DENIED           = 40;
 
     const TYPE_LENDER   = 1;
     const TYPE_BORROWER = 2;
@@ -37,7 +37,7 @@ class Virements
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="wireTransferOuts")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })

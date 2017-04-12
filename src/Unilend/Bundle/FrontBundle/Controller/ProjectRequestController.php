@@ -217,7 +217,7 @@ class ProjectRequestController extends Controller
 
         if (empty($partnerId) || null === $em->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
             $partnerManager = $this->get('unilend.service.partner_manager');
-            $partnerId      = $partnerManager->getDefaultPartner()->id;
+            $partnerId      = $partnerManager->getDefaultPartner()->getId();
         }
 
         $this->project                                       = $entityManager->getRepository('projects');

@@ -989,6 +989,58 @@
                             </td>
                         </tr>
                     </table>
+                    <h2>
+                        Transfert
+                        <?php if ($this->displayAddButton) : ?>
+                            <a href="<?= $this->lurl ?>/transferts/add_lightbox/<?= $this->projects->id_project ?>" class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                        <?php endif; ?>
+                    </h2>
+                    <p>
+                        Fonds restant : <?= $this->restFunds ?>
+                    </p>
+                    <table class="tablesorter">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Bénéficiaire</th>
+                            <th>Motif</th>
+                            <th>Montant</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Virements $wireTransferOut */
+                        ?>
+                        <?php foreach ($this->wireTransferOuts as $wireTransferOut) : ?>
+                            <?php
+                            $bankAccount = $wireTransferOut->getBankAccount();
+                            if (null === $bankAccount) {
+                                $bankAccount = $this->bankAccountRepository->getClientValidatedBankAccount($wireTransferOut->getClient());
+                            }
+                            $beneficiary        = $bankAccount->getIdClient();
+                            $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $beneficiary->getIdClient()]);
+                            ?>
+                            <tr>
+                                <td><?= $wireTransferOut->getTransferAt() === null ? 'Dès validation' : $wireTransferOut->getTransferAt()->format('d/m/Y') ?></td>
+                                <td>
+                                    <?= $beneficiaryCompany->getName() ?>
+                                    <?= ' (' . $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom() . ')' ?>
+                                </td>
+                                <td><?= $wireTransferOut->getMotif() ?></td>
+                                <td><?= $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'); ?></td>
+                                <td><?= $this->translator->trans('wire-transfer-out_status-' . $wireTransferOut->getStatus()) ?></td>
+                                <td>
+                                    <?php if (false === in_array($wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED])) : ?>
+                                        <img src="<?= $this->surl ?>/images/admin/delete.png">
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </td>
             </tr>
             <tr<?php if (empty($this->projects->id_commercial)) : ?> style="display: none" <?php endif; ?>>

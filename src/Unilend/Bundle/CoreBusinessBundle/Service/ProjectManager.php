@@ -10,6 +10,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
@@ -1033,5 +1034,29 @@ class ProjectManager
         }
 
         return $commission;
+    }
+
+    /**
+     * @param Projects $project
+     * @param boolean  $includePendingRequest
+     *
+     * @return string
+     */
+    public function getRestOfFundsToRelease(Projects $project, $includePendingRequest)
+    {
+        $fundsToRelease = bcsub($project->getAmount(), $this->getCommissionFunds($project, true), 2);
+        if ($includePendingRequest) {
+            $status = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED];
+        } else {
+            $status = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_CLIENT_VALIDATED, Virements::STATUS_PENDING];
+        }
+        $wireTransferOuts = $project->getWireTransferOuts();
+        foreach ($wireTransferOuts as $wireTransferOut) {
+            if (false === in_array($wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED])) {
+                $fundsToRelease = bcsub($fundsToRelease, round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2), 2);
+            }
+        }
+
+        return $fundsToRelease;
     }
 }

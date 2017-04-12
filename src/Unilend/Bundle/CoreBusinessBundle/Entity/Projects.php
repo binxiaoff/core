@@ -370,12 +370,20 @@ class Projects
     private $termOfUser;
 
     /**
+     * @var Virements[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Virements", mappedBy="idProject")
+     */
+    private $wireTransferOuts;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
     {
-        $this->attachments = new ArrayCollection();
-        $this->mandats     = new ArrayCollection();
+        $this->attachments      = new ArrayCollection();
+        $this->mandats          = new ArrayCollection();
+        $this->wireTransferOuts = new ArrayCollection();
     }
 
     /**
@@ -1482,5 +1490,13 @@ class Projects
     public function getTermOfUser()
     {
         return $this->termOfUser;
+    }
+
+    /**
+     * @return Virements[]
+     */
+    public function getWireTransferOuts()
+    {
+        return $this->wireTransferOuts;
     }
 }

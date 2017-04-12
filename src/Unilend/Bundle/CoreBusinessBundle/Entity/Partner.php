@@ -17,6 +17,9 @@ class Partner
     const STATUS_VALIDATED = 2;
     const STATUS_DISABLED  = 3;
 
+    const PARTNER_UNILEND_LABEL = 'unilend';
+    const PARTNER_U_CAR_LABEL   = 'u_car';
+
     /**
      * @var string
      *
@@ -96,7 +99,8 @@ class Partner
      * Projects constructor.
      */
     public function __construct() {
-        $this->attachmentTypes = new ArrayCollection();
+        $this->attachmentTypes     = new ArrayCollection();
+        $this->partnerThirdParties = new ArrayCollection();
     }
 
     /**

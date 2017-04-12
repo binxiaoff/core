@@ -125,7 +125,7 @@ class BorrowerAccountController extends Controller
                 $project->comments                             = $formData['message'];
                 $project->period                               = $formData['duration'];
                 $project->status                               = \projects_status::COMPLETE_REQUEST;
-                $project->id_partner                           = $partnerManager->getDefaultPartner()->id;
+                $project->id_partner                           = $partnerManager->getDefaultPartner()->getId();
                 $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
                 $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
                 $project->create();
