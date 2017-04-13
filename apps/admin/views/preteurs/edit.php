@@ -14,25 +14,37 @@
         $("#annee").change(function () {
             $('#changeDate').attr('href', "<?= $this->lurl ?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
-    });
-    $(function () {
+
         $('#btn-show-lender-vigilance-history').click(function () {
             $('#lender-vigilance-history').toggle();
             $(this).text(function (i, text) {
                 return text === 'Voir l\'historique de vigilance' ? 'Cacher l\'historique' : 'Voir l\'historique de vigilance'
             })
         })
-    })
-    $(function () {
+
         $('#btn-show-lender-atypical-operation').click(function () {
             $('#lender-atypical-operation').toggle();
             $(this).text(function (i, text) {
                 return text === 'Voir les détections' ? 'Cacher les détections' : 'Voir les détections'
             })
         })
-    })
 
-    $(function() {
+        // Delete Bid
+        function deleteBid(id_bid) {
+            if (confirm('Etes vous sur de vouloir supprimer ce bid ?')) {
+                var val = {
+                    id_bid: id_bid,
+                    id_lender: <?= $this->lenders_accounts->id_lender_account ?>
+                };
+                $.post(add_url + '/ajax/deleteBidPreteur', val).done(function (data) {
+                    if (data != 'nok') {
+                        $(".lesbidsEncours").html(data);
+                    }
+                });
+            }
+        }
+
+        // Datepickers
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
         $("#datepik_1").datepicker({
@@ -52,6 +64,21 @@
             changeYear: true,
             yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
         });
+
+        // Filter
+        $("#anneeMouvTransacForm").submit(function(e) {
+            e.preventDefault()
+            var val = {
+                id_client: <?= $this->clients->id_client ?>,
+                year: $(this).find('select').val()
+            };
+            $.post(add_url + '/ajax/loadMouvTransac', val).done(function(data) {
+                if (data != 'nok') {
+
+                    $(".MouvTransac").html(data);
+                }
+            });
+        });
     });
 </script>
 <style>
@@ -67,30 +94,18 @@
     table.attachment-list td, th{
         vertical-align: middle;
     }
-
-    .datepicker_table {
-        margin: 0 auto 20px;
-        width: 450px;
-        background-color: white;
-        border: 1px solid #A1A5A7;
-        border-radius: 10px 10px 10px 10px;
-        padding: 5px;
+    .form-field {
+        width: 140px;
+        margin-right: 20px;
         float: left;
     }
-
-    .search_fields td {
-        padding-top: 10px;
-        padding-left: 10px;
+    .form-field input, .form-field select {
+        width: 100%;
+        box-sizing: border-box;
+        height: 30px;
     }
-
-    .filter_section {
-        margin: 0 auto 20px;
-        width: 300px;
-        background-color: white;
-        border: 1px solid #A1A5A7;
-        border-radius: 10px 10px 10px 10px;
-        padding: 5px;
-        float: right;
+    .form-field img {
+        margin-top: -46px;
     }
 </style>
 <div id="contenu">
@@ -342,42 +357,38 @@
         </div>
         <br/><br/>
         <h2>Mouvements</h2>
-        <div class="filter_section">
-            <h2>Filtrer</h2>
-            <div class="btnDroite">
-                <select name="anneeMouvTransac" id="anneeMouvTransac" class="select" style="width:95px;">
-                    <?php for ($i = date('Y'); $i >= 2008; $i--) : ?>
-                        <option value="<?= $i ?>"><?= $i ?></option>
-                    <?php endfor; ?>
-                </select>
-            </div>
-
-        </div>
-        <div></div>
-        <div class="datepicker_table">
+        <div class="gauche" style="border: 0; padding-top: 5px;">
             <form method="post" name="date_select" action="<?= $this->lurl ?>/preteurs/operations_export/<?= $this->clients->id_client ?>">
-                <fieldset>
-                    <table class="search_fields">
-                        <tr>
-                            <td><label>Date debut</label><br/>
-                                <input type="text" name="dateStart"
-                                       id="datepik_1"
-                                       class="input_dp"
-                                       value="<?= (empty($_POST['id']) && false === empty($_POST['dateStart'])) ? $_POST['dateStart'] : '' ?>"/>
-                            </td>
-                            <td><label>Date fin</label><br/>
-                                <input type="text" name="dateEnd"
-                                       id="datepik_2" class="input_dp"
-                                       value="<?= (empty($_POST['id']) && false === empty($_POST['dateEnd'])) ? $_POST['dateEnd'] : '' ?>"/>
-                            </td>
-                            <td><br>
-                                <input type="submit" value="Exporter" title="Valider" name="export_operations" id="export_operations" class="btn"/>
-                            </td>
-                        </tr>
-                    </table>
-                </fieldset>
+                <div class="form-field">
+                    <input type="text" name="dateStart"
+                           placeholder="Date debut"
+                           id="datepik_1"
+                           class="input_dp"
+                           value="<?= (empty($_POST['id']) && false === empty($_POST['dateStart'])) ? $_POST['dateStart'] : '' ?>"/>
+                </div>
+                <div class="form-field">
+                    <input type="text"
+                           placeholder="Date fin"
+                           name="dateEnd"
+                           id="datepik_2" class="input_dp"
+                           value="<?= (empty($_POST['id']) && false === empty($_POST['dateEnd'])) ? $_POST['dateEnd'] : '' ?>"/>
+                </div>
+                <input type="submit" value="Exporter" title="Valider" name="export_operations" id="export_operations" class="btn" style="height: 30px" />
             </form>
         </div>
+        <div class="droite" style="padding-top: 5px;">
+            <form method="post" id="anneeMouvTransacForm" action="">
+                <input type="submit" value="Filtrer" name="filter" id="export_operations" class="btn" style="float: right; height: 30px" />
+                <div class="form-field" style="float: right;">
+                    <select name="anneeMouvTransac" id="anneeMouvTransac" class="select" style="width:100%;">
+                        <?php for ($i = date('Y'); $i >= 2013; $i--) : ?>
+                            <option value="<?= $i ?>"><?= $i ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+            </form>
+        </div>
+
         <div class="MouvTransac">
             <?php $this->fireView('transactions'); ?>
         </div>
@@ -507,30 +518,3 @@
         <?php endif; ?>
     <?php endif; ?>
 </div>
-<script type="text/javascript">
-    $("#anneeMouvTransac").change(function() {
-        var val = {
-            id_client: <?= $this->clients->id_client ?>,
-            year: $(this).val()
-        };
-        $.post(add_url + '/ajax/loadMouvTransac', val).done(function(data) {
-            if (data != 'nok') {
-                $(".MouvTransac").html(data);
-            }
-        });
-    });
-
-    function deleteBid(id_bid) {
-        if (confirm('Etes vous sur de vouloir supprimer ce bid ?')) {
-            var val = {
-                id_bid: id_bid,
-                id_lender: <?= $this->lenders_accounts->id_lender_account ?>
-            };
-            $.post(add_url + '/ajax/deleteBidPreteur', val).done(function (data) {
-                if (data != 'nok') {
-                    $(".lesbidsEncours").html(data);
-                }
-            });
-        }
-    }
-</script>
