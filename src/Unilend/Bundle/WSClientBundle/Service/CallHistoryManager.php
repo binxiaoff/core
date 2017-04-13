@@ -74,19 +74,23 @@ class CallHistoryManager
                     $event        = $this->stopwatch->stop($wsResource->id_resource);
                     $transferTime = $event->getDuration() / 1000;
 
-                    if ($stats instanceof TransferStats && null != $stats && $stats->hasResponse()) {
+                    if ($stats instanceof TransferStats && $stats->hasResponse()) {
                         $statusCode = $stats->getResponse()->getStatusCode();
                         $stream     = $stats->getResponse()->getBody();
                         $stream->rewind();
                         // getContents returns the remaining contents, so that a second call returns nothing unless we seek the position of the stream with rewind
                         $result = $stream->getContents();
+                    } elseif ($stats instanceof TransferStats) {
+                        $statusCode = null;
+                        $result     = '';
                     } else {
                         $statusCode = null;
                         $result     = $stats;
                     }
 
+                    $this->createLog($wsResource->id_resource, $siren, $transferTime, $statusCode);
+
                     if ($useCache) {
-                        $this->createLog($wsResource->id_resource, $siren, $transferTime, $statusCode);
                         $this->storeResponse($wsResource, $siren, $result);
                     }
                 } catch (\Exception $exception) {
@@ -213,8 +217,6 @@ class CallHistoryManager
         } catch (\Exception $exception) {
             $this->logger->warning('Unable to fetch data from mongoDB: ' . $exception->getMessage(), $logContext);
         }
-
-        $this->logger->info('Data fetch from mongo DB took ' . $this->stopwatch->stop(__FUNCTION__ . $time)->getDuration() . ' ms', $logContext);
 
         return $wsCall;
     }

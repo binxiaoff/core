@@ -110,7 +110,8 @@ class InfogreffeManager
 
                 $this->client->__soapCall($wsResource->resource_name, [$request->asXML()]);
             } catch (\SoapFault $exception) {
-                if (0 != $exception->getCode()) {
+                // Infogreffe WS response does not seem to be valid. Workaround by Mesbah: ignore error and call SoapClient::__getLastResponse()
+                if ('SOAP-ERROR: Encoding: Violation of encoding rules' !== $exception->getMessage()) {
                     $this->logger->error('Calling Infogreffe Indebtedness SIREN: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
                 }
             }

@@ -41,7 +41,7 @@ class CompanyRating
      */
     public function getScoreDate()
     {
-        return $this->scoreDate;
+        return $this->scoreDate->setTime(0, 0, 0);
     }
 
     /**
