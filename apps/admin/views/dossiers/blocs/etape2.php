@@ -223,7 +223,6 @@
                     <input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"> E
                 </td>
             </tr>
-            <tr></tr>
             <tr>
                 <td colspan="4" style="padding-top: 15px">
                     <input<?= ($this->companies->status_adresse_correspondance == 1 ? ' checked' : '') ?> type="checkbox" name="same_address_etape2" id="same_address_etape2">
