@@ -27,6 +27,8 @@ class CallHistoryManager
     private $logger;
     /** @var ManagerRegistry */
     private $managerRegistry;
+    /** @var  LoggerInterface */
+    private $mongoDBLogger;
 
     /**
      * WSProviderCallHistoryManager constructor.
@@ -37,6 +39,7 @@ class CallHistoryManager
      * @param Packages        $assetPackage
      * @param LoggerInterface $logger
      * @param ManagerRegistry $managerRegistry
+     * @param LoggerInterface $mongoDBLogger
      */
     public function __construct(
         EntityManager $entityManager,
@@ -45,7 +48,8 @@ class CallHistoryManager
         $alertChannel,
         Packages $assetPackage,
         LoggerInterface $logger,
-        ManagerRegistry $managerRegistry
+        ManagerRegistry $managerRegistry,
+        LoggerInterface $mongoDBLogger
     )
     {
         $this->entityManager   = $entityManager;
@@ -55,6 +59,7 @@ class CallHistoryManager
         $this->assetPackage    = $assetPackage;
         $this->logger          = $logger;
         $this->managerRegistry = $managerRegistry;
+        $this->mongoDBLogger   = $mongoDBLogger;
     }
 
     /**
@@ -252,5 +257,58 @@ class CallHistoryManager
     public function getDateTimeFromPassedDays($days = 3)
     {
         return (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
+    }
+
+    public function handleMongoDBLogging()
+    {
+        /** @var \settings $settings */
+        $settings = $this->entityManager->getRepository('settings');
+
+        if ($settings->get('mongo_log', 'type') && 'on' === $settings->value) {
+            \MongoLog::setModule(\MongoLog::ALL);
+            \MongoLog::setLevel(\MongoLog::ALL);
+            \MongoLog::setCallback([$this, 'callback']);
+        }
+    }
+
+    /**
+     * @param int    $module
+     * @param int    $level
+     * @param string $message
+     */
+    public function callback($module, $level, $message)
+    {
+        switch ($level) {
+            case \MongoLog::WARNING:
+                $this->mongoDBLogger->warning($this->module2string($module). ' ' . $message , ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                break;
+            case \MongoLog::INFO:
+                $this->mongoDBLogger->info($this->module2string($module). ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                break;
+            default:
+                $this->mongoDBLogger->debug($this->module2string($module). ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        }
+    }
+
+    /**
+     * @param int $module
+     * @return string
+     */
+    private function module2string($module)
+    {
+        switch ($module) {
+            case \MongoLog::RS:
+                return 'REPLSET';
+            case \MongoLog::CON:
+                return 'CON';
+            case \MongoLog::IO:
+                return 'IO';
+            case \MongoLog::SERVER:
+                return 'SERVER';
+            case \MongoLog::PARSE:
+                return 'PARSE';
+            default:
+                return 'UNKNOWN';
+        }
     }
 }
