@@ -403,7 +403,7 @@ Modal.prototype.open = function () {
  * @method confirm
  * @returns {Void}
  */
-Modal.prototype.confirm = function (deferredReturn) {
+Modal.prototype.confirm = function () {
   var self = this
 
   // @trigger elem `Modal:confirm:before`
@@ -412,7 +412,19 @@ Modal.prototype.confirm = function (deferredReturn) {
   // Fire the custom `onconfirm` action
   if (typeof self.settings.onconfirm === 'function') {
     // onconfirm should return a Promise made via jQuery's $.deferred API
-    self.settings.onconfirm.call(self.close())
+    self.settings.onconfirm.call(self).always(function (deferredReturn) {
+      // deferred returned falsey value, so consider confirm is actively denied
+      if (!deferredReturn) {
+        // @trigger elem `Modal:confirmed`
+        self.$elem.trigger('Modal:confirmed', [self, deferredReturn])
+
+        // Close the modal
+        self.close(deferredReturn)
+      } else {
+        // @trigger elem `Modal:confirm:error`
+        self.$elem.trigger('Modal:confirm:error', [self, deferredReturn])
+      }
+    })
 
   // Close the modal
   } else {

@@ -176,10 +176,7 @@ loanPeriods = {
 {% block modals %}
 
     <div id="modal-partner-prospect" data-modal>
-        <header class="modal-header text-align-center">
-            {% trans %} partner-project-request_popup-prospect-added-title {% endtrans %}
-        </header>
-        <div class="modal-body">
+        <div class="modal-body text-align-center">
             {# TODO The translation below needs to be added #}
             {# I am not sure if this is correct and don't know how to pass the parameters in the SQL query #}
             {# Also, since companyName is generated using AJAX on step 2, there is a JS which will look for <span class="companyName"></span> #}
@@ -197,10 +194,7 @@ loanPeriods = {
     </div><!-- /#modal-partner-prospect -->
 
     <div id="modal-partner-prospect-error" data-modal>
-        <header class="modal-header text-align-center">
-            {% trans %} partner-project-request_popup-prospect-not-added-title {% endtrans %}
-        </header>
-        <div class="modal-body">
+        <div class="modal-body text-align-center">
             {% trans %} partner-project-request_popup-prospect-not-added-message {% endtrans %}
         </div>
         <footer class="modal-footer">

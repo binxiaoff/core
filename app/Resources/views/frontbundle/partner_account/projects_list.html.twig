@@ -71,68 +71,6 @@
 ]  %}
 
 {% block dashboardContent %}
-    <style>
-        .table-prospects td, .table-prospects th, .table-projects td, .table-projects th {
-            padding-left: 20px;
-            padding-right: 20px;
-        }
-        .table-prospects td, .table-projects td {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .table-prospects-item-action {
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-        .table-prospects-item-action a {
-            display: inline-block;
-            box-sizing: border-box;
-            width: 30px;
-            height: 30px;
-            padding: 7px;
-        }
-        .table-prospects-item-borrower, .table-projects-item-borrower {
-            width: 20%;
-        }
-        .table-prospects-item-applicant, .table-prospects-item-amount,
-        .table-projects-item-applicant, .table-projects-item-amount {
-            width: 18%;
-        }
-        .table-prospects-item-amount, .table-projects-item-amount {
-            width: 14%;
-        }
-        .table-prospects-item-duration, .table-projects-item-duration {
-            width: 10%;
-        }
-        .table-prospects-item-action, .table-projects-item-memos {
-            text-align: center;
-            width: 11%;
-        }
-        .table-projects-item-memos .icon {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            transition: transform 150ms;
-        }
-        .ui-details-open .table-projects-item-memos .icon {
-            transform: rotate(90deg);
-        }
-        .table-projects-details > td {
-            padding: 0;
-        }
-        .table-projects-details td {
-            font-size: 14px;
-        }
-        .details-memo-date, .details-memo-author {
-            width: 10%;
-            padding-right: 0;
-        }
-        #prospect-cancel-motif {
-            max-width: 290px;
-            margin: 0 auto;
-        }
-    </style>
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
             <article class="dashboard-tab-pane">
@@ -321,7 +259,7 @@
                 <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
                     {% trans %} partner-project-list_popup-prospect-cancel-ko {% endtrans %}
                 </a>
-                <a href="javascript:;" class="btn-primary" data-modal-doactionconfirm>
+                <a href="javascript:;" class="btn-primary" data-modal-doactionsubmit>
                     {% trans %} partner-project-list_popup-prospect-cancel-ok {% endtrans %}
                 </a>
             </div>
@@ -342,7 +280,7 @@
                 <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
                     {% trans %} partner-project-list_popup-prospect-submit-ko {% endtrans %}
                 </a>
-                <a href="javascript:;" class="btn-primary" data-modal-doactionconfirm>
+                <a href="javascript:;" class="btn-primary" data-modal-doactionsubmit>
                     {% trans %} partner-project-list_popup-prospect-submit-ok {% endtrans %}
                 </a>
             </div>

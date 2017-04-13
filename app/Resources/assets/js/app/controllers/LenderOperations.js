@@ -63,7 +63,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
   } else {
     if ($details.length === 0) {
       // Get the details
-      // var details = Utility.convertStringToJson($item.attr('data-details'))
+      var details = Utility.convertStringToJson($item.attr('data-details'))
       var detailsItemsHtml = ''
 
       // My loans details

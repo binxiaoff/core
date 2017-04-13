@@ -271,7 +271,6 @@ $doc.ready(function ($) {
             // Show the continue button
             $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
 
-
             if (!isPartner) {
               // Siren is unknown yet, so focus the user input
               $('#esim-input-siren').focus()
@@ -318,17 +317,16 @@ $doc.ready(function ($) {
           .removeAttr("href data-toggle aria-expanded")
       }
     })
-    .on(Utility.clickEvent, '[data-prospect-btn]:not(:disabled)', function () {
-
+    .on(Utility.clickEvent, '[data-prospect-btn]', function () {
+      // Gather data for submitting prospect
       var period = $("input[id^='esim-input-duration-']:checked").val()
       var amount = $("#esim-input-amount").val()
       var motiveId = $("#esim-input-reason > option:selected").val()
       var siren = $('#esim-input-siren').val()
 
-      // TODO
-      // Uncomment below
-      // var ajaxData = { period: period, amount: amount, motiveId: motiveId, siren: siren }
-      // Add url for posting to Prospects
+      var ajaxData = { period: period, amount: amount, motiveId: motiveId, siren: siren }
+
+      // TODO - Add url for posting to Prospects and Uncomment below
       // var ajaxUrl  = ''
       // $.ajax({
       //   type: 'POST',
@@ -349,69 +347,23 @@ $doc.ready(function ($) {
       // TODO END
 
     })
-    .on(Utility.clickEvent, '[data-prospect-lnk]', function () {
-      $('#modal-partner-prospect').uiModal('close')
+
+  $doc
+    .on(Utility.clickEvent, '.table-prospects [data-action]', function() {
+      // TODO - ADD AJAX URL FOR DELETING A PROSPECT
+      var $prospect = $(this).closest('tr')
+      var action = $(this).data('action')
+      var $modal = $('#modal-partner-prospect-' + action)
+
+      // Add prospect id for further actions (abandon / submit)
+      $modal.data('prospect-id', $prospect.attr('id'))
+      // Insert the company name inside the modal text and Show the popup
+      $modal.find('.ui-modal-output-company').html($prospect.data('sortable-borrower'))
+      $modal.uiModal('open')
     })
-    $('#modal-partner-prospect').uiModal({
-      onclose: function() {
-        $('[data-prospect-btn]').prop('disabled', true).attr('disabled', true);
-      }
-    })
-
-  $('#modal-partner-prospect-cancel').uiModal({
-    onconfirm: function(event) {
-      var $prospect = $('#' + $('#modal-partner-prospect-cancel').data('prospect-id'))
-
-      var $select = $('#prospect-cancel-motif')
-      if ($select.val() !== '0') {
-        $prospect.remove()
-        if (!$('.table-prospects-item').length) {
-          $('#partner-prospects-panel .table-scroll').remove()
-          $('#partner-prospects-panel .message-info').show()
-        }
-      } else {
-        $select.parent().addClass('ui-formvalidation-error')
-        $select.change(function(){
-          if ($(this).val() !== 0) {
-            $(this).parent().removeClass('ui-formvalidation-error')
-          }
-        })
-        event.stopPropagation()
-      }
-
-      var formData = {
-        prospectId : $prospect.attr('id'),
-        motif : $select.val()
-      }
-
-      console.log(formData)
-
-      // TODO - Move lines above inside AJAX Success
-      // $.ajax({
-      //   type: 'POST',
-      //   url: '',
-      //   data: formData,
-      //   success: function(response) {
-      //     if (response.text === 'OK') {
-      //       $prospect.remove()
-      //       if (!$('.table-prospects-item').length) {
-      //         $('#partner-prospects').remove()
-      //       }
-      //       console.log('Delete prospect ' + prospectId)
-      //     }
-      //   },
-      //   error: function() {
-      //     console.log("error retrieving data");
-      //   }
-      // })
-      // TODO END
-    }
-  })
-
-  $('#modal-partner-prospect-submit').uiModal({
-    onconfirm: function() {
-      var $prospect = $('#' + $('#modal-partner-prospect-submit').data('prospect-id'))
-      console.log($prospect.attr('id'))
+    .on(Utility.clickEvent, '#modal-partner-prospect-submit [data-modal-doactionsubmit]', function() {
+      var $modal = $('#modal-partner-prospect-submit')
+      var $prospect = $('#' + $modal.data('prospect-id'))
       var $form = $('#submit-partner-prospect')
       var siren = $prospect.data('sortable-siren')
       var company = $prospect.data('sortable-borrower')
@@ -429,20 +381,57 @@ $doc.ready(function ($) {
       $form.find('[name="esim[motif]"]').val(motif)
       $form.submit();
 
+      $modal.uiModal('close')
+
       console.log('Submit prospect ' + $prospect.attr('id'))
-    }
-  })
+    })
+    .on(Utility.clickEvent, '#modal-partner-prospect-cancel [data-modal-doactionsubmit]', function() {
+      var $modal = $(this).closest('[data-modal]')
+      var $prospect = $('#' + $modal.data('prospect-id'))
 
-  $doc
-    .on(Utility.clickEvent, '.table-prospects [data-action]', function() {
-      // TODO - ADD AJAX URL FOR DELETING A PROSPECT
-      var $prospect = $(this).closest('tr')
-      var action = $(this).data('action')
-      var $modal = $('#modal-partner-prospect-' + action)
+      var $select = $modal.find('#prospect-cancel-motif')
+      if ($select.val() !== '0') {
+        // TODO - Remove lines below and Uncomment Ajax
 
-      $modal.data('prospect-id', $prospect.attr('id'))
-      console.log($modal.data('prospect-id'))
-      $modal.uiModal('open')
+        $modal.uiModal('close')
+        $prospect.remove()
+        if (!$('.table-prospects-item').length) {
+          $('#partner-prospects-panel .table-scroll').remove()
+          $('#partner-prospects-panel .message-info').show()
+        }
+
+        // var formData = {
+        //   prospectId : $prospect.attr('id'),
+        //   motif : $select.val()
+        // }
+        // // console.log(formData)
+        // $.ajax({
+        //   type: 'POST',
+        //   url: '',
+        //   data: formData,
+        //   success: function(response) {
+        //     if (response.text === 'OK') {
+        //       $modal.uiModal('close')
+        //       $prospect.remove()
+        //       if (!$('.table-prospects-item').length) {
+        //         $('#partner-prospects-panel .table-scroll').remove()
+        //         $('#partner-prospects-panel .message-info').show()
+        //       }
+        //     }
+        //   },
+        //   error: function() {
+        //     console.log("error retrieving data");
+        //   }
+        // })
+        // TODO END
+      } else {
+        $select.parent().addClass('ui-formvalidation-error')
+        $select.change(function(){
+          if ($(this).val() !== 0) {
+            $(this).parent().removeClass('ui-formvalidation-error')
+          }
+        })
+      }
     })
 
   /*
