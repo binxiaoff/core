@@ -31,6 +31,28 @@
             })
         })
     })
+
+    $(function() {
+        $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
+
+        $("#datepik_1").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
+        });
+
+        $("#datepik_2").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
+        });
+    });
 </script>
 <style>
     .td-greenPoint-status-valid {
@@ -44,6 +66,31 @@
     }
     table.attachment-list td, th{
         vertical-align: middle;
+    }
+
+    .datepicker_table {
+        margin: 0 auto 20px;
+        width: 450px;
+        background-color: white;
+        border: 1px solid #A1A5A7;
+        border-radius: 10px 10px 10px 10px;
+        padding: 5px;
+        float: left;
+    }
+
+    .search_fields td {
+        padding-top: 10px;
+        padding-left: 10px;
+    }
+
+    .filter_section {
+        margin: 0 auto 20px;
+        width: 300px;
+        background-color: white;
+        border: 1px solid #A1A5A7;
+        border-radius: 10px 10px 10px 10px;
+        padding: 5px;
+        float: right;
     }
 </style>
 <div id="contenu">
@@ -295,12 +342,41 @@
         </div>
         <br/><br/>
         <h2>Mouvements</h2>
-        <div class="btnDroite">
-            <select name="anneeMouvTransac" id="anneeMouvTransac" class="select" style="width:95px;">
-                <?php for ($i = date('Y'); $i >= 2008; $i--) : ?>
-                    <option value="<?= $i ?>"><?= $i ?></option>
-                <?php endfor; ?>
-            </select>
+        <div class="filter_section">
+            <h2>Filtrer</h2>
+            <div class="btnDroite">
+                <select name="anneeMouvTransac" id="anneeMouvTransac" class="select" style="width:95px;">
+                    <?php for ($i = date('Y'); $i >= 2008; $i--) : ?>
+                        <option value="<?= $i ?>"><?= $i ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+
+        </div>
+        <div></div>
+        <div class="datepicker_table">
+            <form method="post" name="date_select" action="<?= $this->lurl ?>/preteurs/operations_export/<?= $this->clients->id_client ?>">
+                <fieldset>
+                    <table class="search_fields">
+                        <tr>
+                            <td><label>Date debut</label><br/>
+                                <input type="text" name="dateStart"
+                                       id="datepik_1"
+                                       class="input_dp"
+                                       value="<?= (empty($_POST['id']) && false === empty($_POST['dateStart'])) ? $_POST['dateStart'] : '' ?>"/>
+                            </td>
+                            <td><label>Date fin</label><br/>
+                                <input type="text" name="dateEnd"
+                                       id="datepik_2" class="input_dp"
+                                       value="<?= (empty($_POST['id']) && false === empty($_POST['dateEnd'])) ? $_POST['dateEnd'] : '' ?>"/>
+                            </td>
+                            <td><br>
+                                <input type="submit" value="Exporter" title="Valider" name="export_operations" id="export_operations" class="btn"/>
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </form>
         </div>
         <div class="MouvTransac">
             <?php $this->fireView('transactions'); ?>

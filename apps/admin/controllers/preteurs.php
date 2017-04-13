@@ -1619,4 +1619,35 @@ class preteursController extends bootstrap
         $bankAccountManager = $this->get('unilend.service.bank_account_manager');
         $bankAccountManager->validateBankAccount($bankAccount);
     }
+
+    public function _operations_export()
+    {
+        if (
+            isset($_POST['dateStart']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $_POST['dateStart'])
+            && isset($_POST['dateEnd']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $_POST['dateEnd'])
+        ) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var LenderOperationsManager $lenderOperationsManager */
+            $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
+            $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER);
+            $start                   = \DateTime::createFromFormat('m/d/Y', $_POST['dateStart']);
+            $end                     = \DateTime::createFromFormat('m/d/Y', $_POST['dateEnd']);
+
+            $document = $lenderOperationsManager->getOperationsExcelFile($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES);
+            $fileName = 'operations_' . date('Y-m-d_H:i:s');
+
+            /** @var \PHPExcel_Writer_Excel2007 $writer */
+            $writer = PHPExcel_IOFactory::createWriter($document, 'Excel2007');
+
+            header('Content-Type: application/force-download; charset=utf-8');
+            header('Content-Disposition: attachment;filename=' . $fileName . '.xlsx');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Expires: 0');
+
+            $writer->save('php://output');
+
+            die;
+        }
+    }
 }
