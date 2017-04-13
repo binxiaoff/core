@@ -49,14 +49,14 @@
         var alertShown = false;
         // Prepare streetview container
         var initStreetview = function(location) {
-            var streetview = document.getElementById('streetview')
-            var container = document.getElementById('streetview_container')
+            var streetview = document.getElementById('streetview');
+            var container = document.getElementById('streetview_container');
             var offsetSpace = 50;
             var aspectRatio = 0.5625;
             var animationTime = 200;
             var screenHeight = window.innerHeight;
             var availableHeight = screenHeight - offsetSpace;
-            var streetviewContainerWidth = $(container).width()
+            var streetviewContainerWidth = $(container).width();
             var containerRatioHeight =  streetviewContainerWidth * aspectRatio;
             $(container).show();
             // Scroll window to streetview
@@ -67,39 +67,37 @@
                 } else {
                     streetviewAspectRatio = aspectRatio * 100 + '%';
                 }
-                $(container).animate({'padding-bottom': '50%'}, animationTime, function(){
-                    showStreetView(location)
+                $(container).animate({'padding-bottom': streetviewAspectRatio}, animationTime, function(){
+                    showStreetView(location);
                 });
             });
         }
         // Resolve address
         var resolveAddress = function() {
-            var street = $('#address_etape2').val()
-            var city = $('#ville_etape2').val()
-            var postCode = $('#ville_etape2').val()
-            var address = [street, city, postCode]
-            address = address.join(", ")
+            var street = $('#address_etape2').val();
+            var city = $('#ville_etape2').val();
+            var postCode = $('#ville_etape2').val();
+            var address = [street, city, postCode];
+            address = address.join(", ");
             // Init Geocoder
             var geocoder = new google.maps.Geocoder();
             geocoder.geocode({'address': address}, function(results, status) {
                 if (status === 'OK') {
                     // Show Streetview
-                    initStreetview(results[0].geometry.location)
+                    initStreetview(results[0].geometry.location);
                 } else {
                     console.log(status);
                     invalidAddress = true;
                     if (alertShown === false) {
-                        //alert('')
                         $.colorbox({inline:true, href:"#popup-streetview-error"});
-//                        $.colorbox({html:"<h3 style='padding: 40px;'>Could not resolve address</h3>"});
-                        alertShown = true
+                        alertShown = true;
                     }
                 }
             });
         }
         // Init Streetview
         var showStreetView = function(location) {
-            console.log(location)
+            console.log(location);
             new google.maps.StreetViewPanorama(document.getElementById('streetview'), {
                 position: location,
                 pov: {heading: 165, pitch: 0},
