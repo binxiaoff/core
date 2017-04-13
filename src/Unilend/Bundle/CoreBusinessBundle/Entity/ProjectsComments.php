@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectsComments
  *
- * @ORM\Table(name="projects_comments")
+ * @ORM\Table(name="projects_comments", indexes={@ORM\Index(name="projects_comments_id_project", columns={"id_project"}), @ORM\Index(name="projects_comments_id_user", columns={"id_user"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */

@@ -21,7 +21,7 @@
                     <?php endif; ?>
                 </td>
                 <td>
-                    <?php if (false === empty($comment->getIdUser()->getIdUser()) && $this->users->get($comment->getIdUser()->getIdUser())) : ?>
+                    <?php if ($comment->getIdUser() && $this->users->get($comment->getIdUser()->getIdUser())) : ?>
                         <?= $this->users->firstname ?> <?= $this->users->name ?>
                     <?php endif; ?>
                 </td>

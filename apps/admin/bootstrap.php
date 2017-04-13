@@ -212,7 +212,7 @@ class bootstrap extends Controller
             $userAccessEntity->setIp($_SERVER['REMOTE_ADDR']);
 
             $entityManager->persist($userAccessEntity);
-            $entityManager->flush();
+            $entityManager->flush($userAccessEntity);
         }
 
         // On vérifie ici si le mot de passe du user date de moins de 3 mois sinon on le redirige sur la page d'édition de mot de passe

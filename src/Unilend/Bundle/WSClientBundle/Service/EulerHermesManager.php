@@ -200,9 +200,8 @@ class EulerHermesManager
     {
         return (
             false !== $response
-            && $response = json_decode($response)
-            && isset($response->code)
-            && 200 === $response->code
+            && ($response = json_decode($response))
+            && (false === isset($response->code) || 200 === $response->code)
         );
     }
 

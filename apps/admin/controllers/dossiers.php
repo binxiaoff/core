@@ -1347,7 +1347,7 @@ class dossiersController extends bootstrap
                 $projectCommentEntity->setIdUser($this->userEntity);
 
                 $entityManager->persist($projectCommentEntity);
-                $entityManager->flush();
+                $entityManager->flush($projectCommentEntity);
             }
         }
 
@@ -1374,7 +1374,7 @@ class dossiersController extends bootstrap
             && $projectCommentEntity->getIdUser()->getIdUser() == $_SESSION['user']['id_user']
         ) {
             $entityManager->remove($projectCommentEntity);
-            $entityManager->flush();
+            $entityManager->flush($projectCommentEntity);
 
             echo json_encode([
                 'success' => true
@@ -3017,7 +3017,7 @@ class dossiersController extends bootstrap
             $projectCommentEntity->setContent("Projet reporté\n--\n" . $_POST['comment']);
 
             $entityManager->persist($projectCommentEntity);
-            $entityManager->flush();
+            $entityManager->flush($projectCommentEntity);
 
             if ($this->projects->status != \projects_status::POSTPONED) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
@@ -3056,7 +3056,7 @@ class dossiersController extends bootstrap
                 $projectCommentEntity->setContent("Abandon projet\n--\n" . $_POST['comment']);
 
                 $entityManager->persist($projectCommentEntity);
-                $entityManager->flush();
+                $entityManager->flush($projectCommentEntity);
             }
 
             /** @var \project_abandon_reason $abandonReason */
@@ -3154,7 +3154,7 @@ class dossiersController extends bootstrap
             $projectCommentEntity->setContent("Retour à l'analyse\n--\n" . $_POST['comment']);
 
             $entityManager->persist($projectCommentEntity);
-            $entityManager->flush();
+            $entityManager->flush($projectCommentEntity);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
