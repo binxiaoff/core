@@ -112,7 +112,7 @@ class ProjectRequestManager
         if (empty($aFormData['email']) || false === filter_var($aFormData['email'], FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email');
         }
-        if (empty($aFormData['siren']) || false === preg_match('/^([0-9]{9}|[0-9]{14})$/', $aFormData['siren'])) {
+        if (empty($aFormData['siren']) || 1 !== preg_match('/^([0-9]{9}|[0-9]{14})$/', $aFormData['siren'])) {
             throw new \InvalidArgumentException('Invalid SIREN');
         }
         if (empty($aFormData['amount']) || false === filter_var($aFormData['amount'], FILTER_VALIDATE_INT)) {
