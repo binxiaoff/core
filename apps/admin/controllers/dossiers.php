@@ -768,7 +768,7 @@ class dossiersController extends bootstrap
             $projectManager              = $this->get('unilend.service.project_manager');
             $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
             $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
-            $this->currencyFormatter     = new \NumberFormatter('fr', \NumberFormatter::CURRENCY);
+            $this->currencyFormatter     = $this->get('currency_formatter');
 
             $restFunds                   = $projectManager->getRestOfFundsToRelease($project, true);
             $this->wireTransferOuts      = $project->getWireTransferOuts();

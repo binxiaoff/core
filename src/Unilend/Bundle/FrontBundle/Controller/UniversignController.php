@@ -260,14 +260,13 @@ class UniversignController extends Controller
         if (false === file_exists($wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName())) {
             $company           = $wireTransferOut->getProject()->getIdCompany();
             $companyManager    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
-            $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
             $bankAccount       = $wireTransferOut->getBankAccount();
             $pdfContent = $this->renderView('/pdf/wire_transfer_out/borrower_request_third_party.html.twig', [
                 'companyManagerName'      => $companyManager->getNom(),
                 'companyManagerFirstName' => $companyManager->getPrenom(),
                 'companyManagerFunction'  => $companyManager->getFonction(),
                 'companyName'             => $company->getName(),
-                'amount'                  => $currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
+                'amount'                  => $this->get('currency_formatter')->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
                 'destinationName'         => $bankAccount->getIdClient()->getNom(),
                 'destinationFirstName'    => $bankAccount->getIdClient()->getPrenom(),
                 'iban'                    => $bankAccount->getIban(),

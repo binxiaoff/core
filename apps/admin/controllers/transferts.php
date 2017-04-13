@@ -1056,7 +1056,10 @@ class transfertsController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
             $borrowerManager = $this->get('unilend.service.borrower_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-            $partnerManager          = $this->get('unilend.service.partner_manager');
+            $partnerManager = $this->get('unilend.service.partner_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
+            $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
+
             $bankAccountRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
             $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
             $this->project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
@@ -1106,52 +1109,13 @@ class transfertsController extends bootstrap
                 $entityManager->flush($wireTransferOut);
 
                 if ($borrowerBankAccount !== $bankAccount) {
-                    $this->sendWireTransferOutNotificationToBorrower($wireTransferOut);
+                    $wireTransferOutManager->sendWireTransferOutNotificationToBorrower($wireTransferOut);
                 }
                 $_SESSION['freeow']['title']   = 'Transfer de fonds';
                 $_SESSION['freeow']['message'] = 'Le transfer de fonds a été créé avec succès ';
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
-        }
-    }
-
-    private function sendWireTransferOutNotificationToBorrower(Virements $wireTransferOut)
-    {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-        $projectManager    = $this->get('unilend.service.project_manager');
-        $restFunds         = $projectManager->getRestOfFundsToRelease($wireTransferOut->getProject(), false);
-        $currencyFormatter = new \NumberFormatter('fr', \NumberFormatter::CURRENCY);
-        $bankAccount       = $wireTransferOut->getBankAccount();
-        if ($bankAccount) {
-            $facebook       = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook']);
-            $twitter        = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter']);
-            $universignLink = $this->get('router')->generate(
-                'wire_transfer_out_request_pdf',
-                ['clientHash' => $wireTransferOut->getClient()->getHash(), 'wireTransferOutId' => $wireTransferOut->getIdVirement()],
-                \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_PATH
-            );
-
-            $varMail = array(
-                'surl'              => $this->surl,
-                'url'               => $this->furl,
-                'first_name'        => $wireTransferOut->getClient()->getPrenom(),
-                'rest_funds'        => $currencyFormatter->formatCurrency($restFunds, 'EUR'),
-                'amount'            => $currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
-                'iban'              => chunk_split($bankAccount->getIban(), 4, ' '),
-                'bank_account_name' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
-                'universign_link'   => $this->furl . $universignLink,
-                'lien_fb'           => $facebook->getValue(),
-                'lien_tw'           => $twitter->getValue()
-            );
-
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('wire-transfer-out-borrower-notification', $varMail);
-            $message->setTo($wireTransferOut->getClient()->getEmail());
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
         }
     }
 
@@ -1206,11 +1170,13 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         if (false === empty($this->params[0])) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager               = $this->get('doctrine.orm.entity_manager');
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \NumberFormatTest currencyFormatter */
+            $this->currencyFormatter = $this->get('currency_formatter');
+
             $this->wireTransferOut       = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($this->params[0]);
             $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
             $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-            $this->currencyFormatter     = new \NumberFormatter('fr', \NumberFormatter::CURRENCY);
         }
 
         return $this->wireTransferOut;
@@ -1219,11 +1185,14 @@ class transfertsController extends bootstrap
     public function _virement_emprunteur()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager                                              = $this->get('doctrine.orm.entity_manager');
-        $wireTransferOutRepository                                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements');
-        $this->bankAccountRepository                                = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
-        $this->companyRepository                                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-        $this->currencyFormatter                                    = new \NumberFormatter('fr', \NumberFormatter::CURRENCY);
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \NumberFormatTest currencyFormatter */
+        $this->currencyFormatter = $this->get('currency_formatter');
+
+        $wireTransferOutRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements');
+        $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+        $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+
 
         $this->wireTransferOuts[Virements::STATUS_CLIENT_VALIDATED] = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_CLIENT_VALIDATED]);
         $this->wireTransferOuts[Virements::STATUS_PENDING]          = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_PENDING]);
