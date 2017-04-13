@@ -1109,7 +1109,6 @@ class preteursController extends bootstrap
         $this->loadGestionData();
 
         $this->projects_status         = $this->loadData('projects_status');
-        $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->echeanciers             = $this->loadData('echeanciers');
         $this->tax                     = $this->loadData('tax');
         /** @var underlying_contract contract */
