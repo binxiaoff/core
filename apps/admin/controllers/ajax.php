@@ -1,7 +1,8 @@
 <?php
 
-use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
-
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class ajaxController extends bootstrap
 {
@@ -637,38 +638,23 @@ class ajaxController extends bootstrap
 
     public function _loadMouvTransac()
     {
-        $this->transactions = $this->loadData('transactions');
-        $this->clients      = $this->loadData('clients');
-        $this->echeanciers  = $this->loadData('echeanciers');
-        $this->projects     = $this->loadData('projects');
-        $this->companies    = $this->loadData('companies');
-
-        if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
+        if (isset($_POST['year'], $_POST['id_client'])) {
             /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
-            $translator = $this->get('translator');
+            $this->translator = $this->get('translator');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var LenderOperationsManager $lenderOperationsManager */
+            $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-            $this->lesStatuts = array(
-                \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('preteur-profile_versement-initial'),
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('preteur-profile_alimentation-cb'),
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('preteur-profile_alimentation-virement'),
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement de capital',
-                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS     => 'Remboursement d\'intérêts',
-                \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('preteur-profile_alimentation-prelevement'),
-                \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('preteur-profile_retrait'),
-                \transactions_types::TYPE_LENDER_REGULATION              => 'Régularisation prêteur',
-                \transactions_types::TYPE_WELCOME_OFFER                  => 'Offre de bienvenue',
-                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => 'Retrait offre de bienvenue',
-                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
-                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
-                \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe'),
-                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe-preteur'),
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur'),
-                \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
-            );
-
-            $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
+            $year                   = filter_var($_POST['year'], FILTER_VALIDATE_INT);
+            $idClient               = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
+            $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($idClient, WalletType::LENDER);
+            $start                  = new \DateTime();
+            $start->setDate($year, 1,1);
+            $end                    = new \DateTime();
+            $end->setDate($year, 12, 31);
+            $this->lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES);
         }
-
         $this->setView('../preteurs/transactions');
     }
 
