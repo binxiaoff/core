@@ -15,6 +15,7 @@
             $('#changeDate').attr('href', "<?= $this->lurl ?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
 
+        // Lender Vigilance / Atypical Operations
         $('#btn-show-lender-vigilance-history').click(function () {
             $('#lender-vigilance-history').toggle();
             $(this).text(function (i, text) {
