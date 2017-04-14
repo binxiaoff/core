@@ -176,7 +176,7 @@ class dossiersController extends bootstrap
                 $this->projects->status <= \projects_status::COMMERCIAL_REVIEW
                 && empty($this->projects->id_commercial)
                 && empty($this->companies->phone)
-                && false === empty($this->companies->siren)
+                && 1 === preg_match('/^[0-9]{9}$/', $this->companies->siren)
                 && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN !== $this->projects_status_history->content
             ) {
                 /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */

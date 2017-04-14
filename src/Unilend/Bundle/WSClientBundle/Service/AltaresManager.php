@@ -20,8 +20,7 @@ class AltaresManager
     const RESOURCE_FINANCIAL_SUMMARY       = 'get_financial_summary_altares';
     const RESOURCE_MANAGEMENT_LINE         = 'get_balance_management_line_altares';
 
-    const EXCEPTION_CODE_UNKNOWN_SIREN_COMPANY = 101;
-    const EXCEPTION_CODE_NO_FINANCIAL_DATA     = 118;
+    const EXCEPTION_CODE_NO_FINANCIAL_DATA = 118;
 
     /** @var string */
     private $login;
@@ -198,7 +197,7 @@ class AltaresManager
         try {
             $response = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
 
-            if (false === $this->isValidResponse($response, $resourceLabel)) {
+            if (false === $this->isValidResponse($response)) {
                 $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
                 ini_set('default_socket_timeout', 8);
 
@@ -217,7 +216,7 @@ class AltaresManager
             if (null !== $response) {
                 $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
 
-                if ($this->isValidResponse($response, $resourceLabel)) {
+                if ($this->isValidResponse($response)) {
                     return isset($response->return->myInfo) ? $response->return->myInfo : null;
                 }
             }
@@ -262,11 +261,10 @@ class AltaresManager
 
     /**
      * @param mixed  $response
-     * @param string $resourceLabel
      *
      * @return bool
      */
-    private function isValidResponse($response, $resourceLabel)
+    private function isValidResponse($response)
     {
         if (is_string($response)) {
             $response = json_decode($response);
@@ -275,7 +273,6 @@ class AltaresManager
         return (
             isset($response->return->myInfo, $response->return->correct) && $response->return->correct
             || isset($response->return->exception->code) && self::EXCEPTION_CODE_NO_FINANCIAL_DATA == $response->return->exception->code
-            || isset($response->return->exception->code) && self::RESOURCE_ESTABLISHMENT_IDENTITY === $resourceLabel
         );
     }
 }
