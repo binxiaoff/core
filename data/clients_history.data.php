@@ -135,21 +135,4 @@ class clients_history extends clients_history_crud
         }
         return $this->create();
     }
-
-    /**
-     * @param int $clientId
-     * @return mixed
-     */
-    public function getClientLastLogin($clientId)
-    {
-        $sql = '
-        SELECT MAX(added) AS last_login_date FROM clients_history cs
-        WHERE cs.id_client = :id_client
-        AND cs.status = :status
-        ';
-        /** @var \Doctrine\DBAL\Statement $query */
-        $query = $this->bdd->executeQuery($sql, ['id_client' => $clientId, 'status' => self::STATUS_ACTION_LOGIN], ['id_client' => \PDO::PARAM_INT, 'status' => \PDO::PARAM_INT]);
-
-        return $query->fetchColumn();
-    }
 }

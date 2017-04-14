@@ -52,20 +52,12 @@ class UserProvider implements UserProviderInterface
         $client = $this->entityManager->getRepository('clients');
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
-        /** @var \clients_history $clientHistory */
-        $clientHistory = $this->entityManager->getRepository('clients_history');
 
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL) && $client->get($username, 'status = ' . Clients::STATUS_ONLINE. ' AND email')) {
             $balance  = $this->clientManager->getClientBalance($client);
             $initials = $this->clientManager->getClientInitials($client);
             $isActive = $this->clientManager->isActive($client);
             $roles    = ['ROLE_USER'];
-
-            try {
-                $lastLoginDate = $clientHistory->getClientLastLogin($client->id_client);
-            } catch (\Exception $exception) {
-                $lastLoginDate = null;
-            }
 
             if ($this->clientManager->isLender($client)) {
                 $lenderAccount->get($client->id_client, 'id_client_owner');
@@ -94,7 +86,7 @@ class UserProvider implements UserProviderInterface
                     $notifications,
                     $client->etape_inscription_preteur,
                     $userLevel,
-                    $lastLoginDate
+                    $client->lastlogin
                 );
             }
 

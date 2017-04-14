@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -37,6 +37,13 @@ class WalletBalanceHistoryRepository extends EntityRepository
         return $query->getOneOrNullResult();
     }
 
+    /**
+     * @param Wallet    $wallet
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
     public function getLenderOperationHistory(Wallet $wallet, \DateTime $start, \DateTime $end)
     {
         $start->setTime(00, 00, 00);
@@ -55,7 +62,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                                   IF(ot.label = "' . OperationType::LENDER_LOAN . '", o.amount, o.amount*-1)
                               ),
                               IF(
-                                  wbh.id_bid IS NULL,
+                                  wbh.id_autobid IS NULL,
                                   IF(
                                       1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid),
                                       b.amount/-100,
@@ -64,7 +71,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                                   IF(
                                       1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project),
                                       b.amount/-100,
-                                      IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added), b.amount/-100, b.amount/-100)
+                                      IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added), b.amount/-100, b.amount/100)
                                   )
                               )
                           )
@@ -91,7 +98,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                           )) AS label,
                       IF(o.id_project IS NOT NULL, o.id_project, wbh.id_project) as id_project,
                       DATE(wbh.added) AS date,
-                      o.added AS operationDate,
+                      wbh.added AS operationDate,
                       wbh.id_bid,
                       wbh.id_autobid,
                       IF(wbh.id_loan IS NOT NULL, wbh.id_loan, IF(o.id_loan IS NOT NULL, o.id_loan, IF(e.id_loan IS NOT NULL, e.id_loan, ""))) AS id_loan,
@@ -107,27 +114,34 @@ class WalletBalanceHistoryRepository extends EntityRepository
                     WHERE wbh.id_wallet = :idWallet
                     AND wbh.added BETWEEN :startDate AND :endDate
                     GROUP BY IF(id_repayment_schedule IS NULL, wbh.id, o.id_repayment_schedule)
-                    ORDER BY wbh.added DESC, id_bid DESC, id_loan DESC, id_repayment_schedule DESC';
+                    ORDER BY wbh.id DESC, id_bid DESC, id_loan DESC, id_repayment_schedule DESC';
 
-        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, [
+        /** @var QueryCacheProfile $qcProfile */
+        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__ . $wallet->getId()));
+
+        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, [
             'idWallet'  => $wallet->getId(),
             'startDate' => $start->format('Y-m-d H:i:s'),
             'endDate'   => $end->format('Y-m-d H:i:s')
-        ]);
+        ], [
+            'idWallet'  => \PDO::PARAM_INT,
+            'startDate' => \PDO::PARAM_STR,
+            'endDate'   => \PDO::PARAM_STR
+        ], $qcProfile);
 
+        $result =  $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
 
-        //TODO implement cache
-
-        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
     }
 
     /**
      * @param Wallet $wallet
-     * @param $idWalletBalanceHistory
+     * @param int    $idWalletBalanceHistory
      *
-     * @return mixed
+     * @return null|WalletBalanceHistory
      */
-    public function getPreviousLIneForWallet(Wallet $wallet, $idWalletBalanceHistory)
+    public function getPreviousLineForWallet(Wallet $wallet, $idWalletBalanceHistory)
     {
         $qb = $this->createQueryBuilder('wbh');
         $qb->where('wbh.id < :idWbh')
@@ -135,7 +149,8 @@ class WalletBalanceHistoryRepository extends EntityRepository
             ->orderBy('wbh.id', 'DESC')
             ->setMaxResults(1)
             ->setParameter('idWallet', $wallet)
-            ->setParameter('idWbh', $idWalletBalanceHistory);
+            ->setParameter('idWbh', $idWalletBalanceHistory)
+            ->setCacheable(true);
 
         $query = $qb->getQuery();
 

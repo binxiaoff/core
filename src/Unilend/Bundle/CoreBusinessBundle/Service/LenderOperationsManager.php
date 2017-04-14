@@ -3,15 +3,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-
-use function array_push;
-use function bcdiv;
-use function bcsub;
 use Doctrine\ORM\EntityManager;
-use function in_array;
-use function number_format;
-use PHPExcel_Shared_Font;
-use PHPExcel_Style;
+use PHPExcel_Shared_Date;
 use PHPExcel_Style_Border;
 use PHPExcel_Style_Color;
 use PHPExcel_Style_Conditional;
@@ -24,7 +17,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use function var_dump;
 
 class LenderOperationsManager
 {
@@ -36,6 +28,7 @@ class LenderOperationsManager
     const OP_AUTOBID            = 'autobid';
     const OP_REFUSED_AUTOBID    = 'refused-autobid';
     const OP_REFUSED_LOAN       = 'refused-loan';
+
     const PROVISION_TYPES = [
         OperationType::LENDER_PROVISION,
         OperationType::LENDER_TRANSFER,
@@ -92,16 +85,32 @@ class LenderOperationsManager
     /** @var  TranslatorInterface */
     private $translator;
 
+    /**
+     * LenderOperationsManager constructor.
+     * @param EntityManager $entityManager
+     * @param Translator    $translator
+     */
     public function __construct(EntityManager $entityManager, Translator $translator)
     {
         $this->entityManager = $entityManager;
         $this->translator    = $translator;
     }
 
+    /**
+     * @param Wallet     $wallet
+     * @param \DateTime  $start
+     * @param \DateTime  $end
+     * @param int| null  $idProject
+     * @param array|null $operations
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
     public function getLenderOperations(Wallet $wallet, \DateTime $start, \DateTime $end, $idProject = null, array $operations = null)
     {
         if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
-            //TODO throw exception our return false
+            throw new \Exception('Wallet is not a Lender wallet');
         }
 
         $walletBalanceHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
@@ -185,24 +194,24 @@ class LenderOperationsManager
             if (OperationType::COLLECTION_COMMISSION_LENDER === $historyLine['label']) {
                 continue;
             }
-             if (self::OP_REFUSED_BID === $historyLine['label']) {
+
+            if (self::OP_REFUSED_BID === $historyLine['label']) {
                 if (empty($historyLine['amount']) && empty($historyLine['id_bid'] && empty($historyLine['id_loan']))) {
                     /** @var WalletBalanceHistory $walletBalanceHistory */
-                    $walletBalanceHistory  = $walletBalanceHistoryRepository->getPreviousLIneForWallet($wallet, $historyLine['id']);
+                    $walletBalanceHistory  = $walletBalanceHistoryRepository->getPreviousLineForWallet($wallet, $historyLine['id']);
                     $amount                = bcsub($walletBalanceHistory->getAvailableBalance(), $historyLine['amount'], 2);
                     $historyLine['amount'] = $amount;
                 }
-                 $historyLine['amount'] = abs($historyLine['amount']);
+                $historyLine['amount'] = abs($historyLine['amount']);
 
                 if (false === empty($historyLine['id_loan'])) {
-                    $historyLine['label'] = self::OP_REFUSED_LOAN;
-                    $loan = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($historyLine['id_loan']);
+                    $historyLine['label']  = self::OP_REFUSED_LOAN;
+                    $loan                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($historyLine['id_loan']);
                     $historyLine['amount'] = bcdiv($loan->getAmount(), 100, 2);
                 }
-             }
+            }
             $lenderOperations[] = $historyLine;
         }
-
 
         if (null !== $idProject || null !== $operations){
             return $this->filterLenderOperations($lenderOperations, $idProject, $operations);
@@ -304,7 +313,7 @@ class LenderOperationsManager
             $taxColumns[$label] = $column;
             $column ++;
         }
-        $balanceColumn = $column+1;
+        $balanceColumn = $column;
         $activeSheet->setCellValueByColumnAndRow($balanceColumn, $row, $this->translator->trans('lender-operations_operations-csv-account-balance-column'));
         $row ++;
 
@@ -313,7 +322,8 @@ class LenderOperationsManager
             $activeSheet->setCellValueByColumnAndRow(1, $row, $operation['id_loan']);
             $activeSheet->setCellValueByColumnAndRow(2, $row, $operation['id_project']);
             $activeSheet->setCellValueByColumnAndRow(3, $row, $operation['title']);
-            $activeSheet->setCellValueByColumnAndRow(4, $row, date('d/m/Y', strtotime($operation['date'])));
+            $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, PHPExcel_Shared_Date::PHPToExcel(strtotime($operation['operationDate'])),\PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->getCellByColumnAndRow(4, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
             $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, $operation['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->getCellByColumnAndRow(5, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             $this->addConditionalStyleToCell($activeSheet, 5, $row);
@@ -394,6 +404,4 @@ class LenderOperationsManager
         array_push($conditionalStyles, $positiveValue);
         $activeSheet->getCellByColumnAndRow($column, $row)->getStyle()->setConditionalStyles($conditionalStyles);
     }
-
-
 }

@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\Common\Collections\Expr\Comparison;
+use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
@@ -31,6 +32,7 @@ class OperationRepository extends EntityRepository
      * @param Wallet    $wallet
      * @param double    $amount
      * @param \DateTime $added
+     *
      * @return Operation[]
      */
     public function getWithdrawOperationByWallet(Wallet $wallet, $amount, \DateTime $added)
@@ -54,6 +56,7 @@ class OperationRepository extends EntityRepository
     /**
      * @param Wallet    $wallet
      * @param \DateTime $date
+     *
      * @return Operation[]
      */
     public function getWithdrawAndProvisionOperationByDateAndWallet(Wallet $wallet, \DateTime $date)
@@ -75,6 +78,7 @@ class OperationRepository extends EntityRepository
     /**
      * @param array $criteria [field => value]
      * @param array $operator [field => operator]
+     *
      * @return Operation[]
      */
     private function getOperationBy(array $criteria = [], array $operator = [])
@@ -93,9 +97,9 @@ class OperationRepository extends EntityRepository
 
 
     /**
-     * @param $idRepaymentSchedule
+     * @param int $idRepaymentSchedule
      *
-     * @return mixed
+     * @return null|float
      */
     public function getTaxAmountByRepaymentScheduleId($idRepaymentSchedule)
     {
@@ -105,13 +109,14 @@ class OperationRepository extends EntityRepository
             ->where('ot.label IN (:taxTypes)')
             ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
             ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idRepaymentSchedule', $idRepaymentSchedule);
+            ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
+            ->setCacheable(true);
 
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * @param $idRepaymentSchedule
+     * @param int $idRepaymentSchedule
      *
      * @return mixed
      */
@@ -132,10 +137,12 @@ class OperationRepository extends EntityRepository
                   INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '"
                 WHERE o_capital.id_repayment_schedule = :idRepaymentSchedule';
 
-        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, ['idRepaymentSchedule' => $idRepaymentSchedule]);
-        //TODO implement cache
-        return $statement->fetch();
+        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__ . $idRepaymentSchedule));
+        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idRepaymentSchedule' => $idRepaymentSchedule], ['idRepaymentSchedule' => \PDO::PARAM_INT], $qcProfile);
+        $result    = $statement->fetch();
+        $statement->closeCursor();
 
+        return $result;
     }
 
     /**
@@ -169,9 +176,11 @@ class OperationRepository extends EntityRepository
                       AND o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
                     GROUP BY IF(o_capital.id_repayment_schedule IS NOT NULL, o_capital.id_repayment_schedule, o_capital.id)';
 
+        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__ . $wallet->getId()));
+        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idWallet' => $wallet->getId(), 'date' => $date], ['idWallet' => \PDO::PARAM_INT, 'date' => \PDO::PARAM_STR], $qcProfile);
+        $result    = $statement->fetch();
+        $statement->closeCursor();
 
-        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, ['idWallet' => $wallet->getId(), 'date' => $date]);
-        //TODO implement cache
-        return $statement->fetch();
+        return $result;
     }
 }
