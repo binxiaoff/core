@@ -10,6 +10,9 @@ $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $b
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
     <h1>Validation du transfert</h1>
     <p>Voulez-vous valider le transfert ci-dessus :
+    <?php if ($this->displayWarning) : ?>
+        <p class="red">Attention: <?= $beneficiaryCompany->getName() ?> n'a jamais été utilisé comme bénéficiaire d'un transfert.</p>
+    <?php endif; ?>
     <form method="post" enctype="multipart/form-data" action="/transferts/validate_lightbox/<?= $this->params[0] ?>">
         <table class="tablesorter">
             <thead>

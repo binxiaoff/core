@@ -1137,10 +1137,16 @@ class transfertsController extends bootstrap
 
     public function _validate_lightbox()
     {
-        $wireTransferOut = $this->prepareDisplayWireTransferOut();
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $wireTransferOut       = $this->prepareDisplayWireTransferOut();
+        $this->displayWarning = false;
+        if ($wireTransferOut->getBankAccount()->getIdClient() !== $wireTransferOut->getClient()) {
+            $this->displayWarning = false === $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->isBankAccountValidatedOnceTime($wireTransferOut);
+        }
+
         if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $wireTransferOut) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
             $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
             if (in_array($wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_VALIDATED])) {

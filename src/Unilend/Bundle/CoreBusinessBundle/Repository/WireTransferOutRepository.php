@@ -54,11 +54,25 @@ class WireTransferOutRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('wto');
         $qb->where('wto.status = :ready')
-            ->andWhere('wto.addedXml IS NULL')
-            ->andWhere('wto.transferAt IS NULL OR wto.transferAt <= :today')
-            ->setParameter('ready', Virements::STATUS_VALIDATED)
-            ->setParameter('today', new \DateTime());
+           ->andWhere('wto.addedXml IS NULL')
+           ->andWhere('wto.transferAt IS NULL OR wto.transferAt <= :today')
+           ->setParameter('ready', Virements::STATUS_VALIDATED)
+           ->setParameter('today', new \DateTime());
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function isBankAccountValidatedOnceTime(Virements $wireTransferOut)
+    {
+        $qb = $this->createQueryBuilder('wto');
+        $qb->select('COUNT(wto)')
+           ->where('wto.bankAccount = :bankAccount')
+           ->andWhere('wto.idClient = :client')
+           ->andWhere('wto.status in (:status)')
+           ->setParameter('client', $wireTransferOut->getClient())
+           ->setParameter('bankAccount', $wireTransferOut->getBankAccount())
+           ->setParameter('status', [Virements::STATUS_VALIDATED, Virements::STATUS_SENT], Connection::PARAM_INT_ARRAY);
+
+        return $qb->getQuery()->getSingleScalarResult() > 0;
     }
 }
