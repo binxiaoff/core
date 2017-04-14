@@ -23,6 +23,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
@@ -712,6 +713,9 @@ class LenderSubscriptionController extends Controller
 
                 $redirectUrl = $this->get('unilend.service.payline_manager')->pay($amount, $wallet, $successUrl, $cancelUrl);
 
+                $formManager = $this->get('unilend.frontbundle.service.form_manager');
+                $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_PROVISION_BY_CREDIT_CARD, serialize(['id_client' => $client->getIdClient(), 'post' => $request->request->all()]), $request->getClientIp());
+
                 if (false !== $redirectUrl) {
                     return $this->redirect($redirectUrl);
                 }
@@ -939,37 +943,24 @@ class LenderSubscriptionController extends Controller
      */
     private function saveClientHistoryAction(Clients $client, Request $request, $step)
     {
-        $formId     = '';
-        $clientType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
-
         $formManager = $this->get('unilend.frontbundle.service.form_manager');
         $post        = $formManager->cleanPostData($request->request->all());
         $files       = $request->files;
 
-        switch ($step) {
-            case 1:
-                $post['form']['client']['password']['first']  = md5($post['form']['client']['password']['first']);
-                $post['form']['client']['password']['second'] = md5($post['form']['client']['password']['second']);
-                $post['form']['security']['secreteReponse']   = md5($post['form']['security']['secreteReponse']);
-                $formId                                       = 14;
-                break;
-            case 2:
-                $formId = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 17 : 19;
-                break;
+        if (1 == $step) {
+            $post['form']['client']['password']['first']  = md5($post['form']['client']['password']['first']);
+            $post['form']['client']['password']['second'] = md5($post['form']['client']['password']['second']);
+            $post['form']['security']['secreteReponse']   = md5($post['form']['security']['secreteReponse']);
+            $formType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_PERSONAL_INFORMATION : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_PERSONAL_INFORMATION;
+        } else {
+            $formType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_BANK_DOCUMENTS : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_BANK_DOCUMENTS;
         }
-
 
         if (false === empty($files)) {
             $post = array_merge($post, $formManager->getNamesOfFiles($files));
         }
 
-        /** @var \clients_history_actions $clientHistoryActions */
-        $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
-        $clientHistoryActions->histo(
-            $formId,
-            'inscription etape ' . $step . ' ' . $clientType,
-            $client->getIdClient(), serialize(['id_client' => $client->getIdClient(), 'post' => $post])
-        );
+        $formManager->saveFormSubmission($client, $formType, serialize(['id_client' => $client->getIdClient(), 'post' => $post]), $request->getClientIp());
     }
 
     /**
