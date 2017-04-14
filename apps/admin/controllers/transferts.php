@@ -58,13 +58,15 @@ class transfertsController extends bootstrap
 
     public function _non_attribues()
     {
-        $this->aOperations = $this->loadData('receptions')->select('id_client IS NULL AND id_project IS NULL AND type IN (1, 2) AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
+        $this->aOperations = $this->loadData('receptions')
+                                  ->select('id_client IS NULL AND id_project IS NULL AND type IN (1, 2) AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)',
+                                      'id_reception DESC');
 
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             $bank_unilend = $this->loadData('bank_unilend');
             $transactions = $this->loadData('transactions');
             /** @var \Doctrine\ORM\EntityManager $em */
-            $em               = $this->get('doctrine.orm.entity_manager');
+            $em = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
             $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
@@ -213,7 +215,7 @@ class transfertsController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
             $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-            $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($_POST['id_client'], WalletType::LENDER);
+            $wallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($_POST['id_client'], WalletType::LENDER);
 
             if (null !== $reception && null !== $wallet) {
                 $user  = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
@@ -461,7 +463,7 @@ class transfertsController extends bootstrap
 
                 $this->aClientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer(null, $sStartDateSQL, $sEndDateSQL);
             } elseif (false === empty($_POST['id'])) {
-                $this->aClientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer($_POST['id']);
+                $this->aClientsWithoutWelcomeOffer                     = $this->clients->getClientsWithNoWelcomeOffer($_POST['id']);
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['id'] = $_POST['id'];
             } else {
                 $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez soit la liste des ID clients soit un interval de date';
@@ -470,17 +472,17 @@ class transfertsController extends bootstrap
         }
 
         if (isset($_POST['affect_welcome_offer']) && isset($this->params[0])) {
-            if($this->clients->get($this->params[0])&& $oLendersAccounts->get($this->clients->id_client, 'id_client_owner')) {
+            if ($this->clients->get($this->params[0]) && $oLendersAccounts->get($this->clients->id_client, 'id_client_owner')) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
                 $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-                $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
+                $response            = $welcomeOfferManager->createWelcomeOffer($this->clients);
 
                 switch ($response['code']) {
                     case 0:
-                        $_SESSION['freeow']['title']   = 'Offre de bienvenue cr&eacute;dit&eacute;';
+                        $_SESSION['freeow']['title'] = 'Offre de bienvenue cr&eacute;dit&eacute;';
                         break;
                     default:
-                        $_SESSION['freeow']['title']   = 'Offre de bienvenue non cr&eacute;dit&eacute;';
+                        $_SESSION['freeow']['title'] = 'Offre de bienvenue non cr&eacute;dit&eacute;';
                         break;
                 }
                 $_SESSION['freeow']['message'] = $response['message'];
@@ -493,7 +495,7 @@ class transfertsController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
         /** @var \clients $oClients */
-        $oClients = $this->loadData('clients');
+        $oClients                    = $this->loadData('clients');
         $aClientsWithoutWelcomeOffer = array();
 
         if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL']) && isset($_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL'])) {
@@ -512,7 +514,7 @@ class transfertsController extends bootstrap
         $aColumnHeaders = array('ID Client', 'Nom ou Raison Sociale', 'Prénom', 'Email', 'Date de création', 'Date de validation');
         $aData          = array();
 
-        foreach ($aClientsWithoutWelcomeOffer as $key =>$aClient) {
+        foreach ($aClientsWithoutWelcomeOffer as $key => $aClient) {
             $aData[] = array(
                 $aClient['id_client'],
                 empty($aClient['company']) ? $aClient['nom'] : $aClient['company'],
@@ -697,7 +699,7 @@ class transfertsController extends bootstrap
                 }
 
                 $allAcceptedBids = $acceptedBids->getDistinctBids($project->getIdProject());
-                $lastLoans    = array();
+                $lastLoans       = array();
 
                 foreach ($allAcceptedBids as $bid) {
                     $lender->get($bid['id_lender']);
@@ -727,7 +729,7 @@ class transfertsController extends bootstrap
                     /** @var \factures $invoice */
                     $invoice = $this->loadData('factures');
 
-                    $dateFirstPayment        = $repaymentHistory[0]['added'];
+                    $dateFirstPayment         = $repaymentHistory[0]['added'];
                     $commissionIncents        = bcmul($commission, 100);
                     $commissionIncentsExclTax = bcmul($projectManager->getCommissionFunds($project, false), 100);
 
@@ -847,7 +849,8 @@ class transfertsController extends bootstrap
                 false === empty($_POST['id_client_to_transfer'])
                 && (false === is_numeric($_POST['id_client_to_transfer'])
                     || false === $originalClient->get($_POST['id_client_to_transfer'])
-                    || false === $clientManager->isLender($originalClient))) {
+                    || false === $clientManager->isLender($originalClient))
+            ) {
                 $this->addErrorMessageAndRedirect('Le défunt n\'est pas un prêteur');
             }
 
@@ -1001,7 +1004,7 @@ class transfertsController extends bootstrap
     }
 
     /**
-     * @param \loans $loans
+     * @param \loans            $loans
      * @param \lenders_accounts $newLender
      */
     private function transferRepaymentSchedule(\loans $loans, \lenders_accounts $newLender)
@@ -1009,7 +1012,7 @@ class transfertsController extends bootstrap
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->loadData('echeanciers');
 
-        foreach ($repaymentSchedule->select('id_loan = ' . $loans->id_loan) as $repayment){
+        foreach ($repaymentSchedule->select('id_loan = ' . $loans->id_loan) as $repayment) {
             $repaymentSchedule->get($repayment['id_echeancier']);
             $repaymentSchedule->id_lender = $newLender->id_lender_account;
             $repaymentSchedule->update();
@@ -1039,9 +1042,9 @@ class transfertsController extends bootstrap
 
     private function deleteClaimsPdf(\loans $loan, \clients $originalClient)
     {
-        $filePath      = $this->path . 'protected/pdf/declaration_de_creances/' . $loan->id_project . '/';
-        $filePath      = ($loan->id_project == '1456') ? $filePath : $filePath . $originalClient->id_client . '/';
-        $filePath      = $filePath . 'declaration-de-creances' . '-' . $originalClient->hash . '-' . $loan->id_loan . '.pdf';
+        $filePath = $this->path . 'protected/pdf/declaration_de_creances/' . $loan->id_project . '/';
+        $filePath = ($loan->id_project == '1456') ? $filePath : $filePath . $originalClient->id_client . '/';
+        $filePath = $filePath . 'declaration-de-creances' . '-' . $originalClient->hash . '-' . $loan->id_loan . '.pdf';
         if (file_exists($filePath)) {
             unlink($filePath);
         }
@@ -1060,12 +1063,10 @@ class transfertsController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
             $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
 
-            $bankAccountRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
             $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
             $this->project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
             $this->borrowerMotif     = $borrowerManager->getBorrowerBankTransferLabel($this->project);
-            $borrowerBankAccount     = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->project->getIdCompany()->getIdClientOwner());
-            $this->bankAccounts[]    = $borrowerBankAccount;
+            $this->bankAccounts[]    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->project->getIdCompany()->getIdClientOwner());
             $this->bankAccounts      = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getPartner()));
 
             if ($this->request->isMethod('POST')) {
@@ -1086,31 +1087,21 @@ class transfertsController extends bootstrap
                     die;
                 }
 
-                $bankAccount = $bankAccountRepository->find($this->request->request->get('bank_account'));
-                $client      = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->project->getIdCompany()->getIdClientOwner());
+                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($this->request->request->get('bank_account'));
+                $wallet      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
                 $user        = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-                $status      = Virements::STATUS_PENDING;
-                if ($borrowerBankAccount === $bankAccount) {
-                    $status = Virements::STATUS_CLIENT_VALIDATED;
+
+                try {
+                    $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount, $this->project, $user, $date, $this->request->request->get('pattern'));
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error($exception->getMessage(), ['methode' => __METHOD__]);
+                    $_SESSION['freeow']['title']   = 'Transfer de fonds échoué';
+                    $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a pas été créé';
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    die;
                 }
 
-                $wireTransferOut = new Virements();
-                $wireTransferOut->setProject($this->project)
-                                ->setClient($client)
-                                ->setMontant(bcmul($amount, 100))
-                                ->setMotif($this->request->request->get('pattern'))
-                                ->setType(Virements::TYPE_BORROWER)
-                                ->setBankAccount($bankAccount)
-                                ->setUserRequest($user)
-                                ->setTransferAt($date)
-                                ->setStatus($status);
-
-                $entityManager->persist($wireTransferOut);
-                $entityManager->flush($wireTransferOut);
-
-                if ($borrowerBankAccount !== $bankAccount) {
-                    $wireTransferOutManager->sendWireTransferOutNotificationToBorrower($wireTransferOut);
-                }
                 $_SESSION['freeow']['title']   = 'Transfer de fonds';
                 $_SESSION['freeow']['message'] = 'Le transfer de fonds a été créé avec succès ';
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
@@ -1124,7 +1115,7 @@ class transfertsController extends bootstrap
         $wireTransferOut = $this->prepareDisplayWireTransferOut();
         if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $wireTransferOut) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager               = $this->get('doctrine.orm.entity_manager');
+            $entityManager   = $this->get('doctrine.orm.entity_manager');
             $forbiddenStatus = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_VALIDATED, Virements::STATUS_SENT];
             if (false === in_array($wireTransferOut->getStatus(), $forbiddenStatus)) {
                 $wireTransferOut->setStatus(Virements::STATUS_DENIED);
@@ -1149,10 +1140,13 @@ class transfertsController extends bootstrap
         $wireTransferOut = $this->prepareDisplayWireTransferOut();
         if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $wireTransferOut) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager               = $this->get('doctrine.orm.entity_manager');
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
+            $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
             if (in_array($wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_VALIDATED])) {
-                $wireTransferOut->setStatus(Virements::STATUS_VALIDATED);
-                $entityManager->flush($wireTransferOut);
+                $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+                $wireTransferOutManager->validateTransfer($wireTransferOut, $user);
+
                 $_SESSION['freeow']['title']   = 'Transfer de fonds';
                 $_SESSION['freeow']['message'] = 'Le transfer de fonds a été validé avec succès ';
             } else {

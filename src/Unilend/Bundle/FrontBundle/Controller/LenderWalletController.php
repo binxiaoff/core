@@ -15,9 +15,7 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
@@ -203,7 +201,6 @@ class LenderWalletController extends Controller
                         $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                     }
                 }
-                $logger->info('Wrong parameters submitted, id_client=' . $client->getIdClient(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
             }
 
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
@@ -216,40 +213,38 @@ class LenderWalletController extends Controller
                 $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($wallet->getIdClient());
 
                 if ($bankAccount) {
-                    $wireTransferOut = new Virements();
-                    $wireTransferOut->setClient($wallet->getIdClient());
-                    $wireTransferOut->setMontant(bcmul($amount, 100));
-                    $wireTransferOut->setMotif($wallet->getWireTransferPattern());
-                    $wireTransferOut->setType(Virements::TYPE_LENDER);
-                    $wireTransferOut->setStatus(Virements::STATUS_PENDING);
-                    $wireTransferOut->setBankAccount($bankAccount);
-                    $em->persist($wireTransferOut);
+                    try {
+                        $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
+                        $wireTransferOut        = $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount);
 
-                    $this->get('unilend.service.operation_manager')->withdrawLenderWallet($wallet, $wireTransferOut);
-                    $transaction->get($wireTransferOut->getIdTransaction());
+                        $transaction->get($wireTransferOut->getIdTransaction());
 
-                    $notification->type      = \notifications::TYPE_DEBIT;
-                    $notification->id_lender = $lender->id_lender_account;
-                    $notification->amount    = $amount * 100;
-                    $notification->create();
+                        $notification->type      = \notifications::TYPE_DEBIT;
+                        $notification->id_lender = $lender->id_lender_account;
+                        $notification->amount    = $amount * 100;
+                        $notification->create();
 
-                    $this->getUser()->setBalance($transaction->getSolde($client->getIdClient()));
+                        $this->getUser()->setBalance($transaction->getSolde($client->getIdClient()));
 
-                    $clientMailNotification->id_client       = $client->getIdClient();
-                    $clientMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_DEBIT;
-                    $clientMailNotification->date_notif      = date('Y-m-d H:i:s');
-                    $clientMailNotification->id_notification = $notification->id_notification;
-                    $clientMailNotification->id_transaction  = $transaction->id_transaction;
-                    $clientMailNotification->create();
+                        $clientMailNotification->id_client       = $client->getIdClient();
+                        $clientMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_DEBIT;
+                        $clientMailNotification->date_notif      = date('Y-m-d H:i:s');
+                        $clientMailNotification->id_notification = $notification->id_notification;
+                        $clientMailNotification->id_transaction  = $transaction->id_transaction;
+                        $clientMailNotification->create();
 
-                    if ($clientNotification->getNotif($client->getIdClient(), 8, 'immediatement') == true) {
-                        $clientMailNotification->get($clientMailNotification->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                        $clientMailNotification->immediatement = 1;
-                        $clientMailNotification->update();
-                        $this->sendClientWithdrawalNotification($client, $amount);
+                        if ($clientNotification->getNotif($client->getIdClient(), 8, 'immediatement') == true) {
+                            $clientMailNotification->get($clientMailNotification->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                            $clientMailNotification->immediatement = 1;
+                            $clientMailNotification->update();
+                            $this->sendClientWithdrawalNotification($client, $amount);
+                        }
+
+                        $this->addFlash('withdrawalSuccess', $translator->trans('lender-wallet_withdrawal-success-message'));
+                    } catch (\Exception $exception) {
+                        $logger->error('Failed to handle withdrawal operation for client : ' . $client->getIdClient() . 'Error : ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
+                        $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                     }
-
-                    $this->addFlash('withdrawalSuccess', $translator->trans('lender-wallet_withdrawal-success-message'));
                 } else {
                     $logger->info('No validated bank account found for id_client=' . $client->getIdClient(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));

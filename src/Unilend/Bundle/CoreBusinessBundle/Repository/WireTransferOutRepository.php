@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 
 class WireTransferOutRepository extends EntityRepository
 {
@@ -42,6 +43,21 @@ class WireTransferOutRepository extends EntityRepository
            ->orderBy('wto.added', 'DESC')
            ->setParameter('client', $client)
            ->setParameter('status', $status, Connection::PARAM_INT_ARRAY);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return Virements[]
+     */
+    public function findWireTransferReadyToSend()
+    {
+        $qb = $this->createQueryBuilder('wto');
+        $qb->where('wto.status = :ready')
+            ->andWhere('wto.addedXml IS NULL')
+            ->andWhere('wto.transferAt IS NULL OR wto.transferAt <= :today')
+            ->setParameter('ready', Virements::STATUS_VALIDATED)
+            ->setParameter('today', new \DateTime());
 
         return $qb->getQuery()->getResult();
     }

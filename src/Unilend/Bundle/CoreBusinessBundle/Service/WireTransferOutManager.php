@@ -6,7 +6,12 @@ use Doctrine\ORM\EntityManager;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class WireTransferOutManager
@@ -32,6 +37,9 @@ class WireTransferOutManager
     /** @var Packages */
     private $assetsPackages;
 
+    /** @var OperationManager */
+    private $operationManager;
+
     /** @var string */
     private $frontUrl;
 
@@ -43,6 +51,7 @@ class WireTransferOutManager
         \Swift_Mailer $mailer,
         RouterInterface $router,
         Packages $assetsPackages,
+        OperationManager $operationManager,
         $frontUrl
     ) {
         $this->entityManager     = $entityManager;
@@ -52,6 +61,7 @@ class WireTransferOutManager
         $this->mailer            = $mailer;
         $this->router            = $router;
         $this->assetsPackages    = $assetsPackages;
+        $this->operationManager  = $operationManager;
         $this->frontUrl          = $frontUrl;
 
     }
@@ -87,5 +97,80 @@ class WireTransferOutManager
             $message->setTo($wireTransferOut->getClient()->getEmail());
             $this->mailer->send($message);
         }
+    }
+
+    /**
+     * @param Wallet        $wallet
+     * @param               $amount
+     * @param BankAccount   $bankAccount
+     * @param Projects|null $project
+     * @param Users|null    $requestUser
+     * @param null          $wireTransferPattern
+     * @param \DateTime     $transferAt
+     *
+     * @return Virements
+     */
+    public function createTransfer(
+        Wallet $wallet,
+        $amount,
+        BankAccount $bankAccount = null,
+        Projects $project = null,
+        Users $requestUser = null,
+        \DateTime $transferAt = null,
+        $wireTransferPattern = null
+    ) {
+        switch ($wallet->getIdType()->getLabel()) {
+            case WalletType::LENDER :
+                $type = Virements::TYPE_LENDER;
+                break;
+            case WalletType::BORROWER :
+                $type = Virements::TYPE_BORROWER;
+                break;
+            case WalletType::UNILEND :
+                $type = Virements::TYPE_UNILEND;
+                break;
+            default :
+                throw new \InvalidArgumentException('Wallet type ' . $wallet->getIdType()->getLabel() . ' is not supported.');
+        }
+        if (null === $bankAccount && WalletType::UNILEND !== $wallet->getIdType()->getLabel()) {
+            throw new \InvalidArgumentException('Bank account is not defined.');
+        }
+        $pattern = $wireTransferPattern ? $wireTransferPattern : $wallet->getWireTransferPattern();
+
+        $wireTransferOut = new Virements();
+        $wireTransferOut->setClient($wallet->getIdClient())
+                        ->setProject($project)
+                        ->setMontant(bcmul($amount, 100))
+                        ->setMotif($pattern)
+                        ->setType($type)
+                        ->setBankAccount($bankAccount)
+                        ->setUserRequest($requestUser)
+                        ->setTransferAt($transferAt)
+                        ->setStatus(Virements::STATUS_PENDING);
+
+        $this->entityManager->persist($wireTransferOut);
+
+        if (WalletType::UNILEND === $wallet->getIdType()->getLabel() || $bankAccount && $bankAccount->getIdClient() === $wallet->getIdClient()) {
+            $this->validateTransfer($wireTransferOut);
+        }
+
+        $this->entityManager->flush($wireTransferOut);
+
+        if (Virements::STATUS_PENDING === $wireTransferOut->getStatus() && Virements::TYPE_BORROWER === $wireTransferOut->getType()) {
+            $this->sendWireTransferOutNotificationToBorrower($wireTransferOut);
+        }
+
+        return $wireTransferOut;
+    }
+
+    public function validateTransfer(Virements $wireTransferOut, Users $validationUser = null)
+    {
+        $wireTransferOut->setStatus(Virements::STATUS_VALIDATED)
+                        ->setUserValidation($validationUser)
+                        ->setValidated(new \DateTime());
+
+        $this->entityManager->flush($wireTransferOut);
+
+        $this->operationManager->withdraw($wireTransferOut);
     }
 }
