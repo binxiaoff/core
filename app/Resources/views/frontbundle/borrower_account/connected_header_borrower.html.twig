@@ -21,17 +21,14 @@
                                 <a href="{{ path('borrower_account_projects') }}">{{ app.user.initials }}</a>
                             </div><!-- /.profile-avatar -->
 
-                            {% if app.user.unreadNotificationsCount is defined %}
-                                <a href="javascript:;" class="profile-notifications" data-usernotificationsdrop>
-                                    <span data-usernotifications-unreadcount></span>
-                                </a><!-- /.profile-notifications -->
-                            {% endif %}
-
                             <div class="profile-name">{% trans with {'%firstName%' : app.user.firstName} %} borrower-header_greeting {% endtrans %}</div>
 
                             <div class="profile-balance">
                                 <span class="label">{% trans %} borrower-header_siren {% endtrans %}</span>
                                 <span class="value">{{ app.user.siren }}</span>
+                            </div><!-- /.profile-balance -->
+                            <div class="profile-balance">
+                                <span>{% trans with {'%balance%' : app.user.balance|default(0)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}</span>
                             </div><!-- /.profile-balance -->
 
                             <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{{ 'borrower-header_logout'|trans }}</span></a>
