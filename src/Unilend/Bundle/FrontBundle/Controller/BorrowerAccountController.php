@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
@@ -231,13 +232,23 @@ class BorrowerAccountController extends Controller
             }
         }
 
+        $thirdPartyWireTransfersOuts = $this->get('doctrine.orm.entity_manager')
+                                            ->getRepository('UnilendCoreBusinessBundle:Virements')
+                                            ->findWireTransferToThirdParty($client->id_client, [
+                                                Virements::STATUS_PENDING,
+                                                Virements::STATUS_CLIENT_VALIDATED,
+                                                Virements::STATUS_VALIDATED,
+                                                Virements::STATUS_SENT
+                                            ]);
+
         return $this->render(
             'borrower_account/operations.html.twig',
             [
-                'default_filter_date'   => $defaultFilterDate,
-                'projects_ids'          => $projectsIds,
-                'invoices'              => $clientsInvoices,
-                'post_funding_projects' => $projectsPostFunding,
+                'default_filter_date'            => $defaultFilterDate,
+                'projects_ids'                   => $projectsIds,
+                'invoices'                       => $clientsInvoices,
+                'post_funding_projects'          => $projectsPostFunding,
+                'third_party_wire_transfer_outs' => $thirdPartyWireTransfersOuts,
             ]
         );
     }

@@ -18,12 +18,13 @@ class CheckWireTransferOutValidationCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManager          = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $wiretransferOutManager = $this->getContainer()->get('unilend.service.wire_transfer_out_manager');
-
-        $pendingWireTransferOuts = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findBefore(Virements::STATUS_PENDING, new \DateTime('2 days ago'));
+        $wireTransferOutManager  = $this->getContainer()->get('unilend.service.wire_transfer_out_manager');
+        $pendingWireTransferOuts = $this->getContainer()
+                                        ->get('doctrine.orm.entity_manager')
+                                        ->getRepository('UnilendCoreBusinessBundle:Virements')
+                                        ->findWireTransferBefore(Virements::STATUS_PENDING, new \DateTime('2 days ago'));
         foreach ($pendingWireTransferOuts as $wireTransferOut) {
-            $wiretransferOutManager->sendWireTransferOutNotificationToBorrower($wireTransferOut);
+            $wireTransferOutManager->sendWireTransferOutNotificationToBorrower($wireTransferOut);
         }
     }
 }

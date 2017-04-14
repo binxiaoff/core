@@ -3,9 +3,10 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class ProjectRepository extends EntityRepository
@@ -13,16 +14,14 @@ class ProjectRepository extends EntityRepository
     /**
      * @param \DateTime $dateTime
      *
-     * @return array;
+     * @return Projects[];
      */
     public function findPartiallyReleasedProjects(\DateTime $dateTime)
     {
-        $rsm = new ResultSetMapping();
-        $rsm->addEntityResult('Unilend\Bundle\CoreBusinessBundle\Entity\Projects', 'p');
-        $rsm->addFieldResult('p', 'id_project', 'idProject');
-        $rsm->addFieldResult('p', 'title', 'title');
+        $rsm = new ResultSetMappingBuilder($this->getEntityManager());
+        $rsm->addRootEntityFromClassMetadata('UnilendCoreBusinessBundle:Projects', 'p');
 
-        $sql = 'SELECT p.id_project, p.title, MIN(psh.added) as release_date, p.amount - ROUND(i.montant_ttc / 100, 2) - IF(f.release_funds IS NULL, 0, f.release_funds ) as rest_funds
+        $sql = 'SELECT p.*, MIN(psh.added) as release_date, p.amount - ROUND(i.montant_ttc / 100, 2) - IF(f.release_funds IS NULL, 0, f.release_funds ) as rest_funds
                 FROM projects p
                   INNER JOIN projects_status_history psh ON psh.id_project = p.id_project
                   INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
@@ -40,11 +39,11 @@ class ProjectRepository extends EntityRepository
         $query = $this->_em->createNativeQuery($sql, $rsm);
         $query->setParameters([
             'borrower_withdraw' => OperationType::BORROWER_WITHDRAW,
-            'repayment' => ProjectsStatus::REMBOURSEMENT,
-            'funds_commission' => Factures::TYPE_COMMISSION_FINANCEMENT,
-            'date' => $dateTime,
+            'repayment'         => ProjectsStatus::REMBOURSEMENT,
+            'funds_commission'  => Factures::TYPE_COMMISSION_FINANCEMENT,
+            'date'              => $dateTime,
         ]);
 
-        return $query->getArrayResult();
+        return $query->getResult();
     }
 }

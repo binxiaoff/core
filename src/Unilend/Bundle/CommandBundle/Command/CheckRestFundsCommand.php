@@ -22,7 +22,7 @@ class CheckRestFundsCommand extends ContainerAwareCommand
                               ->findPartiallyReleasedProjects(new \DateTime('1 month ago'));
         $projectsTexts = '';
         foreach ($projects as $project) {
-            $projectsTexts .= $project['title'] . ' (id : ' . $project['idProject'] . ')<br><br>';
+            $projectsTexts .= $project->getTitle() . ' (id : ' . $project->getIdProject() . ')<br><br>';
         }
 
         if ($projectsTexts) {
