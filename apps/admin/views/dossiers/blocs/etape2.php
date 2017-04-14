@@ -206,22 +206,20 @@
                         </div>
                     <?php endif; ?>
                 </td>
-                <th><label for="ville_etape2">Ville</label></th>
-                <td><input type="text" name="ville_etape2" id="ville_etape2" class="input_large" value="<?= $this->companies->city ?>"></td>
-            </tr>
-            <tr>
-                <th><label for="postal_etape2">Code postal</label></th>
-                <td><input type="text" name="postal_etape2" id="postal_etape2" class="input_court" value="<?= $this->companies->zip ?>"></td>
                 <th><label for="phone_etape2">Téléphone</label></th>
                 <td><input type="text" name="phone_etape2" id="phone_etape2" class="input_moy" value="<?= $this->companies->phone ?>"></td>
             </tr>
             <tr>
+                <th><label for="postal_etape2">Code postal</label></th>
+                <td><input type="text" name="postal_etape2" id="postal_etape2" class="input_court" value="<?= $this->companies->zip ?>"></td>
                 <th><label for="latitude">Latitude</label></th>
                 <td><input type="text" name="latitude" id="latitude" class="input_court" value="<?php if (false === empty($this->latitude)) : ?><?= $this->latitude ?><?php endif; ?>"> N</td>
+            </tr>
+            <tr>
+                <th><label for="ville_etape2">Ville</label></th>
+                <td><input type="text" name="ville_etape2" id="ville_etape2" class="input_large" value="<?= $this->companies->city ?>"></td>
                 <th><label for="longitude">Longitude</label></th>
-                <td colspan="3">
-                    <input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"> E
-                </td>
+                <td><input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"> E</td>
             </tr>
             <tr>
                 <td colspan="4" style="padding-top: 15px">
