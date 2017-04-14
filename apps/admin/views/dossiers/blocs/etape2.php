@@ -41,58 +41,24 @@
             }
         });
 
-        var initMap = function(location) {
-            var map = new google.maps.Map(document.getElementById('map'), {
-                center: location,
-                zoom: 16
-            });
-        }
-        var initStreetView = function(location) {
-            var sv = new google.maps.StreetViewPanorama(document.getElementById('streetview'), {
-                position: location,
-                pov: {heading: 165, pitch: 0},
-                zoom: 1
-            });
-        }
+        // STREETVIEW
 
-        var validateCoordinates = function(lat, lng, streetview, container) {
-
-            var location = {lat: lat, lng: lng};
-            var svService = new google.maps.StreetViewService();
-
-            svService.getPanorama({location}, function(data, status) {
-                if (status !== google.maps.StreetViewStatus.OK) {
-                    console.log('Street View data not found for this exact location.');
-                    $(container).addClass('no-streetview');
-                    initMap(location)
-                } else {
-                    console.log('Street View data found.');
-                    if ($(container).is('.no-streetview')) {
-                        $(container).removeClass('no-streetview');
-                    }
-                    initStreetView(location)
-                }
-            });
-        }
-
-        $("#etape2").on('click', '#btn_streetview', function(e) {
-            e.preventDefault();
-
-            var streetview = document.getElementById('streetview')
-            var container = document.getElementById('streetview_container')
-            var lat = parseFloat($('#latitude').val());
-            var lng = parseFloat($('#longitude').val());
-
+        // Prevent multiple clicks if address is invalid
+        var invalidAddress = false;
+        // Prevent double alert
+        var alertShown = false;
+        // Prepare streetview container
+        var initStreetview = function(location) {
+            var streetview = document.getElementById('streetview');
+            var container = document.getElementById('streetview_container');
             var offsetSpace = 50;
             var aspectRatio = 0.5625;
             var animationTime = 200;
             var screenHeight = window.innerHeight;
             var availableHeight = screenHeight - offsetSpace;
-            var streetviewContainerWidth = $(container).width()
+            var streetviewContainerWidth = $(container).width();
             var containerRatioHeight =  streetviewContainerWidth * aspectRatio;
-
             $(container).show();
-
             // Scroll window to streetview
             $('html, body').animate({scrollTop: $(container).offset().top - offsetSpace}, animationTime, function() {
                 var streetviewAspectRatio = '';
@@ -102,21 +68,60 @@
                     streetviewAspectRatio = aspectRatio * 100 + '%';
                 }
                 $(container).animate({'padding-bottom': streetviewAspectRatio}, animationTime, function(){
-                    validateCoordinates(lat, lng, streetview, container);
+                    showStreetView(location);
                 });
             });
-        });
-
-        var closeStreetView = function(el) {
-            var $el = el;
-            $el.animate({'padding-bottom': 0}, 200, function(){
-                $el.hide();
+        }
+        // Resolve address
+        var resolveAddress = function() {
+            var street = $('#address_etape2').val();
+            var city = $('#ville_etape2').val();
+            var postCode = $('#ville_etape2').val();
+            var address = [street, city, postCode];
+            address = address.join(", ");
+            // Init Geocoder
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({'address': address}, function(results, status) {
+                if (status === 'OK') {
+                    // Show Streetview
+                    initStreetview(results[0].geometry.location);
+                } else {
+                    console.log(status);
+                    invalidAddress = true;
+                    if (alertShown === false) {
+                        $.colorbox({inline:true, href:"#popup-streetview-error"});
+                        alertShown = true;
+                    }
+                }
             });
         }
+        // Init Streetview
+        var showStreetView = function(location) {
+            console.log(location);
+            new google.maps.StreetViewPanorama(document.getElementById('streetview'), {
+                position: location,
+                pov: {heading: 165, pitch: 0},
+                zoom: 1
+            });
+        }
+        // Open streetview
+        $("#etape2").on('click', '#streetview_open', function(e) {
+            e.preventDefault();
+            if (invalidAddress === false) { resolveAddress() }
+        });
+        // Reset invalid address on change
+        $("#etape2").on('change', '#address_etape2, #postal_etape2, #ville_etape2', function(e) {
+            invalidAddress = false;
+            alertShown = false;
+        });
+        // Close streetview
         $("#etape2").on('click', '#streetview_close', function(e) {
             e.preventDefault();
-            var streetview = $(this).closest('#streetview_container')
-            closeStreetView(streetview)
+            alertShown = false;
+            var $container = $(this).closest('#streetview_container')
+            $container.animate({'padding-bottom': 0}, 200, function(){
+                $container.hide();
+            });
         });
     });
 </script>
@@ -151,32 +156,15 @@
         right: 10px;
         bottom: 10px;
     }
-    #streetview-error {
-        line-height: 50px;
-        float: left;
-        color: #999;
-    }
-    #streetview-error img {
-        height: 20px;
-    }
-    #map, #streetview-error, .no-streetview #streetview {
-        display: none;
-    }
-    .no-streetview #map, .no-streetview #streetview-error {
-        display: block;
-    }
 </style>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJQJHPnNXye8Hhsf7CUK6dPQ9dvD861k4"></script>
-
 
 <a class="tab_title" id="section-contact-details" href="#section-contact-details">2. Coordonnées</a>
 <div class="tab_content" id="etape2">
     <div id="streetview_container">
         <div class="controls">
-            <div id="streetview-error">Faites glisser l’icône <img src="<?= $this->surl ?>/images/admin/googleIcon.png" alt=""> pour trouver la Streetview la plus proche disponible.</div>
             <button id="streetview_close" class="btn">X</button>
         </div>
-        <div id="map" class="iframe"></div>
         <div id="streetview" class="iframe"></div>
     </div>
     <form method="post" id="dossier_etape2" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" onsubmit="valid_etape2(<?= $this->projects->id_project ?>); return false;">
@@ -201,28 +189,37 @@
             </tr>
             <tr>
                 <th><label for="address_etape2">Adresse</label></th>
-                <td><input type="text" name="address_etape2" id="address_etape2" class="input_large" value="<?= $this->companies->adresse1 ?>"></td>
-                <th><label for="ville_etape2">Ville</label></th>
-                <td><input type="text" name="ville_etape2" id="ville_etape2" class="input_large" value="<?= $this->companies->city ?>"></td>
-            </tr>
-            <tr>
-                <th><label for="postal_etape2">Code postal</label></th>
-                <td><input type="text" name="postal_etape2" id="postal_etape2" class="input_court" value="<?= $this->companies->zip ?>"></td>
+                <td>
+                    <input type="text" name="address_etape2" id="address_etape2" class="input_large" value="<?= $this->companies->adresse1 ?>">
+                    <?php if (false === empty($this->companies->adresse1)) : ?>
+                        <a id="streetview_open" class="btn-small btn_link">Voir Streetview</a>
+                        <div style="display: none;">
+                            <div id="popup-streetview-error" style="width: 300px; text-align: center">
+                                <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn">
+                                    <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/>
+                                </a>
+                                <div id="popup-content">
+                                    <h2 style="padding-top: 30px">Erreur</h2>
+                                    <p style="margin: 0; line-height: 18px;">Aucun résultat pour cette adresse. Veuillez saisir une nouvelle adresse, ville ou code postale et réessayez.</p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </td>
                 <th><label for="phone_etape2">Téléphone</label></th>
                 <td><input type="text" name="phone_etape2" id="phone_etape2" class="input_moy" value="<?= $this->companies->phone ?>"></td>
             </tr>
             <tr>
+                <th><label for="postal_etape2">Code postal</label></th>
+                <td><input type="text" name="postal_etape2" id="postal_etape2" class="input_court" value="<?= $this->companies->zip ?>"></td>
                 <th><label for="latitude">Latitude</label></th>
                 <td><input type="text" name="latitude" id="latitude" class="input_court" value="<?php if (false === empty($this->latitude)) : ?><?= $this->latitude ?><?php endif; ?>"> N</td>
             </tr>
             <tr>
+                <th><label for="ville_etape2">Ville</label></th>
+                <td><input type="text" name="ville_etape2" id="ville_etape2" class="input_large" value="<?= $this->companies->city ?>"></td>
                 <th><label for="longitude">Longitude</label></th>
-                <td colspan="3">
-                    <input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"> E
-                    <?php if (false === empty($this->latitude) && false === empty($this->longitude)) : ?>
-                        <a id="btn_streetview" class="btn-small btn_link" target="_blank" >Voir sur la carte</a>
-                    <?php endif; ?>
-                </td>
+                <td><input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"> E</td>
             </tr>
             <tr>
                 <td colspan="4" style="padding-top: 15px">

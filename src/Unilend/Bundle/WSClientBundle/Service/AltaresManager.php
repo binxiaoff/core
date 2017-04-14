@@ -20,9 +20,7 @@ class AltaresManager
     const RESOURCE_FINANCIAL_SUMMARY       = 'get_financial_summary_altares';
     const RESOURCE_MANAGEMENT_LINE         = 'get_balance_management_line_altares';
 
-    const EXCEPTION_CODE_INVALID_SIREN_ESTABLISHMENT = 108;
-    const EXCEPTION_CODE_INVALID_SIREN_COMPANY       = 109;
-    const EXCEPTION_CODE_NO_FINANCIAL_DATA           = 118;
+    const EXCEPTION_CODE_NO_FINANCIAL_DATA = 118;
 
     /** @var string */
     private $login;
@@ -199,10 +197,11 @@ class AltaresManager
         try {
             $response = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
 
-            if (false === $this->isValidResponse($response, $resourceLabel)) {
+            if (false === $this->isValidResponse($response)) {
                 $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
                 ini_set('default_socket_timeout', 8);
 
+                /** @var \SoapClient $soapClient */
                 $soapClient = $this->{$client . 'Client'};
                 $response   = $soapClient->__soapCall(
                     $wsResource->resource_name, [
@@ -214,12 +213,21 @@ class AltaresManager
                 $response = json_decode($response);
             }
 
-            if ($this->isValidResponse($response, $resourceLabel)) {
+            if (null !== $response) {
                 $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-                return $response->return->myInfo;
+
+                if ($this->isValidResponse($response)) {
+                    return isset($response->return->myInfo) ? $response->return->myInfo : null;
+                }
             }
+
+            $this->logger->error(
+                'Altares response could not be handled: "' . (isset($response->return->exception->description) ? $response->return->exception->description : print_r($response, true)) . '"',
+                ['class' => __CLASS__, 'resource' => $resourceLabel] + $params
+            );
+            return null;
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__] + $params);
+            $this->logger->error($exception->getMessage(), ['class' => __CLASS__, 'resource' => $resourceLabel] + $params);
         }
 
         $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
@@ -253,24 +261,18 @@ class AltaresManager
 
     /**
      * @param mixed  $response
-     * @param string $resourceLabel
      *
      * @return bool
      */
-    private function isValidResponse($response, $resourceLabel)
+    private function isValidResponse($response)
     {
         if (is_string($response)) {
             $response = json_decode($response);
         }
 
         return (
-            isset($response->return)
-            && (
-                $response->return->correct && isset($response->return->myInfo)
-                || isset($response->return->exception->code) && self::EXCEPTION_CODE_NO_FINANCIAL_DATA == $response->return->exception->code
-                || isset($response->return->exception->code) && self::EXCEPTION_CODE_INVALID_SIREN_COMPANY == $response->return->exception->code && self::RESOURCE_COMPANY_IDENTITY === $resourceLabel
-                || isset($response->return->exception->code) && self::EXCEPTION_CODE_INVALID_SIREN_ESTABLISHMENT == $response->return->exception->code && self::RESOURCE_ESTABLISHMENT_IDENTITY === $resourceLabel
-            )
+            isset($response->return->myInfo, $response->return->correct) && $response->return->correct
+            || isset($response->return->exception->code) && self::EXCEPTION_CODE_NO_FINANCIAL_DATA == $response->return->exception->code
         );
     }
 }
