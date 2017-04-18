@@ -1,1 +1,133 @@
-Ici viendra le tout nouveau et tout beau pdf des opérations preteur
+{% extends 'pdf/layout.html.twig' %}
+
+{% block cssFiles %}
+    {{ parent() }}
+    <style>
+        .item-amount, .item-balance {
+            text-align: right;
+        }
+        .item-date {
+            text-align: left;
+        }
+        .item-operation {
+            width: 25%;
+        }
+        .item-project {
+            width: 20%;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-6 col-lg-6">
+            <p>
+                <b>Unilend – Société Française pour le financement des PME</b><br/>
+                6 Rue du général Clergerie<br/>
+                75116 Paris
+            </p>
+        </div>
+        <div class="col-md-6 col-lg-6">
+            <p class="text-align-right">
+                <b>Paris, le 31/03/2017</b><br/>
+                Prenom 23357 Nom 23357 <br>
+                23357, Rue du 23357 <br>
+                75014 Paris
+            </p>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 col-lg-8">
+            <p>
+                <b style="font-size: 1rem; line-height: 1.5rem;">Objet : relevé d’opérations de votre compte Unilend n°23357</b><br/>
+                Titulaire : Prenom 23357 Nom 23357
+            </p>
+        </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="item-operation">Opération</th>
+                <th class="item-project">Projet</th>
+                <th class="item-contract">Contrat</th>
+                <th class="item-date">Date</th>
+                <th class="item-amount">Montant</th>
+                <th class="item-balance">Solde</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for op in lenderOperations %}
+
+                {% if (loop.index is odd) %}
+                    {% set backgroundClass = 'bg-bg3' %}
+                {% else %}
+                    {% set backgroundClass = '' %}
+                {% endif %}
+
+                {% if (op.amount > 0) %}
+                    {% set colorClass = 'c-success' %}
+                {% else %}
+                    {% set colorClass = 'c-error' %}
+                {% endif %}
+
+                {% if (op.label == 'bid') %}
+                    {% set operationLabel = 'Bid' %}
+                {% elseif (op.label == 'repayment') %}
+                    {% set operationLabel = 'Remboursement' %}
+                {% elseif (op.label == 'lender_loan') %}
+                    {% set operationLabel = 'Offre acceptée' %}
+                {% elseif (op.label == 'refused-bid') %}
+                    {% set operationLabel = 'Bid refusé' %}
+                {% else %}
+                    {% set operationLabel =  op.label %}
+                {% endif %}
+
+                <tr class="transaction-{{ op.label }} {{ backgroundClass }}">
+                    <td class="item-operation">
+                        {{ operationLabel }}
+                    </td>
+                    <td class="item-project">
+                        {{ op.title }}
+                    </td>
+                    <td class="item-contract">
+                        {{ op.id_loan }}
+                    </td>
+                    <td class="item-date">
+                        {{ op.date }}
+                    </td>
+                    <td class="item-amount {{ colorClass }}">
+                        {{ op.amount|localizednumber }}&nbsp;€
+                    </td>
+                    <td class="item-balance">
+                        {{ op.available_balance|localizednumber }}&nbsp;€
+                    </td>
+                </tr>
+                {% if op.detail is defined %}
+                    {#<tr class="transaction-details transaction-{{ op.label }}-details {{ backgroundClass }}">#}
+                        {#<td colspan="6">{{ op.detail.label }}</td>#}
+                    {#</tr>#}
+                    {% for item in op.detail.items %}
+                        {% if (item.value > 0) %}
+                            {% set colorClass = 'c-success' %}
+                        {% else %}
+                            {% set colorClass = 'c-error' %}
+                        {% endif %}
+                        <tr class="details transaction-{{ op.label }}-details {{ backgroundClass }} {% if loop.index == op.detail|length + 1 %} last {% endif %}">
+                            <td colspan="3">{{ item.label }}</td>
+                            <td>&nbsp;</td>
+                            <td style="text-align: right" class="{{ colorClass }}">{{ item.value|localizednumber }}&nbsp;€</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {{ dump(lenderOperations) }}
+{% endblock %}
