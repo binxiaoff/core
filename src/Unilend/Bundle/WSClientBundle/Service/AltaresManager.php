@@ -20,7 +20,8 @@ class AltaresManager
     const RESOURCE_FINANCIAL_SUMMARY       = 'get_financial_summary_altares';
     const RESOURCE_MANAGEMENT_LINE         = 'get_balance_management_line_altares';
 
-    const EXCEPTION_CODE_NO_FINANCIAL_DATA = 118;
+    const EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN = [101, 102, 108, 109];
+    const EXCEPTION_CODE_NO_FINANCIAL_DATA        = [118];
 
     /** @var string */
     private $login;
@@ -222,7 +223,7 @@ class AltaresManager
             }
 
             $this->logger->error(
-                'Altares response could not be handled: "' . (isset($response->return->exception->description) ? $response->return->exception->description : print_r($response, true)) . '"',
+                'Altares response could not be handled: "' . (isset($response->return->exception->description, $response->return->exception->code) ? $response->return->exception->code . ' : ' . $response->return->exception->description : print_r($response, true)) . '"',
                 ['class' => __CLASS__, 'resource' => $resourceLabel] + $params
             );
             return null;
@@ -272,7 +273,7 @@ class AltaresManager
 
         return (
             isset($response->return->myInfo, $response->return->correct) && $response->return->correct
-            || isset($response->return->exception->code) && self::EXCEPTION_CODE_NO_FINANCIAL_DATA == $response->return->exception->code
+            || isset($response->return->exception->code) && in_array($response->return->exception->code, self::EXCEPTION_CODE_NO_FINANCIAL_DATA + self::EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN)
         );
     }
 }

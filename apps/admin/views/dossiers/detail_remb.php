@@ -181,62 +181,39 @@
                 <td><label for="statut"><?= $this->receptions->motif ?></label></td>
             </tr>
         <?php elseif (isset($this->nextRepaymentDate)) : ?>
-                <tr>
-                    <th>Virement à émettre avant le :</th>
-                    <td><label for="statut"><?= $this->nextRepaymentDate ?></label></td>
-                </tr>
+            <tr>
+                <th>Virement à émettre avant le :</th>
+                <td><label for="statut"><?= $this->nextRepaymentDate ?></label></td>
+            </tr>
         <?php endif; ?>
         <tr>
             <th>Montant CRD (*) :</th>
-            <td><label for="statut"><?= $this->montant_restant_du_preteur ?>€</label></td>
+            <td><label for="statut"><?= $this->ficelle->formatNumber($this->montant_restant_du_preteur) ?>&nbsp;€</label></td>
         </tr>
-        <?php
-        // on ne se base plus sur l'echeancier emprunteur mais preteur comme pour le calcul du CRD
-        $L_echeance = $this->echeanciers->select(" id_project = " . $this->projects->id_project . " AND status = 0 AND ordre < " . $this->ordre_echeance_ra, 'ordre ASC');
-
-        if (count($L_echeance) > 0 && false) : ?>
-            <tr>
-                <th>Actions :</th>
-                <td>
-                    <label for="statut">Le remboursement anticipé n'est pour le moment pas possible car les échéances
-                        précédentes ne sont pas encore réglée</label>
-                </td>
-            </tr>
-            <?php
-        else :
-            if (false === $this->remb_anticipe_effectue) :
-                if ($this->virement_recu) :
-                    if ($this->virement_recu_ok) :
-                        if ($this->ra_possible_all_payed) : ?>
-                            <tr>
-                                <th>Actions :</th>
-                                <td>
-                                    <form action="" method="post" name="action_remb_anticipe">
-                                        <input type="hidden" name="id_reception" value="<?= $this->receptions->id_reception ?>">
-                                        <input type="hidden" name="montant_crd_preteur" value="<?= $this->montant_restant_du_preteur ?>">
-                                        <input type="hidden" name="spy_remb_anticipe" value="ok">
-                                        <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php
-                        endif;
-                    endif;
-                else : ?>
+        <?php if (false === $this->remb_anticipe_effectue) : ?>
+            <?php if ($this->virement_recu) : ?>
+                <?php if ($this->virement_recu_ok && $this->ra_possible_all_payed) : ?>
                     <tr>
-                        <th>Motif à indiquer sur le virement :</th>
-                        <td><label for="statut">RA-<?= $this->projects->id_project ?></label></td>
+                        <th>Actions :</th>
+                        <td>
+                            <form action="" method="post" name="action_remb_anticipe">
+                                <input type="hidden" name="id_reception" value="<?= $this->receptions->id_reception ?>">
+                                <input type="hidden" name="montant_crd_preteur" value="<?= $this->montant_restant_du_preteur ?>">
+                                <input type="hidden" name="spy_remb_anticipe" value="ok">
+                                <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
+                            </form>
+                        </td>
                     </tr>
-                    <?php
-                endif;
-            endif;
-        endif; ?>
+                <?php endif; ?>
+            <?php else : ?>
+                <tr>
+                    <th>Motif à indiquer sur le virement :</th>
+                    <td><label for="statut">RA-<?= $this->projects->id_project ?></label></td>
+                </tr>
+            <?php endif; ?>
+        <?php endif; ?>
     </table>
-    <?php
-    if (false === $this->virement_recu && false === $this->remb_anticipe_effectue && false != $this->montant_restant_du_preteur) : ?>
-        * : Le montant correspond aux CRD des échéances restantes après celle du <?= isset($this->date_next_echeance) ? $this->date_next_echeance : '--' ?> qui sera prélevé normalement
-        <?php
-    endif;
-    ?>
-    <br/><br/><br/><br/>
+    <?php if (false === $this->virement_recu && false === $this->remb_anticipe_effectue && false != $this->montant_restant_du_preteur) : ?>
+        <p>* : Le montant correspond aux CRD des échéances restantes après celle du <?= isset($this->date_next_echeance) ? $this->date_next_echeance : '--' ?> qui sera prélevé normalement</p>
+    <?php endif; ?>
 </div>

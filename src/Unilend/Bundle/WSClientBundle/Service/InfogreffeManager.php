@@ -235,7 +235,6 @@ class InfogreffeManager
         $subscriptionList = [];
 
         if (isset($data['etat'], $data['etat']['debiteur'])) {
-
             if (array_key_exists('inscription_3', $data['etat']['debiteur'])) {
                 $subscriptionList['inscription_3'][] = $data['etat']['debiteur']['inscription_3'];
             }
@@ -250,11 +249,11 @@ class InfogreffeManager
 
             foreach ($data['etat']['debiteur'] as $debtor) {
                 if (is_array($debtor) && array_key_exists('inscription_3', $debtor)) {
-                    $subscriptionList['inscription_3'] = $debtor['inscription_3'];
+                    $subscriptionList['inscription_3'][] = $debtor['inscription_3'];
                 }
 
                 if (is_array($debtor) && array_key_exists('inscription_4', $debtor)) {
-                    $subscriptionList['inscription_4'] = $debtor['inscription_4'];
+                    $subscriptionList['inscription_4'][] = $debtor['inscription_4'];
                 }
             }
         }
