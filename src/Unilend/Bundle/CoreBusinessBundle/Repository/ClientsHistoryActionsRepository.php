@@ -16,9 +16,9 @@ class ClientsHistoryActionsRepository extends EntityRepository
     public function getLastAutoBidOnOffActions($clientId)
     {
         $qb = $this->createQueryBuilder('cha');
-        $qb->where('nomForm = :autobid')
-            ->andWhere('idClient = :idClient')
-            ->orderBy('added', 'DESC')
+        $qb->where('cha.nomForm = :autobid')
+            ->andWhere('cha.idClient = :idClient')
+            ->orderBy('cha.added', 'DESC')
             ->setMaxResults(2)
             ->setParameter('idClient', $clientId)
             ->setParameter('autobid', ClientsHistoryActions::AUTOBID_SWITCH);
@@ -35,9 +35,9 @@ class ClientsHistoryActionsRepository extends EntityRepository
     public function countAutobidActivationHistory($clientId)
     {
         $qb = $this->createQueryBuilder('cha');
-        $qb->select('COUNT(cha.idClientsHistoryActions)')
-            ->where('nomForm = :autobid')
-            ->andWhere('idClient = :idClient')
+        $qb->select('COUNT(cha.idClientHistoryAction)')
+            ->where('cha.nomForm = :autobid')
+            ->andWhere('cha.idClient = :idClient')
             ->setParameter('idClient', $clientId)
             ->setParameter('autobid', ClientsHistoryActions::AUTOBID_SWITCH);
         $query  = $qb->getQuery();

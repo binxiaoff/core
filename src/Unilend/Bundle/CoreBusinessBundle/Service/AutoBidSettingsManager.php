@@ -330,8 +330,8 @@ class AutoBidSettingsManager
         $dates                 = [];
 
         foreach ($autoBidHistory as $historyAction) {
-            $action                            = unserialize($historyAction['serialize']);
-            $dates[$action['autobid_switch']] = \DateTime::createFromFormat('Y-m-d H:i:s', $historyAction['added']);
+            $action                           = unserialize($historyAction['serialize']);
+            $dates[$action['autobid_switch']] = $historyAction['added'];
         }
         return $dates;
     }
