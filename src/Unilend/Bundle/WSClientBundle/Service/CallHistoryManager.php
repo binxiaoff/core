@@ -3,11 +3,12 @@
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Doctrine\ORM\EntityManager;
 use GuzzleHttp\TransferStats;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\StoreBundle\Document\WsCall;
 
@@ -27,16 +28,22 @@ class CallHistoryManager
     private $logger;
     /** @var ManagerRegistry */
     private $managerRegistry;
+    /** @var  LoggerInterface */
+    private $mongoDBLogger;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
 
     /**
      * WSProviderCallHistoryManager constructor.
-     * @param EntityManager   $entityManager
-     * @param Stopwatch       $stopwatch
-     * @param SlackManager    $slackManager
-     * @param string          $alertChannel
-     * @param Packages        $assetPackage
-     * @param LoggerInterface $logger
-     * @param ManagerRegistry $managerRegistry
+     * @param EntityManager          $entityManager
+     * @param Stopwatch              $stopwatch
+     * @param SlackManager           $slackManager
+     * @param string                 $alertChannel
+     * @param Packages               $assetPackage
+     * @param LoggerInterface        $logger
+     * @param ManagerRegistry        $managerRegistry
+     * @param LoggerInterface        $mongoDBLogger
+     * @param EntityManagerSimulator $entityManagerSimulator
      */
     public function __construct(
         EntityManager $entityManager,
@@ -45,16 +52,20 @@ class CallHistoryManager
         $alertChannel,
         Packages $assetPackage,
         LoggerInterface $logger,
-        ManagerRegistry $managerRegistry
+        ManagerRegistry $managerRegistry,
+        LoggerInterface $mongoDBLogger,
+        EntityManagerSimulator $entityManagerSimulator
     )
     {
-        $this->entityManager   = $entityManager;
-        $this->stopwatch       = $stopwatch;
-        $this->slackManager    = $slackManager;
-        $this->alertChannel    = $alertChannel;
-        $this->assetPackage    = $assetPackage;
-        $this->logger          = $logger;
-        $this->managerRegistry = $managerRegistry;
+        $this->entityManager          = $entityManager;
+        $this->stopwatch              = $stopwatch;
+        $this->slackManager           = $slackManager;
+        $this->alertChannel           = $alertChannel;
+        $this->assetPackage           = $assetPackage;
+        $this->logger                 = $logger;
+        $this->managerRegistry        = $managerRegistry;
+        $this->mongoDBLogger          = $mongoDBLogger;
+        $this->entityManagerSimulator = $entityManagerSimulator;
     }
 
     /**
@@ -108,7 +119,7 @@ class CallHistoryManager
     private function createLog($resourceId, $siren, $transferTime, $statusCode)
     {
         /** @var \ws_call_history $wsCallHistory */
-        $wsCallHistory                = $this->entityManager->getRepository('ws_call_history');
+        $wsCallHistory                = $this->entityManagerSimulator->getRepository('ws_call_history');
         $wsCallHistory->id_resource   = $resourceId;
         $wsCallHistory->siren         = $siren;
         $wsCallHistory->transfer_time = $transferTime;
@@ -252,5 +263,57 @@ class CallHistoryManager
     public function getDateTimeFromPassedDays($days = 3)
     {
         return (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
+    }
+
+    public function handleMongoDBLogging()
+    {
+        $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'mongo_log']);
+
+        if (null !== $setting && 'on' === $setting->getValue()) {
+            \MongoLog::setModule(\MongoLog::ALL);
+            \MongoLog::setLevel(\MongoLog::ALL);
+            \MongoLog::setCallback([$this, 'callback']);
+        }
+    }
+
+    /**
+     * @param int    $module
+     * @param int    $level
+     * @param string $message
+     */
+    public function callback($module, $level, $message)
+    {
+        switch ($level) {
+            case \MongoLog::WARNING:
+                $this->mongoDBLogger->warning($this->module2string($module). ' ' . $message , ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                break;
+            case \MongoLog::INFO:
+                $this->mongoDBLogger->info($this->module2string($module). ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                break;
+            default:
+                $this->mongoDBLogger->debug($this->module2string($module). ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        }
+    }
+
+    /**
+     * @param int $module
+     * @return string
+     */
+    private function module2string($module)
+    {
+        switch ($module) {
+            case \MongoLog::RS:
+                return 'REPLSET';
+            case \MongoLog::CON:
+                return 'CON';
+            case \MongoLog::IO:
+                return 'IO';
+            case \MongoLog::SERVER:
+                return 'SERVER';
+            case \MongoLog::PARSE:
+                return 'PARSE';
+            default:
+                return 'UNKNOWN';
+        }
     }
 }
