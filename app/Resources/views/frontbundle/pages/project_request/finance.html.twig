@@ -66,7 +66,7 @@
                                                         <div class="btn-group">
                                                             <span class="icon fa-euro"></span>
                                                         </div><!-- /.btn-group -->
-                                                        <input id="form-project-create-finance-equity" type="text" name="finance[dl]" value="{{ form.values.dl|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        <input id="form-project-create-finance-equity" type="text" name="finance[dl]" value="{% if form.values.dl is not same as('') %}{{ form.values.dl|localizednumber }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     </div><!-- /.input-group -->
                                                     {% if form.errors.dl is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -84,7 +84,7 @@
                                                         <div class="btn-group">
                                                             <span class="icon fa-euro"></span>
                                                         </div><!-- /.btn-group -->
-                                                        <input id="form-project-create-finance-turnover" type="text" name="finance[fl]" value="{{ form.values.fl|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        <input id="form-project-create-finance-turnover" type="text" name="finance[fl]" value="{% if form.values.fl is not same as('') %}{{ form.values.fl|localizednumber }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     </div><!-- /.input-group -->
                                                     {% if form.errors.fl is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -102,7 +102,7 @@
                                                         <div class="btn-group">
                                                             <span class="icon fa-euro"></span>
                                                         </div><!-- /.btn-group -->
-                                                        <input id="form-project-create-finance-income" type="text" name="finance[gg]" value="{{ form.values.gg|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        <input id="form-project-create-finance-income" type="text" name="finance[gg]" value="{% if form.values.gg is not same as('') %}{{ form.values.gg|localizednumber }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     </div><!-- /.input-group -->
                                                     {% if form.errors.gg is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -120,7 +120,7 @@
                                                             <div class="btn-group">
                                                                 <span class="icon fa-euro"></span>
                                                             </div><!-- /.btn-group -->
-                                                            <input id="form-project-create-finance-turnover" type="text" name="finance[ag_2035]" value="{{ form.values.ag_2035|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                            <input id="form-project-create-finance-turnover" type="text" name="finance[ag_2035]" value="{% if form.values.ag_2035 is not same as('') %}{{ form.values.ag_2035|localizednumber }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                         </div><!-- /.input-group -->
                                                         {% if form.errors.ag_2035 is defined %}
                                                             <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>

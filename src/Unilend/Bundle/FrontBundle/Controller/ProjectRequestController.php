@@ -622,17 +622,51 @@ class ProjectRequestController extends Controller
         $template['form']['errors'] = isset($session['errors']) ? $session['errors'] : [];
 
         if (empty($this->company->getRcs())) {
-            $template['form']['values'] = [
-                'ag_2035' => isset($values['ag_2035']) ? $values['ag_2035'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
-            ];
             $template['rcs']            = false;
+            $template['form']['values'] = [];
+
+            if (isset($values['ag_2035'])) {
+                $template['form']['values']['ag_2035'] = $values['ag_2035'];
+            } elseif (false === empty($this->project->ca_declara_client) || $this->project->ca_declara_client != $altaresRevenue) {
+                $template['form']['values']['ag_2035'] = $this->project->ca_declara_client;
+            } elseif (null === $altaresRevenue) {
+                $template['form']['values']['ag_2035'] = $altaresRevenue;
+            } else {
+                $template['form']['values']['ag_2035'] = '';
+            }
         } else {
-            $template['form']['values'] = [
-                'dl' => isset($values['dl']) ? $values['dl'] : (empty($this->project->fonds_propres_declara_client) ? (empty($altaresCapitalStock) ? '' : $altaresCapitalStock) : $this->project->fonds_propres_declara_client),
-                'fl' => isset($values['fl']) ? $values['fl'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
-                'gg' => isset($values['gg']) ? $values['gg'] : (empty($this->project->resultat_exploitation_declara_client) ? (empty($altaresOperationIncomes) ? '' : $altaresOperationIncomes) : $this->project->resultat_exploitation_declara_client)
-            ];
             $template['rcs']            = true;
+            $template['form']['values'] = [];
+
+            if (isset($values['dl'])) {
+                $template['form']['values']['dl'] = $values['dl'];
+            } elseif (false === empty($this->project->fonds_propres_declara_client) || $this->project->fonds_propres_declara_client != $altaresCapitalStock) {
+                $template['form']['values']['dl'] = $this->project->fonds_propres_declara_client;
+            } elseif (null === $altaresCapitalStock) {
+                $template['form']['values']['dl'] = $altaresCapitalStock;
+            } else {
+                $template['form']['values']['dl'] = '';
+            }
+
+            if (isset($values['fl'])) {
+                $template['form']['values']['fl'] = $values['fl'];
+            } elseif (false === empty($this->project->ca_declara_client) || $this->project->ca_declara_client != $altaresRevenue) {
+                $template['form']['values']['fl'] = $this->project->ca_declara_client;
+            } elseif (null === $altaresRevenue) {
+                $template['form']['values']['fl'] = $altaresRevenue;
+            } else {
+                $template['form']['values']['fl'] = '';
+            }
+
+            if (isset($values['gg'])) {
+                $template['form']['values']['gg'] = $values['gg'];
+            } elseif (false === empty($this->project->resultat_exploitation_declara_client) || $this->project->resultat_exploitation_declara_client != $altaresOperationIncomes) {
+                $template['form']['values']['gg'] = $this->project->resultat_exploitation_declara_client;
+            } elseif (null === $altaresOperationIncomes) {
+                $template['form']['values']['gg'] = $altaresOperationIncomes;
+            } else {
+                $template['form']['values']['gg'] = '';
+            }
         }
 
         $template['project'] = [
