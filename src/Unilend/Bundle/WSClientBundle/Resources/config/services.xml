@@ -5,7 +5,7 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
         <service id="unilend.service.ws_client.call_history_handler" class="Unilend\Bundle\WSClientBundle\Service\CallHistoryManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="debug.stopwatch"/>
             <argument type="service" id="unilend.service.slack_manager"/>
             <argument>%slack.monitoring_channel%</argument>
@@ -13,6 +13,7 @@
             <argument type="service" id="logger" />
             <argument type="service" id="doctrine_mongodb"/>
             <argument type="service" id="monolog.logger.mongodb" />
+            <argument type="service" id="unilend.service.entity_manager"/>
             <call method="handleMongoDBLogging"></call>
         </service>
 

@@ -175,11 +175,6 @@ monolog:
             file_permission: 0664
             date_format: 'Y-m-d'
 
-        translation_filter:
-            type: filter
-            handler: translation_handler
-            max_level: warning
-            channels: translation
         translation_handler:
             type: rotating_file
             level: warning
