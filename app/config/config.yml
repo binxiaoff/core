@@ -99,6 +99,7 @@ doctrine_mongodb:
             server: "%mongodb_server%"
             options:
                 authMechanism: SCRAM-SHA-1
+                connect:       false
                 ssl:           true
                 password:      "%mongodb_password%"
                 username:      "%mongodb_username%"
@@ -107,6 +108,8 @@ doctrine_mongodb:
     document_managers:
         default:
             auto_mapping: true
+            retry_connect: 2
+            retry_query:   2
 
 cache_adapter:
     providers:

@@ -99,7 +99,8 @@ class ProjectRequestManager
     }
 
     /**
-     * @param $formData
+     * @param array $formData
+     *
      * @return \projects
      */
     public function saveSimulatorRequest($formData)
@@ -113,7 +114,7 @@ class ProjectRequestManager
         if (false === empty($formData['siren'])) {
             $formData['siren'] = str_replace(' ', '', $formData['siren']);
         }
-        if (empty($formData['siren']) || false === preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
+        if (empty($formData['siren']) || 1 !== preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
             throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren']);
         }
         if (false === empty($formData['amount'])) {
