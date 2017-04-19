@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsHistoryActions
  *
- * @ORM\Table(name="clients_history_actions", indexes={@ORM\Index(name="idx_clients_history_actions_id_client_nom_form", columns={"id_client", "nom_form"})})
+ * @ORM\Table(name="clients_history_actions", indexes={@ORM\Index(name="idx_clients_history_actions_id_client_nom_form", columns={"id_client", "nom_form"}), @ORM\Index(name="IDX_C386E5B9E173B1B8", columns={"id_client"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsHistoryActionsRepository")
  * @ORM\HasLifecycleCallbacks()
  */
@@ -35,17 +35,6 @@ class ClientsHistoryActions
     private $nomForm;
 
     /**
-     * @var Clients
-     *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", inversedBy="clientsHistoryActions")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
-     * })
-     */
-    private $idClient;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="serialize", type="text", length=16777215, nullable=false)
@@ -67,6 +56,13 @@ class ClientsHistoryActions
     private $updated;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="ip", type="string", length=191, nullable=true)
+     */
+    private $ip;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="id_client_history_action", type="integer")
@@ -76,11 +72,14 @@ class ClientsHistoryActions
     private $idClientHistoryAction;
 
     /**
-     * @var string
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\Column(name="ip", type="string", length=191, nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
      */
-    private $ip;
+    private $idClient;
 
     /**
      * Set nomForm
@@ -104,30 +103,6 @@ class ClientsHistoryActions
     public function getNomForm()
     {
         return $this->nomForm;
-    }
-
-    /**
-     * Set idClient
-     *
-     * @param Clients $idClient
-     *
-     * @return ClientsHistoryActions
-     */
-    public function setIdClient(Clients $idClient)
-    {
-        $this->idClient = $idClient;
-
-        return $this;
-    }
-
-    /**
-     * Get idClient
-     *
-     * @return Clients
-     */
-    public function getIdClient()
-    {
-        return $this->idClient;
     }
 
     /**
@@ -203,6 +178,30 @@ class ClientsHistoryActions
     }
 
     /**
+     * Set ip
+     *
+     * @param string $ip
+     *
+     * @return ClientsHistoryActions
+     */
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
+
+        return $this;
+    }
+
+    /**
+     * Get ip
+     *
+     * @return string
+     */
+    public function getIp()
+    {
+        return $this->ip;
+    }
+
+    /**
      * Get idClientHistoryAction
      *
      * @return integer
@@ -213,19 +212,27 @@ class ClientsHistoryActions
     }
 
     /**
-     * @param string $ip
+     * Set idClient
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $idClient
+     *
+     * @return ClientsHistoryActions
      */
-    public function setIP($ip)
+    public function setIdClient(\Unilend\Bundle\CoreBusinessBundle\Entity\Clients $idClient = null)
     {
-        $this->ip = $ip;
+        $this->idClient = $idClient;
+
+        return $this;
     }
 
     /**
-     * @return string
+     * Get idClient
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      */
-    public function getIp()
+    public function getIdClient()
     {
-        return $this->ip;
+        return $this->idClient;
     }
 
     /**
