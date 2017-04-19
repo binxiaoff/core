@@ -628,14 +628,14 @@ class statsController extends bootstrap
         $declarationPath       = $this->getParameter('path.sftp') . 'bdf/emissions/declarations_mensuelles/';
         $this->declarationList = [];
 
-        if (isset($this->params[0], $this->params[1])) {
+        if (isset($this->params[0], $this->params[1]) && 'file' === $this->params[0] && is_string($this->params[1])) {
             $this->download($declarationPath . $this->params[1]);
         }
         foreach ($declarationList as $declaration) {
             $absoluteFileName = $declarationPath . $declaration->getElementName();
 
             if (file_exists($absoluteFileName)) {
-                if ($declaration->getAdded()->format('m') === '01') {
+                if ('01' === $declaration->getAdded()->format('m')) {
                     $year = $declaration->getAdded()->format('Y') - 1;
                 } else {
                     $year = $declaration->getAdded()->format('Y');
