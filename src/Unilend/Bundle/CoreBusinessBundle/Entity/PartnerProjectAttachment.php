@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * PartnerProjectAttachment
  *
  * @ORM\Table(name="partner_project_attachment", uniqueConstraints={@ORM\UniqueConstraint(name="uc_id_partner_id_attachment_type", columns={"id_partner", "id_attachment_type"})}, indexes={@ORM\Index(name="fk_partner_project_attachment_attachment_type", columns={"id_attachment_type"}), @ORM\Index(name="IDX_E130D16DEFB69766", columns={"id_partner"})})
- * @ORM\Entity
+ * @ORM\Entity()
  */
 class PartnerProjectAttachment
 {
@@ -48,7 +48,7 @@ class PartnerProjectAttachment
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Partner
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner", inversedBy="attachmentTypes")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id")
      * })
@@ -122,7 +122,7 @@ class PartnerProjectAttachment
      *
      * @return PartnerProjectAttachment
      */
-    public function setIdAttachmentType(\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $idAttachmentType = null)
+    public function setAttachmentType(AttachmentType $idAttachmentType = null)
     {
         $this->idAttachmentType = $idAttachmentType;
 
@@ -134,7 +134,7 @@ class PartnerProjectAttachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType
      */
-    public function getIdAttachmentType()
+    public function getAttachmentType()
     {
         return $this->idAttachmentType;
     }
@@ -146,7 +146,7 @@ class PartnerProjectAttachment
      *
      * @return PartnerProjectAttachment
      */
-    public function setIdPartner(\Unilend\Bundle\CoreBusinessBundle\Entity\Partner $idPartner = null)
+    public function setPartner(Partner $idPartner = null)
     {
         $this->idPartner = $idPartner;
 
@@ -158,7 +158,7 @@ class PartnerProjectAttachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Partner
      */
-    public function getIdPartner()
+    public function getPartner()
     {
         return $this->idPartner;
     }

@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
 {
@@ -136,9 +137,9 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                 ROUND(SUM(IFNULL(t_interets.montant + (SELECT SUM(amount) FROM tax WHERE tax.id_transaction = t_interets.id_transaction), t_interets.montant)) /100, 2) AS sum53,
                 ROUND(SUM(retenues_source.amount)/ 100, 2) AS sum2,
                 ROUND(SUM(prelevements_obligatoires.amount)/ 100, 2) AS sum54,
-                ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND (tlih.id_pays = 1 OR tlih.id_pays = NULL OR tlih.id_pays IS NULL OR tlih.id_pays = \'\' ), t_interets.montant + (SELECT SUM(tax.amount) FROM tax WHERE id_transaction = t_interets.id_transaction), 0))/100, 2) AS sum66,
-                ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays IN (6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_interets.montant, 0))/100, 2) AS sum81,
-                ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays IN (6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_capital.montant, 0))/100, 2) AS sum82,
+                ROUND(SUM(IF(c.type IN (' . implode(',', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER ]) . ') AND (tlih.id_pays = 1 OR tlih.id_pays = NULL OR tlih.id_pays IS NULL OR tlih.id_pays = \'\' ), t_interets.montant + (SELECT SUM(tax.amount) FROM tax WHERE id_transaction = t_interets.id_transaction), 0))/100, 2) AS sum66,
+                ROUND(SUM(IF(c.type IN (' . implode(',', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays IN (6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_interets.montant, 0))/100, 2) AS sum81,
+                ROUND(SUM(IF(c.type IN (' . implode(',', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays IN (6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_capital.montant, 0))/100, 2) AS sum82,
                 ROUND(SUM(IF(t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ', t_capital.montant/0.844, t_capital.montant))/100, 2) AS sum118
               FROM clients c
                 INNER JOIN temporary_lender_repayment_transactions t_capital ON c.id_client = t_capital.id_client AND t_capital.type_transaction IN (' . implode(',', [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT ]) . ')

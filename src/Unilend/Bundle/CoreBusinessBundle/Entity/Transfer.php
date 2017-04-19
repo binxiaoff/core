@@ -2,30 +2,18 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Transfer
  *
- * @ORM\Table(name="transfer", indexes={@ORM\Index(name="id_transfer_type", columns={"id_transfer_type"})})
- * @ORM\Entity
+ * @ORM\Table(name="transfer", indexes={@ORM\Index(name="idx_transfer_id_client_origin", columns={"id_client_origin"}), @ORM\Index(name="idx_transfer_id_client_receiver", columns={"id_client_receiver"}), @ORM\Index(name="idx_transfer_id_transfer_type", columns={"id_transfer_type"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TransferRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Transfer
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_client_origin", type="integer", nullable=false)
-     */
-    private $idClientOrigin;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_client_receiver", type="integer", nullable=false)
-     */
-    private $idClientReceiver;
-
     /**
      * @var string
      *
@@ -66,54 +54,38 @@ class Transfer
      */
     private $idTransferType;
 
-
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client_receiver", referencedColumnName="id_client")
+     * })
+     */
+    private $idClientReceiver;
 
     /**
-     * Set idClientOrigin
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @param integer $idClientOrigin
-     *
-     * @return Transfer
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client_origin", referencedColumnName="id_client")
+     * })
      */
-    public function setIdClientOrigin($idClientOrigin)
-    {
-        $this->idClientOrigin = $idClientOrigin;
-
-        return $this;
-    }
+    private $idClientOrigin;
 
     /**
-     * Get idClientOrigin
+     * @var ProjectAttachment[]
      *
-     * @return integer
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\TransferAttachment", mappedBy="idTransfer")
      */
-    public function getIdClientOrigin()
-    {
-        return $this->idClientOrigin;
-    }
+    private $attachments;
 
     /**
-     * Set idClientReceiver
-     *
-     * @param integer $idClientReceiver
-     *
-     * @return Transfer
+     * Projects constructor.
      */
-    public function setIdClientReceiver($idClientReceiver)
-    {
-        $this->idClientReceiver = $idClientReceiver;
-
-        return $this;
-    }
-
-    /**
-     * Get idClientReceiver
-     *
-     * @return integer
-     */
-    public function getIdClientReceiver()
-    {
-        return $this->idClientReceiver;
+    public function __construct() {
+        $this->attachments = new ArrayCollection();
     }
 
     /**
@@ -205,7 +177,7 @@ class Transfer
      *
      * @return Transfer
      */
-    public function setIdTransferType(\Unilend\Bundle\CoreBusinessBundle\Entity\TransferType $idTransferType = null)
+    public function setTransferType(TransferType $idTransferType = null)
     {
         $this->idTransferType = $idTransferType;
 
@@ -217,8 +189,84 @@ class Transfer
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\TransferType
      */
-    public function getIdTransferType()
+    public function getTransferType()
     {
         return $this->idTransferType;
+    }
+
+    /**
+     * Set idClientReceiver
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $idClientReceiver
+     *
+     * @return Transfer
+     */
+    public function setClientReceiver(Clients $idClientReceiver = null)
+    {
+        $this->idClientReceiver = $idClientReceiver;
+
+        return $this;
+    }
+
+    /**
+     * Get idClientReceiver
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     */
+    public function getClientReceiver()
+    {
+        return $this->idClientReceiver;
+    }
+
+    /**
+     * Set idClientOrigin
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $idClientOrigin
+     *
+     * @return Transfer
+     */
+    public function setClientOrigin(Clients $idClientOrigin = null)
+    {
+        $this->idClientOrigin = $idClientOrigin;
+
+        return $this;
+    }
+
+    /**
+     * Get idClientOrigin
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     */
+    public function getClientOrigin()
+    {
+        return $this->idClientOrigin;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
+    }
+
+    /**
+     * Get project attachments
+     *
+     * @return ProjectAttachment[]
+     */
+    public function getAttachments()
+    {
+        return $this->attachments;
     }
 }

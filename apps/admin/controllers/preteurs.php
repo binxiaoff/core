@@ -5,14 +5,12 @@ use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class preteursController extends bootstrap
 {
-    /**
-     * @var attachment_helper
-     */
-    private $attachmentHelper;
-
     public function initialize()
     {
         parent::initialize();
@@ -43,8 +41,6 @@ class preteursController extends bootstrap
         $this->companies              = $this->loadData('companies');
         $this->projects               = $this->loadData('projects');
         $this->wallets_lines          = $this->loadData('wallets_lines');
-        $this->attachment             = $this->loadData('attachment');
-        $this->attachment_type        = $this->loadData('attachment_type');
     }
 
     public function _default()
@@ -128,6 +124,10 @@ class preteursController extends bootstrap
     {
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
 
         $this->projects      = $this->loadData('projects');
         $this->transactions  = $this->loadData('transactions');
@@ -137,12 +137,12 @@ class preteursController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
-
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->lenders_accounts->id_client_owner);
             $this->clients_adresses = $this->loadData('clients_adresses');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             $this->companies = $this->loadData('companies');
-            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
             }
 
@@ -183,15 +183,8 @@ class preteursController extends bootstrap
             $this->clients_mandats = $this->loadData('clients_mandats');
             $this->clients_mandats->get($this->clients->id_client, 'id_client');
 
-            $this->attachment       = $this->loadData('attachment');
-            $this->attachment_type  = $this->loadData('attachment_type');
-            $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
-
-            $this->aAvailableAttachments = [];
-
-            $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
-            $this->aAvailableAttachments = $this->aIdentity + $this->aDomicile + $this->aRibAndFiscale + $this->aOther;
+            $this->attachments     = $client->getAttachments();
+            $this->attachmentTypes = $attachmentManager->getAllTypesForLender();
 
             /** @var \lender_tax_exemption $oLenderTaxExemption */
             $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
@@ -221,64 +214,95 @@ class preteursController extends bootstrap
             $this->soldeRetrait = abs($this->soldeRetrait / 100);
             $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
 
-            /** @var \transfer $transfer */
-            $transfer           = $this->loadData('transfer');
-            $transfersForClient = $transfer->select('id_client_origin = ' . $this->clients->id_client . ' OR id_client_receiver = ' . $this->clients->id_client);
-
-            $this->transferDocuments = [];
-            foreach ($transfersForClient as $transfer) {
-                $transferDocument = $this->attachment->select('id_owner = ' . $transfer['id_transfer'] . ' AND id_type = ' . \attachment_type::TRANSFER_CERTIFICATE);
-                if (false === empty($transferDocument)) {
-                    $transferDocument                                   = $transferDocument[0];
-                    $this->transferDocuments[$transferDocument['path']] = $transferDocument;
-                }
-            }
+            $this->transfers = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($client);
 
             $this->getMessageAboutClientStatus();
             $this->setClientVigilanceStatusData();
         }
     }
 
-    private function setAttachments($iIdClient, $oAttachmentTypes)
+    /**
+     * @param Attachment[]     $attachments
+     * @param AttachmentType[] $attachmentTypes
+     */
+    private function setAttachments($attachments, $attachmentTypes)
     {
-        /** @var \greenpoint_attachment $oGreenPointAttachment */
-        $oGreenPointAttachment       = $this->loadData('greenpoint_attachment');
-        $aGreenpointAttachmentStatus = [];
-        $this->aIdentity             = [];
-        $this->aDomicile             = [];
-        $this->aRibAndFiscale        = [];
-        $this->aOther                = [];
-        $this->aRibAndFiscaleToAdd   = [];
-        $this->aIdentityToAdd        = [];
-        $this->aDomicileToAdd        = [];
-        $this->aOtherToAdd           = [];
+        $identityGroup      = [
+            AttachmentType::CNI_PASSPORTE,
+            AttachmentType::CNI_PASSPORTE_VERSO,
+            AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT,
+            AttachmentType::CNI_PASSPORTE_DIRIGEANT
+        ];
+        $bankAndFiscalGroup = [
+            AttachmentType::RIB,
+            AttachmentType::JUSTIFICATIF_FISCAL
+        ];
+        $fiscalAddressGroup = [
+            AttachmentType::JUSTIFICATIF_DOMICILE,
+            AttachmentType::ATTESTATION_HEBERGEMENT_TIERS
+        ];
 
-        foreach ($oGreenPointAttachment->select('id_client = ' . $iIdClient) as $aGPAS) {
-            $aGreenpointAttachmentStatus[$aGPAS['id_attachment']] = $aGPAS;
-        }
+        $identityTypes      = [];
+        $bankAndFiscalTypes = [];
+        $fiscalAddressTypes = [];
+        $otherTypes         = [];
 
-        foreach ($oAttachmentTypes as $aAttachmentType) {
-            $iType = $aAttachmentType['id'];
-            switch ($iType) {
-                case attachment_type::CNI_PASSPORTE:
-                case attachment_type::CNI_PASSPORTE_VERSO:
-                case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
-                case attachment_type::CNI_PASSPORTE_DIRIGEANT:
-                    $this->organizeAttachments($this->aIdentity, $this->aIdentityToAdd, $aGreenpointAttachmentStatus, $iType, $aAttachmentType);
-                    break;
-                case attachment_type::RIB:
-                case attachment_type::JUSTIFICATIF_FISCAL:
-                    $this->organizeAttachments($this->aRibAndFiscale, $this->aRibAndFiscaleToAdd, $aGreenpointAttachmentStatus, $iType, $aAttachmentType);
-                    break;
-                case attachment_type::JUSTIFICATIF_DOMICILE:
-                case attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
-                    $this->organizeAttachments($this->aDomicile, $this->aDomicileToAdd, $aGreenpointAttachmentStatus, $iType, $aAttachmentType);
-                    break;
-                default:
-                    $this->organizeAttachments($this->aOther, $this->aOtherToAdd, $aGreenpointAttachmentStatus, $iType, $aAttachmentType);
-                    break;
+        $identityAttachments      = [];
+        $bankAndFiscalAttachments = [];
+        $fiscalAddressAttachments = [];
+        $otherAttachments         = [];
+
+        foreach ($attachmentTypes as $attachmentType) {
+            $typeId = $attachmentType->getId();
+            if (in_array($typeId, $identityGroup)) {
+                $identityTypes[$typeId] = $attachmentType;
+            } elseif (in_array($typeId, $bankAndFiscalGroup)) {
+                $bankAndFiscalTypes[$typeId] = $attachmentType;
+            } elseif (in_array($typeId, $fiscalAddressGroup)) {
+                $fiscalAddressTypes[$typeId] = $attachmentType;
+            } else {
+                $otherTypes[$typeId] = $attachmentType;
             }
         }
+        foreach ($attachments as $attachment) {
+            $typeId = $attachment->getType()->getId();
+            if (in_array($typeId, $identityGroup)) {
+                unset($identityTypes[$typeId]);
+                $identityAttachments[] = $attachment;
+            } elseif (in_array($typeId, $bankAndFiscalGroup)) {
+                unset($bankAndFiscalTypes[$typeId]);
+                $bankAndFiscalAttachments[] = $attachment;
+            } elseif (in_array($typeId, $fiscalAddressGroup)) {
+                unset($fiscalAddressTypes[$typeId]);
+                $fiscalAddressAttachments[] = $attachment;
+            } else {
+                unset($otherTypes[$typeId]);
+                $otherAttachments[] = $attachment;
+            }
+        }
+
+        $this->attachmentGroups = [
+            [
+                'title'       => 'Identité',
+                'attachments' => $identityAttachments,
+                'typeToAdd'   => $identityTypes
+            ],
+            [
+                'title'       => 'RIB et Justificatif fiscal',
+                'attachments' => $bankAndFiscalAttachments,
+                'typeToAdd'   => $bankAndFiscalTypes
+            ],
+            [
+                'title'       => 'Justificatif de domicile',
+                'attachments' => $fiscalAddressAttachments,
+                'typeToAdd'   => $fiscalAddressTypes
+            ],
+            [
+                'title'       => 'Autre',
+                'attachments' => $otherAttachments,
+                'typeToAdd'   => $otherTypes
+            ]
+        ];
     }
 
     public function _edit_preteur()
@@ -302,14 +326,19 @@ class preteursController extends bootstrap
 
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->clients = $this->loadData('clients');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
 
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->lenders_accounts->id_client_owner);
             $this->clients_adresses = $this->loadData('clients_adresses');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             $this->companies = $this->loadData('companies');
 
-            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
 
                 $this->meme_adresse_fiscal = $this->companies->status_adresse_correspondance;
@@ -354,14 +383,6 @@ class preteursController extends bootstrap
 
             if (null === $this->currentBankAccount) {
                 $this->currentBankAccount = new BankAccount();
-            } else {
-                $this->iban1 = substr($this->currentBankAccount->getIban(), 0, 4);
-                $this->iban2 = substr($this->currentBankAccount->getIban(), 4, 4);
-                $this->iban3 = substr($this->currentBankAccount->getIban(), 8, 4);
-                $this->iban4 = substr($this->currentBankAccount->getIban(), 12, 4);
-                $this->iban5 = substr($this->currentBankAccount->getIban(), 16, 4);
-                $this->iban6 = substr($this->currentBankAccount->getIban(), 20, 4);
-                $this->iban7 = substr($this->currentBankAccount->getIban(), 24, 3);
             }
 
             if ($this->clients->telephone != '') {
@@ -384,22 +405,24 @@ class preteursController extends bootstrap
 
             $this->getMessageAboutClientStatus();
 
-            $this->attachment       = $this->loadData('attachment');
-            $this->attachment_type  = $this->loadData('attachment_type');
-            $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
-
-            $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
+            $attachments     = $client->getAttachments();
+            $attachmentTypes = $attachmentManager->getAllTypesForLender();
+            $this->setAttachments($attachments, $attachmentTypes);
 
             $this->loadJs('default/component/add-file-input');
 
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
             $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
-            /** @var \greenpoint_attachment_detail $greenPointDetail */
-            $greenPointDetail            = $this->loadData('greenpoint_attachment_detail');
-            $this->lenderIdentityMRZData = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORTE);
-            $this->hostIdentityMRZData   = $greenPointDetail->getIdentityData($this->clients->id_client, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+            $identityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE);
+            if ($identityDocument && $identityDocument->getGreenpointAttachment()) {
+                $this->lenderIdentityMRZData = $identityDocument->getGreenpointAttachment()->getGreenpointAttachmentDetail();
+            }
+
+            $hostIdentityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT);
+            if ($hostIdentityDocument && $hostIdentityDocument->getGreenpointAttachment()) {
+                $this->hostIdentityMRZData = $hostIdentityDocument->getGreenpointAttachment()->getGreenpointAttachmentDetail();
+            }
 
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest();
@@ -419,7 +442,7 @@ class preteursController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager $taxManager */
                 $taxManager = $this->get('unilend.service.tax_manager');
 
-                if (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+                if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
 
                     if (false === empty($_POST['meme-adresse'])) {
                         $this->clients_adresses->meme_adresse_fiscal = 1;
@@ -456,29 +479,30 @@ class preteursController extends bootstrap
 
                     $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
 
-                $this->clients->telephone           = str_replace(' ', '', $_POST['phone']);
-                $this->clients->mobile              = str_replace(' ', '', $_POST['mobile']);
-                $this->clients->ville_naissance     = $_POST['com-naissance'];
-                $this->clients->insee_birth         = $_POST['insee_birth'];
-                $this->clients->naissance           = $oBirthday->format('Y-m-d');
-                $this->clients->id_pays_naissance   = $_POST['id_pays_naissance'];
-                $this->clients->id_nationalite      = $_POST['nationalite'];
-                $this->clients->id_langue           = 'fr';
-                $this->clients->type                = 1;
-                $this->clients->fonction            = '';
-                $this->clients->funds_origin        = $_POST['origine_des_fonds'];
-                $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
-                $this->clients->update();
+                    $this->clients->telephone           = str_replace(' ', '', $_POST['phone']);
+                    $this->clients->mobile              = str_replace(' ', '', $_POST['mobile']);
+                    $this->clients->ville_naissance     = $_POST['com-naissance'];
+                    $this->clients->insee_birth         = $_POST['insee_birth'];
+                    $this->clients->naissance           = $oBirthday->format('Y-m-d');
+                    $this->clients->id_pays_naissance   = $_POST['id_pays_naissance'];
+                    $this->clients->id_nationalite      = $_POST['nationalite'];
+                    $this->clients->id_langue           = 'fr';
+                    $this->clients->type                = 1;
+                    $this->clients->fonction            = '';
+                    $this->clients->funds_origin        = $_POST['origine_des_fonds'];
+                    $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
+                    $this->clients->update();
 
-                $this->lenders_accounts->id_company_owner = 0;
-
-                foreach ($_FILES as $field => $file) {
-                    // Field name = attachment type id
-                    $iAttachmentType = $field;
-                    if ('' !== $file['name']) {
-                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
+                    $this->lenders_accounts->id_company_owner = 0;
+                    $attachmentTypeRepository                 = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+                    foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
+                        if ($uploadedFile) {
+                            $attachmentType   = $attachmentTypeRepository->find($attachmentTypeId);
+                            if ($attachmentType) {
+                                $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                            }
+                        }
                     }
-                }
 
                     if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
                         if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
@@ -536,7 +560,6 @@ class preteursController extends bootstrap
 
                     $this->clients_adresses->update();
                     $this->lenders_accounts->update();
-                    $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
                     $serialize = serialize(['id_client' => $this->clients->id_client, 'post'      => $_POST, 'files'     => $_FILES]);
                     $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
@@ -550,7 +573,7 @@ class preteursController extends bootstrap
                         $iOriginForUserHistory = 3;
 
                         if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
-                            $this->changeClientStatus($this->clients, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
+                            $this->changeClientStatus($this->clients, Clients::STATUS_OFFLINE, $iOriginForUserHistory);
                             $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
                             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                             die;
@@ -577,11 +600,9 @@ class preteursController extends bootstrap
                     if (true === $applyTaxCountry) {
                         $taxManager->addTaxToApply($this->clients, $this->lenders_accounts, $this->clients_adresses, $_SESSION['user']['id_user']);
                     }
-
-                    $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
                     header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                     die;
-                } elseif (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                } elseif (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                     $this->companies->name         = $_POST['raison-sociale'];
                     $this->companies->forme        = $_POST['form-juridique'];
                     $this->companies->capital      = str_replace(' ', '', $_POST['capital-sociale']);
@@ -670,14 +691,17 @@ class preteursController extends bootstrap
                         $this->companies->create();
                     }
 
-                $this->clients->funds_origin        = $_POST['origine_des_fonds'];
-                $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
-                $this->clients->update();
+                    $this->clients->funds_origin        = $_POST['origine_des_fonds'];
+                    $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
+                    $this->clients->update();
 
-                    foreach ($_FILES as $field => $file) {
-                        $iAttachmentType = $field;
-                        if ('' !== $file['name']) {
-                            $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
+                    $attachmentTypeRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+                    foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
+                        if ($uploadedFile) {
+                            $attachmentType   = $attachmentTypeRepository->find($attachmentTypeId);
+                            if ($attachmentType) {
+                                $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                            }
                         }
                     }
 
@@ -712,7 +736,6 @@ class preteursController extends bootstrap
                     // On met a jour le lender
                     $this->lenders_accounts->id_company_owner = $this->companies->id_company;
                     $this->lenders_accounts->update();
-                    $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
                     // On met a jour le client
                     $this->clients->update();
@@ -762,50 +785,6 @@ class preteursController extends bootstrap
         }
 
         return $aResult;
-    }
-
-    /**
-     * @param array $aDataToDisplay
-     * @param array $aDataToAdd
-     * @param array $aGPAttachmentStatus
-     * @param int $iType
-     * @param array $aAttachmentType
-     */
-    private function organizeAttachments(&$aDataToDisplay, &$aDataToAdd, array $aGPAttachmentStatus, $iType, array $aAttachmentType)
-    {
-        if (isset($this->attachments[$iType]['path'])) {
-            $aDataToDisplay[$iType] = [
-                'label' => $aAttachmentType['label'],
-                'path'  => $this->attachments[$iType]['path'],
-                'id'    => $this->attachments[$iType]['id']
-            ];
-
-            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label']) && \greenpoint_attachment::REVALIDATE_NO == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['revalidate']) {
-                $aDataToDisplay[$iType]['greenpoint_label'] = $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'];
-
-                if (1 == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['final_status']) {
-                    $aDataToDisplay[$iType]['final_status'] = 'Statut définitif';
-                } elseif(8 > $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status']) {
-                    $aDataToDisplay[$iType]['final_status'] = 'Attente de confirmation Green Point';
-                } else {
-                    $aDataToDisplay[$iType]['final_status'] = '';
-                }
-
-                if ('0' === $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status']) {
-                    $aDataToDisplay[$iType]['color'] = 'error';
-                } elseif (8 > $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status']) {
-                    $aDataToDisplay[$iType]['color'] = 'warning';
-                } else {
-                    $aDataToDisplay[$iType]['color'] = 'valid';
-                }
-            } else {
-                $aDataToDisplay[$iType]['greenpoint_label'] = 'Non Contrôlé par GreenPoint';
-                $aDataToDisplay[$iType]['color']            = 'error';
-                $aDataToDisplay[$iType]['final_status']     = '';
-            }
-        } else {
-            $aDataToAdd[$iType]['label'] = $aAttachmentType['label'];
-        }
     }
 
     public function _activation()
@@ -1007,54 +986,6 @@ class preteursController extends bootstrap
         $this->sumDispoPourOffres         = $sumVirementUnilendOffres - $sumOffresTransac;
         $this->sumDispoPourOffresSelonMax = $this->montant_limit * 100 - $sumOffresTransac;
     }
-
-    /**
-     * @param integer $iOwnerId
-     * @param integer $field
-     * @param integer $iAttachmentType
-     * @return int|bool
-     */
-    private function uploadAttachment($iOwnerId, $field, $iAttachmentType)
-    {
-        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
-            $this->upload = $this->loadLib('upload');
-        }
-
-        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
-            $this->attachment = $this->loadData('attachment');
-        }
-
-        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
-            $this->attachment_type = $this->loadData('attachment_type');
-        }
-
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', [$this->attachment, $this->attachment_type, $this->path]);
-        }
-
-        $sNewName = '';
-        if (isset($_FILES[$field]['name']) && $aFileInfo = pathinfo($_FILES[$field]['name'])) {
-            $sNewName = mb_substr($aFileInfo['filename'], 0, 30) . '_' . $iOwnerId;
-        }
-
-
-        if (false === isset($this->oGreenPointAttachment) || false === $this->oGreenPointAttachment instanceof greenpoint_attachment) {
-            /** @var greenpoint_attachment oGreenPointAttachment */
-            $this->oGreenPointAttachment = $this->loadData('greenpoint_attachment');
-        }
-        $mResult = $this->attachmentHelper->attachmentExists($this->attachment, $iOwnerId, attachment::LENDER, $iAttachmentType);
-
-        if (is_numeric($mResult)) {
-            $this->oGreenPointAttachment->get($mResult, 'id_attachment');
-            $this->oGreenPointAttachment->revalidate   = \greenpoint_attachment::REVALIDATE_YES;
-            $this->oGreenPointAttachment->final_status = \greenpoint_attachment::FINAL_STATUS_NO;
-            $this->oGreenPointAttachment->update();
-        }
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::LENDER, $iAttachmentType, $field, $this->upload, $sNewName);
-
-        return $resultUpload;
-    }
-
     public function _email_history()
     {
         $this->clients                = $this->loadData('clients');
@@ -1206,7 +1137,7 @@ class preteursController extends bootstrap
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            if (in_array($this->clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
             }
 
@@ -1373,7 +1304,7 @@ class preteursController extends bootstrap
         $oSettings->get('Twitter', 'type');
         $lien_tw = $oSettings->value;
 
-        $lapage = (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) ? 'particulier_doc' : 'societe_doc';
+        $lapage = (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) ? 'particulier_doc' : 'societe_doc';
 
         $timeCreate = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month      = $this->dates->tableauMois['fr'][ date('n', $timeCreate) ];
@@ -1511,95 +1442,6 @@ class preteursController extends bootstrap
          }
     }
 
-    public function _change_bank_account()
-    {
-        $this->hideDecoration();
-        $this->autoFireView = false;
-        $clientId           = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
-        $idBankAccount      = filter_var($_POST['id_bank_account'], FILTER_VALIDATE_INT);
-
-        if (false === $clientId) {
-            echo json_encode(['text' => 'Une erreur est survenue', 'severity' => 'error']);
-            return;
-        }
-
-        /** @var BankAccountManager $bankAccountManager */
-        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-
-        /** @var ClientsRepository $clientRepository */
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-        /** @var Clients $clientEntity */
-        $clientEntity = $clientRepository->find($clientId);
-        /** @var BankAccount $currentBankAccount */
-        $currentBankAccount =  $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
-        if (null !== $currentBankAccount) {
-            $currentBic  = $currentBankAccount->getBic();
-            $currentIban = $currentBankAccount->getIban();
-        } else {
-            $currentBic  = '';
-            $currentIban = '';
-        }
-        $newBic      = str_replace(' ', '', strtoupper($_POST['bic']));
-        $iban        = '';
-
-        for ($i = 1; $i <= 7; $i++) {
-            if (empty($_POST['iban' . $i])) {
-                echo json_encode(['text' => 'IBAN incorrect', 'severity' => 'error']);
-                return;
-            }
-            $iban .= strtoupper($_POST['iban' . $i]);
-        }
-        $newIban     = str_replace(' ', '', $iban);
-
-        $message  = [];
-        $severity = [];
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager*/
-        $mailerManager= $this->get('unilend.service.email_manager');
-
-        $validator      = $this->get('validator');
-        $ibanViolations = null;
-        $bicVoilations  = null;
-        if ($currentIban !== $newIban) {
-            $ibanViolations = $validator->validate($newIban, new \Symfony\Component\Validator\Constraints\Iban());
-
-            if (0 === $ibanViolations->count()) {
-                $message['iban']  = 'IBAN modifié ';
-                $severity['iban'] = 'valid';
-            } else {
-                $message['iban']  = 'IBAN incorrect';
-                $severity['iban'] = 'error ';
-            }
-        }
-
-        if ($currentBic !== $newBic) {
-            $bicVoilations = $validator->validate($newBic, new \Symfony\Component\Validator\Constraints\Bic());
-
-            if (0 === $bicVoilations->count()) {
-                $message['bic']  = 'BIC modifié';
-                $severity['bic'] = 'valid';
-            } else {
-                $message['bic']  = 'BIC incorrect';
-                $severity['bic'] = 'error';
-            }
-        }
-        if (0 === count($ibanViolations) && 0 === count($bicVoilations)) {
-            /** @var BankAccount $bankAccount */
-            $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $newBic, $newIban);
-            $this->validateBankAccount($bankAccount->getId());
-            if ($currentIban !== $newIban) {
-                $mailerManager->sendIbanUpdateToStaff($clientId, $currentIban, $newIban);
-            }
-        }
-
-        if ($currentIban == $newIban && $currentBic == $newBic) {
-            $message = ['text' => 'Aucune modification', 'severity' => 'warning'];
-            echo json_encode(['bic' => $message, 'iban' => $message]);
-            return;
-        }
-
-        echo json_encode(['text' => $message, 'severity' => $severity]);
-    }
-
     public function _lenderOnlineOffline()
     {
         $this->hideDecoration();
@@ -1619,7 +1461,7 @@ class preteursController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
             $this->changeClientStatus($oClient, $this->params[2], 1);
-            if ($this->params[2] == \clients::STATUS_OFFLINE) {
+            if ($this->params[2] == Clients::STATUS_OFFLINE) {
                 $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND);
             } else {
                 $aLastTwoStatus = $oClientsStatusHistory->select('id_client =  ' . $oClient->id_client, 'id_client_status_history DESC', null, 2);
@@ -1733,7 +1575,7 @@ class preteursController extends bootstrap
      */
     private function isEmailUnique($email, \clients $clientEntity)
     {
-        $clientsWithSameEmailAddress = $clientEntity->select('email = "' . $email . '" AND id_client != ' . $clientEntity->id_client . ' AND status = ' . \clients::STATUS_ONLINE);
+        $clientsWithSameEmailAddress = $clientEntity->select('email = "' . $email . '" AND id_client != ' . $clientEntity->id_client . ' AND status = ' . Clients::STATUS_ONLINE);
         if (count($clientsWithSameEmailAddress) > 0) {
             $ClientIdWithSameEmail = '';
             foreach ($clientsWithSameEmailAddress as $client) {

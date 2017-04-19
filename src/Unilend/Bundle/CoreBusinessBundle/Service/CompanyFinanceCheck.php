@@ -135,7 +135,7 @@ class CompanyFinanceCheck
         } catch (\Exception $exception) {
             $this->logger->error(
                 'Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
             );
         }
 
@@ -208,8 +208,10 @@ class CompanyFinanceCheck
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
+            $this->logger->error(
+                'Could not get financial summary: AltaresManager::getFinancialSummary(' . $siren . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
+            );
         }
 
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro';
@@ -238,8 +240,10 @@ class CompanyFinanceCheck
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get balance management line: AltaresManager::getBalanceManagementLine(' . $siren . ', ' . $lastBalanceSheet->getBalanceSheetId() . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
+            $this->logger->error(
+                'Could not get balance management line: AltaresManager::getBalanceManagementLine(' . $siren . ', ' . $lastBalanceSheet->getBalanceSheetId() . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
+            );
         }
 
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_ebe';
@@ -263,7 +267,7 @@ class CompanyFinanceCheck
             if (
                 is_array($privileges)
                 && isset($privileges['code'])
-                && in_array($privileges['code'], [InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, InfogreffeManager::RETURN_CODE_NO_DEBTOR])
+                && in_array($privileges['code'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, InfogreffeManager::RETURN_CODE_NO_DEBTOR])
             ) {
                 if (null !== $companyRatingHistory && null !== $companyRating) {
                     $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_INFOGREFFE_RETURN_CODE, $privileges['code']);
@@ -298,12 +302,10 @@ class CompanyFinanceCheck
             }
         } catch (\Exception $exception) {
             $this->logger->warning('Could not get infogreffe privileges: InfogreffeManager::getIndebtedness(' . $siren .'). Message: ' . $exception->getMessage(), $logContext);
-
-            $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
-            return true;
         }
 
-        return false;
+        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
+        return true;
     }
 
     /**
