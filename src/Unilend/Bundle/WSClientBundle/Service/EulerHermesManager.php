@@ -178,11 +178,13 @@ class EulerHermesManager
 
             $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
 
-            if (200 === $response->getStatusCode()) {
-                return $response->getBody()->getContents();
+            $content = $response->getBody()->getContents();
+
+            if (200 === $response->getStatusCode() && $this->isValidResponse($content)) {
+                return $content;
             }
 
-            $this->logger->error('Call to ' . $wsResource->resource_name . '. Result: ' . $response->getBody()->getContents(), $logContext);
+            $this->logger->error('Call to ' . $wsResource->resource_name . '. Result: ' . $content, $logContext);
             return null;
         } catch (\Exception $exception) {
         }
