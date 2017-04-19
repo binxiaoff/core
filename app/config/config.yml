@@ -97,7 +97,7 @@ doctrine_mongodb:
             server: "%mongodb_server%"
             options:
                 authMechanism: SCRAM-SHA-1
-                connect:       false
+                connect:       true
                 ssl:           true
                 password:      "%mongodb_password%"
                 username:      "%mongodb_username%"
