@@ -22,7 +22,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
             $wallet = $wallet->getId();
         }
 
-        $date->setTime('23', '59', '59');
+        $date->setTime(23, 59, 59);
 
         $qb = $this->createQueryBuilder('w');
         $qb->andWhere('w.idWallet = :wallet')
@@ -47,8 +47,8 @@ class WalletBalanceHistoryRepository extends EntityRepository
      */
     public function getBorrowerWalletOperations($idWallet, \DateTime $startDate, \DateTime $endDate, array $idProjects, $operationType = null)
     {
-        $startDate->setTime('00', '00', '00');
-        $endDate->setTime('23', '59', '59');
+        $startDate->setTime(00, 00, 00);
+        $endDate->setTime(23, 59, 59);
 
         $qb = $this->createQueryBuilder('wbh');
         $qb->select('o.id,
