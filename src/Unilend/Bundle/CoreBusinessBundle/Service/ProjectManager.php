@@ -738,6 +738,7 @@ class ProjectManager
      */
     public function addProjectStatus($userId, $projectStatus, \projects &$project, $reminderNumber = 0, $content = '')
     {
+        $originStatus = $project->status;
         /** @var \projects_status_history $projectsStatusHistory */
         $projectsStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
         /** @var \projects_status $projectStatusEntity */
@@ -754,7 +755,9 @@ class ProjectManager
         $project->status = $projectStatus;
         $project->update();
 
-        $this->projectStatusUpdateTrigger($projectStatusEntity, $project, $userId);
+        if ($originStatus != $projectStatus) {
+            $this->projectStatusUpdateTrigger($projectStatusEntity, $project, $userId);
+        }
     }
 
     /**

@@ -111,7 +111,12 @@ class InfogreffeManager
                 $this->client->__soapCall($wsResource->resource_name, [$request->asXML()]);
             } catch (\SoapFault $exception) {
                 // Infogreffe WS response does not seem to be valid. Workaround by Mesbah: ignore error and call SoapClient::__getLastResponse()
-                if ('SOAP-ERROR: Encoding: Violation of encoding rules' !== $exception->getMessage()) {
+                if ('SOAP-ERROR: Encoding: Violation of encoding rules' === $exception->getMessage()) {
+                    // https://github.com/laravel/framework/issues/6618
+                    set_error_handler('var_dump', 0); // Never called because of empty mask.
+                    @trigger_error('');
+                    restore_error_handler();
+                } else {
                     $this->logger->error('Calling Infogreffe Indebtedness SIREN: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
                 }
             }
@@ -235,7 +240,6 @@ class InfogreffeManager
         $subscriptionList = [];
 
         if (isset($data['etat'], $data['etat']['debiteur'])) {
-
             if (array_key_exists('inscription_3', $data['etat']['debiteur'])) {
                 $subscriptionList['inscription_3'][] = $data['etat']['debiteur']['inscription_3'];
             }
@@ -250,11 +254,11 @@ class InfogreffeManager
 
             foreach ($data['etat']['debiteur'] as $debtor) {
                 if (is_array($debtor) && array_key_exists('inscription_3', $debtor)) {
-                    $subscriptionList['inscription_3'] = $debtor['inscription_3'];
+                    $subscriptionList['inscription_3'][] = $debtor['inscription_3'];
                 }
 
                 if (is_array($debtor) && array_key_exists('inscription_4', $debtor)) {
-                    $subscriptionList['inscription_4'] = $debtor['inscription_4'];
+                    $subscriptionList['inscription_4'][] = $debtor['inscription_4'];
                 }
             }
         }

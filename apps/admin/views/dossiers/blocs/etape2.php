@@ -47,44 +47,49 @@
         var invalidAddress = false;
         // Prevent double alert
         var alertShown = false;
+        // Avoid re-initialisation
+        var streetviewOpen = false;
         // Prepare streetview container
         var initStreetview = function(location) {
-            var streetview = document.getElementById('streetview');
-            var container = document.getElementById('streetview_container');
-            var offsetSpace = 50;
-            var aspectRatio = 0.5625;
-            var animationTime = 200;
-            var screenHeight = window.innerHeight;
-            var availableHeight = screenHeight - offsetSpace;
-            var streetviewContainerWidth = $(container).width();
-            var containerRatioHeight =  streetviewContainerWidth * aspectRatio;
-            $(container).show();
-            // Scroll window to streetview
-            $('html, body').animate({scrollTop: $(container).offset().top - offsetSpace}, animationTime, function() {
-                var streetviewAspectRatio = '';
-                if (containerRatioHeight > availableHeight) {
-                    streetviewAspectRatio = (availableHeight / streetviewContainerWidth) * 100 +  '%';
-                } else {
-                    streetviewAspectRatio = aspectRatio * 100 + '%';
-                }
-                $(container).animate({'padding-bottom': streetviewAspectRatio}, animationTime, function(){
-                    showStreetView(location);
+            if (!streetviewOpen) {
+                var streetview = document.getElementById('streetview');
+                var container = document.getElementById('streetview_container');
+                var offsetSpace = 50;
+                var aspectRatio = 0.5625;
+                var animationTime = 200;
+                var screenHeight = window.innerHeight;
+                var availableHeight = screenHeight - offsetSpace;
+                var streetviewContainerWidth = $(container).width();
+                var containerRatioHeight = streetviewContainerWidth * aspectRatio;
+                $(container).show();
+                // Scroll window to streetview
+                $('html, body').animate({scrollTop: $(container).offset().top - offsetSpace}, animationTime, function () {
+                    var streetviewAspectRatio = '';
+                    if (containerRatioHeight > availableHeight) {
+                        streetviewAspectRatio = (availableHeight / streetviewContainerWidth) * 100 + '%';
+                    } else {
+                        streetviewAspectRatio = aspectRatio * 100 + '%';
+                    }
+                    $(container).animate({'padding-bottom': streetviewAspectRatio}, animationTime, function () {
+                        showStreetView(location);
+                    });
                 });
-            });
+            } else {
+                showStreetView(location);
+            }
         }
         // Resolve address
-        var resolveAddress = function() {
-            var street = $('#address_etape2').val();
-            var city = $('#ville_etape2').val();
-            var postCode = $('#ville_etape2').val();
-            var address = [street, city, postCode];
+        var resolveAddress = function(street, city, postcode) {
+            var address = [street, postcode, city];
             address = address.join(", ");
+            console.log(address)
             // Init Geocoder
             var geocoder = new google.maps.Geocoder();
             geocoder.geocode({'address': address}, function(results, status) {
                 if (status === 'OK') {
                     // Show Streetview
                     initStreetview(results[0].geometry.location);
+                    initAutocomplete();
                 } else {
                     console.log(status);
                     invalidAddress = true;
@@ -98,6 +103,7 @@
         // Init Streetview
         var showStreetView = function(location) {
             console.log(location);
+            streetviewOpen = true;
             new google.maps.StreetViewPanorama(document.getElementById('streetview'), {
                 position: location,
                 pov: {heading: 165, pitch: 0},
@@ -107,7 +113,12 @@
         // Open streetview
         $("#etape2").on('click', '#streetview_open', function(e) {
             e.preventDefault();
-            if (invalidAddress === false) { resolveAddress() }
+            if (invalidAddress === false) {
+                var street = $('#address_etape2').val();
+                var city = $('#ville_etape2').val();
+                var postcode = $('#postal_etape2').val();
+                resolveAddress(street, city, postcode);
+            }
         });
         // Reset invalid address on change
         $("#etape2").on('change', '#address_etape2, #postal_etape2, #ville_etape2', function(e) {
@@ -121,8 +132,26 @@
             var $container = $(this).closest('#streetview_container')
             $container.animate({'padding-bottom': 0}, 200, function(){
                 $container.hide();
+                streetviewOpen = false;
             });
         });
+
+        //Google Places Autocomplete
+        var googleAutoComplete;
+        function initAutocomplete() {
+            googleAutoComplete = new google.maps.places.Autocomplete((document.getElementById('google-autocomplete')),{types: ['geocode']});
+            googleAutoComplete.addListener('place_changed', updateStreetview);
+        }
+        function updateStreetview() {
+            // Get the place details from the autocomplete object.
+            var $place = $('<div id="autocomplete-address" />');
+            $place.html(googleAutoComplete.getPlace().adr_address)
+            var street = $place.find('.street-address').text();
+            var city = $place.find('.locality').text();
+            var postcode = $place.find('.postal-code').text();
+            console.log(postcode)
+            resolveAddress(street, city, postcode);
+        }
     });
 </script>
 <style>
@@ -156,13 +185,28 @@
         right: 10px;
         bottom: 10px;
     }
+    #autocomplete_container {
+        width: 290px;
+        float: left;
+    }
+    #google-autocomplete {
+        padding: 5px 10px;
+        width: 100%;
+        height: 20px;
+        background: #494c4a;
+        color: #fff;
+        border: 0;
+    }
 </style>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJQJHPnNXye8Hhsf7CUK6dPQ9dvD861k4"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJQJHPnNXye8Hhsf7CUK6dPQ9dvD861k4&libraries=places"></script>
 
 <a class="tab_title" id="section-contact-details" href="#section-contact-details">2. Coordonnées</a>
 <div class="tab_content" id="etape2">
     <div id="streetview_container">
         <div class="controls">
+            <div id="autocomplete_container">
+                <input type="text" id="google-autocomplete">
+            </div>
             <button id="streetview_close" class="btn">X</button>
         </div>
         <div id="streetview" class="iframe"></div>

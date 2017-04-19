@@ -176,7 +176,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $repaymentLog->fin = date('Y-m-d H:i:s');
                 $repaymentLog->update();
 
-                $logger->error(
+                $logger->warning(
                     'Cannot find pending lenders\'s repayment schedule to repay for project ' . $r['id_project'] . ' (order: ' . $r['ordre'] . '). The repayment may have been repaid manually.',
                     array('class' => __CLASS__, 'function' => __FUNCTION__)
                 );

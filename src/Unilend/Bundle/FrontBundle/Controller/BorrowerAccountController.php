@@ -731,21 +731,23 @@ class BorrowerAccountController extends Controller
 
         foreach ($projectsPostFunding as $index => $project) {
             $projects->get($project['id_project']);
+            $nextRepayment = [
+                'montant'                  => 0,
+                'commission'               => 0,
+                'tva'                      => 0,
+                'date_echeance_emprunteur' => date('Y-m-d H:i:s'),
+            ];
 
             if (false === in_array($project['status'], [\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE])) {
-               $nextRepayment = $repaymentSchedule->select(
+               $repayment = $repaymentSchedule->select(
                    'id_project = ' . $project['id_project'] . ' AND status_emprunteur = 0',
                    'date_echeance_emprunteur ASC',
                    '',
                    1
-               )[0];
-            } else {
-                $nextRepayment = [
-                    'montant'                  => 0,
-                    'commission'               => 0,
-                    'tva'                      => 0,
-                    'date_echeance_emprunteur' => date('Y-m-d H:i:s'),
-                ];
+               );
+               if (false === empty($repayment[0])) {
+                   $nextRepayment = $repayment[0];
+               }
             }
 
             $projectsPostFunding[$index] = $projectsPostFunding[$index] + [

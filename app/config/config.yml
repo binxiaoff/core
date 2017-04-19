@@ -99,7 +99,7 @@ doctrine_mongodb:
             server: "%mongodb_server%"
             options:
                 authMechanism: SCRAM-SHA-1
-                connect:       false
+                connect:       true
                 ssl:           true
                 password:      "%mongodb_password%"
                 username:      "%mongodb_username%"
@@ -121,12 +121,13 @@ cache_adapter:
             aliases: ['memcache.default']
 
 monolog:
-    channels: [console, migration]
+    channels: [console, migration, mongodb]
     handlers:
         error:
             type: fingers_crossed
             action_level: error
             handler: error_handler
+            channels: ['!translation']
         error_handler:
             type: group
             members: [error_file]
@@ -167,7 +168,7 @@ monolog:
             type: filter
             handler: site_handler
             max_level: warning
-            channels: ['!console', '!translation']
+            channels: ['!console', '!translation', '!mongodb']
         site_handler:
             type: rotating_file
             level: warning
@@ -176,11 +177,6 @@ monolog:
             file_permission: 0664
             date_format: 'Y-m-d'
 
-        translation_filter:
-            type: filter
-            handler: translation_handler
-            max_level: warning
-            channels: translation
         translation_handler:
             type: rotating_file
             level: warning
@@ -189,6 +185,19 @@ monolog:
             file_permission: 0664
             date_format: 'Y-m-d'
             channels: translation
+
+        mongodb:
+            type: fingers_crossed
+            action_level: warning
+            handler: mongodb_handler
+            channels: mongodb
+        mongodb_handler:
+            type: rotating_file
+            level: debug
+            path: "%kernel.logs_dir%/mongodb.%kernel.environment%.log"
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Y-m-d'
 
         migration_handler:
             type : stream
