@@ -1327,6 +1327,10 @@ class dossiersController extends bootstrap
         /** @var \Doctrine\ORM\EntityRepository $projectCommentRepository */
         $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $projectEntity */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments $projectCommentEntity */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $userEntity */
+
         if (
             isset($_POST['projectId'], $_POST['content'])
             && filter_var($_POST['projectId'], FILTER_VALIDATE_INT)
@@ -1340,6 +1344,8 @@ class dossiersController extends bootstrap
                 $projectCommentEntity->setContent($_POST['content']);
 
                 $entityManager->flush($projectCommentEntity);
+
+                $slackNotification = 'édité';
             } else {
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity->setIdProject($projectEntity);
@@ -1348,6 +1354,32 @@ class dossiersController extends bootstrap
 
                 $entityManager->persist($projectCommentEntity);
                 $entityManager->flush($projectCommentEntity);
+
+                $slackNotification = 'ajouté';
+            }
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SlackManager $slackManager */
+            $slackManager = $this->get('unilend.service.slack_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $userRepository */
+            $userRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            $slackNotification = 'Mémo ' . $slackNotification . ' par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
+
+            if (
+                $projectEntity->getIdCommercial() > 0
+                && $_SESSION['user']['id_user'] != $projectEntity->getIdCommercial()
+                && ($userEntity = $userRepository->find($projectEntity->getIdCommercial()))
+                && false === empty($userEntity->getSlack())
+            ) {
+                $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+            }
+
+            if (
+                $projectEntity->getIdAnalyste() > 0
+                && $_SESSION['user']['id_user'] != $projectEntity->getIdAnalyste()
+                && ($userEntity = $userRepository->find($projectEntity->getIdAnalyste()))
+                && false === empty($userEntity->getSlack())
+            ) {
+                $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
             }
         }
 
