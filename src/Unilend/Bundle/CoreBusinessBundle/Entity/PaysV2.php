@@ -16,6 +16,8 @@ class PaysV2
     const VIGILANCE_STATUS_MEDIUM_RISK = 1;
     const VIGILANCE_STATUS_HIGH_RISK   = 2;
 
+    const COUNTRY_FRANCE = 1;
+
     /**
      * @var string
      *

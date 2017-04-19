@@ -23,6 +23,26 @@ class PartnerProductManager extends ProductManager
     }
 
     /**
+     * @param \projects $project
+     * @param bool      $includeInactiveProduct
+     *
+     * @return \product[]
+     */
+    public function findEligibleProducts(\projects $project, $includeInactiveProduct = false)
+    {
+        $eligibleProducts = [];
+
+        foreach ($this->getAvailableProducts($includeInactiveProduct, $project->id_partner) as $product) {
+            if ($this->isProjectEligible($project, $product)) {
+                $eligibleProduct    = clone $product;
+                $eligibleProducts[] = $eligibleProduct;
+            }
+        }
+
+        return $eligibleProducts;
+    }
+
+    /**
      * @param array $productList
      * @param bool  $includeInactiveProduct
      * @return \product[]

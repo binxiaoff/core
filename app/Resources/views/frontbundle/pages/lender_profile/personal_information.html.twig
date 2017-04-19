@@ -5,6 +5,33 @@ id: 'user-preter-profile',
 classNames: 'user-preter-profile'
 } %}
 
+{% form_theme forms.identity '/frontbundle/forms/fields.html.twig' %}
+{% if forms.identity.vars.valid == false %}
+    {% set identityFormCollapse = 'in' %}
+    {% set identityViewCollapse = '' %}
+{% else %}
+    {% set identityFormCollapse = '' %}
+    {% set identityViewCollapse = 'in' %}
+{% endif %}
+
+{% form_theme forms.fiscalAddress '/frontbundle/forms/fields.html.twig' %}
+{% if forms.fiscalAddress.vars.valid == false %}
+    {% set fiscalAddressFormCollapse = 'in' %}
+    {% set fiscalAddressViewCollapse = '' %}
+{% else %}
+    {% set fiscalAddressFormCollapse = '' %}
+    {% set fiscalAddressViewCollapse = 'in' %}
+{% endif %}
+
+{% form_theme forms.phone '/frontbundle/forms/fields.html.twig' %}
+{% if forms.phone.vars.valid == false %}
+    {% set phoneFormCollapse = 'in' %}
+    {% set phoneViewCollapse = '' %}
+{% else %}
+    {% set phoneFormCollapse = '' %}
+    {% set phoneViewCollapse = 'in' %}
+{% endif %}
+
 
 {% block dashboardContent %}
 <div class="dashboard-tabs tabs">
@@ -17,31 +44,10 @@ classNames: 'user-preter-profile'
                 <header class="panel-header">
                     <h3>{% trans %} lender-profile_information-tab-identity-section-title {% endtrans %}</h3>
                     <div id="form-profile-info-notifications">
-
-                        {% if app.session.flashBag.has('personIdentityErrors') %}
-                            <div class="message-error">
-                                {% for error in app.session.flashBag.get('personIdentityErrors') %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        {% if app.session.flashBag.has('personIdentitySuccess') %}
+                        {{ form_errors(forms.identity) }}
+                        {% if app.session.flashBag.has('identitySuccess') %}
                             <div class="message-success">
-                                {% for message in app.session.flashBag.get('personIdentitySuccess') %}
-                                    <span>{{ message }}</span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        {% if app.session.flashBag.has('legalEntityIdentityErrors') %}
-                            <div class="message-error">
-                                {% for errorMessage in app.session.flashBag.get('legalEntityIdentityErrors') %}
-                                    <p>{{ errorMessage }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        {% if app.session.flashBag.has('legalEntityidentitySuccess') %}
-                            <div class="message-success">
-                                {% for message in app.session.flashBag.get('legalEntityidentitySuccess') %}
+                                {% for message in app.session.flashBag.get('identitySuccess') %}
                                     <span>{{ message }}</span>
                                 {% endfor %}
                             </div>
@@ -49,7 +55,7 @@ classNames: 'user-preter-profile'
                     </div>
                 </header>
                 <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                         {{ include('pages/lender_profile/partials/person_identity.html.twig') }}
                         {{ include('pages/lender_profile/partials/person_identity_form.html.twig') }}
                     {% else %}
@@ -59,34 +65,35 @@ classNames: 'user-preter-profile'
                 </section><!-- /.ui-toggle-group -->
             </article><!-- /.panel -->
 
+            {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                <article id="panel-phone" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-profile_information-tab-phone-section-title {% endtrans %}</h3>
+                        <div id="form-profile-phone-notifications">
+                            {{ form_errors(forms.phone) }}
+                            {% if app.session.flashBag.has('phoneSuccess') %}
+                                <div class="message-success">
+                                    {% for message in app.session.flashBag.get('phoneSuccess') %}
+                                        <span>{{ message }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </header>
+                    <section id="profile-phone-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {{ include('pages/lender_profile/partials/phone_details.html.twig') }}
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            {% endif %}
+
             <article id="panel-address" class="panel">
                 <header class="panel-header">
                     <h3>{% trans %} lender-profile_information-tab-fiscal-address-section-title {% endtrans %}</h3>
                     <div id="form-profile-address-notifications">
-                        {% if app.session.flashBag.has('personFiscalAddressErrors') %}
-                            <div class="message-error">
-                                {% for errorMessage in app.session.flashBag.get('personFiscalAddressErrors') %}
-                                    <p>{{ errorMessage }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        {% if app.session.flashBag.has('personFiscalAddressSuccess') %}
+                        {{ form_errors(forms.fiscalAddress) }}
+                        {% if app.session.flashBag.has('fiscalAddressSuccess') %}
                             <div class="message-success">
-                                {% for message in app.session.flashBag.get('personFiscalAddressSuccess') %}
-                                    <span>{{ message }}</span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        {% if app.session.flashBag.has('legalEntityFiscalAddressErrors') %}
-                            <div class="message-error">
-                                {% for errorMessage in app.session.flashBag.get('legalEntityFiscalAddressErrors') %}
-                                    <p>{{ errorMessage }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        {% if app.session.flashBag.has('legalEntityFiscalAddressSuccess') %}
-                            <div class="message-success">
-                                {% for message in app.session.flashBag.get('legalEntityFiscalAddressSuccess') %}
+                                {% for message in app.session.flashBag.get('fiscalAddressSuccess') %}
                                     <span>{{ message }}</span>
                                 {% endfor %}
                             </div>
@@ -94,7 +101,7 @@ classNames: 'user-preter-profile'
                     </div>
                 </header>
                 <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                         {{ include('pages/lender_profile/partials/person_fiscal_address.html.twig') }}
                     {% else %}
                         {{ include('pages/lender_profile/partials/legal_entity_fiscal_address.html.twig') }}
@@ -129,7 +136,8 @@ classNames: 'user-preter-profile'
                 <section id="profile-terms-of-use-section">
                     <div class="list-files">
                         <div class="file file-type-pdf">
-                            <a target="_blank" href="{{ '/pdf_cgv_preteurs'|baseUrl }}">{% trans %} lender-profile_information-tab-terms-of-use-section-link-label {% endtrans %}</a>
+                            <a target="_blank" href="{{ '/pdf_cgv_preteurs'|baseUrl }}">
+                                {% trans %} lender-profile_information-tab-terms-of-use-section-link-label {% endtrans %}</a>
                         </div>
                     </div><!-- /.list-files -->
                 </section><!-- /.ui-toggle-group -->

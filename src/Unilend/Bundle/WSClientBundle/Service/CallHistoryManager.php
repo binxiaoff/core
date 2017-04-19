@@ -3,11 +3,12 @@
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Doctrine\ORM\EntityManager;
 use GuzzleHttp\TransferStats;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\StoreBundle\Document\WsCall;
 
@@ -27,16 +28,22 @@ class CallHistoryManager
     private $logger;
     /** @var ManagerRegistry */
     private $managerRegistry;
+    /** @var  LoggerInterface */
+    private $mongoDBLogger;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
 
     /**
      * WSProviderCallHistoryManager constructor.
-     * @param EntityManager   $entityManager
-     * @param Stopwatch       $stopwatch
-     * @param SlackManager    $slackManager
-     * @param string          $alertChannel
-     * @param Packages        $assetPackage
-     * @param LoggerInterface $logger
-     * @param ManagerRegistry $managerRegistry
+     * @param EntityManager          $entityManager
+     * @param Stopwatch              $stopwatch
+     * @param SlackManager           $slackManager
+     * @param string                 $alertChannel
+     * @param Packages               $assetPackage
+     * @param LoggerInterface        $logger
+     * @param ManagerRegistry        $managerRegistry
+     * @param LoggerInterface        $mongoDBLogger
+     * @param EntityManagerSimulator $entityManagerSimulator
      */
     public function __construct(
         EntityManager $entityManager,
@@ -45,51 +52,65 @@ class CallHistoryManager
         $alertChannel,
         Packages $assetPackage,
         LoggerInterface $logger,
-        ManagerRegistry $managerRegistry
+        ManagerRegistry $managerRegistry,
+        LoggerInterface $mongoDBLogger,
+        EntityManagerSimulator $entityManagerSimulator
     )
     {
-        $this->entityManager   = $entityManager;
-        $this->stopwatch       = $stopwatch;
-        $this->slackManager    = $slackManager;
-        $this->alertChannel    = $alertChannel;
-        $this->assetPackage    = $assetPackage;
-        $this->logger          = $logger;
-        $this->managerRegistry = $managerRegistry;
+        $this->entityManager          = $entityManager;
+        $this->stopwatch              = $stopwatch;
+        $this->slackManager           = $slackManager;
+        $this->alertChannel           = $alertChannel;
+        $this->assetPackage           = $assetPackage;
+        $this->logger                 = $logger;
+        $this->managerRegistry        = $managerRegistry;
+        $this->mongoDBLogger          = $mongoDBLogger;
+        $this->entityManagerSimulator = $entityManagerSimulator;
     }
 
     /**
      * @param \ws_external_resource $wsResource
-     * @param string $siren
+     * @param string                $siren
+     * @param bool                  $useCache
+     *
      * @return \Closure
      */
-    public function addResourceCallHistoryLog($wsResource, $siren)
+    public function addResourceCallHistoryLog($wsResource, $siren, $useCache)
     {
         if (false !== $wsResource) {
             $this->stopwatch->start($wsResource->id_resource);
 
-            return function ($stats = null) use ($wsResource, $siren) {
+            return function ($stats = null) use ($wsResource, $siren, $useCache) {
                 try {
                     $event        = $this->stopwatch->stop($wsResource->id_resource);
                     $transferTime = $event->getDuration() / 1000;
 
-                    if ($stats instanceof TransferStats && null != $stats && $stats->hasResponse()) {
+                    if ($stats instanceof TransferStats && $stats->hasResponse()) {
                         $statusCode = $stats->getResponse()->getStatusCode();
                         $stream     = $stats->getResponse()->getBody();
-                        // getContents returns the remaining contents, so that a second call returns nothing unless we seek the position of the stream with rewind
                         $stream->rewind();
+                        // getContents returns the remaining contents, so that a second call returns nothing unless we seek the position of the stream with rewind
                         $result = $stream->getContents();
+                    } elseif ($stats instanceof TransferStats) {
+                        $statusCode = null;
+                        $result     = '';
                     } else {
                         $statusCode = null;
                         $result     = $stats;
                     }
+
                     $this->createLog($wsResource->id_resource, $siren, $transferTime, $statusCode);
-                    $this->storeResponse($wsResource, $siren, $result);
+
+                    if ($useCache) {
+                        $this->storeResponse($wsResource, $siren, $result);
+                    }
                 } catch (\Exception $exception) {
                     $this->logger->error('Unable to log response time into database. Error message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
                     unset($exception);
                 }
             };
         }
+
         return function () {
 
         };
@@ -98,7 +119,7 @@ class CallHistoryManager
     private function createLog($resourceId, $siren, $transferTime, $statusCode)
     {
         /** @var \ws_call_history $wsCallHistory */
-        $wsCallHistory                = $this->entityManager->getRepository('ws_call_history');
+        $wsCallHistory                = $this->entityManagerSimulator->getRepository('ws_call_history');
         $wsCallHistory->id_resource   = $resourceId;
         $wsCallHistory->siren         = $siren;
         $wsCallHistory->transfer_time = $transferTime;
@@ -208,8 +229,6 @@ class CallHistoryManager
             $this->logger->warning('Unable to fetch data from mongoDB: ' . $exception->getMessage(), $logContext);
         }
 
-        $this->logger->info('Data fetch from mongo DB took ' . $this->stopwatch->stop(__FUNCTION__ . $time)->getDuration() . ' ms', $logContext);
-
         return $wsCall;
     }
 
@@ -244,5 +263,57 @@ class CallHistoryManager
     public function getDateTimeFromPassedDays($days = 3)
     {
         return (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
+    }
+
+    public function handleMongoDBLogging()
+    {
+        $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'mongo_log']);
+
+        if (null !== $setting && 'on' === $setting->getValue()) {
+            \MongoLog::setModule(\MongoLog::ALL);
+            \MongoLog::setLevel(\MongoLog::ALL);
+            \MongoLog::setCallback([$this, 'callback']);
+        }
+    }
+
+    /**
+     * @param int    $module
+     * @param int    $level
+     * @param string $message
+     */
+    public function callback($module, $level, $message)
+    {
+        switch ($level) {
+            case \MongoLog::WARNING:
+                $this->mongoDBLogger->warning($this->module2string($module). ' ' . $message , ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                break;
+            case \MongoLog::INFO:
+                $this->mongoDBLogger->info($this->module2string($module). ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                break;
+            default:
+                $this->mongoDBLogger->debug($this->module2string($module). ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        }
+    }
+
+    /**
+     * @param int $module
+     * @return string
+     */
+    private function module2string($module)
+    {
+        switch ($module) {
+            case \MongoLog::RS:
+                return 'REPLSET';
+            case \MongoLog::CON:
+                return 'CON';
+            case \MongoLog::IO:
+                return 'IO';
+            case \MongoLog::SERVER:
+                return 'SERVER';
+            case \MongoLog::PARSE:
+                return 'PARSE';
+            default:
+                return 'UNKNOWN';
+        }
     }
 }

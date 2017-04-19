@@ -7,22 +7,35 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsMandats
  *
- * @ORM\Table(name="clients_mandats", indexes={@ORM\Index(name="id_client", columns={"id_client"})})
+ * @ORM\Table(name="clients_mandats", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="idx_clients_mandats_id_project", columns={"id_project"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ClientsMandats
 {
+    const STATUS_PENDING  = 0;
+    const STATUS_SIGNED   = 1;
+    const STATUS_CANCELED = 2;
+    const STATUS_FAILED   = 3;
+    const STATUS_ARCHIVED = 4;
+
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="mandats")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -99,15 +112,14 @@ class ClientsMandats
     private $idMandat;
 
 
-
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param Clients $idClient
      *
      * @return ClientsMandats
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient)
     {
         $this->idClient = $idClient;
 
@@ -117,7 +129,7 @@ class ClientsMandats
     /**
      * Get idClient
      *
-     * @return integer
+     * @return Clients
      */
     public function getIdClient()
     {
@@ -127,11 +139,11 @@ class ClientsMandats
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ClientsMandats
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -141,7 +153,7 @@ class ClientsMandats
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -372,5 +384,23 @@ class ClientsMandats
     public function getIdMandat()
     {
         return $this->idMandat;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

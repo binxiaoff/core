@@ -2,7 +2,7 @@
     $(function() {
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
-        $("#date_de_retrait").datepicker({
+        $("#date_retrait").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
@@ -19,9 +19,9 @@
         <fieldset>
             <table class="form">
                 <tr>
-                    <td><label for="date_de_retrait">Date de retrait</label></td>
+                    <td><label for="date_retrait">Date de retrait</label></td>
                     <td>
-                        <input type="text" name="date_de_retrait" id="date_de_retrait" class="input_dp" value="<?= $this->date_retrait ?>">
+                        <input type="text" name="date_retrait" id="date_retrait" class="input_dp" value="<?= $this->date_retrait ?>">
                         <select name="date_retrait_heure" class="selectMini" title="Heure">
                             <?php for ($hour = 0; $hour < 24; $hour++) : ?>
                                 <option value="<?= sprintf('%02d', $hour) ?>"<?= ($this->heure_date_retrait == $hour ? ' selected' : '') ?>><?= sprintf('%02d', $hour) ?></option>

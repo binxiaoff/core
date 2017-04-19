@@ -103,7 +103,7 @@
                         <?php
                         // on check si on a coché les cgv ou pas
                         // cgu societe
-                        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+                        if (in_array($this->clients->type, array(\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_LEGAL_ENTITY, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
                             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
                             $this->lienConditionsGenerales_header = $this->settings->value;
                         } // cgu particulier

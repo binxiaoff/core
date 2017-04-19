@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -340,7 +341,28 @@ class Projects
      */
     private $status;
 
+    /**
+     * @var ProjectAttachment[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment", mappedBy="idProject")
+     */
+    private $attachments;
 
+    /**
+     * @var ClientsMandats[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats", mappedBy="idProject")
+     */
+    private $mandats;
+
+    /**
+     * Projects constructor.
+     */
+    public function __construct()
+    {
+        $this->attachments = new ArrayCollection();
+        $this->mandats     = new ArrayCollection();
+    }
 
     /**
      * Set hash
@@ -1406,5 +1428,25 @@ class Projects
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Get project attachments
+     *
+     * @return ProjectAttachment[]
+     */
+    public function getAttachments()
+    {
+        return $this->attachments;
+    }
+
+    /**
+     * Get project mandats
+     *
+     * @return ClientsMandats[]
+     */
+    public function getMandats()
+    {
+        return $this->mandats;
     }
 }

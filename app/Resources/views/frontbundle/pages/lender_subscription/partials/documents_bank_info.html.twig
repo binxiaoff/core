@@ -1,12 +1,6 @@
 <fieldset class="panel">
     <div id="form-preter-2-notifications" class="ui-formvalidation-notifications">
-        {% if app.session.flashBag.has('documentsErrors') %}
-            <div class="message-error">
-                {% for error in app.session.flashBag.get('documentsErrors') %}
-                    <p>{{ error }}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
+        {{ form_errors(form) }}
     </div>
     <h3 class="h3">{% trans %} lender-subscription_documents-title {% endtrans %}</h3>
 
@@ -22,9 +16,15 @@
             </label>
 
             <div class="input-group">
-                <div class="custom-input-bic">
-                    <input id="form-lender-step-2-bic" type="text" name="bic" value="{{ formData.bic }}" class="bic-input input-field"
-                           data-formvalidation-input data-formvalidation-type="bic"/>
+                <div class="custom-input-bic {% if form.bankAccount.bic.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                    {{ form_widget(form.bankAccount.bic, {
+                        'id' : 'form-lender-step-2-bic',
+                        'attr' : {
+                            'class' : 'bic-input input-field',
+                            'data-formvalidation-input data-formvalidation-type' : 'bic'
+                        }
+                    }) }}
+                    {{ form_errors(form.bankAccount.bic) }}
                 </div>
             </div><!-- /.input-group -->
         </div><!-- /.form-field -->
@@ -38,9 +38,15 @@
             </label>
 
             <div class="input-group">
-                <div class="custom-input-iban">
-                    <input id="form-lender-step-2-iban" type="text" name="iban" value="{{ formData.iban }}" class="iban-input input-field"
-                           data-formvalidation-input data-formvalidation-type="iban"/>
+                <div class="custom-input-iban {% if form.bankAccount.iban.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                    {{ form_widget(form.bankAccount.iban, {
+                        'id' : 'form-lender-step-2-iban',
+                        'attr' : {
+                            'class' : 'iban-input input-field',
+                            'data-formvalidation-input data-formvalidation-type' : 'iban'
+                        }
+                    }) }}
+                    {{ form_errors(form.bankAccount.iban) }}
                 </div>
             </div><!-- /.input-group -->
 
@@ -49,18 +55,19 @@
     </div>
 
     <div class="row">
-        <div class="form-field">
+        <div class="form-field {% if form.client.fundsOrigin.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <div class="field-label">
                 <label for="lender-subscription-funds-origin">{% trans %} lender-subscription_documents-bank-info-section-funds-origin-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
             </div>
-            <select id="lender-subscription-funds-origin" name="funds_origin" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                <option value=""> {% trans %} common_drop-down-select-label {% endtrans %} </option>
-                {% for id, label in fundsOrigin %}
-                    <option value="{{ id }}" {% if id == formData.fundsOrigin %} selected="selected"{% endif %} > {{ label }} </option>
-                {% endfor %}
-            </select>
+            {{ form_widget(form.client.fundsOrigin, {
+                'id' : 'funds-origin',
+                'attr' : {
+                    'class' : 'input-field'
+                }
+            }) }}
+            {{ form_errors(form.client.fundsOrigin) }}
         </div>
     </div>
 

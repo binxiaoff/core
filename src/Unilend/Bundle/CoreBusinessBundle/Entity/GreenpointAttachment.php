@@ -7,38 +7,27 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * GreenpointAttachment
  *
- * @ORM\Table(name="greenpoint_attachment", uniqueConstraints={@ORM\UniqueConstraint(name="id_attachment", columns={"id_attachment"})}, indexes={@ORM\Index(name="index_gp_id_attachment", columns={"id_attachment"}), @ORM\Index(name="index_gp_id_client", columns={"id_client"})})
+ * @ORM\Table(name="greenpoint_attachment", uniqueConstraints={@ORM\UniqueConstraint(name="id_attachment", columns={"id_attachment"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class GreenpointAttachment
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
-     */
-    private $idClient;
+    const STATUS_VALIDATION_VALID = 9;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="validation_status", type="integer", nullable=false)
+     * @ORM\Column(name="validation_status", type="integer", nullable=true)
      */
     private $validationStatus;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="validation_code", type="string", length=2, nullable=false)
+     * @ORM\Column(name="validation_code", type="string", length=2, nullable=true)
      */
     private $validationCode;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="control_level", type="integer", nullable=false)
-     */
-    private $controlLevel;
 
     /**
      * @var string
@@ -48,30 +37,9 @@ class GreenpointAttachment
     private $validationStatusLabel;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="agency", type="string", length=32, nullable=true)
-     */
-    private $agency;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="revalidate", type="smallint", nullable=true)
-     */
-    private $revalidate = '0';
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="final_status", type="smallint", nullable=true)
-     */
-    private $finalStatus;
-
-    /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=true)
+     * @ORM\Column(name="added", type="datetime", nullable=false)
      */
     private $added;
 
@@ -94,38 +62,19 @@ class GreenpointAttachment
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", inversedBy="greenpointAttachment")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
      * })
      */
     private $idAttachment;
 
-
-
     /**
-     * Set idClient
+     * @var GreenpointAttachment
      *
-     * @param integer $idClient
-     *
-     * @return GreenpointAttachment
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachmentDetail", mappedBy="idGreenpointAttachment")
      */
-    public function setIdClient($idClient)
-    {
-        $this->idClient = $idClient;
-
-        return $this;
-    }
-
-    /**
-     * Get idClient
-     *
-     * @return integer
-     */
-    public function getIdClient()
-    {
-        return $this->idClient;
-    }
+    private $greenpointAttachmentDetail;
 
     /**
      * Set validationStatus
@@ -176,30 +125,6 @@ class GreenpointAttachment
     }
 
     /**
-     * Set controlLevel
-     *
-     * @param integer $controlLevel
-     *
-     * @return GreenpointAttachment
-     */
-    public function setControlLevel($controlLevel)
-    {
-        $this->controlLevel = $controlLevel;
-
-        return $this;
-    }
-
-    /**
-     * Get controlLevel
-     *
-     * @return integer
-     */
-    public function getControlLevel()
-    {
-        return $this->controlLevel;
-    }
-
-    /**
      * Set validationStatusLabel
      *
      * @param string $validationStatusLabel
@@ -221,78 +146,6 @@ class GreenpointAttachment
     public function getValidationStatusLabel()
     {
         return $this->validationStatusLabel;
-    }
-
-    /**
-     * Set agency
-     *
-     * @param string $agency
-     *
-     * @return GreenpointAttachment
-     */
-    public function setAgency($agency)
-    {
-        $this->agency = $agency;
-
-        return $this;
-    }
-
-    /**
-     * Get agency
-     *
-     * @return string
-     */
-    public function getAgency()
-    {
-        return $this->agency;
-    }
-
-    /**
-     * Set revalidate
-     *
-     * @param integer $revalidate
-     *
-     * @return GreenpointAttachment
-     */
-    public function setRevalidate($revalidate)
-    {
-        $this->revalidate = $revalidate;
-
-        return $this;
-    }
-
-    /**
-     * Get revalidate
-     *
-     * @return integer
-     */
-    public function getRevalidate()
-    {
-        return $this->revalidate;
-    }
-
-    /**
-     * Set finalStatus
-     *
-     * @param integer $finalStatus
-     *
-     * @return GreenpointAttachment
-     */
-    public function setFinalStatus($finalStatus)
-    {
-        $this->finalStatus = $finalStatus;
-
-        return $this;
-    }
-
-    /**
-     * Get finalStatus
-     *
-     * @return integer
-     */
-    public function getFinalStatus()
-    {
-        return $this->finalStatus;
     }
 
     /**
@@ -375,5 +228,33 @@ class GreenpointAttachment
     public function getIdAttachment()
     {
         return $this->idAttachment;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
+    }
+
+    /**
+     * Get greenpointAttachmentDetail
+     *
+     * @return GreenpointAttachment
+     */
+    public function getGreenpointAttachmentDetail()
+    {
+        return $this->greenpointAttachmentDetail;
     }
 }

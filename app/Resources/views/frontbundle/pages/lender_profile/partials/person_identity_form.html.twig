@@ -1,9 +1,16 @@
-<section id="profile-info-edit" role="tabpanel" class="profile-info-edit collapse">
-    <form id="form-profile-info-edit" action="{{ path('profile_person_identity_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-info-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-info-notifications">
+<section id="profile-info-edit" role="tabpanel" class="profile-info-edit collapse {{ identityFormCollapse }}">
+    {{ form_start(forms.identity, {
+        'multipart' : true,
+            'attr' : {
+            'class' : 'form-profile form-profile-info-edit',
+            'data-formvalidation data-formvalidation-notificationselem' : '#form-profile-info-notifications'
+        }})
+    }}
         <div class="row">
             <div class="form-field form-field-multi">
                 <div class="field-label">
-                    <label>{% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}
+                    <label>
+                        {% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 </div>
                 <ul class="list-input-values">
@@ -19,16 +26,15 @@
         <div class="row">
             <div class="form-field form-field-multi">
                 <div class="field-label">
-                    <label>{% trans %} common_form-of-address {% endtrans %}
+                    <label>{% trans %} common_title {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
-                    <li>
-                        <label><input type="radio" name="form_of_address" value="Mme" {% if formData.person.form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} common_form-of-address-female {% endtrans %}</label>
-                    </li>
-                    <li>
-                        <label><input type="radio" name="form_of_address" value="M." {% if formData.person.form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} common_form-of-address-male {% endtrans %}</label>
-                    </li>
+                    {{ form_widget(forms.identity.client.civilite, {'attr' : {
+                        'class' : '',
+                        'required' : false
+                    }}) }}
+                    {{ form_errors(forms.identity.client.civilite) }}
                 </ul>
             </div><!-- /.form-field -->
         </div><!-- /.row -->
@@ -38,47 +44,66 @@
                 <label for="form-profile-info-nom">{% trans %} common_birth-name {% endtrans %}</label>
                 <span id="form-profile-info-nom" >{{ client.nom }}</span>
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.identity.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-info-prenom">{% trans %} common_firstname {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                <input id="form-profile-info-prenom" type="text" name="first_name" value="{{ formData.person.first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                    {{ form_widget(forms.identity.client.prenom, {
+                        'id' : 'form-profile-info-prenom',
+                        'attr' : {
+                            'class' : 'input-field',
+                            'data-formvalidation-input data-formvalidation-required' : 'true'
+                        }})
+                    }}
+                    {{ form_errors(forms.identity.client.prenom) }}
             </div><!-- /.form-field -->
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.identity.client.nomUsage.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-info-prenom">{% trans %} common_used-name {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                <input id="form-profile-info-prenom" type="text" name="used_name" value="{{ formData.person.used_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="false"/>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                {{ form_widget(forms.identity.client.nomUsage, {
+                    'id' : 'form-profile-info-prenom',
+                    'attr' : {
+                        'class' : 'input-field',
+                        'data-formvalidation-input data-formvalidation-required' : 'false'
+                    }})
+                }}
+                {{ form_errors(forms.identity.client.nomUsage) }}
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
             </div><!-- /.form-field -->
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.identity.client.idNationalite.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label>{% trans %} common_birthday {% endtrans %}</label>
                 <span id="profile-info-dob-output">{{ client.naissance|date('d/m/Y') }}</span>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-info-nationalite">{% trans %} common_nationality {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                <select id="form-profile-info-nationalite" name="nationality" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                    {% for i, nationality in nationalities %}
-                        <option value="{{ i }}"{% if i == formData.person.nationality %} selected="selected"{% endif %}>{{ nationality }}</option>
-                    {% endfor %}
-                </select>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                {{ form_widget(forms.identity.client.idNationalite, {
+                    'id' : 'form-profile-info-nationalite',
+                    'attr' : {
+                        'class' : 'input-field',
+                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    }})
+                }}
+                {{ form_errors(forms.identity.client.idNationalite) }}
             </div><!-- /.form-field -->
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-info-dob-pays">{% trans %} common_birth-country {% endtrans %}</label>
-                <dd id="form-profile-info-dob-pays">{{ client.id_pays_naissance|countryLabel }}</dd>
+                <dd id="form-profile-info-dob-pays">{{ client.idPaysNaissance|countryLabel }}</dd>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-info-dob-commune">{% trans %} common_birth-city {% endtrans %}</label>
-                <span id="form-profile-info-dob-commune">{{ client.ville_naissance }}</span>
+                <span id="form-profile-info-dob-commune">{{ client.villeNaissance }}</span>
             </div><!-- /.form-field -->
         </div><!-- /.row -->
 
@@ -101,8 +126,8 @@
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}"
                          data-fileattach-fileremove="false">
-                        {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] is defined %}
-                            <input type="file" name="id_recto" value="{{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] }}" />
+                        {% if identityAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE')].path is defined %}
+                            <input type="file" name="id_recto" value="{{ identityAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE')].path }}" />
                         {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
@@ -113,8 +138,8 @@
                          data-fileattach-inputname="id_verso"
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}">
-                        {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
-                            <input type="file" name="id_verso" value="{{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}" />
+                        {% if identityAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO')].path is defined %}
+                            <input type="file" name="id_verso" value="{{ identityAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO')].path }}" />
                         {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
@@ -130,5 +155,5 @@
             <input type="hidden" name="person_identity_form" value="true" />
             <button type="reset" role="button" data-toggle="collapse" data-target="#profile-info-view" data-parent="#profile-info-section" class="btn-default" aria-controls="#profile-info-view">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
         </div>
-    </form><!-- /.form-profile-info-edit -->
+    {{ form_end(forms.identity)}}
 </section><!-- /.profile-info-edit -->

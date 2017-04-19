@@ -44,7 +44,7 @@ class simulationController extends bootstrap
         /** @var \ws_external_resource $wsResource */
         $wsResource      = $this->loadData('ws_external_resource');
         $this->resources = $wsResource->select('', 'provider_name ASC, resource_name ASC');
-        $this->result    = [];
+        $this->result    = false;
 
         try {
             if (isset($_POST['send'], $_POST['siren'])) {
@@ -81,9 +81,6 @@ class simulationController extends bootstrap
         }
     }
 
-    /**
-     *
-     */
     public function _storedData()
     {
         $this->hideDecoration();
@@ -97,18 +94,14 @@ class simulationController extends bootstrap
         try {
             if (isset($_POST['send'], $_POST['siren'])) {
                 if (false === empty($_POST['siren']) && false !== $wsResource->get($_POST['resource_label'], 'label')) {
-                    if (true === empty($_POST['nbDaysAgo'])) {
-                        $days = 3;
-                    } else {
-                        $days = $_POST['nbDaysAgo'];
-                    }
+                    $days = empty($_POST['nbDaysAgo']) ? 3 : $_POST['nbDaysAgo'];
                     $date = (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
                     $this->result = $wsCallHistory->fetchLatestDataFromMongo($_POST['siren'], $wsResource->provider_name, $wsResource->resource_name, $date);
                 } else {
                     $this->result = 'Please give a siren and a valid resource from the drop down list';
                 }
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->result = 'Error code: ' . $exception->getCode() . ' Error message: ' . $exception->getMessage() . ' in file: ' . $exception->getFile() . ' at line: ' . $exception->getLine();
         }
     }
