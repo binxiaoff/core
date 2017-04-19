@@ -166,7 +166,7 @@ class ProjectRequestManager
             $this->entityManager->commit();
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
-            $this->logger->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->logger->error('An error occurred while creating client ', ['class' => __CLASS__, 'function' => __FUNCTION__]);
             throw $exception;
         }
 
