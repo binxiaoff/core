@@ -177,7 +177,7 @@ class BorrowerAccountController extends Controller
         $client              = $this->getClient();
         $projectsPostFunding = $this->getProjectsPostFunding();
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
-        $operationTypes = [
+        $operationTypes      = [
             OperationType::LENDER_LOAN,
             OperationType::BORROWER_COMMISSION,
             OperationType::BORROWER_WITHDRAW,
@@ -402,8 +402,7 @@ class BorrowerAccountController extends Controller
         $client              = $this->getClient();
         $projectsPostFunding = $this->getProjectsPostFunding();
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
-
-        $filter    = $request->query->get('filter');
+        $filter              = $request->query->get('filter');
 
         if (
             false === isset($filter['start'], $filter['end'], $filter['op'])

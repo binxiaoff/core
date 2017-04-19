@@ -7,7 +7,6 @@ use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
-use function var_dump;
 
 class WalletBalanceHistoryRepository extends EntityRepository
 {
@@ -52,16 +51,19 @@ class WalletBalanceHistoryRepository extends EntityRepository
         $endDate->setTime('23', '59', '59');
 
         $qb = $this->createQueryBuilder('wbh');
-        $qb->select('
-        o.id,
-        CASE WHEN(o.idWalletDebtor= wbh.idWallet) THEN -SUM(o.amount) ELSE SUM(o.amount) AS amount, 
-        ot.label, 
-        IDENTITY(o.idProject) AS idProject, 
-        IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
-        DATE(o.added) AS date,
-        ROUND(f.montantHt/100, 2) AS netCommission,
-        ROUND(f.tva/100, 2) AS vat,
-        e.ordre')
+        $qb->select('o.id,
+                            CASE 
+                                WHEN(o.idWalletDebtor= wbh.idWallet)  
+                                THEN -SUM(o.amount) 
+                                ELSE SUM(o.amount)
+                            END AS amount, 
+                            ot.label, 
+                            IDENTITY(o.idProject) AS idProject, 
+                            IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
+                            DATE(o.added) AS date,
+                            ROUND(f.montantHt/100, 2) AS netCommission,
+                            ROUND(f.tva/100, 2) AS vat,
+                            e.ordre')
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->leftJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'o.idPaymentSchedule = ee.idEcheancierEmprunteur')
@@ -71,7 +73,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
             ->andWhere('o.idProject IN (:idProjects)')
             ->andWhere('o.added BETWEEN :startDate AND :endDate')
             ->setParameter('idWallet', $idWallet)
-            ->setParameter('idProjects', $idProjects, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idProjects', $idProjects, Connection::PARAM_INT_ARRAY)
             ->setParameter('startDate', $startDate->format('Y-m-d H:i:s'))
             ->setParameter('endDate', $endDate->format('Y-m-d H:i:s'))
             ->groupBy('o.idProject, o.idType, date')
