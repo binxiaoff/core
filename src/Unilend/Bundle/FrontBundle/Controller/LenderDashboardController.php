@@ -8,7 +8,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 
 class LenderDashboardController extends Controller
@@ -21,29 +26,34 @@ class LenderDashboardController extends Controller
      */
     public function indexAction()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \lenders_account_stats $oLenderAccountStats */
-        $oLenderAccountStats = $entityManager->getRepository('lenders_account_stats');
+        /** @var LenderStatisticRepository $lenderStatisticsRepository */
+        $lenderStatisticsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
+        /** @var WalletRepository $walletRepository */
+        $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        /** @var LenderManager $lenderManager */
+        $lenderManager = $this->get('unilend.service.lender_manager');
+        /** @var EntityManagerSimulator $entityManager */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \loans $loan */
-        $loan = $entityManager->getRepository('loans');
+        $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers $lenderRepayment */
-        $lenderRepayment = $entityManager->getRepository('echeanciers');
+        $lenderRepayment = $entityManagerSimulator->getRepository('echeanciers');
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
         /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
+        $company = $entityManagerSimulator->getRepository('companies');
         /** @var \bids $bid */
-        $bid = $entityManager->getRepository('bids');
+        $bid = $entityManagerSimulator->getRepository('bids');
         /** @var \wallets_lines $wallet_line */
-        $wallet_line = $entityManager->getRepository('wallets_lines');
+        $wallet_line = $entityManagerSimulator->getRepository('wallets_lines');
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $client = $entityManagerSimulator->getRepository('clients');
         /** @var \lenders_accounts $lender */
-        $lender = $entityManager->getRepository('lenders_accounts');
+        $lender = $entityManagerSimulator->getRepository('lenders_accounts');
 
         $client->get($this->getUser()->getClientId());
         $lender->get($client->id_client, 'id_client_owner');
+        $wallet = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
 
         $balance         = $this->getUser()->getBalance();
         $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30);
@@ -62,16 +72,17 @@ class LenderDashboardController extends Controller
         $hasIRR                 = false;
 
         if ($this->getUser()->getLevel() > 0) {
-            $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
-            if ($aLastIRR && $aLastIRR['status'] == \lenders_account_stats::STAT_VALID_OK) {
-                $irr                = $aLastIRR['value'];
+            /** @var LenderStatistic $lastIRR */
+            $lastIRR = $lenderStatisticsRepository->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
+            if (null !== $lastIRR && LenderStatistic::STAT_VALID_OK === $lastIRR->getStatus()) {
+                $irr                = $lastIRR->getValue();
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
                 $hasIRR             = true;
             } else {
-                $fLossRate = $oLenderAccountStats->getLossRate($lender->id_lender_account, $lender);
+                $lossRate = $lenderManager->getLossRate($lender);
 
-                if ($fLossRate > 0) {
-                    $irr                = -$fLossRate;
+                if ($lossRate > 0) {
+                    $irr                = -$lossRate;
                     $irrTranslationType = 'not-calculable';
                 } else {
                     $irrTranslationType = 'not-calculated-yet';
@@ -201,12 +212,12 @@ class LenderDashboardController extends Controller
      */
     public function saveUserDisplayPreferencesAction(Request $request)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \lender_panel_preference $panelPreferences */
-        $panelPreferences = $entityManager->getRepository('lender_panel_preference');
+        $panelPreferences = $entityManagerSimulator->getRepository('lender_panel_preference');
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $entityManager->getRepository('lenders_accounts');
+        $lenderAccount = $entityManagerSimulator->getRepository('lenders_accounts');
         $lenderAccount->get($this->getUser()->getClientId(), 'id_client_owner');
 
         $pageName = 'lender_dashboard';
@@ -268,12 +279,12 @@ class LenderDashboardController extends Controller
      */
     private function getDashboardPreferences()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \lender_panel_preference $panelPreferences */
-        $panelPreferences = $entityManager->getRepository('lender_panel_preference');
+        $panelPreferences = $entityManagerSimulator->getRepository('lender_panel_preference');
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $entityManager->getRepository('lenders_accounts');
+        $lenderAccount = $entityManagerSimulator->getRepository('lenders_accounts');
         $lenderAccount->get($this->getUser()->getClientId(), 'id_client_owner');
 
         $pageName            = 'lender_dashboard';
