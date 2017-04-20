@@ -3,8 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 
 class StatisticsManager
@@ -20,7 +21,9 @@ class StatisticsManager
      */
     const START_FRONT_STATISTICS_HISTORY      = '2016-11-17';
 
-    /** @var EntityManager */
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
+    /** @var  EntityManager */
     private $entityManager;
     /** @var IRRManager */
     private $IRRManager;
@@ -30,15 +33,17 @@ class StatisticsManager
     private $locationManager;
 
     public function __construct(
+        EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         IRRManager $IRRManager,
         MemcacheCachePool $cachePool,
         LocationManager $locationManager
     ) {
-        $this->entityManager   = $entityManager;
-        $this->IRRManager      = $IRRManager;
-        $this->cachePool       = $cachePool;
-        $this->locationManager = $locationManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->IRRManager             = $IRRManager;
+        $this->cachePool              = $cachePool;
+        $this->locationManager        = $locationManager;
     }
 
     /**
@@ -63,15 +68,13 @@ class StatisticsManager
 
         $cachedItem = $this->cachePool->getItem($cacheKey);
         if (false === $cachedItem->isHit()) {
-            /** @var \unilend_stats $unilendStats */
-            $unilendStats = $this->entityManager->getRepository('unilend_stats');
-
             if ($date->format('Y-m-d') == $today->format('Y-m-d')) {
-                $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '"', 'added DESC', null, '1')[0];
+                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => CacheKeys::UNILEND_STATISTICS], ['added' => 'DESC']);
             } else {
-                $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '" AND DATE(added) = "' . $date->format('Y-m-d') . '"','added DESC', null, '1')[0];
+                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getStatisticAtDate($date, CacheKeys::UNILEND_STATISTICS);
+                //$statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '" AND DATE(added) = "' . $date->format('Y-m-d') . '"','added DESC', null, '1')[0];
             }
-            $statistics = json_decode($statsEntry['value'], true);
+            $statistics = json_decode($statsEntry->getValue(), true);
             $cachedItem->set($statistics)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
@@ -84,11 +87,11 @@ class StatisticsManager
     public function calculateStatistics()
     {
         /** @var \lenders_accounts $lenders */
-        $lenders = $this->entityManager->getRepository('lenders_accounts');
+        $lenders = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \projects $projects */
-        $projects = $this->entityManager->getRepository('projects');
+        $projects = $this->entityManagerSimulator->getRepository('projects');
         /** @var \loans $loans */
-        $loans = $this->entityManager->getRepository('loans');
+        $loans = $this->entityManagerSimulator->getRepository('loans');
         /** @var \DateTime $startDate voluntarily on last 6 Months except for average funding time which is on 4 month */
         $startDate = new \DateTime('NOW - 6 MONTHS');
 
@@ -130,7 +133,7 @@ class StatisticsManager
     private function getPercentageOfAcceptedProjects($numberOfProjectRequests)
     {
         /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
+        $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
         /** @var array $countByStatus */
         $countByStatus = $projectStatusHistory->countProjectsHavingHadStatus([\projects_status::EN_FUNDING]);
         /** @var string $percentageOfAcceptedProjects */
@@ -142,7 +145,7 @@ class StatisticsManager
     private function getLendersByType()
     {
         /** @var \lenders_accounts $lenders */
-        $lenders = $this->entityManager->getRepository('lenders_accounts');
+        $lenders = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var int $lendersPerson */
         $lendersPerson = $lenders->countLendersByClientType([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
         /** @var int $lendersLegalEntity */
@@ -171,7 +174,7 @@ class StatisticsManager
     private function getPercentageOfProjectsFundedIn24Hours(\DateTime $startDate)
     {
         /** @var \projects $projects */
-        $projects                        = $this->entityManager->getRepository('projects');
+        $projects                        = $this->entityManagerSimulator->getRepository('projects');
         $countAllProjects                = $projects->countProjectsFundedSince($startDate);
         $numberOfProjectsFundedIn24Hours = $projects->countProjectsFundedIn24Hours($startDate);
         $percentageFunded24h             = $countAllProjects > 0 ? bcmul(bcdiv($numberOfProjectsFundedIn24Hours, $countAllProjects, 4), 100, 0) : 0;
@@ -182,7 +185,7 @@ class StatisticsManager
     private function getSecondsForBid()
     {
         /** @var \bids $bids */
-        $bids               = $this->entityManager->getRepository('bids');
+        $bids               = $this->entityManagerSimulator->getRepository('bids');
         $maxCountBidsPerDay = $bids->getMaxCountBidsPerDay();
         $secondsPerDay      = 24 * 60 * 60;
         $secondsForBid      = bcdiv($secondsPerDay, $maxCountBidsPerDay, 0);
@@ -195,17 +198,17 @@ class StatisticsManager
         $years = array_merge(['2013-2014'], range(2015, date('Y')));
 
         /** @var \loans $loans */
-        $loans = $this->entityManager->getRepository('loans');
+        $loans = $this->entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
-        $borrowerPaymentSchedule = $this->entityManager->getRepository('echeanciers_emprunteur');
+        $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
         /** @var \transactions $transactions */
-        $transactions = $this->entityManager->getRepository('transactions');
+        $transactions = $this->entityManagerSimulator->getRepository('transactions');
         /** @var \echeanciers $lenderRepaymentSchedule */
-        $lenderRepaymentSchedule = $this->entityManager->getRepository('echeanciers');
+        $lenderRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
         /** @var \projects $projects */
-        $projects = $this->entityManager->getRepository('projects');
+        $projects = $this->entityManagerSimulator->getRepository('projects');
         /** @var \companies $companies */
-        $companies = $this->entityManager->getRepository('companies');
+        $companies = $this->entityManagerSimulator->getRepository('companies');
 
         $borrowedCapital                          = $this->formatCohortQueryResult($loans->sumLoansByCohort(), $years);
         $repaidCapital                            = $this->formatCohortQueryResult($borrowerPaymentSchedule->getRepaidCapitalByCohort(), $years);
@@ -320,7 +323,7 @@ class StatisticsManager
     private function calculateIncidenceRateOnIFPContracts()
     {
         /** @var \echeanciers $paymentSchedule */
-        $paymentSchedule = $this->entityManager->getRepository('echeanciers');
+        $paymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
         $problematicProjectsIfp       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP, 60);
         $allProjectsIfp               = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP);

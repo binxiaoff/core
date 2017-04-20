@@ -120,6 +120,7 @@
 
         <service id="unilend.service.statistics_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="unilend.service.irr_manager"/>
             <argument type="service" id="memcache.default"/>
             <argument type="service" id="unilend.service.location_manager"/>

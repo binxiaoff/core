@@ -382,4 +382,23 @@ class UnilendStatsRepository extends EntityRepository
 
         return $values;
     }
+
+    /**
+     * @param \DateTime $date
+     * @param $typeStat
+     *
+     * @return null|UnilendStats
+     */
+    public function getStatisticAtDate(\DateTime $date, $typeStat)
+    {
+        $qb = $this->createQueryBuilder('us');
+        $qb->where('DATE(us.added) = :date')
+            ->andWhere('us.typeStat = :typeStat')
+            ->orderBy('us.added', 'DESC')
+            ->setMaxResults(1)
+            ->setParameter('typeStat', $typeStat)
+            ->setParameter('date', $date->format('y-m-d'));
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
 }
