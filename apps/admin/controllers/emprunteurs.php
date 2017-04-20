@@ -154,17 +154,13 @@ class emprunteursController extends bootstrap
                         if ($mandate->getStatus() === ClientsMandats::STATUS_ARCHIVED) {
                             continue;
                         }
-                        if (ClientsMandats::STATUS_SIGNED == $mandate->getStatus()) {
-                            $nouveauNom    = str_replace('mandat', 'mandat-' . $mandate->getIdMandat(), $mandate->getName());
-                            $chemin        = $this->path . 'protected/pdf/mandat/' . $mandate->getName();
-                            $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
-
-                            if (file_exists($chemin)) {
-                                rename($chemin, $nouveauChemin);
-                            }
-
-                            $mandate->setName($nouveauNom);
+                        $nouveauNom    = str_replace('mandat', 'mandat-' . $mandate->getIdMandat(), $mandate->getName());
+                        $chemin        = $this->path . 'protected/pdf/mandat/' . $mandate->getName();
+                        $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
+                        if (file_exists($chemin)) {
+                            rename($chemin, $nouveauChemin);
                         }
+                        $mandate->setName($nouveauNom);
                         $mandate->setStatus(ClientsMandats::STATUS_ARCHIVED);
                         $entityManager->flush($mandate);
                     }

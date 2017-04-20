@@ -3,10 +3,14 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\Common\Collections\Expr\Comparison;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Doctrine\DBAL\Connection;
 
 class OperationRepository extends EntityRepository
 {
@@ -49,6 +53,27 @@ class OperationRepository extends EntityRepository
     }
 
     /**
+     * @param Wallet    $wallet
+     * @param \DateTime $date
+     * @return Operation[]
+     */
+    public function getWithdrawAndProvisionOperationByDateAndWallet(Wallet $wallet, \DateTime $date)
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->where('o.idType IN (:walletType)')
+            ->setParameter('walletType', [
+                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
+                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
+            ])
+            ->andWhere('o.idWalletCreditor = :idWallet OR o.idWalletDebtor = :idWallet')
+            ->setParameter('idWallet', $wallet)
+            ->andWhere('o.added >= :added')
+            ->setParameter('added', $date);
+
+        return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
+    }
+
+    /**
      * @param array $criteria [field => value]
      * @param array $operator [field => operator]
      * @return Operation[]
@@ -65,5 +90,179 @@ class OperationRepository extends EntityRepository
         $qb->orderBy('op.added', 'ASC');
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param Wallet $creditorWallet
+     * @param array  $operationTypes
+     * @param int    $year
+     *
+     * @return mixed
+     */
+    public function sumCreditOperationsByTypeAndYear(Wallet $creditorWallet, $operationTypes, $year)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletCreditor = :idWallet')
+            ->andWhere('YEAR(o.added) = :year')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $creditorWallet)
+            ->setParameter('year', $year);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /***
+     * @param Wallet $debtorWallet
+     * @param array  $operationTypes
+     * @param int    $year
+     *
+     * @return mixed
+     */
+    public function sumDebitOperationsByTypeAndYear(Wallet $debtorWallet, $operationTypes, $year)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletDebtor = :idWallet')
+            ->andWhere('YEAR(o.added) = :year')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $debtorWallet)
+            ->setParameter('year', $year);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param int $year
+     *
+     * @return bool|string
+     */
+    public function sumCapitalRepaymentsInEeaExceptFrance(Wallet $wallet, $year)
+    {
+        $query = 'SELECT
+                     SUM(IF(tlih.id_pays IN (:eeaCountries),o_capital.amount, 0)) AS capital
+                  FROM operation o_capital
+                     LEFT JOIN (SELECT
+                                  o.id_wallet_creditor,
+                                  o.id,
+                                  (SELECT lih.id_pays
+                                   FROM lenders_imposition_history lih
+                                   WHERE id_lender = am.id_lender_account AND DATE(lih.added) <= DATE(o.added)
+                                   ORDER BY lih.added DESC
+                                   LIMIT 1) AS id_pays
+                                FROM operation o
+                                  INNER JOIN account_matching am ON o.id_wallet_creditor = am.id_wallet
+                                  INNER JOIN operation_type ot ON o.id_type = ot.id
+                                WHERE ot.label = "' . OperationType::CAPITAL_REPAYMENT . '" AND o.id_wallet_creditor = :idWallet) AS tlih ON o_capital.id = tlih.id
+                    WHERE o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
+                    AND LEFT(o_capital.added, 4) = :year
+                    AND o_capital.id_wallet_creditor = :idWallet';
+
+        $bind  = [
+            'year'         => $year,
+            'idWallet'     => $wallet->getId(),
+            'eeaCountries' => PaysV2::EUROPEAN_ECONOMIC_AREA
+        ];
+        $types = ['year'         => \PDO::PARAM_INT,
+                  'idWallet'     => \PDO::PARAM_INT,
+                  'eeaCountries' => Connection::PARAM_INT_ARRAY
+        ];
+
+        return $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $types)->fetchColumn();
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param int    $year
+     *
+     * @return bool|string
+     */
+    public function sumNetInterestRepaymentsNotInEeaExceptFrance(Wallet $wallet, $year)
+    {
+        $taxTypes = [
+            OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS,
+            OperationType::TAX_FR_SOCIAL_DEDUCTIONS,
+            OperationType::TAX_FR_CSG,
+            OperationType::TAX_FR_CRDS,
+            OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
+            OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE,
+            OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS
+        ];
+
+        $query = 'SELECT
+                      SUM(IF(tlih.id_pays IN (:eeaCountries), o_interest.amount, 0)) AS interest
+                    FROM operation o_interest
+                     LEFT JOIN (SELECT 
+                                  SUM(amount) AS amount,
+                                  id_repayment_schedule
+                                 FROM operation
+                                  WHERE operation.id_wallet_debtor = :idWallet
+                                  AND operation.id_type IN (SELECT id FROM operation_type WHERE label IN (:taxOperations))
+                                  GROUP BY id_repayment_schedule) AS o_taxes ON o_interest.id_repayment_schedule = o_taxes.id_repayment_schedule
+                     LEFT JOIN (SELECT
+                                  o.id_wallet_creditor,
+                                  o.id,
+                                  (SELECT lih.id_pays
+                                   FROM lenders_imposition_history lih
+                                   WHERE id_lender = am.id_lender_account AND DATE(lih.added) <= DATE(o.added)
+                                   ORDER BY lih.added DESC
+                                   LIMIT 1) AS id_pays
+                                FROM operation o
+                                  INNER JOIN account_matching am ON o.id_wallet_creditor = am.id_wallet
+                                  INNER JOIN operation_type ot ON o.id_type = ot.id
+                                WHERE ot.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '" AND o.id_wallet_creditor = :idWallet) AS tlih ON o_interest.id = tlih.id
+                    WHERE o_interest.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
+                    AND LEFT(o_interest.added, 4) = :year
+                         AND o_interest.id_wallet_creditor = :idWallet';
+
+        $bind  = [
+            'year'          => $year,
+            'idWallet'      => $wallet->getId(),
+            'taxOperations' => $taxTypes,
+            'eeaCountries'  => PaysV2::EUROPEAN_ECONOMIC_AREA
+        ];
+        $types = [
+            'year'          => \PDO::PARAM_INT,
+            'idWallet'      => \PDO::PARAM_INT,
+            'taxOperations' => Connection::PARAM_STR_ARRAY,
+            'eeaCountries'  => Connection::PARAM_INT_ARRAY
+        ];
+
+        return $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $types)->fetchColumn();
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param int    $year
+     *
+     * @return bool|string
+     */
+    public function getGrossInterestPaymentsInFrance(Wallet $wallet, $year)
+    {
+        $query = 'SELECT
+                      SUM(IF(tlih.id_pays = 1 OR tlih.id_pays IS NULL OR tlih.id_pays = "", o_interest.amount, 0)) AS sum66
+                    FROM operation o_interest
+                      LEFT JOIN (SELECT
+                                   o.id_wallet_creditor,
+                                   o.id,
+                                   (SELECT lih.id_pays
+                                    FROM lenders_imposition_history lih
+                                      WHERE id_lender = am.id_lender_account AND added <= o.added
+                                    ORDER BY added DESC
+                                    LIMIT 1) AS id_pays
+                                 FROM operation o
+                                   INNER JOIN account_matching am ON o.id_wallet_creditor = am.id_wallet
+                                   INNER JOIN operation_type ot ON o.id_type = ot.id
+                                 WHERE ot.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '" AND o.id_wallet_creditor = :idWallet) AS tlih ON o_interest.id = tlih.id
+                    WHERE o_interest.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
+                      AND LEFT(o_interest.added, 4) = :year 
+                      AND o_interest.id_wallet_creditor =  :idWallet';
+
+        return $this->getEntityManager()->getConnection()->executeQuery($query, ['year' => $year, 'idWallet' => $wallet->getId()])->fetchColumn();
     }
 }

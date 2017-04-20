@@ -1,30 +1,30 @@
 {% for i, op in operations %}
-    {% set classAmount = op.montant > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
-    {% if op.type == 'commission-mensuelle' %}
+    {% set classAmount = op.amount > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
+    {% if op.label == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\BorrowerAccountController::OP_MONTHLY_COMMISSION') %}
         {% set data_details = {
             "label":"commission-mensuelle",
             "items": [
                 {
                     "label": 'borrower-operation_commission-excl-tax'|trans,
-                    "value": op.commission|localizedcurrency('EUR')
+                    "value": op.netCommission|localizedcurrency('EUR')
                 },{
                     "label": 'borrower-operation_vat'|trans,
-                    "value": op.tva|localizedcurrency('EUR')
+                    "value": op.vat|localizedcurrency('EUR')
                 }
             ]
         } %}
     {% endif %}
 
-    <tr id="operation-{{ i }}" {% if op.type == 'commission-mensuelle' %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
-        <td class="table-myoperations-borrower-item-type">{{ ('borrower-operation_' ~ op.type)|trans }}</td>
-        <td class="table-myoperations-borrower-item-project">{{ op.id_project }}</td>
+    <tr id="operation-{{ i }}" {% if op.label == 'monthly-commission' %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
+        <td class="table-myoperations-borrower-item-type">{{ ('borrower-operation_' ~ op.label)|trans }}</td>
+        <td class="table-myoperations-borrower-item-project">{{ op.idProject }}</td>
         <td class="table-myoperations-borrower-item-date">{{ op.date|localizeddate('short', 'none') }}</td>
-        <td class="table-myoperations-borrower-item-amount">{{ op.montant|localizedcurrency('EUR') }}</td>
+        <td class="table-myoperations-borrower-item-amount">{{ op.amount|localizedcurrency('EUR') }}</td>
         <td class="table-myoperations-borrower-item-controls">
-            {% if op.type == 'affectation-preteurs'  %}
-                <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'e', 'projectId': op.id_project, 'repaymentOrder': op.ordre}) }}" class="btn-export" title="Exporter"><span class="icon fa-excel-u16"></span></a>
-            {% elseif op.type == 'financement'  %}
-                <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'l', 'projectId': op.id_project}) }}" class="btn-export" title="Exporter"><span class="icon fa-excel-u16"></span></a>
+            {% if op.label == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\BorrowerAccountController::OP_LENDER_MONTHLY_REPAYMENT')  %}
+                <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'e', 'projectId': op.idProject, 'repaymentOrder': op.ordre}) }}" class="btn-export" title="Exporter"><span class="icon fa-excel-u16"></span></a>
+            {% elseif op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN')  %}
+                <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'l', 'projectId': op.idProject}) }}" class="btn-export" title="Exporter"><span class="icon fa-excel-u16"></span></a>
             {% else %}
                 &nbsp;
             {% endif %}

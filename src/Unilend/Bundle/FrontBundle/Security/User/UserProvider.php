@@ -9,6 +9,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
@@ -19,7 +20,7 @@ class UserProvider implements UserProviderInterface
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var EntityManager */
+    /** @var  EntityManager */
     private $entityManager;
     /** @var ClientManager */
     private $clientManager;
@@ -31,7 +32,13 @@ class UserProvider implements UserProviderInterface
     private $clientStatusManager;
 
     /**
-     * @inheritDoc
+     * UserProvider constructor.
+     * @param EntityManagerSimulator     $entityManagerSimulator
+     * @param EntityManager              $entityManager
+     * @param ClientManager              $clientManager
+     * @param NotificationDisplayManager $notificationDisplayManager
+     * @param LenderManager              $lenderManager
+     * @param ClientStatusManager        $clientStatusManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -58,23 +65,17 @@ class UserProvider implements UserProviderInterface
         $client = $this->entityManagerSimulator->getRepository('clients');
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
-        /** @var \clients_history $clientHistory */
-        $clientHistory = $this->entityManagerSimulator->getRepository('clients_history');
 
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL) && $client->get($username, 'status = ' . Clients::STATUS_ONLINE. ' AND email')) {
             $initials = $this->clientManager->getClientInitials($client);
             $isActive = $this->clientManager->isActive($client);
             $roles    = ['ROLE_USER'];
 
-            try {
-                $lastLoginDate = $clientHistory->getClientLastLogin($client->id_client);
-            } catch (\Exception $exception) {
-                $lastLoginDate = null;
-            }
+            /** @var Wallet $wallet */
+            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->id_client]);
 
-            if ($this->clientManager->isLender($client)) {
+            if (WalletType::LENDER === $wallet->getIdType()->getLabel()) {
                 $lenderAccount->get($client->id_client, 'id_client_owner');
-                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
 
                 $roles[]                 = 'ROLE_LENDER';
                 $clientStatus            = $this->clientStatusManager->getLastClientStatus($client);
@@ -100,11 +101,11 @@ class UserProvider implements UserProviderInterface
                     $notifications,
                     $client->etape_inscription_preteur,
                     $userLevel,
-                    $lastLoginDate
+                    $client->lastlogin
                 );
             }
 
-            if ($this->clientManager->isBorrower($client)) {
+            if (WalletType::BORROWER === $wallet->getIdType()->getLabel()) {
                 /** @var \companies $company */
                 $company = $this->entityManagerSimulator->getRepository('companies');
                 $company->get($client->id_client, 'id_client_owner');
@@ -121,7 +122,8 @@ class UserProvider implements UserProviderInterface
                     $client->prenom,
                     $client->nom,
                     $company->siren,
-                    $lastLoginDate
+                    $wallet->getAvailableBalance(),
+                    $client->lastlogin
                 );
             }
         }

@@ -187,8 +187,6 @@ class transfertsController extends bootstrap
 
         /** @var \clients $preteurs */
         $preteurs = $this->loadData('clients');
-        /** @var \receptions $receptions */
-        $receptions = $this->loadData('receptions');
         /** @var \transactions $transactions */
         $transactions = $this->loadData('transactions');
         /** @var \notifications notifications */
@@ -230,7 +228,7 @@ class transfertsController extends bootstrap
                 if ($result) {
                     $this->notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
                     $this->notifications->id_lender = $match->getIdLenderAccount()->getIdLenderAccount();
-                    $this->notifications->amount    = $receptions->montant;
+                    $this->notifications->amount    = $reception->getMontant();
                     $this->notifications->create();
 
                     $this->clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
@@ -261,7 +259,7 @@ class transfertsController extends bootstrap
                             'surl'            => $this->surl,
                             'url'             => $this->furl,
                             'prenom_p'        => html_entity_decode($preteurs->prenom, null, 'UTF-8'),
-                            'fonds_depot'     => $this->ficelle->formatNumber($receptions->montant / 100),
+                            'fonds_depot'     => $this->ficelle->formatNumber($reception->getMontant() / 100),
                             'solde_p'         => $this->ficelle->formatNumber($wallet->getAvailableBalance()),
                             'motif_virement'  => $wallet->getWireTransferPattern(),
                             'projets'         => $this->furl . '/projets-a-financer',
@@ -277,7 +275,7 @@ class transfertsController extends bootstrap
                         $mailer->send($message);
                     }
 
-                    echo $receptions->id_client;
+                    echo $reception->getIdClient()->getIdClient();
                 }
             }
         }

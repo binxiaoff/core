@@ -9,7 +9,8 @@ class company_rating extends company_rating_crud
     const TYPE_XERFI_RISK_SCORE           = 'xerfi';
     const TYPE_UNILEND_XERFI_RISK         = 'xerfi_unilend';
     const TYPE_EULER_HERMES_GRADE         = 'grade_euler_hermes';
-    const TYPE_EULER_HERMES_TRAFFIC_LIGHT = 'get_traffic_light_euler';
+    const TYPE_EULER_HERMES_TRAFFIC_LIGHT = 'traffic_light_euler_hermes';
+    const TYPE_INFOGREFFE_RETURN_CODE     = 'infogreffe_code';
 
     public static $automaticRatingTypes = [
         self::TYPE_ALTARES_VALUE_DATE,
