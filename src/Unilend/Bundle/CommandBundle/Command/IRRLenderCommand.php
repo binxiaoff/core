@@ -10,7 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatisticQueue;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticQueueRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsStatusHistoryRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
@@ -37,8 +36,6 @@ EOF
         $irrManager = $this->getContainer()->get('unilend.service.irr_manager');
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        /** @var LenderStatisticQueueRepository $lenderStatisticQueueRepository */
-        $lenderStatisticQueueRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue');
 
         $cachePool  = $this->getContainer()->get('memcache.default');
         $cachedItem = $cachePool->getItem(CacheKeys::LENDER_STAT_QUEUE_UPDATED);
@@ -61,7 +58,7 @@ EOF
         $calculatedIRRs         = 0;
 
         /** @var LenderStatisticQueue $queueEntry */
-        foreach ($lenderStatisticQueueRepository->getLenderFromQueue($amountOfLenderAccounts) as $queueEntry) {
+        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue')->findBy([], ['added' => 'DESC'], $amountOfLenderAccounts) as $queueEntry) {
             $wallet = $queueEntry->getIdWallet();
             $match  = $entityManager->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet->getId()]);
             $irrManager->addIRRLender($wallet, $match->getIdLenderAccount()->getIdLenderAccount());

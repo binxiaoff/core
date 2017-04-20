@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -139,7 +138,7 @@ class WalletRepository extends EntityRepository
             ->add('where', 'w.id = ls.idWallet');
 
         $qb->andWhere('(' . $subQuery->getDQL() . ') < e.dateEcheance')
-            ->setParameter(':now', $now->format('Y-m-d'))
+            ->setParameter(':now', $now)
             ->setParameter(':status',[
                 \projects_status::PROBLEME,
                 \projects_status::PROBLEME_J_X,

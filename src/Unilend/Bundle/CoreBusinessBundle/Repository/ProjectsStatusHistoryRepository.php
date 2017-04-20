@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use DateTime;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -59,7 +60,7 @@ class ProjectsStatusHistoryRepository extends EntityRepository
             ->andWhere('DATE(psh.added) = :date')
             ->andWhere('ps.status IN (:status)')
             ->setParameter(':date', $dateAdded->format('Y-m-d'))
-            ->setParameter(':status', $projectStatus,\Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+            ->setParameter(':status', $projectStatus,Connection::PARAM_INT_ARRAY);
         $query = $qb->getQuery();
 
         return $query->getResult();

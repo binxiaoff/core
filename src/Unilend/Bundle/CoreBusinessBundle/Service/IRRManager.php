@@ -172,7 +172,7 @@ class IRRManager
     public function getLastUnilendIRR()
     {
         $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
-        return $unilendStatsRepository->getLastUnilendIRR();
+        return $unilendStatsRepository->findOneBy(['typeStat' => UnilendStats::TYPE_STAT_IRR], ['added' => 'DESC']);
     }
 
     /**

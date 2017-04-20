@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * LenderStatisticQueue
  *
  * @ORM\Table(name="lender_statistic_queue", uniqueConstraints={@ORM\UniqueConstraint(name="id_wallet", columns={"id_wallet"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticQueueRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks()
  */
 class LenderStatisticQueue

@@ -4,16 +4,14 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 class LenderStatisticRepository extends EntityRepository
 {
 
     /**
-     * @param string $idWallet
-     * @param string $idLender
+     * @param int $idWallet
+     * @param int $idLender
      *
      * @return array
      */
@@ -142,24 +140,6 @@ class LenderStatisticRepository extends EntityRepository
             ])->fetchAll(\PDO::FETCH_ASSOC);
 
         return $values;
-    }
-
-    /**
-     * @param Wallet $wallet
-     *
-     * @return null|LenderStatistic
-     */
-    public function getLastIRRForLender(Wallet $wallet)
-    {
-        $qb = $this->createQueryBuilder('ls');
-        $qb->where('ls.idWallet = :idWallet')
-            ->andWhere('ls.typeStat = :irr' )
-            ->orderBy('ls.added', 'DESC')
-            ->setMaxResults(1)
-            ->setParameter('idWallet', $wallet)
-            ->setParameter('irr', LenderStatistic::TYPE_STAT_IRR);
-
-        return $qb->getQuery()->getOneOrNullResult();
     }
 
 }

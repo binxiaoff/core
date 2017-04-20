@@ -73,7 +73,7 @@ class LenderDashboardController extends Controller
 
         if ($this->getUser()->getLevel() > 0) {
             /** @var LenderStatistic $lastIRR */
-            $lastIRR = $lenderStatisticsRepository->getLastIRRForLender($wallet);
+            $lastIRR = $lenderStatisticsRepository->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
             if (null !== $lastIRR && LenderStatistic::STAT_VALID_OK === $lastIRR->getStatus()) {
                 $irr                = $lastIRR->getValue();
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');

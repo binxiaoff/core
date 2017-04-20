@@ -382,17 +382,4 @@ class UnilendStatsRepository extends EntityRepository
 
         return $values;
     }
-
-    /**
-     * @return null|UnilendStats
-     */
-    public function getLastUnilendIRR()
-    {
-        $qb = $this->createQueryBuilder('us');
-        $qb->where('us.typeStat = "IRR"')
-            ->orderBy('us.added', 'DESC')
-            ->setMaxResults(1);
-
-        return $qb->getQuery()->getOneOrNullResult();
-    }
 }

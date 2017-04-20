@@ -17,7 +17,7 @@
                 <?php if(null === $this->IRR) : ?>
                     Ce prêteur est trop récent. Son TRI n'a pas encore été calculé.
                 <?php else : ?>
-                    <?= \Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic::STAT_VALID_OK === $this->IRR->getStatus() ? $this->IRR->getValue() . '%'  : 'TRI non valide'?>
+                    <?= \Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic::STAT_VALID_OK === $this->IRR->getStatus() ? number_format($this->IRR->getValue(), 2, ',', ' ') . '%'  : 'TRI non valide'?>
                     <?= (is_null($this->IRR->getAdded())) ? '' : '(calculé le ' . $this->IRR->getAdded()->format('d/m/Y') . ')' ?>
                 <?php endif; ?>
             </h3>
