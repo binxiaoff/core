@@ -256,18 +256,18 @@ class transfertsController extends bootstrap
                         $this->settings->get('Twitter', 'type');
                         $lien_tw = $this->settings->value;
 
-                        $varMail = array(
+                        $varMail = [
                             'surl'            => $this->surl,
                             'url'             => $this->furl,
                             'prenom_p'        => html_entity_decode($preteurs->prenom, null, 'UTF-8'),
                             'fonds_depot'     => $this->ficelle->formatNumber($reception->getMontant() / 100),
-                            'solde_p'         => $this->ficelle->formatNumber($transactions->getSolde($reception->getIdClient()->getIdClient())),
-                            'motif_virement'  => $preteurs->getLenderPattern($preteurs->id_client),
+                            'solde_p'         => $this->ficelle->formatNumber($wallet->getAvailableBalance()),
+                            'motif_virement'  => $wallet->getWireTransferPattern(),
                             'projets'         => $this->furl . '/projets-a-financer',
                             'gestion_alertes' => $this->furl . '/profile',
                             'lien_fb'         => $lien_fb,
                             'lien_tw'         => $lien_tw
-                        );
+                        ];
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-manu', $varMail);
@@ -839,6 +839,8 @@ class transfertsController extends bootstrap
     public function _succession()
     {
         if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
             $clientManager = $this->get('unilend.service.client_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
@@ -872,6 +874,7 @@ class transfertsController extends bootstrap
             /** @var \lenders_accounts $originalLender */
             $originalLender = $this->loadData('lenders_accounts');
             $originalLender->get($originalClient->id_client, 'id_client_owner');
+            $originalWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($originalClient->id_client, WalletType::LENDER);
 
             if ($clientStatusManager->getLastClientStatus($newOwner) != \clients_status::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
@@ -886,7 +889,7 @@ class transfertsController extends bootstrap
             /** @var \loans $loans */
             $loans                 = $this->loadData('loans');
             $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalLender->id_lender_account, array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE]));
-            $originalClientBalance = $clientManager->getClientBalance($originalClient);
+            $originalClientBalance = $originalWallet->getAvailableBalance();
 
             if (isset($_POST['succession_check'])) {
                 $_SESSION['succession']['check'] = [
@@ -910,8 +913,6 @@ class transfertsController extends bootstrap
                 if (null === $transferDocument) {
                     $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
                 }
-                /** @var \Doctrine\ORM\EntityManager $entityManager */
-                $entityManager = $this->get('doctrine.orm.entity_manager');
 
                 $entityManager->getConnection()->beginTransaction();
                 try {
@@ -932,7 +933,7 @@ class transfertsController extends bootstrap
                     if (false === empty($attachment)) {
                         $attachmentManager->attachToTransfer($attachment, $transferEntity);
                     }
-                    $originalClientBalance = $clientManager->getClientBalance($originalClient);
+                    $originalClientBalance = $originalWallet->getAvailableBalance();
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->lenderTransfer($transferEntity, $originalClientBalance);

@@ -142,6 +142,7 @@ class preteursController extends bootstrap
 
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->lenders_accounts->id_client_owner);
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
             $this->clients_adresses = $this->loadData('clients_adresses');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
@@ -213,7 +214,7 @@ class preteursController extends bootstrap
                 \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
             ];
 
-            $this->solde        = $this->transactions->getSolde($this->clients->id_client);
+            $this->solde        = $wallet->getAvailableBalance();
             $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_WITHDRAWAL . ' AND id_client = ' . $this->clients->id_client, 'montant');
             $this->soldeRetrait = abs($this->soldeRetrait / 100);
             $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
@@ -1135,6 +1136,8 @@ class preteursController extends bootstrap
         $this->translator  = $this->get('translator');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
         $this->loanManager = $this->get('unilend.service.loan_manager');
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
         $lenderManager = $this->get('unilend.service.lender_manager');
         /** @var LenderStatisticRepository $lenderStatisticsRepository */

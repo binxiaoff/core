@@ -8,8 +8,8 @@ use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
@@ -28,7 +28,7 @@ class UserProvider implements UserProviderInterface
     private $notificationDisplayManager;
     /** @var LenderManager */
     private $lenderManager;
-    /** @var  ClientStatusManager */
+    /** @var ClientStatusManager */
     private $clientStatusManager;
 
     /**
@@ -67,7 +67,6 @@ class UserProvider implements UserProviderInterface
         $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
 
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL) && $client->get($username, 'status = ' . Clients::STATUS_ONLINE. ' AND email')) {
-            $balance  = $this->clientManager->getClientBalance($client);
             $initials = $this->clientManager->getClientInitials($client);
             $isActive = $this->clientManager->isActive($client);
             $roles    = ['ROLE_USER'];
@@ -93,7 +92,7 @@ class UserProvider implements UserProviderInterface
                     $isActive,
                     $client->id_client,
                     $client->hash,
-                    $balance,
+                    $wallet->getAvailableBalance(),
                     $initials,
                     $client->prenom,
                     $client->nom,
