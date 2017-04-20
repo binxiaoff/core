@@ -296,7 +296,7 @@ class clients extends clients_crud
                   c.telephone AS telephone,
                   c.status_inscription_preteur AS status_inscription_preteur,
                   CASE c.type
-                    WHEN 1 OR 3 THEN c.prenom
+                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN c.prenom
                     ELSE
                     (SELECT
                        CASE co.status_client
@@ -306,11 +306,11 @@ class clients extends clients_crud
                      FROM companies co WHERE co.id_client_owner = c.id_client)
                   END AS prenom_ou_dirigeant,
                   CASE c.type
-                    WHEN 1 OR 3 THEN c.nom
+                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN c.nom
                   ELSE (SELECT co.name FROM companies co WHERE co.id_client_owner = c.id_client)
                   END AS nom_ou_societe,
                   CASE c.type
-                    WHEN 1 OR 3 THEN REPLACE(c.nom_usage,"Nom D\'usage","")
+                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN REPLACE(c.nom_usage,"Nom D\'usage","")
                     ELSE ""
                   END AS nom_usage
                 FROM clients c

@@ -8,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 
 class preteursController extends bootstrap
 {
@@ -73,7 +74,7 @@ class preteursController extends bootstrap
 
             $this->lPreteurs = $this->clients->searchPreteurs($clientId, $lastName, $email, $firstName, $companyName, $nonValide);
 
-            if (false === empty($clientId) || 1 == count($this->lPreteurs)) {
+            if (false === empty($this->lPreteurs[0]['id_client'])) {
                 header('Location:' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
                 die;
             }
@@ -304,7 +305,7 @@ class preteursController extends bootstrap
         $this->clients_adresses         = $this->loadData('clients_adresses');
         $this->clients_status           = $this->loadData('clients_status');
         $this->clients_status_history   = $this->loadData('clients_status_history');
-        $this->oClientsStatusForHistory = $this->loadData('clients_status');
+        $this->clientsStatusForHistory  = $this->loadData('clients_status');
         $this->acceptations_legal_docs  = $this->loadData('acceptations_legal_docs');
         $this->companies                = $this->loadData('companies');
 
@@ -428,9 +429,9 @@ class preteursController extends bootstrap
                 if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
 
                     if (false === empty($_POST['meme-adresse'])) {
-                        $this->clients_adresses->meme_adresse_fiscal = \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL;
+                        $this->clients_adresses->meme_adresse_fiscal = ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL;
                     } else {
-                        $this->clients_adresses->meme_adresse_fiscal = \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses::DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL;
+                        $this->clients_adresses->meme_adresse_fiscal = ClientsAdresses::DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL;
                     }
                     $applyTaxCountry                        = false === empty($_POST['id_pays_fiscal']) && $this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'];
                     $this->clients_adresses->adresse_fiscal = $_POST['adresse'];

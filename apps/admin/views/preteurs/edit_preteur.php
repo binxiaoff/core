@@ -617,10 +617,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <h3>Historique des statuts client</h3>
                         <table class="tablesorter histo_status_client">
                         <?php foreach ($this->lActions as $historyEntry) {
-                            $this->oClientsStatusForHistory->get($historyEntry['id_client_status'], 'id_client_status');
+                            $this->clientsStatusForHistory->get($historyEntry['id_client_status'], 'id_client_status');
                             $this->users->get($historyEntry['id_user'], 'id_user');
 
-                            switch ($this->oClientsStatusForHistory->status) {
+                            switch ($this->clientsStatusForHistory->status) {
                                 case \clients_status::TO_BE_CHECKED: ?>
                                     <tr>
                                         <td>
