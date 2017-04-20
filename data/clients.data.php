@@ -27,6 +27,7 @@
 // **************************************************************************************************** //
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS clientEntity;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 
 class clients extends clients_crud
 {
@@ -795,7 +796,7 @@ class clients extends clients_crud
                              LEFT JOIN companies ON clients.id_client = companies.id_client_owner
                              INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner
                          WHERE clients.status = '. ClientEntity::STATUS_ONLINE .' AND lenders_accounts.status = 1
-                         AND (clients_adresses.id_pays_fiscal = ' . \pays_v2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . \pays_v2::COUNTRY_FRANCE . ')) AS client_base
+                         AND (clients_adresses.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . PaysV2::COUNTRY_FRANCE . ')) AS client_base
                     GROUP BY insee_region_code';
 
         $statement = $this->bdd->executeQuery($query);
