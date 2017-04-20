@@ -13,13 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
 class LenderPanelPreference
 {
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_lender", type="integer", nullable=false)
-     */
-    private $idLender;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="page_name", type="string", length=64, nullable=false)
@@ -70,31 +63,17 @@ class LenderPanelPreference
      */
     private $idLenderPanelPreference;
 
-
-
     /**
-     * Set idLender
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @param integer $idLender
-     *
-     * @return LenderPanelPreference
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     * })
      */
-    public function setIdLender($idLender)
-    {
-        $this->idLender = $idLender;
+    private $idLender;
 
-        return $this;
-    }
 
-    /**
-     * Get idLender
-     *
-     * @return integer
-     */
-    public function getIdLender()
-    {
-        return $this->idLender;
-    }
 
     /**
      * Set pageName
@@ -248,5 +227,29 @@ class LenderPanelPreference
     public function getIdLenderPanelPreference()
     {
         return $this->idLenderPanelPreference;
+    }
+
+    /**
+     * Set idLender
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     *
+     * @return LenderPanelPreference
+     */
+    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender = null)
+    {
+        $this->idLender = $idLender;
+
+        return $this;
+    }
+
+    /**
+     * Get idLender
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLender()
+    {
+        return $this->idLender;
     }
 }

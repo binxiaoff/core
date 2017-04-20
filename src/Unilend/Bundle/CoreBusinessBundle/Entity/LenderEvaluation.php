@@ -7,18 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * LenderEvaluation
  *
- * @ORM\Table(name="lender_evaluation", indexes={@ORM\Index(name="id_lender_questionnaire", columns={"id_lender_questionnaire"})})
+ * @ORM\Table(name="lender_evaluation", indexes={@ORM\Index(name="id_lender_questionnaire", columns={"id_lender_questionnaire"}), @ORM\Index(name="fk_lender_evaluation_id_lender", columns={"id_lender"})})
  * @ORM\Entity
  */
 class LenderEvaluation
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_lender", type="integer", nullable=false)
-     */
-    private $idLender;
-
     /**
      * @var \DateTime
      *
@@ -59,31 +52,17 @@ class LenderEvaluation
      */
     private $idLenderQuestionnaire;
 
-
-
     /**
-     * Set idLender
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @param integer $idLender
-     *
-     * @return LenderEvaluation
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     * })
      */
-    public function setIdLender($idLender)
-    {
-        $this->idLender = $idLender;
+    private $idLender;
 
-        return $this;
-    }
 
-    /**
-     * Get idLender
-     *
-     * @return integer
-     */
-    public function getIdLender()
-    {
-        return $this->idLender;
-    }
 
     /**
      * Set expiryDate
@@ -189,5 +168,29 @@ class LenderEvaluation
     public function getIdLenderQuestionnaire()
     {
         return $this->idLenderQuestionnaire;
+    }
+
+    /**
+     * Set idLender
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     *
+     * @return LenderEvaluation
+     */
+    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender = null)
+    {
+        $this->idLender = $idLender;
+
+        return $this;
+    }
+
+    /**
+     * Get idLender
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLender()
+    {
+        return $this->idLender;
     }
 }

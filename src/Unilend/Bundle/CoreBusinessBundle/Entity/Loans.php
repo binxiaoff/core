@@ -15,26 +15,9 @@ class Loans
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_lender", type="integer", nullable=false)
-     */
-    private $idLender;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="id_transfer", type="integer", nullable=false)
      */
     private $idTransfer;
-
-    /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
-     * })
-     */
-    private $idProject;
 
     /**
      * @var integer
@@ -123,6 +106,26 @@ class Loans
     private $idLoan;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     * })
+     */
+    private $idLender;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
+     */
+    private $idProject;
+
+    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract")
@@ -133,30 +136,6 @@ class Loans
     private $idTypeContract;
 
 
-
-    /**
-     * Set idLender
-     *
-     * @param integer $idLender
-     *
-     * @return Loans
-     */
-    public function setIdLender($idLender)
-    {
-        $this->idLender = $idLender;
-
-        return $this;
-    }
-
-    /**
-     * Get idLender
-     *
-     * @return integer
-     */
-    public function getIdLender()
-    {
-        return $this->idLender;
-    }
 
     /**
      * Set idTransfer
@@ -180,30 +159,6 @@ class Loans
     public function getIdTransfer()
     {
         return $this->idTransfer;
-    }
-
-    /**
-     * Set idProject
-     *
-     * @param Projects $idProject
-     *
-     * @return Loans
-     */
-    public function setProject(Projects $idProject)
-    {
-        $this->idProject = $idProject;
-
-        return $this;
-    }
-
-    /**
-     * Get idProject
-     *
-     * @return Projects
-     */
-    public function getProject()
-    {
-        return $this->idProject;
     }
 
     /**
@@ -478,6 +433,54 @@ class Loans
     public function getIdLoan()
     {
         return $this->idLoan;
+    }
+
+    /**
+     * Set idLender
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     *
+     * @return Loans
+     */
+    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender = null)
+    {
+        $this->idLender = $idLender;
+
+        return $this;
+    }
+
+    /**
+     * Get idLender
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLender()
+    {
+        return $this->idLender;
+    }
+
+    /**
+     * Set idProject
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
+     *
+     * @return Loans
+     */
+    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
+    {
+        $this->idProject = $idProject;
+
+        return $this;
+    }
+
+    /**
+     * Get idProject
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     */
+    public function getIdProject()
+    {
+        return $this->idProject;
     }
 
     /**
