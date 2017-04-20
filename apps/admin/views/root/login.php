@@ -12,7 +12,7 @@
     <?= $this->callJs() ?>
 </head>
 <body class="loginBody">
-<div id="contener">
+<div id="contener" class="container">
     <script type="text/javascript">
         $(function() {
             <?php if (false === empty($_SESSION['msgErreur'])) : ?>

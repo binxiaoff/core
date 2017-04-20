@@ -12,7 +12,7 @@
     <?= $this->callJs() ?>
 </head>
 <body class="loginBody">
-<div id="contener">
+<div id="contener" class="container">
     <style>
         .edit_pass {
             width: 50% !important;

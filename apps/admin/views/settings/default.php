@@ -15,7 +15,7 @@
             <thead>
                 <tr>
                     <th style="width: 340px">Type</th>
-                    <th style="width: 700px; overflow-x: scroll">Valeur</th>
+                    <th style="width: 700px;">Valeur</th>
                     <th style="width: 120px">&nbsp;</th>
                 </tr>
             </thead>
