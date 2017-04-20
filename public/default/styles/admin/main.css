@@ -190,9 +190,9 @@ table.large label { cursor: pointer; font-weight: bold; }
 
 table.form { width: 100%; margin: 0; }
 
-table.form th { text-align: right; vertical-align: middle; padding: 0 5px 10px 0; }
+table.form th { text-align: right; vertical-align: middle; padding: 5px 5px 5px 0; }
 
-table.form td { text-align: left; vertical-align: middle; padding: 0 0 10px 5px; }
+table.form td { text-align: left; vertical-align: middle; padding: 5px 0 5px 5px; }
 
 table.form label { cursor: pointer; font-weight: bold; }
 

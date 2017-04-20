@@ -236,7 +236,7 @@ class dossiersController extends bootstrap
                 $this->aBalanceSheets          = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
                 foreach ($aAnnualAccountsIds as $balanceId) {
                     $this->companies_bilans->get($balanceId);
-                    $this->incomeStatements[$balanceId] = $companyBalanceSheetManager->getIncomeStatement($this->companies_bilans);
+                    $this->incomeStatements[$balanceId] = $companyBalanceSheetManager->getIncomeStatement($this->companies_bilans, true);
                 }
                 if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
                     foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
@@ -469,7 +469,10 @@ class dossiersController extends bootstrap
                     $publicationLimitationDate      = new \DateTime('NOW + 5 minutes');
                     $endOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
 
-                    if ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate) {
+                    if (
+                        $publicationDate->format('Y-m-d H:i:s') !== $this->projects->date_publication
+                        && ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate)
+                    ) {
                         $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
 
                         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -617,7 +620,7 @@ class dossiersController extends bootstrap
                     && 1 === preg_match('#[0-9]{2}/[0-9]{2}/[0-9]{8}#', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute'])
                     && $this->projects->status <= \projects_status::EN_FUNDING
                 ) {
-                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_de_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
+                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
 
                     if ($endOfPublicationDate > new \DateTime()) {
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
@@ -691,13 +694,13 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \partner $partner */
-            $partner = $this->loadData('partner');
+            /** @var \partner $partnerData */
+            $partnerData = $this->loadData('partner');
 
             $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
             $this->selectedProduct  = $product;
             $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
+            $this->partnerList      = $partnerData->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
             $this->partnerProduct   = $this->loadData('partner_product');
 
             if (false === empty($this->projects->id_product)) {
@@ -727,6 +730,10 @@ class dossiersController extends bootstrap
             $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
             $partnerAttachments                   = $partner->getAttachmentTypes(true);
             $this->isFundsCommissionRateEditable  = $this->isFundsCommissionRateEditable();
+            $this->lastBalanceSheet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+                'idClient' => $project->getIdCompany()->getIdClientOwner(),
+                'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
+            ]);
 
             $this->aMandatoryAttachmentTypes      = [];
             foreach ($partnerAttachments as $partnerAttachment) {
@@ -738,6 +745,8 @@ class dossiersController extends bootstrap
             }
 
             $this->loadEarlyRepaymentInformation();
+            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
+            $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
@@ -1481,7 +1490,6 @@ class dossiersController extends bootstrap
             } else {
                 $companyEntity = $this->createBlankCompany();
             }
-
             $this->createProject($companyEntity, $defaultPartner->id);
 
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
@@ -1538,16 +1546,16 @@ class dossiersController extends bootstrap
 
         try {
             $em->persist($clientEntity);
-            $em->flush();
+            $em->flush($clientEntity);
 
-            $clientAddressEntity->setIdClient($clientEntity->getIdClient());
+            $clientAddressEntity->setIdClient($clientEntity);
             $em->persist($clientAddressEntity);
 
             $companyEntity->setSiren($siren);
             $companyEntity->setIdClientOwner($clientEntity->getIdClient());
             $companyEntity->setStatusAdresseCorrespondance(1);
             $em->persist($companyEntity);
-            $em->flush();
+            $em->flush($companyEntity);
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
             $em->commit();
@@ -3302,35 +3310,52 @@ class dossiersController extends bootstrap
      * @param array  $codes
      * @param string $formType
      * @param string $domId
+     * @param bool   $displayNegativeValue
+     * @param array  $amountsToUse
      * @return string
      */
-    protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '')
+    protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '', $displayNegativeValue = true, $amountsToUse = [])
     {
-        $html           = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
-        $iPreviousTotal = null;
-        $iColumn        = 0;
-        foreach ($this->aBalanceSheets as $aBalanceSheet) {
-            if ($formType != $aBalanceSheet['form_type']) {
+        $html             = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
+        $previousTotal    = null;
+        $column           = 0;
+        $index            = 0;
+        $cumulativeAmount = [];
+
+        foreach ($this->aBalanceSheets as $balanceSheet) {
+            $cumulativeAmount[$index] = 0;
+
+            if ($formType != $balanceSheet['form_type']) {
                 $html .= '<td></td>';
-                if ($iColumn) {
+                if ($column) {
                     $html .= '<td></td>';
                 }
             } else {
-                $iTotal = $this->sumBalances($codes, $aBalanceSheet);
-
-                if ($iColumn) {
-                    $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
-                    $html .= '<td>' . $movement . '</td>';
+                if (false === empty($amountsToUse[$index])) {
+                    $total = $this->sumBalances($codes, $balanceSheet) + $amountsToUse[$index];
+                } else {
+                    $total = $this->sumBalances($codes, $balanceSheet);
                 }
-                $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
-                $html .= '<td id="' . $domId . '" data-total="' . $iTotal . '">' . $formatedValue . '</td>';
-                $iPreviousTotal = $iTotal;
+
+                if (false === $displayNegativeValue && $total < 0) {
+                    $total = 0;
+                }
+                $cumulativeAmount[$index] = $total;
+
+                if ($column) {
+                    $movement = empty($total) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $total) / abs($total) * 100) . '&nbsp;%';
+                    $html     .= '<td>' . $movement . '</td>';
+                }
+                $formattedValue = $this->ficelle->formatNumber($total, 0);
+                $html           .= '<td id="' . $domId . '" data-total="' . $total . '">' . $formattedValue . '</td>';
+                $previousTotal  = $total;
             }
-            $iColumn++;
+            $column++;
+            $index++;
         }
         $html .= '</tr>';
 
-        return $html;
+        return ['html' => $html, 'amounts' => $cumulativeAmount];
     }
 
     /**
@@ -3341,7 +3366,7 @@ class dossiersController extends bootstrap
      */
     protected function generateBalanceGroupHtml($totalLabel, array $code, $formType)
     {
-        return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $code, $formType);
+        return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $code, $formType)['html'];
     }
 
     /**
@@ -3353,28 +3378,30 @@ class dossiersController extends bootstrap
      */
     protected function generateBalanceTotalLineHtml($label, array $codes, $formType, $domId = '')
     {
-        $html           = '<tr><th colspan="2">' . $label . '</th>';
-        $iPreviousTotal = null;
-        $iIndex         = 0;
-        $iColumn        = 0;
-        foreach ($this->aBalanceSheets as $aBalanceSheet) {
-            if ($formType != $aBalanceSheet['form_type']) {
+        $html          = '<tr><th colspan="2">' . $label . '</th>';
+        $previousTotal = null;
+        $index         = 0;
+        $column        = 0;
+
+        foreach ($this->aBalanceSheets as $balanceSheet) {
+            if ($formType != $balanceSheet['form_type']) {
                 $html .= '<th></th>';
-                if ($iColumn) {
+
+                if ($column) {
                     $html .= '<th></th>';
                 }
             } else {
-                $iTotal = $this->sumBalances($codes, $aBalanceSheet);
+                $total = $this->sumBalances($codes, $balanceSheet);
 
-                if ($iColumn) {
-                    $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
-                    $html .= '<th>' . $movement . '</th>';
+                if ($column) {
+                    $movement = empty($total) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $total) / abs($total) * 100) . '&nbsp;%';
+                    $html     .= '<th>' . $movement . '</th>';
                 }
-                $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
-                $html .= '<th id="' . $domId . $iIndex++ . '" data-total="' . $iTotal . '">' . $formatedValue . '</th>';
-                $iPreviousTotal = $iTotal;
+                $formattedValue = $this->ficelle->formatNumber($total, 0);
+                $html           .= '<th id="' . $domId . $index++ . '" data-total="' . $total . '">' . $formattedValue . '</th>';
+                $previousTotal  = $total;
             }
-            $iColumn++;
+            $column++;
         }
         $html .= '</tr>';
 

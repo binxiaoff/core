@@ -55,9 +55,6 @@
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
-            <call method="setMonitoring">
-                <argument>true</argument>
-            </call>
         </service>
 
         <service id="unilend.service.ws_client.codinf_manager" class="Unilend\Bundle\WSClientBundle\Service\CodinfManager">
@@ -69,9 +66,6 @@
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
-            <call method="setMonitoring">
-                <argument>true</argument>
-            </call>
         </service>
 
         <service id="unilend.service.ws_client.infolegale_manager" class="Unilend\Bundle\WSClientBundle\Service\InfolegaleManager">
@@ -81,9 +75,6 @@
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
-            <call method="setMonitoring">
-                <argument>true</argument>
-            </call>
         </service>
 
         <service id="unilend.service.ws_client.infogreffe_manager" class="Unilend\Bundle\WSClientBundle\Service\InfogreffeManager">
@@ -94,9 +85,6 @@
             <argument type="service" id="unilend.service.ws_client.soap_client.infogreffe"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
-            <call method="setMonitoring">
-                <argument>true</argument>
-            </call>
         </service>
 
         <service id="unilend.service.ws_client.altares_manager" class="Unilend\Bundle\WSClientBundle\Service\AltaresManager" >
@@ -108,9 +96,6 @@
             <argument type="service" id="unilend.service.ws_client.soap_client.altares_risque"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
-            <call method="setMonitoring">
-                <argument>true</argument>
-            </call>
         </service>
     </services>
 </container>

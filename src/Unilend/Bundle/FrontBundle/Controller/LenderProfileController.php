@@ -819,8 +819,7 @@ class LenderProfileController extends Controller
             }
         }
         if (empty($uploadError) && false === empty($uploadSuccess)) {
-            $clientEmailContent = '<ul><li>' . implode('</li><li>', $uploadSuccess) . '</li></ul>';
-            $this->updateClientStatusAndNotifyClient($client, $clientEmailContent);
+            $this->updateClientStatusAndNotifyClient($client, $uploadSuccess);
             $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));
         } elseif (false === empty($uploadError)) {
             $this->addFlash('completenessError', $translator->trans('lender-profile_completeness-form-error-message'));

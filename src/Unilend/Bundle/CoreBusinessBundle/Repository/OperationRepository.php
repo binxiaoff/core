@@ -3,13 +3,14 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\Common\Collections\Expr\Comparison;
-use Doctrine\DBAL\Connection;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Doctrine\DBAL\Connection;
 
 class OperationRepository extends EntityRepository
 {
@@ -49,6 +50,27 @@ class OperationRepository extends EntityRepository
         ];
 
         return $this->getOperationBy($criteria, $operator);
+    }
+
+    /**
+     * @param Wallet    $wallet
+     * @param \DateTime $date
+     * @return Operation[]
+     */
+    public function getWithdrawAndProvisionOperationByDateAndWallet(Wallet $wallet, \DateTime $date)
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->where('o.idType IN (:walletType)')
+            ->setParameter('walletType', [
+                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
+                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
+            ])
+            ->andWhere('o.idWalletCreditor = :idWallet OR o.idWalletDebtor = :idWallet')
+            ->setParameter('idWallet', $wallet)
+            ->andWhere('o.added >= :added')
+            ->setParameter('added', $date);
+
+        return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
 
     /**

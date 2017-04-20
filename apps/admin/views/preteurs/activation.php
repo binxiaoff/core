@@ -105,10 +105,6 @@
             </table>
         <?php endif; ?>
     <?php else : ?>
-        <?php if (isset($_POST['form_search_client'])) : ?>
-            <p>Il n'y a aucun prêteur pour cette recherche.</p>
-        <?php else : ?>
-            <p>Il n'y a aucun prêteur pour le moment.</p>
-        <?php endif; ?>
+        <p>Il n'y a aucun prêteur pour le moment.</p>
     <?php endif; ?>
 </div>

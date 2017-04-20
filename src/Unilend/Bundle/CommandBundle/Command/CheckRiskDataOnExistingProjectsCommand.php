@@ -27,6 +27,9 @@ class CheckRiskDataOnExistingProjectsCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        // Block this cron temporally in order to finalize DEV-1171
+        die('Non stable version. Do not execute on prod');
+
         $filePath       = $this->getContainer()->getParameter('path.sftp');
         $inputFileName  = $input->getArgument('file');
         $outputFilename = 'processed_' . $inputFileName;

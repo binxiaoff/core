@@ -31,8 +31,6 @@ class EulerHermesManager
     private $accountPassword;
     /** @var string */
     private $accountEmail;
-    /** @var bool */
-    private $monitoring;
     /** @var ResourceManager */
     private $resourceManager;
 
@@ -71,17 +69,11 @@ class EulerHermesManager
     }
 
     /**
-     * @param boolean $activate
-     */
-    public function setMonitoring($activate)
-    {
-        $this->monitoring = $activate;
-    }
-
-    /**
      * @param string $siren
      * @param string $countryCode
+     *
      * @return CompanyIdentity
+     *
      * @throws \Exception
      */
     public function searchCompany($siren, $countryCode)
@@ -104,7 +96,9 @@ class EulerHermesManager
     /**
      * @param string $siren
      * @param string $countryCode
+     *
      * @return null|CompanyRating
+     *
      * @throws \Exception
      */
     public function getTrafficLight($siren, $countryCode)
@@ -124,7 +118,9 @@ class EulerHermesManager
     /**
      * @param string $siren
      * @param string $countryCode
+     *
      * @return null|CompanyRating
+     *
      * @throws \Exception
      */
     public function getGrade($siren, $countryCode)
@@ -146,41 +142,36 @@ class EulerHermesManager
      * @param string $uri
      * @param string $apiKey
      * @param string $siren
+     *
      * @return null|string
      */
     private function sendRequest($resourceLabel, $uri, $apiKey, $siren)
     {
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'SIREN' => $siren];
-        $result     = null;
         $wsResource = $this->resourceManager->getResource($resourceLabel);
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
 
         try {
-            if (false === $result = $this->callHistoryManager->getStoredResponse($wsResource, $siren)) {
+            if (false === ($result = $this->callHistoryManager->getStoredResponse($wsResource, $siren))) {
                 $response = $this->client->get($wsResource->resource_name . $uri, [
                     'headers'  => ['apikey' => $apiKey],
                     'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren)
                 ]);
 
                 if (200 === $response->getStatusCode()) {
-                    $result    = $response->getBody()->getContents();
-                    $alertType = 'up';
+                    $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+                    return $response->getBody()->getContents();
                 } else {
-                    $alertType = 'down';
                     $this->logger->error('Call to ' . $wsResource->resource_name . '. Result: ' . $response->getBody()->getContents(), $logContext);
                 }
             } else {
-                $this->setMonitoring(false);
+                return $result;
             }
         } catch (\Exception $exception) {
-            $alertType = 'down';
             $this->logger->error('Call to ' . $wsResource->resource_name . '. Error message: ' . $exception->getMessage(), $logContext);
         }
 
-        if ($this->monitoring) {
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, $alertType);
-        }
-
-        return $result;
+        $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
+        return null;
     }
 
     /**

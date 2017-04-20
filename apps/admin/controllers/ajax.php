@@ -215,6 +215,8 @@ class ajaxController extends bootstrap
     public function _valid_etapes()
     {
         $this->autoFireView = false;
+        /** @var \Symfony\Component\Translation\Translator translator */
+        $this->translator = $this->get('translator');
 
         /** @var \projects $project */
         $project = $this->loadData('projects');
@@ -320,6 +322,7 @@ class ajaxController extends bootstrap
                 }
                 $address->update();
 
+                $this->clients = $this->loadData('clients');
                 $this->clients->get($company->id_client_owner, 'id_client');
                 $this->clients->email     = $_POST['email_etape2'];
                 $this->clients->civilite  = $_POST['civilite_etape2'];
@@ -401,7 +404,6 @@ class ajaxController extends bootstrap
                             $companyBalanceSheetManager->saveBalanceSheetDetails($companyAnnualAccounts, $box, $value);
                         }
                         $companyBalanceSheetManager->calculateDebtsAssetsFromBalance($companyAnnualAccounts->id_bilan);
-                        $companyBalanceSheetManager->getIncomeStatement($companyAnnualAccounts);
                     }
                 }
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->id_project);

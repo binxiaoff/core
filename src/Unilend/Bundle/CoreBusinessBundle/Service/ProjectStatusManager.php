@@ -74,8 +74,6 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-low-altares-score');
             case \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-low-infolegale-score');
-            case \projects_status::NON_ELIGIBLE_REASON_EULER_WHITE_TRAFFIC_LIGHT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-white-traffic-light');
             case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light');
             case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE:
@@ -104,6 +102,8 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-score-error');
             case \projects_status::UNEXPECTED_RESPONSE . 'infolegale_score':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-score-error');
+            case \projects_status::UNEXPECTED_RESPONSE . 'euler_traffic_light_score':
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light-error');
             case \projects_status::UNEXPECTED_RESPONSE . 'euler_grade':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-error');
             default:

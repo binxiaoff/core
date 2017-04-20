@@ -55,7 +55,7 @@
                                                             <select name="files[extra__NUM__]" class="input-field">
                                                                 <option value="">{% trans %} lender-profile_completeness-form-select-label {% endtrans %}</option>
                                                                 {% for attachmentType in attachmentTypes %}
-                                                                    <option value="{{ attachmentType.id }}">{{ 'projet_document-type-' ~ attachmentType.id }}</option>
+                                                                    <option value="{{ attachmentType.id }}">{{ ('projet_document-type-' ~ attachmentType.id)|trans}}</option>
                                                                 {% endfor %}
                                                             </select>
                                                         </div>
@@ -80,7 +80,7 @@
                                                             <select name="files[file]" class="input-field">
                                                                 <option value="">{% trans %} lender-profile_completeness-form-select-label {% endtrans %}</option>
                                                                 {% for attachmentType in attachmentTypes %}
-                                                                    <option value="{{ attachmentType.id }}">{{ 'projet_document-type-' ~ attachmentType.id }}</option>
+                                                                    <option value="{{ attachmentType.id }}">{{ ('projet_document-type-' ~ attachmentType.id)|trans }}</option>
                                                                 {% endfor %}
                                                             </select>
                                                         </div>

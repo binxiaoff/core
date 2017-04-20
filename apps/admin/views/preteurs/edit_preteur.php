@@ -832,35 +832,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
             </div>
             <div class="clear"></div>
             <br/><br/>
-            <div class="content_cgv_accept">
-                <h2>Acceptation CGV</h2>
-                <?php if (count($this->lAcceptCGV) > 0) : ?>
-                    <table class="tablesorter cgv_accept">
-                        <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Version</th>
-                            <th>URL</th>
-                            <th>Date validation</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($this->lAcceptCGV as $a) :
-                            $this->tree->get(array('id_tree' => $a['id_legal_doc'], 'id_langue' => $this->language));
-                            ?>
-                            <tr>
-                                <td><?= date('d/m/Y', strtotime($this->tree->added)) ?></td>
-                                <td><?= $this->tree->title ?></td>
-                                <td><a target="_blank" href="<?= $this->furl . '/' . $this->tree->slug ?>"><?= $this->furl . '/' . $this->tree->slug ?></a></td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($a['added'])) ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php else : ?>
-                    <p style="text-align:center;" >Aucun CGV signé</p>
-                <?php endif; ?>
-            </div>
+            <?php $this->fireView('../blocs/acceptedLegalDocumentList'); ?>
             <br/><br/><br/><br/>
             <input type="hidden" name="statut_valider_preteur" id="statut_valider_preteur" value="0"/>
             <input type="hidden" name="send_edit_preteur" id="send_edit_preteur"/>
