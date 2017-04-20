@@ -8,8 +8,14 @@
     });
 </script>
 <div id="contenu">
-    <h1>Liste des paramètres globaux</h1>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/settings/add" class="btn_link thickbox">Ajouter un paramètre</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Liste des paramètres globaux</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/settings/add" class="btn-primary pull-right thickbox">Ajouter un paramètre</a>
+        </div>
+    </div>
     <?php if (count($this->lSettings) > 0) : ?>
         <table class="tablesorter">
             <thead>

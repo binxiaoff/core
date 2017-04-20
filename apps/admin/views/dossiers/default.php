@@ -117,14 +117,20 @@
     </div>
 </div>
 <div id="contenu">
-    <?php if (isset($this->iCountProjects) && $this->iCountProjects == 0) : ?>
-        <h1>Aucun dossier trouvé</h1>
-    <?php elseif (isset($this->iCountProjects) && $this->iCountProjects == 1) : ?>
-        <h1>1 dossier trouvé</h1>
-    <?php elseif (isset($this->iCountProjects) && $this->iCountProjects > 0) : ?>
-        <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> dossiers trouvés</h1>
-    <?php endif; ?>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/add/create" class="btn_link">Créer un dossier</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <?php if (isset($this->iCountProjects) && $this->iCountProjects == 0) : ?>
+                <h1>Aucun dossier trouvé</h1>
+            <?php elseif (isset($this->iCountProjects) && $this->iCountProjects == 1) : ?>
+                <h1>1 dossier trouvé</h1>
+            <?php elseif (isset($this->iCountProjects) && $this->iCountProjects > 0) : ?>
+                <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> dossiers trouvés</h1>
+            <?php endif; ?>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/dossiers/add/create" class="btn-primary pull-right">Créer un dossier</a>
+        </div>
+    </div>
     <style>
         table.formColor {width: 1115px;}
         .select {width: 100px;}

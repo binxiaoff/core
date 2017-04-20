@@ -52,10 +52,12 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 .input_login { width: 200px; height: 25px; background: #FFF; border: 1px solid #b20066; margin: 0; padding: 0 4px; font: 12px Arial, Helvetica, sans-serif; color: #b20066; }
 
-.btn-primary { font-size: 12px; line-height: 20px; border-radius: 2px; font-weight: bold; background-color: #b20066; border: 1px solid #b20066; color: #fff; }
+.btn-primary, .btn-default {  display: inline-block; margin-bottom: 0; text-align: center; vertical-align: middle; -ms-touch-action: manipulation; touch-action: manipulation; cursor: pointer; background-image: none; border: 1px solid transparent; white-space: nowrap; padding: 6px 12px; user-select: none; font-size: 12px; line-height: 20px; border-radius: 2px; font-weight: bold; }
+.btn-primary:hover, .btn-default:hover, .btn-primary:focus, .btn-default:focus, .btn-primary:active:focus, .btn-default:active:focus { text-decoration: none; }
+.btn-primary { background-color: #b20066; border: 1px solid #b20066; color: #fff; }
 .btn-primary:hover { background-color: #9a1d5a; border-color: #9a1d5a; color: #fff; }
 .btn-primary:active:focus, .btn-primary:active, .btn-primary:focus { background-color: #85194d; border-color: #85194d; color: #fff;  box-shadow: none; }
-.btn-default { font-size: 12px; line-height: 20px; border-radius: 2px; font-weight: bold; background-color: #B1ADB2; border-color: #B1ADB2; color: #fff; }
+.btn-default { background-color: #B1ADB2; border-color: #B1ADB2; color: #fff; }
 .btn-default:hover { background-color: #8B888C; border-color: #8B888C; color: #fff; }
 .btn-default:active:focus, .btn-default:active, .btn-default:focus { background-color: #959595; border-color: #959595; color: #fff; box-shadow: none; }
 

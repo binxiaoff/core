@@ -28,13 +28,19 @@
     });
 </script>
 <div id="contenu">
-    <h1>Statistiques des AutoLends</h1>
-    <form method="post" name="recupCSV">
-        <input type="hidden" name="extraction_csv"/>
-        <input type="hidden" name="date_from" value="<?= isset($_POST['date_from'])? $_POST['date_from'] : '' ?>"/>
-        <input type="hidden" name="date_to" value="<?= isset($_POST['date_to'])? $_POST['date_to'] : '' ?>"/>
-    </form>
-    <div style="margin-bottom:20px; float:right;"><a onClick="document.forms['recupCSV'].submit();" class="btn colorAdd">Recuperation du CSV</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Statistiques des AutoLends</h1>
+        </div>
+        <div class="col-sm-6">
+            <form method="post" name="recupCSV">
+                <input type="hidden" name="extraction_csv"/>
+                <input type="hidden" name="date_from" value="<?= isset($_POST['date_from'])? $_POST['date_from'] : '' ?>"/>
+                <input type="hidden" name="date_to" value="<?= isset($_POST['date_to'])? $_POST['date_to'] : '' ?>"/>
+            </form>
+            <a role="button" onclick="document.forms['recupCSV'].submit();" class="btn-primary pull-right">Recuperation du CSV</a>
+        </div>
+    </div>
     <div style="width:500px; background-color: white; border: 1px solid #A1A5A7; border-radius: 10px; margin: 0 auto 20px; padding: 5px;">
         <form method="post" name="date_select">
             <fieldset>

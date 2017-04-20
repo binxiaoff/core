@@ -28,14 +28,20 @@
     });
 </script>
 <div id="contenu">
-    <h1>Etape d'inscription des utilisateurs</h1>
-    <form method="post" name="recupCSV">
-        <input type="hidden" name="recup"/>
-        <input type="hidden" name="spy_date1" value="<?= $_POST['date1'] ?>"/>
-        <input type="hidden" name="spy_date2" value="<?= $_POST['date2'] ?>"/>
-    </form>
-    <div style="margin-bottom:20px; float:right;">
-        <a onclick="document.forms['recupCSV'].submit();" class="btn colorAdd">Recuperation du CSV</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Etape d'inscription des utilisateurs</h1>
+        </div>
+        <div class="col-sm-6">
+            <form method="post" name="recupCSV">
+                <input type="hidden" name="recup"/>
+                <input type="hidden" name="spy_date1" value="<?= $_POST['date1'] ?>"/>
+                <input type="hidden" name="spy_date2" value="<?= $_POST['date2'] ?>"/>
+            </form>
+            <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
+                <a role="button" onclick="document.forms['recupCSV'].submit();" class="btn-primary pull-right">Recuperation du CSV</a>
+            <?php endif; ?>
+        </div>
     </div>
     <div style="width:500px;margin: auto;margin-bottom:20px;background-color: white;border: 1px solid #A1A5A7;border-radius: 10px 10px 10px 10px;margin: 0 auto 20px;padding:5px;">
         <form method="post" name="date_select">
