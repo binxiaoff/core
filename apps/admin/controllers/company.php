@@ -45,7 +45,7 @@ class companyController extends bootstrap
         }
 
         if ($this->request->isMethod('POST')) {
-            $siren               = filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING);
+            $siren               = substr(filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING), 0, 9);
             $corporateName       = filter_var($this->request->request->get('corporate_name'), FILTER_SANITIZE_STRING);
             $title               = filter_var($this->request->request->get('title'), FILTER_SANITIZE_STRING);
             $name                = filter_var($this->request->request->get('name'), FILTER_SANITIZE_STRING);
@@ -55,7 +55,7 @@ class companyController extends bootstrap
             $address             = filter_var($this->request->request->get('address'), FILTER_SANITIZE_STRING);
             $postCode            = filter_var($this->request->request->get('postCode'), FILTER_SANITIZE_STRING);
             $city                = filter_var($this->request->request->get('city'), FILTER_SANITIZE_STRING);
-            $invoiceEmail        = filter_var($this->request->request->get('invoice_email'), FILTER_SANITIZE_STRING);
+            $invoiceEmail        = filter_var($this->request->request->get('invoice_email'), FILTER_SANITIZE_EMAIL);
             $invoiceEmail        = empty($invoiceEmail) ? $email : $invoiceEmail;
             $bic                 = filter_var($this->request->request->get('bic'), FILTER_SANITIZE_STRING);
             $iban                = $this->request->request->get('iban1')
@@ -68,6 +68,12 @@ class companyController extends bootstrap
             $iban                = filter_var($iban, FILTER_SANITIZE_STRING);
             $bankAccountDocument = $this->request->files->get('rib');
             $registryForm        = $this->request->files->get('kbis');
+
+            if (1 !== preg_match('/^\d{9}$/', $siren)) {
+                $_SESSION['freeow']['title']   = 'Une erreur survenue !';
+                $_SESSION['freeow']['message'] = 'SIREN n\'est pas valide.';
+                header('Location: ' . $this->url . '/company/add' . (isset($this->params[0]) ? '/' . $this->params[0] : ''));
+            }
 
             $entityManager->beginTransaction();
             try {
@@ -84,7 +90,7 @@ class companyController extends bootstrap
                 $company = new Companies();
                 $company->setSiren($siren)
                         ->setName($corporateName)
-                        ->setStatusAdresseCorrespondance(1)
+                        ->setStatusAdresseCorrespondance(Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL)
                         ->setEmailDirigeant($email)
                         ->setEmailFacture($invoiceEmail)
                         ->setIdClientOwner($client->getIdClient())
@@ -112,8 +118,6 @@ class companyController extends bootstrap
                 $_SESSION['freeow']['message'] = 'La Société est bien créée !';
                 header('Location: ' . $this->url . '/company');
             } catch (\Exception $exception) {
-                var_dump($exception->getMessage());
-                die;
                 $entityManager->getConnection()->rollBack();
                 $_SESSION['freeow']['title']   = 'Une erreur survenue !';
                 $_SESSION['freeow']['message'] = 'La Société n\'est pas créée !';
