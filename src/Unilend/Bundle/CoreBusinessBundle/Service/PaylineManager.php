@@ -266,7 +266,7 @@ class PaylineManager
                 'surl'            => $this->sUrl,
                 'url'             => $this->router->getContext()->getBaseUrl(),
                 'prenom_p'        => $client->prenom,
-                'fonds_depot'     => number_format($amount,2, ',', ' '),
+                'fonds_depot'     => number_format($amount, 2, ',', ' '),
                 'solde_p'         => number_format($backPayline->getWallet()->getAvailableBalance(), 2, ',', ' '),
                 'link_mandat'     => $this->sUrl . '/images/default/mandat.jpg',
                 'motif_virement'  => $backPayline->getWallet()->getWireTransferPattern(),
