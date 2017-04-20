@@ -7,6 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatisticQueue;
 
 class transfertsController extends bootstrap
 {
@@ -846,6 +847,10 @@ class transfertsController extends bootstrap
             $originalClient = $this->loadData('clients');
             /** @var \clients $newOwner */
             $newOwner = $this->loadData('clients');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository $walletRepository */
+            $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
             if (
                 false === empty($_POST['id_client_to_transfer'])
@@ -932,26 +937,33 @@ class transfertsController extends bootstrap
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->lenderTransfer($transferEntity, $originalClientBalance);
 
-                    /** @var \loan_transfer $loanTransfer */
-                    $loanTransfer = $this->loadData('loan_transfer');
-                    /** @var \lenders_accounts $originalLender */
-                    $originalLender = $this->loadData('lenders_accounts');
-                    $originalLender->get($transfer->id_client_origin, 'id_client_owner');
-                    /** @var \lenders_accounts $newLender */
-                    $newLender = $this->loadData('lenders_accounts');
-                    $newLender->get($transfer->id_client_receiver, 'id_client_owner');
+                /** @var \loan_transfer $loanTransfer */
+                $loanTransfer = $this->loadData('loan_transfer');
+                /** @var \lenders_accounts $originalLender */
+                $originalLender = $this->loadData('lenders_accounts');
+                $originalLender->get($transfer->id_client_origin, 'id_client_owner');
+                $originalWallet = $walletRepository->getWalletByType($originalClient->id_client, WalletType::LENDER);
 
-                    $numberLoans = 0;
-                    foreach ($loansInRepayment as $loan) {
-                        $loans->get($loan['id_loan']);
-                        $this->transferLoan($transfer, $loanTransfer, $loans, $newLender, $originalClient, $newOwner);
-                        $loans->unsetData();
-                        $numberLoans += 1;
-                    }
-                    /** @var \lenders_accounts_stats_queue $lenderStatQueue */
-                    $lenderStatQueue = $this->loadData('lenders_accounts_stats_queue');
-                    $lenderStatQueue->addLenderToQueue($newLender);
-                    $lenderStatQueue->addLenderToQueue($originalLender);
+                /** @var \lenders_accounts $newLender */
+                $newLender = $this->loadData('lenders_accounts');
+                $newLender->get($transfer->id_client_receiver, 'id_client_owner');
+                $newWallet = $walletRepository->getWalletByType($transfer->id_client_receiver, WalletType::LENDER);
+
+                $numberLoans  = 0;
+                foreach ($loansInRepayment as $loan) {
+                    $loans->get($loan['id_loan']);
+                    $this->transferLoan($transfer, $loanTransfer, $loans, $newLender, $originalClient, $newOwner);
+                    $loans->unsetData();
+                    $numberLoans += 1;
+                }
+
+                $lenderStatQueueOriginal = new LenderStatisticQueue();
+                $lenderStatQueueOriginal->setIdWallet($originalWallet);
+                $entityManager->persist($lenderStatQueueOriginal);
+                $lenderStatQueueNew = new LenderStatisticQueue();
+                $lenderStatQueueNew->setIdWallet($newWallet);
+                $entityManager->persist($lenderStatQueueNew);
+                $entityManager->flush();
 
                     $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
                     try {
