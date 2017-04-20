@@ -507,7 +507,9 @@ class dossiersController extends bootstrap
                     && $_POST['commercial'] != $this->projects->id_commercial
                     && $this->projects->status < \projects_status::COMMERCIAL_REVIEW
                 ) {
-                    $_POST['status'] = \projects_status::COMMERCIAL_REVIEW;
+                    if (\projects_status::NOT_ELIGIBLE != $this->projects->status) {
+                        $_POST['status'] = \projects_status::COMMERCIAL_REVIEW;
+                    }
 
                     $latitude  = (float) $this->companies->latitude;
                     $longitude = (float) $this->companies->longitude;
@@ -3040,7 +3042,14 @@ class dossiersController extends bootstrap
             return;
         }
 
-        if (false === empty($_POST['comment'])) {
+        if (isset($this->params[1]) && 'resume' === $this->params[1] && \projects_status::POSTPONED == $this->projects->status) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMMERCIAL_REVIEW, $this->projects);
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
+        } elseif (false === empty($_POST['comment'])) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager        = $this->get('doctrine.orm.entity_manager');
             $projectCommentEntity = new ProjectsComments();

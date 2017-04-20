@@ -406,11 +406,13 @@
             });
         });
 
-        $('#commercial').change(function() {
-            if ($(this).val() > 0 && $('#current_commercial').val() == 0) {
-                $(this).parents('form').submit()
-            }
-        })
+        <?php if (\projects_status::NOT_ELIGIBLE != $this->projects->status) : ?>
+            $('#commercial').change(function() {
+                if ($(this).val() > 0 && $('#current_commercial').val() == 0) {
+                    $(this).parents('form').submit()
+                }
+            })
+        <?php endif; ?>
 
         $('#analyste').change(function() {
             if ($(this).val() > 0 && $('#current_analyst').val() == 0) {
@@ -752,7 +754,7 @@
                             <th>Nom</th>
                             <td><?= $this->clients->nom ?></td>
                         </tr>
-                        <?php if (false === empty($this->projects->id_commercial) || false === in_array($this->projects->status, [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::NOT_ELIGIBLE, \projects_status::ABANDONED])) : ?>
+                        <?php if (false === empty($this->projects->id_commercial) || false === in_array($this->projects->status, [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::ABANDONED])) : ?>
                             <tr>
                                 <th><label for="commercial">Commercial</label></th>
                                 <td>
@@ -954,6 +956,7 @@
                                         <?php break;
                                     case \projects_status::POSTPONED: ?>
                                         <div style="text-align: right">
+                                            <a href="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>/resume" class="btn btn-small btnDisabled btn_link">Reprendre</a>
                                             <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
                                             <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
                                             <?php if (empty($this->projects->id_product)) : ?>
@@ -983,7 +986,7 @@
                     </table>
                 </td>
             </tr>
-            <tr<?php if (empty($this->projects->id_commercial)) : ?> style="display: none" <?php endif; ?>>
+            <tr<?php if (empty($this->projects->id_commercial) && \projects_status::NOT_ELIGIBLE != $this->projects->status) : ?> style="display: none"<?php endif; ?>>
                 <td colspan="2" class="center">
                     <input type="hidden" name="statut_encours" id="statut_encours" value="0">
                     <input type="hidden" name="send_form_dossier_resume">
