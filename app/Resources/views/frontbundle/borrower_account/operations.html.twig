@@ -20,10 +20,11 @@
                     <header class="panel-header">
                         <h3 class="panel-title">{{ 'borrower-operation_panel-title'|trans }}</h3>
                         <div class="panel-controls">
-                            <button type="submit" name="action" value="print" class="btn-default">
-                                <span class="icon fa-print-u32"></span>
-                                <span class="label">{{ 'borrower-operation_print'|trans }}</span>
-                            </button>
+                            {# Button commented pending DEV-1347 - it is currently not wokring in production either #}
+                            {#<button type="submit" name="action" value="print" class="btn-default">#}
+                                {#<span class="icon fa-print-u32"></span>#}
+                                {#<span class="label">{{ 'borrower-operation_print'|trans }}</span>#}
+                            {#</button>#}
                             <button type="submit" name="action" value="export" class="btn-default">
                                 <span class="icon fa-excel-u32"></span>
                                 <span class="label">{{ 'borrower-operation_csv-export'|trans }}</span>
@@ -66,7 +67,7 @@
                                                 <label for="filter-start" class="c-t3">{{ 'borrower-operation_customized-date'|trans }}</label>
                                                 <div class="row">
                                                     <div class="input-group set-right">
-                                                        <input type="text" id="filter-start" name="filter[start]" value="{{ default_filter_date.start }}" {#placeholder="{{ 'borrower-operation_select-start-date-placeholder'|trans }}"#} class="input-field ui-has-datepicker" />
+                                                        <input type="text" id="filter-start" name="filter[start]" value="{{ default_filter_date.start }}" class="input-field ui-has-datepicker" />
                                                         <div class="btn-group">
                                                             <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">{{ 'borrower-operation_select-start-date'|trans }}</span></span></label>
                                                         </div><!-- /.btn-group -->
@@ -77,7 +78,7 @@
                                                 <label>&nbsp;</label>
                                                 <div class="row">
                                                     <div class="input-group set-right">
-                                                        <input type="text" id="filter-end" name="filter[end]" value="{{ default_filter_date.end }}" {#placeholder="{{ 'borrower-operation_select-end-date-placeholder'|trans }}"#} class="input-field ui-has-datepicker"/>
+                                                        <input type="text" id="filter-end" name="filter[end]" value="{{ default_filter_date.end }}" class="input-field ui-has-datepicker"/>
                                                         <div class="btn-group">
                                                             <label for="filter-end"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">{{ 'borrower-operation_select-end-date'|trans }}</span></span></label>
                                                         </div><!-- /.btn-group -->
@@ -100,14 +101,9 @@
                                                 <div class="row">
                                                     <select id="fiter-type" name="filter[op]" class="input-field">
                                                         <option value="all">{{ 'borrower-operation_all-the-operations'|trans }}</option>
-                                                        <option value="1">{{ 'borrower-operation_financement'|trans }}</option>
-                                                        <option value="2">{{ 'borrower-operation_virement'|trans }}</option>
-                                                        <option value="3">{{ 'borrower-operation_commission-deblocage'|trans }}</option>
-                                                        <option value="4">{{ 'borrower-operation_prelevement-mensualite'|trans }}</option>
-                                                        <option value="5">{{ 'borrower-operation_affectation-preteurs'|trans }}</option>
-                                                        <option value="6">{{ 'borrower-operation_commission-mensuelle'|trans }}</option>
-                                                        <option value="7">{{ 'borrower-operation_remboursement-anticipe'|trans }}</option>
-                                                        <option value="8">{{ 'borrower-operation_affectation-ra-preteur'|trans }}</option>
+                                                        {% for op in operationTypes %}
+                                                            <option value="{{ op }}">{{ ('borrower-operation_' ~ op)|trans}}</option>
+                                                        {% endfor %}
                                                     </select>
                                                 </div>
                                             </div>
