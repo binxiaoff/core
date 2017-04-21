@@ -159,12 +159,12 @@ function getInputRate(cellIndex) {
 }
 
 function rateActivatedSwitch($checkbox, $inputStatus) {
-    if ($inputStatus.attr('value') == 1) {
+    if ($inputStatus.val() == 1) {
         deactivateSetting($inputStatus)
-        $checkbox.removeAttr('checked')
+        $checkbox.removeAttr('checked').prop('checked', false)
     } else {
         activateSetting($inputStatus)
-        $checkbox.attr('checked', 'checked')
+        $checkbox.attr('checked', 'checked').prop('checked', 'checked')
     }
 }
 
@@ -307,6 +307,9 @@ $doc
             eventDecreaseCell(event)
         }
     })
+    .on('change', '.cell .cell-input input[type="number"]', function (event) {
+
+    })
 
     // Reduce cell rate
     .on(Utility.clickEvent, '.cell .cell-input .btn-cell-minus', eventDecreaseCell)
@@ -316,9 +319,11 @@ $doc
 
     // Show cell info (side widget)
     .on(Utility.clickEvent, '.cell .cell-input', function (event) {
-        var $cell = $(this).find('input')
-        activateCell($cell)
+        var $cell = $(this).find('input[type="number"]')
+        var cellIndex = $cell.data('autolendtable-cell')
+        var $inputStatus = $('#' + cellIndex + '-param-advanced-is-active')
         showBalance($cell.parent().attr('data-autolendtable-cell'))
+        rateActivatedSwitch($('#autolend-cell-disable-switch'), $inputStatus)
     })
 
     // Close confirmation- dialog
@@ -340,7 +345,7 @@ $doc
     // Enable cell
     .on(Utility.clickEvent, '.cell .btn-cell-enable', function (event) {
         var $cell = $(this).parents('.cell-data').first()
-        var cellIndex = ~~$cell.attr('data-autolendtable-cell')
+        var cellIndex = $cell.attr('data-autolendtable-cell')
         var $inputStatus = $('#' + cellIndex + '-param-advanced-is-active')
         rateActivatedSwitch($('#autolend-cell-disable-switch'), $inputStatus)
         showBalance(cellIndex)
