@@ -1,7 +1,6 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -9,18 +8,17 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
@@ -84,7 +82,7 @@ class LenderProfileController extends Controller
                 $identityForm->handleRequest($request);
 
                 if ($identityForm->isSubmitted()) {
-                    $this->saveClientHistoryAction($client, $request, 'info perso profile');
+                    $this->saveClientHistoryAction($client, $request, ClientsHistoryActions::LENDER_PROFILE_PERSONAL_INFORMATION);
                     if ($identityForm->isValid()) {
                         if (isset($request->request->get('form')['company'])) {
                             $isValid = $this->handleCompanyIdentity($unattachedClient, $client, $unattachedCompany, $company, $identityForm, $request->files);
@@ -99,7 +97,7 @@ class LenderProfileController extends Controller
                 $fiscalAddressForm->handleRequest($request);
 
                 if ($fiscalAddressForm->isSubmitted()) {
-                    $this->saveClientHistoryAction($client, $request, 'info perso profile');
+                    $this->saveClientHistoryAction($client, $request, ClientsHistoryActions::LENDER_PROFILE_PERSONAL_INFORMATION);
                     if ($fiscalAddressForm->isValid()) {
                         $isValid = $this->handlePersonFiscalAddress($unattachedClientAddress, $clientAddress, $fiscalAddressForm, $request->files);
                     }
@@ -110,7 +108,7 @@ class LenderProfileController extends Controller
                 $fiscalAddressForm->handleRequest($request);
 
                 if ($fiscalAddressForm->isSubmitted()) {
-                    $this->saveClientHistoryAction($client, $request, 'info perso profile');
+                    $this->saveClientHistoryAction($client, $request, ClientsHistoryActions::LENDER_PROFILE_PERSONAL_INFORMATION);
                     if ($fiscalAddressForm->isValid()) {
                         $isValid = $this->handleCompanyFiscalAddress($unattachedCompany, $company, $fiscalAddressForm);
                     }
@@ -121,7 +119,7 @@ class LenderProfileController extends Controller
                 $postalAddressForm->handleRequest($request);
 
                 if ($postalAddressForm->isSubmitted()) {
-                    $this->saveClientHistoryAction($client, $request, 'info perso profile');
+                    $this->saveClientHistoryAction($client, $request, ClientsHistoryActions::LENDER_PROFILE_PERSONAL_INFORMATION);
                     if ($postalAddressForm->isValid()) {
                         $isValid = $this->handlePostalAddressForm($clientAddress);
                     }
@@ -130,7 +128,7 @@ class LenderProfileController extends Controller
 
             if (false === empty($request->request->get('person_phone'))) {
                 $phoneForm->handleRequest($request);
-                $this->saveClientHistoryAction($client, $request, 'info perso profile');
+                $this->saveClientHistoryAction($client, $request, ClientsHistoryActions::LENDER_PROFILE_PERSONAL_INFORMATION);
                 if ($phoneForm->isValid()) {
                     $translator = $this->get('translator');
                     $entityManager->flush($client);
@@ -483,7 +481,7 @@ class LenderProfileController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            $this->saveClientHistoryAction($clientEntity, $request, 'info perso profile');
+            $this->saveClientHistoryAction($clientEntity, $request, ClientsHistoryActions::LENDER_PROFILE_BANK_INFORMATION);
             if ($form->isValid()) {
                 $isValid = $this->handleBankDetailsForm($bankAccount, $unattachedClientEntity, $form, $request->files);
                 if ($isValid) {
@@ -557,7 +555,7 @@ class LenderProfileController extends Controller
                 $emailForm->handleRequest($request);
 
                 if ($emailForm->isSubmitted()) {
-                    $this->saveClientHistoryAction($clientEntity, $request, 'info perso profile');
+                    $this->saveClientHistoryAction($clientEntity, $request, ClientsHistoryActions::LENDER_PROFILE_PERSONAL_INFORMATION);
 
                     if ($emailForm->isValid()) {
                         $isValid = $this->handleEmailForm($unattachedClientEntity, $clientEntity, $emailForm);
@@ -569,7 +567,7 @@ class LenderProfileController extends Controller
                 $pwdForm->handleRequest($request);
 
                 if ($pwdForm->isSubmitted()) {
-                    $this->saveClientHistoryAction($clientEntity, $request, 'change mdp');
+                    $this->saveClientHistoryAction($clientEntity, $request, ClientsHistoryActions::CHANGE_PASSWORD);
                     if ($pwdForm->isValid()) {
                         $isValid = $this->handlePasswordForm($clientEntity, $pwdForm);
                     }
@@ -580,7 +578,7 @@ class LenderProfileController extends Controller
                 $questionForm->handleRequest($request);
 
                 if ($questionForm->isSubmitted()) {
-                    $this->saveClientHistoryAction($clientEntity, $request, 'change secret question');
+                    $this->saveClientHistoryAction($clientEntity, $request, ClientsHistoryActions::LENDER_PROFILE_SECURITY_QUESTION);
                     if ($questionForm->isValid()) {
                         $translator = $this->get('translator');
                         $this->get('doctrine.orm.entity_manager')->flush($client);
@@ -824,7 +822,7 @@ class LenderProfileController extends Controller
         } elseif (false === empty($uploadError)) {
             $this->addFlash('completenessError', $translator->trans('lender-profile_completeness-form-error-message'));
         }
-        $this->saveClientHistoryAction($clientEntity, $request, 'upload doc profile');
+        $this->saveClientHistoryAction($clientEntity, $request, ClientsHistoryActions::LENDER_UPLOAD_FILES);
 
         return $this->redirectToRoute('lender_completeness');
     }
@@ -853,10 +851,10 @@ class LenderProfileController extends Controller
     /**
      * @param Clients $client
      * @param Request $request
+     * @param string  $formName
      */
     private function saveClientHistoryAction(Clients $client, Request $request, $formName)
     {
-        $formId      = '';
         $formManager = $this->get('unilend.frontbundle.service.form_manager');
         $post        = $formManager->cleanPostData($request->request->all());
         $files       = $request->files;
@@ -865,27 +863,7 @@ class LenderProfileController extends Controller
             $post = array_merge($post, $formManager->getNamesOfFiles($files));
         }
 
-        switch ($formName) {
-            case 'info perso profile':
-                $formId = 4;
-                break;
-            case 'change mdp':
-                $formId = 7;
-                break;
-            case 'change secret question':
-                $formId = 6;
-                $post['security_question']['secreteReponse'] = md5($post['security_question']['secreteReponse']);
-                break;
-            case 'upload doc profile':
-                $formId = 12;
-                break;
-            default:
-                break;
-        }
-
-        /** @var \clients_history_actions $clientHistoryActions */
-        $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
-        $clientHistoryActions->histo($formId, $formName, $client->getIdClient(), serialize(['id_client' => $client->getIdClient(), 'post' => $post]));
+        $formManager->saveFormSubmission($client, $formName, serialize(['id_client' => $client->getIdClient(), 'post' => $post]), $request->getClientIp());
     }
 
     /**

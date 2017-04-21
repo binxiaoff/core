@@ -18,6 +18,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -433,6 +434,8 @@ class ProjectsController extends Controller
             /** @var \projects $project */
             $project = $entityManagerSimulator->getRepository('projects');
 
+            $formManager = $this->get('unilend.frontbundle.service.form_manager');
+
             if (false === $project->get($projectId)) {
                 return $this->redirectToRoute('home');
             }
@@ -447,9 +450,8 @@ class ProjectsController extends Controller
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            /** @var \clients_history_actions $clientHistoryActions */
-            $clientHistoryActions = $entityManagerSimulator->getRepository('clients_history_actions');
-            $clientHistoryActions->histo(9, 'bid', $user->getClientId(), serialize(array('id_client' => $user->getClientId(), 'post' => $post, 'id_projet' => $projectId)));
+            $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+            $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_BID, serialize(['id_client' => $user->getClientId(), 'post' => $post, 'id_projet' => $projectId]), $request->getClientIp());
 
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $entityManagerSimulator->getRepository('lenders_accounts');

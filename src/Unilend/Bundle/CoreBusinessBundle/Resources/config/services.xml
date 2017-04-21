@@ -7,6 +7,7 @@
         <!-- Unilend services -->
         <service id="unilend.service.autobid_settings_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="unilend.service.client_settings_manager"/>
             <argument type="service" id="unilend.service.client_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>

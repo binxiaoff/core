@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
 use Unilend\core\Loader;
 
@@ -251,9 +252,8 @@ class SecurityController extends Controller
             $this->sendPasswordModificationEmail($client);
             $this->addFlash('passwordSuccess', $translator->trans('password-forgotten_new-password-form-success-message'));
 
-            /** @var \clients_history_actions $clientHistoryActions */
-            $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
-            $clientHistoryActions->histo(7, 'mdp oublié', $client->id_client, serialize(['id_client' => $client->id_client, 'newmdp' => md5($request->request->get('client_new_password'))]));
+            $formManager = $this->get('unilend.frontbundle.service.form_manager');
+            $formManager->saveFormSubmission($client, ClientsHistoryActions::CHANGE_PASSWORD, serialize(['id_client' => $client->id_client, 'newmdp' => md5($request->request->get('client_new_password'))]), $request->getClientIp());
         }
 
         return $this->redirectToRoute('define_new_password', ['token' => $token]);
