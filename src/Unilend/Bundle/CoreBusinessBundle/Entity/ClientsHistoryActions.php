@@ -58,7 +58,7 @@ class ClientsHistoryActions
     /**
      * @var string
      *
-     * @ORM\Column(name="ip", type="string", length=191, nullable=true)
+     * @ORM\Column(name="ip", type="string", length=45, nullable=true)
      */
     private $ip;
 

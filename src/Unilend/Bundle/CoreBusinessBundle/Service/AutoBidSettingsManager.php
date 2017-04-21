@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -326,12 +327,13 @@ class AutoBidSettingsManager
      */
     public function getLastDateOnOff($clientId)
     {
-        $autoBidHistory        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsHistoryActions')->getLastAutoBidOnOffActions($clientId);
-        $dates                 = [];
+        $autoBidHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsHistoryActions')
+            ->findBy(['idClient' => $clientId, 'nomForm'  => ClientsHistoryActions::AUTOBID_SWITCH], ['added' => 'DESC'], 2);
+        $dates          = [];
 
         foreach ($autoBidHistory as $historyAction) {
-            $action                           = unserialize($historyAction['serialize']);
-            $dates[$action['autobid_switch']] = $historyAction['added'];
+            $action                           = unserialize($historyAction->getSerialize());
+            $dates[$action['autobid_switch']] = $historyAction->getAdded();
         }
         return $dates;
     }
