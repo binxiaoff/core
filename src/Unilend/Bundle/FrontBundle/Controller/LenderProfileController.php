@@ -20,6 +20,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\BankAccountType;
@@ -152,7 +153,7 @@ class LenderProfileController extends Controller
                 'phone'         => $phoneForm->createView()
             ],
 
-            'isLivingAbroad' => ($clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE)
+            'isLivingAbroad' => ($clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE)
         ];
         $setting                             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
         $templateData['externalCounselList'] = json_decode($setting->getValue(), true);
@@ -331,7 +332,7 @@ class LenderProfileController extends Controller
 
         if (
             $unattachedClientAddress->getCpFiscal() !== $clientAddress->getCpFiscal()
-            && \pays_v2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal()
+            && PaysV2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal()
             && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])
         ) {
             $form->get('cpFiscal')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
@@ -341,7 +342,7 @@ class LenderProfileController extends Controller
             $modifications[] = 'noUsPerson';
         }
         $files[AttachmentType::JUSTIFICATIF_DOMICILE] = $fileBag->get('housing-certificate');
-        if ($clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE) {
+        if ($clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if ($form->get('housedByThirdPerson')->getData()) {
@@ -406,7 +407,7 @@ class LenderProfileController extends Controller
 
         if (
             $unattachedCompany->getZip() !== $company->getZip()
-            && \pays_v2::COUNTRY_FRANCE == $company->getIdPays()
+            && PaysV2::COUNTRY_FRANCE == $company->getIdPays()
             && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $company->getZip()])
         ) {
             $form->get('company_fiscal_address')->get('zip')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));

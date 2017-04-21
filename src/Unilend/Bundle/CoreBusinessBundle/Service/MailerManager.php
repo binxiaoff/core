@@ -1,14 +1,16 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\core\Loader;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class MailerManager
 {
@@ -36,8 +38,11 @@ class MailerManager
     /** @var ContainerInterface */
     private $container;
 
-    /** @var EntityManager */
-    private $oEntityManager;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
+
+    /** @var  EntityManager */
+    private $entityManager;
 
     /** @var TemplateMessageProvider */
     private $messageProvider;
@@ -53,7 +58,8 @@ class MailerManager
 
     public function __construct(
         ContainerInterface $container,
-        EntityManager $oEntityManager,
+        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         $defaultLocale,
@@ -63,14 +69,15 @@ class MailerManager
         $adminHost,
         TranslatorInterface $translator
     ) {
-        $this->container       = $container;
-        $this->oEntityManager  = $oEntityManager;
-        $this->messageProvider = $messageProvider;
-        $this->mailer          = $mailer;
-        $this->translator          = $translator;
+        $this->container              = $container;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->messageProvider        = $messageProvider;
+        $this->mailer                 = $mailer;
+        $this->translator             = $translator;
 
-        $this->oSettings     = $this->oEntityManager->getRepository('settings');
-        $this->oMailTemplate = $this->oEntityManager->getRepository('mail_templates');
+        $this->oSettings     = $this->entityManagerSimulator->getRepository('settings');
+        $this->oMailTemplate = $this->entityManagerSimulator->getRepository('mail_templates');
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
@@ -94,17 +101,17 @@ class MailerManager
     public function sendBidConfirmation(\notifications $oNotification)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        $oLenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \clients $oClient */
-        $oClient = $this->oEntityManager->getRepository('clients');
+        $oClient = $this->entityManagerSimulator->getRepository('clients');
         /** @var \companies $oCompany */
-        $oCompany = $this->oEntityManager->getRepository('companies');
-        /** @var \projects $oProject */
-        $oProject = $this->oEntityManager->getRepository('projects');
+        $oCompany = $this->entityManagerSimulator->getRepository('companies');
+        /** @var \projects $project */
+        $project = $this->entityManagerSimulator->getRepository('projects');
         /** @var \tree $oTree */
-        $oTree = $this->oEntityManager->getRepository('tree');
+        $oTree = $this->entityManagerSimulator->getRepository('tree');
         /** @var \bids $oBid */
-        $oBid = $this->oEntityManager->getRepository('bids');
+        $oBid = $this->entityManagerSimulator->getRepository('bids');
 
         if ($oLenderAccount->get($oNotification->id_lender) && $oBid->get($oNotification->id_bid) && $oClient->get($oLenderAccount->id_client_owner)) {
             if (empty($oBid->id_autobid)) {
@@ -117,15 +124,15 @@ class MailerManager
             $month        = $this->oDate->tableauMois['fr'][date('n', $timeAdd)];
             $pageProjects = $oTree->getSlug(4, substr($this->locale, 0, 2));
 
-            $oProject->get($oBid->id_project);
-            $oCompany->get($oProject->id_company, 'id_company');
+            $project->get($oBid->id_project);
+            $oCompany->get($project->id_company, 'id_company');
 
             $varMail = array(
                 'surl'           => $this->sSUrl,
                 'url'            => $this->sFUrl,
                 'prenom_p'       => $oClient->prenom,
                 'nom_entreprise' => $oCompany->name,
-                'project_name'   => $oProject->title,
+                'project_name'   => $project->title,
                 'valeur_bid'     => $this->oFicelle->formatNumber($oBid->amount / 100),
                 'taux_bid'       => $this->oFicelle->formatNumber($oBid->rate, 1),
                 'date_bid'       => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
@@ -147,26 +154,25 @@ class MailerManager
     public function sendFundFailedToLender(\projects $oProject)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        $oLenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \clients $oClient */
-        $oClient = $this->oEntityManager->getRepository('clients');
-        /** @var \transactions $oTransaction */
-        $oTransaction = $this->oEntityManager->getRepository('transactions');
+        $oClient = $this->entityManagerSimulator->getRepository('clients');
         /** @var \companies $oCompany */
-        $oCompany = $this->oEntityManager->getRepository('companies');
+        $oCompany = $this->entityManagerSimulator->getRepository('companies');
         /** @var \bids $oBid */
-        $oBid = $this->oEntityManager->getRepository('bids');
+        $oBid = $this->entityManagerSimulator->getRepository('bids');
 
         $aBidList = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC, added ASC');
         foreach ($aBidList as $aBid) {
             $oBid->get($aBid['id_bid']);
             $oLenderAccount->get($oBid->id_lender_account);
             $oClient->get($oLenderAccount->id_client_owner);
+            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($oClient->id_client, WalletType::LENDER);
             if ($oClient->status == 1) {
                 $oProject->get($oBid->id_project, 'id_project');
                 $oCompany->get($oProject->id_company);
 
-                $fBalance = $oTransaction->getSolde($oClient->id_client);
+                $fBalance = $wallet->getAvailableBalance();
                 $sAdded   = strtotime($oBid->added);
                 $month    = $this->oDate->tableauMois['fr'][date('n', $sAdded)];
 
@@ -181,7 +187,7 @@ class MailerManager
                     'date_proposition_pret' => date('d', $sAdded) . ' ' . $month . ' ' . date('Y', $sAdded),
                     'taux_proposition_pret' => $oBid->rate,
                     'compte-p'              => '/projets-a-financer',
-                    'motif_virement'        => $oClient->getLenderPattern($oClient->id_client),
+                    'motif_virement'        => $wallet->getWireTransferPattern(),
                     'solde_p'               => $fBalance,
                     'lien_fb'               => $this->getFacebookLink(),
                     'lien_tw'               => $this->getTwitterLink()
@@ -198,9 +204,9 @@ class MailerManager
     public function sendFundedToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = $this->oEntityManager->getRepository('companies');
+        $oCompany = $this->entityManagerSimulator->getRepository('companies');
         /** @var \clients $oBorrower */
-        $oBorrower = $this->oEntityManager->getRepository('clients');
+        $oBorrower = $this->entityManagerSimulator->getRepository('clients');
 
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info(
@@ -251,11 +257,11 @@ class MailerManager
     public function sendFundedAndFinishedToBorrower(\projects $project)
     {
         /** @var \companies $company */
-        $company = $this->oEntityManager->getRepository('companies');
+        $company = $this->entityManagerSimulator->getRepository('companies');
         /** @var \clients $borrower */
-        $borrower = $this->oEntityManager->getRepository('clients');
+        $borrower = $this->entityManagerSimulator->getRepository('clients');
         /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
-        $borrowerPaymentSchedule = $this->oEntityManager->getRepository('echeanciers_emprunteur');
+        $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
 
         $company->get($project->id_company, 'id_company');
         $borrower->get($company->id_client_owner, 'id_client');
@@ -264,7 +270,7 @@ class MailerManager
         $monthlyPayment = $borrowerPaymentSchedule->montant + $borrowerPaymentSchedule->commission + $borrowerPaymentSchedule->tva;
         $monthlyPayment = $monthlyPayment / 100;
 
-        $varMail = array(
+        $varMail = [
             'surl'                   => $this->sSUrl,
             'url'                    => $this->sFUrl,
             'prenom_e'               => $borrower->prenom,
@@ -278,7 +284,7 @@ class MailerManager
             'projet'                 => $project->title,
             'lien_fb'                => $this->getFacebookLink(),
             'lien_tw'                => $this->getTwitterLink()
-        );
+        ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('emprunteur-dossier-funde-et-termine', $varMail);
@@ -296,7 +302,7 @@ class MailerManager
     public function sendFundedToStaff(\projects $project)
     {
         /** @var \bids $bid */
-        $bid = $this->oEntityManager->getRepository('bids');
+        $bid = $this->entityManagerSimulator->getRepository('bids');
 
         $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->date_retrait);
 
@@ -312,14 +318,14 @@ class MailerManager
             $remainingDuration = $inter['secondes'] . ' secondes';
         }
 
-        $keywords = array(
+        $keywords = [
             '$surl'         => $this->sSUrl,
             '$id_projet'    => $project->id_project,
             '$title_projet' => $project->title,
             '$nbPeteurs'    => $bid->countLendersOnProject($project->id_project),
             '$tx'           => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
             '$periode'      => $remainingDuration
-        );
+        ];
 
         $this->oSettings->get('Adresse notification projet funde a 100', 'type');
         $recipient = $this->oSettings->value;
@@ -333,19 +339,19 @@ class MailerManager
     public function sendBidAccepted(\projects $oProject)
     {
         /** @var \loans $oLoan */
-        $oLoan = $this->oEntityManager->getRepository('loans');
+        $oLoan = $this->entityManagerSimulator->getRepository('loans');
         /** @var \companies $oCompany */
-        $oCompany = $this->oEntityManager->getRepository('companies');
+        $oCompany = $this->entityManagerSimulator->getRepository('companies');
         /** @var \clients $oClient */
-        $oClient = $this->oEntityManager->getRepository('clients');
+        $oClient = $this->entityManagerSimulator->getRepository('clients');
         /** @var \echeanciers $oPaymentSchedule */
-        $oPaymentSchedule = $this->oEntityManager->getRepository('echeanciers');
+        $oPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
         /** @var \accepted_bids $oAcceptedBid */
-        $oAcceptedBid = $this->oEntityManager->getRepository('accepted_bids');
+        $oAcceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        $oLenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \underlying_contract $contract */
-        $contract = $this->oEntityManager->getRepository('underlying_contract');
+        $contract = $this->entityManagerSimulator->getRepository('underlying_contract');
 
         $contracts     = $contract->select();
         $contractLabel = [];
@@ -360,7 +366,7 @@ class MailerManager
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info(
                 $iNbLenders . ' lenders to send email (project ' . $oProject->id_project . ')',
-                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]
             );
         }
 
@@ -418,7 +424,7 @@ class MailerManager
                                                </tr>';
                 }
 
-                $varMail = array(
+                $varMail = [
                     'surl'                  => $this->sSUrl,
                     'url'                   => $this->sFUrl,
                     'offre_s_selectionne_s' => $sSelectedOffers,
@@ -435,7 +441,7 @@ class MailerManager
                     'lien_fb'               => $this->getFacebookLink(),
                     'lien_tw'               => $this->getTwitterLink(),
                     'annee'                 => date('Y')
-                );
+                ];
 
                 /** @var TemplateMessage $message */
                 $message = $this->messageProvider->newMessage('preteur-bid-ok', $varMail);
@@ -445,7 +451,7 @@ class MailerManager
                 if ($this->oLogger instanceof LoggerInterface) {
                     $this->oLogger->info(
                         'Email preteur-bid-ok sent for lender ' . $oLenderAccount->id_lender_account . ' (project ' . $oProject->id_project . ')',
-                        array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]
                     );
                 }
             }
@@ -455,7 +461,7 @@ class MailerManager
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->info(
                     'Loan notification emails sent to ' . $iNbTreatedLenders . '/' . $iNbLenders . ' lenders  (project ' . $oProject->id_project . ')',
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]
                 );
             }
         }
@@ -464,17 +470,17 @@ class MailerManager
     public function sendBidRejected(\notifications $oNotification)
     {
         /** @var \bids $oBid */
-        $oBid = $this->oEntityManager->getRepository('bids');
+        $oBid = $this->entityManagerSimulator->getRepository('bids');
         /** @var \companies $oCompany */
-        $oCompany = $this->oEntityManager->getRepository('companies');
+        $oCompany = $this->entityManagerSimulator->getRepository('companies');
         /** @var \clients $oClient */
-        $oClient = $this->oEntityManager->getRepository('clients');
+        $oClient = $this->entityManagerSimulator->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        $oLenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \projects $oProject */
-        $oProject = $this->oEntityManager->getRepository('projects');
+        $oProject = $this->entityManagerSimulator->getRepository('projects');
         /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->oEntityManager->getRepository('autobid');
+        $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
 
         $oBid->get($oNotification->id_bid);
         $oLenderAccount->get($oBid->id_lender_account);
@@ -514,7 +520,7 @@ class MailerManager
             $iAddedBid = strtotime($oBid->added);
             $sMonthFr  = $this->oDate->tableauMois['fr'][date('n', $iAddedBid)];
 
-            $varMail = array(
+            $varMail = [
                 'surl'             => $this->sSUrl,
                 'url'              => $this->sFUrl,
                 'prenom_p'         => $oClient->prenom,
@@ -531,7 +537,7 @@ class MailerManager
                 'motif_virement'   => $oClient->getLenderPattern($oClient->id_client),
                 'lien_fb'          => $this->getFacebookLink(),
                 'lien_tw'          => $this->getTwitterLink()
-            );
+            ];
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage($sMailTemplate, $varMail);
@@ -543,22 +549,22 @@ class MailerManager
     public function sendFundFailedToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = $this->oEntityManager->getRepository('companies');
+        $oCompany = $this->entityManagerSimulator->getRepository('companies');
         /** @var \clients $oClient */
-        $oClient = $this->oEntityManager->getRepository('clients');
+        $oClient = $this->entityManagerSimulator->getRepository('clients');
 
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
 
         if ($oClient->status == 1) {
-            $varMail = array(
+            $varMail = [
                 'surl'     => $this->sSUrl,
                 'url'      => $this->sFUrl,
                 'prenom_e' => $oClient->prenom,
                 'projet'   => $oProject->title,
                 'lien_fb'  => $this->getFacebookLink(),
                 'lien_tw'  => $this->getTwitterLink()
-            );
+            ];
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('emprunteur-dossier-funding-ko', $varMail);
@@ -568,7 +574,7 @@ class MailerManager
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->info(
                     'Email emprunteur-dossier-funding-ko sent (project ' . $oProject->id_project . ')',
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]
                 );
             }
         }
@@ -577,13 +583,13 @@ class MailerManager
     public function sendProjectFinishedToStaff(\projects $oProject)
     {
         /** @var \loans $oLoan */
-        $oLoan = $this->oEntityManager->getRepository('loans');
+        $oLoan = $this->entityManagerSimulator->getRepository('loans');
         /** @var \companies $oCompany */
-        $oCompany = $this->oEntityManager->getRepository('companies');
+        $oCompany = $this->entityManagerSimulator->getRepository('companies');
         /** @var \clients $oClient */
-        $oClient = $this->oEntityManager->getRepository('clients');
+        $oClient = $this->entityManagerSimulator->getRepository('clients');
         /** @var \bids $oBid */
-        $oBid = $this->oEntityManager->getRepository('bids');
+        $oBid = $this->entityManagerSimulator->getRepository('bids');
 
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
@@ -600,7 +606,7 @@ class MailerManager
         $iLendersNb = $oLoan->getNbPreteurs($oProject->id_project);
         $this->oMailTemplate->get('notification-projet-fini', 'locale = "' . $this->locale . '" AND status = ' . \mail_templates::STATUS_ACTIVE . ' AND type');
 
-        $varMail = array(
+        $varMail = [
             '$surl'         => $this->sSUrl,
             '$url'          => $this->sFUrl,
             '$id_projet'    => $oProject->id_project,
@@ -610,7 +616,7 @@ class MailerManager
             '$montant'      => $iBidTotal,
             '$sujetMail'    => htmlentities($this->oMailTemplate->subject),
             '$taux_moyen'   => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1)
-        );
+        ];
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);
         $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
@@ -620,15 +626,15 @@ class MailerManager
     public function sendFirstAutoBidActivation(\notifications $oNotification)
     {
         /** @var \clients $oClient */
-        $oClient = $this->oEntityManager->getRepository('clients');
+        $oClient = $this->entityManagerSimulator->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        $oLenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
 
         $oLenderAccount->get($oNotification->id_lender);
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
 
         if ($oClient->status == 1) {
-            $varMail = array(
+            $varMail = [
                 'surl'             => $this->sSUrl,
                 'url'              => $this->sFUrl,
                 'prenom_p'         => $oClient->prenom,
@@ -637,7 +643,7 @@ class MailerManager
                 'lien_fb'          => $this->getFacebookLink(),
                 'lien_tw'          => $this->getTwitterLink(),
                 'annee'            => date('Y')
-            );
+            ];
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('preteur-autobid-activation', $varMail);
@@ -712,7 +718,7 @@ class MailerManager
     private function getActivationTime(\clients $oClient)
     {
         /** @var \client_settings $oClientSettings */
-        $oClientSettings = $this->oEntityManager->getRepository('client_settings');
+        $oClientSettings = $this->entityManagerSimulator->getRepository('client_settings');
 
         if ($oClientSettings->get($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client')) {
             $oActivationTime = new \DateTime($oClientSettings->added);
@@ -725,17 +731,17 @@ class MailerManager
     public function sendProjectNotificationToStaff($sNotificationType, \projects $oProject, $sRecipient)
     {
         /** @var \companies $oCompanies */
-        $oCompanies = $this->oEntityManager->getRepository('companies');
+        $oCompanies = $this->entityManagerSimulator->getRepository('companies');
         $oCompanies->get($oProject->id_company, 'id_company');
 
-        $aReplacements = array(
+        $aReplacements = [
             '[SURL]'           => $this->sSUrl,
             '[ID_PROJET]'      => $oProject->id_project,
             '[MONTANT]'        => $oProject->amount,
             '[RAISON_SOCIALE]' => $oCompanies->name,
             '[LIEN_REPRISE]'   => $this->sAUrl . '/depot_de_dossier/reprise/' . $oProject->hash,
             '[LIEN_BO_PROJET]' => $this->sAUrl . '/dossiers/edit/' . $oProject->id_project
-        );
+        ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($sNotificationType, $aReplacements, false);
@@ -746,9 +752,9 @@ class MailerManager
     public function sendProjectOnlineToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompanies */
-        $oCompanies = $this->oEntityManager->getRepository('companies');
+        $oCompanies = $this->entityManagerSimulator->getRepository('companies');
         /** @var \clients $oClients */
-        $oClients = $this->oEntityManager->getRepository('clients');
+        $oClients = $this->entityManagerSimulator->getRepository('clients');
         $oCompanies->get($oProject->id_company);
 
         if (false === empty($oCompanies->prenom_dirigeant) && false === empty($oCompanies->email_dirigeant)) {
@@ -767,7 +773,7 @@ class MailerManager
         $iFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
         $sFundingTime = $iFundingTime . ($iFundingTime == 1 ? ' jour' : ' jours');
 
-        $aMail = array(
+        $aMail = [
             'surl'           => $this->sSUrl,
             'url'            => $this->sFUrl,
             'nom_entreprise' => $oCompanies->name,
@@ -779,7 +785,7 @@ class MailerManager
             'lien_fb'        => $this->getFacebookLink(),
             'lien_tw'        => $this->getTwitterLink(),
             'annee'          => date('Y')
-        );
+        ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('annonce-mise-en-ligne-emprunteur', $aMail);
@@ -797,10 +803,10 @@ class MailerManager
     public function sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        $oLenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
         $oLenderAccount->get($iClientId, 'id_client_owner');
 
-        $aMail = array(
+        $aMail = [
             'aurl'       => $this->sAUrl,
             'id_client'  => $iClientId,
             'id_lender'  => $oLenderAccount->id_lender_account,
@@ -809,7 +815,7 @@ class MailerManager
             'user_id'    => $_SESSION['user']['id_user'],
             'old_iban'   => $sCurrentIban,
             'new_iban'   => $sNewIban
-        );
+        ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('uninotification-modification-iban-bo', $aMail);
@@ -823,17 +829,17 @@ class MailerManager
     public function sendLoanAccepted(\projects $project)
     {
         /** @var \loans $loans */
-        $loans = $this->oEntityManager->getRepository('loans');
+        $loans = $this->entityManagerSimulator->getRepository('loans');
 
         /** @var \companies $companies */
-        $companies = $this->oEntityManager->getRepository('companies');
+        $companies = $this->entityManagerSimulator->getRepository('companies');
         $companies->get($project->id_company, 'id_company');
 
         /** @var \clients_gestion_notifications $clientNotifications */
-        $clientNotifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $clientNotifications = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
 
         /** @var \lenders_accounts $lender */
-        $lender = $this->oEntityManager->getRepository('lenders_accounts');
+        $lender = $this->entityManagerSimulator->getRepository('lenders_accounts');
 
         $aLendersIds = $loans->getProjectLoansByLender($project->id_project);
 
@@ -842,17 +848,17 @@ class MailerManager
             $lender->get($loans->id_lender);
 
             /** @var \clients $client */
-            $client = $this->oEntityManager->getRepository('clients');
+            $client = $this->entityManagerSimulator->getRepository('clients');
             $client->get($lender->id_client_owner, 'id_client');
 
             /** @var \echeanciers $paymentSchedule */
-            $paymentSchedule = $this->oEntityManager->getRepository('echeanciers');
+            $paymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
             /** @var \accepted_bids $acceptedBids */
-            $acceptedBids = $this->oEntityManager->getRepository('accepted_bids');
+            $acceptedBids = $this->entityManagerSimulator->getRepository('accepted_bids');
             /** @var \underlying_contract $contract */
-            $contract = $this->oEntityManager->getRepository('underlying_contract');
+            $contract = $this->entityManagerSimulator->getRepository('underlying_contract');
             /** @var \clients_gestion_mails_notif $clientMailNotifications */
-            $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+            $clientMailNotifications = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
 
             $contracts     = $contract->select();
             $contractLabel = [];
@@ -920,7 +926,7 @@ class MailerManager
                 $sTimeAdd = strtotime($sDateFirstPayment);
                 $sMonth   = $this->oDate->tableauMois['fr'][date('n', $sTimeAdd)];
 
-                $varMail = array(
+                $varMail = [
                     'surl'               => $this->sSUrl,
                     'url'                => $this->sFUrl,
                     'offre_s_acceptee_s' => $sAcceptedOffers,
@@ -941,7 +947,7 @@ class MailerManager
                     'link_explication'   => $sLinkExplication,
                     'contrat_pret'       => $sContract,
                     'annee'              => date('Y')
-                );
+                ];
 
                 /** @var TemplateMessage $message */
                 $message = $this->messageProvider->newMessage('preteur-contrat', $varMail);
@@ -954,14 +960,14 @@ class MailerManager
     public function sendBorrowerBill(\projects $project)
     {
         /** @var \companies $companies */
-        $companies = $this->oEntityManager->getRepository('companies');
+        $companies = $this->entityManagerSimulator->getRepository('companies');
         $companies->get($project->id_company, 'id_company');
 
         /** @var \clients $client */
-        $client = $this->oEntityManager->getRepository('clients');
+        $client = $this->entityManagerSimulator->getRepository('clients');
         $client->get($companies->id_client_owner, 'id_client');
 
-        $varMail = array(
+        $varMail = [
             'surl'            => $this->sSUrl,
             'url'             => $this->sFUrl,
             'prenom'          => $client->prenom,
@@ -976,7 +982,7 @@ class MailerManager
             'annee'           => date('Y'),
             'lien_fb'         => $this->getFacebookLink(),
             'lien_tw'         => $this->getTwitterLink()
-        );
+        ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('facture-emprunteur', $varMail);
@@ -994,21 +1000,21 @@ class MailerManager
     public function sendNewProjectsSummaryEmail(array $aCustomerId, $sFrequency)
     {
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->debug('New projects notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
+            $this->oLogger->debug('New projects notifications start', ['class' => __CLASS__, 'function' => __FUNCTION__]);
             $this->oLogger->debug('Number of customers to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
 
         /** @var \clients $oCustomer */
-        $oCustomer = $this->oEntityManager->getRepository('clients');
+        $oCustomer = $this->entityManagerSimulator->getRepository('clients');
         /** @var \projects $oProject */
-        $oProject = $this->oEntityManager->getRepository('projects');
+        $oProject = $this->entityManagerSimulator->getRepository('projects');
         /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+        $oMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $oCustomerNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
+        $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
         $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
@@ -1027,7 +1033,7 @@ class MailerManager
                 return;
         }
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
-            $aCustomerMailNotifications = array();
+            $aCustomerMailNotifications = [];
             foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_NEW_PROJECT) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
@@ -1107,7 +1113,7 @@ class MailerManager
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
                             'Could not send new projects summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                            ['class' => __CLASS__, 'function' => __FUNCTION__]
                         );
                     }
                 }
@@ -1127,25 +1133,25 @@ class MailerManager
     public function sendPlacedBidsSummaryEmail(array $aCustomerId, $sFrequency)
     {
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->debug('Placed bids notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
-            $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
+            $this->oLogger->debug('Placed bids notifications start', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
         /** @var \bids $oBid */
-        $oBid = $this->oEntityManager->getRepository('bids');
+        $oBid = $this->entityManagerSimulator->getRepository('bids');
         /** @var \clients $oCustomer */
-        $oCustomer = $this->oEntityManager->getRepository('clients');
+        $oCustomer = $this->entityManagerSimulator->getRepository('clients');
         /** @var \notifications $oNotification */
-        $oNotification = $this->oEntityManager->getRepository('notifications');
+        $oNotification = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \projects $oProject */
-        $oProject = $this->oEntityManager->getRepository('projects');
+        $oProject = $this->entityManagerSimulator->getRepository('projects');
         /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+        $oMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $oCustomerNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
+        $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
         $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_BID_PLACED;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
@@ -1219,7 +1225,7 @@ class MailerManager
                         continue;
                     }
 
-                    $aReplacements = array(
+                    $aReplacements = [
                         'surl'            => $this->sSUrl,
                         'url'             => $this->sFUrl,
                         'prenom_p'        => $oCustomer->prenom,
@@ -1231,7 +1237,7 @@ class MailerManager
                         'sujet'           => $sSubject,
                         'lien_fb'         => $this->getFacebookLink(),
                         'lien_tw'         => $this->getTwitterLink()
-                    );
+                    ];
 
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
@@ -1267,19 +1273,19 @@ class MailerManager
         }
 
         /** @var \bids $oBid */
-        $oBid = $this->oEntityManager->getRepository('bids');
+        $oBid = $this->entityManagerSimulator->getRepository('bids');
         /** @var \clients $oCustomer */
-        $oCustomer = $this->oEntityManager->getRepository('clients');
+        $oCustomer = $this->entityManagerSimulator->getRepository('clients');
         /** @var \notifications $oNotification */
-        $oNotification = $this->oEntityManager->getRepository('notifications');
+        $oNotification = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \projects $oProject */
-        $oProject = $this->oEntityManager->getRepository('projects');
+        $oProject = $this->entityManagerSimulator->getRepository('projects');
         /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+        $oMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $oCustomerNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
+        $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
         $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_BID_REJECTED;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
@@ -1296,7 +1302,7 @@ class MailerManager
         }
 
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
-            $aCustomerMailNotifications = array();
+            $aCustomerMailNotifications = [];
             foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_BID_REJECTED) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
@@ -1353,7 +1359,7 @@ class MailerManager
                         continue;
                     }
 
-                    $aReplacements = array(
+                    $aReplacements = [
                         'surl'            => $this->sSUrl,
                         'url'             => $this->sFUrl,
                         'prenom_p'        => $oCustomer->prenom,
@@ -1365,7 +1371,7 @@ class MailerManager
                         'sujet'           => $sSubject,
                         'lien_fb'         => $this->getFacebookLink(),
                         'lien_tw'         => $this->getTwitterLink()
-                    );
+                    ];
 
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
@@ -1376,7 +1382,7 @@ class MailerManager
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
                             'Could not send rejected bids summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                            ['class' => __CLASS__, 'function' => __FUNCTION__]
                         );
                     }
                 }
@@ -1396,27 +1402,27 @@ class MailerManager
     public function sendAcceptedLoansSummaryEmail(array $aCustomerId, $sFrequency)
     {
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->debug('Accepted loans notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
-            $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
+            $this->oLogger->debug('Accepted loans notifications start', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
         /** @var \clients $oCustomer */
-        $oCustomer = $this->oEntityManager->getRepository('clients');
+        $oCustomer = $this->entityManagerSimulator->getRepository('clients');
         /** @var \lenders_accounts $oLender */
-        $oLender = $this->oEntityManager->getRepository('lenders_accounts');
+        $oLender = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \loans $oLoan */
-        $oLoan = $this->oEntityManager->getRepository('loans');
+        $oLoan = $this->entityManagerSimulator->getRepository('loans');
         /** @var \notifications $oNotification */
-        $oNotification = $this->oEntityManager->getRepository('notifications');
+        $oNotification = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \projects $oProject */
-        $oProject = $this->oEntityManager->getRepository('projects');
+        $oProject = $this->entityManagerSimulator->getRepository('projects');
         /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+        $oMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $oCustomerNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
 
         /** @var \underlying_contract $contract */
-        $contract = $this->oEntityManager->getRepository('underlying_contract');
+        $contract = $this->entityManagerSimulator->getRepository('underlying_contract');
         $contracts     = $contract->select();
         $contractLabel = [];
         foreach ($contracts as $contractType) {
@@ -1424,7 +1430,7 @@ class MailerManager
         }
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
+        $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
         $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
@@ -1447,7 +1453,7 @@ class MailerManager
         }
 
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
-            $aCustomerMailNotifications = array();
+            $aCustomerMailNotifications = [];
             foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
@@ -1525,7 +1531,7 @@ class MailerManager
                         continue;
                     }
 
-                    $aReplacements = array(
+                    $aReplacements = [
                         'surl'             => $this->sSUrl,
                         'url'              => $this->sFUrl,
                         'prenom_p'         => $oCustomer->prenom,
@@ -1538,7 +1544,7 @@ class MailerManager
                         'sujet'            => $sSubject,
                         'lien_fb'          => $this->getFacebookLink(),
                         'lien_tw'          => $this->getTwitterLink()
-                    );
+                    ];
 
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
@@ -1549,7 +1555,7 @@ class MailerManager
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
                             'Could not send accepted loan summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                            ['class' => __CLASS__, 'function' => __FUNCTION__]
                         );
                     }
                 }
@@ -1569,27 +1575,27 @@ class MailerManager
     public function sendRepaymentsSummaryEmail(array $aCustomerId, $sFrequency)
     {
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->debug('Repayments notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
-            $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
+            $this->oLogger->debug('Repayments notifications start', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
         /** @var \clients $oCustomer */
-        $oCustomer = $this->oEntityManager->getRepository('clients');
+        $oCustomer = $this->entityManagerSimulator->getRepository('clients');
         /** @var \echeanciers $oLenderRepayment */
-        $oLenderRepayment = $this->oEntityManager->getRepository('echeanciers');
+        $oLenderRepayment = $this->entityManagerSimulator->getRepository('echeanciers');
         /** @var \notifications $oNotification */
-        $oNotification = $this->oEntityManager->getRepository('notifications');
+        $oNotification = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \projects $oProject */
-        $oProject = $this->oEntityManager->getRepository('projects');
+        $oProject = $this->entityManagerSimulator->getRepository('projects');
         /** @var \transactions $oTransaction */
-        $oTransaction = $this->oEntityManager->getRepository('transactions');
+        $oTransaction = $this->entityManagerSimulator->getRepository('transactions');
         /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+        $oMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $oCustomerNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
+        $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
         $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_REPAYMENT;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
@@ -1624,6 +1630,7 @@ class MailerManager
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
                     $oCustomer->get($iCustomerId);
+                    $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($iCustomerId, WalletType::LENDER);
 
                     $sEarlyRepaymentContent     = '';
                     $sRepaymentsListHTML        = '';
@@ -1645,15 +1652,15 @@ class MailerManager
 
                         if (\transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT == $oTransaction->type_transaction) {
                             /** @var \companies $oCompanies */
-                            $oCompanies = $this->oEntityManager->getRepository('companies');
+                            $oCompanies = $this->entityManagerSimulator->getRepository('companies');
                             $oCompanies->get($oProject->id_company);
 
                             /** @var \lenders_accounts $oLender */
-                            $oLender = $this->oEntityManager->getRepository('lenders_accounts');
+                            $oLender = $this->entityManagerSimulator->getRepository('lenders_accounts');
                             $oLender->get($oCustomer->id_client, 'id_client_owner');
 
                             /** @var \loans $oLoan */
-                            $oLoan = $this->oEntityManager->getRepository('loans');
+                            $oLoan = $this->entityManagerSimulator->getRepository('loans');
 
                             $fRepaymentCapital              = $oTransaction->montant / 100;
                             $fRepaymentInterestsTaxIncluded = 0;
@@ -1667,7 +1674,7 @@ class MailerManager
                                     $oProject->id_project), 1) . " %.</span><br/><br/> ";
                         } else {
                             /** @var \tax $tax */
-                            $tax = $this->oEntityManager->getRepository('tax');
+                            $tax = $this->entityManagerSimulator->getRepository('tax');
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
                             $fRepaymentCapital              = bcdiv($oLenderRepayment->capital_rembourse, 100, 2);
@@ -1727,21 +1734,21 @@ class MailerManager
                         continue;
                     }
 
-                    $aReplacements = array(
+                    $aReplacements = [
                         'surl'                   => $this->sSUrl,
                         'url'                    => $this->sFUrl,
                         'prenom_p'               => $oCustomer->prenom,
                         'liste_offres'           => $sRepaymentsListHTML,
-                        'motif_virement'         => $oCustomer->getLenderPattern($oCustomer->id_client),
+                        'motif_virement'         => $wallet->getWireTransferPattern(),
                         'gestion_alertes'        => $this->sFUrl . '/profile',
-                        'montant_dispo'          => $this->oFicelle->formatNumber($oTransaction->getSolde($oCustomer->id_client)),
+                        'montant_dispo'          => $this->oFicelle->formatNumber($wallet->getAvailableBalance()),
                         'remboursement_anticipe' => $sEarlyRepaymentContent,
                         'contenu'                => $sContent,
                         'sujet'                  => $sSubject,
                         'lien_fb'                => $this->getFacebookLink(),
                         'lien_tw'                => $this->getTwitterLink(),
                         'annee'                  => date('Y')
-                    );
+                    ];
 
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
@@ -1752,7 +1759,7 @@ class MailerManager
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
                             'Could not repayments summary send email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                            ['class' => __CLASS__, 'function' => __FUNCTION__]
                         );
                     }
                 }
@@ -1769,7 +1776,7 @@ class MailerManager
      */
     public function sendNewPasswordEmail(\users $user, $newPassword)
     {
-        $replacements = array(
+        $replacements = [
             'surl'    => $this->sSUrl,
             'url'     => $this->sFUrl,
             'email'   => trim($user->email),
@@ -1777,7 +1784,7 @@ class MailerManager
             'lien_tw' => $this->getTwitterLink(),
             'annee'   => date('Y'),
             'mdp'     => $newPassword
-        );
+        ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('user-nouveau-mot-de-passe', $replacements);
@@ -1790,21 +1797,21 @@ class MailerManager
      */
     public function sendPasswordModificationEmail(\users $user)
     {
-        $replacements = array(
+        $replacements = [
             'surl'    => $this->sSUrl,
             'url'     => $this->sFUrl,
             'email'   => trim($user->email),
             'lien_fb' => $this->getFacebookLink(),
             'lien_tw' => $this->getTwitterLink(),
             'annee'   => date('Y')
-        );
+        ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('admin-nouveau-mot-de-passe', $replacements);
         $message->setTo(trim($user->email));
 
         /** @var \settings $settings */
-        $settings = $this->oEntityManager->getRepository('settings');
+        $settings = $this->entityManagerSimulator->getRepository('settings');
         $settings->get('alias_tracking_log', 'type');
 
         if (false === empty($settings->value)) {
@@ -1819,11 +1826,11 @@ class MailerManager
     public function sendInternalNotificationEndOfRepayment(\projects $projects)
     {
         /** @var \companies $company */
-        $company = $this->oEntityManager->getRepository('companies');
+        $company = $this->entityManagerSimulator->getRepository('companies');
         $company->get($projects->id_company);
 
         /** @var \settings $settings */
-        $settings = $this->oEntityManager->getRepository('settings');
+        $settings = $this->entityManagerSimulator->getRepository('settings');
         $settings->get('Adresse controle interne', 'type');
         $mailBO = $settings->value;
 
@@ -1850,23 +1857,23 @@ class MailerManager
     public function sendClientNotificationEndOfRepayment(\projects $projects)
     {
         /** @var \companies $company */
-        $company = $this->oEntityManager->getRepository('companies');
+        $company = $this->entityManagerSimulator->getRepository('companies');
         $company->get($projects->id_company);
 
         /** @var \clients $client */
-        $client = $this->oEntityManager->getRepository('clients');
+        $client = $this->entityManagerSimulator->getRepository('clients');
         $client->get($company->id_client_owner);
 
         /** @var \transactions $transactions */
-        $transactions = $this->oEntityManager->getRepository('transactions');
+        $transactions = $this->entityManagerSimulator->getRepository('transactions');
         $transactions->get($projects->id_project . '" AND type_transaction = "' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'id_project');
 
         /** @var \receptions $sfpmeiFeedIncoming */
-        $sfpmeiFeedIncoming = $this->oEntityManager->getRepository('receptions');
+        $sfpmeiFeedIncoming = $this->entityManagerSimulator->getRepository('receptions');
         $lastRepayment      = $sfpmeiFeedIncoming->select('id_project = ' . $projects->id_project, 'added DESC', 0, 1);
 
         /** @var \loans $loans */
-        $loans = $this->oEntityManager->getRepository('loans');
+        $loans = $this->entityManagerSimulator->getRepository('loans');
 
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
@@ -1945,16 +1952,16 @@ class MailerManager
     public function sendProxyAndMandateSigned(\projects_pouvoir $proxy, \clients_mandats $mandate)
     {
         /** @var \projects $project */
-        $project = $this->oEntityManager->getRepository('projects');
+        $project = $this->entityManagerSimulator->getRepository('projects');
         $project->get($proxy->id_project, 'id_project');
         /** @var \companies $company */
-        $company = $this->oEntityManager->getRepository('companies');
+        $company = $this->entityManagerSimulator->getRepository('companies');
         $company->get($project->id_company, 'id_company');
         /** @var \clients $client */
-        $client = $this->oEntityManager->getRepository('clients');
+        $client = $this->entityManagerSimulator->getRepository('clients');
         $client->get($company->id_client_owner, 'id_client');
         /** @var \settings $setting */
-        $setting = $this->oEntityManager->getRepository('settings');
+        $setting = $this->entityManagerSimulator->getRepository('settings');
         $setting->get('Adresse notification pouvoir mandat signe', 'type');
         $destinataire = $setting->value;
 

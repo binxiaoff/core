@@ -1,10 +1,12 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
 
@@ -19,32 +21,34 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         /** @var \echeanciers $echeanciers */
-        $echeanciers = $entityManager->getRepository('echeanciers');
+        $echeanciers = $entityManagerSimulator->getRepository('echeanciers');
         /** @var \transactions $transactions */
-        $transactions = $entityManager->getRepository('transactions');
+        $transactions = $entityManagerSimulator->getRepository('transactions');
         /** @var \lenders_accounts $lenders */
-        $lenders = $entityManager->getRepository('lenders_accounts');
+        $lenders = $entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \clients $clients */
-        $clients = $entityManager->getRepository('clients');
+        $clients = $entityManagerSimulator->getRepository('clients');
         /** @var \companies $companies */
-        $companies = $entityManager->getRepository('companies');
+        $companies = $entityManagerSimulator->getRepository('companies');
         /** @var \notifications $notifications */
-        $notifications = $entityManager->getRepository('notifications');
+        $notifications = $entityManagerSimulator->getRepository('notifications');
         /** @var \loans $loans */
-        $loans = $entityManager->getRepository('loans');
+        $loans = $entityManagerSimulator->getRepository('loans');
         /** @var \projects_status_history $projects_status_history */
-        $projects_status_history = $entityManager->getRepository('projects_status_history');
+        $projects_status_history = $entityManagerSimulator->getRepository('projects_status_history');
         /** @var \projects $projects */
-        $projects = $entityManager->getRepository('projects');
+        $projects = $entityManagerSimulator->getRepository('projects');
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
-        $clients_gestion_notifications = $entityManager->getRepository('clients_gestion_notifications');
+        $clients_gestion_notifications = $entityManagerSimulator->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
-        $clients_gestion_mails_notif = $entityManager->getRepository('clients_gestion_mails_notif');
+        $clients_gestion_mails_notif = $entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
+        $settings = $entityManagerSimulator->getRepository('settings');
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
         /** @var \ficelle $ficelle */
@@ -67,7 +71,8 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                 $rembNet = bcdiv($transactions->sum(' id_echeancier = ' . $echeanciers->id_echeancier, 'montant'), 100, 2);
                 $transactions->get($echeanciers->id_echeancier, 'type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' AND id_echeancier');
 
-                if (1 == $clients->status) {
+                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clients->id_client, WalletType::LENDER);
+                if (1 == $clients->status && null !== $wallet) {
                     $projects->get($echeanciers->id_project, 'id_project');
                     $companies->get($projects->id_company, 'id_company');
 
@@ -81,9 +86,9 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $year              = date('Y', $timeAdd);
                     $euros             = ($rembNet >= 2) ? ' euros' : ' euro';
                     $rembNetEmail      = $ficelle->formatNumber($rembNet) . $euros;
-                    $getsolde          = $transactions->getSolde($clients->id_client);
-                    $euros             = ($getsolde >= 2) ? ' euros' : ' euro';
-                    $solde             = $ficelle->formatNumber($getsolde) . $euros;
+                    $availableBalance  = $wallet->getAvailableBalance();
+                    $euros             = ($availableBalance >= 2) ? ' euros' : ' euro';
+                    $solde             = $ficelle->formatNumber($availableBalance) . $euros;
 
                     $notifications->type       = \notifications::TYPE_REPAYMENT;
                     $notifications->id_lender  = $echeanciers->id_lender;
@@ -113,7 +118,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                             'nom_entreprise'        => $companies->name,
                             'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
                             'solde_p'               => $solde,
-                            'motif_virement'        => $clients->getLenderPattern($clients->id_client),
+                            'motif_virement'        => $wallet->getWireTransferPattern(),
                             'lien_fb'               => $sFB,
                             'lien_tw'               => $sTwitter,
                             'annee'                 => date('Y'),

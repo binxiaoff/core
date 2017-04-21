@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -199,14 +201,14 @@ EOF
         $companies = $oEntityManager->getRepository('companies');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $oEntityManager->getRepository('lenders_accounts');
-        /** @var \transactions $oTransaction */
-        $oTransaction = $oEntityManager->getRepository('transactions');
 
         $oAutobidSettingsManager = $this->getContainer()->get('unilend.service.autobid_settings_manager');
         $translator              = $this->getContainer()->get('translator');
         $messageProvider         = $this->getContainer()->get('unilend.swiftmailer.message_provider');
         $mailer                  = $this->getContainer()->get('mailer');
         $productManager          = $this->getContainer()->get('unilend.service_product.product_manager');
+        /** @var WalletRepository $walletRepository */
+        $walletRepository        = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         $insufficientBalance = $translator->trans('email-nouveau-projet_solde-insuffisant-nouveau-projet');
 
@@ -228,7 +230,7 @@ EOF
         $settings->get('Twitter', 'type');
         $sTwitterLink = $settings->value;
 
-        $varMail = array(
+        $varMail = [
             'surl'            => $sStaticUrl,
             'url'             => $sUrl,
             'nom_entreprise'  => $companies->name,
@@ -239,7 +241,7 @@ EOF
             'lien_fb'         => $sFacebookLink,
             'lien_tw'         => $sTwitterLink,
             'annee'           => date('Y')
-        );
+        ];
         /** @var \project_period $oProjectPeriods */
         $oProjectPeriods = $oEntityManager->getRepository('project_period');
         $oProjectPeriods->getPeriod($project->period);
@@ -264,6 +266,7 @@ EOF
 
             foreach ($aLenders as $aLender) {
                 $oLenderAccount->get($aLender['id_lender']);
+                $wallet = $walletRepository->getWalletByType($oLenderAccount->id_client_owner, WalletType::LENDER);
                 if ($productManager->getLenderEligibility($oLenderAccount, $project)) {
                     $notifications->type       = \notifications::TYPE_NEW_PROJECT;
                     $notifications->id_lender  = $aLender['id_lender'];
@@ -285,7 +288,7 @@ EOF
                             if (
                                 in_array($aLender['id_lender'], $aNoAutobidPlaced)
                                 && $oAutobidSettingsManager->isOn($oLenderAccount)
-                                && $oTransaction->getSolde($oLenderAccount->id_client_owner) < $aAutobiders[$oLenderAccount->id_lender_account]
+                                && $wallet->getAvailableBalance() < $aAutobiders[$oLenderAccount->id_lender_account]
                             ) {
                                 $sAutobidInsufficientBalance = '
                                     <table width=\'100%\' border=\'1\' cellspacing=\'0\' cellpadding=\'5\' bgcolor="d8b5ce" bordercolor="b20066">

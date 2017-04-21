@@ -24,10 +24,6 @@
                             <div class="profile-name">{% trans with {'%firstName%' : app.user.firstName} %} borrower-header_greeting {% endtrans %}</div>
 
                             <div class="profile-balance">
-                                <span class="label">{% trans %} borrower-header_siren {% endtrans %}</span>
-                                <span class="value">{{ app.user.siren }}</span>
-                            </div><!-- /.profile-balance -->
-                            <div class="profile-balance">
                                 <span>{% trans with {'%balance%' : app.user.balance|default(0)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}</span>
                             </div><!-- /.profile-balance -->
 

@@ -5,14 +5,111 @@
             <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
             <link rel="stylesheet" href="{{ absolute_url(asset('fonts/style.css', 'gulp')) }}"/>
             <link rel="stylesheet" href="{{ absolute_url(asset('css/main.css', 'gulp')) }}"/>
+            <style>
+                /* Visible on screen devices only */
+                @media screen {
+                    .pdf-layout {
+                        background: #ccc;
+                    }
+                    .pdf-layout  .site {
+                        max-width: 960px;
+                        box-sizing: border-box;
+                        padding: 60px;
+                        height: 1358px;
+                        margin: 0 auto;
+                        background: #fff;
+                        overflow-y: visible;
+                    }
+                }
+
+                /* Visible when printed only */
+                @media print {
+                    p, table, tr, td, th, tbody, thead, tfoot {
+                        page-break-inside: avoid !important;
+                    }
+                }
+
+                /* Adjust common styles */
+                .pdf-layout .logo {
+                    margin: 0 0 1.25rem;
+                }
+                .pdf-layout h1 {
+                    font-size: 1.5rem;
+                }
+                .pdf-layout h2 {
+                    font-size: 1.125rem;
+                }
+                .pdf-layout h3 {
+                    font-size: 1rem;
+                }
+                .pdf-layout header {
+                    text-align: center;
+                }
+                .pdf-layout header > h1 {
+                    font-size: 1.5rem;
+                    margin: 0;
+                }
+                .pdf-layout header > .subtite {
+                    color: #b20066;
+                    font-weight: 400;
+                    line-height: 0.875rem;
+                }
+                .pdf-layout p {
+                    margin: 0 0 1.25rem;
+                    font-size: 0.875rem;
+                    line-height: 1.25rem;
+                }
+                .pdf-layout .spacer {
+                    height: 0.75rem;
+                }
+                .pdf-layout .table {
+                    border: 0;
+                }
+                .pdf-layout .table thead th, .pdf-layout .table tbody td {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    line-height: 0.875rem;
+                }
+                .pdf-layout .table thead th:first-child, .pdf-layout .table tbody td:first-child {
+                    padding-left: 30px;
+                }
+                .pdf-layout .table thead th:last-child, .pdf-layout .table tbody td:last-child {
+                    padding-right: 30px;
+                }
+                .pdf-layout .table thead th {
+                    padding-top: 12.5px;
+                    padding-bottom: 12.5px;
+                }
+                .pdf-layout .table tbody td {
+                    font-size: 0.875rem;
+                }
+                .pdf-layout .table tbody tr.bg-bg3 {
+                    background-color: #f8f6f8;
+                }
+                .pdf-layout .table tbody .details td {
+                    font-size: 0.775rem;
+                    line-height: 0.775rem;
+                    padding-top: 5px;
+                    padding-bottom: 5px;
+                }
+                .pdf-layout .table tbody .details td:first-child {
+                    padding-left: 45px;
+                }
+                .pdf-layout .table tbody .details.last td {
+                    padding-bottom: 12px;
+                }
+            </style>
         {% endblock %}
         <meta name="theme-color" content="#ffffff">
         <meta charset="UTF-8">
     </head>
-    <body class="ui-no-user">
+    <body class="pdf-layout">
         <div id="top" class="site">
-            {% block header %} {% endblock %}
-
+            <div class="logo">
+            {% block header %}
+                <img src="{{ siteurlmedia('logo/logo-and-type-unilend-209x44-purple.png') }}">
+            {% endblock %}
+            </div><!-- /.header -->
             <div class="page-content">
                 {% block content %} {% endblock %}
             </div><!-- /.page-content -->

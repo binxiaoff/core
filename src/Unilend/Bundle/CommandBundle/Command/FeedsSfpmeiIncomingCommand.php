@@ -11,18 +11,18 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\core\Loader;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
 {
     const FILE_ROOT_NAME                 = 'UNILEND-00040631007-';
     const FRENCH_BANK_TRANSFER_BNPP_CODE = '0568';
 
-    /** @var LoggerInterface $oLogger */
-    private $oLogger;
+    /** @var LoggerInterface $logger */
+    private $logger;
 
-    /** @var EntityManager $oEntityManager */
-    private $oEntityManager;
+    /** @var EntityManagerSimulator $entityManagerSimulator */
+    private $entityManagerSimulator;
 
     protected function configure()
     {
@@ -39,24 +39,24 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        $this->entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \clients $clients */
-        $clients = $this->oEntityManager->getRepository('clients');
+        $clients = $this->entityManagerSimulator->getRepository('clients');
         /** @var \transactions $transactions */
-        $transactions = $this->oEntityManager->getRepository('transactions');
+        $transactions = $this->entityManagerSimulator->getRepository('transactions');
         /** @var \projects $projects */
-        $projects = $this->oEntityManager->getRepository('projects');
+        $projects = $this->entityManagerSimulator->getRepository('projects');
         /** @var \companies $companies */
-        $companies = $this->oEntityManager->getRepository('companies');
+        $companies = $this->entityManagerSimulator->getRepository('companies');
         /** @var \bank_unilend $bank_unilend */
-        $bank_unilend = $this->oEntityManager->getRepository('bank_unilend');
+        $bank_unilend = $this->entityManagerSimulator->getRepository('bank_unilend');
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
         /** @var \settings $settings */
-        $settings = $this->oEntityManager->getRepository('settings');
-        $this->oEntityManager->getRepository('transactions_types');
+        $settings = $this->entityManagerSimulator->getRepository('settings');
+        $this->entityManagerSimulator->getRepository('transactions_types');
 
-        $this->oLogger = $this->getContainer()->get('monolog.logger.console');
+        $this->logger = $this->getContainer()->get('monolog.logger.console');
 
         $aReceivedTransfersStatus = [05, 18, 45, 13];
         $aEmittedTransfersStatus  = [06, 21];
@@ -70,7 +70,7 @@ EOF
 
         switch ($sFileContent) {
             case false: {
-                $this->oLogger->info('No SFPMEI incoming file to process in "' . $sReceptionPath . '"', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $this->logger->info('No SFPMEI incoming file to process in "' . $sReceptionPath . '"', array('class' => __CLASS__, 'function' => __FUNCTION__));
                 break;
             }
             default : {
@@ -274,7 +274,7 @@ EOF
                 unset($aResult[$item]);
             }
         } else {
-            $this->oLogger->error('SFPMEI incoming file "' . $file . '" not processed');
+            $this->logger->error('SFPMEI incoming file "' . $file . '" not processed');
         }
         return $aResult;
     }
@@ -286,11 +286,11 @@ EOF
     private function updateRepayment($iProjectId, $fAmount)
     {
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-        $echeanciers_emprunteur = $this->oEntityManager->getRepository('echeanciers_emprunteur');
+        $echeanciers_emprunteur = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $echeanciers */
-        $echeanciers = $this->oEntityManager->getRepository('echeanciers');
+        $echeanciers = $this->entityManagerSimulator->getRepository('echeanciers');
         /** @var \projects_remb $projects_remb */
-        $projects_remb = $this->oEntityManager->getRepository('projects_remb');
+        $projects_remb = $this->entityManagerSimulator->getRepository('projects_remb');
 
         $aRepaymentSchedules = $echeanciers_emprunteur->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC');
 
@@ -329,7 +329,7 @@ EOF
      */
     private function processWelcomeOffer(array $aRow)
     {
-        $this->oLogger->info('Bank transfer welcome offer: ' . json_encode($aRow['unilend_bienvenue']), array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $this->logger->info('Bank transfer welcome offer: ' . json_encode($aRow['unilend_bienvenue']), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         $amount = round(bcdiv($aRow['montant'], 100, 4), 2);
         $this->getContainer()->get('unilend.service.operation_manager')->provisionUnilendPromotionalWallet($amount);
@@ -344,24 +344,24 @@ EOF
     private function processDirectDebit($motif, \transactions $transactions, Receptions $reception, \bank_unilend $bank_unilend)
     {
         preg_match('#[0-9]+#', $motif, $extract);
-        $iProjectId = (int) $extract[0];
+        $projectId = (int) $extract[0];
 
-        /** @var \echeanciers_emprunteur $oRepaymentSchedule */
-        $oRepaymentSchedule = $this->oEntityManager->getRepository('echeanciers_emprunteur');
-        $aNextRepayment     = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
+        /** @var \echeanciers_emprunteur $repaymentSchedule */
+        $repaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
+        $nextRepayment    = $repaymentSchedule->select('id_project = ' . $projectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
 
-        /** @var \prelevements $oBankDirectDebit */
-        $oBankDirectDebit = $this->oEntityManager->getRepository('prelevements');
+        /** @var \prelevements $bankDirectDebit */
+        $bankDirectDebit = $this->entityManagerSimulator->getRepository('prelevements');
         if (
-            count($aNextRepayment) > 0
-            && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
-            && false !== strpos($motif, $oBankDirectDebit->motif)
+            count($nextRepayment) > 0
+            && $bankDirectDebit->get($projectId . '" AND num_prelevement = "' . $nextRepayment[0]['ordre'], 'id_project')
+            && false !== strpos($motif, $bankDirectDebit->motif)
             && false === $transactions->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
         ) {
-            $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
+            $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
             $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
-            $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($iProjectId);
-            $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+            $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
             if ($project instanceof Projects) {
                 $reception->setIdProject($project)
@@ -369,7 +369,7 @@ EOF
                           ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
                           ->setAssignmentDate(new \DateTime())
                           ->setRemb(1);
-                $em->flush();
+                $entityManager->flush();
 
                 $operationManager->provisionBorrowerWallet($reception);
 
@@ -402,17 +402,17 @@ EOF
      */
     private function processBorrowerAnticipatedRepayment(Receptions $reception, \transactions $transactions, \bank_unilend $bank_unilend, \projects $projects)
     {
-        $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
-        $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($projects->id_project);
-        $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projects->id_project);
+        $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
         $reception->setIdProject($project)
                   ->setIdClient($client)
                   ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
                   ->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY)
                   ->setAssignmentDate(new \DateTime())
                   ->setRemb(1);
-        $em->flush();
+        $entityManager->flush();
 
         $operationManager->provisionBorrowerWallet($reception);
 
@@ -432,25 +432,25 @@ EOF
         $bank_unilend->type           = 1; // remb emprunteur
         $bank_unilend->status         = 0; // chez unilend
         $bank_unilend->create();
-        /** @var \settings $oSettings */
-        $oSettings = $this->oEntityManager->getRepository('settings');
-        $oSettings->get('Adresse notification nouveau remboursement anticipe', 'type');
-        $sEmail = $oSettings->value;
+        /** @var \settings $settings */
+        $settings = $this->entityManagerSimulator->getRepository('settings');
+        $settings->get('Adresse notification nouveau remboursement anticipe', 'type');
+        $email = $settings->value;
 
-        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
+        $url       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
                       $this->getContainer()->getParameter('url.host_default');
-        $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
-        $varMail = array(
-            '$surl'       => $sStaticUrl,
-            '$url'        => $sUrl,
+        $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
+        $varMail = [
+            '$surl'       => $staticUrl,
+            '$url'        => $url,
             '$id_projet'  => $project->getIdProject(),
             '$montant'    => bcdiv($reception->getMontant(), 100, 2),
             '$nom_projet' => $project->getTitle()
-        );
+        ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-remboursement-anticipe', $varMail, false);
-        $message->setTo($sEmail);
+        $message->setTo($email);
         $mailer = $this->getContainer()->get('mailer');
         $mailer->send($message);
     }
@@ -464,10 +464,10 @@ EOF
      */
     private function processRegulation($sMotif, Receptions $reception, \projects $projects, \transactions $transactions, \bank_unilend $bankUnilend)
     {
-        $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
-        $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($projects->id_project);
-        $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projects->id_project);
+        $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
         $reception->setIdProject($project)
                   ->setIdClient($client)
                   ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
@@ -475,7 +475,7 @@ EOF
                   ->setRemb(1)
                   ->setAssignmentDate(new \DateTime())
                   ->setMotif($sMotif);
-        $em->flush();
+        $entityManager->flush();
 
         $operationManager->provisionBorrowerWallet($reception);
 
@@ -510,13 +510,13 @@ EOF
         /** @var \ficelle $oFicelle */
         $oFicelle = Loader::loadLib('ficelle');
         /** @var \lenders_accounts $lenders */
-        $lenders = $this->oEntityManager->getRepository('lenders_accounts');
+        $lenders = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \notifications $notifications */
-        $notifications = $this->oEntityManager->getRepository('notifications');
+        $notifications = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
-        $clients_gestion_notifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $clients_gestion_notifications = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
-        $clients_gestion_mails_notif = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+        $clients_gestion_mails_notif = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
 
         if (
             preg_match('/([0-9]{6}) ?[A-Z]+/', $motif, $matches)
@@ -530,13 +530,13 @@ EOF
                 $lenders->update();
             }
 
-            $em        = $this->getContainer()->get('doctrine.orm.entity_manager');
-            $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clients->id_client, WalletType::LENDER);
+            $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+            $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clients->id_client, WalletType::LENDER);
 
             $reception->setIdClient($wallet->getIdClient())
                       ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
                       ->setRemb(1); // todo: delete the field
-            $em->flush();
+            $entityManager->flush();
 
             $this->getContainer()->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
 
@@ -573,7 +573,7 @@ EOF
                         'url'             => $sUrl,
                         'prenom_p'        => $clients->prenom,
                         'fonds_depot'     => $oFicelle->formatNumber(bcdiv($reception->getMontant(), 100, 2)),
-                        'solde_p'         => $oFicelle->formatNumber($transactions->getSolde($reception->getIdClient()->getIdClient())),
+                        'solde_p'         => $oFicelle->formatNumber($wallet->getAvailableBalance()),
                         'motif_virement'  => $clients->getLenderPattern($clients->id_client),
                         'projets'         => $sUrl . '/projets-a-financer',
                         'gestion_alertes' => $sUrl . '/profile',
@@ -600,15 +600,15 @@ EOF
     private function processBorrowerRepaymentRejection(array $aRow, \projects $projects, \companies $companies, \transactions $transactions)
     {
         /** @var \echeanciers $oEcheanciers */
-        $oEcheanciers = $this->oEntityManager->getRepository('echeanciers');
+        $oEcheanciers = $this->entityManagerSimulator->getRepository('echeanciers');
         /** @var \echeanciers_emprunteur $oEcheanciersEmprunteur */
-        $oEcheanciersEmprunteur = $this->oEntityManager->getRepository('echeanciers_emprunteur');
+        $oEcheanciersEmprunteur = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
         /** @var \prelevements $oPrelevements */
-        $oPrelevements = $this->oEntityManager->getRepository('prelevements');
+        $oPrelevements = $this->entityManagerSimulator->getRepository('prelevements');
         /** @var \projects_remb $oProjectsRemb */
-        $oProjectsRemb = $this->oEntityManager->getRepository('projects_remb');
+        $oProjectsRemb = $this->entityManagerSimulator->getRepository('projects_remb');
         /** @var \transactions $oTransactions */
-        $oTransactions = $this->oEntityManager->getRepository('transactions');
+        $oTransactions = $this->entityManagerSimulator->getRepository('transactions');
 
         if (
             1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $aRow['libelleOpe3'], $aMatches)
@@ -623,17 +623,17 @@ EOF
             $projects->remb_auto = 1;
             $projects->update();
 
-            $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
+            $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
             $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
-            $reception        = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($transactions->id_prelevement);
-            $wallet           = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
+            $reception        = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($transactions->id_prelevement);
+            $wallet           = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
             if ($wallet) {
                 $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                 $operationManager->rejectProvisionBorrowerWallet($wallet, $amount, $reception); //todo: replace it by cancelProvisionBorrowerWallet
 
                 $reception->setStatusBo(Receptions::STATUS_REJECTED);
                 $reception->setRemb(0);
-                $em->flush();
+                $entityManager->flush();
 
                 $fNewAmount = bcdiv($reception->getMontant(), 100, 2);
 

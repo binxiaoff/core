@@ -221,7 +221,7 @@ class BidManager
         }
 
         $iClientId = $oLenderAccount->id_client_owner;
-        $iBalance  = $oTransaction->getSolde($iClientId);
+        $iBalance  = $wallet->getAvailableBalance();
 
         if ($iBalance < $amount) {
             if ($this->oLogger instanceof LoggerInterface) {

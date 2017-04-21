@@ -61,6 +61,7 @@ class WalletRepository extends EntityRepository
     /**
      * @param \DateTime  $inactiveSince
      * @param null|float $minAvailableBalance
+     *
      * @return array
      */
     public function getInactiveLenderWalletOnPeriod(\DateTime $inactiveSince, $minAvailableBalance = null)
@@ -89,5 +90,64 @@ class WalletRepository extends EntityRepository
 
         return $qb->getQuery()
             ->getResult(AbstractQuery::HYDRATE_SCALAR);
+    }
+
+
+    /**
+     * @param array  $operationTypes
+     * @param int    $year
+     *
+     * @return array Wallet[]
+     */
+    public function getLenderWalletsWithOperationsInYear($operationTypes, $year)
+    {
+        $qb = $this->createQueryBuilder('w');
+        $qb->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
+            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
+            ->where('wt.label = :lender')
+            ->andWhere('ot.label IN (:operationTypes)')
+            ->andWhere('YEAR(o.added) = :year')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_INT_ARRAY)
+            ->setParameter('year', $year);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function getLendersWalletsWithLatePaymentsForIRR()
+    {
+        $now = new \DateTime('NOW');
+
+        $qb = $this->createQueryBuilder('w')
+            ->select('w')
+            ->innerJoin('UnilendCoreBusinessBundle:AccountMatching', 'am', Join::WITH, 'w.id = am.idWallet')
+            ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'am.idLenderAccount = e.idLender')
+            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'e.idProject = p.idProject')
+            ->where('e.dateEcheance < :now')
+            ->andWhere('e.status = 0')
+            ->andWhere('p.status IN (:status)');
+
+        $subQuery = $this->getEntityManager()->createQueryBuilder()
+            ->add('select','MAX(ls.added)')
+            ->add('from', 'UnilendCoreBusinessBundle:LenderStatistic ls')
+            ->add('where', 'w.id = ls.idWallet');
+
+        $qb->andWhere('(' . $subQuery->getDQL() . ') < e.dateEcheance')
+            ->setParameter(':now', $now)
+            ->setParameter(':status',[
+                \projects_status::PROBLEME,
+                \projects_status::PROBLEME_J_X,
+                \projects_status::RECOUVREMENT
+            ], Connection::PARAM_INT_ARRAY)
+            ->groupBy('w.id');
+
+        $query = $qb->getQuery();
+
+        return $query->getResult();
     }
 }
