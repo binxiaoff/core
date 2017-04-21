@@ -9,6 +9,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 
 class preteursController extends bootstrap
 {
@@ -141,6 +144,7 @@ class preteursController extends bootstrap
 
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->lenders_accounts->id_client_owner);
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
             $this->clients_adresses = $this->loadData('clients_adresses');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
@@ -193,7 +197,7 @@ class preteursController extends bootstrap
             $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
             $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
 
-            $this->solde        = $this->transactions->getSolde($this->clients->id_client);
+            $this->solde        = $wallet->getAvailableBalance();
             $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_WITHDRAWAL . ' AND id_client = ' . $this->clients->id_client, 'montant');
             $this->soldeRetrait = abs($this->soldeRetrait / 100);
 
@@ -1111,18 +1115,25 @@ class preteursController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->echeanciers             = $this->loadData('echeanciers');
         $this->tax                     = $this->loadData('tax');
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
         /** @var underlying_contract contract */
-        $this->contract                = $this->loadData('underlying_contract');
+        $this->contract  = $this->loadData('underlying_contract');
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
-        $this->translator              = $this->get('translator');
+        $this->translator  = $this->get('translator');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
         $this->loanManager = $this->get('unilend.service.loan_manager');
         /** @var \loans loan */
         $this->loan = $this->loadData('loans');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
         $lenderManager = $this->get('unilend.service.lender_manager');
+        /** @var LenderStatisticRepository $lenderStatisticsRepository */
+        $lenderStatisticsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
+        /** @var WalletRepository $walletRepository */
+        $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         if ($this->lenders_accounts->get($this->params[0], 'id_lender_account') && $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client')) {
+            $wallet = $walletRepository->getWalletByType($this->clients->id_client, WalletType::LENDER);
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
@@ -1132,16 +1143,8 @@ class preteursController extends bootstrap
             $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account);
             $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
 
-            $this->IRRValue = null;
-            $this->IRRDate  = null;
-
-            /** @var \lenders_account_stats $oLenderAccountStats */
-            $oLenderAccountStats = $this->loadData('lenders_account_stats');
-            $aIRR                = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
-
-            if (false === is_null($aIRR)) {
-                $this->IRR = $aIRR;
-            }
+            /** @var LenderStatistic $lastIRR */
+            $this->IRR = $lenderStatisticsRepository->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
 
             $statusOk                = [\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE];
             $statusKo                = [\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE];

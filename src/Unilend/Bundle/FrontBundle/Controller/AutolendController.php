@@ -7,6 +7,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
@@ -23,6 +27,9 @@ class AutolendController extends Controller
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         /** @var \lenders_accounts $lendersAccounts */
         $lendersAccounts = $this->getLenderAccount();
+
+        $entityManager =  $this->get('doctrine.orm.entity_manager');
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
 
         if (false === $autoBidSettingsManager->isQualified($lendersAccounts)) {
             return $this->redirectToRoute('lender_profile');
@@ -49,15 +56,15 @@ class AutolendController extends Controller
 
             if ($request->isXmlHttpRequest()) {
                 if (false === empty($post['setting']) && $post['setting'] === 'autolend-off') {
-                    $this->saveAutolendOff($lendersAccounts, $clientSettings, $autoBidSettingsManager);
+                    $this->saveAutolendOff($lendersAccounts, $clientSettings, $autoBidSettingsManager, $request, $wallet);
                 }
             } else {
                 if (isset($post['hidden-settings-mode-input']) && $post['hidden-settings-mode-input'] === 'simple') {
-                    $messages = $this->handleSimpleSettings($post, $settings, $lendersAccounts, $autoBidSettingsManager);
+                    $messages = $this->handleSimpleSettings($post, $settings, $lendersAccounts, $autoBidSettingsManager, $request, $wallet);
                 }
 
                 if (isset($post['hidden-settings-mode-input']) && $post['hidden-settings-mode-input'] === 'expert') {
-                    $messages = $this->handleExpertSettings($post, $settings, $lendersAccounts, $autoBidSettingsManager);
+                    $messages = $this->handleExpertSettings($post, $settings, $lendersAccounts, $autoBidSettingsManager, $request, $wallet);
                 }
 
                 $translator = $this->get('translator');
@@ -123,7 +130,7 @@ class AutolendController extends Controller
         return $this->render('pages/autolend.html.twig', $template);
     }
 
-    private function handleSimpleSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager)
+    private function handleSimpleSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager, Request $request, Wallet $wallet)
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
@@ -168,6 +175,7 @@ class AutolendController extends Controller
 
         if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
             $autoBidSettingsManager->on($lenderAccount);
+            $this->saveAutoBidSwitchHistory($wallet->getIdClient(), \client_settings::AUTO_BID_ON, $request);
         }
 
         $autoBidSettingsManager->saveNoviceSetting($lenderAccount->id_lender_account, $autolendRateMin, $autolendAmount);
@@ -175,7 +183,7 @@ class AutolendController extends Controller
         return [];
     }
 
-    private function handleExpertSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager)
+    private function handleExpertSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager, Request $request, Wallet $wallet)
     {
         /** @var \project_period $projectPeriods */
         $projectPeriods = $this->get('unilend.service.entity_manager')->getRepository('project_period');
@@ -256,6 +264,7 @@ class AutolendController extends Controller
 
         if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
             $autoBidSettingsManager->on($lenderAccount);
+            $this->saveAutoBidSwitchHistory($wallet->getIdClient(), \client_settings::AUTO_BID_ON, $request);
         }
 
         foreach ($post['data'] as $setting) {
@@ -269,10 +278,11 @@ class AutolendController extends Controller
         return [];
     }
 
-    private function saveAutolendOff(\lenders_accounts $lenderAccount, \client_settings $clientSettings, AutoBidSettingsManager $autoBidSettingsManager)
+    private function saveAutolendOff(\lenders_accounts $lenderAccount, \client_settings $clientSettings, AutoBidSettingsManager $autoBidSettingsManager, Request $request, Wallet $wallet)
     {
         if (\client_settings::AUTO_BID_ON == $clientSettings->getSetting($lenderAccount->id_client_owner, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
             $autoBidSettingsManager->off($lenderAccount);
+            $this->saveAutoBidSwitchHistory($wallet->getIdClient(), \client_settings::AUTO_BID_OFF, $request);
             return 'update_off_success';
         } else {
             return 'already-off';
@@ -317,5 +327,18 @@ class AutolendController extends Controller
         }
 
         return $settings;
+    }
+
+    /**
+     * @param Clients $client
+     * @param string  $value
+     * @param Request $request
+     */
+    private function saveAutoBidSwitchHistory(Clients $client, $value, Request $request)
+    {
+        $onOff      = $value === \client_settings::AUTO_BID_ON ? 'on' : 'off';
+        $userId     = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : null;
+        $sSerialized = serialize(array('id_user' => $userId, 'id_client' => $client->getIdClient(), 'autobid_switch' => $onOff));
+        $this->get('unilend.frontbundle.service.form_manager')->saveFormSubmission($client, ClientsHistoryActions::AUTOBID_SWITCH, $sSerialized, $request->getClientIp());
     }
 }

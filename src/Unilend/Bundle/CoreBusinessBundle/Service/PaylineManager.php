@@ -18,6 +18,10 @@ class PaylineManager
     const PAYMENT_LOCATION_LENDER_WALLET = 2;
 
     /**
+     * @var EntityManagerSimulator
+     */
+    private $entityManagerSimulator;
+    /**
      * @var EntityManager
      */
     private $entityManager;
@@ -63,8 +67,8 @@ class PaylineManager
     private $accessKey;
 
     public function __construct(
-        EntityManagerSimulator $entityManager,
-        EntityManager $em,
+        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         ClientManager $clientManager,
@@ -78,17 +82,17 @@ class PaylineManager
     ) {
         require_once $paylineFile;
 
-        $this->entityManager    = $entityManager;
-        $this->em               = $em;
-        $this->messageProvider  = $messageProvider;
-        $this->mailer           = $mailer;
-        $this->clientManager    = $clientManager;
-        $this->operationManager = $operationManager;
-        $this->router           = $router;
-        $this->sUrl             = $assetsPackages->getUrl('');
-        $this->isProduction     = $environment === 'prod' ? true : false;
-        $this->merchantId       = (string) $merchantId; // PaylineSDK need string
-        $this->accessKey        = $accessKey;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->messageProvider        = $messageProvider;
+        $this->mailer                 = $mailer;
+        $this->clientManager          = $clientManager;
+        $this->operationManager       = $operationManager;
+        $this->router                 = $router;
+        $this->sUrl                   = $assetsPackages->getUrl('');
+        $this->isProduction           = $environment === 'prod' ? true : false;
+        $this->merchantId             = (string) $merchantId; // PaylineSDK need string
+        $this->accessKey              = $accessKey;
     }
 
     /**
@@ -106,8 +110,8 @@ class PaylineManager
         $backPayline = new Backpayline();
         $backPayline->setWallet($wallet);
         $backPayline->setAmount($amountInCent);
-        $this->em->persist($backPayline);
-        $this->em->flush($backPayline);
+        $this->entityManager->persist($backPayline);
+        $this->entityManager->flush($backPayline);
         /** @var \paylineSDK $payline */
         $payline                  = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
         $payline->returnURL       = $redirectUrl;
@@ -139,7 +143,7 @@ class PaylineManager
 
         $backPayline->setSerializeDoPayment(serialize($result));
 
-        $this->em->flush($backPayline);
+        $this->entityManager->flush($backPayline);
 
         if (false === isset($result['result']['code']) || $result['result']['code'] !== Backpayline::CODE_TRANSACTION_APPROVED) {
             $this->logger->error('alimentation preteur (wallet : ' . $wallet->getId() . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
@@ -170,7 +174,7 @@ class PaylineManager
             return false;
         }
 
-        $backPayline = $this->em->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['idBackpayline' => $response['order']['ref']]);
+        $backPayline = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['idBackpayline' => $response['order']['ref']]);
 
         if ($backPayline instanceof Backpayline) {
             $backPayline->setId($response['transaction']['id']);
@@ -182,7 +186,7 @@ class PaylineManager
             if (isset($response['card']) && isset($response['card']['number'])) {
                 $backPayline->setCardNumber($response['card']['number']);
             }
-            $this->em->flush($backPayline);
+            $this->entityManager->flush($backPayline);
 
             if ($response['result']['code'] === Backpayline::CODE_TRANSACTION_APPROVED && $backPayline->getAmount() != $response['payment']['amount']) {
                 $errorMsg = 'Payline amount for wallet id : '
@@ -215,17 +219,17 @@ class PaylineManager
     private function notifyClientAboutMoneyTransfer(Backpayline $backPayline)
     {
         /** @var \notifications $notification */
-        $notification = $this->entityManager->getRepository('notifications');
+        $notification = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \clients_gestion_notifications $clientNotification */
-        $clientNotification = $this->entityManager->getRepository('clients_gestion_notifications');
+        $clientNotification = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clientMailNotification */
-        $clientMailNotification = $this->entityManager->getRepository('clients_gestion_mails_notif');
+        $clientMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \transactions $transaction */
-        $transaction = $this->entityManager->getRepository('transactions');
+        $transaction = $this->entityManagerSimulator->getRepository('transactions');
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
+        $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
+        $client = $this->entityManagerSimulator->getRepository('clients');
 
         $amount = round(bcdiv($backPayline->getAmount(), 100, 4), 2);
 
@@ -251,7 +255,7 @@ class PaylineManager
             $clientMailNotification->update();
 
             /** @var \settings $settings */
-            $settings = $this->entityManager->getRepository('settings');
+            $settings = $this->entityManagerSimulator->getRepository('settings');
             $settings->get('Facebook', 'type');
             $lien_fb = $settings->value;
 
@@ -262,10 +266,10 @@ class PaylineManager
                 'surl'            => $this->sUrl,
                 'url'             => $this->router->getContext()->getBaseUrl(),
                 'prenom_p'        => $client->prenom,
-                'fonds_depot'     => $amount,
-                'solde_p'         => $this->clientManager->getClientBalance($client),
+                'fonds_depot'     => number_format($amount, 2, ',', ' '),
+                'solde_p'         => number_format($backPayline->getWallet()->getAvailableBalance(), 2, ',', ' '),
                 'link_mandat'     => $this->sUrl . '/images/default/mandat.jpg',
-                'motif_virement'  => $client->getLenderPattern($client->id_client),
+                'motif_virement'  => $backPayline->getWallet()->getWireTransferPattern(),
                 'projets'         => $this->router->generate('home', ['type' => 'projets-a-financer']),
                 'gestion_alertes' => $this->router->generate('lender_profile'),
                 'lien_fb'         => $lien_fb,

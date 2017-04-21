@@ -1,10 +1,11 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Input\InputOption;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\core\Loader;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,42 +22,44 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
         /** @var \echeanciers $lenderRepaymentSchedule */
-        $lenderRepaymentSchedule = $entityManager->getRepository('echeanciers');
+        $lenderRepaymentSchedule = $entityManagerSimulator->getRepository('echeanciers');
         /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
-        $borrowerRepaymentSchedule = $entityManager->getRepository('echeanciers_emprunteur');
+        $borrowerRepaymentSchedule = $entityManagerSimulator->getRepository('echeanciers_emprunteur');
         /** @var \receptions $sfpmeiFeedIncoming */
-        $sfpmeiFeedIncoming = $entityManager->getRepository('receptions');
+        $sfpmeiFeedIncoming = $entityManagerSimulator->getRepository('receptions');
         /** @var \transactions $borrowerTransaction */
-        $borrowerTransaction = $entityManager->getRepository('transactions');
+        $borrowerTransaction = $entityManagerSimulator->getRepository('transactions');
         /** @var \transactions $lenderTransaction */
-        $lenderTransaction = $entityManager->getRepository('transactions');
+        $lenderTransaction = $entityManagerSimulator->getRepository('transactions');
         /** @var \lenders_accounts $lender */
-        $lender = $entityManager->getRepository('lenders_accounts');
+        $lender = $entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $client = $entityManagerSimulator->getRepository('clients');
         /** @var \clients_gestion_mails_notif $emailNotification */
-        $emailNotification = $entityManager->getRepository('clients_gestion_mails_notif');
+        $emailNotification = $entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $notificationSettings */
-        $notificationSettings = $entityManager->getRepository('clients_gestion_notifications');
+        $notificationSettings = $entityManagerSimulator->getRepository('clients_gestion_notifications');
         /** @var \notifications $notification */
-        $notification = $entityManager->getRepository('notifications');
+        $notification = $entityManagerSimulator->getRepository('notifications');
         /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
+        $company = $entityManagerSimulator->getRepository('companies');
         /** @var \loans $loan */
-        $loan = $entityManager->getRepository('loans');
+        $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \remboursement_anticipe_mail_a_envoyer $earlyRepaymentEmail */
-        $earlyRepaymentEmail = $entityManager->getRepository('remboursement_anticipe_mail_a_envoyer');
+        $earlyRepaymentEmail = $entityManagerSimulator->getRepository('remboursement_anticipe_mail_a_envoyer');
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
+        $settings = $entityManagerSimulator->getRepository('settings');
 
         $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
         $frontUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
@@ -105,6 +108,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
             foreach ($projectLenders as $projectLender) {
                 $lender->get($projectLender['id_lender'], 'id_lender_account');
                 $client->get($lender->id_client_owner, 'id_client');
+                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
 
                 if ($client->status == 1) {
                     $lenderRemainingCapital = $borrowerTransaction->sum('type_transaction = ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT .' AND id_client = ' . $client->id_client . ' AND id_loan_remb = ' . $projectLender['id_loan'] . ' AND id_project = ' . $project->id_project, 'montant');
@@ -129,7 +133,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
                         $loan->get($projectLender['id_loan'], 'id_loan');
 
-                        $accountBalance = $lenderTransaction->getSolde($client->id_client);
+                        $accountBalance = $wallet->getAvailableBalance();
                         $keywords       = [
                             'surl'                 => $staticUrl,
                             'url'                  => $frontUrl,
@@ -142,7 +146,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                             'crdpreteur'           => $ficelle->formatNumber($lenderRemainingCapital / 100) . (($lenderRemainingCapital / 100) >= 2 ? ' euros' : ' euro'),
                             'Datera'               => date('d/m/Y'),
                             'solde_p'              => $ficelle->formatNumber($accountBalance) . ($accountBalance >= 2 ? ' euros' : ' euro'),
-                            'motif_virement'       => $client->getLenderPattern($client->id_client),
+                            'motif_virement'       => $wallet->getWireTransferPattern(),
                             'lien_fb'              => $facebookLink,
                             'lien_tw'              => $twitterLink,
                             'annee'                => date('Y')

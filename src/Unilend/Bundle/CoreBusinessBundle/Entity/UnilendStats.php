@@ -8,10 +8,14 @@ use Doctrine\ORM\Mapping as ORM;
  * UnilendStats
  *
  * @ORM\Table(name="unilend_stats")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\UnilendStatsRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class UnilendStats
 {
+    const TYPE_STAT_IRR             = 'IRR';
+    const TYPE_STAT_FRONT_STATISTIC = 'unilend_front_statistics';
+
     /**
      * @var string
      *
@@ -36,7 +40,7 @@ class UnilendStats
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -155,5 +159,23 @@ class UnilendStats
     public function getIdUnilendStat()
     {
         return $this->idUnilendStat;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }
