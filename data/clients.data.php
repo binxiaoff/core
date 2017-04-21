@@ -28,6 +28,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS clientEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class clients extends clients_crud
 {
@@ -279,41 +280,40 @@ class clients extends clients_crud
 
         $where .= $and;
 
-        $sql = "
-            SELECT
-                la.id_lender_account as id_lender_account,
-                c.id_client as id_client,
-                c.status as status,
-                c.email as email,
-                c.telephone as telephone,
-                c.status_inscription_preteur as status_inscription_preteur,
-                CASE la.id_company_owner
-                    WHEN 0 THEN c.prenom
+        $sql = '
+                SELECT
+                  c.id_client AS id_client,
+                  c.status AS status,
+                  c.email AS email,
+                  c.telephone AS telephone,
+                  c.status_inscription_preteur AS status_inscription_preteur,
+                  CASE c.type
+                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN c.prenom
                     ELSE
-                        (SELECT
-                            CASE co.status_client
-                                WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
-                                ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
-                            END as dirigeant
-                         FROM companies co WHERE co.id_company = la.id_company_owner)
-                END as prenom_ou_dirigeant,
-                CASE la.id_company_owner
-                    WHEN 0 THEN c.nom
-                    ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
-                END as nom_ou_societe,
-                CASE la.id_company_owner
-                    WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
-                    ELSE ''
-                END as nom_usage
-            FROM lenders_accounts la
-            LEFT JOIN clients c ON c.id_client = la.id_client_owner
-                LEFT JOIN companies co ON co.id_company = la.id_company_owner
-            " . $where . "
-            GROUP BY la.id_lender_account
-            ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+                    (SELECT
+                       CASE co.status_client
+                       WHEN 1 THEN CONCAT(c.prenom," ",c.nom)
+                       ELSE CONCAT(co.prenom_dirigeant," ",co.nom_dirigeant)
+                       END as dirigeant
+                     FROM companies co WHERE co.id_client_owner = c.id_client)
+                  END AS prenom_ou_dirigeant,
+                  CASE c.type
+                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN c.nom
+                  ELSE (SELECT co.name FROM companies co WHERE co.id_client_owner = c.id_client)
+                  END AS nom_ou_societe,
+                  CASE c.type
+                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN REPLACE(c.nom_usage,"Nom D\'usage","")
+                    ELSE ""
+                  END AS nom_usage
+                FROM clients c
+                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = ' . WalletType::LENDER . ' ")
+                  LEFT JOIN companies co ON co.id_client_owner = c.id_client
+            ' . $where . '
+            GROUP BY c.id_client
+            ORDER BY c.id_client DESC ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result   = array();
+        $result   = [];
 
         $i = 0;
         while ($record = $this->bdd->fetch_array($resultat)) {
