@@ -30,7 +30,7 @@
 <div id="contenu">
     <div class="row">
         <div class="col-sm-6">
-            <h1>Statistiques des AutoLends</h1>
+            <h1>Statistiques Autolend</h1>
         </div>
         <div class="col-sm-6">
             <form method="post" name="recupCSV">
@@ -51,7 +51,7 @@
 
                         <td style="padding-top:23px;">
                             <input type="hidden" name="search" id="search"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn"/>
+                            <button type="submit" class="btn-primary">Rechercher</button>
                         </td>
                     </tr>
                     <tr>

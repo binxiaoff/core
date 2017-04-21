@@ -91,8 +91,7 @@
                         <td width = 15%>
                             <br>
                             <input type="hidden" name="spy_search" id="spy_search"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_query" id="send_query"
-                                   class="btn"/>
+                            <button type="submit" name="send_query" id="send_query" class="btn-primary">Rechercher</button>
                         </td>
                     </tr>
                 </table>

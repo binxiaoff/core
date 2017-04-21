@@ -75,7 +75,7 @@
             <tr>
                 <th colspan="4">
                     <input type="hidden" name="form_edit_emprunteur" id="form_edit_emprunteur" />
-                    <input type="submit" value="Valider" title="Valider" name="send_edit_emprunteur" id="send_edit_emprunteur" class="btn" />
+                    <button type="submit" class="btn-primary pull-right">Valider</button>
                 </th>
             </tr>
         </table>

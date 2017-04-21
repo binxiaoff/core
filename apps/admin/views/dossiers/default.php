@@ -211,8 +211,8 @@
                     <tr>
                         <th colspan="10" style="text-align:center;">
                             <input type="hidden" name="form_search_dossier" id="form_search_dossier">
-                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn">
-                            <input style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" type="button" value="Reset" title="Reset" name="Reset" id="Reset" class="btn">
+                            <button type="submit" id="send_dossier" class="btn-primary" style="margin-right: 5px;">Rechercher</button>
+                            <button type="submit" id="Reset" class="btn-default">Réinitialiser</button>
                         </th>
                     </tr>
                 </table>

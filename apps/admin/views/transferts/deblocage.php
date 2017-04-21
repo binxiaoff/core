@@ -60,7 +60,7 @@
                                 && $aProject['status_mandat'] == \clients_mandats::STATUS_SIGNED
                                 && $aProject['authority_status'] == \projects_pouvoir::STATUS_SIGNED
                             ) : ?>
-                                <input type="submit" name="validateProxy" class="btn" value="Débloquer les fonds" />
+                                <input type="submit" name="validateProxy" class="btn-primary" value="Débloquer les fonds" />
                                 <input type="hidden" name="id_project" value="<?= $aProject['id_project'] ?>"/>
                             <?php endif; ?>
                         </form>

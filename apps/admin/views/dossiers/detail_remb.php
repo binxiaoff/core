@@ -200,7 +200,7 @@
                                 <input type="hidden" name="id_reception" value="<?= $this->receptions->id_reception ?>">
                                 <input type="hidden" name="montant_crd_preteur" value="<?= $this->montant_restant_du_preteur ?>">
                                 <input type="hidden" name="spy_remb_anticipe" value="ok">
-                                <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
+                                <button type="submit" class="btn-primary">Déclencher le remboursement anticipé</button>
                             </form>
                         </td>
                     </tr>

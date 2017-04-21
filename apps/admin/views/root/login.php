@@ -63,7 +63,7 @@
                     <tr>
                         <td colspan="2" class="center">
                             <div id="bloc_action">
-                                <input type="submit" value="Se connecter" title="Se connecter" name="connect" id="connect" class="btn"/>
+                                <button type="submit" id="connect" class="btn-primary">Se connecter</button>
                             </div>
                         </td>
                     </tr>

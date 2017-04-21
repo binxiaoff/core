@@ -50,13 +50,10 @@
                     <tr>
                         <td style="padding-top:23px;"><label>Date debut</label><br/><input type="text" name="date1" id="datepik_1" class="input_dp" value="<?= $_POST['date1'] ?>"/></td>
                         <td style="padding-top:23px;"><label>Date fin</label><br/><input type="text" name="date2" id="datepik_2" class="input_dp" value="<?= $_POST['date2'] ?>"/></td>
-                        <td style="padding-top:23px;">
+                        <td style="padding-top:33px;">
                             <input type="hidden" name="spy_search" id="spy_search"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn"/>
+                            <button type="submit" name="send_dossier" id="send_dossier" class="btn-primary">Rechercher</button>
                         </td>
-                    </tr>
-                    <tr>
-                        <th colspan="8" style=""></th>
                     </tr>
                 </table>
             </fieldset>

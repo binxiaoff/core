@@ -22,7 +22,7 @@
                         <td><input type="text" name="email" id="email" class="input_recupPassword" /></td>
                         <td>
                             <input type="hidden" name="form_new_password" id="form_new_password" />
-                            <input type="submit" value="Envoyer" title="Envoyer" name="send_new_password" id="send_new_password" class="btn" />
+                            <button type="submit" class="btn-primary">Valider</button>>
                         </td>
                     </tr>
                 </table>

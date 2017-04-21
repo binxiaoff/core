@@ -63,8 +63,8 @@
                     <tr>
                         <th colspan="4" style="text-align:center;">
                             <input type="hidden" name="form_search_emprunteur" id="form_search_emprunteur"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_emprunteur" id="send_emprunteur" class="btn"/>
-                            <input style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" type="button" value="Reset" title="Reset" name="Reset" id="Reset" class="btn"/>
+                            <button type="submit" class="btn-primary" style="margin-right: 5px;">Rechercher</button>
+                            <button type="submit" id="Reset" class="btn-default">Réinitialiser</button>
                         </th>
                     </tr>
                 </table>

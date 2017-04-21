@@ -39,7 +39,7 @@
                 </tr>
                 <tr>
                     <th><label for="datepik_from">Entre : </label></th>
-                    <td><input type="text" name="date_from" id="datepik_from" class="input_dp"/></td>
+                    <td><input type="text" name="dsate_from" id="datepik_from" class="input_dp"/></td>
                 </tr>
                 <tr>
                     <th><label for="datepik_to">Et : </label></th>
@@ -53,7 +53,7 @@
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_send_search" id="form_send_search"/>
-                        <input type="submit" value="Valider" title="Valider" name="send_settings" id="send_settings" class="btn"/>
+                        <button type="submit" name="send_settings" id="send_settings" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>

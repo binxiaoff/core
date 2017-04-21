@@ -73,8 +73,7 @@
                         </td>
                         <td><br>
                             <input type="hidden" name="spy_search" id="spy_search"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier"
-                                   class="btn"/>
+                            <button type="submit" class="btn-primary">Rechercher</button>
                         </td>
                     </tr>
                 </table>

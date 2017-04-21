@@ -103,7 +103,7 @@
                         <td colspan="2">
                             <input type="hidden" name="form_edit_pass_user" id="form_edit_pass_user"/>
                             <input type="hidden" name="id_user" value="<?= $this->users->id_user ?>"/>
-                            <input type="submit" value="Valider la modification du mot de passe" class="btn button_valid"/>
+                            <button type="submit" class="btn-primary">Valider la modification du mot de passe</button>
                         </td>
                     </tr>
                 </table>
