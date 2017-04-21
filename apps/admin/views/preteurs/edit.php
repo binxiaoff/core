@@ -182,18 +182,54 @@
                 <th>Statut GreenPoint</th>
                 <th>&Eacute;tat de validation</th>
             </tr>
-            <?php foreach ($this->aAvailableAttachments as $aAttachmentType) : ?>
+            <?php
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+            foreach ($this->attachmentTypes as $attachmentType) :
+                $currentAttachment     = null;
+                $greenPointAttachment  = null;
+                $greenpointLabel       = 'Non Contrôlé par GreenPoint';
+                $greenpointColor       = 'error';
+                $greenpointFinalStatus = '';
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
+                foreach ($this->attachments as $attachment) :
+                    if ($attachment->getType() === $attachmentType) {
+                        $currentAttachment = $attachment;
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $greenPointAttachment */
+                        $greenPointAttachment = $currentAttachment->getGreenpointAttachment();
+                        break;
+                    }
+                    ?>
+                <?php
+                endforeach;
+                if (null === $currentAttachment) {
+                    continue;
+                }
+                if ($greenPointAttachment) {
+                    $greenpointLabel = $greenPointAttachment->getValidationStatusLabel();
+                    if (\Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
+                        $greenpointFinalStatus = 'Statut définitif';
+                    } else {
+                        $greenpointFinalStatus = 'Statut peut être modifié par un retour asychrone';
+                    }
+
+                    if (0 == $greenPointAttachment->getValidationStatus()) {
+                        $greenpointColor = 'error';
+                    } elseif (8 > $greenPointAttachment->getValidationStatus()) {
+                        $greenpointColor = 'warning';
+                    } else {
+                        $greenpointColor = 'valid';
+                    }
+                }
+                ?>
                 <tr style="height: 2em; padding: 2px; ">
-                    <th ><?= $aAttachmentType['label'] ?></th>
+                    <th ><?= $attachmentType->getLabel() ?></th>
                     <td>
-                        <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
-                            <?= $aAttachmentType['path'] ?>
+                        <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
+                            <?= $attachment->getPath() ?>
                         </a>
                     </td>
-                    <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
-                        <?= $aAttachmentType['greenpoint_label'] ?>
-                    </td>
-                    <td><?= $aAttachmentType['final_status'] ?></td>
+                    <td class="td-greenPoint-status-<?= $greenpointColor?>"><?= $greenpointLabel ?></td>
+                    <td><?= $greenpointFinalStatus ?></td>
                 </tr>
             <?php endforeach; ?>
             <tr>
@@ -206,15 +242,21 @@
             </tr>
         </table>
         <br/><br/>
-        <?php if (false === empty($this->transferDocuments)) : ?>
+        <?php if (false === empty($this->transfers)) : ?>
             <h2>Document de transfert (en cas de succession)</h2>
             <table class="attachment-list" style="width: auto; border-collapse: separate; border-spacing: 2px;">
-                <?php foreach ($this->transferDocuments as $document) : ?>
+                <?php
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\TransferAttachment $transferDocument */
+                foreach ($this->transfers as $transfer) :
+                    foreach ($transfer->getAttachments() as $transferAttachment) :
+                    $attachment = $transferAttachment->getAttachment();
+                ?>
                     <tr>
                         <td>
-                            <a href="<?= $this->url ?>/attachment/download/id/<?= $document['id'] ?>/file/<?= urlencode($document['path']) ?>"><?= $document['path'] ?></a>
+                            <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>"><?= $attachment->getPath() ?></a>
                         </td>
                     </tr>
+                    <?php endforeach; ?>
                 <?php endforeach; ?>
             </table>
         <?php endif; ?>

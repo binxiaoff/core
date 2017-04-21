@@ -95,9 +95,7 @@ class greenPointStatus
             }
         };
 
-        $aAttachment['id_attachment']     = false === is_null($iAttachmentId) ? $iAttachmentId : $fGetColumnValue($aResponse, 'document');
         $aAttachment['validation_code']   = false === is_null($iCode) ? $iCode : $fGetColumnValue($aResponse, 'code');
-        $aAttachment['id_client']         = false === is_null($iClientId) ? $iClientId : $fGetColumnValue($aResponse, 'dossier');
         $aAttachment['validation_status'] = (int) $fGetColumnValue($aResponse, 'statut_verification');
 
         switch ($iAttachmentTypeId) {

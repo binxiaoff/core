@@ -5,18 +5,20 @@ use Monolog\ErrorHandler;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class Dispatcher
 {
     private $Command;
-    private $Route;
+    /** @var  Request */
+    private $request;
     /** @var \AppKernel */
     private $kernel;
 
-    public function __construct($kernel, $name, $route = array())
+    public function __construct($kernel, $name, $request)
     {
         $this->kernel      = $kernel;
-        $this->Route       = $route;
+        $this->request     = $request;
         $this->App         = $name;
         $this->environment = $this->kernel->getEnvironment();
         $this->debug       = $this->kernel->isDebug();
@@ -101,7 +103,7 @@ class Dispatcher
 
         include $this->path . 'apps/' . $this->App . '/controllers/' . $controllerName . '.php';
 
-        $controller = new $controllerClass($this->Command, $this->App);
+        $controller = new $controllerClass($this->Command, $this->App, $this->request);
         $controller->setContainer($this->kernel->getContainer());
         $controller->execute();
     }

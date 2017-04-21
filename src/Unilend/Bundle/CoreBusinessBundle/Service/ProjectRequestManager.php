@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -99,47 +98,52 @@ class ProjectRequestManager
     }
 
     /**
-     * @param $aFormData
+     * @param array $formData
+     *
      * @return \projects
+     * @throws \Exception
      */
-    public function saveSimulatorRequest($aFormData)
+    public function saveSimulatorRequest($formData)
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
-        /** @var \clients $clientRepository */
-        $clientRepository = $this->entityManagerSimulator->getRepository('clients');
 
-        if (empty($aFormData['email']) || false === filter_var($aFormData['email'], FILTER_VALIDATE_EMAIL)) {
+        if (empty($formData['email']) || false === filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email');
         }
-        if (empty($aFormData['siren']) || false === preg_match('/^([0-9]{9}|[0-9]{14})$/', $aFormData['siren'])) {
-            throw new \InvalidArgumentException('Invalid SIREN');
+        if (false === empty($formData['siren'])) {
+            $formData['siren'] = str_replace(' ', '', $formData['siren']);
         }
-        if (empty($aFormData['amount']) || false === filter_var($aFormData['amount'], FILTER_VALIDATE_INT)) {
-            throw new \InvalidArgumentException('Invalid amount');
+        if (empty($formData['siren']) || 1 !== preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
+            throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren']);
         }
-        if (empty($aFormData['duration']) || false === filter_var($aFormData['duration'], FILTER_VALIDATE_INT)) {
+        if (false === empty($formData['amount'])) {
+            $formData['amount'] = str_replace([' ', '€'], '', $formData['amount']);
+        }
+        if (empty($formData['amount']) || false === filter_var($formData['amount'], FILTER_VALIDATE_INT)) {
+            throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount']);
+        }
+        if (empty($formData['duration']) || false === filter_var($formData['duration'], FILTER_VALIDATE_INT)) {
             throw new \InvalidArgumentException('Invalid duration');
         }
-        if (empty($aFormData['reason']) || false === filter_var($aFormData['reason'], FILTER_VALIDATE_INT)) {
+        if (empty($formData['reason']) || false === filter_var($formData['reason'], FILTER_VALIDATE_INT)) {
             throw new \InvalidArgumentException('Invalid reason');
         }
 
-        $email = $clientRepository->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
+        $email = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($formData['email']) ? $formData['email'] . '-' . time() : $formData['email'];
 
         $client = new Clients();
         $client
             ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(\clients::STATUS_ONLINE)
+            ->setStatus(Clients::STATUS_ONLINE)
             ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($this->sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($this->sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-        $aFormData['siren'] = str_replace(' ', '', $aFormData['siren']);
-        $siren              = substr($aFormData['siren'], 0, 9);
-        $siret              = strlen($aFormData['siren']) === 14 ? $aFormData['siren'] : '';
+        $siren             = substr($formData['siren'], 0, 9);
+        $siret             = strlen($formData['siren']) === 14 ? $formData['siren'] : '';
 
         $company = new Companies();
         $company->setSiren($siren)
@@ -151,24 +155,25 @@ class ProjectRequestManager
         $this->entityManager->beginTransaction();
         try {
             $this->entityManager->persist($client);
-            $this->entityManager->flush($client);
             $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($client->getIdClient());
+            $clientAddress->setIdClient($client);
             $this->entityManager->persist($clientAddress);
+            $this->entityManager->flush($clientAddress);
             $company->setIdClientOwner($client->getIdClient());
             $this->entityManager->persist($company);
-            $this->entityManager->flush();
+            $this->entityManager->flush($company);
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
             $this->entityManager->commit();
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
-            $this->logger->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->logger->error('An error occurred while creating client ', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            throw $exception;
         }
 
         $project->id_company                           = $company->getIdCompany();
-        $project->amount                               = $aFormData['amount'];
-        $project->period                               = $aFormData['duration'];
-        $project->id_borrowing_motive                  = $aFormData['reason'];
+        $project->amount                               = $formData['amount'];
+        $project->period                               = $formData['duration'];
+        $project->id_borrowing_motive                  = $formData['reason'];
         $project->ca_declara_client                    = 0;
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;

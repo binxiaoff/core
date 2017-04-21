@@ -1,5 +1,8 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\UserAccess;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+
 class bootstrap extends Controller
 {
     /**
@@ -53,6 +56,12 @@ class bootstrap extends Controller
     protected $lenders_accounts;
     /** @var \echeanciers */
     protected $echeanciers;
+
+    /**
+     * Doctrine entities
+     */
+    /** @var Users */
+    protected $userEntity;
 
     /**
      * Config
@@ -190,6 +199,20 @@ class bootstrap extends Controller
         if (isset($_SESSION['user']) && !empty($_SESSION['user']['id_user'])) {
             $this->sessionIdUser = $_SESSION['user']['id_user'];
             $this->lZonesHeader  = $this->users_zones->selectZonesUser($_SESSION['user']['id_user']);
+
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+
+            $this->userEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
+            $userAccessEntity = new UserAccess();
+            $userAccessEntity->setAction($this->current_function);
+            $userAccessEntity->setController($this->current_controller);
+            $userAccessEntity->setIdUser($this->userEntity);
+            $userAccessEntity->setIp($_SERVER['REMOTE_ADDR']);
+
+            $entityManager->persist($userAccessEntity);
+            $entityManager->flush($userAccessEntity);
         }
 
         // On vérifie ici si le mot de passe du user date de moins de 3 mois sinon on le redirige sur la page d'édition de mot de passe

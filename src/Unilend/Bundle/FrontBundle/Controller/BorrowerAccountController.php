@@ -5,6 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,16 +34,11 @@ class BorrowerAccountController extends Controller
         $projectsFunding     = $this->getProjectsFunding();
         $projectsPostFunding = $this->getProjectsPostFunding();
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
         return [
             'pre_funding_projects'  => $projectsPreFunding,
             'funding_projects'      => $projectsFunding,
             'post_funding_projects' => $projectsPostFunding,
-            'closing_projects'      => $request->getSession()->get('closingProjects'),
-            'faq_url'               => $settings->value
+            'closing_projects'      => $request->getSession()->get('closingProjects')
         ];
     }
 
@@ -142,11 +138,7 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
-        return ['project_form' => $projectForm->createView(), 'faq_url' => $settings->value];
+        return ['project_form' => $projectForm->createView()];
     }
 
     /**
@@ -239,10 +231,6 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
         return $this->render(
             'borrower_account/operations.html.twig',
             [
@@ -250,7 +238,6 @@ class BorrowerAccountController extends Controller
                 'projects_ids'          => $projectsIds,
                 'invoices'              => $clientsInvoices,
                 'post_funding_projects' => $projectsPostFunding,
-                'faq_url'               => $settings->value
             ]
         );
     }
@@ -263,17 +250,14 @@ class BorrowerAccountController extends Controller
      */
     public function profileAction()
     {
-        $client  = $this->getClient();
-        $company = $this->getCompany();
-
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
+        $client      = $this->getClient();
+        $company     = $this->getCompany();
+        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
 
         return [
-            'client'         => $client,
-            'company'        => $company,
-            'faq_url'        => $settings->value
+            'client'      => $client,
+            'company'     => $company,
+            'bankAccount' => $bankAccount
         ];
     }
 
@@ -318,12 +302,11 @@ class BorrowerAccountController extends Controller
 
             if (false === $error) {
                 $filePath = '';
-                if (isset($_FILES['attachment']['name'] ) && $_FILES['attachment']['name'] !== '') {
-                    $oUpload = new \upload;
-                    $path = $this->get('kernel')->getRootDir() . '/../';
-                    $oUpload->setUploadDir($path, 'protected/contact/');
-                    $oUpload->doUpload('attachment');
-                    $filePath = $path . 'protected/contact/' . $oUpload->getName();
+                $file = $request->files->get('attachment');
+                if ($file instanceof UploadedFile) {
+                    $uploadDestination = $this->getParameter('path.protected') . 'contact/';
+                    $file = $file->move($uploadDestination, $file->getClientOriginalName() . '.' . $file->getClientOriginalExtension());
+                    $filePath = $file->getPathname();
                 }
 
                 /** @var \settings $oSettings */
@@ -377,11 +360,7 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
-        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name, 'faq_url' => $settings->value];
+        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name];
     }
 
     /**
@@ -478,7 +457,7 @@ class BorrowerAccountController extends Controller
         include $rootDir . '/apps/default/controllers/pdf.php';
 
         $pdfCommand    = new \Command('pdf', 'setDisplay', 'fr');
-        $pdfController = new \pdfController($pdfCommand, 'default');
+        $pdfController = new \pdfController($pdfCommand, 'default', $request);
         $pdfController->setContainer($this->container);
         $pdfController->initialize();
 
@@ -752,21 +731,23 @@ class BorrowerAccountController extends Controller
 
         foreach ($projectsPostFunding as $index => $project) {
             $projects->get($project['id_project']);
+            $nextRepayment = [
+                'montant'                  => 0,
+                'commission'               => 0,
+                'tva'                      => 0,
+                'date_echeance_emprunteur' => date('Y-m-d H:i:s'),
+            ];
 
             if (false === in_array($project['status'], [\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE])) {
-               $nextRepayment = $repaymentSchedule->select(
+               $repayment = $repaymentSchedule->select(
                    'id_project = ' . $project['id_project'] . ' AND status_emprunteur = 0',
                    'date_echeance_emprunteur ASC',
                    '',
                    1
-               )[0];
-            } else {
-                $nextRepayment = [
-                    'montant'                  => 0,
-                    'commission'               => 0,
-                    'tva'                      => 0,
-                    'date_echeance_emprunteur' => date('Y-m-d H:i:s'),
-                ];
+               );
+               if (false === empty($repayment[0])) {
+                   $nextRepayment = $repayment[0];
+               }
             }
 
             $projectsPostFunding[$index] = $projectsPostFunding[$index] + [

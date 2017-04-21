@@ -2,6 +2,7 @@
 
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class pdfController extends bootstrap
 {
@@ -181,6 +182,8 @@ class pdfController extends bootstrap
         $project = $this->loadData('projects');
         /** @var \companies $company */
         $company = $this->loadData('companies');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
             $this->clients->get($this->params[0], 'hash')
@@ -189,6 +192,11 @@ class pdfController extends bootstrap
             && $project->id_company == $company->id_company
             && $project->status != \projects_status::PRET_REFUSE
         ) {
+            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
+            if (null === $bankAccount) {
+                header('Location: ' . $this->lurl);
+                die;
+            }
             $path            = $this->path . 'protected/pdf/mandat/';
             $namePDFClient   = 'MANDAT-UNILEND-' . $project->slug . '-' . $this->clients->id_client;
             $mandates        = $this->loadData('clients_mandats');
@@ -221,6 +229,8 @@ class pdfController extends bootstrap
                 $mandates->name       = 'mandat-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
                 $mandates->id_project = $project->id_project;
                 $mandates->status     = \clients_mandats::STATUS_PENDING;
+                $mandates->iban       = $bankAccount->getIban();
+                $mandates->bic        = $bankAccount->getBic();
                 $mandates->create();
             }
 
@@ -241,35 +251,23 @@ class pdfController extends bootstrap
     {
         $this->pays             = $this->loadData('pays');
         $this->oLendersAccounts = $this->loadData('lenders_accounts');
-
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
         $this->pays->get($this->clients->id_langue, 'id_langue');
 
         if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
             $this->entreprise = true;
-
-            $this->iban[1] = substr($this->companies->iban, 0, 4);
-            $this->iban[2] = substr($this->companies->iban, 4, 4);
-            $this->iban[3] = substr($this->companies->iban, 8, 4);
-            $this->iban[4] = substr($this->companies->iban, 12, 4);
-            $this->iban[5] = substr($this->companies->iban, 16, 4);
-            $this->iban[6] = substr($this->companies->iban, 20, 4);
-            $this->iban[7] = substr($this->companies->iban, 24, 3);
-
-            $this->leIban = $this->companies->iban;
         } else {
             $this->entreprise = false;
-
-            $this->iban[1] = substr($this->oLendersAccounts->iban, 0, 4);
-            $this->iban[2] = substr($this->oLendersAccounts->iban, 4, 4);
-            $this->iban[3] = substr($this->oLendersAccounts->iban, 8, 4);
-            $this->iban[4] = substr($this->oLendersAccounts->iban, 12, 4);
-            $this->iban[5] = substr($this->oLendersAccounts->iban, 16, 4);
-            $this->iban[6] = substr($this->oLendersAccounts->iban, 20, 4);
-            $this->iban[7] = substr($this->oLendersAccounts->iban, 24, 3);
-
-            $this->leIban = $this->oLendersAccounts->iban;
+        }
+        $this->iban  = '';
+        $this->bic   = '';
+        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
+        if ($bankAccount) {
+            $this->iban = $bankAccount->getIban();
+            $this->bic  = $bankAccount->getBic();
         }
 
         // pour savoir si Preteur ou emprunteur
@@ -729,7 +727,7 @@ class pdfController extends bootstrap
             $this->lEcheances = array_values($this->echeanciers->getYearlySchedule(array('id_loan' => $this->oLoans->id_loan)));
             $this->lenderCountry = '';
 
-            if ($this->preteur->type == \clients::TYPE_LEGAL_ENTITY) {
+            if ($this->preteur->type == Clients::TYPE_LEGAL_ENTITY) {
                 $this->preteurCompanie->get($this->lender->id_company_owner, 'id_company');
 
                 $this->nomPreteur     = $this->preteurCompanie->name;
@@ -806,9 +804,6 @@ class pdfController extends bootstrap
 
         $this->settings->get('Facture - TVA INTRACOMMUNAUTAIRE', 'type');
         $this->tvaIntra = mb_strtoupper($this->settings->value, 'UTF-8');
-
-
-        $this->setDisplay('footer_facture');
     }
 
     private function GenerateInvoiceEFHtml()
@@ -842,10 +837,9 @@ class pdfController extends bootstrap
         $this->date_echeance_reel   = $aInvoices[0]['date'];
         $this->commissionPercentage = $aInvoices[0]['commission'];
 
-        $this->setDisplay('facture_EF_html');
-        $sDisplayInvoice = $this->sDisplay;
         $this->GenerateFooterInvoice();
-        $this->sDisplay = $sDisplayInvoice . $this->sDisplay;
+
+        $this->setDisplay('facture_EF_html');
     }
 
     public function _facture_ER($sHash = null, $iProjectId = null, $iOrder = null, $bRead = true)
@@ -904,10 +898,9 @@ class pdfController extends bootstrap
         $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
         $this->date_echeance_reel = $aInvoices[0]['date'];
 
-        $this->setDisplay('facture_ER_html');
-        $sDisplayInvoice = $this->sDisplay;
         $this->GenerateFooterInvoice();
-        $this->sDisplay = $sDisplayInvoice . $this->sDisplay;
+
+        $this->setDisplay('facture_ER_html');
     }
 
     // Mise a jour des dates echeances preteurs et emprunteur (utilisé pour se baser sur la date de creation du pouvoir)
@@ -1032,7 +1025,7 @@ class pdfController extends bootstrap
         ) {
             $this->companiesEmpr->get($this->projects->id_company, 'id_company');
 
-            if (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+            if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
                 $iCountryId = $this->clients_adresses->id_pays_fiscal;
             } else {

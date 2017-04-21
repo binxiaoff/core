@@ -1,11 +1,12 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
-use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class dossiersController extends bootstrap
@@ -142,6 +143,8 @@ class dossiersController extends bootstrap
         $this->translator = $this->get('translator');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->taxFormTypes    = $companyTaxFormType->select();
@@ -171,7 +174,13 @@ class dossiersController extends bootstrap
             $this->projects_status->get($this->projects->status, 'status');
             $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
-            if ($this->projects->status <= \projects_status::COMMERCIAL_REVIEW && empty($this->projects->id_commercial) && empty($this->companies->phone) && false === empty($this->companies->siren)) {
+            if (
+                $this->projects->status <= \projects_status::COMMERCIAL_REVIEW
+                && empty($this->projects->id_commercial)
+                && empty($this->companies->phone)
+                && 1 === preg_match('/^[0-9]{9}$/', $this->companies->siren)
+                && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN !== $this->projects_status_history->content
+            ) {
                 /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
                 $establishmentIdentity  = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
 
@@ -207,9 +216,9 @@ class dossiersController extends bootstrap
 
             $this->aAnnualAccountsDates = array();
             $this->aAnalysts            = $this->users->select('(status = 1 AND id_user_type = 2) OR id_user = ' . $this->projects->id_analyste);
-            $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = ' . $this->projects->id_commercial);
+            $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = 23 OR id_user = ' . $this->projects->id_commercial); // ID user 23 corresponds to Arnaud
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_user > 0 AND id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC');
-            $this->projectComments      = $this->loadData('projects_comments')->select('id_project = ' . $this->projects->id_project, 'added DESC');
+            $this->projectComments      = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectsComments')->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
             $this->lProjects_status     = $projectStatusManager->getPossibleStatus($this->projects);
 
@@ -467,7 +476,10 @@ class dossiersController extends bootstrap
                     $publicationLimitationDate      = new \DateTime('NOW + 5 minutes');
                     $endOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
 
-                    if ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate) {
+                    if (
+                        $publicationDate->format('Y-m-d H:i:s') !== $this->projects->date_publication
+                        && ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate)
+                    ) {
                         $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
 
                         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -497,7 +509,9 @@ class dossiersController extends bootstrap
                     && $_POST['commercial'] != $this->projects->id_commercial
                     && $this->projects->status < \projects_status::COMMERCIAL_REVIEW
                 ) {
-                    $_POST['status'] = \projects_status::COMMERCIAL_REVIEW;
+                    if (\projects_status::NOT_ELIGIBLE != $this->projects->status) {
+                        $_POST['status'] = \projects_status::COMMERCIAL_REVIEW;
+                    }
 
                     $latitude  = (float) $this->companies->latitude;
                     $longitude = (float) $this->companies->longitude;
@@ -615,7 +629,7 @@ class dossiersController extends bootstrap
                     && 1 === preg_match('#[0-9]{2}/[0-9]{2}/[0-9]{8}#', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute'])
                     && $this->projects->status <= \projects_status::EN_FUNDING
                 ) {
-                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_de_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
+                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
 
                     if ($endOfPublicationDate > new \DateTime()) {
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
@@ -689,13 +703,13 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \partner $partner */
-            $partner = $this->loadData('partner');
+            /** @var \partner $partnerData */
+            $partnerData = $this->loadData('partner');
 
             $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
             $this->selectedProduct  = $product;
             $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
+            $this->partnerList      = $partnerData->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
             $this->partnerProduct   = $this->loadData('partner_product');
 
             if (false === empty($this->projects->id_product)) {
@@ -715,26 +729,25 @@ class dossiersController extends bootstrap
                 }
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-            $partnerManager = $this->get('unilend.service.partner_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $this->attachment_type               = $this->loadData('attachment_type');
-            $this->aAttachments                  = $this->projects->getAttachments();
-            $this->aAttachmentTypes              = $this->attachment_type->getAllTypesForProjects($this->language);
-            $this->aMandatoryAttachmentTypes     = $partnerManager->getAttachmentTypesByPartner($this->projects->id_partner, true);
-            $this->isFundsCommissionRateEditable = $this->isFundsCommissionRateEditable();
+            $project                              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $partner                              = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->projects->id_partner);
+            $this->aAttachments                   = $project->getAttachments();
+            $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
+            $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
+            $partnerAttachments                   = $partner->getAttachmentTypes(true);
+            $this->isFundsCommissionRateEditable  = $this->isFundsCommissionRateEditable();
+            $this->lastBalanceSheet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+                'idClient' => $project->getIdCompany()->getIdClientOwner(),
+                'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
+            ]);
 
-            $this->completude_wording = [];
-            $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
-
-            foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
-                if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
-                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
-                } else {
-                    $this->completude_wording[] = $aAttachment['label'];
-                }
+            $this->aMandatoryAttachmentTypes      = [];
+            foreach ($partnerAttachments as $partnerAttachment) {
+                $this->aMandatoryAttachmentTypes[] = $partnerAttachment->getAttachmentType();
             }
-            $this->completude_wording[] = $this->translator->trans('projet_completude-charge-affaires');
 
             if ($this->isTakeover()) {
                 $this->loadTargetCompany();
@@ -1290,16 +1303,18 @@ class dossiersController extends bootstrap
 
     private function listMemo()
     {
-        /** @var \projects_comments $projectComments */
-        $projectComments = $this->loadData('projects_comments');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityRepository $projectCommentRepository */
+        $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
 
         if (
             isset($this->params[0], $this->params[1])
-            && $projectComments->get($this->params[1], 'id_project_comment')
-            && $projectComments->id_project == $this->params[0]
+            && ($projectCommentEntity = $projectCommentRepository->find($this->params[1]))
+            && $projectCommentEntity->getIdProject()->getIdProject() == $this->params[0]
         ) {
             $this->type    = 'edit';
-            $this->content = $projectComments->content;
+            $this->content = $projectCommentEntity->getContent();
         } else {
             $this->type    = 'add';
             $this->content = '';
@@ -1310,31 +1325,70 @@ class dossiersController extends bootstrap
 
     private function editMemo()
     {
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
-        /** @var \projects_comments $projectComments */
-        $projectComments = $this->loadData('projects_comments');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityRepository $projectRepository */
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        /** @var \Doctrine\ORM\EntityRepository $projectCommentRepository */
+        $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $projectEntity */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments $projectCommentEntity */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $userEntity */
 
         if (
             isset($_POST['projectId'], $_POST['content'])
             && filter_var($_POST['projectId'], FILTER_VALIDATE_INT)
-            && ($content = filter_var($_POST['content'], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES))
-            && $project->get($_POST['projectId'])
+            && ($projectEntity = $projectRepository->find($_POST['projectId']))
         ) {
-            if (isset($_POST['commentId']) && $projectComments->get($_POST['commentId'])) {
-                if ($projectComments->id_user == $_SESSION['user']['id_user']) {
-                    $projectComments->content = $content;
-                    $projectComments->update();
-                }
+            if (
+                isset($_POST['commentId'])
+                && ($projectCommentEntity = $projectCommentRepository->find($_POST['commentId']))
+                && $_SESSION['user']['id_user'] == $projectCommentEntity->getIdUser()->getIdUser()
+            ) {
+                $projectCommentEntity->setContent($_POST['content']);
+
+                $entityManager->flush($projectCommentEntity);
+
+                $slackNotification = 'édité';
             } else {
-                $projectComments->id_project = $project->id_project;
-                $projectComments->content    = $content;
-                $projectComments->id_user    = $_SESSION['user']['id_user'];
-                $projectComments->create();
+                $projectCommentEntity = new ProjectsComments();
+                $projectCommentEntity->setIdProject($projectEntity);
+                $projectCommentEntity->setContent($_POST['content']);
+                $projectCommentEntity->setIdUser($this->userEntity);
+
+                $entityManager->persist($projectCommentEntity);
+                $entityManager->flush($projectCommentEntity);
+
+                $slackNotification = 'ajouté';
+            }
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SlackManager $slackManager */
+            $slackManager = $this->get('unilend.service.slack_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $userRepository */
+            $userRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            $slackNotification = 'Mémo ' . $slackNotification . ' par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
+
+            if (
+                $projectEntity->getIdCommercial() > 0
+                && $_SESSION['user']['id_user'] != $projectEntity->getIdCommercial()
+                && ($userEntity = $userRepository->find($projectEntity->getIdCommercial()))
+                && false === empty($userEntity->getSlack())
+            ) {
+                $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+            }
+
+            if (
+                $projectEntity->getIdAnalyste() > 0
+                && $_SESSION['user']['id_user'] != $projectEntity->getIdAnalyste()
+                && ($userEntity = $userRepository->find($projectEntity->getIdAnalyste()))
+                && false === empty($userEntity->getSlack())
+            ) {
+                $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
             }
         }
 
-        $this->projectComments = $projectComments->select('id_project = ' . $_POST['projectId'], 'added DESC');
+        $this->projectComments = $projectCommentRepository->findBy(['idProject' => $_POST['projectId']], ['added' => 'DESC']);
 
         $this->setView('memo/list');
     }
@@ -1345,24 +1399,29 @@ class dossiersController extends bootstrap
 
         header('Content-Type: application/json');
 
-        /** @var \projects_comments $projectComments */
-        $projectComments = $this->loadData('projects_comments');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityRepository $projectCommentRepository */
+        $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
 
         if (
             isset($this->params[0], $this->params[1])
-            && $projectComments->get($this->params[1], 'id_project_comment')
-            && $projectComments->id_project == $this->params[0]
-            && $projectComments->id_user == $_SESSION['user']['id_user']
+            && ($projectCommentEntity = $projectCommentRepository->find($this->params[1]))
+            && $projectCommentEntity->getIdProject()->getIdProject() == $this->params[0]
+            && $projectCommentEntity->getIdUser()->getIdUser() == $_SESSION['user']['id_user']
         ) {
-            $projectComments->delete($this->params[1], 'id_project_comment');
+            $entityManager->remove($projectCommentEntity);
+            $entityManager->flush($projectCommentEntity);
 
             echo json_encode([
                 'success' => true
             ]);
         } else {
-            if ($projectComments->id_project != $this->params[0]) {
+            if (empty($projectCommentEntity)) {
+                $error = 'Erreur inconnue';
+            } elseif ($projectCommentEntity->getIdProject()->getIdProject() != $this->params[0]) {
                 $error = 'Le mémo n\'appartient pas à ce projet';
-            } elseif ($projectComments->id_user != $_SESSION['user']['id_user']) {
+            } elseif ($projectCommentEntity->getIdUser()->getIdUser() != $_SESSION['user']['id_user']) {
                 $error = 'Vous ne disposez pas des droits pour supprimer ce mémo';
             } else {
                 $error = 'Erreur inconnue';
@@ -1379,22 +1438,41 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        $this->projects = $this->loadData('projects');
+        if (isset($_POST['send_etape5']) && isset($this->params[0])) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\AttachmentTypeRepository $attachmentTypeRepo */
+            $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+            $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
-        if (isset($_POST['send_etape5']) && isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             // Histo user //
             $serialize = serialize(array('id_project' => $this->params[0], 'files' => $_FILES));
             $this->users_history->histo(9, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
 
             $this->tablResult = array();
 
-            foreach ($_FILES as $field => $file) {
-                //We made the field name = attachment type id
-                $iAttachmentType = $field;
-                if ('' !== $file['name'] && $this->uploadAttachment($this->projects->id_project, $field, $iAttachmentType)) {
-                    $this->tablResult['fichier_' . $iAttachmentType] = 'ok';
+            foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
+                if ($uploadedFile) {
+                    $attachment        = null;
+                    $projectAttachment = null;
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+                    $attachmentType = $attachmentTypeRepo->find($attachmentTypeId);
+                    if ($attachmentType) {
+                        $attachment = $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                    }
+                    if ($attachment) {
+                        $projectAttachment = $attachmentManager->attachToProject($attachment, $project);
+                    }
+                    if ($projectAttachment) {
+                        $this->tablResult['fichier_' . $attachmentTypeId] = 'ok';
+                    }
                 }
             }
+
             $this->result = json_encode($this->tablResult);
         }
     }
@@ -1408,12 +1486,15 @@ class dossiersController extends bootstrap
 
         $aResult = array();
 
-        if (isset($_POST['attachment_id'])) {
-            $iAttachmentId = $_POST['attachment_id'];
-
-            if ($this->removeAttachment($iAttachmentId)) {
-                $aResult[$iAttachmentId] = 'ok';
+        if (isset($_POST['project_attachment_id'])) {
+            $entityManager =  $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['project_attachment_id']);
+            if ($projectAttachment) {
+                $entityManager->remove($projectAttachment);
+                $entityManager->flush($projectAttachment);
             }
+            $aResult[$_POST['project_attachment_id']] = 'ok';
         }
 
         echo json_encode($aResult);
@@ -1449,12 +1530,12 @@ class dossiersController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] === 'create_etape2') {
             if (isset($this->params[1]) && is_numeric($this->params[1])) {
-                /** @var \Doctrine\ORM\EntityManager $em */
-                $em = $this->get('doctrine.orm.entity_manager');
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
                 /** @var Clients $clientEntity */
-                $clientEntity = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
+                $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
                 if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)){
-                    $companyEntity = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
+                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
                 } else {
                     $_SESSION['freeow']['title']   = 'La création n\' pas abouti';
                     $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
@@ -1464,7 +1545,6 @@ class dossiersController extends bootstrap
             } else {
                 $companyEntity = $this->createBlankCompany();
             }
-
             $this->createProject($companyEntity, $defaultPartner->id);
 
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
@@ -1521,16 +1601,16 @@ class dossiersController extends bootstrap
 
         try {
             $em->persist($clientEntity);
-            $em->flush();
+            $em->flush($clientEntity);
 
-            $clientAddressEntity->setIdClient($clientEntity->getIdClient());
+            $clientAddressEntity->setIdClient($clientEntity);
             $em->persist($clientAddressEntity);
 
             $companyEntity->setSiren($siren);
             $companyEntity->setIdClientOwner($clientEntity->getIdClient());
             $companyEntity->setStatusAdresseCorrespondance(1);
             $em->persist($companyEntity);
-            $em->flush();
+            $em->flush($companyEntity);
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
             $em->commit();
@@ -2363,7 +2443,7 @@ class dossiersController extends bootstrap
     //utilisé pour récup les infos affichées dans le cadre
     private function loadEarlyRepaymentInformation()
     {
-        if ($this->projects->status == \projects_status::REMBOURSEMENT) {
+        if ($this->projects->status >= \projects_status::REMBOURSEMENT) {
             $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
             $this->echeanciers            = $this->loadData('echeanciers');
             $oBusinessDays                = $this->loadLib('jours_ouvres');
@@ -2376,7 +2456,7 @@ class dossiersController extends bootstrap
             $sBusinessDaysOrderDate = '';
 
             // Date 4 jours ouvrés avant $sLastOrderDate
-            if ($iLastOrderDate != "" && isset($iLastOrderDate)) {
+            if ($iLastOrderDate != '' && isset($iLastOrderDate)) {
                 $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
             }
 
@@ -2760,63 +2840,6 @@ class dossiersController extends bootstrap
         );
     }
 
-    /**
-     * @param integer $iOwnerId
-     * @param integer $field
-     * @param integer $iAttachmentType
-     * @return bool
-     */
-    private function uploadAttachment($iOwnerId, $field, $iAttachmentType)
-    {
-        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
-            $this->upload = $this->loadLib('upload');
-        }
-
-        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
-            $this->attachment = $this->loadData('attachment');
-        }
-
-        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
-            $this->attachment_type = $this->loadData('attachment_type');
-        }
-
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
-        }
-
-        //add the new name for each file
-        $sNewName = '';
-        if (isset($_FILES[$field]['name']) && $aFileInfo = pathinfo($_FILES[$field]['name'])) {
-            $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
-        }
-
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->upload, $sNewName);
-
-        return $resultUpload;
-    }
-
-    /**
-     * @param $iAttachmentId
-     *
-     * @return mixed
-     */
-    private function removeAttachment($iAttachmentId)
-    {
-        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
-            $this->attachment = $this->loadData('attachment');
-        }
-
-        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
-            $this->attachment_type = $this->loadData('attachment_type');
-        }
-
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));
-        }
-
-        return $this->attachmentHelper->remove($iAttachmentId);
-    }
-
     private function selectEmailCompleteness($iClientId)
     {
         $oClients = $this->loadData('clients');
@@ -2986,13 +3009,23 @@ class dossiersController extends bootstrap
             return;
         }
 
-        if (false === empty($_POST['comment'])) {
-            /** @var \projects_comments $projectComment */
-            $projectComment             = $this->loadData('projects_comments');
-            $projectComment->id_project = $this->projects->id_project;
-            $projectComment->id_user    = $_SESSION['user']['id_user'];
-            $projectComment->content    = "Projet reporté\n--\n" . filter_var($_POST['comment'], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
-            $projectComment->create();
+        if (isset($this->params[1]) && 'resume' === $this->params[1] && \projects_status::POSTPONED == $this->projects->status) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMMERCIAL_REVIEW, $this->projects);
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
+        } elseif (false === empty($_POST['comment'])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager        = $this->get('doctrine.orm.entity_manager');
+            $projectCommentEntity = new ProjectsComments();
+            $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
+            $projectCommentEntity->setIdUser($this->userEntity);
+            $projectCommentEntity->setContent("Projet reporté\n--\n" . $_POST['comment']);
+
+            $entityManager->persist($projectCommentEntity);
+            $entityManager->flush($projectCommentEntity);
 
             if ($this->projects->status != \projects_status::POSTPONED) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
@@ -3023,12 +3056,15 @@ class dossiersController extends bootstrap
 
         if (false === empty($_POST['reason']) && filter_var($_POST['reason'], FILTER_VALIDATE_INT)) {
             if (false === empty($_POST['comment'])) {
-                /** @var \projects_comments $projectComment */
-                $projectComment             = $this->loadData('projects_comments');
-                $projectComment->id_project = $this->projects->id_project;
-                $projectComment->id_user    = $_SESSION['user']['id_user'];
-                $projectComment->content    = "Abandon projet\n--\n" . filter_var($_POST['comment'], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
-                $projectComment->create();
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager        = $this->get('doctrine.orm.entity_manager');
+                $projectCommentEntity = new ProjectsComments();
+                $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
+                $projectCommentEntity->setIdUser($this->userEntity);
+                $projectCommentEntity->setContent("Abandon projet\n--\n" . $_POST['comment']);
+
+                $entityManager->persist($projectCommentEntity);
+                $entityManager->flush($projectCommentEntity);
             }
 
             /** @var \project_abandon_reason $abandonReason */
@@ -3118,12 +3154,15 @@ class dossiersController extends bootstrap
         }
 
         if (false === empty($_POST['comment'])) {
-            /** @var \projects_comments $projectComment */
-            $projectComment             = $this->loadData('projects_comments');
-            $projectComment->id_project = $this->projects->id_project;
-            $projectComment->id_user    = $_SESSION['user']['id_user'];
-            $projectComment->content    = "Retour à l'analyse\n--\n" . filter_var($_POST['comment'], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
-            $projectComment->create();
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager        = $this->get('doctrine.orm.entity_manager');
+            $projectCommentEntity = new ProjectsComments();
+            $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
+            $projectCommentEntity->setIdUser($this->userEntity);
+            $projectCommentEntity->setContent("Retour à l'analyse\n--\n" . $_POST['comment']);
+
+            $entityManager->persist($projectCommentEntity);
+            $entityManager->flush($projectCommentEntity);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');

@@ -1,8 +1,10 @@
 {# Projects Index #}
 {% extends 'layouts/_layout.html.twig' %}
-
+{% form_theme form '/frontbundle/forms/fields.html.twig' %}
 {# Set input ID namespace to "person" #}
-{% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+ {% if client.type in [
+ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'),
+ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
     {% set idClientType = 'person' %}
 
 {# Otherwise set input ID namespace to "legal-entity" #}
@@ -26,7 +28,14 @@
                     {% include 'pages/lender_subscription/partials/progress_bar.html.twig' %}
 
                     <div class="form-preter-content tab-content">
-                        <form id="form-lender-step-2" method="post" action="{{ path('lender_subscription_documents_form', {'clientHash' : client.hash }) }}" class="form-preter-create" enctype="multipart/form-data">
+                        {{ form_start(form, {
+                            'id' : 'form-lender-step-2',
+                            'multipart' : true,
+                            'attr' : {
+                                'class' : 'form-preter-create',
+                                'data-cacheform' : true
+                            }
+                        }) }}
                             <div id="form-preter-2" role="tabpanel" class="tab-pane active" aria-labelledby="preter-create-2 preter-create-title">
                                 <div class="row">
                                     <div class="col-form col-lg-8 col-md-8" data-formvalidation data-formvalidation-notificationselem="#form-preter-2-notifications">
@@ -93,7 +102,7 @@
                                     </div>
                                 </div><!-- /.row -->
                             </div><!-- /.tab-pane -->
-                        </form><!-- /.form-preter-create -->
+                        {{ form_end(form) }}
                     </div><!-- /.form-preter-content -->
                 </div><!-- /.tabs -->
             </div><!-- /.site-wrap -->

@@ -31,7 +31,7 @@ var cached = {
 
 // Change from person to society form
 function checkClientType() {
-  var $clientTypePerson = $('input[name="client_type"][value="person"]:visible')
+  var $clientTypePerson = $('input[name="form[clientType]"][value="person"]:visible')
 
   // @debug
   // console.log('checkClientType', $clientTypePerson.prop('checked'))
@@ -46,8 +46,8 @@ function checkClientType() {
     $('#form-lender-legal-entity').hide()
 
     // Change values across inputs on both forms
-    $('input[name="client_type"][value="person"]').prop('checked', true)
-    $('input[name="client_type"][value="legal_entity"]').removeProp('checked')
+    $('input[name="form[clientType]"][value="person"]').prop('checked', true)
+    $('input[name="form[clientType]"][value="legalEntity"]').removeProp('checked')
 
     // Show legal entity form
   } else {
@@ -59,8 +59,8 @@ function checkClientType() {
     $('#form-lender-legal-entity').show()
 
     // Change values across inputs on both forms
-    $('input[name="client_type"][value="person"]').removeProp('checked')
-    $('input[name="client_type"][value="legal_entity"]').prop('checked', true)
+    $('input[name="form[clientType]"][value="person"]').removeProp('checked')
+    $('input[name="form[clientType]"][value="legalEntity"]').prop('checked', true)
   }
 }
 
@@ -192,7 +192,7 @@ $doc.on('ready', function () {
    */
 
   checkClientType()
-  $doc.on('change', '#devenir-preteur input[name="client_type"]:visible', function () {
+  $doc.on('change', '#devenir-preteur input[name="form[clientType]"]:visible', function () {
     checkClientType()
   })
 

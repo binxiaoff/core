@@ -6,6 +6,24 @@
 $(document).ready(function()
 {
     $(".thickbox").colorbox();
+
+    $('.extract_rib_btn').colorbox({
+        onComplete: function() {
+            var tmpImg = new Image();
+            tmpImg.src = $('#colorbox').find('img').attr('src');
+            tmpImg.onload = function() {
+                var origHeight = this.height + 300;
+                var origWidth = this.width + 50;
+                if (origWidth > 1080) {
+                    origWidth = 1080;
+                }
+                if (origWidth < 600) {
+                    origWidth = 600;
+                }
+                $.colorbox.resize({height: origHeight, width: origWidth});
+            };
+        }
+    });
 });
 
 /* Changer l'onglet de la langue */

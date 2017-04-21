@@ -280,6 +280,7 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="unilend.service.lender_manager" />
             <argument type="service" id="logger" />
+            <argument type="service" id="validator" />
         </service>
 
         <service id="unilend.service.borrower_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager">
@@ -345,6 +346,12 @@
             <argument>%url.host_admin%</argument>
             <argument>%slack.default_channel%</argument>
             <argument>%kernel.environment%</argument>
+        </service>
+
+        <service id="unilend.service.attachment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="filesystem" />
+            <argument>%path.protected%attachments</argument>
         </service>
     </services>
 </container>
