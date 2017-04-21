@@ -66,121 +66,39 @@
     </header><!-- /.panel-header -->
 
     <div class="panel-content">
-        <div class="panel-before-table">
-            {% if lenderLoans|length > 0 %}
-            <div class="chart" data-chartview='{{ loansChartData.charts.lenderOperations|json_encode|escape('html_attr') }}'></div>
-            {# Responsive issues, so I am rendering the legend in the page itself, rather than in the chart above #}
-            <div class="chart-legend">
-                {% set filterVal = 0 %}
-                {% for i, series in loansChartData.charts.lenderOperations.highcharts.series %}
-                    {% for j, dataItem in series.data if dataItem.showInLegend is defined > 0 %}
-                        {#var mapStatusFunction = function(status) {#}
-                        {#if (status.indexOf('à jour') > -1)         {status = 'inprogress';}#}
-                        {#if (status.indexOf('retard') > -1)         {status = 'late';}#}
-                        {#if (status.indexOf('recouvrement') > -1)   {status = 'completing';}#}
-                        {#if (status.indexOf('collective') > -1)     {status = 'problem';}#}
-                        {#if (status.indexOf('défaut') > -1)         {status = 'defaulted';}#}
-                        {#if (status.indexOf('remboursé') > -1)      {status = 'completed';}#}
-                        {#return status;#}
-                        {#}#}
-                        {% if 'à jour' in dataItem.name %}
-                            {% set filterVal = 80 %}
-                        {% elseif 'retard' in dataItem.name %}
-                            {% set filterVal = 100 %}
-                            {# group 100 and 110 #}
-                        {% elseif 'recouvrement' in dataItem.name %}
-                            {% set filterVal = 120 %}
-                        {% elseif 'collective' in dataItem.name %}
-                            {% set filterVal = 130 %}
-                            {# group 130, 140 and  150 #}
-                        {% elseif 'défaut' in dataItem.name %}
-                            {% set filterVal = 160 %}
-                        {% elseif 'remboursé' in dataItem.name %}
-                            {% set filterVal = 90 %}
-                        {% endif %}
-                        <div class="chart-key" data-filter-val="{{ filterVal }}">
-                            <div class="icon" style="background-color: {{ dataItem.color }}"></div>
-                            <div class="label">{{ dataItem.name }}</div>
-                        </div>
+        {% if lenderLoans|length > 0 %}
+            <div class="panel-before-table">
+                <div class="chart" data-chartview='{{ loansChartData.charts.lenderOperations|json_encode|escape('html_attr') }}'></div>
+                {# Responsive issues, so I am rendering the legend in the page itself, rather than in the chart above #}
+                <div class="chart-legend">
+                    {% for series in loansChartData.charts.lenderOperations.highcharts.series %}
+                        {% for dataItem in series.data if dataItem.showInLegend is defined > 0 %}
+                            <div class="chart-key" data-filter-val="{{ dataItem.status }}">
+                                <div class="icon" style="background-color: {{ dataItem.color }}"></div>
+                                <div class="label">{{ dataItem.name }}</div>
+                            </div>
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
-            </div>
-            <form id="form-filters-loans" action="{{ path('filter_loans') }}" method="post" class="form-filters" data-ajax>
-                <input class="id_last_action" type="hidden" name="filter[id_last_action]" value="">
-                <select id="filter-status" name="filter[status]" class="input-field">
-                    <option value="">{% trans %} lender-operations_loans-table-by-status-filter {% endtrans %}</option>
-                    {% for statusDetail in loansStatusFilter %}
-                        <option value="{{ statusDetail.status }}" {% if currentFilters.status is defined and currentFilters.status == statusDetail.status %} selected="selected" {% endif %}>{{ "lender-operations_project-status-label-#{ statusDetail.status }" | trans }}</option>
-                    {% endfor %}
-                </select>
-                <select id="filter-next" name="filter[date]" class="input-field">
-                    <option value="">{% trans %} lender-operations_loans-table-by-date-filter {% endtrans %}</option>
-                    {% for year in firstLoanYear..date()|date('Y') %}
-                        <option value="{{ year }}"{% if currentFilters.date is defined and currentFilters.date == year %} selected="selected"{% endif %}>{{ year }}</option>
-                    {% endfor %}
-                </select>
-            </form><!-- /.form-filters -->
-        </div><!-- /.panel-before-table -->
-
-        <div class="table-scroll">
-            <table class="table table-myloans" data-sortable data-sortable-responsivefilters="false">
-                <thead>
-                <tr>
-                    <th class="table-sortable-column table-myloans-item-project" data-sortable-by="project">
-                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-project-name-column'|trans|e('html_attr') }}" data-toggle="tooltip">
-                            {% trans %} lender-operations_loans-table-project-column {% endtrans %}
-                        </span>
-                    </th>
-                    {#
-                    <th class="table-sortable-column table-myloans-item-rating" data-sortable-by="rating">
-                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-project-rate-column'|trans|e('html_attr') }}" data-toggle="tooltip">
-                            {% trans %} lender-operations_loans-table-project-risk-column {% endtrans %}
-                        </span>
-                    </th>
-                    #}
-                    <th class="table-sortable-column table-myloans-item-amount" data-sortable-by="amount">
-                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-loan-amount-column'|trans|e('html_attr') }}" data-toggle="tooltip">
-                            {% trans %} lender-operations_loans-table-amount-column {% endtrans %}
-                        </span>
-                    </th>
-                    <th class="table-sortable-column table-myloans-item-rate" data-sortable-by="rate">
-                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-loan-rate-column'|trans|e('html_attr') }}" data-toggle="tooltip">
-                            {% trans %} lender-operations_loans-table-loan-rate-column {% endtrans %}
-                        </span>
-                    </th>
-                    <th class="table-sortable-column table-myloans-item-monthly" data-sortable-by="monthly">
-                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-monthly-installment-column'|trans|e('html_attr') }}" data-toggle="tooltip">
-                            {% trans %} lender-operations_loans-table-monthly-installment-amount-column {% endtrans %}
-                        </span>
-                    </th>
-                    <th class="table-sortable-column table-myloans-item-next" data-sortable-by="next">
-                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-next-monthly-installment-column'|trans|e('html_attr') }}" data-toggle="tooltip">
-                            {% trans %} lender-operations_loans-table-next-monthly-installment-date-column {% endtrans %}
-                        </span>
-                    </th>
-                    <th class="table-sortable-column table-myloans-item-remaining" data-sortable-by="remaining">
-                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-total-repayment-remaining-amount-column'|trans|e('html_attr') }}" data-toggle="tooltip">
-                            {% trans %} lender-operations-loans-table-total-repayment-remaining-amount-column {% endtrans %}
-                        </span>
-                    </th>
-                    <th class="table-sortable-column table-myloans-item-duration" data-sortable-by="duration">
-                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-remaining-monthly-installments-column'|trans|e('html_attr') }}" data-toggle="tooltip">
-                            {% trans %} lender-operations_loans-table-remaining-monthly-installments-column {% endtrans %}
-                        </span>
-                    </th>
-                    <th class="table-myloans-item-controls">
-                        &nbsp;
-                    </th>
-                </tr>
-                </thead>
-                <tbody data-sortable-content>
-                    {% for i, loan in lenderLoans %}
-                        {{ include('/pages/lender_operations/my_loans_rows.html.twig') }}
-                        {{ include('/pages/lender_operations/my_loans_details.html.twig') }}
-                    {% endfor %}
-                </tbody>
-            </table><!-- /.table-myloans -->
-        </div><!-- /.table-scroll -->
+                </div>
+                <form id="form-filters-loans" action="{{ path('filter_loans') }}" method="post" class="form-filters" data-ajax>
+                    <input class="id_last_action" type="hidden" name="filter[id_last_action]" value="">
+                    <select id="filter-status" name="filter[status]" class="input-field">
+                        <option value="">{% trans %} lender-operations_loans-table-by-status-filter {% endtrans %}</option>
+                        {% for filterName, statusList in loansStatusFilter %}
+                            <option value="{{ filterName }}">{{ "lender-operations_project-status-label-filter-#{ filterName }"|trans }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="filter-next" name="filter[date]" class="input-field">
+                        <option value="">{% trans %} lender-operations_loans-table-by-date-filter {% endtrans %}</option>
+                        {% for year in firstLoanYear..date()|date('Y') %}
+                            <option value="{{ year }}"{% if currentFilters.date is defined and currentFilters.date == year %} selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </form><!-- /.form-filters -->
+            </div><!-- /.panel-before-table -->
+            <div class="panel-table">
+                {{ include('/pages/lender_operations/my_loans_table.html.twig') }}
+            </div><!-- /.panel-table -->
         {% else %}
             <div class="message-info after">{{ 'lender-operations_no-result-found-message'|trans }}</div>
         {% endif %}

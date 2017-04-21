@@ -751,7 +751,6 @@ ChartView.prototype.render = function (data, schema) {
 
         // Preter Operations Pie/Donut Chart
         case 'preterOperations':
-
             var $preterLoans = $('#dashboard-lender-operations #loans');
             var $preterLoansKeys = $preterLoans.find('.chart-key');
 

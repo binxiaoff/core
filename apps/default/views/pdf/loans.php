@@ -53,20 +53,20 @@
             <th>Date de dernière échéance</th>
             <th>Mensualité</th>
         </tr>
-        <?php foreach ($this->lSumLoans as $aProjectLoans): ?>
-            <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
+        <?php foreach ($this->lSumLoans as $aProjectLoans) : ?>
+            <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT) : ?>
                 <tr>
                     <td><?= $this->lng['preteur-operations-detail']['filter-status-' . $aProjectLoans['project_status']] ?></td>
-                    <td class="description"><?= $aProjectLoans['name'] ?></td>
+                    <td class="description"><?= $aProjectLoans['title'] ?></td>
                     <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProjectLoans['amount'], 0) ?> €</td>
                     <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProjectLoans['rate'], 1) ?> %</td>
                     <td><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
-                    <?php if (in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE))) { ?>
-                        <td colspan="2">Remboursé intégralement <br /> le <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y')?></td>
-                    <?php } else { ?>
+                    <?php if (in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE))) : ?>
+                        <td colspan="2">Remboursé intégralement <br> le <?= $this->dates->formatDate($aProjectLoans['final_repayment_date'], 'd/m/Y')?></td>
+                    <?php else : ?>
                         <td><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
                         <td><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
-                    <?php } ?>
+                    <?php endif; ?>
                     <td><?= $this->ficelle->formatNumber($aProjectLoans['monthly_repayment_amount']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
                 </tr>
             <?php endif; ?>
