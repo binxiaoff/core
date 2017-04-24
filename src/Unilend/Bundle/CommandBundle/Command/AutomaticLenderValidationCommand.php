@@ -1,13 +1,15 @@
 <?php
 
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
@@ -52,9 +54,9 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
      */
     private function getClientsForAutoValidation()
     {
-      //$clientStatus   = [\clients_status::TO_BE_CHECKED, \clients_status::COMPLETENESS_REPLY, \clients_status::MODIFICATION];
+        //$clientStatus = [\clients_status::TO_BE_CHECKED, \clients_status::COMPLETENESS_REPLY, \clients_status::MODIFICATION];
         $clientStatus   = [\clients_status::TO_BE_CHECKED]; // this is a temporary restriction. Waiting for a fix on the root cause of TMA-1613
-        $attachmentType = [\attachment_type::CNI_PASSPORTE, \attachment_type::JUSTIFICATIF_DOMICILE, \attachment_type::RIB];
+        $attachmentType = [AttachmentType::CNI_PASSPORTE, AttachmentType::JUSTIFICATIF_DOMICILE, AttachmentType::RIB];
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \clients $client */
@@ -62,12 +64,10 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
         $result            = $client->getClientsToAutoValidate($clientStatus, $attachmentType);
         $clientsToValidate = [];
-
         if (false === empty($result)) {
             foreach ($result as $row) {
                 $clientsToValidate[$row['id_client']][$row['id_type']] = [
-                    'revalidate'   => $row['revalidate'],
-                    'final_status' => $row['final_status']
+                    'id_attachment'   => $row['id_attachment']
                 ];
             }
             unset($result);
@@ -82,14 +82,6 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                         continue 2;
                     }
                 }
-
-                foreach ($attachments as $attachment) {
-                    // Check if it is the final status and that no revalidation is required
-                    if (\greenpoint_attachment::REVALIDATE_YES == $attachment['revalidate']) {
-                        unset($clientsToValidate[$clientId]);
-                        continue 2;
-                    }
-                }
             }
         }
         return $clientsToValidate;
@@ -97,7 +89,9 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
     /**
      * @param \clients $client
-     * @param array $attachment
+     * @param array    $attachment
+     * @throws \Exception
+     *
      */
     private function validateLender(\clients $client, array $attachment)
     {
@@ -122,6 +116,23 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         /** @var ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->getContainer()->get('unilend.service.client_status_manager');
 
+        /** @var BankAccountRepository $bankAccountRepository */
+        $bankAccountRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount');
+        if (null === $bankAccountRepository->getClientValidatedBankAccount($client->id_client)) {
+            /** @var BankAccount $bankAccount */
+            $bankAccount = $bankAccountRepository->findOneBy(['idClient' => $client->id_client, 'dateArchived' => null, 'dateValidated' => null]);
+            if (null === $bankAccount) {
+                throw new \Exception('Lender has no pending bank account to validate and could not be validated');
+            }
+            $gpAttachment = $bankAccount->getAttachment()->getGreenpointAttachment();
+            if ($gpAttachment && GreenpointAttachment::STATUS_VALIDATION_VALID === $gpAttachment->getValidationStatus()) {
+                /** @var BankAccountManager $bankAccountManager */
+                $bankAccountManager = $this->getContainer()->get('unilend.service.bank_account_manager');
+                $bankAccountManager->validateBankAccount($bankAccount);
+            } else {
+                throw new \Exception('Lender has no valid bank account and could not be validated');
+            }
+        }
         $existingClient = $client->getDuplicates($client->nom, $client->prenom, $client->naissance);
         $existingClient = array_shift($existingClient);
 
@@ -134,18 +145,6 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         }
         $lenderAccount->get($client->id_client, 'id_client_owner');
         $clientAddress->get($client->id_client, 'id_client');
-
-        /** @var BankAccountRepository $bankAccountRepository */
-        $bankAccountRepository  = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount');
-        $gpValidatedBankAccount = $bankAccountRepository->getGreenPointValidatedBankAccount($client->id_client);
-
-        if (null === $gpValidatedBankAccount) {
-            throw new \Exception('Lender has no validated bank account and could not be validated');
-        }
-        /** @var BankAccountManager $bankAccountManager */
-        $bankAccountManager = $this->getContainer()->get('unilend.service.bank_account_manager');
-        $bankAccountManager->validateBankAccount($gpValidatedBankAccount);
-
         $clientStatusManager->addClientStatus($client, Users::USER_ID_CRON, \clients_status::VALIDATED, 'Validation automatique basée sur Green Point');
         $serialize = serialize(array('id_client' => $client->id_client, 'attachment_data' => $attachment));
         $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);

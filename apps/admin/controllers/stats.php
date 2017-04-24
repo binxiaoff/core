@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+
 class statsController extends bootstrap
 {
     public function initialize()
@@ -173,7 +175,7 @@ class statsController extends bootstrap
             $lenderAccount->get($clients->id_client, 'id_client_owner');
             $fiscalAndLocationData = [];
 
-            if (in_array($clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+            if (in_array($clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $fiscalAndLocationData = [
                     'address'    => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->adresse_fiscal) ? trim($clientAddress->adresse1) : trim($clientAddress->adresse_fiscal),
                     'zip'        => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->cp_fiscal) ? trim($clientAddress->cp) : trim($clientAddress->cp_fiscal),
@@ -240,7 +242,7 @@ class statsController extends bootstrap
                 $this->addPersonLineToBeneficiaryQueryData($data, $lenderAccount, $clients, $fiscalAndLocationData);
             }
 
-            if ($company->get($clients->id_client, 'id_client_owner') && in_array($clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if ($company->get($clients->id_client, 'id_client_owner') && in_array($clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $company->id_pays = (0 == $company->id_pays) ? 1 : $company->id_pays;
                 $countries->get($company->id_pays, 'id_pays');
                 $fiscalAndLocationData['isoFiscal']   = $countries->iso;
@@ -615,6 +617,52 @@ class statsController extends bootstrap
                 $aHeader = isset($aHeaderExtended) ? $aHeaderExtended : array_keys(array_shift($this->aBorrowers));
                 $this->exportCSV($this->aBorrowers, 'requete_source_emprunteurs' . date('Ymd'), $aHeader);
             }
+        }
+    }
+
+    public function _declarations_bdf()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $declarationList       = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findAll();
+        $declarationPath       = $this->getParameter('path.sftp') . 'bdf/emissions/declarations_mensuelles/';
+        $this->declarationList = [];
+
+        if (isset($this->params[0], $this->params[1]) && 'file' === $this->params[0] && is_string($this->params[1])) {
+            $this->download($declarationPath . $this->params[1]);
+        }
+        foreach ($declarationList as $declaration) {
+            $absoluteFileName = $declarationPath . $declaration->getElementName();
+
+            if (file_exists($absoluteFileName)) {
+                if ('01' === $declaration->getAdded()->format('m')) {
+                    $year = $declaration->getAdded()->format('Y') - 1;
+                } else {
+                    $year = $declaration->getAdded()->format('Y');
+                }
+                $declarationDate                = \DateTime::createFromFormat('Ym', substr($declaration->getElementName(), 6, 6));
+                $this->declarationList[$year][] = [
+                    'declarationDate' => strftime('%B %Y', $declarationDate->getTimestamp()),
+                    'creationDate'    => $declaration->getAdded()->format('d/m/Y H:i'),
+                    'link'            => '/stats/declarations_bdf/file/' . $declaration->getElementName(),
+                    'fileName'        => $declaration->getElementName()
+                ];
+            }
+        }
+    }
+
+    /**
+     * @param string $filePath
+     */
+    protected function download($filePath)
+    {
+        if (file_exists($filePath)) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . basename($filePath) . '";');
+            @readfile($filePath);
+
+            exit;
         }
     }
 }

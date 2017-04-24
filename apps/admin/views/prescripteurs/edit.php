@@ -46,9 +46,9 @@
             </tr>
             <tr>
                 <th><label for="iban">IBAN :</label></th>
-                <td><input type="text" name="iban" id="iban" class="input_large" value="<?= $this->companies->iban ?>"/></td>
+                <td><input type="text" name="iban" id="iban" class="input_large" value="<?= $this->bankAccount->getIban() ?>"/></td>
                 <th><label for="bic">BIC :</label></th>
-                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->companies->bic ?>"/></td>
+                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->bankAccount->getBic() ?>"/></td>
             </tr>
             <tr>
                 <th colspan="4">

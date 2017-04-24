@@ -1,0 +1,54 @@
+Unilend\Bundle\CoreBusinessBundle\Entity\Companies:
+    properties:
+        name:
+            - NotBlank: ~
+        forme:
+            - NotBlank: ~
+        siren:
+            - NotBlank: ~
+            - Length:
+                min: 9
+                max: 14
+            - Type : string
+        capital:
+            - NotBlank: ~
+            - Type: numeric
+        statusClient:
+            - NotBlank: ~
+            - Type: integer
+        statusConseilExterneEntreprise:
+            - Type: integer
+        preciserConseilExterneEntreprise:
+            - Regex:
+                pattern: '/[^A-zÀ-ÿ\s\-]+/i'
+                match: false
+            - Length:
+                min: 2
+        nomDirigeant:
+            - Regex:
+                pattern: '/[^A-zÀ-ÿ\s\-]+/i'
+                match: false
+            - Length:
+                min: 2
+        prenomDirigeant:
+            - Regex:
+                pattern: '/[^A-zÀ-ÿ\s\-]+/i'
+                match: false
+            - Length:
+                min: 2
+        fonctionDirigeant:
+            - Regex:
+                pattern: '/[^A-zÀ-ÿ\s\-]+/i'
+                match: false
+            - Length:
+                min: 2
+        emailDirigeant:
+            - Email: ~
+        phoneDirigeant:
+            - Regex:
+                pattern: '/[^0-9\s\-\+]/'
+                match: false
+            - Length:
+                min: 10
+                max: 14
+

@@ -46,14 +46,6 @@ class WalletRepository extends EntityRepository
      */
     public function getWalletByType($idClient, $walletType)
     {
-        if ($idClient instanceof Clients) {
-            $idClient = $idClient->getIdClient();
-        }
-
-        if ($walletType instanceof WalletType) {
-            $walletType = $walletType->getLabel();
-        }
-
         $cb = $this->createQueryBuilder('w');
         $cb->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
             ->where('w.idClient = :idClient')

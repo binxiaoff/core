@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+
 class rootController extends bootstrap
 {
     public function initialize()
@@ -80,7 +82,7 @@ class rootController extends bootstrap
             @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
         } else {
             $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-            $oPdf           = new \pdfController($oCommandPdf, 'default');
+            $oPdf           = new \pdfController($oCommandPdf, 'default', $this->request);
             $oPdf->setContainer($this->container);
             $oPdf->initialize();
             $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
@@ -141,7 +143,7 @@ class rootController extends bootstrap
             $oLoans      = $this->loadData('loans');
             $iLoansCount = $oLoans->counter('id_lender = ' . $oLenderAccount->id_lender_account . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
-            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+            if (in_array($this->clients->type, array(Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER))) {
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
                 if ($this->clients_adresses->id_pays_fiscal == 0) {

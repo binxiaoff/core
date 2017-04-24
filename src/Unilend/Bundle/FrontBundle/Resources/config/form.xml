@@ -21,5 +21,56 @@
         <service id="unilend.form.lender_withdrawal" class="Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType">
             <tag name="form.type" />
         </service>
+
+        <service id="unilend.form.company_identity" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityType">
+            <tag name="form.type" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.component.gender_type" class="Unilend\Bundle\FrontBundle\Form\Components\GenderType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.component.countries_type" class="Unilend\Bundle\FrontBundle\Form\Components\CountriesType">
+            <tag name="form.type" />
+            <argument type="service" id="unilend.service.location_manager" />
+        </service>
+
+        <service id="unilend.form.component.nationalities_type" class="Unilend\Bundle\FrontBundle\Form\Components\NationalitiesType">
+            <tag name="form.type" />
+            <argument type="service" id="unilend.service.location_manager" />
+        </service>
+
+        <service id="unilend.form.postal_address_type" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PostalAddressType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.funds_origin" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\OriginOfFundsType">
+            <tag name="form.type" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+        </service>
+
+        <service id="unilend.form.email" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientEmailType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.password" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientPasswordType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.person_identity" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.form.legal_entity_identity" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
     </services>
 </container>

@@ -66,7 +66,7 @@
                                                         <div class="btn-group">
                                                             <span class="icon fa-euro"></span>
                                                         </div><!-- /.btn-group -->
-                                                        <input id="form-project-create-finance-equity" type="text" name="finance[dl]" value="{{ form.values.dl|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        <input id="form-project-create-finance-equity" type="text" name="finance[dl]" value="{% if form.values.dl is not same as('') %}{{ form.values.dl|localizednumber }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     </div><!-- /.input-group -->
                                                     {% if form.errors.dl is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -84,7 +84,7 @@
                                                         <div class="btn-group">
                                                             <span class="icon fa-euro"></span>
                                                         </div><!-- /.btn-group -->
-                                                        <input id="form-project-create-finance-turnover" type="text" name="finance[fl]" value="{{ form.values.fl|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        <input id="form-project-create-finance-turnover" type="text" name="finance[fl]" value="{% if form.values.fl is not same as('') %}{{ form.values.fl|localizednumber }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     </div><!-- /.input-group -->
                                                     {% if form.errors.fl is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -102,7 +102,7 @@
                                                         <div class="btn-group">
                                                             <span class="icon fa-euro"></span>
                                                         </div><!-- /.btn-group -->
-                                                        <input id="form-project-create-finance-income" type="text" name="finance[gg]" value="{{ form.values.gg|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        <input id="form-project-create-finance-income" type="text" name="finance[gg]" value="{% if form.values.gg is not same as('') %}{{ form.values.gg|localizednumber }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     </div><!-- /.input-group -->
                                                     {% if form.errors.gg is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -120,7 +120,7 @@
                                                             <div class="btn-group">
                                                                 <span class="icon fa-euro"></span>
                                                             </div><!-- /.btn-group -->
-                                                            <input id="form-project-create-finance-turnover" type="text" name="finance[ag_2035]" value="{{ form.values.ag_2035|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                            <input id="form-project-create-finance-turnover" type="text" name="finance[ag_2035]" value="{% if form.values.ag_2035 is not same as('') %}{{ form.values.ag_2035|localizednumber }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                         </div><!-- /.input-group -->
                                                         {% if form.errors.ag_2035 is defined %}
                                                             <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -171,8 +171,21 @@
                                                                     <div class="col-lg-6 col-md-6">
                                                                         <select name="files[extra__NUM__]" class="input-field">
                                                                             <option value="">{% trans %} project-request_step-2-process-fast-files-select {% endtrans %}</option>
-                                                                            {% for attachment in attachment_types  %}
-                                                                                <option value="{{ attachment.id }}">{{ attachment.label }}</option>
+                                                                            {% for attachmentType in attachmentTypes %}
+                                                                                {% set translationLabel = 'projet_document-type-' ~ attachmentType.getId() %}
+                                                                                <option value="{{ attachmentType.getId() }}">
+                                                                                    {% set year = 'now'|date('Y') %}
+                                                                                    {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DERNIERE_LIASSE_FISCAL') %}
+                                                                                        {% set year = year - 1 %}
+                                                                                    {% endif %}
+                                                                                    {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::LIASSE_FISCAL_N_1') %}
+                                                                                        {% set year = year - 2 %}
+                                                                                    {% endif %}
+                                                                                    {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::LIASSE_FISCAL_N_2') %}
+                                                                                        {% set year = year - 3 %}
+                                                                                    {% endif %}
+                                                                                    {{ translationLabel|trans({'%year%': year}) }}
+                                                                                </option>
                                                                             {% endfor %}
                                                                         </select>
                                                                     </div>

@@ -23,7 +23,7 @@ class Subscription
      * @JMS\SerializedName("numero_inscription")
      * @JMS\Type("integer")
      */
-    private $subscritpionNumber;
+    private $subscriptionNumber;
 
     /**
      * @JMS\SerializedName("montant_creance")
@@ -40,7 +40,7 @@ class Subscription
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
     public function getSubscriptionDate()
     {
@@ -48,15 +48,15 @@ class Subscription
     }
 
     /**
-     * @return mixed
+     * @return integer
      */
-    public function getSubscritpionNumber()
+    public function getSubscriptionNumber()
     {
-        return $this->subscritpionNumber;
+        return $this->subscriptionNumber;
     }
 
     /**
-     * @return mixed
+     * @return float
      */
     public function getAmount()
     {

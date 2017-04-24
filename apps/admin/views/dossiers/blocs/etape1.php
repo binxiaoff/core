@@ -9,7 +9,7 @@
                 <td>
                     <select id="partner_etape1" name="partner_etape1" class="select" title="Partenaire">
                         <?php foreach ($this->partnerList as $partner) : ?>
-                            <option value="<?= $partner['id'] ?>"<?= $this->projects->id_partner === $partner['id'] ? ' selected' : '' ?>><?= $partner['name'] ?></option>
+                            <option value="<?= $partner->getId() ?>"<?= $this->projects->id_partner == $partner->getId() ? ' selected' : '' ?>><?= $partner->getIdCompany()->getName() ?></option>
                         <?php endforeach; ?>
                     </select>
                 </td>
