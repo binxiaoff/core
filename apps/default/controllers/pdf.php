@@ -780,9 +780,6 @@ class pdfController extends bootstrap
 
         $this->settings->get('Facture - TVA INTRACOMMUNAUTAIRE', 'type');
         $this->tvaIntra = mb_strtoupper($this->settings->value, 'UTF-8');
-
-
-        $this->setDisplay('footer_facture');
     }
 
     private function GenerateInvoiceEFHtml()
@@ -816,10 +813,9 @@ class pdfController extends bootstrap
         $this->date_echeance_reel   = $aInvoices[0]['date'];
         $this->commissionPercentage = $aInvoices[0]['commission'];
 
-        $this->setDisplay('facture_EF_html');
-        $sDisplayInvoice = $this->sDisplay;
         $this->GenerateFooterInvoice();
-        $this->sDisplay = $sDisplayInvoice . $this->sDisplay;
+
+        $this->setDisplay('facture_EF_html');
     }
 
     public function _facture_ER($sHash = null, $iProjectId = null, $iOrder = null, $bRead = true)
@@ -878,10 +874,9 @@ class pdfController extends bootstrap
         $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
         $this->date_echeance_reel = $aInvoices[0]['date'];
 
-        $this->setDisplay('facture_ER_html');
-        $sDisplayInvoice = $this->sDisplay;
         $this->GenerateFooterInvoice();
-        $this->sDisplay = $sDisplayInvoice . $this->sDisplay;
+
+        $this->setDisplay('facture_ER_html');
     }
 
     // Mise a jour des dates echeances preteurs et emprunteur (utilisé pour se baser sur la date de creation du pouvoir)

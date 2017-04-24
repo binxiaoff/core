@@ -728,28 +728,6 @@ class MailerManager
         return $oActivationTime;
     }
 
-    /**
-     * @param string   $notificationType
-     * @param Projects $project
-     * @param string   $recipient
-     */
-    public function sendProjectNotificationToStaff($notificationType, Projects $project, $recipient)
-    {
-        $aReplacements = array(
-            '[SURL]'           => $this->sSUrl,
-            '[ID_PROJET]'      => $project->getIdProject(),
-            '[MONTANT]'        => $project->getAmount(),
-            '[RAISON_SOCIALE]' => $project->getIdCompany()->getName(),
-            '[LIEN_REPRISE]'   => $this->sAUrl . '/depot_de_dossier/reprise/' . $project->getHash(),
-            '[LIEN_BO_PROJET]' => $this->sAUrl . '/dossiers/edit/' . $project->getIdProject()
-        );
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($notificationType, $aReplacements, false);
-        $message->setTo(explode(';', str_replace(' ', '', $recipient)));
-        $this->mailer->send($message);
-    }
-
     public function sendProjectOnlineToBorrower(Projects $project)
     {
         $company = $project->getIdCompany();

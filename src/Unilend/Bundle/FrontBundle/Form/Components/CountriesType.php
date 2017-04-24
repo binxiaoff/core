@@ -30,7 +30,7 @@ class CountriesType extends AbstractType
         $countryList = $this->locationManager->getCountries();
 
         $resolver->setDefaults([
-            'choices' => array_flip($countryList),
+            'choices'  => array_flip($countryList),
             'expanded' => false,
             'multiple' => false
         ]);

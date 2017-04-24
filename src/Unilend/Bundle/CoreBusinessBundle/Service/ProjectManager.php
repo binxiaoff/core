@@ -747,6 +747,7 @@ class ProjectManager
             $projectId = $project->id_project;
             $project   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
         }
+        $originStatus = $project->getStatus();
         /** @var \projects_status_history $projectsStatusHistory */
         $projectsStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
         /** @var \projects_status $projectStatusEntity */
@@ -763,7 +764,9 @@ class ProjectManager
         $project->setStatus($projectStatus);
         $this->entityManager->flush($project);
 
-        $this->projectStatusUpdateTrigger($projectStatusEntity, $project, $userId);
+        if ($originStatus != $projectStatus) {
+            $this->projectStatusUpdateTrigger($projectStatusEntity, $project, $userId);
+        }
     }
 
     /**
@@ -781,6 +784,24 @@ class ProjectManager
                 $message .= ' par ' . $user->getFirstname() . ' ' . $user->getName();
             }
 
+            if (
+                $project->id_commercial > 0
+                && $userId != $project->id_commercial
+                && ($user = $userRepository->find($project->id_commercial))
+                && false === empty($user->getSlack())
+            ) {
+                $this->slackManager->sendMessage($message, '@' . $user->getSlack());
+            }
+
+            if (
+                $project->id_analyste > 0
+                && $userId != $project->id_analyste
+                && ($user = $userRepository->find($project->id_analyste))
+                && false === empty($user->getSlack())
+            ) {
+                $this->slackManager->sendMessage($message, '@' . $user->getSlack());
+            }
+
             $this->slackManager->sendMessage($message, '#statuts-projets');
         }
 
@@ -788,18 +809,6 @@ class ProjectManager
         $projectData = $this->entityManagerSimulator->getRepository('projects');
 
         switch ($project->getStatus()) {
-            case \projects_status::COMPLETE_REQUEST:
-                /** @var \settings $setting */
-                $setting = $this->entityManagerSimulator->getRepository('settings');
-                $setting->get('Adresse notification inscription emprunteur', 'type');
-                $this->mailerManager->sendProjectNotificationToStaff('notification-depot-de-dossier', $project, trim($setting->value));
-                break;
-            case \projects_status::PENDING_ANALYSIS:
-                /** @var \settings $setting */
-                $setting = $this->entityManagerSimulator->getRepository('settings');
-                $setting->get('Adresse notification analystes', 'type');
-                $this->mailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $project, trim($setting->value));
-                break;
             case \projects_status::COMMERCIAL_REJECTION:
             case \projects_status::ANALYSIS_REJECTION:
             case \projects_status::COMITY_REJECTION:

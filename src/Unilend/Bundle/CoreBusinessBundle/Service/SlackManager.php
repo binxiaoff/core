@@ -93,11 +93,11 @@ class SlackManager
         $backUrl = $this->backUrl . '/dossiers/edit/' . $project->getIdProject();
         $company = $project->getIdCompany();
 
-        if (empty($title)) {
+        if (empty($title) && $company) {
             $title = $company->getName();
         }
 
-        if (empty($title)) {
+        if (empty($title) && $company) {
             $title = $company->getSiren();
         }
 

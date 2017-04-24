@@ -95,7 +95,7 @@ class MonitoringController extends Controller
 
         try {
             $siren             = '790766034';
-            $infogreffeManager = $this->get('unilend.service.ws_client.infogreffe_manager')->setUseCache(false);
+            $infogreffeManager = $this->get('unilend.service.ws_client.infogreffe_manager')->setUseCache(false)->setMonitoring(true);
             $response          = null === $infogreffeManager->getIndebtedness($siren) ? 'ko' : 'ok';
         } catch (\Exception $exception) {
             $this->get('logger')->error('Infogreffe monitoring error: ' . $exception->getMessage());

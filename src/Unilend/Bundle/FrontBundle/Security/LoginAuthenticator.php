@@ -262,7 +262,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $loginLog->create();
 
         if ('wrong-security-token' === $exception->getMessage()) {
-            $this->logger->error('Invalid CSRF token', [
+            $this->logger->warning('Invalid CSRF token', [
                 'login_log ID' => $loginLog->id_log_login,
                 'server'       => exec('hostname'),
                 'token'        => $this->getCredentials($request)['csrfToken'],
