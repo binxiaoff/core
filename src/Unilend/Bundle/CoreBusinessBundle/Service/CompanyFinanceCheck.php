@@ -135,7 +135,7 @@ class CompanyFinanceCheck
         } catch (\Exception $exception) {
             $this->logger->error(
                 'Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
             );
         }
 
@@ -208,8 +208,10 @@ class CompanyFinanceCheck
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not get balance sheets: AltaresManager::getBalanceSheets(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
+            $this->logger->error(
+                'Could not get financial summary: AltaresManager::getFinancialSummary(' . $siren . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
+            );
         }
 
         $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro';
@@ -240,7 +242,7 @@ class CompanyFinanceCheck
         } catch (\Exception $exception) {
             $this->logger->error(
                 'Could not get balance management line: AltaresManager::getBalanceManagementLine(' . $siren . ', ' . $lastBalanceSheet->getBalanceSheetId() . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
             );
         }
 

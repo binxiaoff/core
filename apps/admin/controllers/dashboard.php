@@ -216,19 +216,25 @@ class dashboardController extends bootstrap
 
     public function _evaluate_projects()
     {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \projects $project */
         $project  = $this->loadData('projects');
-        $projects = $project->getImpossibleEvaluationProjects();
+        /** @var \clients $client */
+        $client  = $this->loadData('clients');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        foreach ($projects as $projectRow) {
-            $project->get($projectRow['id_project']);
+        $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => \projects_status::IMPOSSIBLE_AUTO_EVALUATION]);
+        foreach ($projects as $projectEntity) {
+            $project->get($projectEntity->getIdProject());
 
             if (null === $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user'])) {
-                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::INCOMPLETE_REQUEST, $project);
+                $client->get($projectEntity->getIdCompany()->getIdClientOwner());
+                $status = empty($client->email) ? \projects_status::INCOMPLETE_REQUEST : \projects_status::COMPLETE_REQUEST;
+                $projectManager->addProjectStatus($_SESSION['user']['id_user'], $status, $project);
             }
         }
 
