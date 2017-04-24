@@ -167,7 +167,7 @@ function rateActivatedSwitch($checkbox, $inputStatus) {
         $checkbox.removeAttr('checked').prop('checked', false)
     } else {
         activateSetting($inputStatus)
-        $checkbox.attr('checked', 'checked').prop('checked', 'checked')
+        $checkbox.attr('checked', 'checked').prop('checked', true)
     }
 }
 
@@ -195,7 +195,6 @@ function showBalance(cellIndex) {
 }
 
 function activateCell($input) {
-
     $('.col-data').children().filter('.active').removeClass('active')
     $input.parents('.cell-data').first().addClass('active')
 }
