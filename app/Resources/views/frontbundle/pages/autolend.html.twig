@@ -300,4 +300,18 @@
             <a href="javascript:;" class="btn-outline" data-modal-doactioncancel>{% trans %} autolend_out-of-range-confirmation-popup-cancel-button {% endtrans %}</a>
         </footer>
     </div><!-- /.autolend-table-dialog -->
+
+    <div id="autolend-out-of-absolute-range-table-dialog" class="autolend-table-dialog" data-modal data-modal-maxwidth="600" data-modal-closeonclickoverlay="true">
+        <div class="modal-body">
+            <h3 class="dialog-title">
+                <span class="icon fa-ban-u"><span class="sr-only">{% trans %} autolend_out-of-absolute-range-confirmation-popup-title {% endtrans %}</span></span>
+            </h3>
+            <div class="dialog-message">
+                <p>{% trans %} autolend_out-of-absolute-range-confirmation-popup-text {% endtrans %}</p>
+            </div>
+        </div>
+        <footer class="modal-footer">
+            <a href="javascript:;" class="btn-outline" data-modal-doactioncancel>{% trans %} autolend_out-of-absolute-range-confirmation-popup-cancel-button {% endtrans %}</a>
+        </footer>
+    </div><!-- /.autolend-table-dialog -->
 {% endblock %}

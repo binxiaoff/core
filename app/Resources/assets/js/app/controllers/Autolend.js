@@ -4,6 +4,9 @@ var __ = new Dictionary(window.UTILITY_LANG)
 
 var $doc = $(document)
 
+var autolendAbsoluteMin = 3.5
+var autolendAbsoluteMax = 10
+
 function getCellInfo(cellIndex) {
     var $inputRate = getInputRate(cellIndex)
 
@@ -213,6 +216,17 @@ function emptyNotificationsDiv(){
     $('#form-info-notifications .message-error').text('').hide()
 }
 
+function directInputChangeCell (event) {
+    event.preventDefault()
+
+    var cellData = getCellInfo($(event.target).parents('[data-autolendtable-cell]').attr('data-autolendtable-cell'))
+    var $inputRate = getInputRate(cellData.cellIndex)
+
+    changeCellColor(cellData, cellData.currentRate)
+    addCellDataToBalance(cellData)
+    changeBalance(cellData)
+}
+
 function eventDecreaseCell (event) {
     event.preventDefault()
 
@@ -308,7 +322,7 @@ $doc
         }
     })
     .on('change', '.cell .cell-input input[type="number"]', function (event) {
-
+        directInputChangeCell(event)
     })
 
     // Reduce cell rate
@@ -370,6 +384,8 @@ $doc
         var $elem = $(this)
         var form = event.target
         var $dialog = $('#autolend-table-dialog')
+        var outOfAbsoluteRange = false
+        var outOfUnilendRange = false
 
         emptyNotificationsDiv()
 
@@ -379,10 +395,22 @@ $doc
         $('.cell-input[data-autolendtable-cell]').each(function() {
             var cellData = getCellInfo($(this).attr('data-autolendtable-cell'))
 
+            if (parseFloat(cellData.currentRate, 1) < autolendAbsoluteMin || parseFloat(cellData.currentRate, 1) > autolendAbsoluteMax) {
+                outOfAbsoluteRange = true
+            }
+
             if (parseFloat(cellData.currentRate, 1) < parseFloat(cellData.min, 1) || parseFloat(cellData.currentRate, 1) > parseFloat(cellData.max, 1)) {
-                $dialog = $('#autolend-out-of-range-table-dialog')
+                outOfUnilendRange = true
             }
         })
+
+        if (outOfAbsoluteRange) {
+            $dialog = $('#autolend-out-of-absolute-range-table-dialog')
+        } else {
+            if (outOfUnilendRange) {
+                $dialog = $('#autolend-out-of-range-table-dialog')
+            }
+        }
 
         // Show dialog
         $dialog.uiModal('open')
