@@ -73,7 +73,7 @@ class CompanyScoringCheck
         } catch (\Exception $exception) {
             $this->logger->error(
                 'Could not get Altares score: AltaresManager::getScore(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
             );
         }
 
@@ -248,7 +248,7 @@ class CompanyScoringCheck
         } catch (\Exception $exception) {
             $this->logger->error(
                 'Could not get infolegale score: InfolegaleManager::getScore(' . $siren . '). Message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
             );
         }
 

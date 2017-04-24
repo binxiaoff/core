@@ -29,7 +29,7 @@ class MailQueue
     /**
      * @var string
      *
-     * @ORM\Column(name="serialized_variables", type="text", length=65535, nullable=true)
+     * @ORM\Column(name="serialized_variables", type="text", length=16777215, nullable=true)
      */
     private $serializedVariables;
 

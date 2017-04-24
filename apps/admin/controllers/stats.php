@@ -619,4 +619,50 @@ class statsController extends bootstrap
             }
         }
     }
+
+    public function _declarations_bdf()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $declarationList       = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findAll();
+        $declarationPath       = $this->getParameter('path.sftp') . 'bdf/emissions/declarations_mensuelles/';
+        $this->declarationList = [];
+
+        if (isset($this->params[0], $this->params[1]) && 'file' === $this->params[0] && is_string($this->params[1])) {
+            $this->download($declarationPath . $this->params[1]);
+        }
+        foreach ($declarationList as $declaration) {
+            $absoluteFileName = $declarationPath . $declaration->getElementName();
+
+            if (file_exists($absoluteFileName)) {
+                if ('01' === $declaration->getAdded()->format('m')) {
+                    $year = $declaration->getAdded()->format('Y') - 1;
+                } else {
+                    $year = $declaration->getAdded()->format('Y');
+                }
+                $declarationDate                = \DateTime::createFromFormat('Ym', substr($declaration->getElementName(), 6, 6));
+                $this->declarationList[$year][] = [
+                    'declarationDate' => strftime('%B %Y', $declarationDate->getTimestamp()),
+                    'creationDate'    => $declaration->getAdded()->format('d/m/Y H:i'),
+                    'link'            => '/stats/declarations_bdf/file/' . $declaration->getElementName(),
+                    'fileName'        => $declaration->getElementName()
+                ];
+            }
+        }
+    }
+
+    /**
+     * @param string $filePath
+     */
+    protected function download($filePath)
+    {
+        if (file_exists($filePath)) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . basename($filePath) . '";');
+            @readfile($filePath);
+
+            exit;
+        }
+    }
 }

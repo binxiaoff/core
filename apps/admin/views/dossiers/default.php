@@ -58,12 +58,24 @@
             $('#nbLignePagination').val(0);
             $('#pageActive').val(1);
         });
+
+        <?php if (
+            false === isset($_SESSION['project_search_page_disclaimer'])
+            && (
+                in_array($this->userEntity->getIdUserType()->getIdUserType(), [\users_types::TYPE_COMMERCIAL, \users_types::TYPE_RISK])
+                || in_array($this->userEntity->getIdUser(), [23, 28])
+            )
+        ) : ?>
+            $.colorbox({html: $('#deprecated-page-disclaimer').html(), overlayClose: false, escKey: false});
+            <?php $_SESSION['project_search_page_disclaimer'] = true; ?>
+        <?php endif; ?>
     });
 
     function paginationDossiers(directionPagination) {
         var nbLignePagination = Math.round($('#nbLignePagination').val());
         var pageActive = Math.round($('#pageActive').val());
         var totalLignePagination = <?= $this->iCountProjects - $this->nb_lignes ?>;
+
         switch (directionPagination) {
             case 'first':
                 $('#nbLignePagination').val(0);
@@ -89,9 +101,21 @@
                 $('#pageActive').val(nbPages);
                 break;
         }
-        $("#search_dossier").submit();
+
+        $('#search_dossier').submit();
     }
 </script>
+<div id="deprecated-page-disclaimer" style="display:none;">
+    <div style="padding:10px;">
+        <h1>Cette fonctionnalité va bientôt être supprimée</h1>
+        <p>Le <a href="<?php $this->lurl ?>/dashboard">flux</a> doit maintenant constituer le point d'entrée vers un dossier.</p>
+        <p>S'il manque des fonctionnalités qui ne vous permettent pas de vous passer de cette page de recherche, merci d'en faire part à Oliver afin de trouver une solution.</p>
+        <div style="text-align:center; margin-top:30px;">
+            <a role="button" class="btn_link" onclick="parent.$.fn.colorbox.close();">Accéder à la recherche</a>
+            <a href="<?php $this->lurl ?>/dashboard" class="btn_link">Accéder à mon flux</a>
+        </div>
+    </div>
+</div>
 <div id="contenu">
     <?php if (isset($this->iCountProjects) && $this->iCountProjects == 0) : ?>
         <h1>Aucun dossier trouvé</h1>

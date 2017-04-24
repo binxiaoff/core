@@ -48,8 +48,8 @@ class AttachmentManager
      */
     public function upload(Clients $client, AttachmentType $attachmentType, UploadedFile $file, $name = null)
     {
-        $destination         = $this->getUploadDestination($client);
-        $destinationAbsolute = $this->getUploadRootDir() . $destination;
+        $destinationRelative = $this->getUploadDestination($client);
+        $destinationAbsolute = $this->getUploadRootDir() . DIRECTORY_SEPARATOR . $destinationRelative;
         if (false === is_dir($destinationAbsolute)) {
             $this->filesystem->mkdir($destinationAbsolute);
         }
@@ -67,7 +67,7 @@ class AttachmentManager
         }
 
         $attachment = new Attachment();
-        $attachment->setPath($destination . DIRECTORY_SEPARATOR . $fileFullName)
+        $attachment->setPath($destinationRelative . DIRECTORY_SEPARATOR . $fileFullName)
                    ->setClient($client)
                    ->setType($attachmentType);
         $this->entityManager->persist($attachment);
@@ -83,7 +83,7 @@ class AttachmentManager
      */
     public function getFullPath(Attachment $attachment)
     {
-        return $this->getUploadRootDir() . $attachment->getPath();
+        return $this->getUploadRootDir() . DIRECTORY_SEPARATOR . $attachment->getPath();
     }
 
     /**
@@ -91,7 +91,9 @@ class AttachmentManager
      */
     private function getUploadRootDir()
     {
-        return realpath($this->uploadRootDir . (substr($this->uploadRootDir, -1) === '/' ? '' : '/'));
+        $rootDir = realpath($this->uploadRootDir);
+
+        return substr($rootDir, -1) === DIRECTORY_SEPARATOR ? substr($rootDir, 0, -1) : $rootDir;
     }
 
     /**

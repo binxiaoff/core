@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -58,94 +59,7 @@ class UserProvider implements UserProviderInterface
             false !== filter_var($username, FILTER_VALIDATE_EMAIL)
             && ($clientEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['email' => $username, 'status' => Clients::STATUS_ONLINE]))
         ) {
-            /** @var \clients $client */
-            $client = $this->entityManagerSimulator->getRepository('clients');
-            $client->get($clientEntity->getIdClient());
-
-            $balance  = $this->clientManager->getClientBalance($client);
-            $initials = $this->clientManager->getClientInitials($client);
-            $isActive = $this->clientManager->isActive($client);
-            $roles    = ['ROLE_USER'];
-
-            try {
-                /** @var \clients_history $clientHistory */
-                $clientHistory = $this->entityManagerSimulator->getRepository('clients_history');
-                $lastLoginDate = $clientHistory->getClientLastLogin($clientEntity->getIdClient());
-            } catch (\Exception $exception) {
-                $lastLoginDate = null;
-            }
-
-            if ($this->clientManager->isLender($clientEntity)) {
-                /** @var \lenders_accounts $lenderAccount */
-                $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
-                $lenderAccount->get($clientEntity->getIdClient(), 'id_client_owner');
-
-                $roles[]                 = 'ROLE_LENDER';
-                $clientStatus            = $this->clientStatusManager->getLastClientStatus($clientEntity);
-                $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
-                $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($lenderAccount);
-                $userLevel               = $this->lenderManager->getDiversificationLevel($lenderAccount);
-
-                return new UserLender(
-                    $clientEntity->getEmail(),
-                    $clientEntity->getPassword(),
-                    $clientEntity->getEmail(),
-                    '',
-                    $roles,
-                    $isActive,
-                    $clientEntity->getIdClient(),
-                    $clientEntity->getHash(),
-                    $balance,
-                    $initials,
-                    $clientEntity->getPrenom(),
-                    $clientEntity->getNom(),
-                    $clientStatus,
-                    $hasAcceptedCurrentTerms,
-                    $notifications,
-                    $clientEntity->getEtapeInscriptionPreteur(),
-                    $userLevel,
-                    $lastLoginDate
-                );
-            }
-
-            if ($this->clientManager->isBorrower($clientEntity)) {
-                /** @var \companies $company */
-                $company = $this->entityManagerSimulator->getRepository('companies');
-                $company->get($clientEntity->getIdClient(), 'id_client_owner');
-
-                $roles[] = 'ROLE_BORROWER';
-                return new UserBorrower(
-                    $clientEntity->getEmail(),
-                    $clientEntity->getPassword(),
-                    $clientEntity->getEmail(),
-                    '',
-                    $roles,
-                    $isActive,
-                    $clientEntity->getIdClient(),
-                    $clientEntity->getHash(),
-                    $clientEntity->getPrenom(),
-                    $clientEntity->getNom(),
-                    $company->siren,
-                    $lastLoginDate
-                );
-            }
-
-            if ($this->clientManager->isPartner($clientEntity)) {
-                $roles[] = 'ROLE_PARTNER';
-                return new UserPartner(
-                    $clientEntity->getEmail(),
-                    $clientEntity->getPassword(),
-                    $clientEntity->getEmail(),
-                    '',
-                    $roles,
-                    $isActive,
-                    $clientEntity->getIdClient(),
-                    $clientEntity->getHash(),
-                    $clientEntity->getPrenom(),
-                    $clientEntity->getNom(),
-                    $lastLoginDate
-                );
-            }
+           return $this->setUser($clientEntity);
         }
 
         throw new UsernameNotFoundException(
@@ -164,7 +78,7 @@ class UserProvider implements UserProviderInterface
             );
         }
 
-        return $this->loadUserByUsername($user->getUsername());
+        return $this->loadUserByHash($user->getHash());
     }
 
     /**
@@ -173,5 +87,120 @@ class UserProvider implements UserProviderInterface
     public function supportsClass($class)
     {
         return $class === 'FrontBundle\Security\User\BaseUser';
+    }
+
+    /**
+     * @param Clients $clientEntity
+     *
+     * @return UserBorrower|UserLender|UserPartner
+     */
+    private function setUser(Clients $clientEntity)
+    {
+        /** @var \clients $client */
+        $client = $this->entityManagerSimulator->getRepository('clients');
+        $client->get($clientEntity->getIdClient());
+
+        $balance  = $this->clientManager->getClientBalance($client);
+        $initials = $this->clientManager->getClientInitials($client);
+        $isActive = $this->clientManager->isActive($client);
+        $roles    = ['ROLE_USER'];
+
+        try {
+            /** @var \clients_history $clientHistory */
+            $clientHistory = $this->entityManagerSimulator->getRepository('clients_history');
+            $lastLoginDate = $clientHistory->getClientLastLogin($clientEntity->getIdClient());
+        } catch (\Exception $exception) {
+            $lastLoginDate = null;
+        }
+
+        if ($this->clientManager->isLender($clientEntity)) {
+            /** @var \lenders_accounts $lenderAccount */
+            $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
+            $lenderAccount->get($clientEntity->getIdClient(), 'id_client_owner');
+
+            $roles[]                 = 'ROLE_LENDER';
+            $clientStatus            = $this->clientStatusManager->getLastClientStatus($clientEntity);
+            $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
+            $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($lenderAccount);
+            $userLevel               = $this->lenderManager->getDiversificationLevel($lenderAccount);
+
+            return new UserLender(
+                $clientEntity->getEmail(),
+                $clientEntity->getPassword(),
+                $clientEntity->getEmail(),
+                '',
+                $roles,
+                $isActive,
+                $clientEntity->getIdClient(),
+                $clientEntity->getHash(),
+                $balance,
+                $initials,
+                $clientEntity->getPrenom(),
+                $clientEntity->getNom(),
+                $clientStatus,
+                $hasAcceptedCurrentTerms,
+                $notifications,
+                $clientEntity->getEtapeInscriptionPreteur(),
+                $userLevel,
+                $lastLoginDate
+            );
+        }
+
+        if ($this->clientManager->isBorrower($clientEntity)) {
+            /** @var \companies $company */
+            $company = $this->entityManagerSimulator->getRepository('companies');
+            $company->get($clientEntity->getIdClient(), 'id_client_owner');
+
+            $roles[] = 'ROLE_BORROWER';
+            return new UserBorrower(
+                $clientEntity->getEmail(),
+                $clientEntity->getPassword(),
+                $clientEntity->getEmail(),
+                '',
+                $roles,
+                $isActive,
+                $clientEntity->getIdClient(),
+                $clientEntity->getHash(),
+                $clientEntity->getPrenom(),
+                $clientEntity->getNom(),
+                $company->siren,
+                $lastLoginDate
+            );
+        }
+
+        if ($this->clientManager->isPartner($clientEntity)) {
+            $roles[] = 'ROLE_PARTNER';
+            return new UserPartner(
+                $clientEntity->getEmail(),
+                $clientEntity->getPassword(),
+                $clientEntity->getEmail(),
+                '',
+                $roles,
+                $isActive,
+                $clientEntity->getIdClient(),
+                $clientEntity->getHash(),
+                $clientEntity->getPrenom(),
+                $clientEntity->getNom(),
+                $lastLoginDate
+            );
+        }
+    }
+
+    public function loadUserByHash($hash)
+    {
+        if (1 !== preg_match('/^[a-z0-9-]{32,36}$/', $hash)) {
+            throw new NotFoundHttpException('Invalid client hash');
+        }
+
+        /** @var \clients $client */
+        $client = $this->entityManager->getRepository('clients');
+
+        if ($client->get($hash, 'status = ' . Clients::STATUS_ONLINE. ' AND hash')) {
+            return $this->setUser($client);
+        }
+
+        throw new NotFoundHttpException(
+            sprintf('Hash "%s" does not exist.', $hash)
+        );
     }
 }
