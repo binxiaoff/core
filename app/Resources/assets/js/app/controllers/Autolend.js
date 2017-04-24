@@ -137,9 +137,9 @@ function addCellDataToBalance(cellData){
     $('.col-info').attr('data-autolendtable-cell', cellData.cellIndex)
 
     if (cellData.enable == 1) {
-        $('#autolend-cell-disable-switch').attr('checked', 'checked')
+        $('#autolend-cell-disable-switch').attr('checked', 'checked').prop('checked', true)
     } else {
-        $('#autolend-cell-disable-switch').removeAttr('checked')
+        $('#autolend-cell-disable-switch').removeAttr('checked').prop('checked', false)
     }
 }
 
@@ -162,7 +162,7 @@ function getInputRate(cellIndex) {
 }
 
 function rateActivatedSwitch($checkbox, $inputStatus) {
-    if ($inputStatus.val() == 1) {
+    if ($inputStatus.attr('value') == 1) {
         deactivateSetting($inputStatus)
         $checkbox.removeAttr('checked').prop('checked', false)
     } else {
@@ -195,6 +195,7 @@ function showBalance(cellIndex) {
 }
 
 function activateCell($input) {
+
     $('.col-data').children().filter('.active').removeClass('active')
     $input.parents('.cell-data').first().addClass('active')
 }
@@ -311,7 +312,7 @@ $doc
     })
 
     // Change cell rate by keys
-    .on('keydown', '.cell .cell-input input', function (event) {
+    .on('keydown', '.cell .cell-input input[type="number"]', function (event) {
         // Press up arrow
         if (event.which === 38) {
             eventIncreaseCell(event)
@@ -333,11 +334,11 @@ $doc
 
     // Show cell info (side widget)
     .on(Utility.clickEvent, '.cell .cell-input', function (event) {
-        var $cell = $(this).find('input[type="number"]')
+        var $cell = $(this).parent()
+        var $input = $(this).find('input[type=number]')
         var cellIndex = $cell.data('autolendtable-cell')
-        var $inputStatus = $('#' + cellIndex + '-param-advanced-is-active')
-        showBalance($cell.parent().attr('data-autolendtable-cell'))
-        rateActivatedSwitch($('#autolend-cell-disable-switch'), $inputStatus)
+        activateCell($input)
+        showBalance(cellIndex)
     })
 
     // Close confirmation- dialog
@@ -404,6 +405,7 @@ $doc
             }
         })
 
+        // If there are rates < 3.5% or > 10%, do not submit
         if (outOfAbsoluteRange) {
             $dialog = $('#autolend-out-of-absolute-range-table-dialog')
         } else {
