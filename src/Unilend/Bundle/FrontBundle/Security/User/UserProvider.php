@@ -168,8 +168,13 @@ class UserProvider implements UserProviderInterface
             );
         }
 
-        if ($this->clientManager->isPartner($clientEntity)) {
+        if (
+            $this->clientManager->isPartner($clientEntity)
+            && ($partnerRole = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findOneBy(['idClient' => $clientEntity]))
+        ) {
             $roles[] = 'ROLE_PARTNER';
+            $roles[] = $partnerRole->getRole();
+
             return new UserPartner(
                 $clientEntity->getEmail(),
                 $clientEntity->getPassword(),
@@ -181,6 +186,7 @@ class UserProvider implements UserProviderInterface
                 $clientEntity->getHash(),
                 $clientEntity->getPrenom(),
                 $clientEntity->getNom(),
+                $partnerRole->getIdCompany(),
                 $lastLoginDate
             );
         }
