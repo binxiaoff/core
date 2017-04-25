@@ -20,7 +20,8 @@ class AltaresManager
     const RESOURCE_FINANCIAL_SUMMARY       = 'get_financial_summary_altares';
     const RESOURCE_MANAGEMENT_LINE         = 'get_balance_management_line_altares';
 
-    const EXCEPTION_CODE_NO_FINANCIAL_DATA = 118;
+    const EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN = [101, 102, 108, 109];
+    const EXCEPTION_CODE_NO_FINANCIAL_DATA        = [118];
 
     /** @var string */
     private $login;
@@ -38,6 +39,8 @@ class AltaresManager
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
+    /** @var bool */
+    private $useCache = true;
 
     /**
      * @param string             $login
@@ -71,6 +74,18 @@ class AltaresManager
     }
 
     /**
+     * @param bool $useCache
+     *
+     * @return AltaresManager
+     */
+    public function setUseCache($useCache)
+    {
+        $this->useCache = $useCache;
+
+        return $this;
+    }
+
+    /**
      * @param string $siren
      *
      * @return null|CompanyRating
@@ -93,6 +108,9 @@ class AltaresManager
     public function getBalanceSheets($siren, $balanceSheetsCount = 3)
     {
         if (null !== ($response = $this->soapCall('identity', self::RESOURCE_BALANCE_SHEET, ['siren' => $siren, 'nbBilans' => $balanceSheetsCount]))) {
+            if (isset($response->nbBilan) && 1 === $response->nbBilan) {
+                $response->bilans = [$response->bilans];
+            }
             return $this->serializer->deserialize(json_encode($response), BalanceSheetList::class, 'json');
         }
 
@@ -178,12 +196,13 @@ class AltaresManager
         $siren      = $params[$this->getSirenKey($wsResource->resource_name)];
 
         try {
-            $response = $this->callHistoryManager->getStoredResponse($wsResource, $siren);
+            $response = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
 
             if (false === $this->isValidResponse($response)) {
-                $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren);
+                $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
                 ini_set('default_socket_timeout', 8);
 
+                /** @var \SoapClient $soapClient */
                 $soapClient = $this->{$client . 'Client'};
                 $response   = $soapClient->__soapCall(
                     $wsResource->resource_name, [
@@ -195,12 +214,21 @@ class AltaresManager
                 $response = json_decode($response);
             }
 
-            if ($this->isValidResponse($response)) {
+            if (null !== $response) {
                 $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-                return $response->return->myInfo;
+
+                if ($this->isValidResponse($response)) {
+                    return isset($response->return->myInfo) ? $response->return->myInfo : null;
+                }
             }
+
+            $this->logger->error(
+                'Altares response could not be handled: "' . (isset($response->return->exception->description, $response->return->exception->code) ? $response->return->exception->code . ' : ' . $response->return->exception->description : print_r($response, true)) . '"',
+                ['class' => __CLASS__, 'resource' => $resourceLabel] + $params
+            );
+            return null;
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__] + $params);
+            $this->logger->error($exception->getMessage(), ['class' => __CLASS__, 'resource' => $resourceLabel] + $params);
         }
 
         $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
@@ -233,7 +261,7 @@ class AltaresManager
     }
 
     /**
-     * @param mixed $response
+     * @param mixed  $response
      *
      * @return bool
      */
@@ -244,11 +272,8 @@ class AltaresManager
         }
 
         return (
-            isset($response->return)
-            && (
-                $response->return->correct && isset($response->return->myInfo)
-                || isset($response->return->exception->code) && self::EXCEPTION_CODE_NO_FINANCIAL_DATA == $response->return->exception->code
-            )
+            isset($response->return->myInfo, $response->return->correct) && $response->return->correct
+            || isset($response->return->exception->code) && in_array($response->return->exception->code, self::EXCEPTION_CODE_NO_FINANCIAL_DATA + self::EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN)
         );
     }
 }

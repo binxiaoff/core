@@ -99,6 +99,21 @@
                 <?php endif; ?>
                 <tbody>
                 <tr>
+                    <th style="width: 300px"><label>Traffic Light Euler-Hermes</label></th>
+                    <td style="width: 250px">
+                        <?php if (false === empty($this->ratings['traffic_light_euler_hermes']['value'])) : ?>
+                            <span class="rating-tooltip" title="traffic_light_euler_hermes"><?= $this->ratings['traffic_light_euler_hermes']['value'] ?></span>
+                        <?php else : ?>-<?php endif; ?>
+                    </td>
+                    <?php if (isset($this->targetRatings)) : ?>
+                        <td style="width: 250px">
+                            <?php if (false === empty($this->targetRatings['traffic_light_euler_hermes']['value'])) : ?>
+                                <span class="rating-tooltip" title="target_traffic_light_euler_hermes"><?= $this->targetRatings['traffic_light_euler_hermes']['value'] ?></span>
+                            <?php else : ?>-<?php endif; ?>
+                        </td>
+                    <?php endif; ?>
+                </tr>
+                <tr>
                     <th style="width: 300px"><label>Grade Euler-Hermes</label></th>
                     <td style="width: 250px"<?php if (false === empty($this->ratings['grade_euler_hermes']['value']) && -1 == $this->ratings['grade_euler_hermes']['value']) : ?> class="warning"<?php endif; ?>>
                         <?php if (false === empty($this->ratings['grade_euler_hermes']['value'])) : ?>
@@ -106,7 +121,7 @@
                         <?php else : ?>-<?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
-                        <td style="width: 250px">
+                        <td style="width: 250px"<?php if (false === empty($this->targetRatings['grade_euler_hermes']['value']) && -1 == $this->targetRatings['grade_euler_hermes']['value']) : ?> class="warning"<?php endif; ?>>
                             <?php if (false === empty($this->targetRatings['grade_euler_hermes']['value'])) : ?>
                                 <span class="rating-tooltip" title="target_grade_euler_hermes"><?= -1 == $this->targetRatings['grade_euler_hermes']['value'] ? 'N/A' : $this->targetRatings['grade_euler_hermes']['value'] ?></span>
                             <?php else : ?>-<?php endif; ?>
@@ -196,27 +211,27 @@
                     <th><label>Présence de RPC < 6 mois *</label></th>
                     <td>
                         <?php if (isset($this->ratings['rpc_6mois']['value']) && in_array($this->ratings['rpc_6mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="rpc_6mois"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <label><input type="radio" name="ratings[rpc_6mois]" value="1"<?php if (isset($this->ratings['rpc_6mois']['value']) && '1' === $this->ratings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
-                                <label><input type="radio" name="ratings[rpc_6mois]" value="0"<?php if (isset($this->ratings['rpc_6mois']['value']) && '0' === $this->ratings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Non</label>
-                            <?php elseif (isset($this->ratings['rpc_6mois']) && '1' === $this->ratings['rpc_6mois']['value']) : ?>
-                                Oui
-                            <?php elseif (isset($this->ratings['rpc_6mois']) && '0' === $this->ratings['rpc_6mois']['value']) : ?>
-                                Non
-                            <?php else : ?>-<?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <label><input type="radio" name="ratings[rpc_6mois]" value="1"<?php if (isset($this->ratings['rpc_6mois']['value']) && '1' === $this->ratings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
+                            <label><input type="radio" name="ratings[rpc_6mois]" value="0"<?php if (isset($this->ratings['rpc_6mois']['value']) && '0' === $this->ratings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Non</label>
+                        <?php elseif (isset($this->ratings['rpc_6mois']) && '1' === $this->ratings['rpc_6mois']['value']) : ?>
+                            Oui
+                        <?php elseif (isset($this->ratings['rpc_6mois']) && '0' === $this->ratings['rpc_6mois']['value']) : ?>
+                            Non
+                        <?php else : ?>-<?php endif; ?>
                         <?php if (isset($this->ratings['rpc_6mois']['value']) && in_array($this->ratings['rpc_6mois']['value'], ['0', '1'], true)) : ?></span><?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (isset($this->targetRatings['rpc_6mois']['value']) && in_array($this->targetRatings['rpc_6mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="target_rpc_6mois"><?php endif; ?>
-                                <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                    <label><input type="radio" name="target_ratings[rpc_6mois]" value="1"<?php if (isset($this->targetRatings['rpc_6mois']['value']) && '1' === $this->targetRatings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
-                                    <label><input type="radio" name="target_ratings[rpc_6mois]" value="0"<?php if (isset($this->targetRatings['rpc_6mois']['value']) && '0' === $this->targetRatings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Non</label>
-                                <?php elseif (isset($this->targetRatings['rpc_6mois']) && '1' === $this->targetRatings['rpc_6mois']['value']) : ?>
-                                    Oui
-                                <?php elseif (isset($this->targetRatings['rpc_6mois']) && '0' === $this->targetRatings['rpc_6mois']['value']) : ?>
-                                    Non
-                                <?php else : ?>-<?php endif; ?>
+                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                                <label><input type="radio" name="target_ratings[rpc_6mois]" value="1"<?php if (isset($this->targetRatings['rpc_6mois']['value']) && '1' === $this->targetRatings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
+                                <label><input type="radio" name="target_ratings[rpc_6mois]" value="0"<?php if (isset($this->targetRatings['rpc_6mois']['value']) && '0' === $this->targetRatings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Non</label>
+                            <?php elseif (isset($this->targetRatings['rpc_6mois']) && '1' === $this->targetRatings['rpc_6mois']['value']) : ?>
+                                Oui
+                            <?php elseif (isset($this->targetRatings['rpc_6mois']) && '0' === $this->targetRatings['rpc_6mois']['value']) : ?>
+                                Non
+                            <?php else : ?>-<?php endif; ?>
                             <?php if (isset($this->targetRatings['rpc_6mois']['value']) && in_array($this->targetRatings['rpc_6mois']['value'], ['0', '1'], true)) : ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>
@@ -225,27 +240,27 @@
                     <th><label>Présence de RPC > 12 mois *</label></th>
                     <td>
                         <?php if (isset($this->ratings['rpc_12mois']['value']) && in_array($this->ratings['rpc_12mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="rpc_12mois"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <label><input type="radio" name="ratings[rpc_12mois]" value="1"<?php if (isset($this->ratings['rpc_12mois']['value']) && '1' === $this->ratings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
-                                <label><input type="radio" name="ratings[rpc_12mois]" value="0"<?php if (isset($this->ratings['rpc_12mois']['value']) && '0' === $this->ratings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Non</label>
-                            <?php elseif (isset($this->ratings['rpc_12mois']) && '1' === $this->ratings['rpc_12mois']['value']) : ?>
-                                Oui
-                            <?php elseif (isset($this->ratings['rpc_12mois']) && '0' === $this->ratings['rpc_12mois']['value']) : ?>
-                                Non
-                            <?php else : ?>-<?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <label><input type="radio" name="ratings[rpc_12mois]" value="1"<?php if (isset($this->ratings['rpc_12mois']['value']) && '1' === $this->ratings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
+                            <label><input type="radio" name="ratings[rpc_12mois]" value="0"<?php if (isset($this->ratings['rpc_12mois']['value']) && '0' === $this->ratings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Non</label>
+                        <?php elseif (isset($this->ratings['rpc_12mois']) && '1' === $this->ratings['rpc_12mois']['value']) : ?>
+                            Oui
+                        <?php elseif (isset($this->ratings['rpc_12mois']) && '0' === $this->ratings['rpc_12mois']['value']) : ?>
+                            Non
+                        <?php else : ?>-<?php endif; ?>
                         <?php if (isset($this->ratings['rpc_12mois']['value']) && in_array($this->ratings['rpc_12mois']['value'], ['0', '1'], true)) : ?></span><?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                         <?php if (isset($this->targetRatings['rpc_12mois']['value']) && in_array($this->targetRatings['rpc_12mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="target_rpc_12mois"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <label><input type="radio" name="target_ratings[rpc_12mois]" value="1"<?php if (isset($this->targetRatings['rpc_12mois']['value']) && '1' === $this->targetRatings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
-                                <label><input type="radio" name="target_ratings[rpc_12mois]" value="0"<?php if (isset($this->targetRatings['rpc_12mois']['value']) && '0' === $this->targetRatings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Non</label>
-                            <?php elseif (isset($this->targetRatings['rpc_12mois']) && '1' === $this->targetRatings['rpc_12mois']['value']) : ?>
-                                Oui
-                            <?php elseif (isset($this->targetRatings['rpc_12mois']) && '0' === $this->targetRatings['rpc_12mois']['value']) : ?>
-                                Non
-                            <?php else : ?>-<?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <label><input type="radio" name="target_ratings[rpc_12mois]" value="1"<?php if (isset($this->targetRatings['rpc_12mois']['value']) && '1' === $this->targetRatings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
+                            <label><input type="radio" name="target_ratings[rpc_12mois]" value="0"<?php if (isset($this->targetRatings['rpc_12mois']['value']) && '0' === $this->targetRatings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Non</label>
+                        <?php elseif (isset($this->targetRatings['rpc_12mois']) && '1' === $this->targetRatings['rpc_12mois']['value']) : ?>
+                            Oui
+                        <?php elseif (isset($this->targetRatings['rpc_12mois']) && '0' === $this->targetRatings['rpc_12mois']['value']) : ?>
+                            Non
+                        <?php else : ?>-<?php endif; ?>
                         <?php if (isset($this->targetRatings['rpc_12mois']['value']) && in_array($this->targetRatings['rpc_12mois']['value'], ['0', '1'], true)) : ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>
@@ -254,21 +269,21 @@
                     <th><label for="cotation_fiben">Cotation FIBEN *</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['cotation_fiben']['value'])) : ?><span class="rating-tooltip" title="cotation_fiben"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <input type="text" name="ratings[cotation_fiben]" id="cotation_fiben" value="<?php if (false === empty($this->ratings['cotation_fiben']['value'])) : ?><?= $this->ratings['cotation_fiben']['value'] ?><?php endif; ?>" class="input_moy">
-                            <?php elseif (false === empty($this->ratings['cotation_fiben']['value'])) : ?>
-                                <span class="rating-tooltip" title="cotation_fiben"><?= $this->ratings['cotation_fiben']['value'] ?></span>
-                            <?php else : ?>-<?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <input type="text" name="ratings[cotation_fiben]" id="cotation_fiben" value="<?php if (false === empty($this->ratings['cotation_fiben']['value'])) : ?><?= $this->ratings['cotation_fiben']['value'] ?><?php endif; ?>" class="input_moy">
+                        <?php elseif (false === empty($this->ratings['cotation_fiben']['value'])) : ?>
+                            <span class="rating-tooltip" title="cotation_fiben"><?= $this->ratings['cotation_fiben']['value'] ?></span>
+                        <?php else : ?>-<?php endif; ?>
                         <?php if (false === empty($this->ratings['cotation_fiben']['value'])) : ?></span><?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (false === empty($this->targetRatings['cotation_fiben']['value'])) : ?><span class="rating-tooltip" title="target_cotation_fiben"><?php endif; ?>
-                                <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                    <input type="text" name="target_ratings[cotation_fiben]" id="cotation_fiben" value="<?php if (false === empty($this->targetRatings['cotation_fiben']['value'])) : ?><?= $this->targetRatings['cotation_fiben']['value'] ?><?php endif; ?>" class="input_moy">
-                                <?php elseif (false === empty($this->targetRatings['cotation_fiben']['value'])) : ?>
-                                    <span class="rating-tooltip" title="target_cotation_fiben"><?= $this->targetRatings['cotation_fiben']['value'] ?></span>
-                                <?php else : ?>-<?php endif; ?>
+                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                                <input type="text" name="target_ratings[cotation_fiben]" id="cotation_fiben" value="<?php if (false === empty($this->targetRatings['cotation_fiben']['value'])) : ?><?= $this->targetRatings['cotation_fiben']['value'] ?><?php endif; ?>" class="input_moy">
+                            <?php elseif (false === empty($this->targetRatings['cotation_fiben']['value'])) : ?>
+                                <span class="rating-tooltip" title="target_cotation_fiben"><?= $this->targetRatings['cotation_fiben']['value'] ?></span>
+                            <?php else : ?>-<?php endif; ?>
                             <?php if (false === empty($this->targetRatings['cotation_fiben']['value'])) : ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>
@@ -277,21 +292,21 @@
                     <th><label for="cotation_dirigeant_fiben">Cotation dirigeant FIBEN</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?><span class="rating-tooltip" title="cotation_dirigeant_fiben"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <input type="text" name="ratings[cotation_dirigeant_fiben]" id="cotation_dirigeant_fiben" value="<?php if (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?><?= $this->ratings['cotation_dirigeant_fiben']['value'] ?><?php endif; ?>" class="input_moy">
-                            <?php elseif (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?>
-                                <span class="rating-tooltip" title="cotation_dirigeant_fiben"><?= $this->ratings['cotation_dirigeant_fiben']['value'] ?></span>
-                            <?php else : ?>-<?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <input type="text" name="ratings[cotation_dirigeant_fiben]" id="cotation_dirigeant_fiben" value="<?php if (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?><?= $this->ratings['cotation_dirigeant_fiben']['value'] ?><?php endif; ?>" class="input_moy">
+                        <?php elseif (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?>
+                            <span class="rating-tooltip" title="cotation_dirigeant_fiben"><?= $this->ratings['cotation_dirigeant_fiben']['value'] ?></span>
+                        <?php else : ?>-<?php endif; ?>
                         <?php if (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?></span><?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (false === empty($this->targetRatings['cotation_dirigeant_fiben']['value'])) : ?><span class="rating-tooltip" title="target_cotation_dirigeant_fiben"><?php endif; ?>
-                                <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                    <input type="text" name="target_ratings[cotation_dirigeant_fiben]" id="target_cotation_dirigeant_fiben" value="<?php if (false === empty($this->targetRatings['cotation_dirigeant_fiben']['value'])) : ?><?= $this->targetRatings['cotation_dirigeant_fiben']['value'] ?><?php endif; ?>" class="input_moy">
-                                <?php elseif (false === empty($this->targetRatings['cotation_dirigeant_fiben']['value'])) : ?>
-                                    <span class="rating-tooltip" title="target_cotation_dirigeant_fiben"><?= $this->targetRatings['cotation_dirigeant_fiben']['value'] ?></span>
-                                <?php else : ?>-<?php endif; ?>
+                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                                <input type="text" name="target_ratings[cotation_dirigeant_fiben]" id="target_cotation_dirigeant_fiben" value="<?php if (false === empty($this->targetRatings['cotation_dirigeant_fiben']['value'])) : ?><?= $this->targetRatings['cotation_dirigeant_fiben']['value'] ?><?php endif; ?>" class="input_moy">
+                            <?php elseif (false === empty($this->targetRatings['cotation_dirigeant_fiben']['value'])) : ?>
+                                <span class="rating-tooltip" title="target_cotation_dirigeant_fiben"><?= $this->targetRatings['cotation_dirigeant_fiben']['value'] ?></span>
+                            <?php else : ?>-<?php endif; ?>
                             <?php if (false === empty($this->targetRatings['cotation_dirigeant_fiben']['value'])) : ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>
@@ -347,21 +362,21 @@
                     <th><label for="date_dernier_privilege">Date du privilège le plus récent</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><span class="rating-tooltip" title="date_dernier_privilege"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <input type="text" name="ratings[date_dernier_privilege]" id="date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->dates->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
-                            <?php elseif (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?>
-                                <span class="rating-tooltip" title="date_dernier_privilege"><?= $this->ratings['date_dernier_privilege']['value'] ?></span>
-                            <?php else : ?>-<?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <input type="text" name="ratings[date_dernier_privilege]" id="date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->dates->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
+                        <?php elseif (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?>
+                            <span class="rating-tooltip" title="date_dernier_privilege"><?= $this->ratings['date_dernier_privilege']['value'] ?></span>
+                        <?php else : ?>-<?php endif; ?>
                         <?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?></span><?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><span class="rating-tooltip" title="target_date_dernier_privilege"><?php endif; ?>
-                                <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                    <input type="text" name="target_ratings[date_dernier_privilege]" id="target_date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->dates->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
-                                <?php elseif (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?>
-                                    <span class="rating-tooltip" title="target_date_dernier_privilege"><?= $this->ratings['date_dernier_privilege']['value'] ?></span>
-                                <?php else : ?>-<?php endif; ?>
+                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                                <input type="text" name="target_ratings[date_dernier_privilege]" id="target_date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->dates->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
+                            <?php elseif (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?>
+                                <span class="rating-tooltip" title="target_date_dernier_privilege"><?= $this->ratings['date_dernier_privilege']['value'] ?></span>
+                            <?php else : ?>-<?php endif; ?>
                             <?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>
@@ -420,46 +435,46 @@
                 <tr>
                     <th><label for="delais_paiement_altares">Délais de paiement Altares (à date) *</label></th>
                     <td>
-                        <?php if (false === empty($this->ratings['delais_paiement_altares']['value'])) : ?><span class="rating-tooltip" title="delais_paiement_altares"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <input type="text" name="ratings[delais_paiement_altares]" id="delais_paiement_altares" value="<?php if (false === empty($this->ratings['delais_paiement_altares']['value'])) : ?><?= $this->ratings['delais_paiement_altares']['value'] ?><?php endif; ?>" class="input_moy">
-                            <?php elseif (false === empty($this->ratings['delais_paiement_altares']['value'])) : ?>
-                                <span class="rating-tooltip" title="delais_paiement_altares"><?= $this->ratings['delais_paiement_altares']['value'] ?></span>
-                            <?php else : ?>-<?php endif; ?>
-                        <?php if (false === empty($this->ratings['delais_paiement_altares']['value'])) : ?></span><?php endif; ?>
+                        <?php if (isset($this->ratings['delais_paiement_altares']['value']) && '' !== $this->ratings['delais_paiement_altares']['value']) : ?><span class="rating-tooltip" title="delais_paiement_altares"><?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <input type="text" name="ratings[delais_paiement_altares]" id="delais_paiement_altares" value="<?php if (isset($this->ratings['delais_paiement_altares']['value'])) : ?><?= $this->ratings['delais_paiement_altares']['value'] ?><?php endif; ?>" class="input_moy">
+                        <?php elseif (isset($this->ratings['delais_paiement_altares']['value']) && '' !== $this->ratings['delais_paiement_altares']['value']) : ?>
+                            <span class="rating-tooltip" title="delais_paiement_altares"><?= $this->ratings['delais_paiement_altares']['value'] ?></span>
+                        <?php else : ?>-<?php endif; ?>
+                        <?php if (isset($this->ratings['delais_paiement_altares']['value']) && '' !== $this->ratings['delais_paiement_altares']['value']) : ?></span><?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
-                            <?php if (false === empty($this->targetRatings['delais_paiement_altares']['value'])) : ?><span class="rating-tooltip" title="target_delais_paiement_altares"><?php endif; ?>
-                                <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                    <input type="text" name="target_ratings[delais_paiement_altares]" id="target_delais_paiement_altares" value="<?php if (false === empty($this->targetRatings['delais_paiement_altares']['value'])) : ?><?= $this->targetRatings['delais_paiement_altares']['value'] ?><?php endif; ?>" class="input_moy">
-                                <?php elseif (false === empty($this->targetRatings['delais_paiement_altares']['value'])) : ?>
-                                    <span class="rating-tooltip" title="target_delais_paiement_altares"><?= $this->targetRatings['delais_paiement_altares']['value'] ?></span>
-                                <?php else : ?>-<?php endif; ?>
-                            <?php if (false === empty($this->targetRatings['delais_paiement_altares']['value'])) : ?></span><?php endif; ?>
+                            <?php if (isset($this->targetRatings['delais_paiement_altares']['value']) && '' !== $this->targetRatings['delais_paiement_altares']['value']) : ?><span class="rating-tooltip" title="delais_paiement_altares"><?php endif; ?>
+                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                                <input type="text" name="ratings[delais_paiement_altares]" id="delais_paiement_altares" value="<?php if (isset($this->targetRatings['delais_paiement_altares']['value'])) : ?><?= $this->targetRatings['delais_paiement_altares']['value'] ?><?php endif; ?>" class="input_moy">
+                            <?php elseif (isset($this->targetRatings['delais_paiement_altares']['value']) && '' !== $this->targetRatings['delais_paiement_altares']['value']) : ?>
+                                <span class="rating-tooltip" title="delais_paiement_altares"><?= $this->targetRatings['delais_paiement_altares']['value'] ?></span>
+                            <?php else : ?>-<?php endif; ?>
+                            <?php if (isset($this->targetRatings['delais_paiement_altares']['value']) && '' !== $this->targetRatings['delais_paiement_altares']['value']) : ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>
                 </tr>
                 <tr>
                     <th><label for="delais_paiement_secteur">Délais de paiement du secteur *</label></th>
                     <td>
-                        <?php if (false === empty($this->ratings['delais_paiement_secteur']['value'])) : ?><span class="rating-tooltip" title="delais_paiement_secteur"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <input type="text" name="ratings[delais_paiement_secteur]" id="delais_paiement_secteur" value="<?php if (false === empty($this->ratings['delais_paiement_secteur']['value'])) : ?><?= $this->ratings['delais_paiement_secteur']['value'] ?><?php endif; ?>" class="input_moy">
-                            <?php elseif (false === empty($this->ratings['delais_paiement_secteur']['value'])) : ?>
-                                <span class="rating-tooltip" title="delais_paiement_secteur"><?= $this->ratings['delais_paiement_secteur']['value'] ?></span>
-                            <?php else : ?>-<?php endif; ?>
-                        <?php if (false === empty($this->ratings['delais_paiement_secteur']['value'])) : ?></span><?php endif; ?>
+                        <?php if (isset($this->ratings['delais_paiement_secteur']['value']) && '' !== $this->ratings['delais_paiement_secteur']['value']) : ?><span class="rating-tooltip" title="delais_paiement_secteur"><?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <input type="text" name="ratings[delais_paiement_secteur]" id="delais_paiement_secteur" value="<?php if (isset($this->ratings['delais_paiement_secteur']['value'])) : ?><?= $this->ratings['delais_paiement_secteur']['value'] ?><?php endif; ?>" class="input_moy">
+                        <?php elseif (isset($this->ratings['delais_paiement_secteur']['value']) && '' !== $this->ratings['delais_paiement_secteur']['value']) : ?>
+                            <span class="rating-tooltip" title="delais_paiement_secteur"><?= $this->ratings['delais_paiement_secteur']['value'] ?></span>
+                        <?php else : ?>-<?php endif; ?>
+                        <?php if (isset($this->ratings['delais_paiement_secteur']['value']) && '' !== $this->ratings['delais_paiement_secteur']['value']) : ?></span><?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
-                            <?php if (false === empty($this->targetRatings['delais_paiement_secteur']['value'])) : ?><span class="rating-tooltip" title="target_delais_paiement_secteur"><?php endif; ?>
-                                <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                    <input type="text" name="target_ratings[delais_paiement_secteur]" id="target_delais_paiement_secteur" value="<?php if (false === empty($this->targetRatings['delais_paiement_secteur']['value'])) : ?><?= $this->targetRatings['delais_paiement_secteur']['value'] ?><?php endif; ?>" class="input_moy">
-                                <?php elseif (false === empty($this->targetRatings['delais_paiement_secteur']['value'])) : ?>
-                                    <span class="rating-tooltip" title="target_delais_paiement_secteur"><?= $this->targetRatings['delais_paiement_secteur']['value'] ?></span>
-                                <?php else : ?>-<?php endif; ?>
-                            <?php if (false === empty($this->targetRatings['delais_paiement_secteur']['value'])) : ?></span><?php endif; ?>
+                            <?php if (isset($this->targetRatings['delais_paiement_secteur']['value']) && '' !== $this->targetRatings['delais_paiement_secteur']['value']) : ?><span class="rating-tooltip" title="delais_paiement_secteur"><?php endif; ?>
+                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                                <input type="text" name="ratings[delais_paiement_secteur]" id="delais_paiement_secteur" value="<?php if (isset($this->targetRatings['delais_paiement_secteur']['value'])) : ?><?= $this->targetRatings['delais_paiement_secteur']['value'] ?><?php endif; ?>" class="input_moy">
+                            <?php elseif (isset($this->targetRatings['delais_paiement_secteur']['value']) && '' !== $this->targetRatings['delais_paiement_secteur']['value']) : ?>
+                                <span class="rating-tooltip" title="delais_paiement_secteur"><?= $this->targetRatings['delais_paiement_secteur']['value'] ?></span>
+                            <?php else : ?>-<?php endif; ?>
+                            <?php if (isset($this->targetRatings['delais_paiement_secteur']['value']) && '' !== $this->targetRatings['delais_paiement_secteur']['value']) : ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>
                 </tr>
@@ -467,27 +482,27 @@
                     <th><label>Dailly</label></th>
                     <td>
                         <?php if (isset($this->ratings['dailly']) && in_array($this->ratings['dailly']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="dailly"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <label><input type="radio" name="ratings[dailly]" value="1"<?php if (isset($this->ratings['dailly']) && '1' === $this->ratings['dailly']['value']) : ?> checked<?php endif; ?>> Oui</label>
-                                <label><input type="radio" name="ratings[dailly]" value="0"<?php if (isset($this->ratings['dailly']) && '0' === $this->ratings['dailly']['value']) : ?> checked<?php endif; ?>> Non</label>
-                            <?php elseif (isset($this->ratings['dailly']) && '1' === $this->ratings['dailly']['value']) : ?>
-                                <span class="rating-tooltip" title="dailly">Oui</span>
-                            <?php elseif (isset($this->ratings['dailly']) && '0' === $this->ratings['dailly']['value']) : ?>
-                                <span class="rating-tooltip" title="dailly">Non</span>
-                            <?php else : ?>-<?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <label><input type="radio" name="ratings[dailly]" value="1"<?php if (isset($this->ratings['dailly']) && '1' === $this->ratings['dailly']['value']) : ?> checked<?php endif; ?>> Oui</label>
+                            <label><input type="radio" name="ratings[dailly]" value="0"<?php if (isset($this->ratings['dailly']) && '0' === $this->ratings['dailly']['value']) : ?> checked<?php endif; ?>> Non</label>
+                        <?php elseif (isset($this->ratings['dailly']) && '1' === $this->ratings['dailly']['value']) : ?>
+                            <span class="rating-tooltip" title="dailly">Oui</span>
+                        <?php elseif (isset($this->ratings['dailly']) && '0' === $this->ratings['dailly']['value']) : ?>
+                            <span class="rating-tooltip" title="dailly">Non</span>
+                        <?php else : ?>-<?php endif; ?>
                         <?php if (isset($this->ratings['dailly']) && in_array($this->ratings['dailly']['value'], ['0', '1'], true)) : ?></span><?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (isset($this->targetRatings['dailly']) && in_array($this->targetRatings['dailly']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="target_dailly"><?php endif; ?>
-                                <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                    <label><input type="radio" name="target_ratings[dailly]" value="1"<?php if (isset($this->targetRatings['dailly']) && '1' === $this->targetRatings['dailly']['value']) : ?> checked<?php endif; ?>> Oui</label>
-                                    <label><input type="radio" name="target_ratings[dailly]" value="0"<?php if (isset($this->targetRatings['dailly']) && '0' === $this->targetRatings['dailly']['value']) : ?> checked<?php endif; ?>> Non</label>
-                                <?php elseif (isset($this->targetRatings['dailly']) && '1' === $this->targetRatings['dailly']['value']) : ?>
-                                    <span class="rating-tooltip" title="target_dailly">Oui</span>
-                                <?php elseif (isset($this->targetRatings['dailly']) && '0' === $this->targetRatings['dailly']['value']) : ?>
-                                    <span class="rating-tooltip" title="target_dailly">Non</span>
-                                <?php else : ?>-<?php endif; ?>
+                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                                <label><input type="radio" name="target_ratings[dailly]" value="1"<?php if (isset($this->targetRatings['dailly']) && '1' === $this->targetRatings['dailly']['value']) : ?> checked<?php endif; ?>> Oui</label>
+                                <label><input type="radio" name="target_ratings[dailly]" value="0"<?php if (isset($this->targetRatings['dailly']) && '0' === $this->targetRatings['dailly']['value']) : ?> checked<?php endif; ?>> Non</label>
+                            <?php elseif (isset($this->targetRatings['dailly']) && '1' === $this->targetRatings['dailly']['value']) : ?>
+                                <span class="rating-tooltip" title="target_dailly">Oui</span>
+                            <?php elseif (isset($this->targetRatings['dailly']) && '0' === $this->targetRatings['dailly']['value']) : ?>
+                                <span class="rating-tooltip" title="target_dailly">Non</span>
+                            <?php else : ?>-<?php endif; ?>
                             <?php if (isset($this->targetRatings['dailly']) && in_array($this->targetRatings['dailly']['value'], ['0', '1'], true)) : ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>
@@ -496,27 +511,27 @@
                     <th><label>Affacturage</label></th>
                     <td>
                         <?php if (isset($this->ratings['affacturage']) && in_array($this->ratings['affacturage']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="affacturage"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <label><input type="radio" name="ratings[affacturage]" value="1"<?php if (isset($this->ratings['affacturage']) && '1' === $this->ratings['affacturage']['value']) : ?> checked<?php endif; ?>> Oui</label>
-                                <label><input type="radio" name="ratings[affacturage]" value="0"<?php if (isset($this->ratings['affacturage']) && '0' === $this->ratings['affacturage']['value']) : ?> checked<?php endif; ?>> Non</label>
-                            <?php elseif (isset($this->ratings['affacturage']) && '1' === $this->ratings['affacturage']['value']) : ?>
-                                <span class="rating-tooltip" title="affacturage">Oui</span>
-                            <?php elseif (isset($this->ratings['affacturage']) && '0' === $this->ratings['affacturage']['value']) : ?>
-                                <span class="rating-tooltip" title="affacturage">Non</span>
-                            <?php else : ?>-<?php endif; ?>
+                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <label><input type="radio" name="ratings[affacturage]" value="1"<?php if (isset($this->ratings['affacturage']) && '1' === $this->ratings['affacturage']['value']) : ?> checked<?php endif; ?>> Oui</label>
+                            <label><input type="radio" name="ratings[affacturage]" value="0"<?php if (isset($this->ratings['affacturage']) && '0' === $this->ratings['affacturage']['value']) : ?> checked<?php endif; ?>> Non</label>
+                        <?php elseif (isset($this->ratings['affacturage']) && '1' === $this->ratings['affacturage']['value']) : ?>
+                            <span class="rating-tooltip" title="affacturage">Oui</span>
+                        <?php elseif (isset($this->ratings['affacturage']) && '0' === $this->ratings['affacturage']['value']) : ?>
+                            <span class="rating-tooltip" title="affacturage">Non</span>
+                        <?php else : ?>-<?php endif; ?>
                         <?php if (isset($this->ratings['affacturage']) && in_array($this->ratings['affacturage']['value'], ['0', '1'], true)) : ?></span><?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (isset($this->targetRatings['affacturage']) && in_array($this->targetRatings['affacturage']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="target_affacturage"><?php endif; ?>
-                                <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                    <label><input type="radio" name="target_ratings[affacturage]" value="1"<?php if (isset($this->targetRatings['affacturage']) && '1' === $this->targetRatings['affacturage']['value']) : ?> checked<?php endif; ?>> Oui</label>
-                                    <label><input type="radio" name="target_ratings[affacturage]" value="0"<?php if (isset($this->targetRatings['affacturage']) && '0' === $this->targetRatings['affacturage']['value']) : ?> checked<?php endif; ?>> Non</label>
-                                <?php elseif (isset($this->targetRatings['affacturage']) && '1' === $this->targetRatings['affacturage']['value']) : ?>
-                                    <span class="rating-tooltip" title="target_affacturage">Oui</span>
-                                <?php elseif (isset($this->targetRatings['affacturage']) && '0' === $this->targetRatings['affacturage']['value']) : ?>
-                                    <span class="rating-tooltip" title="target_affacturage">Non</span>
-                                <?php else : ?>-<?php endif; ?>
+                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                                <label><input type="radio" name="target_ratings[affacturage]" value="1"<?php if (isset($this->targetRatings['affacturage']) && '1' === $this->targetRatings['affacturage']['value']) : ?> checked<?php endif; ?>> Oui</label>
+                                <label><input type="radio" name="target_ratings[affacturage]" value="0"<?php if (isset($this->targetRatings['affacturage']) && '0' === $this->targetRatings['affacturage']['value']) : ?> checked<?php endif; ?>> Non</label>
+                            <?php elseif (isset($this->targetRatings['affacturage']) && '1' === $this->targetRatings['affacturage']['value']) : ?>
+                                <span class="rating-tooltip" title="target_affacturage">Oui</span>
+                            <?php elseif (isset($this->targetRatings['affacturage']) && '0' === $this->targetRatings['affacturage']['value']) : ?>
+                                <span class="rating-tooltip" title="target_affacturage">Non</span>
+                            <?php else : ?>-<?php endif; ?>
                             <?php if (isset($this->targetRatings['affacturage']) && in_array($this->targetRatings['affacturage']['value'], ['0', '1'], true)) : ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>

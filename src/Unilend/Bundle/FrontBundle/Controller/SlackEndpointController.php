@@ -86,10 +86,9 @@ class SlackEndpointController extends Controller
 
         $eligibility = 'Éligible';
         $color       = 'good';
-        $footer      = '';
         $fields      = [[
-            'title' => 'Éligible',
-            'value' => null === $rejectionReason ? 'Oui' : 'Non',
+            'title' => 'SIREN',
+            'value' => $siren,
             'short' => true
         ]];
 
@@ -110,9 +109,6 @@ class SlackEndpointController extends Controller
                 'value' => $rejectionReason,
                 'short' => false
             ];
-        } else {
-            $projectCreationUrl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin') . '/dossiers/add/siren/' . $siren;
-            $footer             = '<' . $projectCreationUrl . '|Créer un nouveau dossier pour ce SIREN>';
         }
 
         $client = new Client();
@@ -120,13 +116,13 @@ class SlackEndpointController extends Controller
             'headers' => ['Content-Type' => 'application/json'],
             'body'    => json_encode([
                 'response_type' => 'in_channel',
-                'text'          => 'SIREN ' . $siren,
+                'text'          => '<' . $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin') . '/dossiers/add/siren/' . $siren . '|Créer un dossier pour ce SIREN>',
                 'unfurl_links'  => false,
                 'attachments'   => [[
-                    'fallback' => 'Éligibilité : ' . $eligibility,
-                    'color'    => $color,
-                    'fields'   => $fields,
-                    'footer'   => $footer
+                    'fallback'   => $eligibility,
+                    'title'      => $eligibility,
+                    'color'      => $color,
+                    'fields'     => $fields
                 ]]
             ])
         ]);

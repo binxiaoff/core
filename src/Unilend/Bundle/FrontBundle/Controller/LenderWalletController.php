@@ -208,7 +208,7 @@ class LenderWalletController extends Controller
             }
 
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
-                $logger->error('Wrong parameters submitted, id_client=' . $client->getIdClient() . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
+                $logger->warning('Wrong parameters submitted, id_client=' . $client->getIdClient() . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
             } else {
                 $entityManager = $this->get('doctrine.orm.entity_manager');
                 /** @var WalletRepository $walletRepository */

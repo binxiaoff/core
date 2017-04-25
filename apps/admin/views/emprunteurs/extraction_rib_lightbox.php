@@ -5,7 +5,7 @@
     ?>
     <a href="<?= $link ?>" target="_blank" style="display: block;">
     <?php if ($this->isImage) :?>
-        <img src="<?= $link ?>" style="display: block; width: 100%; height: auto; margin: 0 auto;">
+        <img src="<?= $link ?>" style="display: block; max-width: 100%; height: auto; margin: 0 auto 15px;">
     <?php else : ?>
         <?= $this->attachment->getPath() ?>
     <?php endif; ?>

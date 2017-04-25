@@ -58,6 +58,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function indexAction($hash, Request $request)
@@ -75,6 +76,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/etape1", name="project_request_landing_page_start")
      *
      * @param Request $request
+     *
      * @return Response
      */
     public function landingPageStartAction(Request $request)
@@ -239,6 +241,7 @@ class ProjectRequestController extends Controller
      * @Method("GET")
      *
      * @param Request $request
+     *
      * @return Response
      */
     public function simulatorStartAction(Request $request)
@@ -262,12 +265,13 @@ class ProjectRequestController extends Controller
     private function start()
     {
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $projectRequestManager->checkProjectRisk($this->project, Users::USER_ID_FRONT);
 
-        if (null === $projectRequestManager->checkProjectRisk($this->project, Users::USER_ID_FRONT)) {
-            return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::INCOMPLETE_REQUEST);
+        if (\projects_status::NOT_ELIGIBLE == $this->project->status) {
+            return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
         }
 
-        return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
+        return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $this->project->hash]);
     }
 
     /**
@@ -276,6 +280,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function contactAction($hash, Request $request)
@@ -366,6 +371,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function contactFormAction($hash, Request $request)
@@ -554,6 +560,10 @@ class ProjectRequestController extends Controller
             $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
         }
 
+        if (\projects_status::IMPOSSIBLE_AUTO_EVALUATION == $this->project->status) {
+            return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $this->project->hash]);
+        }
+
         return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETE_REQUEST);
     }
 
@@ -563,6 +573,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function financeAction($hash, Request $request)
@@ -610,17 +621,51 @@ class ProjectRequestController extends Controller
         $template['form']['errors'] = isset($session['errors']) ? $session['errors'] : [];
 
         if (empty($this->company->getRcs())) {
-            $template['form']['values'] = [
-                'ag_2035' => isset($values['ag_2035']) ? $values['ag_2035'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
-            ];
             $template['rcs']            = false;
+            $template['form']['values'] = [];
+
+            if (isset($values['ag_2035'])) {
+                $template['form']['values']['ag_2035'] = $values['ag_2035'];
+            } elseif (false === empty($this->project->ca_declara_client) || $this->project->ca_declara_client != $altaresRevenue) {
+                $template['form']['values']['ag_2035'] = $this->project->ca_declara_client;
+            } elseif (null === $altaresRevenue) {
+                $template['form']['values']['ag_2035'] = $altaresRevenue;
+            } else {
+                $template['form']['values']['ag_2035'] = '';
+            }
         } else {
-            $template['form']['values'] = [
-                'dl' => isset($values['dl']) ? $values['dl'] : (empty($this->project->fonds_propres_declara_client) ? (empty($altaresCapitalStock) ? '' : $altaresCapitalStock) : $this->project->fonds_propres_declara_client),
-                'fl' => isset($values['fl']) ? $values['fl'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
-                'gg' => isset($values['gg']) ? $values['gg'] : (empty($this->project->resultat_exploitation_declara_client) ? (empty($altaresOperationIncomes) ? '' : $altaresOperationIncomes) : $this->project->resultat_exploitation_declara_client)
-            ];
             $template['rcs']            = true;
+            $template['form']['values'] = [];
+
+            if (isset($values['dl'])) {
+                $template['form']['values']['dl'] = $values['dl'];
+            } elseif (false === empty($this->project->fonds_propres_declara_client) || $this->project->fonds_propres_declara_client != $altaresCapitalStock) {
+                $template['form']['values']['dl'] = $this->project->fonds_propres_declara_client;
+            } elseif (null === $altaresCapitalStock) {
+                $template['form']['values']['dl'] = $altaresCapitalStock;
+            } else {
+                $template['form']['values']['dl'] = '';
+            }
+
+            if (isset($values['fl'])) {
+                $template['form']['values']['fl'] = $values['fl'];
+            } elseif (false === empty($this->project->ca_declara_client) || $this->project->ca_declara_client != $altaresRevenue) {
+                $template['form']['values']['fl'] = $this->project->ca_declara_client;
+            } elseif (null === $altaresRevenue) {
+                $template['form']['values']['fl'] = $altaresRevenue;
+            } else {
+                $template['form']['values']['fl'] = '';
+            }
+
+            if (isset($values['gg'])) {
+                $template['form']['values']['gg'] = $values['gg'];
+            } elseif (false === empty($this->project->resultat_exploitation_declara_client) || $this->project->resultat_exploitation_declara_client != $altaresOperationIncomes) {
+                $template['form']['values']['gg'] = $this->project->resultat_exploitation_declara_client;
+            } elseif (null === $altaresOperationIncomes) {
+                $template['form']['values']['gg'] = $altaresOperationIncomes;
+            } else {
+                $template['form']['values']['gg'] = '';
+            }
         }
 
         $template['project'] = [
@@ -641,6 +686,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function financeFormAction($hash, Request $request)
@@ -807,6 +853,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function partnerAction($hash, Request $request)
@@ -888,6 +935,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function partnerFormAction($hash, Request $request)
@@ -999,6 +1047,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function prospectAction($hash, Request $request)
@@ -1040,6 +1089,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function prospectFormAction($hash, Request $request)
@@ -1097,6 +1147,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function filesAction($hash, Request $request)
@@ -1117,8 +1168,8 @@ class ProjectRequestController extends Controller
         ];
 
         $entityManager = $this->get('unilend.service.entity_manager');
-$em            = $this->get('doctrine.orm.entity_manager');        /** @var Projects $project */
-        $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find( $this->project->id_project);
+        $em            = $this->get('doctrine.orm.entity_manager');        /** @var Projects $project */
+        $project       = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find( $this->project->id_project);
 
         $projectAttachments = $project->getAttachments();
         $partnerAttachments = $project->getPartner()->getAttachmentTypes();
@@ -1155,6 +1206,7 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function filesFormAction($hash, Request $request)
@@ -1168,8 +1220,7 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $logger            = $this->get('logger');
-
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
+        $project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
 
         $files = $request->files->all();
         $fileTypes = $request->request->get('files', []);
@@ -1198,6 +1249,7 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function endAction($hash, Request $request)
@@ -1209,32 +1261,39 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
         }
 
         /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-
+        $translator   = $this->get('translator');
         $addMoreFiles = false;
-        $message      = $translator->trans('project-request_end-page-not-entitled-message');
-        $title        = $translator->trans('project-request_end-page-success-title');
-        $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
 
         switch ($this->project->status) {
             case \projects_status::ABANDONED:
-                $message  = $translator->trans('project-request_end-page-aborted-message');
                 $title    = $translator->trans('project-request_end-page-aborted-title');
                 $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
+                $message  = $translator->trans('project-request_end-page-aborted-message');
                 break;
             case \projects_status::ANALYSIS_REVIEW:
             case \projects_status::COMITY_REVIEW:
             case \projects_status::PREP_FUNDING:
-                $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
                 $title    = $translator->trans('project-request_end-page-processing-title');
                 $subtitle = $translator->trans('project-request_end-page-processing-subtitle');
+                $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
+                break;
+            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
+                $addMoreFiles = true;
+                $title        = $translator->trans('project-request_end-page-impossible-auto-evaluation-title');
+                $subtitle     = $translator->trans('project-request_end-page-impossible-auto-evaluation-subtitle');
+                $message      = $translator->trans('project-request_end-page-impossible-auto-evaluation-message');
                 break;
             case \projects_status::COMPLETE_REQUEST:
+            case \projects_status::POSTPONED:
             case \projects_status::COMMERCIAL_REVIEW:
+            case \projects_status::PENDING_ANALYSIS:
                 $addMoreFiles = true;
+                $title        = $translator->trans('project-request_end-page-success-title');
+                $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
                 $message      = $translator->trans('project-request_end-page-main-content');
                 break;
             case \projects_status::NOT_ELIGIBLE:
+            default:
                 $title    = $translator->trans('project-request_end-page-rejection-title');
                 $subtitle = $translator->trans('project-request_end-page-rejection-subtitle');
 
@@ -1286,6 +1345,7 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function emailsAction($hash, Request $request)
@@ -1424,9 +1484,11 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
     /**
      * Check that hash is present in URL and valid
      * If hash is valid, check status and redirect to appropriate page
+     *
      * @param string  $route
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response|null
      */
     private function checkProjectHash($route, $hash, Request $request)
@@ -1453,7 +1515,6 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
 
         switch ($this->project->status) {
             case \projects_status::NOT_ELIGIBLE:
-            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_PROSPECT])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }
@@ -1472,6 +1533,12 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
                     return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $hash]);
                 }
                 break;
+            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
+                if (false === in_array($route, [self::PAGE_ROUTE_CONTACT, self::PAGE_ROUTE_FINANCE, self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
+                    return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
+                }
+                break;
+            case \projects_status::POSTPONED:
             case \projects_status::COMMERCIAL_REVIEW:
             case \projects_status::PENDING_ANALYSIS:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
@@ -1491,9 +1558,11 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
 
     /**
      * Redirect to corresponding route and update status
+     *
      * @param string $route
      * @param int    $projectStatus
      * @param string $message
+     *
      * @return Response
      */
     private function redirectStatus($route, $projectStatus, $message = '')
@@ -1510,6 +1579,7 @@ $em            = $this->get('doctrine.orm.entity_manager');        /** @var Proj
 
     /**
      * @param string $email
+     *
      * @return string
      */
     private function removeEmailSuffix($email)

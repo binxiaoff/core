@@ -7,24 +7,28 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectsComments
  *
- * @ORM\Table(name="projects_comments")
+ * @ORM\Table(name="projects_comments", indexes={@ORM\Index(name="projects_comments_id_project", columns={"id_project"}), @ORM\Index(name="projects_comments_id_user", columns={"id_user"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectsComments
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
-     */
-    private $idProject;
-
     /**
      * @var string
      *
      * @ORM\Column(name="content", type="text", length=16777215, nullable=false)
      */
     private $content;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
+     */
+    private $idProject;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
@@ -46,7 +50,7 @@ class ProjectsComments
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -64,7 +68,7 @@ class ProjectsComments
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ProjectsComments
      */
@@ -78,7 +82,7 @@ class ProjectsComments
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -189,5 +193,23 @@ class ProjectsComments
     public function getIdProjectComment()
     {
         return $this->idProjectComment;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

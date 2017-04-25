@@ -4,12 +4,11 @@ namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\FrontBundle\Form\Components\CountriesType;
 
 class PostalAddressType extends AbstractType
@@ -30,13 +29,16 @@ class PostalAddressType extends AbstractType
     {
         $builder
             ->add('memeAdresseFiscal', CheckboxType::class, [
-                'label' => $this->translator->trans('lender-address-form_same-address-checkbox'),
+                'label'    => $this->translator->trans('lender-address-form_same-address-checkbox'),
                 'required' => false
             ])
             ->add('adresse1', TextType::class, ['required' => false])
             ->add('cp', TextType::class, ['required' => false])
             ->add('ville', TextType::class, ['required' => false])
-            ->add('idPays', CountriesType::class, ['required' => false])
+            ->add('idPays', CountriesType::class, [
+                'data' => PaysV2::COUNTRY_FRANCE,
+                'required' => false
+            ])
         ;
     }
 

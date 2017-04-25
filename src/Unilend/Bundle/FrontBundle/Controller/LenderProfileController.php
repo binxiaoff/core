@@ -583,7 +583,7 @@ class LenderProfileController extends Controller
                     $this->saveClientHistoryAction($clientEntity, $request, ClientsHistoryActions::LENDER_PROFILE_SECURITY_QUESTION);
                     if ($questionForm->isValid()) {
                         $translator = $this->get('translator');
-                        $this->get('doctrine.orm.entity_manager')->flush($client);
+                        $this->get('doctrine.orm.entity_manager')->flush($clientEntity);
                         $this->addFlash('securitySecretQuestionSuccess', $translator->trans('lender-profile_security-secret-question-section-form-success-message'));
                         $isValid = true;
                     }
@@ -1054,7 +1054,7 @@ class LenderProfileController extends Controller
      */
     private function handleEmailForm(Clients $unattachedClient, Clients $client, FormInterface $form)
     {
-        $translator = $this->get('translator');
+        $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
