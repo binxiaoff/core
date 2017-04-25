@@ -64,7 +64,7 @@
                 author: 'Unilend'
             }
         },
-        status: 'En attente de piece',
+        status: 'En attente de pièces',
         amount: '40000',
         duration: '3 mois'
     },
@@ -73,8 +73,8 @@
         siren: '326300160',
         borrower: 'Télévision Française 2',
         submitter: {
-            firstName: 'JIRA',
-            lastName: 'Lauren',
+            firstName: 'Sébastien',
+            lastName: 'JIRA',
             agency: 'AXA Nancy'
         },
         motif: {
@@ -89,11 +89,13 @@
                 author: 'Unilend'
             }
         },
-        status: 'Demande complete',
+        status: 'Demande complète',
         amount: '20000',
         duration: '3 mois'
     }
 ]  %}
+
+{% set user = 'collaborateur' %}
 
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
@@ -123,11 +125,13 @@
                                                     {% trans %} partner-project-list_prospects-table-borrower {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-prospects-item-submitter table-sortable-column" data-sortable-by="submitter">
+                                            {% if user == 'administrateur' %}
+                                                <th class="table-prospects-item-submitter table-sortable-column" data-sortable-by="submitter">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_prospects-table-submitter {% endtrans %}
                                                 </span>
                                             </th>
+                                            {% endif %}
                                             <th class="table-prospects-item-amount table-sortable-column" data-sortable-by="amount">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_prospects-table-amount {% endtrans %}
@@ -155,13 +159,17 @@
                                             <tr id="prospect-{{ project.id }}" class="table-prospects-item"
                                                 data-sortable-siren="{{ project.siren }}"
                                                 data-sortable-borrower="{{ project.borrower }}"
+                                                {% if user == 'administrateur' %}
                                                 data-sortable-submitter="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}"
+                                                {% endif %}
                                                 data-sortable-motif="{{ project.motif.general }}"
                                                 data-sortable-motif-id="{{ project.motif.value }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}">
                                                 <td class="table-prospects-item-borrower" title="{{ project.borrower }}" data-toggle="tooltip" colspan="2">{{ project.borrower }}</td>
-                                                <td class="table-prospects-item-submitter" title="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}</td>
+                                                {% if user == 'administrateur' %}
+                                                    <td class="table-prospects-item-submitter" title="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}</td>
+                                                {% endif %}
                                                 <td class="table-prospects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
                                                 <td class="table-prospects-item-duration">{{ project.duration }}</td>
                                                 <td class="table-prospects-item-motif" colspan="2" title="{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}" data-toggle="tooltip">{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}></td>
@@ -191,11 +199,13 @@
                                                     {% trans %} partner-project-list_projects-table-borrower {% endtrans %}
                                                 </span>
                                             </th>
+                                            {% if user == 'administrateur' %}
                                             <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-submitter {% endtrans %}
                                                 </span>
                                             </th>
+                                           {% endif %}
                                             <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-amount {% endtrans %}
@@ -227,13 +237,17 @@
                                         {% for project in partnerProjects %}
                                             <tr id="project-{{ project.id }}" class="table-projects-item" data-details
                                                 data-sortable-borrower="{{ project.borrower }}"
-                                                data-sortable-submitter="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}"
+                                                {% if user == 'administrateur' %}
+                                                    data-sortable-submitter="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}"
+                                                {% endif %}
                                                 data-sortable-motif="{{ project.motif.general }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}"
                                                 data-sortable-status="{{ project.status }}">
                                                 <td class="table-projects-item-borrower" title="{{ project.borrower }}" data-toggle="tooltip" colspan="2">{{ project.borrower }}</td>
-                                                <td class="table-projects-item-submitter" title="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}</td>
+                                                {% if user == 'administrateur' %}
+                                                    <td class="table-projects-item-submitter" title="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}</td>
+                                                {% endif %}
                                                 <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
                                                 <td class="table-projects-item-duration">{{ project.duration }}</td>
                                                 <td class="table-projects-item-motif" title="{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}" data-toggle="tooltip">{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}</td>
