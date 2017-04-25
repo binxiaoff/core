@@ -24,12 +24,14 @@
                                         <span class="label">{% trans %} partner-account-nav_projects-list {% endtrans %}</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-users{% if app.request.get('_route') == 'partner_users' %} active{% endif %}">
-                                    <a href="{{ path('partner_users') }}">
-                                        <span class="icon fa-profile-u"></span>
-                                        <span class="label">{% trans %} partner-account-nav_users {% endtrans %}</span>
-                                    </a>
-                                </li>
+                                {% if is_granted('ROLE_PARTNER_ADMIN') %}
+                                    <li role="presentation" class="dashboard-nav-users{% if app.request.get('_route') == 'partner_users' %} active{% endif %}">
+                                        <a href="{{ path('partner_users') }}">
+                                            <span class="icon fa-profile-u"></span>
+                                            <span class="label">{% trans %} partner-account-nav_users {% endtrans %}</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
                                 <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'partner_statistics' %} active{% endif %}">
                                     <a href="{{ path('partner_statistics') }}">
                                         <span class="icon fa-linegraph-u"></span>
