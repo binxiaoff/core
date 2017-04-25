@@ -10,7 +10,7 @@
         id: '12033',
         siren: '326300159',
         borrower: 'Télévision Française 1',
-        applicant: {
+        submitter: {
             firstName: 'Sébastien',
             lastName: 'JIRA',
             agency: 'AXA Nancy'
@@ -27,7 +27,7 @@
         id: '12034',
         siren: '326300153',
         borrower: 'Télévision Française 2',
-        applicant: {
+        submitter: {
             firstName: 'Lauren',
             lastName: 'JIRA',
             agency: 'AXA Nancy'
@@ -47,7 +47,7 @@
         id: '12033',
         siren: '326300159',
         borrower: 'Télévision Française 1',
-        applicant: {
+        submitter: {
             firstName: 'Lauren',
             lastName: 'JIRA',
             agency: 'AXA Nancy'
@@ -98,9 +98,9 @@
                                                     {% trans %} partner-project-list_prospects-table-borrower {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-prospects-item-applicant" data-sortable-by="applicant">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-applicant'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_prospects-table-applicant {% endtrans %}
+                                            <th class="table-prospects-item-submitter" data-sortable-by="submitter">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_prospects-table-submitter {% endtrans %}
                                                 </span>
                                             </th>
                                             <th class="table-prospects-item-amount" data-sortable-by="amount">
@@ -126,20 +126,20 @@
                                         </tr>
                                         </thead>
                                         <tbody data-sortable-content>
-                                        {% for i, pr in partnerProspects %}
-                                            <tr id="prospect-{{ pr.id }}" class="table-prospects-item"
-                                                data-sortable-siren="{{ pr.siren }}"
-                                                data-sortable-borrower="{{ pr.borrower }}"
-                                                data-sortable-applicant="{{ pr.applicant.lastName }}"
-                                                data-sortable-motif="{{ pr.motif.general }}"
-                                                data-sortable-motif-id="{{ pr.motif.value }}"
-                                                data-sortable-amount="{{ pr.amount }}"
-                                                data-sortable-duration="{{ pr.duration }}">
-                                                <td class="table-prospects-item-borrower" title="{{ pr.borrower }}" data-toggle="tooltip" colspan="2">{{ pr.borrower }}</td>
-                                                <td class="table-prospects-item-applicant" title="{{ pr.applicant.lastName }} {{ pr.applicant.firstName }} {% if pr.applicant.agency|length %}- {{ pr.applicant.agency }}{% endif %}" data-toggle="tooltip">{{ pr.applicant.lastName }} {{ pr.applicant.firstName }} {% if pr.applicant.agency|length %}- {{ pr.applicant.agency }}{% endif %}</td>
-                                                <td class="table-prospects-item-amount">{{ pr.amount|localizedcurrency('EUR') }}</td>
-                                                <td class="table-prospects-item-duration">{{ pr.duration }}</td>
-                                                <td class="table-prospects-item-motif" colspan="2" title="{{ pr.motif.general }} {% if pr.motif.details|length %}- {{ pr.motif.details }}{% endif %}" data-toggle="tooltip">{{ pr.motif.general }} {% if pr.motif.details|length %}- {{ pr.motif.details }}{% endif %}></td>
+                                        {% for project in partnerProspects %}
+                                            <tr id="prospect-{{ project.id }}" class="table-prospects-item"
+                                                data-sortable-siren="{{ project.siren }}"
+                                                data-sortable-borrower="{{ project.borrower }}"
+                                                data-sortable-submitter="{{ project.submitter.lastName }}"
+                                                data-sortable-motif="{{ project.motif.general }}"
+                                                data-sortable-motif-id="{{ project.motif.value }}"
+                                                data-sortable-amount="{{ project.amount }}"
+                                                data-sortable-duration="{{ project.duration }}">
+                                                <td class="table-prospects-item-borrower" title="{{ project.borrower }}" data-toggle="tooltip" colspan="2">{{ project.borrower }}</td>
+                                                <td class="table-prospects-item-submitter" title="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}</td>
+                                                <td class="table-prospects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                                <td class="table-prospects-item-duration">{{ project.duration }}</td>
+                                                <td class="table-prospects-item-motif" colspan="2" title="{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}" data-toggle="tooltip">{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}></td>
                                                 <td class="table-prospects-item-action">
                                                     <a role="button" title="{{ 'partner-project-list_prospects-table-action-cancel'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="cancel"><span class="icon fa-ban-u16"></span></a>
                                                     <a role="button" title="{{ 'partner-project-list_prospects-table-action-submit'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="submit"><span class="icon fa-check-u16"></span></a>
@@ -166,9 +166,9 @@
                                                     {% trans %} partner-project-list_projects-table-borrower {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-applicant" data-sortable-by="applicant">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-applicant'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_projects-table-applicant {% endtrans %}
+                                            <th class="table-projects-item-submitter" data-sortable-by="submitter">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_projects-table-submitter {% endtrans %}
                                                 </span>
                                             </th>
                                             <th class="table-projects-item-amount" data-sortable-by="amount">
@@ -199,21 +199,21 @@
                                         </tr>
                                         </thead>
                                         <tbody data-sortable-content>
-                                        {% for i, pr in partnerProjects %}
-                                            <tr id="project-{{ pr.id }}" class="table-projects-item" data-details
-                                                data-sortable-borrower="{{ pr.borrower }}"
-                                                data-sortable-applicant="{{ pr.applicant.lastName }}"
-                                                data-sortable-motif="{{ pr.motif.general }}"
-                                                data-sortable-amount="{{ pr.amount }}"
-                                                data-sortable-duration="{{ pr.duration }}"
-                                                data-sortable-status="{{ pr.status }}">
-                                                <td class="table-projects-item-borrower" title="{{ pr.borrower }}" data-toggle="tooltip" colspan="2">{{ pr.borrower }}</td>
-                                                <td class="table-projects-item-applicant" title="{{ pr.applicant.lastName }} {{ pr.applicant.firstName }} {% if pr.applicant.agency|length %}- {{ pr.applicant.agency }}{% endif %}" data-toggle="tooltip">{{ pr.applicant.lastName }} {{ pr.applicant.firstName }} {% if pr.applicant.agency|length %}- {{ pr.applicant.agency }}{% endif %}</td>
-                                                <td class="table-projects-item-amount">{{ pr.amount|localizedcurrency('EUR') }}</td>
-                                                <td class="table-projects-item-duration">{{ pr.duration }}</td>
-                                                <td class="table-projects-item-motif" title="{{ pr.motif.general }} {% if pr.motif.details|length %}- {{ pr.motif.details }}{% endif %}" data-toggle="tooltip">{{ pr.motif.general }} {% if pr.motif.details|length %}- {{ pr.motif.details }}{% endif %}</td>
+                                        {% for project in partnerProjects %}
+                                            <tr id="project-{{ project.id }}" class="table-projects-item" data-details
+                                                data-sortable-borrower="{{ project.borrower }}"
+                                                data-sortable-submitter="{{ project.submitter.lastName }}"
+                                                data-sortable-motif="{{ project.motif.general }}"
+                                                data-sortable-amount="{{ project.amount }}"
+                                                data-sortable-duration="{{ project.duration }}"
+                                                data-sortable-status="{{ project.status }}">
+                                                <td class="table-projects-item-borrower" title="{{ project.borrower }}" data-toggle="tooltip" colspan="2">{{ project.borrower }}</td>
+                                                <td class="table-projects-item-submitter" title="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}</td>
+                                                <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                                <td class="table-projects-item-duration">{{ project.duration }}</td>
+                                                <td class="table-projects-item-motif" title="{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}" data-toggle="tooltip">{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}</td>
                                                 <td class="table-projects-item-status">
-                                                    <span class="ui-project-status" title="{{ pr.status }}" data-toggle="tooltip">{{ pr.status }}</span>
+                                                    <span class="ui-project-status" title="{{ project.status }}" data-toggle="tooltip">{{ project.status }}</span>
                                                 </td>
                                                 <td class="table-projects-item-memos">
                                                     <a role="button"><span class="icon fa-angle-r-u16"></span></a>
