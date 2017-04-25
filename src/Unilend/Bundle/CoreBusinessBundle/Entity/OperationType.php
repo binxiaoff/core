@@ -47,6 +47,16 @@ class OperationType
     const COLLECTION_COMMISSION_BORROWER                = 'collection_commission_borrower';
     const COLLECTION_COMMISSION_LENDER                  = 'collection_commission_lender';
 
+    const TAX_TYPES_FR = [
+        self::TAX_FR_STATUTORY_CONTRIBUTIONS,
+        self::TAX_FR_CSG,
+        self::TAX_FR_SOCIAL_DEDUCTIONS,
+        self::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
+        self::TAX_FR_SOLIDARITY_DEDUCTIONS,
+        self::TAX_FR_CRDS,
+        self::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE
+    ];
+
     /**
      * @var integer
      *

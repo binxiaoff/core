@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * LenderTaxExemption
  *
  * @ORM\Table(name="lender_tax_exemption", uniqueConstraints={@ORM\UniqueConstraint(name="id_lender_year", columns={"id_lender", "year"})}, indexes={@ORM\Index(name="id_lender", columns={"id_lender"}), @ORM\Index(name="iso_country", columns={"iso_country"}), @ORM\Index(name="year", columns={"year"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LenderTaxExemptionRepository")
  */
 class LenderTaxExemption
 {

@@ -1,26 +1,34 @@
-<?php if (count($this->lTrans) > 0) : ?>
+<?php if (count($this->lenderOperations) > 0) : ?>
     <table class="tablesorter transac">
         <thead>
             <tr>
-                <th>Type d'approvisionnement</th>
-                <th>Date de l'opération</th>
-                <th>Montant de l'opération</th>
+                <th width="15%">Type d'operation</th>
+                <th width="5%">Id loan</th>
+                <th width="25%">Projet</th>
+                <th width="5%">Date</th>
+                <th width="45%">Montant de l'opération</th>
+                <th width="5%">Solde</th>
             </tr>
         </thead>
         <tbody>
             <?php $i = 1; ?>
-            <?php foreach ($this->lTrans as $t) : ?>
-                <?php
-                    if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS))) {
-                        $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-                        $this->projects->get($this->echeanciers->id_project, 'id_project');
-                        $this->companies->get($this->projects->id_company, 'id_company');
-                    }
-                ?>
+            <?php foreach ($this->lenderOperations as $operation) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><?= $this->lesStatuts[$t['type_transaction']] . (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS)) ? ' - ' . $this->companies->name : '') ?></td>
-                    <td><?= $this->dates->formatDate($t['date_transaction'], 'd-m-Y') ?></td>
-                    <td><?= $this->ficelle->formatNumber($t['montant'] / 100) ?> €</td>
+                    <td><?= $this->translator->trans('lender-operations_operation-label-' . $operation['label'])?></td>
+                    <td><?= $operation['id_loan'] ?></td>
+                    <td><?= $operation['title'] ?></td>
+                    <td><?= date('d/m/Y', strtotime($operation['date'])) ?></td>
+                    <td>
+                        <?= number_format($operation['amount'], 2, ',', ' ') ?> €
+                        <?php if (false == empty($operation['detail'])) : ?>
+                            <br><i>(
+                            <?php foreach ($operation['detail']['items'] as $detail) : ?>
+                                <?= $detail['label'] ?> : <?= number_format($detail['value'], 2, ',', ' ') ?>
+                            <?php endforeach; ?>
+                                )</i>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= number_format($operation['available_balance'], 2, ',', ' ') ?> €</td>
                 </tr>
                 <?php $i++; ?>
             <?php endforeach; ?>

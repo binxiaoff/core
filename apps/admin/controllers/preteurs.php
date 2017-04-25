@@ -6,11 +6,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 
@@ -109,11 +109,13 @@ class preteursController extends bootstrap
     public function _edit()
     {
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
-        $translator = $this->get('translator');
+        $this->translator = $this->get('translator');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
         $attachmentManager = $this->get('unilend.service.attachment_manager');
+        /** @var LenderOperationsManager $lenderOperationsManager */
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
 
@@ -180,29 +182,15 @@ class preteursController extends bootstrap
             $lenderTaxExemption   = $this->loadData('lender_tax_exemption');
             $this->exemptionYears = array_column($lenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
 
-            $this->lesStatuts = [
-                \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('preteur-profile_versement-initial'),
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('preteur-profile_alimentation-cb'),
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('preteur-profile_alimentation-virement'),
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement de capital',
-                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS     => 'Remboursement d\'intérêts',
-                \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('preteur-profile_alimentation-prelevement'),
-                \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('preteur-profile_retrait'),
-                \transactions_types::TYPE_LENDER_REGULATION              => 'Régularisation prêteur',
-                \transactions_types::TYPE_WELCOME_OFFER                  => 'Offre de bienvenue',
-                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => 'Retrait offre de bienvenue',
-                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
-                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
-                \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe'),
-                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe-preteur'),
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur'),
-                \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
-            ];
-
             $this->solde        = $wallet->getAvailableBalance();
             $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_WITHDRAWAL . ' AND id_client = ' . $this->clients->id_client, 'montant');
             $this->soldeRetrait = abs($this->soldeRetrait / 100);
-            $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
+
+            //TODO after merge of different branches check that there are not several wallets
+            $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, WalletType::LENDER);
+            $start                  = new \DateTime('First day of january this year');
+            $end                    = new \DateTime('NOW');
+            $this->lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES);
 
             $this->transfers = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($wallet->getIdClient());
 
@@ -1593,5 +1581,36 @@ class preteursController extends bootstrap
         /** @var BankAccountManager $bankAccountManager */
         $bankAccountManager = $this->get('unilend.service.bank_account_manager');
         $bankAccountManager->validateBankAccount($bankAccount);
+    }
+
+    public function _operations_export()
+    {
+        if (
+            isset($_POST['dateStart']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $_POST['dateStart'])
+            && isset($_POST['dateEnd']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $_POST['dateEnd'])
+        ) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var LenderOperationsManager $lenderOperationsManager */
+            $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
+            $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER);
+            $start                   = \DateTime::createFromFormat('m/d/Y', $_POST['dateStart']);
+            $end                     = \DateTime::createFromFormat('m/d/Y', $_POST['dateEnd']);
+
+            $document = $lenderOperationsManager->getOperationsExcelFile($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES);
+            $fileName = 'operations_' . date('Y-m-d_H:i:s');
+
+            /** @var \PHPExcel_Writer_Excel2007 $writer */
+            $writer = PHPExcel_IOFactory::createWriter($document, 'Excel2007');
+
+            header('Content-Type: application/force-download; charset=utf-8');
+            header('Content-Disposition: attachment;filename=' . $fileName . '.xlsx');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Expires: 0');
+
+            $writer->save('php://output');
+
+            die;
+        }
     }
 }
