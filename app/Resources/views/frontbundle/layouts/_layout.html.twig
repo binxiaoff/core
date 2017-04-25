@@ -34,7 +34,7 @@
         <meta name="theme-color" content="#ffffff">
         {% include 'partials/site/vwo_script.html.twig' %}
     </head>
-    <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }}{% if is_granted('ROLE_LENDER') %} ui-user-type-lender{% endif %}{% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower{% endif %}{% if is_granted('ROLE_PARTNER') %} ui-user-type-partner{% endif %}{% else %} ui-no-user{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
+    <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }}{% if is_granted('ROLE_LENDER') %} ui-user-type-lender{% endif %}{% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower{% endif %}{% if is_granted('ROLE_PARTNER') %} ui-user-type-partner{% endif %}{% if is_granted('ROLE_PARTNER_ADMIN') %} ui-user-type-partner-admin{% endif %}{% if is_granted('ROLE_PARTNER_USER') %} ui-user-type-partner-user{% endif %}{% else %} ui-no-user{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
         {{ google_tag_manager() }}
         <div id="top" class="site">
             {% block siteCookie %}

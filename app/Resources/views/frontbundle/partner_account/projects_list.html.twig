@@ -5,9 +5,9 @@
     classNames: 'partner-account'
 } %}
 
-{% set partnerProspects = [
+{% set prospects = [
     {
-        id: '12033',
+        id: 12033,
         siren: '326300159',
         borrower: 'Télévision Française 1',
         submitter: {
@@ -16,16 +16,17 @@
             agency: 'AXA Nancy'
         },
         motif: {
-            value: '1',
-            general: 'Travaux',
-            details: 'Agrandissement du local de venter'
+            value: 1,
+            label: 'Travaux - Agrandissement du local de vente'
         },
-        amount: '40000',
-        duration: '3 mois'
+        memos: 2,
+        amount: 40000,
+        duration: 3,
+        unread: false
     },
     {
-        id: '12034',
-        siren: '326300153',
+        id: 12034,
+        siren: 326300153,
         borrower: 'Télévision Française 2',
         submitter: {
             firstName: 'Lauren',
@@ -33,18 +34,19 @@
             agency: 'AXA Nancy'
         },
         motif: {
-            value: '1',
-            general: 'Equipment',
-            details: 'Nouveau site web'
+            value: 2,
+            label: 'Equipment - Nouveau site web'
         },
-        amount: '20000',
-        duration: '12 mois'
+        memos: 3,
+        amount: 55000,
+        duration: 1,
+        unread: true
     }
 ] %}
 
-{% set partnerProjects = [
+{% set projects = [
     {
-        id: '12033',
+        id: 12033,
         siren: '326300159',
         borrower: 'Télévision Française 1',
         submitter: {
@@ -54,22 +56,16 @@
         },
         motif: {
             value: 1,
-            general: 'Travaux',
-            details: 'Agrandissement du local de venter'
+            label: 'Travaux - Agrandissement du local de venter'
         },
-        memos: {
-            memo: {
-                text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.',
-                time: '14th February',
-                author: 'Unilend'
-            }
-        },
-        status: 'En attente de pièces',
-        amount: '40000',
-        duration: '3 mois'
+        memos: 0,
+        status: 'Traitement commercial',
+        amount: 67000,
+        duration: 3,
+        unread: true
     },
     {
-        id: '12034',
+        id: 12034,
         siren: '326300160',
         borrower: 'Télévision Française 2',
         submitter: {
@@ -78,24 +74,16 @@
             agency: 'AXA Nancy'
         },
         motif: {
-            value: 1,
-            general: 'Equipment',
-            details: 'Nouveau site web'
+            value: 2,
+            label: 'Equipment - Nouveau site web'
         },
-        memos: {
-            memo: {
-                text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.',
-                time: '14th February',
-                author: 'Unilend'
-            }
-        },
+        memos: 1,
         status: 'Demande complète',
-        amount: '20000',
-        duration: '3 mois'
+        amount: 20000,
+        duration: 6,
+        unread: true
     }
 ]  %}
-
-{% set user = 'collaborateur' %}
 
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
@@ -108,8 +96,8 @@
                     <div class="panel-content">
                         <div id="partner-prospects-panel">
                             <h3>{% trans %} partner-project-list_prospects-title {% endtrans %}</h3>
-                            {% if partnerProspects|length > 0 %}
-                                <form id="submit-partner-prospect" action="/partenaire/depot/details" method="post" style="visibility: hidden">
+                            {% if prospects|length > 0 %}
+                                <form id="submit-partner-prospect" action="{{ path('partner_projects_list') }}" method="post" style="visibility: hidden">
                                     <input type="hidden" name="esim[siren]" value="">
                                     <input type="hidden" name="esim[amount]" value="">
                                     <input type="hidden" name="esim[duration]" value="">
@@ -125,12 +113,12 @@
                                                     {% trans %} partner-project-list_prospects-table-borrower {% endtrans %}
                                                 </span>
                                             </th>
-                                            {% if user == 'administrateur' %}
+                                            {% if is_granted('ROLE_PARTNER_ADMIN') %}
                                                 <th class="table-prospects-item-submitter table-sortable-column" data-sortable-by="submitter">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_prospects-table-submitter {% endtrans %}
-                                                </span>
-                                            </th>
+                                                    <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                        {% trans %} partner-project-list_prospects-table-submitter {% endtrans %}
+                                                    </span>
+                                                </th>
                                             {% endif %}
                                             <th class="table-prospects-item-amount table-sortable-column" data-sortable-by="amount">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
@@ -155,24 +143,24 @@
                                         </tr>
                                         </thead>
                                         <tbody data-sortable-content>
-                                        {% for project in partnerProspects %}
+                                        {% for project in prospects %}
                                             <tr id="prospect-{{ project.id }}" class="table-prospects-item"
                                                 data-sortable-siren="{{ project.siren }}"
                                                 data-sortable-borrower="{{ project.borrower }}"
-                                                {% if user == 'administrateur' %}
-                                                data-sortable-submitter="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}"
+                                                {% if is_granted('ROLE_PARTNER_ADMIN') %}
+                                                    data-sortable-submitter="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}"
                                                 {% endif %}
-                                                data-sortable-motif="{{ project.motif.general }}"
+                                                data-sortable-motif="{{ project.motif.label }}"
                                                 data-sortable-motif-id="{{ project.motif.value }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}">
                                                 <td class="table-prospects-item-borrower" title="{{ project.borrower }}" data-toggle="tooltip" colspan="2">{{ project.borrower }}</td>
-                                                {% if user == 'administrateur' %}
+                                                {% if is_granted('ROLE_PARTNER_ADMIN') %}
                                                     <td class="table-prospects-item-submitter" title="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}</td>
                                                 {% endif %}
                                                 <td class="table-prospects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
-                                                <td class="table-prospects-item-duration">{{ project.duration }}</td>
-                                                <td class="table-prospects-item-motif" colspan="2" title="{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}" data-toggle="tooltip">{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}></td>
+                                                <td class="table-prospects-item-duration">{% trans with {'%duration%': project.duration} %} partner-project-list_prospects-table-duration-value {% endtrans %}</td>
+                                                <td class="table-prospects-item-motif" colspan="2" title="{{ project.motif.label }}" data-toggle="tooltip">{{ project.motif.label }}</td>
                                                 <td class="table-prospects-item-action">
                                                     <a role="button" title="{{ 'partner-project-list_prospects-table-action-cancel'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="cancel"><span class="icon fa-ban-u16"></span></a>
                                                     <a role="button" title="{{ 'partner-project-list_prospects-table-action-submit'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="submit"><span class="icon fa-check-u16"></span></a>
@@ -188,7 +176,7 @@
                             {% endif %}
                         </div><!-- /#partner-prospects-panel -->
                         <div id="partner-projects-panel">
-                            {% if partnerProjects|length > 0 %}
+                            {% if projects|length > 0 %}
                                 <h3>{% trans %} partner-project-list_projects-title {% endtrans %}</h3>
                                 <div class="table-scroll">
                                     <table class="table table-projects" data-sortable>
@@ -199,13 +187,13 @@
                                                     {% trans %} partner-project-list_projects-table-borrower {% endtrans %}
                                                 </span>
                                             </th>
-                                            {% if user == 'administrateur' %}
-                                            <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_projects-table-submitter {% endtrans %}
-                                                </span>
-                                            </th>
-                                           {% endif %}
+                                            {% if is_granted('ROLE_PARTNER_ADMIN') %}
+                                                <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
+                                                    <span class="label" title="{{ 'partner-project-list_sr-sort-projects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                        {% trans %} partner-project-list_projects-table-submitter {% endtrans %}
+                                                    </span>
+                                                </th>
+                                            {% endif %}
                                             <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-amount {% endtrans %}
@@ -234,23 +222,23 @@
                                         </tr>
                                         </thead>
                                         <tbody data-sortable-content>
-                                        {% for project in partnerProjects %}
+                                        {% for project in projects %}
                                             <tr id="project-{{ project.id }}" class="table-projects-item" data-details
                                                 data-sortable-borrower="{{ project.borrower }}"
-                                                {% if user == 'administrateur' %}
+                                                {% if is_granted('ROLE_PARTNER_ADMIN') %}
                                                     data-sortable-submitter="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}"
                                                 {% endif %}
-                                                data-sortable-motif="{{ project.motif.general }}"
+                                                data-sortable-motif="{{ project.motif.label }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}"
                                                 data-sortable-status="{{ project.status }}">
                                                 <td class="table-projects-item-borrower" title="{{ project.borrower }}" data-toggle="tooltip" colspan="2">{{ project.borrower }}</td>
-                                                {% if user == 'administrateur' %}
+                                                {% if is_granted('ROLE_PARTNER_ADMIN') %}
                                                     <td class="table-projects-item-submitter" title="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}</td>
                                                 {% endif %}
                                                 <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
-                                                <td class="table-projects-item-duration">{{ project.duration }}</td>
-                                                <td class="table-projects-item-motif" title="{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}" data-toggle="tooltip">{{ project.motif.general }} {% if project.motif.details|length %}- {{ project.motif.details }}{% endif %}</td>
+                                                <td class="table-projects-item-duration">{% trans with {'%duration%': project.duration} %} partner-project-list_projects-table-duration-value {% endtrans %}</td>
+                                                <td class="table-projects-item-motif" title="{{ project.motif.label }}" data-toggle="tooltip">{{ project.motif.label }}</td>
                                                 <td class="table-projects-item-status">
                                                     <span class="ui-project-status" title="{{ project.status }}" data-toggle="tooltip">{{ project.status }}</span>
                                                 </td>
