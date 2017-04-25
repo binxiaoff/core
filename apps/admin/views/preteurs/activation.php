@@ -24,13 +24,13 @@
             </thead>
             <tbody>
                 <?php $iRow = 1; ?>
-                <?php foreach ($this->lPreteurs as $c) : ?>
+                <?php foreach ($this->lPreteurs as $client) : ?>
                     <?php
                         $sGreenPointStatus = '';
                         $sWaitingForGP     = '';
                         $sBGColor          = '';
 
-                        if (isset($this->aGreenPointStatus[$c['id_client']])) {
+                        if (isset($this->aGreenPointStatus[$client['id_client']])) {
                             $sWaitingForGP     = '';
                             $sGreenPointStatus = $this->aGreenPointStatus[$c['id_client']];
                             if (preg_match('/^[8-9]{3}$/', $sGreenPointStatus)) {
@@ -42,42 +42,42 @@
                                     $sBGColor = '#ff0100;';
                                 }
                             }
-                        } elseif (in_array($c['status_client'], array(clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION))) {
+                        } elseif (in_array($client['status_client'], [clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION])) {
                             $sWaitingForGP = '&nbsp;<span style="font-weight: bold; color: #f79232;">Attente Green Point</span>';
                             $sBGColor      = '';
                         }
 
-                        if ($this->companies->get($c['id_client'], 'id_client_owner')) {
-                            if ($this->companies->status_client != 1) {
+                        if ($this->companies->get($client['id_client'], 'id_client_owner')) {
+                            if (\Unilend\Bundle\CoreBusinessBundle\Entity\Companies::CLIENT_STATUS_MANAGER != $this->companies->status_client) {
                                 $prenom = $this->companies->prenom_dirigeant . ' ' . $this->companies->nom_dirigeant;
                             } else {
-                                $prenom = $c['prenom'] . ' ' . $c['nom'];
+                                $prenom = $client['prenom'] . ' ' . $client['nom'];
                             }
 
                             $nom = $this->companies->name;
                         } else {
-                            $nom    = $c['nom'];
-                            $prenom = $c['prenom'];
+                            $nom    = $client['nom'];
+                            $prenom = $client['prenom'];
                         }
 
                         if ($c['type_transfert'] == 1) {
                             $val = 'Virement';
                         } else {
-                            $val = $this->ficelle->formatNumber($c['balance']) . ' €';
+                            $val = $this->ficelle->formatNumber($client['balance']) . ' €';
                         }
                     ?>
                     <tr class="<?= ($iRow % 2 == 1 ? '' : 'odd') ?> ">
-                        <td align="center" <?php if (false === empty($sBGColor)) : ?>style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" <?php endif; ?> title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $c['id_client'] ?></td>
+                        <td align="center" <?php if (false === empty($sBGColor)) : ?>style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" <?php endif; ?> title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $client['id_client'] ?></td>
                         <td><?= $nom ?></td>
                         <td><?= $prenom ?></td>
-                        <td align="center"><?= date('d/m/Y', strtotime($c['added'])) ?></td>
+                        <td align="center"><?= date('d/m/Y', strtotime($client['added'])) ?></td>
                         <td align="center"><?= $val ?></td>
-                        <td align="center"><?= $c['label_status'] . $sWaitingForGP ?></td>
+                        <td align="center"><?= $client['label_status'] . $sWaitingForGP ?></td>
                         <td align="center">
-                            <?php if (in_array($c['status_client'], array(clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION))) : ?>
-                                <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $c['id_lender'] ?>" class="btn_link" style="padding: 3px;">Contrôler</a>
+                            <?php if (in_array($client['status_client'], [clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION])) : ?>
+                                <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $client['id_client'] ?>" class="btn_link" style="padding: 3px;">Contrôler</a>
                             <?php else : ?>
-                                <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $c['id_lender'] ?>">Détails</a>
+                                <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $client['id_client'] ?>">Détails</a>
                             <?php endif; ?>
 
                         </td>
