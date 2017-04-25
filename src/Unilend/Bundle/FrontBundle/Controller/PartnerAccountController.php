@@ -4,13 +4,16 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
 class PartnerAccountController extends Controller
 {
     /**
      * @Route("partenaire/depot", name="partner_project_request")
+     * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @return Response
@@ -18,6 +21,44 @@ class PartnerAccountController extends Controller
     public function projectRequestAction()
     {
         return $this->render('/partner_account/project_request.html.twig');
+    }
+
+    /**
+     * @Route("partenaire/depot", name="partner_project_request_form")
+     * @Method("POST")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @return RedirectResponse
+     */
+    public function projectRequestFormAction()
+    {
+        return $this->redirectToRoute('partner_project_request_eligibility');
+    }
+
+    /**
+     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility", requirements={"hash":"[0-9a-z]{32}"})
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @param string $hash
+     *
+     * @return Response
+     */
+    public function projectRequestEligibilityAction($hash)
+    {
+        return $this->render('/partner_account/project_request_eligibility.html.twig');
+    }
+
+    /**
+     * @Route("partenaire/depot/informations/{hash}", name="partner_project_request_information", requirements={"hash":"[0-9a-z]{32}"})
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @param string $hash
+     *
+     * @return Response
+     */
+    public function projectRequestInformationAction($hash)
+    {
+        return $this->render('/partner_account/project_request_information.html.twig');
     }
 
     /**
