@@ -245,44 +245,67 @@ $doc.ready(function ($) {
       event.stopPropagation()
     })
     .on('shown.bs.tab', '[href="#esim2"]', function () {
+
+      // Slightly different behaviour for partners
+      var isPartner = false, siren = false
+      if ($(this).closest('.emprunter-sim').is('.emprunter-sim-partner')) {
+        isPartner = true
+      }
+
       var period = $("input[id^='esim-input-duration-']:checked").val()
       var amount = $("#esim-input-amount").val()
       var motiveId = $("#esim-input-reason > option:selected").val()
+      var ajaxData = { period: period, amount: amount, motiveId: motiveId }
+
+      if (isPartner) {
+        siren = $('#esim-input-siren').val()
+        ajaxData.siren = siren
+      }
 
       if (! $(".form-validation-notifications .message-error").length) {
         $.ajax({
           type: 'POST',
           url: '/simulateur-projet-etape1',
-          data: {
-            period: period,
-            amount: amount,
-            motiveId: motiveId
-          },
+          data: ajaxData,
           success: function(response) {
             // Show the continue button
             $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
 
-            $('#esim-input-siren').focus()
+            if (!isPartner) {
+              // Siren is unknown yet, so focus the user input
+              $('#esim-input-siren').focus()
+            } else {
+              // TODO
+              // Add Siren and Company Name as part of the response
+              // For now they are simulated using vars
+              var responseCompany = 'Television Francaise';
+              var responseSiren = siren;
+              $('.ui-esim-output-company, .ui-modal-output-company').html(responseCompany); // Replace with response.company
+              $('.ui-esim-output-siren').html(responseSiren); // Replace with response.siren
+              // TODO END
+            }
 
             $(".ui-esim-output-cost").prepend(response.amount);
             $('.ui-esim-output-duration').prepend(response.period)
             $('.ui-esim-funding-duration-output').html(response.estimatedFundingDuration)
             $('.ui-esim-monthly-output').html(response.estimatedMonthlyRepayment)
 
-            if (!response.motiveSentenceComplementToBeDisplayed) {
-              $('p[data-borrower-motive]').show()
-              while ($('.ui-esim-output-duration')[0].nextSibling != null) {
-                $('.ui-esim-output-duration')[0].nextSibling.remove()
+            if (!isPartner) {
+              if (!response.motiveSentenceComplementToBeDisplayed) {
+                $('p[data-borrower-motive]').show()
+                while ($('.ui-esim-output-duration')[0].nextSibling != null) {
+                  $('.ui-esim-output-duration')[0].nextSibling.remove()
+                }
+                $('#esim2 > fieldset > div:nth-child(2) > div > p:nth-child(1)').append('.')
               }
-              $('#esim2 > fieldset > div:nth-child(2) > div > p:nth-child(1)').append('.')
-            }
-            else {
-              var text = $('p[data-borrower-motive]').html()
-              text = text.replace(/\.$/g, '')
+              else {
+                var text = $('p[data-borrower-motive]').html()
+                text = text.replace(/\.$/g, '')
 
-              $('p[data-borrower-motive]')
-                .show()
-                .html(text + response.translationComplement + '.')
+                $('p[data-borrower-motive]')
+                    .show()
+                    .html(text + response.translationComplement + '.')
+              }
             }
           },
           error: function() {
@@ -292,7 +315,122 @@ $doc.ready(function ($) {
 
         $('a[href*="esim1"]')
           .removeAttr("href data-toggle aria-expanded")
-          .attr("nohref", "nohref")
+      }
+    })
+    .on(Utility.clickEvent, '[data-prospect-btn]', function () {
+      // Gather data for submitting prospect
+      var period = $("input[id^='esim-input-duration-']:checked").val()
+      var amount = $("#esim-input-amount").val()
+      var motiveId = $("#esim-input-reason > option:selected").val()
+      var siren = $('#esim-input-siren').val()
+
+      var ajaxData = { period: period, amount: amount, motiveId: motiveId, siren: siren }
+
+      // TODO - Add url for posting to Prospects and Uncomment below
+      // var ajaxUrl  = ''
+      // $.ajax({
+      //   type: 'POST',
+      //   url: ajaxUrl,
+      //   data: ajaxData,
+      //   success: function(response) {
+      //     if (response.text === 'OK') {
+      //       $('#modal-partner-prospect').uiModal('open')
+      //     }
+      //   },
+      //   error: function() {
+      //     $('#modal-partner-prospect-error').uiModal('open')
+      //     console.log("error retrieving data");
+      //   }
+      // })
+      // Remove this line
+      $('#modal-partner-prospect').uiModal('open')
+      // TODO END
+
+    })
+
+  $doc
+    .on(Utility.clickEvent, '.table-prospects [data-action]', function() {
+      // TODO - ADD AJAX URL FOR DELETING A PROSPECT
+      var $prospect = $(this).closest('tr')
+      var action = $(this).data('action')
+      var $modal = $('#modal-partner-prospect-' + action)
+
+      // Add prospect id for further actions (abandon / submit)
+      $modal.data('prospect-id', $prospect.attr('id'))
+      // Insert the company name inside the modal text and Show the popup
+      $modal.find('.ui-modal-output-company').html($prospect.data('sortable-borrower'))
+      $modal.uiModal('open')
+    })
+    .on(Utility.clickEvent, '#modal-partner-prospect-submit [data-modal-doactionsubmit]', function() {
+      var $modal = $('#modal-partner-prospect-submit')
+      var $prospect = $('#' + $modal.data('prospect-id'))
+      var $form = $('#submit-partner-prospect')
+      var siren = $prospect.data('sortable-siren')
+      var company = $prospect.data('sortable-borrower')
+      var amount = $prospect.data('sortable-amount')
+      var duration = $prospect.data('sortable-duration')
+      var motif = $prospect.data('sortable-motif')
+
+      // @Debug data
+      console.log('siren: ' + siren + ' | company: ' + company + ' | amount: ' + amount + ' | duration: ' + duration + ' | motif: ' + motif)
+
+      $form.find('[name="esim[siren]"]').val(siren)
+      $form.find('[name="esim[company]"]').val(company)
+      $form.find('[name="esim[amount]"]').val(amount)
+      $form.find('[name="esim[duration]"]').val(duration)
+      $form.find('[name="esim[motif]"]').val(motif)
+      $form.submit();
+
+      $modal.uiModal('close')
+
+      console.log('Submit prospect ' + $prospect.attr('id'))
+    })
+    .on(Utility.clickEvent, '#modal-partner-prospect-cancel [data-modal-doactionsubmit]', function() {
+      var $modal = $(this).closest('[data-modal]')
+      var $prospect = $('#' + $modal.data('prospect-id'))
+
+      var $select = $modal.find('#prospect-cancel-motif')
+      if ($select.val() !== '0') {
+        // TODO - Remove lines below and Uncomment Ajax
+
+        $modal.uiModal('close')
+        $prospect.remove()
+        if (!$('.table-prospects-item').length) {
+          $('#partner-prospects-panel .table-scroll').remove()
+          $('#partner-prospects-panel .message-info').show()
+        }
+
+        // var formData = {
+        //   prospectId : $prospect.attr('id'),
+        //   motif : $select.val()
+        // }
+        // // console.log(formData)
+        // $.ajax({
+        //   type: 'POST',
+        //   url: '',
+        //   data: formData,
+        //   success: function(response) {
+        //     if (response.text === 'OK') {
+        //       $modal.uiModal('close')
+        //       $prospect.remove()
+        //       if (!$('.table-prospects-item').length) {
+        //         $('#partner-prospects-panel .table-scroll').remove()
+        //         $('#partner-prospects-panel .message-info').show()
+        //       }
+        //     }
+        //   },
+        //   error: function() {
+        //     console.log("error retrieving data");
+        //   }
+        // })
+        // TODO END
+      } else {
+        $select.parent().addClass('ui-formvalidation-error')
+        $select.change(function(){
+          if ($(this).val() !== 0) {
+            $(this).parent().removeClass('ui-formvalidation-error')
+          }
+        })
       }
     })
 

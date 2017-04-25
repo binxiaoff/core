@@ -130,7 +130,60 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         $details = $('<tr class="table-myoperations-borrower-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td>' + details.label + '</td><td colspan="3"><dl>' + detailsItemsHtml + '</dl></td><td>&nbsp;</td></tr>')
       }
 
-      $item.after($details)
+      // Partner project details
+      else if ($item.is('.table-projects-item')) {
+        // TODO - Uncomment Ajax Part Below (Currently using simulated response)
+        var response = {
+          memos: [
+            {
+              id: '1238823',
+              author: 'JIRA Lauren',
+              date: '15 Avril 2017',
+              text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.'
+            },
+            {
+              id: '12388233',
+              author: 'JIRA Lauren',
+              date: '15 Avril 2017',
+              text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.'
+            }
+          ]
+        }
+
+        function AjaxMemosSuccess(response) {
+          $.each(response.memos, function (i, memo) {
+            detailsItemsHtml += '<tr><td class="details-memo-author" title="' + memo.author + '" data-toggle="tooltip">' + memo.author + '</td>' +
+                '<td class="details-memo-date" title="' + memo.date + '" data-toggle="tooltip">' + memo.date + '</td>' +
+                '<td class="details-memo-text" title="' + memo.text + '" data-toggle="tooltip" colspan="5">' + memo.text + '</td></tr>'
+          })
+          // Build element and add to DOM
+          $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="8"><table>' + detailsItemsHtml + '</table></td></tr>')
+          $item.after($details)
+        }
+        AjaxMemosSuccess(response)
+
+        // Don't run if another Ajax is running
+        // if (ajaxIsComplete) {
+        //   ajaxIsComplete = false
+        //
+        //   // New Ajax Request - get Memos for this project
+        //   $.ajax({
+        //     type: 'POST',
+        //     url: '',
+        //     data: $item.attr('id'), // project-12033
+        //     success: function(response) {
+        //       ajaxIsComplete = true
+        //       AjaxMemosSuccess(response)
+        //     },
+        //     error: function() {
+        //       console.log("error retrieving data");
+        //       ajaxIsComplete = true
+        //     }
+        //   });
+        // }
+
+        // TODO END
+      }
     }
 
     // Show
@@ -140,9 +193,9 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
 })
 
 // Remove details before sorting
-$doc.on('Sortable:sort:before', 'table.table-myoperations, table.table-myloans', function (event, elemSortable, columnName, direction) {
+$doc.on('Sortable:sort:before', 'table.table-myoperations, table.table-myloans, .table.table-projects', function (event, elemSortable, columnName, direction) {
   var $table = $(this)
-  var $details = $table.find('.table-myoperations-details, .table-myloans-view-details')
+  var $details = $table.find('.table-myoperations-details, .table-myloans-view-details, .table-projects-details')
 
   // Find any details rows and remove them before the sorting occurs
   if ($details.length > 0) $details.remove()

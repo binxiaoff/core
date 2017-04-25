@@ -6,6 +6,7 @@
 @mixin button {
   box-sizing: border-box;
   display: inline-block;
+  cursor: pointer;
   border-style: solid;
   font-family: $ff-button;
   font-weight: normal;

@@ -49,16 +49,36 @@ class PartnerAccountController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/informations/{hash}", name="partner_project_request_information", requirements={"hash":"[0-9a-z]{32}"})
+     * @Route("partenaire/depot/details", name="partner_project_request_details_form")
      * @Security("has_role('ROLE_PARTNER')")
-     *
-     * @param string $hash
      *
      * @return Response
      */
-    public function projectRequestInformationAction($hash)
+    public function projectRequestDetailsAction()
     {
-        return $this->render('/partner_account/project_request_information.html.twig');
+        return $this->render('/partner_account/project_request_etape_2.html.twig');
+    }
+
+    /**
+     * @Route("partenaire/depot/fichiers", name="partner_project_request_files_form")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @return Response
+     */
+    public function projectRequestFilesAction()
+    {
+        return $this->render('/partner_account/project_request_etape_3.html.twig');
+    }
+
+    /**
+     * @Route("partenaire/depot/fin", name="partner_project_request_end", requirements={"hash": "[0-9a-f-]{32,36}"})
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @return Response
+     */
+    public function projectRequestEndAction()
+    {
+        return $this->render('/partner_account/project_request_etape_4.html.twig');
     }
 
     /**
