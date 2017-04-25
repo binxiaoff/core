@@ -249,6 +249,14 @@ class ajaxController extends bootstrap
                 $client->source = $_POST['source_etape1'] ?: 'Directe';
                 $client->update();
 
+                if (empty($company->siren)) {
+                    echo json_encode([
+                        'success' => false,
+                        'error'   => 'SIREN vide'
+                    ]);
+                    return;
+                }
+
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
                 $result                = $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user']);
@@ -259,7 +267,7 @@ class ajaxController extends bootstrap
                 if (true === is_array($result) && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
                     echo json_encode([
                         'success' => false,
-                        'error'   => 'Siren inconu'
+                        'error'   => 'SIREN inconu'
                     ]);
                     return;
                 } elseif (empty($company->code_naf)) {
@@ -322,6 +330,7 @@ class ajaxController extends bootstrap
                 }
                 $address->update();
 
+                $this->clients = $this->loadData('clients');
                 $this->clients->get($company->id_client_owner, 'id_client');
                 $this->clients->email     = $_POST['email_etape2'];
                 $this->clients->civilite  = $_POST['civilite_etape2'];

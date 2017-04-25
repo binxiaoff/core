@@ -57,9 +57,12 @@ class prescripteursController extends bootstrap
             header('Location:' . $this->lurl . '/prescripteurs/gestion/');
             return;
         }
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $this->aProjects      = $this->projects->searchDossiers('', '', '', '', '', '', '', '', '', $this->params[0]);
         $this->iProjectsCount = array_shift($this->aProjects);
+        $this->bankAccount    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->prescripteurs->id_client);
 
         if (isset($_POST['form_edit_prescripteur'])) {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -79,9 +82,23 @@ class prescripteursController extends bootstrap
 
             $this->companies->siren = $_POST['siren'];
             $this->companies->name  = $_POST['company_name'];
-            $this->companies->iban  = $_POST['iban'];
-            $this->companies->bic   = $_POST['bic'];
             $this->companies->update();
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+            $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+            $clientEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->prescripteurs->id_client);
+            try {
+                $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
+                if ($bankAccount) {
+                    $bankAccountManager->validateBankAccount($bankAccount);
+                }
+            } catch (Exception $exception) {
+                $_SESSION['freeow']['title']   = 'Error RIB';
+                $_SESSION['freeow']['message'] = $exception->getMessage();
+
+                header('Location: ' . $this->lurl . '/prescripteurs/edit/' . $this->prescripteurs->id_prescripteur);
+                exit;
+            }
 
             $serialize = serialize(array('id_prescripteur' => $this->prescripteurs->id_prescripteur, 'post' => $_POST));
             $this->users_history->histo(5, 'edit prescripteur', $_SESSION['user']['id_user'], $serialize);
@@ -127,10 +144,25 @@ class prescripteursController extends bootstrap
             if ($sirenCompany) {
                 $companyId = $sirenCompany[0]['id_company'];
             } else {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                $clientEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+                try {
+                    $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
+                    if ($bankAccount) {
+                        $bankAccountManager->validateBankAccount($bankAccount);
+                    }
+                } catch (Exception $exception) {
+                    echo json_encode([
+                        'result' => 'KO'
+                    ]);
+                    exit;
+                }
+
                 $company->siren = $_POST['siren'];
                 $company->name  = $_POST['company_name'];
-                $company->iban  = $_POST['iban'];
-                $company->bic   = $_POST['bic'];
 
                 $companyId = $company->create();
             }

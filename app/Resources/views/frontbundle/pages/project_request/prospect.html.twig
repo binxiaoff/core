@@ -56,7 +56,7 @@
                                                 <div class="form-field form-field-multi{% if form.errors.civility is defined %} ui-formvalidation-error{% endif %}">
                                                     <div class="field-label">
                                                         <label>
-                                                            {% trans %} common_form-of-address {% endtrans %}
+                                                            {% trans %} common_title {% endtrans %}
                                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                         </label>
                                                     </div>
@@ -64,13 +64,13 @@
                                                         <li>
                                                             <label>
                                                                 <input type="radio" name="civility" value="Mme"{% if 'Mme' == form.values.civility %} checked{% endif %}/>
-                                                                {% trans %} common_form-of-address-female {% endtrans %}
+                                                                {% trans %} common_title {% endtrans %}
                                                             </label>
                                                         </li>
                                                         <li>
                                                             <label>
                                                                 <input type="radio" name="civility" value="M."{% if 'M.' == form.values.civility %} checked{% endif %}/>
-                                                                {% trans %} common_form-of-address-male {% endtrans %}
+                                                                {% trans %} common_title {% endtrans %}
                                                             </label>
                                                         </li>
                                                     </ul>

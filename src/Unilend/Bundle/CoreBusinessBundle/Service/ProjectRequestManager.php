@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -99,15 +98,15 @@ class ProjectRequestManager
     }
 
     /**
-     * @param $formData
+     * @param array $formData
+     *
      * @return \projects
+     * @throws \Exception
      */
     public function saveSimulatorRequest($formData)
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
-        /** @var \clients $clientRepository */
-        $clientRepository = $this->entityManagerSimulator->getRepository('clients');
 
         if (empty($formData['email']) || false === filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email');
@@ -115,7 +114,7 @@ class ProjectRequestManager
         if (false === empty($formData['siren'])) {
             $formData['siren'] = str_replace(' ', '', $formData['siren']);
         }
-        if (empty($formData['siren']) || false === preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
+        if (empty($formData['siren']) || 1 !== preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
             throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren']);
         }
         if (false === empty($formData['amount'])) {
@@ -131,13 +130,13 @@ class ProjectRequestManager
             throw new \InvalidArgumentException('Invalid reason');
         }
 
-        $email = $clientRepository->existEmail($formData['email']) ? $formData['email'] . '-' . time() : $formData['email'];
+        $email = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($formData['email']) ? $formData['email'] . '-' . time() : $formData['email'];
 
         $client = new Clients();
         $client
             ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(\clients::STATUS_ONLINE)
+            ->setStatus(Clients::STATUS_ONLINE)
             ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($this->sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))
@@ -156,18 +155,19 @@ class ProjectRequestManager
         $this->entityManager->beginTransaction();
         try {
             $this->entityManager->persist($client);
-            $this->entityManager->flush($client);
             $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($client->getIdClient());
+            $clientAddress->setIdClient($client);
             $this->entityManager->persist($clientAddress);
+            $this->entityManager->flush($clientAddress);
             $company->setIdClientOwner($client->getIdClient());
             $this->entityManager->persist($company);
-            $this->entityManager->flush();
+            $this->entityManager->flush($company);
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
             $this->entityManager->commit();
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
-            $this->logger->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->logger->error('An error occurred while creating client ', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            throw $exception;
         }
 
         $project->id_company                           = $company->getIdCompany();

@@ -406,11 +406,13 @@
             });
         });
 
-        $('#commercial').change(function() {
-            if ($(this).val() > 0 && $('#current_commercial').val() == 0) {
-                $(this).parents('form').submit()
-            }
-        })
+        <?php if (\projects_status::NOT_ELIGIBLE != $this->projects->status) : ?>
+            $('#commercial').change(function() {
+                if ($(this).val() > 0 && $('#current_commercial').val() == 0) {
+                    $(this).parents('form').submit()
+                }
+            })
+        <?php endif; ?>
 
         $('#analyste').change(function() {
             if ($(this).val() > 0 && $('#current_analyst').val() == 0) {
@@ -614,7 +616,7 @@
                                         <option value="" selected></option>
                                     <?php endif; ?>
                                     <?php foreach ($this->partnerList as $partner) : ?>
-                                        <option value="<?= $partner['id'] ?>"<?= $this->projects->id_partner === $partner['id'] ? ' selected' : '' ?>><?= $partner['name'] ?></option>
+                                        <option value="<?= $partner->getId() ?>"<?= $this->projects->id_partner == $partner->getId() ? ' selected' : '' ?>><?= $partner->getIdCompany()->getName() ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
@@ -752,7 +754,7 @@
                             <th>Nom</th>
                             <td><?= $this->clients->nom ?></td>
                         </tr>
-                        <?php if (false === empty($this->projects->id_commercial) || false === in_array($this->projects->status, [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::NOT_ELIGIBLE, \projects_status::ABANDONED])) : ?>
+                        <?php if (false === empty($this->projects->id_commercial) || false === in_array($this->projects->status, [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::ABANDONED])) : ?>
                             <tr>
                                 <th><label for="commercial">Commercial</label></th>
                                 <td>
@@ -829,11 +831,19 @@
                                 $blockingPublishingError = 'Veuillez sélectionner une durée de prêt';
                             }
 
-                            if (
-                                in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)
-                                && empty($this->aAttachments[\attachment_type::DEBTS_STATEMENT]['path'])
-                            ) {
-                                $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                            if (in_array(\Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)) {
+                                $hasDebtsStatement = false;
+                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+                                foreach ($this->aAttachments as $projectAttachment) {
+                                    $attachment = $projectAttachment->getAttachment();
+                                    if (\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DEBTS_STATEMENT === $attachment->getType()->getId()) {
+                                        $hasDebtsStatement = true;
+                                        break;
+                                    }
+                                }
+                                if (false === $hasDebtsStatement) {
+                                    $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                }
                             }
 
                             if (false === $this->isProductUsable) {
@@ -954,6 +964,7 @@
                                         <?php break;
                                     case \projects_status::POSTPONED: ?>
                                         <div style="text-align: right">
+                                            <a href="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>/resume" class="btn btn-small btnDisabled btn_link">Reprendre</a>
                                             <a href="<?= $this->lurl ?>/dossiers/abandon/<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link thickbox">Abandonner</a>
                                             <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
                                             <?php if (empty($this->projects->id_product)) : ?>
@@ -983,7 +994,7 @@
                     </table>
                 </td>
             </tr>
-            <tr<?php if (empty($this->projects->id_commercial)) : ?> style="display: none" <?php endif; ?>>
+            <tr<?php if (empty($this->projects->id_commercial) && \projects_status::NOT_ELIGIBLE != $this->projects->status) : ?> style="display: none"<?php endif; ?>>
                 <td colspan="2" class="center">
                     <input type="hidden" name="statut_encours" id="statut_encours" value="0">
                     <input type="hidden" name="send_form_dossier_resume">

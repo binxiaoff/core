@@ -6,8 +6,6 @@
     <script>
         $(function () {
             $('#ws-provider-form').submit(function (event) {
-                console.log($('#resource_label option:selected'))
-                console.log($('#resource_label option:selected').val())
                 if (! $('#resource_label option:selected').val()) {
                     event.preventDefault()
                     alert('Veuillez sélectionner un webservice')
@@ -55,14 +53,10 @@
             </tbody>
         </table>
     </form>
-    <?php
-
-    if (false === empty($this->result)) {
-        echo '<pre>';
-        var_export($this->result);
-        echo '</pre>';
-    }
-
-    ?>
+    <?php if (false === empty($this->result)) : ?>
+        <pre><?php var_export($this->result); ?></pre>
+    <?php elseif (false !== $this->result) : ?>
+        <h1>Erreur du WS, voir les logs</h1>
+    <?php endif; ?>
 </body>
 </html>

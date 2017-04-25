@@ -115,7 +115,9 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     }
 
     /**
-     * @inheritDoc
+     * @param UserInterface $user
+     *
+     * @return bool
      */
     public function isEqualTo(UserInterface $user)
     {
@@ -123,12 +125,20 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
             return false;
         }
 
-        if ($this->password !== $user->getPassword()) {
+        if ($this->hash !== $user->getHash()) {
             return false;
         }
 
+        if ($this->password !== $user->getPassword()) {
+            if ($this->username !== $user->getUsername()) {
+                return false;
+            }
+        }
+
         if ($this->username !== $user->getUsername()) {
-            return false;
+            if ($this->password !== $user->getPassword()) {
+                return false;
+            }
         }
 
         return true;

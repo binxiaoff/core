@@ -7,25 +7,12 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Attachment
  *
- * @ORM\Table(name="attachment", uniqueConstraints={@ORM\UniqueConstraint(name="unique_id_owner_type_owner_id_type", columns={"id_type", "id_owner", "type_owner"})}, indexes={@ORM\Index(name="fk_attachment_id_type", columns={"id_type"}), @ORM\Index(name="idx_id_owner_type_owner", columns={"id_owner", "type_owner"})})
- * @ORM\Entity
+ * @ORM\Table(name="attachment", indexes={@ORM\Index(name="fk_attachment_id_type", columns={"id_type"}), @ORM\Index(name="id_client", columns={"id_client"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\AttachmentRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Attachment
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_owner", type="integer", nullable=false)
-     */
-    private $idOwner;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="type_owner", type="string", length=45, nullable=false)
-     */
-    private $typeOwner;
-
     /**
      * @var string
      *
@@ -73,55 +60,30 @@ class Attachment
      */
     private $idType;
 
-
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", inversedBy="attachments")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
+     */
+    private $idClient;
 
     /**
-     * Set idOwner
+     * @var GreenpointAttachment
      *
-     * @param integer $idOwner
-     *
-     * @return Attachment
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment", mappedBy="idAttachment")
      */
-    public function setIdOwner($idOwner)
-    {
-        $this->idOwner = $idOwner;
-
-        return $this;
-    }
+    private $greenpointAttachment;
 
     /**
-     * Get idOwner
+     * @var BankAccount
      *
-     * @return integer
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount", mappedBy="idAttachment")
      */
-    public function getIdOwner()
-    {
-        return $this->idOwner;
-    }
+    private $bankAccount;
 
-    /**
-     * Set typeOwner
-     *
-     * @param string $typeOwner
-     *
-     * @return Attachment
-     */
-    public function setTypeOwner($typeOwner)
-    {
-        $this->typeOwner = $typeOwner;
-
-        return $this;
-    }
-
-    /**
-     * Get typeOwner
-     *
-     * @return string
-     */
-    public function getTypeOwner()
-    {
-        return $this->typeOwner;
-    }
 
     /**
      * Set path
@@ -236,7 +198,7 @@ class Attachment
      *
      * @return Attachment
      */
-    public function setIdType(\Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $idType = null)
+    public function setType(AttachmentType $idType = null)
     {
         $this->idType = $idType;
 
@@ -248,8 +210,70 @@ class Attachment
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType
      */
-    public function getIdType()
+    public function getType()
     {
         return $this->idType;
+    }
+
+    /**
+     * Set idClient
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $idClient
+     *
+     * @return Attachment
+     */
+    public function setClient(Clients $idClient = null)
+    {
+        $this->idClient = $idClient;
+
+        return $this;
+    }
+
+    /**
+     * Get idClient
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     */
+    public function getClient()
+    {
+        return $this->idClient;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
+    }
+
+    /**
+     * Get greenpointAttachment
+     *
+     * @return GreenpointAttachment
+     */
+    public function getGreenpointAttachment()
+    {
+        return $this->greenpointAttachment;
+    }
+
+    /**
+     * Get bankAccount
+     *
+     * @return BankAccount
+     */
+    public function getBankAccount()
+    {
+        return $this->bankAccount;
     }
 }

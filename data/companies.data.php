@@ -2,9 +2,6 @@
 
 class companies extends companies_crud
 {
-    const CLIENT_STATUS_MANAGER             = 1;
-    const CLIENT_STATUS_DELEGATION_OF_POWER = 2;
-    const CLIENT_STATUS_EXTERNAL_CONSULTANT = 3;
 
     public function __construct($bdd, $params = '')
     {

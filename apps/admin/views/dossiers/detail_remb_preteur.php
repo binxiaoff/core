@@ -64,7 +64,7 @@
                         <td><?= $this->clients->prenom ?></td>
                         <td><?= $this->clients->id_client ?></td>
                         <td>
-                            <a href="<?= $this->furl . '/pdf/contrat/' . $this->clients->hash . '/' . $loan['id_loan'] ?>">PDF</a>
+                            <a href="<?= $this->url . '/protected/contrat/' . $this->clients->hash . '/' . $loan['id_loan'] ?>">PDF</a>
                         </td>
                         <td>
                             <?php if (false === empty($loan['id_transfer'])) :
