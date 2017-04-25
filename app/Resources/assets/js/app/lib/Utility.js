@@ -1322,14 +1322,67 @@ var Utility = {
    * Equal Width
    * Sets multiple elements to be the equal (maximum) width
    */
-  setEqualWidths: function () {
-    var maxEqualWidth = 0
-    // Iterate over items with [data-equal-width] attribute
-    $('[data-equal-width]').each(function (i, elem) {
-      var $elem = $(elem)
-      if ($elem.width() > maxEqualWidth) { maxEqualWidth = $elem.width() }
-      $elem.width(maxEqualWidth)
+  setEqualWidths: function() {
+
+    // Set vars
+    var groups        = [],
+    maxWidth          = 0,
+    addGroup          = function(group) {
+      var groupIndex = $.inArray(group, groups)
+      if (groupIndex == -1) {
+        groups.push(group)
+      }
+    },
+    equaliseWidth    = function($elem) {
+      $elem.each(function() {
+        // Update max width
+        maxWidth = Math.max(maxWidth, $(this).width())
+      })
+      // Resize the element
+          .width(maxWidth)
+      // Reset the max width
+      maxWidth = 0
+    },
+    applyToBreakpoint = function($elem) {
+
+      // Only apply to certain breakpoints
+      applyToBp = $elem.attr('data-equal-width')
+
+      if (applyToBp && typeof applyToBp === 'string') {
+        applyToBp = applyToBp.split(/[ ,]+/)
+        // Test breakpoint
+        if (new RegExp(applyToBp.join('|'), 'i').test(Utility.getActiveBreakpoints())) {
+          // Bp active = set equal width
+          equaliseWidth($elem)
+        } else {
+          // Bp inactive = remove height
+          $elem.removeAttr('style')
+        }
+      } else {
+        // No breakpoint set? Apply indiscriminately
+        equaliseWidth($elem)
+      }
+    }
+
+    // Iterate through elements with data-equal-width  
+    $('[data-equal-width]').each(function() {
+      // Add to group if attribute is present 
+      var applyToGroup = $(this).data('equal-width-group')
+      if (applyToGroup && typeof applyToGroup === 'string') {
+        addGroup($(this).data('equal-width-group'))
+      } else {
+        // If group attribute is not present, set default group
+        addGroup('default')
+        $(this).attr('data-equal-width-group', 'default')
+      }
     })
+
+    // Iterate through the groups 
+    for (i = 0; i < groups.length; i++) {
+      var $elem = $('[data-equal-width-group="' + groups[i] + '"]')
+      // Fitler active breakpoints and resize
+      applyToBreakpoint($elem)
+    }
   },
 
   /*
