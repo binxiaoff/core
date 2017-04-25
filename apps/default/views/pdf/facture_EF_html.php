@@ -71,7 +71,7 @@
             </div><!-- /.info-body -->
         </div><!-- /.info-block -->
 
-
+        <?php $this->fireView('footer_facture'); ?>
     </div><!-- /.main -->
 </div><!-- /.container -->
 </body>

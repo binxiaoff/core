@@ -47,8 +47,8 @@ class BorrowerContactType extends AbstractType
             /** @var \companies $company */
             $company = $this->entityManager->getRepository('companies');
             if ($company->get($this->borrower->getClientId(), 'id_client_owner')) {
-                $mobile = $company->phone_dirigeant !== '' ? : $company->phone;
-                $email  = $company->email_dirigeant !== '' ? : $company->email_facture;
+                $mobile = empty($client->mobile) ? $client->telephone : $client->mobile;
+                $email  = empty($client->email) ? $company->email_dirigeant : $client->email;
             }
         }
         /** @var \contact_request_subjects $requestSubjects */

@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -99,8 +98,10 @@ class ProjectRequestManager
     }
 
     /**
-     * @param $formData
+     * @param array $formData
+     *
      * @return \projects
+     * @throws \Exception
      */
     public function saveSimulatorRequest($formData)
     {
@@ -113,7 +114,7 @@ class ProjectRequestManager
         if (false === empty($formData['siren'])) {
             $formData['siren'] = str_replace(' ', '', $formData['siren']);
         }
-        if (empty($formData['siren']) || false === preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
+        if (empty($formData['siren']) || 1 !== preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
             throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren']);
         }
         if (false === empty($formData['amount'])) {
@@ -163,9 +164,10 @@ class ProjectRequestManager
             $this->entityManager->flush($company);
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
             $this->entityManager->commit();
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
-            $this->logger->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->logger->error('An error occurred while creating client ', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            throw $exception;
         }
 
         $project->id_company                           = $company->getIdCompany();

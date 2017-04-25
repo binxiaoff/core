@@ -728,27 +728,6 @@ class MailerManager
         return $oActivationTime;
     }
 
-    public function sendProjectNotificationToStaff($sNotificationType, \projects $oProject, $sRecipient)
-    {
-        /** @var \companies $oCompanies */
-        $oCompanies = $this->entityManagerSimulator->getRepository('companies');
-        $oCompanies->get($oProject->id_company, 'id_company');
-
-        $aReplacements = [
-            '[SURL]'           => $this->sSUrl,
-            '[ID_PROJET]'      => $oProject->id_project,
-            '[MONTANT]'        => $oProject->amount,
-            '[RAISON_SOCIALE]' => $oCompanies->name,
-            '[LIEN_REPRISE]'   => $this->sAUrl . '/depot_de_dossier/reprise/' . $oProject->hash,
-            '[LIEN_BO_PROJET]' => $this->sAUrl . '/dossiers/edit/' . $oProject->id_project
-        ];
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($sNotificationType, $aReplacements, false);
-        $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
-        $this->mailer->send($message);
-    }
-
     public function sendProjectOnlineToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompanies */

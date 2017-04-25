@@ -109,13 +109,13 @@ class protectedController extends bootstrap
             exit;
         }
 
-        $namePdfClient = 'CONTRAT-UNILEND-' . $projects->slug . '-' . $loans->id_loan;
+        $namePdfClient = 'CONTRAT-UNILEND-' . $projects->slug . '-' . $loans->id_loan . '.pdf';
         $filePath      = $this->path . 'protected/pdf/contrat/contrat-' . $clients->hash . '-' . $loans->id_loan . '.pdf';
 
         if (file_exists($filePath)) {
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($namePdfClient) . '";');
+            header('Content-Disposition: attachment; filename="' . $namePdfClient . '";');
             @readfile($filePath);
             die();
         } else {
@@ -140,12 +140,12 @@ class protectedController extends bootstrap
                 $filePath = $this->path . 'protected/pdf/declaration_de_creances/' . $loans->id_project . '/';
                 $filePath = ($loans->id_project == '1456') ? $filePath : $filePath . $clients->id_client . '/';
                 $filePath = $filePath . 'declaration-de-creances' . '-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
-                $fileName = 'DECLARATION-DE-CREANCES-UNILEND-' . $clients->hash . '-' . $loans->id_loan;
+                $fileName = 'DECLARATION-DE-CREANCES-UNILEND-' . $clients->hash . '-' . $loans->id_loan . '.pdf';
 
                 if (file_exists($filePath)) {
                     header('Content-Description: File Transfer');
                     header('Content-Type: application/octet-stream');
-                    header('Content-Disposition: attachment; filename="' . basename($fileName) . '";');
+                    header('Content-Disposition: attachment; filename="' . $fileName . '";');
                     @readfile($filePath);
                     die();
                 } else {

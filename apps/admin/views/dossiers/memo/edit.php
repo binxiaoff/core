@@ -4,7 +4,7 @@
     <table style="margin-bottom:15px;">
         <tr>
             <td>
-                <textarea name="content" id="content_memo" autofocus style="width:500px; height:150px;"><?= $this->content ?></textarea>
+                <textarea name="content" id="content_memo" autofocus style="width:500px; height:150px;" class="select"><?= $this->content ?></textarea>
             </td>
         </tr>
     </table>
