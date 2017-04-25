@@ -34,10 +34,10 @@
         },
         motif: {
             value: '1',
-            general: 'Travaux',
-            details: 'Agrandissement du local de venter'
+            general: 'Equipment',
+            details: 'Nouveau site web'
         },
-        amount: '40000',
+        amount: '20000',
         duration: '12 mois'
     }
 ] %}
@@ -67,6 +67,31 @@
         status: 'En attente de piece',
         amount: '40000',
         duration: '3 mois'
+    },
+    {
+        id: '12034',
+        siren: '326300160',
+        borrower: 'Télévision Française 2',
+        submitter: {
+            firstName: 'JIRA',
+            lastName: 'Lauren',
+            agency: 'AXA Nancy'
+        },
+        motif: {
+            value: 1,
+            general: 'Equipment',
+            details: 'Nouveau site web'
+        },
+        memos: {
+            memo: {
+                text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.',
+                time: '14th February',
+                author: 'Unilend'
+            }
+        },
+        status: 'Demande complete',
+        amount: '20000',
+        duration: '3 mois'
     }
 ]  %}
 
@@ -93,27 +118,27 @@
                                     <table class="table table-prospects" data-sortable>
                                         <thead class="table-sortable-columns">
                                         <tr>
-                                            <th class="table-prospects-item-borrower" data-sortable-by="borrower" colspan="2">
+                                            <th class="table-prospects-item-borrower table-sortable-column" data-sortable-by="borrower" colspan="2">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-borrower'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_prospects-table-borrower {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-prospects-item-submitter" data-sortable-by="submitter">
+                                            <th class="table-prospects-item-submitter table-sortable-column" data-sortable-by="submitter">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_prospects-table-submitter {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-prospects-item-amount" data-sortable-by="amount">
+                                            <th class="table-prospects-item-amount table-sortable-column" data-sortable-by="amount">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_prospects-table-amount {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-prospects-item-duration" data-sortable-by="duration">
+                                            <th class="table-prospects-item-duration table-sortable-column" data-sortable-by="duration">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-duration'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_prospects-table-duration {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-prospects-item-motif" data-sortable-by="motif" colspan="2">
+                                            <th class="table-prospects-item-motif table-sortable-column" data-sortable-by="motif" colspan="2">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-motif'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_prospects-table-motif {% endtrans %}
                                                 </span>
@@ -130,7 +155,7 @@
                                             <tr id="prospect-{{ project.id }}" class="table-prospects-item"
                                                 data-sortable-siren="{{ project.siren }}"
                                                 data-sortable-borrower="{{ project.borrower }}"
-                                                data-sortable-submitter="{{ project.submitter.lastName }}"
+                                                data-sortable-submitter="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}"
                                                 data-sortable-motif="{{ project.motif.general }}"
                                                 data-sortable-motif-id="{{ project.motif.value }}"
                                                 data-sortable-amount="{{ project.amount }}"
@@ -161,37 +186,37 @@
                                     <table class="table table-projects" data-sortable>
                                         <thead class="table-sortable-columns">
                                         <tr>
-                                            <th class="table-projects-item-borrower" data-sortable-by="borrower" colspan="2">
+                                            <th class="table-projects-item-borrower table-sortable-column" data-sortable-by="borrower" colspan="2">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-borrower'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-borrower {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-submitter" data-sortable-by="submitter">
+                                            <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-submitter {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-amount" data-sortable-by="amount">
+                                            <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-amount {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-duration" data-sortable-by="duration">
+                                            <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-duration'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-duration {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-motif" data-sortable-by="motif">
+                                            <th class="table-projects-item-motif table-sortable-column" data-sortable-by="motif">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-motif'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-motif {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-status" data-sortable-by="status">
+                                            <th class="table-projects-item-status table-sortable-column" data-sortable-by="status">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-status'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-status {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-memos" data-sortable-by="memos">
+                                            <th class="table-projects-item-memos">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-projects-memos'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_projects-table-memos {% endtrans %}
                                                 </span>
@@ -202,7 +227,7 @@
                                         {% for project in partnerProjects %}
                                             <tr id="project-{{ project.id }}" class="table-projects-item" data-details
                                                 data-sortable-borrower="{{ project.borrower }}"
-                                                data-sortable-submitter="{{ project.submitter.lastName }}"
+                                                data-sortable-submitter="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.agency|length %}- {{ project.submitter.agency }}{% endif %}"
                                                 data-sortable-motif="{{ project.motif.general }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}"
