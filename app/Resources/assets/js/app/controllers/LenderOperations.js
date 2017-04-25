@@ -157,7 +157,11 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
                 '<td class="details-memo-text" title="' + memo.text + '" data-toggle="tooltip" colspan="5">' + memo.text + '</td></tr>'
           })
           // Build element and add to DOM
-          $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="8"><table>' + detailsItemsHtml + '</table></td></tr>')
+          var colspan = 8
+          if (!$('body').is('.ui-user-type-partner-admin')) {
+            colspan = 7
+          }
+          $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="' + colspan + '"><table>' + detailsItemsHtml + '</table></td></tr>')
           $item.after($details)
         }
         AjaxMemosSuccess(response)
