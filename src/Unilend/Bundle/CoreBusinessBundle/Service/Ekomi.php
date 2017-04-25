@@ -121,7 +121,7 @@ class Ekomi
 
     /**
      * @param Projects $project
-     * @param  string  $message
+     * @param string   $message
      */
     private function logProjectAlert(Projects $project, $message)
     {

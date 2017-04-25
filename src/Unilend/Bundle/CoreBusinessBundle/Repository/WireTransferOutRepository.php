@@ -11,10 +11,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 class WireTransferOutRepository extends EntityRepository
 {
     /**
-     * @param           $status
+     * @param int       $status
      * @param \DateTime $dateTime
      *
-     * @return array
+     * @return Virements[]
      */
     public function findWireTransferBefore($status, \DateTime $dateTime)
     {
@@ -31,7 +31,7 @@ class WireTransferOutRepository extends EntityRepository
      * @param integer|Clients $client
      * @param array           $status
      *
-     * @return Clients[]
+     * @return Virements[]
      */
     public function findWireTransferToThirdParty($client, array $status)
     {
@@ -62,6 +62,11 @@ class WireTransferOutRepository extends EntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * @param Virements $wireTransferOut
+     *
+     * @return bool
+     */
     public function isBankAccountValidatedOnceTime(Virements $wireTransferOut)
     {
         $qb = $this->createQueryBuilder('wto');

@@ -705,8 +705,6 @@ class preteursController extends bootstrap
                         }
                     }
 
-                    // fin fichier //
-
                     // On met a jour le lender
                     $this->lenders_accounts->id_company_owner = $this->companies->id_company;
                     $this->lenders_accounts->update();

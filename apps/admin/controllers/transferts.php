@@ -58,21 +58,20 @@ class transfertsController extends bootstrap
 
     public function _non_attribues()
     {
-        $this->aOperations = $this->loadData('receptions')
-                                  ->select('id_client IS NULL AND id_project IS NULL AND type IN (1, 2) AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)',
-                                      'id_reception DESC');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $this->nonAttributedReceptions = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findNonAttributed();
 
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             $bank_unilend = $this->loadData('bank_unilend');
             $transactions = $this->loadData('transactions');
-            /** @var \Doctrine\ORM\EntityManager $em */
-            $em = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
-            $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
-            $reception        = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
-            $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-            $user             = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
+            $reception        = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+            $user             = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
             if (null !== $project && null !== $reception) {
                 $reception->setIdProject($project)
@@ -107,7 +106,7 @@ class transfertsController extends bootstrap
                     $this->updateEcheances($project->getIdProject(), $reception->getMontant());
                 }
 
-                $em->flush();
+                $entityManager->flush();
 
                 $bank_unilend->id_transaction = $transactions->id_transaction;
                 $bank_unilend->id_project     = $project->getIdProject();
@@ -654,7 +653,7 @@ class transfertsController extends bootstrap
                 $paymentInspectionStopped->value = 0;
                 $paymentInspectionStopped->update();
 
-                $proxy->setStatusRemb(ProjectsPouvoir::STATUS_VALIDATED);
+                $proxy->setStatusRemb(ProjectsPouvoir::STATUS_REPAYMENT_VALIDATED);
                 $entityManager->flush($proxy);
 
                 $offset         = 0;
@@ -739,7 +738,7 @@ class transfertsController extends bootstrap
                     $invoice->id_company      = $project->getIdCompany()->getIdCompany();
                     $invoice->id_project      = $project->getIdProject();
                     $invoice->ordre           = 0;
-                    $invoice->type_commission = \factures::TYPE_COMMISSION_FINANCEMENT;
+                    $invoice->type_commission = \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS;
                     $invoice->commission      = $project->getCommissionRateFunds();
                     $invoice->montant_ttc     = $commissionIncents;
                     $invoice->montant_ht      = $commissionIncentsExclTax;
@@ -753,7 +752,7 @@ class transfertsController extends bootstrap
                 $logger->info('Check refund status done (project ' . $project->getIdProject() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds';
-                $_SESSION['freeow']['message'] = 'Le déblocage a été faite avec succès';
+                $_SESSION['freeow']['message'] = 'Le déblocage a été fait avec succès';
 
                 $entityManager->flush();
                 $entityManager->getConnection()->commit();
@@ -1045,6 +1044,7 @@ class transfertsController extends bootstrap
         $filePath = $this->path . 'protected/pdf/declaration_de_creances/' . $loan->id_project . '/';
         $filePath = ($loan->id_project == '1456') ? $filePath : $filePath . $originalClient->id_client . '/';
         $filePath = $filePath . 'declaration-de-creances' . '-' . $originalClient->hash . '-' . $loan->id_loan . '.pdf';
+
         if (file_exists($filePath)) {
             unlink($filePath);
         }
@@ -1053,6 +1053,7 @@ class transfertsController extends bootstrap
     public function _add_lightbox()
     {
         $this->hideDecoration();
+
         if (false === empty($this->params[0])) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -1116,6 +1117,7 @@ class transfertsController extends bootstrap
         if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $wireTransferOut) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager   = $this->get('doctrine.orm.entity_manager');
+
             $forbiddenStatus = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_VALIDATED, Virements::STATUS_SENT];
             if (false === in_array($wireTransferOut->getStatus(), $forbiddenStatus)) {
                 $wireTransferOut->setStatus(Virements::STATUS_DENIED);
@@ -1141,7 +1143,7 @@ class transfertsController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $wireTransferOut       = $this->prepareDisplayWireTransferOut();
-        $this->displayWarning = false;
+        $this->displayWarning  = false;
         if ($wireTransferOut->getBankAccount()->getIdClient() !== $wireTransferOut->getClient()) {
             $this->displayWarning = false === $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->isBankAccountValidatedOnceTime($wireTransferOut);
         }
@@ -1168,6 +1170,7 @@ class transfertsController extends bootstrap
     private function prepareDisplayWireTransferOut()
     {
         $this->hideDecoration();
+
         if (false === empty($this->params[0])) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');

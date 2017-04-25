@@ -761,7 +761,6 @@ class dossiersController extends bootstrap
             $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
             $this->transferFunds($project);
-
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
@@ -782,10 +781,7 @@ class dossiersController extends bootstrap
             $restFunds                   = $projectManager->getRestOfFundsToRelease($project, true);
             $this->wireTransferOuts      = $project->getWireTransferOuts();
             $this->restFunds             = $this->currencyFormatter->formatCurrency($restFunds, 'EUR');
-            $this->displayAddButton      = false;
-            if ($restFunds > 0) {
-                $this->displayAddButton = true;
-            }
+            $this->displayAddButton      = $restFunds > 0;
         }
     }
 
@@ -2181,7 +2177,7 @@ class dossiersController extends bootstrap
                         $oInvoice->id_company      = $companies->id_company;
                         $oInvoice->id_project      = $projects->id_project;
                         $oInvoice->ordre           = $e['ordre'];
-                        $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
+                        $oInvoice->type_commission = \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_REPAYMENT;
                         $oInvoice->commission      = $projects->commission_rate_repayment;
                         $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                         $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;

@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
@@ -223,10 +224,10 @@ class BorrowerAccountController extends Controller
 
         foreach ($clientsInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
-                case \factures::TYPE_COMMISSION_FINANCEMENT :
+                case Factures::TYPE_COMMISSION_FUNDS:
                     $clientsInvoices[$iKey]['url'] = '/pdf/facture_EF/' . $client->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
-                case \factures::TYPE_COMMISSION_REMBOURSEMENT:
+                case Factures::TYPE_COMMISSION_REPAYMENT:
                     $clientsInvoices[$iKey]['url'] = '/pdf/facture_ER/' . $client->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
             }

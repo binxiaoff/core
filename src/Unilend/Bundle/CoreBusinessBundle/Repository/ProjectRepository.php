@@ -40,7 +40,7 @@ class ProjectRepository extends EntityRepository
         $query->setParameters([
             'borrower_withdraw' => OperationType::BORROWER_WITHDRAW,
             'repayment'         => ProjectsStatus::REMBOURSEMENT,
-            'funds_commission'  => Factures::TYPE_COMMISSION_FINANCEMENT,
+            'funds_commission'  => Factures::TYPE_COMMISSION_FUNDS,
             'date'              => $dateTime,
         ]);
 

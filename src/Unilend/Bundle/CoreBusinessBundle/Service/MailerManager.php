@@ -1919,7 +1919,6 @@ class MailerManager
     public function sendProxyAndMandateSigned(ProjectsPouvoir $proxy, ClientsMandats $mandate)
     {
         if ($proxy->getIdProject() && $proxy->getIdProject()->getIdCompany()) {
-
             /** @var \settings $setting */
             $setting = $this->oEntityManager->getRepository('settings');
             $setting->get('Adresse notification pouvoir mandat signe', 'type');

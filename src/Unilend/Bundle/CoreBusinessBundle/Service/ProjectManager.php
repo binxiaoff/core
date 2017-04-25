@@ -744,28 +744,34 @@ class ProjectManager
     public function addProjectStatus($userId, $projectStatus, $project, $reminderNumber = 0, $content = '')
     {
         if ($project instanceof \projects) {
-            $projectId = $project->id_project;
-            $project   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            $projectEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        } else {
+            $projectEntity = $project;
         }
-        $originStatus = $project->getStatus();
+
+        $originStatus = $projectEntity->getStatus();
         /** @var \projects_status_history $projectsStatusHistory */
         $projectsStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
         /** @var \projects_status $projectStatusEntity */
         $projectStatusEntity = $this->entityManagerSimulator->getRepository('projects_status');
         $projectStatusEntity->get($projectStatus, 'status');
 
-        $projectsStatusHistory->id_project        = $project->getIdProject();
+        $projectsStatusHistory->id_project        = $projectEntity->getIdProject();
         $projectsStatusHistory->id_project_status = $projectStatusEntity->id_project_status;
         $projectsStatusHistory->id_user           = $userId;
         $projectsStatusHistory->numero_relance    = $reminderNumber;
         $projectsStatusHistory->content           = $content;
         $projectsStatusHistory->create();
 
-        $project->setStatus($projectStatus);
-        $this->entityManager->flush($project);
+        $projectEntity->setStatus($projectStatus);
+        $this->entityManager->flush($projectEntity);
+
+        if ($project instanceof \projects) {
+            $project->status = $projectStatus;
+        }
 
         if ($originStatus != $projectStatus) {
-            $this->projectStatusUpdateTrigger($projectStatusEntity, $project, $userId);
+            $this->projectStatusUpdateTrigger($projectStatusEntity, $projectEntity, $userId);
         }
     }
 
@@ -785,18 +791,18 @@ class ProjectManager
             }
 
             if (
-                $project->id_commercial > 0
-                && $userId != $project->id_commercial
-                && ($user = $userRepository->find($project->id_commercial))
+                $project->getIdCommercial() > 0
+                && $userId != $project->getIdCommercial()
+                && ($user = $userRepository->find($project->getIdCommercial()))
                 && false === empty($user->getSlack())
             ) {
                 $this->slackManager->sendMessage($message, '@' . $user->getSlack());
             }
 
             if (
-                $project->id_analyste > 0
-                && $userId != $project->id_analyste
-                && ($user = $userRepository->find($project->id_analyste))
+                $project->getIdAnalyste() > 0
+                && $userId != $project->getIdAnalyste()
+                && ($user = $userRepository->find($project->getIdAnalyste()))
                 && false === empty($user->getSlack())
             ) {
                 $this->slackManager->sendMessage($message, '@' . $user->getSlack());
@@ -1036,6 +1042,7 @@ class ProjectManager
     {
         $commissionRate = bcdiv($project->getCommissionRateFunds(), 100, 4);
         $commission     = round(bcmul($project->getAmount(), $commissionRate, 4), 2);
+
         if ($inclTax) {
             $vatTax     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
             $vatRate    = bcadd(1, bcdiv($vatTax->getRate(), 100, 4), 4);
@@ -1061,7 +1068,7 @@ class ProjectManager
         }
         $wireTransferOuts = $project->getWireTransferOuts();
         foreach ($wireTransferOuts as $wireTransferOut) {
-            if (false === in_array($wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED])) {
+            if (false === in_array($wireTransferOut->getStatus(), $status)) {
                 $fundsToRelease = bcsub($fundsToRelease, round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2), 2);
             }
         }

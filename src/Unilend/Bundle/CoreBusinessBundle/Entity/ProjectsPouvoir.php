@@ -12,8 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectsPouvoir implements UniversignEntityInterface
 {
-    const STATUS_PENDING_VALIDATION = 0;
-    const STATUS_VALIDATED          = 1;
+    const STATUS_REPAYMENT_PENDING   = 0;
+    const STATUS_REPAYMENT_VALIDATED = 1;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects

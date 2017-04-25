@@ -56,7 +56,7 @@
                         <form method="post" name="deblocage" onsubmit="return confirm('Voulez-vous vraiment débloquer les fonds pour le projet <?= $aProject['id_project'] ?> ?');">
                             <?php if (
                                 isset($aProject['status_remb'], $aProject['status_mandat'], $aProject['authority_status'])
-                                && $aProject['status_remb'] == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_PENDING_VALIDATION
+                                && $aProject['status_remb'] == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_REPAYMENT_PENDING
                                 && $aProject['status_mandat'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                                 && $aProject['authority_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                             ) : ?>

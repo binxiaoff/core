@@ -157,9 +157,11 @@ class emprunteursController extends bootstrap
                         $nouveauNom    = str_replace('mandat', 'mandat-' . $mandate->getId(), $mandate->getName());
                         $chemin        = $this->path . 'protected/pdf/mandat/' . $mandate->getName();
                         $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
+
                         if (file_exists($chemin)) {
                             rename($chemin, $nouveauChemin);
                         }
+
                         $mandate->setName($nouveauNom);
                         $mandate->setStatus(UniversignEntityInterface::STATUS_ARCHIVED);
                         $entityManager->flush($mandate);
@@ -229,10 +231,10 @@ class emprunteursController extends bootstrap
 
         foreach ($aProjectInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
-                case \factures::TYPE_COMMISSION_FINANCEMENT :
+                case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS :
                     $aProjectInvoices[$iKey]['url'] = $this->furl . '/pdf/facture_EF/' . $oClient->hash . '/' . $aInvoice['id_project'];
                     break;
-                case \factures::TYPE_COMMISSION_REMBOURSEMENT:
+                case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_REPAYMENT:
                     $aProjectInvoices[$iKey]['url'] = $this->furl . '/pdf/facture_ER/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
                 default :

@@ -356,7 +356,7 @@
         </service>
 
         <service id="currency_formatter" class="NumberFormatter">
-            <argument>%kernel.default_locale%%</argument>
+            <argument>%kernel.default_locale%</argument>
             <argument type="constant">\NumberFormatter::CURRENCY</argument>
         </service>
 
