@@ -231,7 +231,7 @@ class emprunteursController extends bootstrap
 
         foreach ($aProjectInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
-                case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS :
+                case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS:
                     $aProjectInvoices[$iKey]['url'] = $this->furl . '/pdf/facture_EF/' . $oClient->hash . '/' . $aInvoice['id_project'];
                     break;
                 case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_REPAYMENT:

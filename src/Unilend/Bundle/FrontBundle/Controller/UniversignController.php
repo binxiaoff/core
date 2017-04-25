@@ -75,16 +75,16 @@ class UniversignController extends Controller
         $entityManager     = $this->get('doctrine.orm.entity_manager');
 
         switch ($documentType) {
-            case self::DOCUMENT_TYPE_PROXY :
+            case self::DOCUMENT_TYPE_PROXY:
                 $repository = 'UnilendCoreBusinessBundle:ProjectsPouvoir';
                 break;
-            case self::DOCUMENT_TYPE_MANDATE :
+            case self::DOCUMENT_TYPE_MANDATE:
                 $repository = 'UnilendCoreBusinessBundle:ClientsMandats';
                 break;
-            case self::DOCUMENT_TYPE_TERM_OF_USER :
+            case self::DOCUMENT_TYPE_TERM_OF_USER:
                 $repository = 'UnilendCoreBusinessBundle:ProjectCgv';
                 break;
-            case self::DOCUMENT_TYPE_WIRE_TRANSFER_OUT :
+            case self::DOCUMENT_TYPE_WIRE_TRANSFER_OUT:
                 $repository = 'UnilendCoreBusinessBundle:WireTransferOutUniversign';
                 break;
             default :
@@ -96,8 +96,8 @@ class UniversignController extends Controller
         $client             = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
         $clientIdUniversign = null;
         switch (get_class($universign)) {
-            case ProjectPeriod::class :
-            case ProjectCgv::class :
+            case ProjectPeriod::class:
+            case ProjectCgv::class:
                 if ($universign->getIdProject() instanceof Projects && $universign->getIdProject()->getIdCompany() instanceof Companies) {
                     $clientIdUniversign = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
                 }
@@ -107,7 +107,7 @@ class UniversignController extends Controller
                     $clientIdUniversign = $universign->getIdClient()->getIdClient();
                 }
                 break;
-            case WireTransferOutUniversign::class :
+            case WireTransferOutUniversign::class:
                 if ($universign->getIdWireTransferOut() instanceof Virements
                     && $universign->getIdWireTransferOut()->getClient() instanceof Clients
                 ) {

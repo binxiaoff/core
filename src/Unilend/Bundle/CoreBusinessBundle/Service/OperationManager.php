@@ -287,13 +287,13 @@ class OperationManager
     public function withdraw(Virements $wireTransferOut)
     {
         switch ($wireTransferOut->getType()) {
-            case Virements::TYPE_LENDER :
+            case Virements::TYPE_LENDER:
                 $this->withdrawLenderWallet($wireTransferOut);
                 break;
-            case Virements::TYPE_BORROWER :
+            case Virements::TYPE_BORROWER:
                 $this->withdrawBorrowerWallet($wireTransferOut);
                 break;
-            case Virements::TYPE_UNILEND :
+            case Virements::TYPE_UNILEND:
                 $this->withdrawUnilendWallet($wireTransferOut);
                 break;
             default :

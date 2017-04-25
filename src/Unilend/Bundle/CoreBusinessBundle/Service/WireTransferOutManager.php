@@ -118,15 +118,16 @@ class WireTransferOutManager
         Users $requestUser = null,
         \DateTime $transferAt = null,
         $wireTransferPattern = null
-    ) {
+    )
+    {
         switch ($wallet->getIdType()->getLabel()) {
-            case WalletType::LENDER :
+            case WalletType::LENDER:
                 $type = Virements::TYPE_LENDER;
                 break;
-            case WalletType::BORROWER :
+            case WalletType::BORROWER:
                 $type = Virements::TYPE_BORROWER;
                 break;
-            case WalletType::UNILEND :
+            case WalletType::UNILEND:
                 $type = Virements::TYPE_UNILEND;
                 break;
             default :

@@ -25,7 +25,7 @@ class UniversignManager
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
     /** @var Router */
     private $router;
@@ -67,16 +67,16 @@ class UniversignManager
         $this->updateSignature($universign);
         if (UniversignEntityInterface::STATUS_SIGNED === $universign->getStatus()) {
             switch (get_class($universign)) {
-                case ProjectsPouvoir::class :
+                case ProjectsPouvoir::class:
                     $this->signProxy($universign);
                     break;
-                case ClientsMandats::class :
+                case ClientsMandats::class:
                     $this->signMandate($universign);
                     break;
                 case ProjectCgv::class :
                     // nothing else to do;
                     break;
-                case WireTransferOutUniversign::class :
+                case WireTransferOutUniversign::class:
                     $this->signWireTransferOut($universign);
                     break;
             }
@@ -280,13 +280,13 @@ class UniversignManager
         $wireTransferOut = $wireTransferOutUniversign->getIdWireTransferOut();
         if ($wireTransferOut) {
             switch ($wireTransferOutUniversign->getStatus()) {
-                case UniversignEntityInterface::STATUS_CANCELED :
+                case UniversignEntityInterface::STATUS_CANCELED:
                     $wireTransferOut->setStatus(Virements::STATUS_CLIENT_DENIED);
                     break;
-                case UniversignEntityInterface::STATUS_SIGNED :
+                case UniversignEntityInterface::STATUS_SIGNED:
                     $wireTransferOut->setStatus(Virements::STATUS_CLIENT_VALIDATED);
                     break;
-                default :
+                default:
                     //nothing
                     break;
             }
