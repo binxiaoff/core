@@ -36,28 +36,18 @@ class PartnerAccountController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility", requirements={"hash":"[0-9a-z]{32}"})
+     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details", requirements={"hash":"[0-9a-z]{32}"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string $hash
      *
      * @return Response
      */
-    public function projectRequestEligibilityAction($hash)
+    public function projectRequestDetailsAction($hash)
     {
-        return $this->render('/partner_account/project_request_eligibility.html.twig');
+        return $this->render('/partner_account/project_request_details.html.twig');
     }
 
-    /**
-     * @Route("partenaire/depot/details", name="partner_project_request_details_form")
-     * @Security("has_role('ROLE_PARTNER')")
-     *
-     * @return Response
-     */
-    public function projectRequestDetailsAction()
-    {
-        return $this->render('/partner_account/project_request_etape_2.html.twig');
-    }
 
     /**
      * @Route("partenaire/depot/fichiers", name="partner_project_request_files_form")
@@ -67,7 +57,7 @@ class PartnerAccountController extends Controller
      */
     public function projectRequestFilesAction()
     {
-        return $this->render('/partner_account/project_request_etape_3.html.twig');
+        return $this->render('/partner_account/project_request_documents.html.twig');
     }
 
     /**
@@ -78,7 +68,7 @@ class PartnerAccountController extends Controller
      */
     public function projectRequestEndAction()
     {
-        return $this->render('/partner_account/project_request_etape_4.html.twig');
+        return $this->render('/partner_account/project_request_end.html.twig');
     }
 
     /**
