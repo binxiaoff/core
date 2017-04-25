@@ -43,6 +43,19 @@ class WireTransferOutManager
     /** @var string */
     private $frontUrl;
 
+    /**
+     * WireTransferOutManager constructor.
+     *
+     * @param EntityManager           $entityManager
+     * @param ProjectManager          $projectManager
+     * @param \NumberFormatter        $currencyFormatter
+     * @param TemplateMessageProvider $messageProvider
+     * @param \Swift_Mailer           $mailer
+     * @param RouterInterface         $router
+     * @param Packages                $assetsPackages
+     * @param OperationManager        $operationManager
+     * @param string                  $frontUrl
+     */
     public function __construct(
         EntityManager $entityManager,
         ProjectManager $projectManager,
@@ -63,9 +76,11 @@ class WireTransferOutManager
         $this->assetsPackages    = $assetsPackages;
         $this->operationManager  = $operationManager;
         $this->frontUrl          = $frontUrl;
-
     }
 
+    /**
+     * @param Virements $wireTransferOut
+     */
     public function sendWireTransferOutNotificationToBorrower(Virements $wireTransferOut)
     {
         $restFunds   = $this->projectManager->getRestOfFundsToRelease($wireTransferOut->getProject(), false);
@@ -101,7 +116,7 @@ class WireTransferOutManager
 
     /**
      * @param Wallet        $wallet
-     * @param               $amount
+     * @param float         $amount
      * @param BankAccount   $bankAccount
      * @param Projects|null $project
      * @param Users|null    $requestUser
@@ -118,8 +133,7 @@ class WireTransferOutManager
         Users $requestUser = null,
         \DateTime $transferAt = null,
         $wireTransferPattern = null
-    )
-    {
+    ) {
         switch ($wallet->getIdType()->getLabel()) {
             case WalletType::LENDER:
                 $type = Virements::TYPE_LENDER;

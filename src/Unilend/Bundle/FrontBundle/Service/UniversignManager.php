@@ -40,6 +40,19 @@ class UniversignManager
     /** @var MailerManager */
     private $mailerManager;
 
+    /**
+     * UniversignManager constructor.
+     *
+     * @param EntityManagerSimulator  $entityManagerSimulator
+     * @param EntityManager           $entityManager
+     * @param MailerManager           $mailerManager
+     * @param RouterInterface         $router
+     * @param LoggerInterface         $logger
+     * @param TemplateMessageProvider $messageProvider
+     * @param \Swift_Mailer           $mailer
+     * @param string                  $universignURL
+     * @param string                  $rootDir
+     */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
@@ -384,27 +397,27 @@ class UniversignManager
         switch (get_class($universign)) {
             case ClientsMandats::class:
                 /** @var ClientsMandats $universign */
-                $client    = $universign->getIdClient();
+                $client       = $universign->getIdClient();
                 $documentType = UniversignController::DOCUMENT_TYPE_MANDATE;
                 break;
             case ProjectsPouvoir::class:
                 /** @var ProjectsPouvoir $universign */
-                $clientId  = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
-                $client    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                $clientId     = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
+                $client       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
                 $documentType = UniversignController::DOCUMENT_TYPE_PROXY;
                 break;
             case ProjectCgv::class:
                 /** @var ProjectCgv $universign */
                 $clientId      = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
                 $client        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
-                $documentType = UniversignController::DOCUMENT_TYPE_TERM_OF_USER;
+                $documentType  = UniversignController::DOCUMENT_TYPE_TERM_OF_USER;
                 $signPositionX = 430;
                 $signPositionY = 750;
                 break;
             case WireTransferOutUniversign::class:
                 /** @var WireTransferOutUniversign $universign */
-                $clientId  = $universign->getIdWireTransferOut()->getProject()->getIdCompany()->getIdClientOwner();
-                $client    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                $clientId     = $universign->getIdWireTransferOut()->getProject()->getIdCompany()->getIdClientOwner();
+                $client       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
                 $documentType = UniversignController::DOCUMENT_TYPE_WIRE_TRANSFER_OUT;
                 break;
             default:
