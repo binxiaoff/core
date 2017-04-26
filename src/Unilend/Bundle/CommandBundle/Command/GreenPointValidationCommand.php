@@ -225,9 +225,9 @@ EOF
             $response = json_decode($response[$requestId]['RESPONSE'], true);
 
             if (isset($response['resource']) && is_array($response['resource'])) {
-                $greenPointData = greenPointStatus::getGreenPointData($response['resource'], $attachment->getType()->getId(), $attachment->getId(), $clientId, $response['code']);
+                $greenPointData = greenPointStatus::getGreenPointData($response['resource'], $attachment->getType()->getId(), $response['code']);
             } else {
-                $greenPointData = greenPointStatus::getGreenPointData([], $attachment->getType()->getId(), $attachment->getId(), $clientId, $response['code']);
+                $greenPointData = greenPointStatus::getGreenPointData([], $attachment->getType()->getId(), $response['code']);
             }
 
             $greenPointAttachment->setValidationCode($greenPointData['greenpoint_attachment']['validation_code'])

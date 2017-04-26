@@ -3229,7 +3229,7 @@ class dossiersController extends bootstrap
                     /** @var \clients $client */
                     $client            = $this->loadData('clients');
                     $client->id_langue = 'fr';
-                    $client->status    = \clients::STATUS_ONLINE;
+                    $client->status    = Clients::STATUS_ONLINE;
                     $client->create();
 
                     /** @var \clients_adresses $clientAddress */
