@@ -1,9 +1,17 @@
 {% extends 'partner_account/_layout.html.twig' %}
 
 {% set page = {
-    id: 'partner-account-project-request',
-    classNames: 'partner-account'
+id: 'partner-account-project-request',
+classNames: 'partner-account'
 } %}
+
+{% set estimation = {
+    fundingPeriod: 2
+} %}
+
+{% set esimInputAmount = 100000 %}
+{% set esimInputDuration = 3 %}
+{% set esimInputReasonId = 1 %}
 
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
@@ -13,8 +21,104 @@
                     <header class="panel-header">
                         <h3>{% trans %} partner-project-request_title {% endtrans %}</h3>
                     </header>
+
+                    <form action="{{ path('partner_project_request_details') }}" method="post" id="emprunter-sim-partner" class="emprunter-sim emprunter-sim-partner tabs ui-tabs-progress">
+                        <div class="emprunter-sim-nav">
+                            <ul class="nav nav-steps" role="tablist">
+                                <li role="presentation">
+                                    <a role="tab" href="{{ path('partner_projects_list') }}">{% trans %} partner-project-request_simulator-step-1 {% endtrans %}</a>
+                                </li>
+                                <li role="presentation" class="active">
+                                    <a role="tab">{% trans %} partner-project-request_simulator-step-2 {% endtrans %}</a>
+                                </li>
+                            </ul>
+                        </div><!-- /.emprunter-sim-nav -->
+
+                        <div class="tab-content emprunter-sim-content">
+                            <div id="esim2" role="tabpanel" class="tab-pane active">
+                                <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
+                                    <div class="form-validation-notifications"></div>
+                                    <div class="row">
+                                        <div class="form-field col-lg-6 col-md-6">
+                                            <label for="esim-input-siren">{% trans %} partner-project-request_simulator-siren-field-label {% endtrans %}</label>
+                                            <input type="text" id="esim-input-siren" name="esim[siren]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siren">
+                                            <input type="hidden" name="esim[amount]" value="{{ esimInputAmount }}">
+                                            <input type="hidden" name="esim[duration]" value="{{ esimInputDuration }}">
+                                            <input type="hidden" name="esim[reason]" value="{{ esimInputReasonId }}">
+                                        </div><!-- /.form-field -->
+                                        <div class="form-field col-lg-6 col-md-6">
+                                            <label for="i_esim_5">{% trans %} partner-project-request_simulator-email-field-label {% endtrans %}</label>
+                                            <div class="input-group">
+                                                <input type="email" id="esim-input-email" name="esim[email]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                            </div><!-- /.input-group -->
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                </fieldset><!-- /.emprunter-sim-pane-inner -->
+
+                                <div class="emprunter-sim-pane-inner bg-p1 c-bg5">
+                                    <div class="row">
+                                        <div class="col-xs-2 col-sm-2 col-md-3 col-lg-3">
+                                            <span>{% trans %} partner-project-request_simulator-footer-funding-duration-label {% endtrans %}</span>
+                                            <strong class="ui-esim-funding-duration-output"></strong>
+                                        </div>
+                                        <div class="col-xs-2 col-sm-2 col-md-3 col-lg-3">
+                                            <strong class="ui-esim-funding-duration-output">
+                                                {% transchoice estimation.fundingPeriod %} partner-project-request_simulator-footer-funding-duration-value {% endtranschoice %}
+                                            </strong>
+                                        </div>
+                                        <div class="col-xs-4 col-sm-4 col-md-6 col-lg-6">
+                                            <div class="emprunter-sim-pane-inner-actions">
+                                                <button class="btn-prospect btn-alternate" data-form-submit="#emprunter-sim-partner" data-form-action-url="{{ path('partner_projects_list') }}">
+                                                    {% trans %} partner-project-request_simulator-footer-prospect-button {% endtrans %}
+                                                </button>
+                                                <button class="btn-submit btn-alternate" data-form-submit="#emprunter-sim-partner" data-form-action-url="{{ path('partner_project_request_details_form') }}">
+                                                    {% trans %} partner-project-request_simulator-footer-submit-button {% endtrans %}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- /.emprunter-sim-pane-inner -->
+                            </div><!-- /.tab-pane -->
+                        </div><!-- /.tab-content -->
+                    </form><!-- /.emprunter-sim -->
                 </div>
-            </article><!-- /.panel -->
+
+            </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+
+    <div id="modal-partner-prospect" data-modal>
+        <div class="modal-body text-align-center">
+            {# TODO The translation below needs to be added #}
+            {# I am not sure if this is correct and don't know how to pass the parameters in the SQL query #}
+            {# Also, since companyName is generated using AJAX on step 2, there is a JS which will look for <span class="companyName"></span> #}
+            {# and will replace it with the AJAX response. #}
+            <p>{% trans with {'%prospectsPath%': path('partner_projects_list'), '%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-request_popup-prospect-added-message {% endtrans %}</p>
+            {# TODO END #}
+        </div>
+        <footer class="modal-footer">
+            <div class="btn-controls">
+                <a href="javascript:;" class="btn-primary" data-modal-doactionclose>
+                    {% trans %} partner-project-request_popup-prospect-added-button {% endtrans %}
+                </a>
+            </div>
+        </footer>
+    </div><!-- /#modal-partner-prospect -->
+
+    <div id="modal-partner-prospect-error" data-modal>
+        <div class="modal-body text-align-center">
+            {% trans %} partner-project-request_popup-prospect-not-added-message {% endtrans %}
+        </div>
+        <footer class="modal-footer">
+            <div class="btn-controls">
+                <a href="javascript:;" class="btn-primary" data-modal-doactionclose>
+                    {% trans %} partner-project-request_popup-prospect-not-added-button {% endtrans %}
+                </a>
+            </div>
+        </footer>
+    </div><!-- /#modal-partner-prospect-error -->
+
 {% endblock %}

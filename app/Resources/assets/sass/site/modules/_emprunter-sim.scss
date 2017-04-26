@@ -98,30 +98,20 @@
 }
 
 .emprunter-sim-partner {
-  dl {
-    margin-bottom: 20px;
-    dd {
-      text-align: left;
-    }
+  @include devices('md', 'lg') {
+    max-width: none;
   }
 }
-.emprunter-sim-actions-partner {
-  text-align: right;
-  .btn-submit, .btn-prospect {
-    display: none;
+.emprunter-sim-pane-inner-actions {
+  text-align: center;
+  .btn-prospect {
+    margin-bottom: 10px;
   }
-  .btn-continue {
-    display: inline-block;
-  }
-}
-.ui-emprunter-sim-estimate-show {
-  .emprunter-sim-actions-partner {
-    text-align: center;
-    .btn-continue {
-      display: none;
-    }
-    .btn-submit, .btn-prospect {
-      display: inline-block;
+  @include devices('sm', 'md', 'lg') {
+    margin-left: -30px;
+    text-align: right;
+    .btn-prospect {
+      margin: 0 10px 0 0;
     }
   }
 }
