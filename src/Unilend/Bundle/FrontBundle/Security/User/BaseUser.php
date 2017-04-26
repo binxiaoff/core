@@ -22,14 +22,14 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
 
     public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, $lastLoginDate = null)
     {
-        $this->username = $username;
-        $this->password = $password;
-        $this->email    = $email;
-        $this->salt     = $salt;
-        $this->roles    = $roles;
-        $this->isActive = $isActive;
-        $this->clientId = $clientId;
-        $this->hash     = $hash;
+        $this->username      = $username;
+        $this->password      = $password;
+        $this->email         = $email;
+        $this->salt          = $salt;
+        $this->roles         = $roles;
+        $this->isActive      = $isActive;
+        $this->clientId      = $clientId;
+        $this->hash          = $hash;
         $this->lastLoginDate = $lastLoginDate;
     }
 
