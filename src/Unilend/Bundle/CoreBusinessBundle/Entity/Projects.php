@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Projects
  *
  * @ORM\Table(name="projects", indexes={@ORM\Index(name="id_company", columns={"id_company"}), @ORM\Index(name="slug", columns={"slug"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="display", columns={"display"}), @ORM\Index(name="date_retrait", columns={"date_retrait"}), @ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}), @ORM\Index(name="id_commercial", columns={"id_commercial"}), @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}), @ORM\Index(name="fk_projects_id_company_submitter", columns={"id_company_submitter"}), @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository")
  */
 class Projects
 {
@@ -375,6 +375,14 @@ class Projects
      */
     private $mandats;
 
+    /**
+     * @var ProjectsComments[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments", mappedBy="idProject")
+     * @ORM\OrderBy({"added" = "DESC"})
+     */
+    private $notes;
+
 
 
     /**
@@ -384,6 +392,7 @@ class Projects
     {
         $this->attachments = new ArrayCollection();
         $this->mandats     = new ArrayCollection();
+        $this->notes       = new ArrayCollection();
     }
 
     /**
@@ -1518,5 +1527,15 @@ class Projects
     public function getMandats()
     {
         return $this->mandats;
+    }
+
+    /**
+     * Get project notes
+     *
+     * @return ProjectsComments[]
+     */
+    public function getNotes()
+    {
+        return $this->notes;
     }
 }
