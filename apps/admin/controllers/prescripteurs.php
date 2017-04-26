@@ -139,9 +139,11 @@ class prescripteursController extends bootstrap
 
             /** @var \companies $company */
             $company      = $this->loadData('companies');
-            $sirenCompany = $company->select('siren = ' . $_POST['siren'], 'added ASC', 0, 1);
+            if ($_POST['siren']) {
+                $sirenCompany = $company->select('siren = ' . $_POST['siren'], 'added ASC', 0, 1);
+            }
 
-            if ($sirenCompany) {
+            if (false === empty($sirenCompany)) {
                 $companyId = $sirenCompany[0]['id_company'];
             } else {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
@@ -150,9 +152,11 @@ class prescripteursController extends bootstrap
                 $entityManager = $this->get('doctrine.orm.entity_manager');
                 $clientEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
                 try {
-                    $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
-                    if ($bankAccount) {
-                        $bankAccountManager->validateBankAccount($bankAccount);
+                    if ($_POST['bic'] && $_POST['iban']) {
+                        $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
+                        if ($bankAccount) {
+                            $bankAccountManager->validateBankAccount($bankAccount);
+                        }
                     }
                 } catch (Exception $exception) {
                     echo json_encode([
