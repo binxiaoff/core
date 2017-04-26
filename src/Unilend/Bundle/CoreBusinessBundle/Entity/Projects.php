@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Projects
  *
- * @ORM\Table(name="projects", indexes={@ORM\Index(name="id_company", columns={"id_company"}), @ORM\Index(name="slug", columns={"slug"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="display", columns={"display"}), @ORM\Index(name="date_retrait", columns={"date_retrait"}), @ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}), @ORM\Index(name="id_commercial", columns={"id_commercial"}), @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"})})
+ * @ORM\Table(name="projects", indexes={@ORM\Index(name="id_company", columns={"id_company"}), @ORM\Index(name="slug", columns={"slug"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="display", columns={"display"}), @ORM\Index(name="date_retrait", columns={"date_retrait"}), @ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}), @ORM\Index(name="id_commercial", columns={"id_commercial"}), @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}), @ORM\Index(name="fk_projects_id_company_submitter", columns={"id_company_submitter"}), @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"})})
  * @ORM\Entity
  */
 class Projects
@@ -291,6 +291,26 @@ class Projects
     private $idPartner;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id_company")
+     * })
+     */
+    private $idCompanySubmitter;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client_submitter", referencedColumnName="id_client")
+     * })
+     */
+    private $idClientSubmitter;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="commission_rate_funds", type="decimal", precision=4, scale=2, nullable=true)
@@ -354,6 +374,8 @@ class Projects
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats", mappedBy="idProject")
      */
     private $mandats;
+
+
 
     /**
      * Projects constructor.
@@ -1259,7 +1281,7 @@ class Projects
      *
      * @return Projects
      */
-    public function setPartner($idPartner)
+    public function setIdPartner($idPartner)
     {
         $this->idPartner = $idPartner;
 
@@ -1271,9 +1293,57 @@ class Projects
      *
      * @return Partner
      */
-    public function getPartner()
+    public function getIdPartner()
     {
         return $this->idPartner;
+    }
+
+    /**
+     * Set idCompanySubmitter
+     *
+     * @param Companies $idCompanySubmitter
+     *
+     * @return Projects
+     */
+    public function setIdCompanySubmitter(Companies $idCompanySubmitter)
+    {
+        $this->idCompanySubmitter = $idCompanySubmitter;
+
+        return $this;
+    }
+
+    /**
+     * Get idCompanySubmitter
+     *
+     * @return Companies
+     */
+    public function getIdCompanySubmitter()
+    {
+        return $this->idCompanySubmitter;
+    }
+
+    /**
+     * Set idClientSubmitter
+     *
+     * @param Clients $idClientSubmitter
+     *
+     * @return Projects
+     */
+    public function setIdClientSubmitter(Clients $idClientSubmitter)
+    {
+        $this->idClientSubmitter = $idClientSubmitter;
+
+        return $this;
+    }
+
+    /**
+     * Get idClientSubmitter
+     *
+     * @return Clients
+     */
+    public function getIdClientSubmitter()
+    {
+        return $this->idClientSubmitter;
     }
 
     /**
