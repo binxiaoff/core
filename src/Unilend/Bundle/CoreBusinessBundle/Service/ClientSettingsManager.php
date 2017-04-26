@@ -2,7 +2,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
  * Class ClientSettingsManager
@@ -12,73 +13,87 @@ class ClientSettingsManager
 {
     const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 
-    private $oCachePool;
+    /** @var CacheItemPoolInterface  */
+    private $cachePool;
+    /** @var EntityManagerSimulator  */
+    private $entityManagerSimulator;
 
-    public function __construct(EntityManager $oEntityManager, CacheItemPoolInterface $oCachePool)
+    /**
+     * ClientSettingsManager constructor.
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param CacheItemPoolInterface $cachePool
+     */
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, CacheItemPoolInterface $cachePool)
     {
-        $this->oEntityManager = $oEntityManager;
-        $this->oCachePool     = $oCachePool;
-        $this->oEntityManager->getRepository('client_setting_type'); //load for use of constants
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->cachePool              = $cachePool;
+        $this->entityManagerSimulator->getRepository('client_setting_type'); //load for use of constants
     }
 
     /**
-     * @param \clients $oClient
-     * @param          $iSettingType
-     * @param          $sValue
+     * @param Clients $client
+     * @param int     $settingType
+     * @param string  $value
      *
      * @return bool
      */
-    public function saveClientSetting(\clients $oClient, $iSettingType, $sValue)
+    public function saveClientSetting(Clients $client, $settingType, $value)
     {
-        /** @var \client_settings $oClientSettings */
-        $oClientSettings = $this->oEntityManager->getRepository('client_settings');
+        /** @var \client_settings $clientSettings */
+        $clientSettings = $this->entityManagerSimulator->getRepository('client_settings');
 
-        if ($oClientSettings->get($oClient->id_client, 'id_type = ' . $iSettingType . ' AND id_client')) {
-            if ($sValue != $oClientSettings->value) {
-                $oClientSettings->value = $sValue;
-                $oClientSettings->update();
-                $this->flushSettingCache($oClient, $iSettingType);
+        if ($clientSettings->get($client->getIdClient(), 'id_type = ' . $settingType . ' AND id_client')) {
+            if ($value != $clientSettings->value) {
+                $clientSettings->value = $value;
+                $clientSettings->update();
+                $this->flushSettingCache($client, $settingType);
+
                 return true;
             } else {
                 return false;
             }
         } else {
-            $oClientSettings->unsetData();
-            $oClientSettings->id_client = $oClient->id_client;
-            $oClientSettings->id_type   = $iSettingType;
-            $oClientSettings->value     = $sValue;
-            $oClientSettings->create();
-            $this->flushSettingCache($oClient, $iSettingType);
+            $clientSettings->unsetData();
+            $clientSettings->id_client = $client->getIdClient();
+            $clientSettings->id_type   = $settingType;
+            $clientSettings->value     = $value;
+            $clientSettings->create();
+            $this->flushSettingCache($client, $settingType);
+
             return true;
         }
     }
 
     /**
-     * @param \clients $oClient
-     * @param int      $iSettingType
+     * @param Clients $client
+     * @param int     $settingType
      *
      * @return string
      */
-    public function getSetting(\clients $oClient, $iSettingType)
+    public function getSetting(Clients $client, $settingType)
     {
-        /** @var \client_settings $oClientSettings */
-        $oClientSettings = $this->oEntityManager->getRepository('client_settings');
-        $oCachedItem     = $this->oCachePool->getItem(self::CACHE_KEY_GET_SETTING . '_' . $oClient->id_client . '_' . $iSettingType);
+        /** @var \client_settings $clientSettings */
+        $clientSettings = $this->entityManagerSimulator->getRepository('client_settings');
+        $cachedItem     = $this->cachePool->getItem(self::CACHE_KEY_GET_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
 
-        if (false === $oCachedItem->isHit()) {
-            $mValue = $oClientSettings->getSetting($oClient->id_client, $iSettingType);
-            $oCachedItem->set($mValue)
+        if (false === $cachedItem->isHit()) {
+            $value = $clientSettings->getSetting($client->getIdClient(), $settingType);
+            $cachedItem->set($value)
                         ->expiresAfter(1800);
-            $this->oCachePool->save($oCachedItem);
+            $this->cachePool->save($cachedItem);
         } else {
-            $mValue = $oCachedItem->get();
+            $value = $cachedItem->get();
         }
 
-        return $mValue;
+        return $value;
     }
 
-    private function flushSettingCache(\clients $oClient, $iSettingType)
+    /**
+     * @param Clients $client
+     * @param int     $settingType
+     */
+    private function flushSettingCache(Clients $client, $settingType)
     {
-        $this->oCachePool->deleteItem(self::CACHE_KEY_GET_SETTING . '_' . $oClient->id_client . '_' . $iSettingType);
+        $this->cachePool->deleteItem(self::CACHE_KEY_GET_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
     }
 }

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * LendersImpositionHistory
  *
  * @ORM\Table(name="lenders_imposition_history", indexes={@ORM\Index(name="id_lender", columns={"id_lender"}), @ORM\Index(name="idx_lenders_imposition_history_added", columns={"added"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LendersImpositionHistoryRepository")
  */
 class LendersImpositionHistory
 {

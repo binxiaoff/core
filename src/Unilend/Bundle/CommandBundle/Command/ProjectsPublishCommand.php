@@ -199,8 +199,6 @@ EOF
         $clients_gestion_mails_notif = $oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \companies $companies */
         $companies = $oEntityManager->getRepository('companies');
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $oEntityManager->getRepository('lenders_accounts');
 
         $oAutobidSettingsManager = $this->getContainer()->get('unilend.service.autobid_settings_manager');
         $translator              = $this->getContainer()->get('translator');
@@ -265,30 +263,29 @@ EOF
             $oLogger->info('Lenders retrieved: ' . count($aLenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
             foreach ($aLenders as $aLender) {
-                $oLenderAccount->get($aLender['id_lender']);
-                $wallet = $walletRepository->getWalletByType($oLenderAccount->id_client_owner, WalletType::LENDER);
-                if ($productManager->getLenderEligibility($oLenderAccount, $project)) {
+                $wallet = $walletRepository->getWalletByType($aLender['id_client'], WalletType::LENDER);
+                if ($productManager->getLenderEligibility($wallet->getIdClient(), $project)) {
                     $notifications->type       = \notifications::TYPE_NEW_PROJECT;
                     $notifications->id_lender  = $aLender['id_lender'];
                     $notifications->id_project = $project->id_project;
                     $notifications->create();
 
                     if (false === $clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $project->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1', 'id_notif')) {
-                        $clients_gestion_mails_notif->id_client       = $oLenderAccount->id_client_owner;
+                        $clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
                         $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
                         $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
                         $clients_gestion_mails_notif->id_project      = $project->id_project;
                         $clients_gestion_mails_notif->date_notif      = $project->date_publication;
 
-                        if ($clients_gestion_notifications->getNotif($oLenderAccount->id_client_owner, \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
+                        if ($clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
                             $clients_gestion_mails_notif->immediatement = 1;
 
                             $sAutobidInsufficientBalance = '';
 
                             if (
                                 in_array($aLender['id_lender'], $aNoAutobidPlaced)
-                                && $oAutobidSettingsManager->isOn($oLenderAccount)
-                                && $wallet->getAvailableBalance() < $aAutobiders[$oLenderAccount->id_lender_account]
+                                && $oAutobidSettingsManager->isOn($wallet->getIdClient())
+                                && $wallet->getAvailableBalance() < $aAutobiders[$wallet->getId()]
                             ) {
                                 $sAutobidInsufficientBalance = '
                                     <table width=\'100%\' border=\'1\' cellspacing=\'0\' cellpadding=\'5\' bgcolor="d8b5ce" bordercolor="b20066">
@@ -298,8 +295,8 @@ EOF
                                     </table>';
                             }
                             $varMail['autobid_insufficient_balance'] = $sAutobidInsufficientBalance;
-                            $varMail['prenom_p']                     = $aLender['prenom'];
-                            $varMail['motif_virement']               = $clients->getLenderPattern($aLender['id_client']);
+                            $varMail['prenom_p']                     = $wallet->getIdClient()->getPrenom();
+                            $varMail['motif_virement']               = $wallet->getWireTransferPattern();
 
                             $message = $messageProvider->newMessage('nouveau-projet', $varMail);
                             $message->setTo($aLender['email']);

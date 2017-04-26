@@ -19,10 +19,31 @@ class Bids
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
+     */
+    private $idProject;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Autobid")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_autobid", referencedColumnName="id_autobid")
+     * })
+     */
+    private $idAutobid;
+
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_lender_wallet_line", type="integer", nullable=true)
+     * @ORM\Column(name="id_lender_wallet_line", type="integer", nullable=false)
      */
     private $idLenderWalletLine;
 
@@ -78,16 +99,6 @@ class Bids
     private $idBid;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
-     * })
-     */
-    private $idProject;
-
-    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
@@ -98,16 +109,76 @@ class Bids
     private $idLenderAccount;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid
+     * Set Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Autobid")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_autobid", referencedColumnName="id_autobid")
-     * })
+     * @param Projects $project
+     *
+     * @return Bids
      */
-    private $idAutobid;
+    public function setProject(Projects $project = null)
+    {
+        $this->idProject = $project;
 
+        return $this;
+    }
 
+    /**
+     * Get Project
+     *
+     * @return Projects
+     */
+    public function getProject()
+    {
+        return $this->idProject;
+    }
+
+    /**
+     * Set Autobid
+     *
+     * @param Autobid $autobid
+     *
+     * @return Bids
+     */
+    public function setAutobid(Autobid $autobid = null)
+    {
+        $this->idAutobid = $autobid;
+
+        return $this;
+    }
+
+    /**
+     * Get Autobid
+     *
+     * @return Autobid
+     */
+    public function getAutobid()
+    {
+        return $this->idAutobid;
+    }
+
+    /**
+     * Set idLenderAccount
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLenderAccount
+     *
+     * @return Bids
+     */
+    public function setIdLenderAccount(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLenderAccount = null)
+    {
+        $this->idLenderAccount = $idLenderAccount;
+
+        return $this;
+    }
+
+    /**
+     * Get idLenderAccount
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLenderAccount()
+    {
+        return $this->idLenderAccount;
+    }
 
     /**
      * Set idLenderWalletLine
@@ -285,78 +356,6 @@ class Bids
     public function getIdBid()
     {
         return $this->idBid;
-    }
-
-    /**
-     * Set idProject
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
-     *
-     * @return Bids
-     */
-    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
-    {
-        $this->idProject = $idProject;
-
-        return $this;
-    }
-
-    /**
-     * Get idProject
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
-     */
-    public function getIdProject()
-    {
-        return $this->idProject;
-    }
-
-    /**
-     * Set idLenderAccount
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLenderAccount
-     *
-     * @return Bids
-     */
-    public function setIdLenderAccount(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLenderAccount = null)
-    {
-        $this->idLenderAccount = $idLenderAccount;
-
-        return $this;
-    }
-
-    /**
-     * Get idLenderAccount
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
-     */
-    public function getIdLenderAccount()
-    {
-        return $this->idLenderAccount;
-    }
-
-    /**
-     * Set idAutobid
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid $idAutobid
-     *
-     * @return Bids
-     */
-    public function setIdAutobid(\Unilend\Bundle\CoreBusinessBundle\Entity\Autobid $idAutobid = null)
-    {
-        $this->idAutobid = $idAutobid;
-
-        return $this;
-    }
-
-    /**
-     * Get idAutobid
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid
-     */
-    public function getIdAutobid()
-    {
-        return $this->idAutobid;
     }
 
     /**

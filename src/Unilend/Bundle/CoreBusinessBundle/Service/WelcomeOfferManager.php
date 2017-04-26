@@ -6,6 +6,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -14,7 +15,7 @@ class WelcomeOfferManager
     /**
      * @var  EntityManagerSimulator
      */
-    private $entityManager;
+    private $entityManagerSimulator;
     /**
      * @var  MailerManager
      */
@@ -26,20 +27,20 @@ class WelcomeOfferManager
     /**
      * @var EntityManager
      */
-    private $em;
+    private $entityManager;
 
-    public function __construct(EntityManagerSimulator $entityManager, MailerManager $mailerManager, EntityManager $em, OperationManager $operationManager)
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, MailerManager $mailerManager, EntityManager $entityManager, OperationManager $operationManager)
     {
-        $this->entityManager    = $entityManager;
-        $this->mailerManager    = $mailerManager;
-        $this->operationManager = $operationManager;
-        $this->em               = $em;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->mailerManager          = $mailerManager;
+        $this->operationManager       = $operationManager;
+        $this->entityManager          = $entityManager;
     }
 
     public function displayOfferOnHome()
     {
         /** @var \settings $settings */
-        $settings = $this->entityManager->getRepository('settings');
+        $settings = $this->entityManagerSimulator->getRepository('settings');
         $settings->get('offre-de-bienvenue-sur-home', 'type');
         return (bool) $settings->value;
     }
@@ -51,8 +52,14 @@ class WelcomeOfferManager
      */
     public function createWelcomeOffer(\clients $client)
     {
+        /** @var Wallet $wallet */
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
+        if (false === $wallet->getIdClient()->isLender()) {
+            throw new \Exception('Client ' . $wallet->getIdClient()->getIdClient() . ' is not a Lender');
+        }
+
         /** @var \offres_bienvenues $welcomeOffer */
-        $welcomeOffer = $this->entityManager->getRepository('offres_bienvenues');
+        $welcomeOffer = $this->entityManagerSimulator->getRepository('offres_bienvenues');
 
         $offerIsValid                    = false;
         $enoughMoneyLeft                 = false;
@@ -64,13 +71,11 @@ class WelcomeOfferManager
 
         if ($welcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue')) {
             /** @var \offres_bienvenues_details $welcomeOfferDetail */
-            $welcomeOfferDetail = $this->entityManager->getRepository('offres_bienvenues_details');
+            $welcomeOfferDetail = $this->entityManagerSimulator->getRepository('offres_bienvenues_details');
             /** @var \transactions $transaction */
-            $transaction = $this->entityManager->getRepository('transactions');
-            /** @var \lenders_accounts $lender */
-            $lender = $this->entityManager->getRepository('lenders_accounts');
+            $transaction = $this->entityManagerSimulator->getRepository('transactions');
             /** @var \settings $setting */
-            $setting = $this->entityManager->getRepository('settings');
+            $setting = $this->entityManagerSimulator->getRepository('settings');
 
             $iSumOfAllWelcomeOffersDistributed = $welcomeOfferDetail->sum('type = 0 AND id_offre_bienvenue = ' . $welcomeOffer->id_offre_bienvenue . ' AND status <> 2', 'montant');
             $sumUnilendOffers                  = $transaction->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
@@ -95,7 +100,6 @@ class WelcomeOfferManager
 
             if ($offerIsValid && $enoughMoneyLeft) {
                 $setting->get("Offre de bienvenue motif", 'type');
-                $lender->get($client->id_client, 'id_client_owner');
 
                 $welcomeOfferDetail->id_offre_bienvenue = $welcomeOffer->id_offre_bienvenue;
                 $welcomeOfferDetail->motif              = $setting->value;
@@ -104,9 +108,7 @@ class WelcomeOfferManager
                 $welcomeOfferDetail->status             = \offres_bienvenues_details::STATUS_NEW;
                 $welcomeOfferDetail->create();
 
-                $wallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
-                $welcomeOfferDetailEntity = $this->em->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->find($welcomeOfferDetail->id_offre_bienvenue_detail);
-
+                $welcomeOfferDetailEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->find($welcomeOfferDetail->id_offre_bienvenue_detail);
                 $this->operationManager->newWelcomeOffer($wallet, $welcomeOfferDetailEntity);
 
                 $this->mailerManager->sendWelcomeOfferEmail($client, $welcomeOffer);
@@ -125,7 +127,7 @@ class WelcomeOfferManager
      */
     public function getCurrentWelcomeOfferAmount(Clients $client)
     {
-        $welcomeOffers = $this->em->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy([
+        $welcomeOffers = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy([
             'idClient' => $client->getIdClient(),
             'status'   => OffresBienvenuesDetails::STATUS_NEW
         ]);

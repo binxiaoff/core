@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Loans
  *
  * @ORM\Table(name="loans", indexes={@ORM\Index(name="id_lender", columns={"id_lender"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="idx_loans_added", columns={"added"}), @ORM\Index(name="idx_loans_id_type_contract", columns={"id_type_contract"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoansRepository")
  */
 class Loans
 {
@@ -159,6 +159,30 @@ class Loans
     public function getIdTransfer()
     {
         return $this->idTransfer;
+    }
+
+    /**
+     * Set idProject
+     *
+     * @param Projects $idProject
+     *
+     * @return Loans
+     */
+    public function setProject(Projects $idProject)
+    {
+        $this->idProject = $idProject;
+
+        return $this;
+    }
+
+    /**
+     * Get idProject
+     *
+     * @return Projects
+     */
+    public function getProject()
+    {
+        return $this->idProject;
     }
 
     /**
@@ -457,30 +481,6 @@ class Loans
     public function getIdLender()
     {
         return $this->idLender;
-    }
-
-    /**
-     * Set idProject
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
-     *
-     * @return Loans
-     */
-    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
-    {
-        $this->idProject = $idProject;
-
-        return $this;
-    }
-
-    /**
-     * Get idProject
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
-     */
-    public function getIdProject()
-    {
-        return $this->idProject;
     }
 
     /**

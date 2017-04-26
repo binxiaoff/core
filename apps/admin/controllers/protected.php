@@ -80,37 +80,27 @@ class protectedController extends bootstrap
 
     public function _contrat()
     {
-        /** @var \clients $clients */
-        $clients = $this->loadData('clients');
-        /** @var \loans $loans */
-        $loans = $this->loadData('loans');
-        /** @var \lenders_accounts $lendersAccounts */
-        $lendersAccounts = $this->loadData('lenders_accounts');
-        /** @var \projects $projects */
-        $projects = $this->loadData('projects');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $loan          = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
 
-        if (false === $loans->get($this->params[1], 'id_loan')) {
+        if (null === $loan) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if (false === $lendersAccounts->get($loans->id_lender, 'id_lender_account')) {
+        if (empty($loan->getProject())) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if (false === $projects->get($loans->id_project, 'id_project')) {
+        if (empty($loan->getIdLender())) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if (false === $clients->get($lendersAccounts->id_client_owner, 'id_client')) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        $namePdfClient = 'CONTRAT-UNILEND-' . $projects->slug . '-' . $loans->id_loan . '.pdf';
-        $filePath      = $this->path . 'protected/pdf/contrat/contrat-' . $clients->hash . '-' . $loans->id_loan . '.pdf';
+        $namePdfClient = 'CONTRAT-UNILEND-' . $loan->getProject()->getSlug() . '-' . $loan->getIdLoan();
+        $filePath      = $this->path . 'protected/pdf/contrat/contrat-' . $loan->getIdLender()->getIdClient()->getHash() . '-' . $loan->getIdLoan() . '.pdf';
 
         if (file_exists($filePath)) {
             header('Content-Description: File Transfer');
@@ -126,32 +116,33 @@ class protectedController extends bootstrap
 
     public function _declaration_de_creances()
     {
-        /** @var \clients $clients */
-        $clients = $this->loadData('clients');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if (isset($this->params[0]) && $clients->get($this->params[0], 'hash') && isset($this->params[1])) {
-            /** @var \loans $loans */
-            $loans = $this->loadData('loans');
-            /** @var \lenders_accounts $lendersAccounts */
-            $lendersAccounts = $this->loadData('lenders_accounts');
-            $lendersAccounts->get($clients->id_client, 'id_client_owner');
+        if (isset($this->params[0]) && isset($this->params[1])) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $client */
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByHash($this->params[0]);
+            $loan   = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
 
-            if ($loans->get($lendersAccounts->id_lender_account, 'id_loan = ' . $this->params[1] . ' AND id_lender')) {
-                $filePath = $this->path . 'protected/pdf/declaration_de_creances/' . $loans->id_project . '/';
-                $filePath = ($loans->id_project == '1456') ? $filePath : $filePath . $clients->id_client . '/';
-                $filePath = $filePath . 'declaration-de-creances' . '-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
-                $fileName = 'DECLARATION-DE-CREANCES-UNILEND-' . $clients->hash . '-' . $loans->id_loan . '.pdf';
+            if ($client !== $loan->getIdLender()->getIdClient()) {
+                header('location: ' . $this->url . '/protected/document_not_found');
+                die;
+            }
 
-                if (file_exists($filePath)) {
-                    header('Content-Description: File Transfer');
-                    header('Content-Type: application/octet-stream');
-                    header('Content-Disposition: attachment; filename="' . $fileName . '";');
-                    @readfile($filePath);
-                    die();
-                } else {
-                    header('location: ' . $this->url . '/protected/document_not_found');
-                    die;
-                }
+            $filePath = $this->path . 'protected/pdf/declaration_de_creances/' . $loan->getProject()->getIdProject() . '/';
+            $filePath = ($loan->getProject()->getIdProject() == '1456') ? $filePath : $filePath . $client->getIdClient() . '/';
+            $filePath = $filePath . 'declaration-de-creances' . '-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
+            $fileName = 'DECLARATION-DE-CREANCES-UNILEND-' . $client->getHash() . '-' . $loan->getIdLoan();
+
+            if (file_exists($filePath)) {
+                header('Content-Description: File Transfer');
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename="' . $fileName . '";');
+                @readfile($filePath);
+                die();
+            } else {
+                header('location: ' . $this->url . '/protected/document_not_found');
+                die;
             }
         } else {
             header('location: ' . $this->url . '/protected/document_not_found');

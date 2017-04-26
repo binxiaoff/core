@@ -74,26 +74,35 @@ class ClientManager
 
 
     /**
-     * @param \clients $client
+     * @param Clients|\clients $client
      *
      * @return bool
      */
-    public function isBetaTester(\clients $client)
+    public function isBetaTester($client)
     {
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
         return (bool) $this->clientSettingsManager->getSetting($client, \client_setting_type::TYPE_BETA_TESTER);
     }
 
     /**
-     * @param \clients $client
-     * @param          $legalDocId
+     * @param \clients|Clients $client
+     * @param                  $legalDocId
      *
      * @return bool
      */
-    public function isAcceptedCGV(\clients $client, $legalDocId)
+    public function isAcceptedCGV($client, $legalDocId)
     {
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
         /** @var \acceptations_legal_docs $oAcceptationLegalDocs */
         $oAcceptationLegalDocs = $this->entityManagerSimulator->getRepository('acceptations_legal_docs');
-        return $oAcceptationLegalDocs->exist($client->id_client, 'id_legal_doc = ' . $legalDocId . ' AND id_client ');
+
+        return $oAcceptationLegalDocs->exist($client->getIdClient(), 'id_legal_doc = ' . $legalDocId . ' AND id_client ');
     }
 
     /**

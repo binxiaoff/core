@@ -8,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatisticQueue;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 class transfertsController extends bootstrap
 {
@@ -61,14 +62,14 @@ class transfertsController extends bootstrap
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             $bank_unilend = $this->loadData('bank_unilend');
             $transactions = $this->loadData('transactions');
-            /** @var \Doctrine\ORM\EntityManager $em */
-            $em               = $this->get('doctrine.orm.entity_manager');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager               = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
-            $project          = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
-            $reception        = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
-            $client           = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-            $user             = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
+            $reception        = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+            $user             = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
             if (null !== $project && null !== $reception) {
                 $reception->setIdProject($project)
@@ -103,7 +104,7 @@ class transfertsController extends bootstrap
                     $this->updateEcheances($project->getIdProject(), $reception->getMontant());
                 }
 
-                $em->flush();
+                $entityManager->flush();
 
                 $bank_unilend->id_transaction = $transactions->id_transaction;
                 $bank_unilend->id_project     = $project->getIdProject();
@@ -206,29 +207,28 @@ class transfertsController extends bootstrap
             && $_SESSION['controlDoubleAttr'] == md5($_SESSION['user']['id_user'])
         ) {
             unset($_SESSION['controlDoubleAttr']);
-            /** @var \Doctrine\ORM\EntityManager $em */
-            $em = $this->get('doctrine.orm.entity_manager');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
-            $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-            $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($_POST['id_client'], WalletType::LENDER);
+            $wallet    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($_POST['id_client'], WalletType::LENDER);
 
             if (null !== $reception && null !== $wallet) {
-                $user  = $em->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-                $match = $em->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet]);
+                $user  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
                 $reception->setIdClient($wallet->getIdClient())
                           ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
                           ->setRemb(1)
                           ->setIdUser($user)
                           ->setAssignmentDate(new \DateTime());
-                $em->flush();
+                $entityManager->flush();
 
                 $result = $this->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
 
                 if ($result) {
                     $this->notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
-                    $this->notifications->id_lender = $match->getIdLenderAccount()->getIdLenderAccount();
+                    $this->notifications->id_lender = $wallet->getId();
                     $this->notifications->amount    = $reception->getMontant();
                     $this->notifications->create();
 
@@ -288,12 +288,12 @@ class transfertsController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_reception'])) {
-            /** @var \Doctrine\ORM\EntityManager $em */
-            $em = $this->get('doctrine.orm.entity_manager');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var Receptions $reception */
-            $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             if ($reception) {
-                $wallet = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::LENDER);
+                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::LENDER);
                 $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                 if ($wallet) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
@@ -302,7 +302,7 @@ class transfertsController extends bootstrap
                     $reception->setIdClient(null)
                               ->setStatusBo(Receptions::STATUS_PENDING)
                               ->setRemb(0); // todo: delete the field
-                    $em->flush();
+                    $entityManager->flush();
                 }
             }
         }
@@ -325,12 +325,12 @@ class transfertsController extends bootstrap
         $projects_remb = $this->loadData('projects_remb');
 
         if ($_POST['id_reception']) {
-            /** @var \Doctrine\ORM\EntityManager $em */
-            $em        = $this->get('doctrine.orm.entity_manager');
-            $reception = $em->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $reception     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             if ($reception) {
                 $projectId = $reception->getIdProject()->getIdProject();
-                $wallet    = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
+                $wallet    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
                 if ($wallet) {
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
@@ -341,7 +341,7 @@ class transfertsController extends bootstrap
                               ->setIdProject(null)
                               ->setStatusBo(Receptions::STATUS_PENDING)
                               ->setRemb(0); // todo: delete the field
-                    $em->flush();
+                    $entityManager->flush();
 
                     $eche   = $echeanciers_emprunteur->select('id_project = ' . $projectId . ' AND status_emprunteur = 1', 'ordre DESC');
                     $newsum = $receptions->montant / 100;
@@ -443,8 +443,6 @@ class transfertsController extends bootstrap
     {
         /** @var \clients clients */
         $this->clients = $this->loadData('clients');
-        /** @var \lenders_accounts $oLendersAccounts */
-        $oLendersAccounts = $this->loadData('lenders_accounts');
 
         unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
 
@@ -467,8 +465,8 @@ class transfertsController extends bootstrap
             }
         }
 
-        if (isset($_POST['affect_welcome_offer']) && isset($this->params[0])) {
-            if($this->clients->get($this->params[0])&& $oLendersAccounts->get($this->clients->id_client, 'id_client_owner')) {
+        if (isset($_POST['affect_welcome_offer']) && isset($this->params[0]) && is_numeric($this->params[0])) {
+            if($this->clients->get($this->params[0])) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
                 $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
                 $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
@@ -571,7 +569,7 @@ class transfertsController extends bootstrap
         $this->oWelcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue');
     }
 
-    public function _deblocage()
+    public function _deblocage() //TODO delete lenders_accounts after merge of transfer progressif
     {
         /** @var \projects $project */
         $project = $this->loadData('projects');
@@ -839,8 +837,6 @@ class transfertsController extends bootstrap
     public function _succession()
     {
         if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
             $clientManager = $this->get('unilend.service.client_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
@@ -871,24 +867,20 @@ class transfertsController extends bootstrap
                 $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
             }
 
-            /** @var \lenders_accounts $originalLender */
-            $originalLender = $this->loadData('lenders_accounts');
-            $originalLender->get($originalClient->id_client, 'id_client_owner');
-            $originalWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($originalClient->id_client, WalletType::LENDER);
-
             if ($clientStatusManager->getLastClientStatus($newOwner) != \clients_status::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
             /** @var \bids $bids */
-            $bids = $this->loadData('bids');
-            if ($bids->exist($originalLender->id_lender_account, 'status = ' . \bids::STATUS_BID_PENDING . ' AND id_lender_account ')) {
+            $bids           = $this->loadData('bids');
+            $originalWallet = $walletRepository->getWalletByType($originalClient->id_client, WalletType::LENDER);
+            if ($bids->exist($originalWallet->getId(), 'status = ' . \bids::STATUS_BID_PENDING . ' AND id_lender_account ')) {
                 $this->addErrorMessageAndRedirect('Le défunt a des bids en cours.');
             }
 
             /** @var \loans $loans */
             $loans                 = $this->loadData('loans');
-            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalLender->id_lender_account, array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE]));
+            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE]));
             $originalClientBalance = $originalWallet->getAvailableBalance();
 
             if (isset($_POST['succession_check'])) {
@@ -938,33 +930,25 @@ class transfertsController extends bootstrap
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->lenderTransfer($transferEntity, $originalClientBalance);
 
-                /** @var \loan_transfer $loanTransfer */
-                $loanTransfer = $this->loadData('loan_transfer');
-                /** @var \lenders_accounts $originalLender */
-                $originalLender = $this->loadData('lenders_accounts');
-                $originalLender->get($transfer->id_client_origin, 'id_client_owner');
-                $originalWallet = $walletRepository->getWalletByType($originalClient->id_client, WalletType::LENDER);
+                    /** @var \loan_transfer $loanTransfer */
+                    $loanTransfer = $this->loadData('loan_transfer');
+                    $newWallet    = $walletRepository->getWalletByType($transfer->id_client_receiver, WalletType::LENDER);
 
-                /** @var \lenders_accounts $newLender */
-                $newLender = $this->loadData('lenders_accounts');
-                $newLender->get($transfer->id_client_receiver, 'id_client_owner');
-                $newWallet = $walletRepository->getWalletByType($transfer->id_client_receiver, WalletType::LENDER);
+                    $numberLoans = 0;
+                    foreach ($loansInRepayment as $loan) {
+                        $loans->get($loan['id_loan']);
+                        $this->transferLoan($transfer, $loanTransfer, $loans, $newWallet, $originalClient, $newOwner);
+                        $loans->unsetData();
+                        $numberLoans += 1;
+                    }
 
-                $numberLoans  = 0;
-                foreach ($loansInRepayment as $loan) {
-                    $loans->get($loan['id_loan']);
-                    $this->transferLoan($transfer, $loanTransfer, $loans, $newLender, $originalClient, $newOwner);
-                    $loans->unsetData();
-                    $numberLoans += 1;
-                }
-
-                $lenderStatQueueOriginal = new LenderStatisticQueue();
-                $lenderStatQueueOriginal->setIdWallet($originalWallet);
-                $entityManager->persist($lenderStatQueueOriginal);
-                $lenderStatQueueNew = new LenderStatisticQueue();
-                $lenderStatQueueNew->setIdWallet($newWallet);
-                $entityManager->persist($lenderStatQueueNew);
-                $entityManager->flush();
+                    $lenderStatQueueOriginal = new LenderStatisticQueue();
+                    $lenderStatQueueOriginal->setIdWallet($originalWallet);
+                    $entityManager->persist($lenderStatQueueOriginal);
+                    $lenderStatQueueNew = new LenderStatisticQueue();
+                    $lenderStatQueueNew->setIdWallet($newWallet);
+                    $entityManager->persist($lenderStatQueueNew);
+                    $entityManager->flush();
 
                     $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
                     try {
@@ -1001,14 +985,22 @@ class transfertsController extends bootstrap
         }
     }
 
-    private function transferLoan(\transfer $transfer, \loan_transfer $loanTransfer, \loans $loans, \lenders_accounts $newLender, \clients $originalClient, \clients $newOwner)
+    /**
+     * @param \transfer      $transfer
+     * @param \loan_transfer $loanTransfer
+     * @param \loans         $loans
+     * @param Wallet         $newLender
+     * @param \clients       $originalClient
+     * @param \clients       $newOwner
+     */
+    private function transferLoan(\transfer $transfer, \loan_transfer $loanTransfer, \loans $loans, Wallet $newLender, \clients $originalClient, \clients $newOwner)
     {
         $loanTransfer->id_transfer = $transfer->id_transfer;
         $loanTransfer->id_loan     = $loans->id_loan;
         $loanTransfer->create();
 
         $loans->id_transfer = $loanTransfer->id_loan_transfer;
-        $loans->id_lender   = $newLender->id_lender_account;
+        $loans->id_lender   = $newLender->getId();
         $loans->update();
 
         $loanTransfer->unsetData();
@@ -1019,16 +1011,16 @@ class transfertsController extends bootstrap
 
     /**
      * @param \loans $loans
-     * @param \lenders_accounts $newLender
+     * @param Wallet $newLender
      */
-    private function transferRepaymentSchedule(\loans $loans, \lenders_accounts $newLender)
+    private function transferRepaymentSchedule(\loans $loans, Wallet $newLender)
     {
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->loadData('echeanciers');
 
         foreach ($repaymentSchedule->select('id_loan = ' . $loans->id_loan) as $repayment){
             $repaymentSchedule->get($repayment['id_echeancier']);
-            $repaymentSchedule->id_lender = $newLender->id_lender_account;
+            $repaymentSchedule->id_lender = $newLender->getId();
             $repaymentSchedule->update();
             $repaymentSchedule->unsetData();
         }

@@ -1,8 +1,10 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class BidValidator
 {
@@ -10,19 +12,23 @@ class BidValidator
 
     /** @var ProductAttributeManager */
     private $productAttributeManager;
-    /** @var EntityManager */
-    private $entityManager;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
     /** @var ContractManager */
     private $contractManager;
+    /** @var EntityManager */
+    private $entityManager;
 
     public function __construct(
         ProductAttributeManager $productAttributeManager,
-        EntityManager $entityManager,
-        ContractManager $contractManager
+        EntityManagerSimulator $entityManagerSimulator,
+        ContractManager $contractManager,
+        EntityManager $entityManager
     ) {
         $this->productAttributeManager = $productAttributeManager;
-        $this->entityManager           = $entityManager;
+        $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->contractManager         = $contractManager;
+        $this->entityManager           = $entityManager;
     }
 
     public function isEligible(\bids $bid)
@@ -31,19 +37,18 @@ class BidValidator
         $eligible = true;
 
         /** @var \projects $project */
-        $project = $this->entityManager->getRepository('projects');
+        $project = $this->entityManagerSimulator->getRepository('projects');
         $project->get($bid->id_project);
         /** @var \product $product */
-        $product = $this->entityManager->getRepository('product');
+        $product = $this->entityManagerSimulator->getRepository('product');
         $product->get($project->id_product);
 
-        /** @var \lenders_accounts $lender */
-        $lender = $this->entityManager->getRepository('lenders_accounts');
-        if (false === $lender->get($bid->id_lender_account)) {
-            throw new \InvalidArgumentException('The lender account id ' . $bid->id_lender_account . ' does not exist');
+        $bidEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($bid->id_bid);
+        if (WalletType::LENDER !== $bidEntity->getIdLenderAccount()->getIdType()->getLabel()) {
+            throw new \InvalidArgumentException('The wallet for client ' . $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient() . ' is no lender wallet ');
         }
 
-        if (false === $this->isLenderEligibleForType($lender, $product, $this->productAttributeManager, $this->entityManager)) {
+        if (false === $this->isLenderEligibleForType($bidEntity->getIdLenderAccount()->getIdClient(), $product, $this->productAttributeManager)) {
             $reason[] = \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE;
             $eligible = false;
         }
@@ -53,8 +58,8 @@ class BidValidator
             $eligible = false;
         }
 
-        if (false === empty($bid->id_autobid)) {
-            if (false === $this->isAutobidEligibleForMaxTotalAmount($bid, $lender, $product, $this->entityManager, $this->contractManager)) {
+        if (false === empty($bidEntity->getAutobid())) {
+            if (false === $this->isAutobidEligibleForMaxTotalAmount($bidEntity, $product, $this->entityManagerSimulator, $this->contractManager)) {
                 $reason[] = \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO;
                 $eligible = false;
             }

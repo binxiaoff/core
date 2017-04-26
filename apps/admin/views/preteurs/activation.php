@@ -32,7 +32,7 @@
 
                         if (isset($this->aGreenPointStatus[$client['id_client']])) {
                             $sWaitingForGP     = '';
-                            $sGreenPointStatus = $this->aGreenPointStatus[$c['id_client']];
+                            $sGreenPointStatus = $this->aGreenPointStatus[$client['id_client']];
                             if (preg_match('/^[8-9]{3}$/', $sGreenPointStatus)) {
                                 $sBGColor = '#14892c;';
                             } else {
@@ -60,11 +60,7 @@
                             $prenom = $client['prenom'];
                         }
 
-                        if ($c['type_transfert'] == 1) {
-                            $val = 'Virement';
-                        } else {
-                            $val = $this->ficelle->formatNumber($client['balance']) . ' €';
-                        }
+                        $val = $this->ficelle->formatNumber($client['balance']) . ' €';
                     ?>
                     <tr class="<?= ($iRow % 2 == 1 ? '' : 'odd') ?> ">
                         <td align="center" <?php if (false === empty($sBGColor)) : ?>style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" <?php endif; ?> title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $client['id_client'] ?></td>

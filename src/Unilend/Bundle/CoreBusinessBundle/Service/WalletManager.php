@@ -146,7 +146,7 @@ class WalletManager
         $transaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
         $transaction->create();
 
-        $walletLine->id_lender                = $bid->getIdLenderAccount();
+        $walletLine->id_lender                = $bid->getIdLenderAccount()->getId();
         $walletLine->type_financial_operation = \wallets_lines::TYPE_BID;
         $walletLine->id_transaction           = $transaction->id_transaction;
         $walletLine->status                   = \wallets_lines::STATUS_VALID;
@@ -185,7 +185,7 @@ class WalletManager
         $transaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $transaction->create();
 
-        $walletLine->id_lender                = $bid->getIdLenderAccount();
+        $walletLine->id_lender                = $bid->getIdLenderAccount()->getId();
         $walletLine->type_financial_operation = \wallets_lines::TYPE_BID;
         $walletLine->id_transaction           = $transaction->id_transaction;
         $walletLine->status                   = \wallets_lines::STATUS_VALID;

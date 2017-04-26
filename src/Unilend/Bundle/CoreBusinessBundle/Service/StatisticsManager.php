@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 
@@ -86,8 +87,6 @@ class StatisticsManager
 
     public function calculateStatistics()
     {
-        /** @var \lenders_accounts $lenders */
-        $lenders = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \projects $projects */
         $projects = $this->entityManagerSimulator->getRepository('projects');
         /** @var \loans $loans */
@@ -95,9 +94,11 @@ class StatisticsManager
         /** @var \DateTime $startDate voluntarily on last 6 Months except for average funding time which is on 4 month */
         $startDate = new \DateTime('NOW - 6 MONTHS');
 
+        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+
         $statistics = [
-            'numberOfLendersInCommunity'      => $lenders->countLenders(),
-            'numberOfActiveLenders'           => $lenders->countLenders(true),
+            'numberOfLendersInCommunity'      => $clientRepository->countLenders(),
+            'numberOfActiveLenders'           => $clientRepository->countLenders(true),
             'numberOfFinancedProjects'        => $projects->countSelectProjectsByStatus(implode(',', \projects_status::$afterRepayment)),
             'numberOfProjectRequests'         => self::HISTORIC_NUMBER_OF_SIREN + $projects->getNumberOfUniqueProjectRequests(self::VALUE_DATE_HISTORIC_NUMBER_OF_SIREN),
             'averageFundingTime'              => $projects->getAverageFundingTime(new \DateTime('NOW - 4 MONTHS')),
@@ -144,12 +145,12 @@ class StatisticsManager
 
     private function getLendersByType()
     {
-        /** @var \lenders_accounts $lenders */
-        $lenders = $this->entityManagerSimulator->getRepository('lenders_accounts');
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         /** @var int $lendersPerson */
-        $lendersPerson = $lenders->countLendersByClientType([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
+        $lendersPerson = $clientRepository->countLendersByClientType([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
         /** @var int $lendersLegalEntity */
-        $lendersLegalEntity = $lenders->countLendersByClientType([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
+        $lendersLegalEntity = $clientRepository->countLendersByClientType([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
         /** @var int $totalLenders */
         $totalLenders = bcadd($lendersPerson, $lendersLegalEntity);
 

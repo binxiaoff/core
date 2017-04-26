@@ -92,7 +92,6 @@ class BankAccountManager
                 if ($bic !== $bankAccount->getBic()) {
                     $bankAccount->setDateValidated(null);
                     $bankAccount->setDatePending(new \DateTime());
-                    $this->updateLegacyBankAccount($client, $bankAccount);
                 }
                 $bankAccount->setBic($bic);
                 $bankAccount->setAttachment($attachment);
@@ -111,8 +110,6 @@ class BankAccountManager
                             ->setAttachment($attachment);
                 $this->entityManager->persist($bankAccount);
                 $this->entityManager->flush($bankAccount);
-
-                $this->updateLegacyBankAccount($client, $bankAccount);
             }
             $this->entityManager->getConnection()->commit();
 
@@ -121,21 +118,6 @@ class BankAccountManager
             $this->entityManager->getConnection()->rollBack();
             throw $exception;
         }
-    }
-
-    /**
-     * @param Clients     $client
-     * @param BankAccount $bankAccount
-     */
-    private function updateLegacyBankAccount(Clients $client, BankAccount $bankAccount)
-    {
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
-        $lenderAccount->get($client->getIdClient(), 'id_client_owner');
-        $lenderAccount->bic   = $bankAccount->getBic();
-        $lenderAccount->iban  = $bankAccount->getIban();
-        $lenderAccount->motif = $this->lenderManager->getLenderPattern($client);
-        $lenderAccount->update();
     }
 
     /**

@@ -226,30 +226,23 @@ class PaylineManager
         $clientMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \transactions $transaction */
         $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
-        /** @var \clients $client */
-        $client = $this->entityManagerSimulator->getRepository('clients');
+        $transaction->get($backPayline->getIdBackpayline(), 'type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND id_backpayline');
 
         $amount = round(bcdiv($backPayline->getAmount(), 100, 4), 2);
 
-        $client->get($backPayline->getWallet()->getIdClient()->getIdClient());
-        $lenderAccount->get($client->id_client, 'id_client_owner');
-        $transaction->get($backPayline->getIdBackpayline(), 'type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND id_backpayline');
-
         $notification->type      = \notifications::TYPE_CREDIT_CARD_CREDIT;
-        $notification->id_lender = $lenderAccount->id_lender_account;
+        $notification->id_lender = $backPayline->getWallet()->getId();
         $notification->amount    = $backPayline->getAmount();
         $notification->create();
 
-        $clientMailNotification->id_client       = $lenderAccount->id_client_owner;
+        $clientMailNotification->id_client       = $backPayline->getWallet()->getIdClient()->getIdClient();
         $clientMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT;
         $clientMailNotification->date_notif      = date('Y-m-d H:i:s');
         $clientMailNotification->id_notification = $notification->id_notification;
         $clientMailNotification->id_transaction  = $transaction->id_transaction;
         $clientMailNotification->create();
 
-        if ($clientNotification->getNotif($client->id_client, 7, 'immediatement') == true) {
+        if ($clientNotification->getNotif($backPayline->getWallet()->getIdClient()->getIdClient(), 7, 'immediatement') == true) {
             $clientMailNotification->get($clientMailNotification->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
             $clientMailNotification->immediatement = 1;
             $clientMailNotification->update();
@@ -265,7 +258,7 @@ class PaylineManager
             $varMail = [
                 'surl'            => $this->sUrl,
                 'url'             => $this->router->getContext()->getBaseUrl(),
-                'prenom_p'        => $client->prenom,
+                'prenom_p'        => $backPayline->getWallet()->getIdClient()->getPrenom(),
                 'fonds_depot'     => number_format($amount, 2, ',', ' '),
                 'solde_p'         => number_format($backPayline->getWallet()->getAvailableBalance(), 2, ',', ' '),
                 'link_mandat'     => $this->sUrl . '/images/default/mandat.jpg',
@@ -278,7 +271,7 @@ class PaylineManager
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->messageProvider->newMessage('preteur-alimentation-cb', $varMail);
-            $message->setTo($client->email);
+            $message->setTo($backPayline->getWallet()->getIdClient()->getEmail());
             $this->mailer->send($message);
         }
     }
