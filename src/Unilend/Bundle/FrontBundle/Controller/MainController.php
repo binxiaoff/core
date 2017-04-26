@@ -120,7 +120,7 @@ class MainController extends Controller
             );
         }
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower || $user instanceof UserPartner);
 
         if (false === $isFullyConnectedUser) {
             /** @var Translator $translator */
