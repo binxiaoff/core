@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -11,7 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 
@@ -89,14 +90,14 @@ class LenderOperationsController extends Controller
      */
     public function indexAction(Request $request)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \indexage_vos_operations $lenderOperationsIndex */
-        $lenderOperationsIndex = $entityManager->getRepository('indexage_vos_operations');
+        $lenderOperationsIndex = $entityManagerSimulator->getRepository('indexage_vos_operations');
         /** @var \lenders_accounts $lender */
-        $lender = $entityManager->getRepository('lenders_accounts');
+        $lender = $entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $client = $entityManagerSimulator->getRepository('clients');
 
         $client->get($this->getUser()->getClientId());
         $lender->get($client->id_client, 'id_client_owner');
@@ -116,7 +117,7 @@ class LenderOperationsController extends Controller
             'projectsFundedByLender' => $projectsFundedByLender,
             'detailedOperations'     => [self::TYPE_REPAYMENT_TRANSACTION],
             'loansStatusFilter'      => self::$loanStatusFilter,
-            'firstLoanYear'          => $entityManager->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
+            'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
             'lenderLoans'            => $loans['lenderLoans'],
             'loanStatus'             => $loans['loanStatus'],
             'seriesData'             => $loans['seriesData'],
@@ -157,8 +158,8 @@ class LenderOperationsController extends Controller
      */
     public function filterOperationsAction(Request $request)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
 
         $filters = $this->getOperationFilters($request);
 
@@ -167,7 +168,7 @@ class LenderOperationsController extends Controller
         $endDate               = $filters['endDate']->format('Y-m-d');
 
         /** @var \indexage_vos_operations $lenderOperationsIndex */
-        $lenderOperationsIndex  = $entityManager->getRepository('indexage_vos_operations');
+        $lenderOperationsIndex  = $entityManagerSimulator->getRepository('indexage_vos_operations');
         $lenderOperations       = $lenderOperationsIndex->getLenderOperations($transactionListFilter, $this->getUser()->getClientId(), $startDate, $endDate, $filters['project']);
         $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('type_transaction IN (' . implode(',', $transactionListFilter) . ') AND id_client = ' . $this->getUser()->getClientId() . ' AND LEFT(date_operation, 10) >= "' . $startDate . '" AND LEFT(date_operation, 10) <= "' . $endDate . '"');
 
@@ -200,18 +201,18 @@ class LenderOperationsController extends Controller
             return $this->redirectToRoute('lender_operations');
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \tax $tax */
-        $tax = $entityManager->getRepository('tax');
+        $tax = $entityManagerSimulator->getRepository('tax');
         /** @var \tax_type $taxType */
-        $taxType = $entityManager->getRepository('tax_type');
+        $taxType = $entityManagerSimulator->getRepository('tax_type');
         /** @var \tax_type $aTaxType */
         $aTaxType = $taxType->select('id_tax_type !=' . \tax_type::TYPE_VAT);
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
         /** @var \indexage_vos_operations $lenderIndexedOperations */
-        $lenderIndexedOperations = $entityManager->getRepository('indexage_vos_operations');
+        $lenderIndexedOperations = $entityManagerSimulator->getRepository('indexage_vos_operations');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
@@ -524,17 +525,17 @@ class LenderOperationsController extends Controller
      */
     private function lenderOperationIndexing(\indexage_vos_operations $lenderOperationsIndex, \lenders_accounts $lender)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \transactions $transaction */
-        $transaction = $entityManager->getRepository('transactions');
+        $transaction = $entityManagerSimulator->getRepository('transactions');
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $client = $entityManagerSimulator->getRepository('clients');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         /** @var \lender_tax_exemption $taxExemption */
-        $taxExemption = $entityManager->getRepository('lender_tax_exemption');
+        $taxExemption = $entityManagerSimulator->getRepository('lender_tax_exemption');
 
         $client->get($this->getUser()->getClientId());
 
@@ -612,10 +613,15 @@ class LenderOperationsController extends Controller
      */
     private function commonLoans(Request $request, \lenders_accounts $lender)
     {
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $notificationManager    = $this->get('unilend.service.notification_manager');
         /** @var \loans $loanEntity */
-        $loanEntity = $this->get('unilend.service.entity_manager')->getRepository('loans');
+        $loanEntity = $entityManagerSimulator->getRepository('loans');
         /** @var \projects $project */
-        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
+        /** @var \clients $client */
+        $client = $entityManagerSimulator->getRepository('clients');
+        $client->get($lender->id_client_owner);
 
         $orderField     = $request->request->get('type', 'start');
         $orderDirection = strtoupper($request->request->get('order', 'ASC'));
@@ -718,10 +724,8 @@ class LenderOperationsController extends Controller
                     ++$loanStatus['no-problem'];
                     break;
             }
-
-            // @todo notifications count to be dynamized
             $loanData['activity'] = [
-                'unread_count' => 5
+                'unread_count' => $notificationManager->countUnreadNotificationsForClient($client, $projectLoans['id_project'])
             ];
 
             $projectLoansDetails = $loanEntity->select('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $projectLoans['id_project']);
@@ -885,5 +889,32 @@ class LenderOperationsController extends Controller
         unset($filters['id_last_action']);
 
         return $filters;
+    }
+
+    /**
+     * @Route("/notifications/projectNotifications/{projectId}", name="lender_loans_notifications", requirements={"projectId": "\d+"})
+     * @Security("has_role('ROLE_LENDER')")
+     * @Method("GET")
+     *
+     * @param int $projectId
+     *
+     * @return JsonResponse
+     */
+    public function loadProjectNotifications($projectId)
+    {
+        try {
+            $notificationDisplayManager = $this->get('unilend.frontbundle.notification_display_manager');
+            $data                       = $notificationDisplayManager->getLenderNotificationsByProject($this->getUser()->getClientId(), $projectId);
+            $code                       = Response::HTTP_OK;
+        } catch (\Exception $exception) {
+            $data = [];
+            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+            $this->get('logger')->error('Exception while getting client notifications for id_project: ' . $projectId . ' Message: ' . $exception->getMessage(), ['id_client' => $this->getUser()->getClientId(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
+        }
+
+        return new JsonResponse([
+            'tpl' => $this->render(':frontbundle/pages/lender_operations:my_loans_details_activity.html.twig', ['projectNotifications' => $data]),
+            'id'  => $projectId
+        ], $code);
     }
 }

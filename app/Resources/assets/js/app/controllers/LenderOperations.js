@@ -54,6 +54,19 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
     if (!evTarget.is('.table-myloans-item-project-name')) {
       event.preventDefault()
       if (evTarget.parents('.table-myloans-item-controls').length) {
+        console.log('hello')
+        $.ajax({
+              method: 'get',
+              url: $item.attr('notifications_url'),
+              success: function (data) {
+                  console.log(data);
+                  $('#loan-'+data.id+'-details-activity').html(data.tpl)
+              },
+              error: function (jqXHR, status, err) {
+                  console.log(jqXHR, status, err);
+                  $('#loan-'+data.id+'-details-activity').html(status)
+              }
+          })
         if (evTarget.parents('.ui-show-table-myloans-item-activity').length || evTarget.is('.ui-show-table-myloans-item-activity')) {
           $details.find('.nav-tab-anchors li:first-child a').trigger('click')
         } else {

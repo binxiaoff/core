@@ -17,6 +17,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
@@ -228,7 +229,7 @@ class LenderWalletController extends Controller
                     $this->get('unilend.service.operation_manager')->withdrawLenderWallet($wallet, $wireTransferOut);
                     $transaction->get($wireTransferOut->getIdTransaction());
 
-                    $notification->type      = \notifications::TYPE_DEBIT;
+                    $notification->type      = Notifications::TYPE_DEBIT;
                     $notification->id_lender = $lender->id_lender_account;
                     $notification->amount    = $amount * 100;
                     $notification->create();
