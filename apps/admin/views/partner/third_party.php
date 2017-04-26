@@ -15,12 +15,22 @@
     $('#freeow-tr').freeow(title, message, opts);
       <?php unset($_SESSION['freeow']); ?>
       <?php endif; ?>
+
+    $('#third-party-add-link').click(function(event) {
+      event.preventDefault()
+      var siren = $('#search-siren').val();
+      if (siren.length == 0) {
+        alert('Merci de saisir le SIREN');
+        return;
+      }
+      $.colorbox({href: '/partner/third_party_add_thickbox/<?= $this->partner->getId() ?>/' + $('#search-siren').val()})
+    })
   });
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if ($this->partner) : ?>
-    <?php $thirdParties = $this->partner->getPartnerThirdParties() ?>
+        <?php $thirdParties = $this->partner->getPartnerThirdParties() ?>
         <h1>Liste des tiers</h1>
         <div class="btnDroite">
             <input type="text" name="siren" id="search-siren" class="input_moy" placeholder="SIREN" pattern="[0-9]{9}" required>
@@ -70,18 +80,3 @@
         <?php endif; ?>
     <?php endif; ?>
 </div>
-
-<script>
-  $(function () {
-    $('#third-party-add-link').click(function(event) {
-      event.preventDefault()
-      var siren = $('#search-siren').val();
-      if (siren.length == 0) {
-        alert('Merci de saisir le SIREN');
-        return;
-      }
-      $.colorbox({href: '/partner/third_party_add_thickbox/<?= $this->partner->getId() ?>/' + $('#search-siren').val()})
-    })
-  })
-</script>
-
