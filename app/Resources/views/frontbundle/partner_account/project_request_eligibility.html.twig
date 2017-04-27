@@ -23,55 +23,44 @@ classNames: 'partner-account'
             <article class="dashboard-tab-pane">
                 <div class="panel">
                     <header class="panel-header">
-                        <h3>{% trans %} partner-project-request_title_eligibility {% endtrans %}</h3>
+                        <h3>{% trans %} partner-project-request_title-eligibility {% endtrans %}</h3>
                     </header>
                     <form action="{{ path('partner_project_request_details') }}" method="post" id="emprunter-sim-partner" class="emprunter-sim emprunter-sim-partner">
                         <fieldset class="emprunter-sim-pane-inner emprunter-sim-pane-inner-content" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                             <div class="form-validation-notifications"></div>
                             <div class="row">
 
-                                {#<h4>{% trans %} partner-project-request_simulator-step-2-title {% endtrans %}</h4>#}
+                                {#<h4>{% trans %} partner-project-request_simulator-eligibility-title {% endtrans %}</h4>#}
 
                             </div>
                             <div class="row">
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
-                                    <dt>{% trans %} partner-project-request_simulator-step-2-company-field-label {% endtrans %}</dt>
+                                    <dt>{% trans %} partner-project-request_simulator-eligibility-company-field-label {% endtrans %}</dt>
                                     <dd><strong class="ui-esim-output-company">{{ estimation.company }}</strong></dd>
                                 </dl>
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
-                                    <dt>{% trans %} partner-project-request_simulator-step-2-siren-field-label {% endtrans %}</dt>
+                                    <dt>{% trans %} partner-project-request_simulator-eligibility-siren-field-label {% endtrans %}</dt>
                                     <dd><strong class="ui-esim-output-siren">{{ estimation.siren }}</strong></dd>
                                 </dl>
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
-                                    <dt>{% trans %} partner-project-request_simulator-step-2-amount-field-label {% endtrans %}</dt>
+                                    <dt>{% trans %} partner-project-request_simulator-eligibility-amount-field-label {% endtrans %}</dt>
                                     <dd><strong class="ui-esim-output-cost">{{ estimation.amount }}</strong></dl>
                                 </dl>
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
-                                    <dt>{% trans %} partner-project-request_simulator-step-2-duration-field-label {% endtrans %}</dt>
-                                    <dd><strong class="ui-esim-output-duration">{% trans with {'%estimationDuration%' : estimation.duration} %} partner-project-request_simulator-step-2-duration-month {% endtrans %}</strong></dd>
+                                    <dt>{% trans %} partner-project-request_simulator-eligibility-duration-field-label {% endtrans %}</dt>
+                                    <dd><strong class="ui-esim-output-duration">{% trans with {'%numberMonth%' : estimation.duration} %} partner-project-request_simulator-eligibility-duration-value {% endtrans %}</strong></dd>
                                 </dl>
                              </div>
-                            {#<div class="row">#}
-                                {#<div class="col-xs-2 col-sm-2 col-md-3 col-lg-3">#}
-                                    {#<span>{% trans %} partner-project-request_simulator-funding-duration-label {% endtrans %}</span>#}
-                                    {#<strong class="ui-esim-funding-duration-output"></strong>#}
-                                {#</div>#}
-                                {#<div class="col-xs-2 col-sm-2 col-md-3 col-lg-3">#}
-                                    {#<strong class="ui-esim-funding-duration-output">#}
-                                        {#{% transchoice estimation.fundingPeriod %} partner-project-request_simulator-footer-funding-duration-value {% endtranschoice %}#}
-                                    {#</strong>#}
-                                {#</div>#}
-                            {#</div>#}
                         </fieldset><!-- /.emprunter-sim-pane-inner -->
                         <div class="emprunter-sim-pane-inner emprunter-sim-pane-inner-results bg-p1 c-bg5">
                             <div class="row">
                                 <div class="col-xs-4">
-                                    <p>Nos statistiques nous permettent d'estimer la vitesse de financement et le montant des mensualités pour des projets similaires : </p>
+                                    {% trans %} partner-project-request_simulator-eligibility-message {% endtrans %}
                                     <dl class="list-2col">
-                                        <dt id="esim-label-amount">Si vous empruntez :</dt>
+                                        <dt id="esim-label-amount">{% trans %} partner-project-request_simulator-eligibility-amount-label {% endtrans %}</dt>
                                         <dd id="esim-output-amount">100&nbsp;000&nbsp;€</dd>
-                                        <dt id="esim-label-duration">Votre argent sera disponible en :</dt>
-                                        <dd id="esim-output-duration">1 jour</dd>
+                                        <dt id="esim-label-duration">{% trans %} partner-project-request_simulator-eligibility-estimated-funding-time-label {% endtrans %}</dt>
+                                        <dd id="esim-output-duration">{% transchoice estimation.fundingPeriod with {'%numberDays%' : estimation.fundingPeriod} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
                                     </dl>
                                 </div>
                             </div>
@@ -81,7 +70,7 @@ classNames: 'partner-account'
                                 <div class="col-xs-4">
                                     <input type="hidden" id="esim-input-status" name="esim[status]" value="{{ estimation.prospectStatus }}">
                                     <button class="btn-abandon btn-alternate" data-equal-width data-form-submit="#emprunter-sim-partner" data-form-action-url="{{ path('partner_projects_list') }}">
-                                        {% trans %} Abandonner {% endtrans %}
+                                        {% trans %} partner-project-request_simulator-footer-abandon-button {% endtrans %}
                                     </button>
                                     <button class="btn-prospect btn-alternate" data-equal-width data-form-submit="#emprunter-sim-partner" data-form-action-url="{{ path('partner_projects_list') }}">
                                         {% trans %} partner-project-request_simulator-footer-prospect-button {% endtrans %}
