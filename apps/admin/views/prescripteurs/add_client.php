@@ -95,6 +95,7 @@
                     $("#company_prescripteur").html(values.company_name);
                     $("#siren_prescripteur").html(values.siren);
                     $('.identification_prescripteur').show('slow');
+                    parent.$.fn.colorbox.close();
                 } else {
                     alert('An error has occurred');
                 }
