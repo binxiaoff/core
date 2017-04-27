@@ -892,13 +892,13 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @Route("/notifications/projectNotifications/{projectId}", name="lender_loans_notifications", requirements={"projectId": "\d+"})
+     * @Route("/operations/projectNotifications/{projectId}", name="lender_loans_notifications", requirements={"projectId": "\d+"})
      * @Security("has_role('ROLE_LENDER')")
      * @Method("GET")
      *
      * @param int $projectId
      *
-     * @return JsonResponse
+     * @return Response
      */
     public function loadProjectNotifications($projectId)
     {
@@ -912,9 +912,11 @@ class LenderOperationsController extends Controller
             $this->get('logger')->error('Exception while getting client notifications for id_project: ' . $projectId . ' Message: ' . $exception->getMessage(), ['id_client' => $this->getUser()->getClientId(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
-        return new JsonResponse([
-            'tpl' => $this->render(':frontbundle/pages/lender_operations:my_loans_details_activity.html.twig', ['projectNotifications' => $data]),
-            'id'  => $projectId
-        ], $code);
+        return new JsonResponse(
+            [
+                'tpl' => $this->renderView(':frontbundle/pages/lender_operations:my_loans_details_activity.html.twig', ['projectNotifications' => $data, 'code' => $code]),
+            ],
+            $code
+        );
     }
 }

@@ -1,6 +1,6 @@
 {% if projectNotifications|length > 0 %}
     <div class="list-notifications">
-    {% for notification in loanNotifications %}
+    {% for notification in projectNotifications %}
         <div class="notification notification-type-{{ notification.type|default('message')|e('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" data-proj-notification>
             <div class="notification-image">
             {% if notification.image %}
@@ -17,8 +17,12 @@
         </div>
     {% endfor %}
     </div>
-{% else %}
-    <div class="notification-content">
+{% elseif code == 200 %}
+    <div class="notification-content message-info">
         <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
+    </div>
+{% else %}
+    <div class="notification-content message-alert">
+        <p>{% trans %} lender-notifications_error-label {% endtrans %}</p>
     </div>
 {% endif %}

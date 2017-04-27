@@ -15,7 +15,7 @@
         </ul>
         <div class="tab-content">
             <article id="loan-{{ loan.id }}-details-activity" role="tabpanel" class="table-myloans-item-details-activity tab-pane active">
-                {% include '/pages/lender_operations/my_loans_details_activity.html.twig' %}
+                {#Content from my_loans_details_activity.html.twig will be loaded by ajax#}
             </article>
             <article id="loan-{{ loan.id }}-details-docs" role="tabpanel" class="table-myloans-item-details-docs tab-pane">
                 {% include '/pages/lender_operations/my_loans_details_documents.html.twig' %}

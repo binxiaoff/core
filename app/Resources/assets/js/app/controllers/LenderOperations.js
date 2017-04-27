@@ -164,9 +164,9 @@ $doc.on('Sortable:sort:after', 'table.table-myloans', function () {
 })
 
 $doc.on('MyLoansActivity:visible', '.table-myloans-view-details', function () {
-    var url = $(this).find('data-notifications-url').data('notifications-url')
+    var url = $(this).attr('data-notifications-url')
     var $activityTab = $(this).find('#loan-'+$(this).data('loan-id')+'-details-activity')
-    if ($activityTab.find('.list-notifications').children().length === 0) {
+    if ($activityTab.children().length === 0) {
         $.ajax({
             url: url,
             success: function (data) {
@@ -177,8 +177,11 @@ $doc.on('MyLoansActivity:visible', '.table-myloans-view-details', function () {
                 $list.trigger('UI:visible')
             },
             error: function (jqXHR, status, err) {
-                console.log(jqXHR, status, err);
-                $activityTab.html(status)
+                if (jqXHR.responseJSON.tpl) {
+                    $activityTab.html(jqXHR.responseJSON.tpl)
+                } else {
+                    $activityTab.html(status)
+                }
             }
         })
     }
