@@ -43,7 +43,7 @@ loanPeriods = {
                     </header>
 
                     {% if projectAbandoned %}
-                        <div class="message">{% trans %} partner-project-request_title {% endtrans %}</div>
+                        <div class="message">{% trans %} partner-project-request_response-abandon-message {% endtrans %}</div>
                     {% endif %}
                     <form action="{{ path('partner_project_request_form') }}" method="post" id="emprunter-sim-partner" class="emprunter-sim emprunter-sim-partner">
                         <div class="emprunter-sim-content">
