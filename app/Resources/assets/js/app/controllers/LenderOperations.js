@@ -170,7 +170,6 @@ $doc.on('MyLoansActivity:visible', '.table-myloans-view-details', function () {
         $.ajax({
             url: url,
             success: function (data) {
-                console.log(data)
                 $activityTab.html(data.tpl)
                 var $list = $activityTab.find('.list-notifications')
                 $list.uiPaginate()
