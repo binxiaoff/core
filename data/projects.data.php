@@ -447,29 +447,6 @@ class projects extends projects_crud
         return $aElements;
     }
 
-    public function getAttachments($project = null)
-    {
-        if (null === $project) {
-            $project = $this->id_project;
-        }
-
-        if (! $project) {
-            return false;
-        }
-
-        $sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
-                FROM attachment a
-                WHERE a.id_owner = ' . $project . '
-                    AND a.type_owner = "projects"';
-
-        $result      = $this->bdd->query($sql);
-        $attachments = array();
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $attachments[$record["id_type"]] = $record;
-        }
-        return $attachments;
-    }
-
     /**
      * Retrieve the list of project IDs that needs email reminder
      *
@@ -486,7 +463,8 @@ class projects extends projects_crud
             FROM projects p
             INNER JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON plsh.id_project = p.id_project
             INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            LEFT JOIN attachment a ON a.id_owner = p.id_project AND a.type_owner = "projects" AND a.id_type = ' . \attachment_type::DERNIERE_LIASSE_FISCAL . '
+            LEFT JOIN project_attachment pa ON pa.id_project = p.id_project
+            LEFT JOIN attachment a ON a.id = pa.id_attachment AND a.archived IS NULL AND a.id_type = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL . '
             WHERE p.status = ' . $status . '
                 AND DATE_SUB(CURDATE(), INTERVAL ' . $daysInterval . ' DAY) = DATE(psh.added)
                 AND psh.numero_relance = ' . $previousReminderIndex . '
