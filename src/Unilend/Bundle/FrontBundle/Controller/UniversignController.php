@@ -12,7 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
@@ -96,7 +95,7 @@ class UniversignController extends Controller
         $client             = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
         $clientIdUniversign = null;
         switch (get_class($universign)) {
-            case ProjectPeriod::class:
+            case ProjectsPouvoir::class:
             case ProjectCgv::class:
                 if ($universign->getIdProject() instanceof Projects && $universign->getIdProject()->getIdCompany() instanceof Companies) {
                     $clientIdUniversign = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
