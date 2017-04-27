@@ -27,6 +27,10 @@ loanPeriods = {
 }
 %}
 
+{% set
+    projectAbandoned = true
+%}
+
 {# TODO END #}
 
 {% block dashboardContent %}
@@ -37,6 +41,10 @@ loanPeriods = {
                     <header class="panel-header">
                         <h3>{% trans %} partner-project-request_title {% endtrans %}</h3>
                     </header>
+
+                    {% if projectAbandoned %}
+                        <div class="message">{% trans %} partner-project-request_title {% endtrans %}</div>
+                    {% endif %}
                     <form action="{{ path('partner_project_request_form') }}" method="post" id="emprunter-sim-partner" class="emprunter-sim emprunter-sim-partner">
                         <div class="emprunter-sim-content">
                             <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">

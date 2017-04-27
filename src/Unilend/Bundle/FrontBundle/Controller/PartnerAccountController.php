@@ -36,6 +36,7 @@ class PartnerAccountController extends Controller
      */
     public function projectRequestFormAction()
     {
+        // Add the project to Vos Prospects with status simulation ( if the prospect is eligible )
         return $this->redirectToRoute('partner_project_request_eligibility_test');
     }
 
@@ -119,6 +120,18 @@ class PartnerAccountController extends Controller
         ];
 
         return $this->render('/partner_account/projects_list.html.twig', $template);
+    }
+
+    /**
+     * @Route("partenaire/depot/abandon", name="partner_projects_abandon")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @return Response
+     */
+    public function projectRequestAbandon()
+    {
+        // Must return a response to initial Depot de dossier page - projectAbandoned = true
+        return $this->redirectToRoute('partner_project_request');
     }
 
     /**

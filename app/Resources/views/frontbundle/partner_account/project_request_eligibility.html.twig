@@ -5,6 +5,8 @@ id: 'partner-account-project-request',
 classNames: 'partner-account'
 } %}
 
+{# TODO - variables/objects below aren't real #}
+
 {% set estimation = {
     eligible: 1,
     amount: 100000,
@@ -13,9 +15,19 @@ classNames: 'partner-account'
     siren: '326300159',
     company: 'Télévison Française',
     email: 'prospect@uncar.fr',
-    fundingPeriod: 2,
-    prospectStatus: 'prospecter'
+    fundingPeriod: 2
 } %}
+
+{% set abandonMotives = [
+{
+id_motive: 1
+},
+{
+id_motive: 2
+}
+] %}
+
+{# TODO END  #}
 
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
@@ -28,11 +40,7 @@ classNames: 'partner-account'
                     <form action="{{ path('partner_project_request_details') }}" method="post" id="emprunter-sim-partner" class="emprunter-sim emprunter-sim-partner">
                         <fieldset class="emprunter-sim-pane-inner emprunter-sim-pane-inner-content" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                             <div class="form-validation-notifications"></div>
-                            <div class="row">
-
-                                {#<h4>{% trans %} partner-project-request_simulator-eligibility-title {% endtrans %}</h4>#}
-
-                            </div>
+                            <input type="hidden" id="esim-input-status" name="esim[status]" value="{% if estimation.eligible ==  1 %}simulation{% else %}not-eligible{% endif %}">
                             <div class="row">
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
                                     <dt>{% trans %} partner-project-request_simulator-eligibility-company-field-label {% endtrans %}</dt>
@@ -58,7 +66,7 @@ classNames: 'partner-account'
                                     {% trans %} partner-project-request_simulator-eligibility-message {% endtrans %}
                                     <dl class="list-2col">
                                         <dt id="esim-label-amount">{% trans %} partner-project-request_simulator-eligibility-amount-label {% endtrans %}</dt>
-                                        <dd id="esim-output-amount">100&nbsp;000&nbsp;€</dd>
+                                        <dd id="esim-output-amount">{{ estimation.amount }} €</dd>
                                         <dt id="esim-label-duration">{% trans %} partner-project-request_simulator-eligibility-estimated-funding-time-label {% endtrans %}</dt>
                                         <dd id="esim-output-duration">{% transchoice estimation.fundingPeriod with {'%numberDays%' : estimation.fundingPeriod} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
                                     </dl>
@@ -68,13 +76,12 @@ classNames: 'partner-account'
                         <footer class="emprunter-sim-pane-inner emprunter-sim-pane-inner-actions bg-p1 c-bg5 text-align-center">
                             <div class="row">
                                 <div class="col-xs-4">
-                                    <input type="hidden" id="esim-input-status" name="esim[status]" value="{{ estimation.prospectStatus }}">
-                                    <button class="btn-abandon btn-alternate" data-equal-width data-form-submit="#emprunter-sim-partner" data-form-action-url="{{ path('partner_projects_list') }}">
+                                    <button class="btn-abandon btn-alternate" data-equal-width data-form-submit="#emprunter-sim-partner" data-form-action-url="{{ path('partner_projects_abandon') }}">
                                         {% trans %} partner-project-request_simulator-footer-abandon-button {% endtrans %}
                                     </button>
-                                    <button class="btn-prospect btn-alternate" data-equal-width data-form-submit="#emprunter-sim-partner" data-form-action-url="{{ path('partner_projects_list') }}">
+                                    <a href="{{ path('partner_projects_list') }}" class="btn-prospect btn-alternate" data-equal-width>
                                         {% trans %} partner-project-request_simulator-footer-prospect-button {% endtrans %}
-                                    </button>
+                                    </a>
                                     {% if estimation.eligible == 1 %}
                                         <button class="btn-submit btn-alternate" data-equal-width data-form-submit="#emprunter-sim-partner" data-form-action-url="{{ path('partner_project_request_details_form') }}">
                                             {% trans %} partner-project-request_simulator-footer-submit-button {% endtrans %}
@@ -95,24 +102,23 @@ classNames: 'partner-account'
 
     <div id="modal-partner-prospect-abandon" data-modal>
         <div class="modal-body text-align-center">
-            <p>{% trans %} partner-project-list_popup-prospect-abandon-message {% endtrans %}</p>
+            <p>{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</p>
             <div class="form-field">
                 <select name="prospect-abandon-motif" id="prospect-abandon-motif" class="input-field">
-                    <option value="0">Sélectionnez</option>
-                    <option value="1">Option 1</option>
-                    <option value="2">Option 2</option>
-                    <option value="3">Option 3</option>
-                    <option value="4">Option 4</option>
+                    <option value="0">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
+                    {% for motive in abandonMotives %}
+                        <option value="{{ motive.id_motive }}">{{ ('partner-project-request_abandon-motif-' ~ motive.id_motive)|trans }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
         <footer class="modal-footer">
             <div class="btn-controls">
                 <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
-                    {% trans %} partner-project-list_popup-prospect-cancel-ko {% endtrans %}
+                    {% trans %} partner-project-request_popup-abandon-cancel-ko {% endtrans %}
                 </a>
                 <a href="javascript:;" class="btn-primary" data-modal-doactionsubmit data-form-target="#emprunter-sim-partner" data-form-action-url="{{ path('partner_projects_list') }}">
-                    {% trans %} partner-project-list_popup-prospect-cancel-ok {% endtrans %}
+                    {% trans %} partner-project-request_popup-abandon-cancel-ok {% endtrans %}
                 </a>
             </div>
         </footer>
