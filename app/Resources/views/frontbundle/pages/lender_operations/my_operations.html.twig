@@ -3,7 +3,7 @@
         <h3 class="panel-title">{% trans %} lender-operations_operations-table-title {% endtrans %}</h3>
         {% if lenderOperations|length > 0 %}
         <div class="panel-controls">
-            <a href="/pdf/vos_operations_pdf_indexation" class="btn-default">
+            <a href="{{ path('lender_operations_pdf') }}" class="btn-default">
                 <span class="icon fa-print-u32"></span>
                 <span class="label"> {% trans %} lender-operations_print {% endtrans %} </span>
             </a>

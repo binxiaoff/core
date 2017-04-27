@@ -30,10 +30,17 @@
         </div>
         <div class="col-md-6 col-lg-6">
             <p class="text-align-right">
-                <b>Paris, le 31/03/2017</b><br/>
-                Prenom 23357 Nom 23357 <br>
-                23357, Rue du 23357 <br>
-                75014 Paris
+                <b>{% trans with {'%date%' : 'now'|date('d/m/Y')} %}lender-operations_pdf-location-date{% endtrans %}</b><br/>
+                {% if company is empty %}
+                    <b>{{ client.prenom }} {{ client.nom }}</b><br/>
+                    {{ clientAddress.adresse1 }}<br>
+                    {{ clientAddress.cp }} {{ clientAddress.ville }}
+                {% else %}
+                    <b>{{ company.name }}</b><br/>
+                    <b>{{ client.prenom }} {{ client.nom }}</b><br/>
+                    {{ company.adresse1 }} <br/>
+                    {{ company.zip }} {{ company.city }}
+                {% endif %}
             </p>
 
         </div>
@@ -42,8 +49,8 @@
     <div class="row">
         <div class="col-md-8 col-lg-8">
             <p>
-                <b style="font-size: 1rem; line-height: 1.5rem;">Objet : relevé d’opérations de votre compte Unilend n°23357</b><br/>
-                Titulaire : Prenom 23357 Nom 23357
+                <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with { 'idClient' : client.idClient } %}lender-operations_pdf-subject-line{% endtrans %}</b><br/>
+                {% trans %}lender-operations_pdf-owner-line{% endtrans %} {{ client.prenom }} {{ client.nom }}
             </p>
         </div>
     </div>
@@ -53,12 +60,12 @@
     <table class="table">
         <thead>
             <tr>
-                <th class="item-operation">Opération</th>
-                <th class="item-project">Projet</th>
-                <th class="item-contract">Contrat</th>
-                <th class="item-date">Date</th>
-                <th class="item-amount">Montant</th>
-                <th class="item-balance">Solde</th>
+                <th class="item-operation">{% trans %} lender-operations_operations-table-operation-column {% endtrans %}</th>
+                <th class="item-project">{% trans %} lender-operations_operations-table-project-column {% endtrans %}</th>
+                <th class="item-contract">{% trans %} lender-operations_loans-table-contract-column {% endtrans %}</th>
+                <th class="item-date">{% trans %} lender-operations_operations-table-date-column {% endtrans %}</th>
+                <th class="item-amount">{% trans %} lender-operations_operations-table-amount-column {% endtrans %}</th>
+                <th class="item-balance">{% trans %} lender-operations_operations-table-account-balance-column {% endtrans %}</th>
             </tr>
         </thead>
         <tbody>
@@ -76,21 +83,9 @@
                     {% set colorClass = 'c-error' %}
                 {% endif %}
 
-                {% if (op.label == 'bid') %}
-                    {% set operationLabel = 'Bid' %}
-                {% elseif (op.label == 'repayment') %}
-                    {% set operationLabel = 'Remboursement' %}
-                {% elseif (op.label == 'lender_loan') %}
-                    {% set operationLabel = 'Offre acceptée' %}
-                {% elseif (op.label == 'refused-bid') %}
-                    {% set operationLabel = 'Bid refusé' %}
-                {% else %}
-                    {% set operationLabel =  op.label %}
-                {% endif %}
-
                 <tr class="transaction-{{ op.label }} {{ backgroundClass }}">
                     <td class="item-operation">
-                        {{ operationLabel }}
+                        {{ ('lender-operations_operation-label-'~op.label)|trans }}
                     </td>
                     <td class="item-project">
                         {{ op.title }}
@@ -99,13 +94,13 @@
                         {{ op.id_loan }}
                     </td>
                     <td class="item-date">
-                        {{ op.date }}
+                        {{ op.date|date('d/m/y') }}
                     </td>
                     <td class="item-amount {{ colorClass }}">
-                        {{ op.amount|localizednumber }}&nbsp;€
+                        {{ op.amount|localizedcurrency('EUR') }}&nbsp;€
                     </td>
                     <td class="item-balance">
-                        {{ op.available_balance|localizednumber }}&nbsp;€
+                        {{ op.available_balance|localizedcurrency('EUR') }}&nbsp;€
                     </td>
                 </tr>
                 {% if op.detail is defined %}
@@ -129,5 +124,4 @@
             {% endfor %}
         </tbody>
     </table>
-    {{ dump(lenderOperations) }}
 {% endblock %}

@@ -116,7 +116,6 @@ class LenderOperationsManager
         $walletBalanceHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
         $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $taxExemptionRepository         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
-        $projectRepository              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $walletHistory                  = $walletBalanceHistoryRepository->getLenderOperationHistory($wallet, $start, $end);
         $lenderOperations               = [];
 
@@ -166,7 +165,7 @@ class LenderOperationsManager
                 && OperationType::CAPITAL_REPAYMENT === $historyLine['label']
                 && empty($historyLine['id_repayment_schedule'])
             ) {
-                $project = $projectRepository->find($historyLine['id_project']);
+                $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($historyLine['id_project']);
 
                 if (\projects_status::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
                     $historyLine['label'] = 'early-repayment';
