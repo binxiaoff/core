@@ -943,7 +943,11 @@
                             <?php if (empty($this->mandate) || $this->mandate['status'] != \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Mandat</th>
-                                    <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <?php if ($this->validBankAccount) : ?>
+                                        <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <?php else : ?>
+                                        <td>L'emprunteur n'a pas de RIB en vigueur.</td>
+                                    <?php endif ?>
                                 </tr>
                             <?php endif ?>
                         <?php endif; ?>

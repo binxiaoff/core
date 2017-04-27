@@ -206,6 +206,8 @@ class dossiersController extends bootstrap
                 $clientMandate = $this->loadData('clients_mandats');
                 $mandate = $clientMandate->select('id_project = ' . $this->projects->id_project, 'updated DESC');
                 $this->mandate = empty($mandate) ? [] : $mandate[0];
+
+                $this->validBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
             }
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
