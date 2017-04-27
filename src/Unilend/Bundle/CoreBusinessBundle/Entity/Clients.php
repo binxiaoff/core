@@ -1321,4 +1321,14 @@ class Clients
     {
         return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::LENDER;
     }
+
+    /**
+     * Dose client has a partner wallet. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isPartner()
+    {
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::PARTNER;
+    }
 }
