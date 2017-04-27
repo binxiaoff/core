@@ -988,7 +988,7 @@ FormValidation.prototype.rules = {
           // console.log(inputValidation.value.length)
 
           // Siren just has to be 9 characters long (or 14 if it's a SIRET)
-          if (false === /^\d+$/.test(inputValidation.value) || 9 !== inputValidation.value.length && 14 !== inputValidation.value.length) {
+          if (false === /^[\d\s]+$/.test(inputValidation.value) || false === $.inArray(inputValidation.value.replace(/\s+/g, '').length, [9, 14])) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid SIREN number. Please ensure you have entered your number in correctly', 'error-field-input-type-siren')
