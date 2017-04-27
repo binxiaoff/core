@@ -1,5 +1,5 @@
 {#{{ dump(loan) }}#}
-<tr id="loan-{{ loan.id }}-details" class="table-myloans-view-details {{ 'ui-loan-status-' ~ loan.status }}" data-parent="loan-{{ loan.id }}" data-loan-id="{{ loan.id }}">
+<tr id="loan-{{ loan.id }}-details" class="table-myloans-view-details {{ 'ui-loan-status-' ~ loan.status }}" data-parent="loan-{{ loan.id }}" data-loan-id="{{ loan.id }}" data-notifications-url="{{ path('lender_loans_notifications', {'projectId':loan.id}) }}">
     <td colspan="8" class="table-myloans-item-details-tabs tabs">
         <ul class="nav nav-tab-anchors">
             <li role="presentation" class="active">

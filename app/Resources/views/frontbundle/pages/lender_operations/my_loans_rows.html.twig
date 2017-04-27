@@ -1,5 +1,4 @@
-<tr id="loan-{{ loan.id }}" class="table-myloans-item {{ 'ui-loan-status-' ~ loan.status }}" data-details notifications_url="{{ path('lender_loans_notifications', {'projectId':loan.id}) }}"
-    data-loan-id="{{ loan.id }}"
+<tr id="loan-{{ loan.id }}" class="table-myloans-item {{ 'ui-loan-status-' ~ loan.status }}" data-details
     data-sortable-status="{{ loan.status }}"
     data-sortable-project="{{ loan.name|escape('html_attr') }}"
     data-sortable-rating="{{ loan.risk|convertRisk }}"
