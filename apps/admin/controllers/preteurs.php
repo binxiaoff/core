@@ -158,8 +158,8 @@ class preteursController extends bootstrap
             $this->SumDepot = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]);
             $provisionType  = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
-            $firstProvision       = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findBy(['idWalletCreditor' => $wallet, 'idType' => $provisionType], ['id' => 'ASC'], 1)[0];
-            $this->SumInscription = $firstProvision->getAmount();
+            $firstProvision       = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $wallet, 'idType' => $provisionType], ['id' => 'ASC']);
+            $this->SumInscription = null !== $firstProvision ? $firstProvision->getAmount() : 0;
 
             $this->echeanciers = $this->loadData('echeanciers');
             $this->sumRembInte = $this->echeanciers->getRepaidInterests(['id_lender' => $wallet->getId()]);
@@ -1474,7 +1474,7 @@ class preteursController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
-            $this->params[0]
+            isset($this->params[0])
             && is_numeric($this->params[0])
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ){
