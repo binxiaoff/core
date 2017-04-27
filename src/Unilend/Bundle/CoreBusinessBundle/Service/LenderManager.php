@@ -3,6 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -146,17 +147,14 @@ class LenderManager
     /**
      * Retrieve pattern that lender must use in bank transfer label
      * @param Clients $client
+     *
      * @return string
      */
     public function getLenderPattern(Clients $client)
     {
-        $oToolkit = new \ficelle();
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
-        return mb_strtoupper(
-            str_pad($client->getIdClient(), 6, 0, STR_PAD_LEFT) .
-            substr($oToolkit->stripAccents($client->getPrenom()), 0, 1) .
-            $oToolkit->stripAccents($client->getNom())
-        );
+        return $wallet->getWireTransferPattern();
     }
 
     /**

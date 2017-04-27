@@ -106,14 +106,12 @@ class UserProvider implements UserProviderInterface
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
 
+        $initials = $this->clientManager->getClientInitials($client);
+        $isActive = $this->clientManager->isActive($client);
+        $roles    = ['ROLE_USER'];
 
-            $initials = $this->clientManager->getClientInitials($client);
-            $isActive = $this->clientManager->isActive($client);
-            $roles    = ['ROLE_USER'];
-
-            /** @var Wallet $wallet */
-                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' =>$client->id_client]);
-
+        /** @var Wallet $wallet */
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' =>$client->id_client]);
 
         if (WalletType::LENDER === $wallet->getIdType()->getLabel()) {
             $lenderAccount->get($client->id_client, 'id_client_owner');
@@ -176,7 +174,7 @@ class UserProvider implements UserProviderInterface
         }
 
         /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
+        $client = $this->entityManagerSimulator->getRepository('clients');
 
         if ($client->get($hash, 'status = ' . Clients::STATUS_ONLINE. ' AND hash')) {
             return $this->setUser($client);

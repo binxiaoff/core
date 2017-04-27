@@ -467,20 +467,16 @@ class clients extends clients_crud
 
     /**
      * Retrieve pattern that lender must use in bank transfer label
-     * @param int $iClientId
+     * @param int $idClient
      * @return string
      */
-    public function getLenderPattern($iClientId)
+    public function getLenderPattern($idClient)
     {
-        $this->get($iClientId);
+        $query = 'SELECT wire_transfer_pattern FROM wallet WHERE id_client = :idClient';
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($query, ['idClient' => $idClient]);
 
-        $oToolkit = new \ficelle();
-
-        return mb_strtoupper(
-            str_pad($this->id_client, 6, 0, STR_PAD_LEFT) .
-            substr($oToolkit->stripAccents($this->prenom), 0, 1) .
-            $oToolkit->stripAccents($this->nom)
-        );
+        return $statement->fetchColumn(0);
     }
 
     /**
