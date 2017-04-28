@@ -309,19 +309,15 @@ $doc.ready(function ($) {
       }
       $form.submit()
     })
-    .on(Utility.clickEvent, '[data-form-action-url]', function (event) {
-      var $this = $(this)
-      var $form = $($this.data('form-submit')) || $($$this.data('form-target'))
-      var actionUrl = $this.data('form-action-url')
-      if (actionUrl && typeof actionUrl === 'string' && $form.length) {
-        $form.attr('action', actionUrl)
-      }
-    })
     .on(Utility.clickEvent, '#modal-partner-prospect-abandon [data-modal-doactionsubmit]', function() {
       var $modal = $(this).closest('[data-modal]')
       var $form = $($(this).data('form-target'))
       var $select = $modal.find('#prospect-cancel-motif')
       if ($select.val() !== '0') {
+        var actionUrl = $(this).data('form-action-url')
+        if (actionUrl && typeof actionUrl === 'string' && $form.length) {
+          $form.attr('action', actionUrl)
+        }
         $form.find('#esim-input-status').val('abandon')
         $form.removeAttr('data-formvalidation')
         $form.submit()
