@@ -62,6 +62,15 @@ updated: '2016-09-28 08:34:43'
 }
 ] %}
 
+{% set abandonMotives = [
+{
+id_motive: 1
+},
+{
+id_motive: 2
+}
+] %}
+
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -255,4 +264,32 @@ updated: '2016-09-28 08:34:43'
             </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+
+    <div id="modal-partner-prospect-abandon" data-modal>
+        <div class="modal-body text-align-center">
+            <p>{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</p>
+            <div class="form-field">
+                <select name="prospect-abandon-motif" id="prospect-abandon-motif" class="input-field">
+                    <option value="0">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
+                    {% for motive in abandonMotives %}
+                        <option value="{{ motive.id_motive }}">{{ ('partner-project-request_abandon-motif-' ~ motive.id_motive)|trans }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <footer class="modal-footer">
+            <div class="btn-controls">
+                <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
+                    {% trans %} partner-project-request_popup-abandon-cancel-ko {% endtrans %}
+                </a>
+                <a href="javascript:;" class="btn-primary" data-modal-doactionsubmit data-form-target="#form-project-details">
+                    {% trans %} partner-project-request_popup-abandon-cancel-ok {% endtrans %}
+                </a>
+            </div>
+        </footer>
+    </div><!-- /#modal-partner-prospect-cancel -->
+
 {% endblock %}

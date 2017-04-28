@@ -323,6 +323,7 @@ $doc.ready(function ($) {
       var $select = $modal.find('#prospect-cancel-motif')
       if ($select.val() !== '0') {
         $form.find('#esim-input-status').val('abandon')
+        $form.removeAttr('data-formvalidation')
         $form.submit()
       } else {
         $select.parent().addClass('ui-formvalidation-error')
