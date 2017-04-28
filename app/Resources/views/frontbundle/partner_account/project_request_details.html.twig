@@ -71,6 +71,8 @@ id_motive: 2
 }
 ] %}
 
+
+
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -251,10 +253,10 @@ id_motive: 2
                         <div class="row">
                             <div class="btn-controls text-align-center">
                                 <input type="hidden" id="esim-input-status" name="esim[status]" value="request-completed">
-                                <button class="btn-default btn-abandon" value data-spinnerbutton data-equal-width data-form-submit="#form-project-details">
+                                <button class="btn-default btn-abandon" data-equal-width data-form-submit="#form-project-details">
                                     {% trans %} partner-project-details_abandon-button {% endtrans %}
                                 </button>
-                                <button type="submit" class="btn-primary btn-submit" value data-spinnerbutton data-equal-width>
+                                <button type="submit" class="btn-primary btn-submit" data-spinnerbutton data-equal-width>
                                     {% trans %} partner-project-details_validate-button {% endtrans %}
                                 </button>
                             </div>
