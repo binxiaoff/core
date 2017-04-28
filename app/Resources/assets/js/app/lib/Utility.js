@@ -1339,7 +1339,7 @@ var Utility = {
         maxWidth = Math.max(maxWidth, $(this).width())
       })
       // Resize the element
-          .width(maxWidth)
+          .width(maxWidth + 2)
       // Reset the max width
       maxWidth = 0
     },

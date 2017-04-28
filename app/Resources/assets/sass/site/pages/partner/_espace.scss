@@ -1,0 +1,31 @@
+.form-project-details {
+    h4 {
+        margin-top: 10px;
+    }
+    .btn-controls {
+        margin-top: 35px;
+    }
+    .btn-abandon {
+        margin-right: 5px;
+    }
+}
+.form-project-details-fieldset {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-bottom: solid 2px #eceaed;
+    &.first {
+        padding-top: 0;
+    }
+    >.row {
+        margin-left: -15px;
+        margin-right: -15px;
+        > * {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+    }
+    @include devices('md', 'lg') {
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+}
