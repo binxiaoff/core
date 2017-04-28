@@ -88,11 +88,7 @@ class PartnerAccountController extends Controller
             $maximumAmount = $projectManager->getMaxProjectAmount();
             $amount        = str_replace([' ', '€'], '', $formData['amount']);
 
-            if (false === filter_var($amount, FILTER_VALIDATE_INT)) {
-                throw new \InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
-            }
-
-            if ($amount < $minimumAmount || $amount > $maximumAmount) {
+            if (false === filter_var($amount, FILTER_VALIDATE_INT, ['options' => ['min_range' => $minimumAmount, 'max_range' => $maximumAmount]])) {
                 throw new \InvalidArgumentException($translator->trans('partner-project-request_amount-value-error'));
             }
 
@@ -200,13 +196,9 @@ class PartnerAccountController extends Controller
 //        $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $client->getIdClient());
 
         /** @var UserPartner $user */
-        $user        = $this->getUser();
-        $rootCompany = $user->getCompany();
+        $user = $this->getUser();
 
-        while ($rootCompany->getIdParentCompany()) {
-            $rootCompany = $rootCompany->getIdParentCompany();
-        }
-
+        /** @var \projects $project */
         $project                                       = $this->get('unilend.service.entity_manager')->getRepository('projects');
         $project->id_company                           = $company->getIdCompany();
         $project->amount                               = $amount;
@@ -216,7 +208,7 @@ class PartnerAccountController extends Controller
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;
         $project->status                               = \projects_status::SIMULATION;
-        $project->id_partner                           = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findOneBy(['idCompany' => $rootCompany->getIdCompany()])->getId();
+        $project->id_partner                           = $user->getPartner()->getId();
         $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->id_company_submitter                 = $user->getCompany()->getIdCompany();
@@ -225,34 +217,42 @@ class PartnerAccountController extends Controller
 
         $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::SIMULATION, $project);
 
-        $request->getSession()->set('partnerProjectRequest', [
-            'values' => [
-                'amount'   => $amount,
-                'siren'    => $siren,
-                'email'    => $email,
-                'motive'   => $motive,
-                'duration' => $duration
-            ]
-        ]);
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
 
-        return $this->redirectToRoute('partner_project_request_eligibility_test');
+        return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->hash]);
     }
 
     /**
-     * @Route("partenaire/depot/eligibilite", name="partner_project_request_eligibility_test")
      * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility", requirements={"hash":"[0-9a-z]{32}"})
      * @Security("has_role('ROLE_PARTNER')")
      *
+     * @param string $hash
+     *
      * @return Response
      */
-    public function projectRequestEligibilityAction()
+    public function projectRequestEligibilityAction($hash)
     {
-        return $this->render('/partner_account/project_request_eligibility.html.twig');
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var Projects $project */
+        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['hash' => $hash]);
+
+        return $this->render('/partner_account/project_request_eligibility.html.twig', [
+            'eligible'        => $project->getStatus() != \projects_status::NOT_ELIGIBLE,
+            'amount'          => $project->getAmount(),
+            'duration'        => $project->getPeriod(),
+            'company'         => $project->getIdCompany()->getName(),
+            'siren'           => $project->getIdCompany()->getSiren(),
+            'hash'            => $project->getHash(),
+            'fundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
+            'abandonReasons'  => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
+            'prospect'        => !$this->getUser()->getPartner()->getProspect()
+        ]);
     }
 
-
     /**
-     * @Route("partenaire/depot/details", name="partner_project_request_details_form")
+     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details", requirements={"hash":"[0-9a-z]{32}"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @return Response

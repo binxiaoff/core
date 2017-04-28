@@ -175,6 +175,14 @@ class UserProvider implements UserProviderInterface
             $roles[] = 'ROLE_PARTNER';
             $roles[] = $partnerRole->getRole();
 
+            $rootCompany = $partnerRole->getIdCompany();
+
+            while ($rootCompany->getIdParentCompany()) {
+                $rootCompany = $rootCompany->getIdParentCompany();
+            }
+
+            $partner = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findOneBy(['idCompany' => $rootCompany->getIdCompany()]);
+
             return new UserPartner(
                 $clientEntity->getEmail(),
                 $clientEntity->getPassword(),
@@ -187,6 +195,7 @@ class UserProvider implements UserProviderInterface
                 $clientEntity->getPrenom(),
                 $clientEntity->getNom(),
                 $partnerRole->getIdCompany(),
+                $partner,
                 $lastLoginDate
             );
         }

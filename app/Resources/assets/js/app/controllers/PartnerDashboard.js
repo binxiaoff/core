@@ -6,40 +6,6 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 
-$doc
-    .on(Utility.clickEvent, '[data-form-submit]', function (event) {
-        event.preventDefault()
-        var $this = $(this)
-        var $form = $($this.data('form-submit'))
-        if ($this.is('.btn-abandon')) {
-            var $modal = $('#modal-partner-prospect-abandon')
-            $modal.uiModal('open')
-            return false
-        }
-        $form.submit()
-    })
-    .on(Utility.clickEvent, '#modal-partner-prospect-abandon [data-modal-doactionsubmit]', function() {
-        var $modal = $(this).closest('[data-modal]')
-        var $form = $($(this).data('form-target'))
-        var $select = $modal.find('#prospect-cancel-motif')
-        if ($select.val() !== '0') {
-            var actionUrl = $(this).data('form-action-url')
-            if (actionUrl && typeof actionUrl === 'string' && $form.length) {
-                $form.attr('action', actionUrl)
-            }
-            $form.find('#esim-input-status').val('abandon')
-            $form.removeAttr('data-formvalidation')
-            $form.submit()
-        } else {
-            $select.parent().addClass('ui-formvalidation-error')
-            $select.change(function(){
-                if ($(this).val() !== 0) {
-                    $(this).parent().removeClass('ui-formvalidation-error')
-                }
-            })
-        }
-    })
-
 // Partner Prospects Table
 $doc
     .on(Utility.clickEvent, '.table-prospects [data-action]', function() {

@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 
 class UserPartner extends BaseUser
 {
@@ -12,6 +13,8 @@ class UserPartner extends BaseUser
     private $lastName;
     /** @var Companies */
     private $company;
+    /** @var Partner */
+    private $partner;
 
     /**
      * @param string         $username
@@ -25,15 +28,17 @@ class UserPartner extends BaseUser
      * @param string         $firstName
      * @param string         $lastName
      * @param Companies      $company
+     * @param Partner        $partner
      * @param null|\DateTime $lastLoginDate
      */
-    public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, $firstName, $lastName, Companies $company, $lastLoginDate = null)
+    public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, $firstName, $lastName, Companies $company, Partner $partner, $lastLoginDate = null)
     {
         parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $lastLoginDate);
 
         $this->firstName = $firstName;
         $this->lastName  = $lastName;
         $this->company   = $company;
+        $this->partner   = $partner;
     }
 
     /**
@@ -66,5 +71,13 @@ class UserPartner extends BaseUser
     public function getCompany()
     {
         return $this->company;
+    }
+
+    /**
+     * @return Partner
+     */
+    public function getPartner()
+    {
+        return $this->partner;
     }
 }
