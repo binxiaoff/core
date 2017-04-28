@@ -262,20 +262,8 @@ class PartnerAccountController extends Controller
         return $this->render('/partner_account/project_request_details.html.twig');
     }
 
-
     /**
-     * @Route("partenaire/depot/fichiers", name="partner_project_request_files_form")
-     * @Security("has_role('ROLE_PARTNER')")
-     *
-     * @return Response
-     */
-    public function projectRequestFilesAction()
-    {
-        return $this->render('/partner_account/project_request_documents.html.twig');
-    }
-
-    /**
-     * @Route("partenaire/depot/fin", name="partner_project_request_end", requirements={"hash": "[0-9a-f-]{32,36}"})
+     * @Route("partenaire/depot/fin", name="partner_project_request_end")
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @return Response

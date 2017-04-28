@@ -75,8 +75,6 @@ id_motive: 2
 }
 ] %}
 
-
-
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -85,14 +83,14 @@ id_motive: 2
                     <header class="panel-header">
                         <h3>{% trans %} partner-project-details_title {% endtrans %}</h3>
                     </header>
-                    <form id="form-project-details" action="{{ path('partner_project_end', {'hash' : project.hash}) }}" method="post" class="form-project-details" data-formvalidation data-formvalidation-notificationselem="#form-project-details-notifications">
+                    <form id="form-project-details" action="{{ path('partner_project_request_end', {'hash' : project.hash}) }}" method="post" class="form-project-details" data-formvalidation data-formvalidation-notificationselem="#form-project-details-notifications">
                         <div id="form-project-details-notifications" class="ui-formvalidation-notifications">
                             {% if form.errors is not empty %}
                                 <div class="message-error"><p>{% trans %} form-validation_error-group-has-errors {% endtrans %}</p></div>
                             {% endif %}
                         </div>
                         <div class="row" ui-sticky-parent>
-                            <div class="col-md-8 col-lg-8">
+                            <div class="col-main col-md-8 col-lg-8">
                                 <fieldset class="form-project-details-fieldset first">
                                     <h4>{% trans %} partner-project-details_identity-section-title {% endtrans %}</h4>
 
@@ -264,7 +262,7 @@ id_motive: 2
                                         </button>
                                     </div>
                                 </div><!-- /.btn-controls.tab-footer -->
-                            </div>
+                            </div><!-- /.col-main -->
                             <div class="col-sim col-md-4 col-lg-4">
                                 <div class="hide-xs hide-sm">
                                     <div class="emprunter-sim-mini emprunter-sim-mini-partner ui-has-sticky" data-sticky-bufferbottom="156" data-sticky-buffertop="-100">
@@ -283,10 +281,10 @@ id_motive: 2
                                         </div>
                                     </div><!-- /.emprunter-sim -->
                                 </div><!-- /.hide-responsive -->
-                            </div>
+                            </div><!-- /.col-sim -->
                         </div>
                     </form><!-- /.form-project-details -->
-                </div>
+                </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->

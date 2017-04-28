@@ -32,3 +32,9 @@
         padding-bottom: 30px;
     }
 }
+
+.partner-project-request-end {
+    @include devices('md', 'lg') {
+        min-height: 400px;
+    }
+}
