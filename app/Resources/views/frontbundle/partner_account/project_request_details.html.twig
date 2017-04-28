@@ -11,7 +11,11 @@ company_name: 'TELEVISION FRANCAISE 1',
 siren: '326300159',
 amount: '100000',
 averageFundingDuration: '1.0',
-hash: '160e66e0584cdab7858f7ab050f35be1'
+hash: '160e66e0584cdab7858f7ab050f35be1',
+monthlyPaymentBoundaries : {
+minimum: 2198,
+maximum: 2334
+}
 } %}
 
 {% set form = {
@@ -87,180 +91,200 @@ id_motive: 2
                                 <div class="message-error"><p>{% trans %} form-validation_error-group-has-errors {% endtrans %}</p></div>
                             {% endif %}
                         </div>
-                        
-                        <fieldset class="form-project-details-fieldset first">
-                            <h4>{% trans %} partner-project-details_identity-section-title {% endtrans %}</h4>
+                        <div class="row" ui-sticky-parent>
+                            <div class="col-md-8 col-lg-8">
+                                <fieldset class="form-project-details-fieldset first">
+                                    <h4>{% trans %} partner-project-details_identity-section-title {% endtrans %}</h4>
 
-                            <div class="row">
-                                <div class="form-field form-field-multi{% if form.errors.contact.civility is defined %} ui-formvalidation-error{% endif %}">
-                                    <div class="field-label">
-                                        <label>
-                                            {% trans %} common_form-of-address {% endtrans %}
-                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                        </label>
-                                    </div>
-                                    <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
-                                        <li>
+                                    <div class="form-field form-field-multi{% if form.errors.contact.civility is defined %} ui-formvalidation-error{% endif %}">
+                                        <div class="field-label">
                                             <label>
-                                                <input type="radio" name="contact[civility]" value="Mme"{% if 'Mme' == form.values.contact.civility %} checked{% endif %}/>
-                                                {% trans %} common_form-of-address-female {% endtrans %}
+                                                {% trans %} common_form-of-address {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             </label>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="radio" name="contact[civility]" value="M."{% if 'M.' == form.values.contact.civility %} checked{% endif %}/>
-                                                {% trans %} common_form-of-address-male {% endtrans %}
-                                            </label>
-                                        </li>
-                                    </ul>
-                                    {% if form.errors.contact.civility is defined %}
-                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-radio {% endtrans %}</li></ul>
-                                    {% endif %}
-                                </div><!-- /.form-field -->
-                            </div>
-
-                            <div class="row">
-                                <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.lastname is defined %} ui-formvalidation-error{% endif %}">
-                                    <label for="form-project-details-identity-nom">
-                                        {% trans %} common_name {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <input id="form-project-details-identity-nom" type="text" name="contact[lastname]" value="{{ form.values.contact.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
-                                    {% if form.errors.contact.lastname is defined %}
-                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
-                                    {% endif %}
-                                </div><!-- /.form-field -->
-
-                                <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.firstname is defined %} ui-formvalidation-error{% endif %}">
-                                    <label for="form-project-details-identity-prenom">
-                                        {% trans %} common_firstname {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <input id="form-project-details-identity-prenom" type="text" name="contact[firstname]" value="{{ form.values.contact.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
-                                    {% if form.errors.contact.firstname is defined %}
-                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
-                                    {% endif %}
-                                </div><!-- /.form-field -->
-                            </div>
-
-                            <div class="row">
-                                <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.email is defined %} ui-formvalidation-error{% endif %}">
-                                    <label for="form-project-details-identity-email">
-                                        {% trans %} common_email {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <input id="form-project-details-identity-email" type="email" name="contact[email]" value="{{ form.values.contact.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email"/>
-                                    {% if form.errors.contact.email is defined %}
-                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
-                                    {% endif %}
-                                </div><!-- /.form-field -->
-                            </div>
-
-                            <div class="row">
-                                <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.mobile is defined %} ui-formvalidation-error{% endif %}">
-                                    <label for="form-project-details-identity-mobile">
-                                        {% trans %} common_phone {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <div class="input-group">
-                                        <input id="form-project-details-identity-mobile" type="text" name="contact[mobile]" value="{{ form.values.contact.mobile }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
-                                        {% if form.errors.contact.mobile is defined %}
-                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
-                                        {% endif %}
-                                    </div>
-                                </div><!-- /.form-field -->
-
-                                <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.function is defined %} ui-formvalidation-error{% endif %}">
-                                    <label for="form-project-details-identity-function">
-                                        {% trans %} common_position {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <div class="input-group">
-                                        <input id="form-project-details-identity-function" type="text" name="contact[function]" value="{{ form.values.contact.function }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
-                                        {% if form.errors.contact.function is defined %}
-                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
-                                        {% endif %}
-                                    </div>
-                                </div><!-- /.form-field -->
-                            </div>
-                        </fieldset><!-- /.form-project-details-fieldset -->
-
-                        <fieldset class="form-project-details-fieldset">
-                            <h4>{% trans %} partner-project-details_description-section-title {% endtrans %}</h4>
-
-                            <div class="row">
-                                <div class="form-field col-lg-12 col-md-12{% if form.errors.project.motive is defined %} ui-formvalidation-error{% endif %}">
-                                    <label for="form-project-details-motive">
-                                        {% trans %} partner-project-details_description-motive-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <div class="input-group">
-                                        <select id="form-project-details-motive" name="project[motive]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                                            <option value="">{% trans %} partner-project-details_description-motive-placeholder {% endtrans %}</option>
-                                            {% for borrowing_motive in borrowing_motives %}
-                                                <option value="{{ borrowing_motive.id_motive }}"{% if borrowing_motive.id_motive == form.values.project.motive %} selected{% endif %}>
-                                                    {{ ('borrowing-motive_motive-' ~ borrowing_motive.id_motive)|trans }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                        {% if form.errors.project.motive is defined %}
-                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-select {% endtrans %}</li></ul>
-                                        {% endif %}
-                                    </div>
-                                </div><!-- /.form-field -->
-                            </div>
-
-                            <div class="row">
-                                <div class="form-field col-lg-12 col-md-12{% if form.errors.project.description is defined %} ui-formvalidation-error{% endif %}">
-                                    <label for="form-project-details-description">
-                                        {% trans %} partner-project-details_description-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <textarea id="form-project-details-description" name="project[description]" class="input-field" rows="5" placeholder="{{ 'partner-project-details_description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
-                                    {% if form.errors.project.description is defined %}
-                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </fieldset><!-- /.form-project-details-fieldset -->
-
-                        <fieldset class="form-project-details-fieldset">
-                            <h4>{% trans %} partner-project-details_documents-section-title {% endtrans %}</h4>
-                            <div class="row">
-                                <div class="form-field">
-                                    <label> {% trans %} partner-project-details_documents-type-1-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-
-                                    <div class="form-field{% if form.errors.accounts is defined %} ui-formvalidation-error{% endif %}">
-                                        <div class="custom-input-file" id="form-project-details-document-type-1" data-fileattach data-fileattach-inputname="documents" data-fileattach-maxfiles="1" data-fileattach-filetypes="doc docx jpg jpeg odt odf odg pdf png ppt pptx rtf tiff xls xlsx" data-formvalidation-input data-formvalidation-required='input[type="file"][name="documents[0]"]'></div><!-- /.ui-fileattach -->
-                                        {% if form.errors.accounts is defined %}
-                                            <ul class="ui-formvalidation-messages">
-                                                <li>
-                                                    {% if form.errors.accounts.message is defined %}
-                                                        {{ form.errors.accounts.message }}
-                                                    {% else %}
-                                                        {% trans %} form-validation_error-field-required {% endtrans %}
-                                                    {% endif %}
-                                                </li>
-                                            </ul>
+                                        </div>
+                                        <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="contact[civility]" value="Mme"{% if 'Mme' == form.values.contact.civility %} checked{% endif %}/>
+                                                    {% trans %} common_form-of-address-female {% endtrans %}
+                                                </label>
+                                            </li>
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="contact[civility]" value="M."{% if 'M.' == form.values.contact.civility %} checked{% endif %}/>
+                                                    {% trans %} common_form-of-address-male {% endtrans %}
+                                                </label>
+                                            </li>
+                                        </ul>
+                                        {% if form.errors.contact.civility is defined %}
+                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-radio {% endtrans %}</li></ul>
                                         {% endif %}
                                     </div><!-- /.form-field -->
-                                </div><!-- /.form-field -->
-                            </div>
-                        </fieldset><!-- /.form-project-details-fieldset -->
+                                    <div class="row">
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.lastname is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-identity-nom">
+                                                {% trans %} common_name {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                            </label>
+                                            <input id="form-project-details-identity-nom" type="text" name="contact[lastname]" value="{{ form.values.contact.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
+                                            {% if form.errors.contact.lastname is defined %}
+                                                <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                            {% endif %}
+                                        </div><!-- /.form-field -->
 
-                        <div class="row">
-                            <div class="btn-controls text-align-center">
-                                <input type="hidden" id="esim-input-status" name="esim[status]" value="request-completed">
-                                <button class="btn-default btn-abandon" data-equal-width data-form-submit="#form-project-details">
-                                    {% trans %} partner-project-details_abandon-button {% endtrans %}
-                                </button>
-                                <button type="submit" class="btn-primary btn-submit" data-spinnerbutton data-equal-width>
-                                    {% trans %} partner-project-details_validate-button {% endtrans %}
-                                </button>
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.firstname is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-identity-prenom">
+                                                {% trans %} common_firstname {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                            </label>
+                                            <input id="form-project-details-identity-prenom" type="text" name="contact[firstname]" value="{{ form.values.contact.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
+                                            {% if form.errors.contact.firstname is defined %}
+                                                <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                            {% endif %}
+                                        </div><!-- /.form-field -->
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.email is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-identity-email">
+                                                {% trans %} common_email {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                            </label>
+                                            <input id="form-project-details-identity-email" type="email" name="contact[email]" value="{{ form.values.contact.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email"/>
+                                            {% if form.errors.contact.email is defined %}
+                                                <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                            {% endif %}
+                                        </div><!-- /.form-field -->
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.mobile is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-identity-mobile">
+                                                {% trans %} common_phone {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                            </label>
+                                            <div class="input-group">
+                                                <input id="form-project-details-identity-mobile" type="text" name="contact[mobile]" value="{{ form.values.contact.mobile }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
+                                                {% if form.errors.contact.mobile is defined %}
+                                                    <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                {% endif %}
+                                            </div>
+                                        </div><!-- /.form-field -->
+
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.function is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-identity-function">
+                                                {% trans %} common_position {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                            </label>
+                                            <div class="input-group">
+                                                <input id="form-project-details-identity-function" type="text" name="contact[function]" value="{{ form.values.contact.function }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                {% if form.errors.contact.function is defined %}
+                                                    <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                {% endif %}
+                                            </div>
+                                        </div><!-- /.form-field -->
+                                    </div>
+
+                                </fieldset><!-- /.form-project-details-fieldset -->
+
+                                <fieldset class="form-project-details-fieldset">
+                                    <h4>{% trans %} partner-project-details_description-section-title {% endtrans %}</h4>
+
+                                    <div class="row">
+                                        <div class="form-field col-lg-12 col-md-12{% if form.errors.project.motive is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-motive">
+                                                {% trans %} partner-project-details_description-motive-label {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                            </label>
+                                            <div class="input-group">
+                                                <select id="form-project-details-motive" name="project[motive]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                    <option value="">{% trans %} partner-project-details_description-motive-placeholder {% endtrans %}</option>
+                                                    {% for borrowing_motive in borrowing_motives %}
+                                                        <option value="{{ borrowing_motive.id_motive }}"{% if borrowing_motive.id_motive == form.values.project.motive %} selected{% endif %}>
+                                                            {{ ('borrowing-motive_motive-' ~ borrowing_motive.id_motive)|trans }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                                {% if form.errors.project.motive is defined %}
+                                                    <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-select {% endtrans %}</li></ul>
+                                                {% endif %}
+                                            </div>
+                                        </div><!-- /.form-field -->
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="form-field col-lg-12 col-md-12{% if form.errors.project.description is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-description">
+                                                {% trans %} partner-project-details_description-label {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                            </label>
+                                            <textarea id="form-project-details-description" name="project[description]" class="input-field" rows="5" placeholder="{{ 'partner-project-details_description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
+                                            {% if form.errors.project.description is defined %}
+                                                <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </fieldset><!-- /.form-project-details-fieldset -->
+
+                                <fieldset class="form-project-details-fieldset">
+                                    <h4>{% trans %} partner-project-details_documents-section-title {% endtrans %}</h4>
+                                    <div class="row">
+                                        <div class="form-field">
+                                            <label> {% trans %} partner-project-details_documents-type-1-label {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                            </label>
+
+                                            <div class="form-field{% if form.errors.accounts is defined %} ui-formvalidation-error{% endif %}">
+                                                <div class="custom-input-file" id="form-project-details-document-type-1" data-fileattach data-fileattach-inputname="documents" data-fileattach-maxfiles="1" data-fileattach-filetypes="doc docx jpg jpeg odt odf odg pdf png ppt pptx rtf tiff xls xlsx" data-formvalidation-input data-formvalidation-required='input[type="file"][name="documents[0]"]'></div><!-- /.ui-fileattach -->
+                                                {% if form.errors.accounts is defined %}
+                                                    <ul class="ui-formvalidation-messages">
+                                                        <li>
+                                                            {% if form.errors.accounts.message is defined %}
+                                                                {{ form.errors.accounts.message }}
+                                                            {% else %}
+                                                                {% trans %} form-validation_error-field-required {% endtrans %}
+                                                            {% endif %}
+                                                        </li>
+                                                    </ul>
+                                                {% endif %}
+                                            </div><!-- /.form-field -->
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                </fieldset><!-- /.form-project-details-fieldset -->
+
+                                <div class="row">
+                                    <div class="btn-controls text-align-center">
+                                        <input type="hidden" id="esim-input-status" name="esim[status]" value="request-completed">
+                                        <button class="btn-default btn-abandon" data-equal-width data-form-submit="#form-project-details">
+                                            {% trans %} partner-project-details_abandon-button {% endtrans %}
+                                        </button>
+                                        <button type="submit" class="btn-primary btn-submit" data-spinnerbutton data-equal-width>
+                                            {% trans %} partner-project-details_validate-button {% endtrans %}
+                                        </button>
+                                    </div>
+                                </div><!-- /.btn-controls.tab-footer -->
                             </div>
-                        </div><!-- /.btn-controls.tab-footer -->
+                            <div class="col-sim col-md-4 col-lg-4" style="padding-left: 30px;">
+                                <div class="hide-xs hide-sm">
+                                    <div class="emprunter-sim-mini emprunter-sim-mini-partner ui-has-sticky" data-sticky-bufferbottom="156" data-sticky-buffertop="-100">
+                                        <header class="emprunter-sim-mini-header">
+                                            <h4 class="emprunter-sim-mini-title">{% trans %} partner-project-details_simulator-panel-title {% endtrans %}</h4>
+                                        </header>
+                                        <div class="emprunter-sim-mini-content emprunter-sim-mini-content-partner">
+                                            <dl>
+                                                <dt id="esim-label-amount">{% trans %} partner-project-details_simulator-panel-amount-label {% endtrans %}</dt>
+                                                <dd id="esim-output-amount">{{ project.amount|localizednumber }}&nbsp;€</dd>
+                                                <dt id="esim-label-duration">{% trans %} partner-project-details_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
+                                                <dd id="esim-output-duration">{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} partner-project-details_simulator-panel-estimated-funding-time-value {% endtranschoice %}</dd>
+                                                <dt id="esim-label-monthly last">{% trans %} partner-project-details_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
+                                                <dd id="esim-output-monthly last">{{ project.monthlyPaymentBoundaries.minimum|localizednumber }} / {{ project.monthlyPaymentBoundaries.maximum|localizednumber }}&nbsp;€</dd>
+                                            </dl>
+                                        </div>
+                                    </div><!-- /.emprunter-sim -->
+                                </div><!-- /.hide-responsive -->
+                            </div>
+                        </div>
                     </form><!-- /.form-project-details -->
                 </div>
             </article><!-- /.dashboard-tab-pane -->

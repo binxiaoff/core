@@ -279,3 +279,23 @@
     margin-bottom: 0;
   }
 }
+
+.emprunter-sim-mini-content-partner {
+  margin-bottom: 0;
+  dl {
+    dt {
+      font-size: 14.4px;
+      line-height: 1;
+      margin-bottom: 0.5em;
+    }
+    dd {
+      font-size: 21.6px;
+      line-height: 1;
+      font-weight: 700;
+      margin-bottom: 1em;
+      &.last {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
