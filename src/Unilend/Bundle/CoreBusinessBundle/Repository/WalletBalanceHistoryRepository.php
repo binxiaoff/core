@@ -182,7 +182,11 @@ class WalletBalanceHistoryRepository extends EntityRepository
                                 THEN -SUM(o.amount) 
                                 ELSE SUM(o.amount)
                             END AS amount, 
-                            ot.label, 
+                            CASE 
+                                WHEN o.idSubType IS NULL
+                                THEN ot.label
+                                ELSE ost.label
+                            END AS label, 
                             IDENTITY(o.idProject) AS idProject, 
                             IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
                             DATE(o.added) AS date,
@@ -191,6 +195,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                             e.ordre')
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->leftJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
             ->leftJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'o.idPaymentSchedule = ee.idEcheancierEmprunteur')
             ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.ordre = f.ordre AND ee.idProject = f.idProject')
             ->leftJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'o.idRepaymentSchedule = e.idEcheancier')
