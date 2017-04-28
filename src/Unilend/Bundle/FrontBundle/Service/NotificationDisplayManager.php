@@ -62,7 +62,7 @@ class NotificationDisplayManager
     }
 
     /**
-     * @param int  $clientId
+     * @param int      $clientId
      * @param null|int $projectId
      * @param null|int $offset
      * @param null|int $length

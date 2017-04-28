@@ -1,5 +1,4 @@
-{#{{ dump(loan) }}#}
-<tr id="loan-{{ loan.id }}-details" class="table-myloans-view-details {{ 'ui-loan-status-' ~ loan.status }}" data-parent="loan-{{ loan.id }}" data-loan-id="{{ loan.id }}" data-notifications-url="{{ path('lender_loans_notifications', {'projectId':loan.id}) }}">
+<tr id="loan-{{ loan.id }}-details" class="table-myloans-view-details {{ 'ui-loan-status-' ~ loan.status }}" data-parent="loan-{{ loan.id }}" data-loan-id="{{ loan.id }}" data-notifications-url="{{ path('lender_loans_notifications', {'projectId': loan.id}) }}">
     <td colspan="8" class="table-myloans-item-details-tabs tabs">
         <ul class="nav nav-tab-anchors">
             <li role="presentation" class="active">
@@ -15,7 +14,7 @@
         </ul>
         <div class="tab-content">
             <article id="loan-{{ loan.id }}-details-activity" role="tabpanel" class="table-myloans-item-details-activity tab-pane active">
-                {#Content from my_loans_details_activity.html.twig will be loaded by ajax#}
+                {# Content from my_loans_details_activity.html.twig will be loaded by ajax #}
             </article>
             <article id="loan-{{ loan.id }}-details-docs" role="tabpanel" class="table-myloans-item-details-docs tab-pane">
                 {% include '/pages/lender_operations/my_loans_details_documents.html.twig' %}
