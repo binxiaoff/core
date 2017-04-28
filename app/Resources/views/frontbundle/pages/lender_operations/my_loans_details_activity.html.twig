@@ -1,97 +1,10 @@
-{% set loan = {
-    activity: {
-        messages: {
-            0: {
-                id: "7944943",
-                type: "remboursement",
-                title: "Remboursement",
-                datetime: "15 nov. 2016 11:42",
-                content: "Remboursement <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
-                image: "notification-remboursement",
-                status: "unread",
-                date: "2016-11-15T10:42:54.000Z"
-            },
-            1: {
-                id: "7944420",
-                type: "remboursement",
-                title: "Remboursement",
-                datetime: "15 nov. 2016 11:42",
-                content: "Remboursement <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
-                image: "notification-remboursement",
-                status: "unread",
-                date: "2016-11-15T10:42:54.000Z"
-            },
-            2: {
-                id: "7942947",
-                type: "remboursement",
-                title: "Remboursement",
-                datetime: "15 nov. 2016 11:42",
-                content: "Remboursement <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
-                image: "notification-remboursement",
-                status: "read",
-                date: "2016-11-15T10:42:54.000Z"
-            },
-            3: {
-                id: "5440709",
-                type: "remboursement",
-                title: "Remboursement",
-                datetime: "15 nov. 2016 11:42",
-                content: "Remboursement <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
-                image: "notification-remboursement",
-                status: "read",
-                date: "2016-11-15T10:42:54.000Z"
-            },
-            4: {
-                id: "5440710",
-                type: "remboursement",
-                title: "Remboursement",
-                datetime: "15 nov. 2016 11:42",
-                content: "Remboursement <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
-                image: "notification-remboursement",
-                status: "read",
-                date: "2016-11-15T10:42:54.000Z"
-            },
-            5: {
-                id: "5440711",
-                type: "remboursement",
-                title: "Remboursement",
-                datetime: "15 nov. 2016 11:42",
-                content: "Remboursement <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
-                image: "notification-remboursement",
-                status: "read",
-                date: "2016-11-15T10:42:54.000Z"
-            },
-            6: {
-                id: "5440712",
-                type: "remboursement",
-                title: "Remboursement",
-                datetime: "15 nov. 2016 11:42",
-                content: "Remboursement <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
-                image: "notification-remboursement",
-                status: "unread",
-                date: "2016-11-15T10:42:54.000Z"
-            },
-            7: {
-                id: "5440713",
-                type: "remboursement",
-                title: "Remboursement",
-                datetime: "15 nov. 2016 11:42",
-                content: "Remboursement <a href=\"projects/detail/financement-restauration-toulouse-2a95153\">LA GRAND PIZZERIA</a> mis en ligne le 15/11/2016 à 00:00. Montant demandé : <strong>200 000 €</strong> sur une période de 60 mois.",
-                image: "notification-remboursement",
-                status: "read",
-                date: "2016-11-15T10:42:54.000Z"
-            }
-        }
-    }
-} %}
-
-{% if loan.activity.messages|length > 0 %}
+{% if projectNotifications|length > 0 %}
     <div class="list-notifications">
-    {% for i, notification in loan.activity.messages %}
+    {% for notification in projectNotifications %}
         <div class="notification notification-type-{{ notification.type|default('message')|e('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" data-proj-notification>
             <div class="notification-image">
             {% if notification.image %}
-                <span class="svg-icon-wrap">{{ svgimage('#' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
+                <span class="svg-icon-wrap">{{ svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
             {% endif %}
             </div>
             <div class="notification-info">
@@ -103,5 +16,13 @@
             </div>
         </div>
     {% endfor %}
+    </div>
+{% elseif code == 200 %}
+    <div class="notification-content message-info">
+        <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
+    </div>
+{% else %}
+    <div class="notification-content message-alert">
+        <p>{% trans %} lender-notifications_error-label {% endtrans %}</p>
     </div>
 {% endif %}

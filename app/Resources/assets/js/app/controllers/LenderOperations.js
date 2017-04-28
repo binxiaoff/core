@@ -164,7 +164,24 @@ $doc.on('Sortable:sort:after', 'table.table-myloans', function () {
 })
 
 $doc.on('MyLoansActivity:visible', '.table-myloans-view-details', function () {
-  var $list = $(this).find('.list-notifications')
-  $list.uiPaginate()
-  $list.trigger('UI:visible')
+    var url = $(this).attr('data-notifications-url')
+    var $activityTab = $(this).find('#loan-'+$(this).data('loan-id')+'-details-activity')
+    if ($activityTab.children().length === 0) {
+        $.ajax({
+            url: url,
+            success: function (data) {
+                $activityTab.html(data.tpl)
+                var $list = $activityTab.find('.list-notifications')
+                $list.uiPaginate()
+                $list.trigger('UI:visible')
+            },
+            error: function (jqXHR, status, err) {
+                if (jqXHR.responseJSON.tpl) {
+                    $activityTab.html(jqXHR.responseJSON.tpl)
+                } else {
+                    $activityTab.html(status)
+                }
+            }
+        })
+    }
 })

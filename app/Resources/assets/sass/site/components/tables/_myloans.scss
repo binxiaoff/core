@@ -316,6 +316,23 @@
   }
 }
 
+// No notifications message
+.table-myloans-view-details {
+  .message-info, .message-alert {
+    margin-bottom: 0;
+    background: transparent;
+    padding: 20px;
+    padding-left: 42px;
+    font-size: 14px;
+    min-height: 55px;
+    &:before {
+      width: 20px;
+      font-size: 25px;
+      padding: 5px 10px;
+    }
+  }
+}
+
 // Loan documents
 .loan-doc {
   display: inline-block;

@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
@@ -275,7 +276,7 @@ class BidManager
 
         if ($bSendNotification) {
             $this->oNotificationManager->create(
-                \notifications::TYPE_BID_PLACED,
+                Notifications::TYPE_BID_PLACED,
                 $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_PLACED,
                 $iClientId,
                 'sendBidConfirmation',
@@ -450,7 +451,7 @@ class BidManager
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         if ($oLenderAccount->get($bid->getIdLenderAccount())) {
             $this->oNotificationManager->create(
-                \notifications::TYPE_BID_REJECTED,
+                Notifications::TYPE_BID_REJECTED,
                 $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_REJECTED,
                 $oLenderAccount->id_client_owner,
                 'sendBidRejected',

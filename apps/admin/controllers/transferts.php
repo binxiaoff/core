@@ -7,6 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 
 class transfertsController extends bootstrap
 {
@@ -226,7 +227,7 @@ class transfertsController extends bootstrap
                 $result = $this->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
 
                 if ($result) {
-                    $this->notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
+                    $this->notifications->type      = Notifications::TYPE_BANK_TRANSFER_CREDIT;
                     $this->notifications->id_lender = $match->getIdLenderAccount()->getIdLenderAccount();
                     $this->notifications->amount    = $reception->getMontant();
                     $this->notifications->create();
@@ -717,7 +718,7 @@ class transfertsController extends bootstrap
                         foreach ($aAcceptedBids as $aBid) {
                             $lender->get($aBid['id_lender']);
 
-                            $oNotification = $oNotificationManager->createNotification(\notifications::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $project->id_project, $aBid['amount'], $aBid['id_bid']);
+                            $oNotification = $oNotificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $project->id_project, $aBid['amount'], $aBid['id_bid']);
 
                             $aLoansForBid = $acceptedBids->select('id_bid = ' . $aBid['id_bid']);
 
