@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -18,6 +19,10 @@ use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 
 class LenderDashboardController extends Controller
 {
+    const REPAYMENT_TIME_FRAME_MONTH   = 'month';
+    const REPAYMENT_TIME_FRAME_QUARTER = 'quarter';
+    const REPAYMENT_TIME_FRAME_YEAR    = 'year';
+
     /**
      * @Route("synthese", name="lender_dashboard")
      * @Security("has_role('ROLE_LENDER')")
@@ -34,6 +39,8 @@ class LenderDashboardController extends Controller
         $lenderManager = $this->get('unilend.service.lender_manager');
         /** @var EntityManagerSimulator $entityManager */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \loans $loan */
         $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers $lenderRepayment */
@@ -183,16 +190,19 @@ class LenderDashboardController extends Controller
                     'capital'   => array_column($lenderRepaymentsData, 'capital'),
                     'interests' => array_column($lenderRepaymentsData, 'netInterests'),
                     'tax'       => array_column($lenderRepaymentsData, 'taxes'),
+                    'max'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getMaxRepaymentAmountForLender($lender->id_lender_account, self::REPAYMENT_TIME_FRAME_MONTH)
                 ],
                 'quarterSum'         => [
                     'capital'   => $repaymentDataPerPeriod['quarterCapital'],
                     'interests' => $repaymentDataPerPeriod['quarterInterests'],
                     'tax'       => $repaymentDataPerPeriod['quarterTax'],
+                    'max'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getMaxRepaymentAmountForLender($lender->id_lender_account, self::REPAYMENT_TIME_FRAME_QUARTER)
                 ],
                 'yearSum'            => [
                     'capital'   => $repaymentDataPerPeriod['yearCapital'],
                     'interests' => $repaymentDataPerPeriod['yearInterests'],
                     'tax'       => $repaymentDataPerPeriod['yearTax'],
+                    'max'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getMaxRepaymentAmountForLender($lender->id_lender_account, self::REPAYMENT_TIME_FRAME_YEAR)
                 ],
                 'bandOrigin'         => [
                     'month'   => $monthAxisData['monthBandOrigin'],
