@@ -253,11 +253,11 @@ id_motive: 2
 
                                 <div class="row">
                                     <div class="btn-controls text-align-center">
-                                        <input type="hidden" id="esim-input-status" name="action" value="finish">
-                                        <button class="btn-default btn-abandon" data-equal-width data-equal-width-group="form-actions" data-form-submit="#form-project-details">
+                                        <input type="hidden" id="simulator-input-status" name="simulator[status]" value="request-completed">
+                                        <button type="button" class="btn-default btn-abandon" data-equal-width data-equal-width-group="form-actions">
                                             {% trans %} partner-project-details_abandon-button {% endtrans %}
                                         </button>
-                                        <button type="submit" class="btn-primary btn-submit" data-equal-width data-equal-width-group="form-actions" data-spinnerbutton data-equal-width>
+                                        <button type="submit" class="btn-primary btn-submit" data-equal-width data-equal-width-group="form-actions" data-spinnerbutton>
                                             {% trans %} partner-project-details_validate-button {% endtrans %}
                                         </button>
                                     </div>
@@ -265,21 +265,21 @@ id_motive: 2
                             </div><!-- /.col-main -->
                             <div class="col-sim col-md-4 col-lg-4">
                                 <div class="hide-xs hide-sm">
-                                    <div class="emprunter-sim-mini emprunter-sim-mini-partner ui-has-sticky" data-sticky-bufferbottom="156" data-sticky-buffertop="-100">
-                                        <header class="emprunter-sim-mini-header">
-                                            <h4 class="emprunter-sim-mini-title">{% trans %} partner-project-details_simulator-panel-title {% endtrans %}</h4>
+                                    <div class="simulator simulator-mini ui-has-sticky" data-sticky-bufferbottom="156" data-sticky-buffertop="-100">
+                                        <header class="simulator-header simulator-mini-header">
+                                            <h4 class="simulator-title simulator-mini-title">{% trans %} partner-project-details_simulator-panel-title {% endtrans %}</h4>
                                         </header>
-                                        <div class="emprunter-sim-mini-content emprunter-sim-mini-content-partner">
+                                        <div class="simulator-content simulator-mini-content">
                                             <dl>
-                                                <dt id="esim-label-amount">{% trans %} partner-project-details_simulator-panel-amount-label {% endtrans %}</dt>
-                                                <dd id="esim-output-amount">{{ project.amount|localizednumber }}&nbsp;€</dd>
-                                                <dt id="esim-label-duration">{% trans %} partner-project-details_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
-                                                <dd id="esim-output-duration">{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} partner-project-details_simulator-panel-estimated-funding-time-value {% endtranschoice %}</dd>
-                                                <dt id="esim-label-monthly">{% trans %} partner-project-details_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
-                                                <dd id="esim-output-monthly">{{ project.monthlyPaymentBoundaries.minimum|localizednumber }} / {{ project.monthlyPaymentBoundaries.maximum|localizednumber }}&nbsp;€</dd>
+                                                <dt id="simulator-label-amount">{% trans %} partner-project-details_simulator-panel-amount-label {% endtrans %}</dt>
+                                                <dd id="simulator-output-amount">{{ project.amount|localizednumber }}&nbsp;€</dd>
+                                                <dt id="simulator-label-duration">{% trans %} partner-project-details_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
+                                                <dd id="simulator-output-duration">{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} partner-project-details_simulator-panel-estimated-funding-time-value {% endtranschoice %}</dd>
+                                                <dt id="simulator-label-monthly">{% trans %} partner-project-details_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
+                                                <dd id="simulator-output-monthly">{{ project.monthlyPaymentBoundaries.minimum|localizednumber }} / {{ project.monthlyPaymentBoundaries.maximum|localizednumber }}&nbsp;€</dd>
                                             </dl>
                                         </div>
-                                    </div><!-- /.emprunter-sim -->
+                                    </div><!-- /.simulator -->
                                 </div><!-- /.hide-responsive -->
                             </div><!-- /.col-sim -->
                         </div>
