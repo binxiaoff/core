@@ -74,40 +74,4 @@ class attachment extends attachment_crud
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
     }
-
-    public function save()
-    {
-        $this->id         = $this->bdd->escape_string($this->id);
-        $this->id_type    = $this->bdd->escape_string($this->id_type);
-        $this->id_owner   = $this->bdd->escape_string($this->id_owner);
-        $this->type_owner = $this->bdd->escape_string($this->type_owner);
-        $this->path       = $this->bdd->escape_string($this->path);
-        $this->added      = $this->bdd->escape_string($this->added);
-        $this->updated    = $this->bdd->escape_string($this->updated);
-        $this->archived   = $this->bdd->escape_string($this->archived);
-
-        if ('' === $this->added) {
-            $this->added = 'NOW()';
-        } else {
-            $this->added = '"' . $this->added . '"';
-        }
-
-        if ('' === $this->archived) {
-            $this->archived = 'null';
-        } else {
-            $this->archived = '"' . $this->archived . '"';
-        }
-
-        $sql = 'INSERT INTO `attachment`(`id_type`,`id_owner`,`type_owner`,`path`,`added`,`updated`,`archived`)
-                VALUES("' . $this->id_type . '","' . $this->id_owner . '","' . $this->type_owner . '","' . $this->path . '",' . $this->added . ',null,' . $this->archived . ')
-                ON DUPLICATE KEY UPDATE path = "' . $this->path . '", updated = NOW(), archived = ' . $this->archived;
-
-        $this->bdd->query($sql);
-
-        $this->id = $this->bdd->insert_id();
-
-        $this->get($this->id, 'id');
-
-        return $this->id;
-    }
 }
