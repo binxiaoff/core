@@ -165,7 +165,12 @@ class WireTransferOutManager
 
         $this->entityManager->persist($wireTransferOut);
 
-        if (WalletType::UNILEND === $wallet->getIdType()->getLabel() || $bankAccount && $bankAccount->getIdClient() === $wallet->getIdClient()) {
+        if (
+            WalletType::UNILEND === $wallet->getIdType()->getLabel()
+            || (Virements::TYPE_LENDER === $wireTransferOut->getType()
+                && $bankAccount
+                && $bankAccount->getIdClient() === $wallet->getIdClient())
+        ) {
             $this->validateTransfer($wireTransferOut);
         }
 
