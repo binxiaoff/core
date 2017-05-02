@@ -65,20 +65,11 @@ class LenderOperationsController extends Controller
         ]
     ];
 
-    public static $loanStatus = [
-        'no-problem'            => [\projects_status::REMBOURSEMENT],
-        'late-repayment'        => [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X],
-        'recovery'              => [\projects_status::RECOUVREMENT],
-        'collective-proceeding' => [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE],
-        'default'               => [\projects_status::DEFAUT],
-        'refund-finished'       => [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE]
-    ];
-
     public static $loanStatusFilter = [
-        'repayment'    => [\projects_status::REMBOURSEMENT],
-        'refund'       => [\projects_status::REMBOURSE],
-        'early-refund' => [\projects_status::REMBOURSEMENT_ANTICIPE],
-        'problem'      => [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]
+        'repayment'      => [\projects_status::REMBOURSEMENT],
+        'refund'         => [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE],
+        'late-repayment' => [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X],
+        'problem'        => [\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]
     ];
 
     /**
@@ -119,7 +110,6 @@ class LenderOperationsController extends Controller
             'loansStatusFilter'      => self::$loanStatusFilter,
             'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
             'lenderLoans'            => $loans['lenderLoans'],
-            'loanStatus'             => $loans['loanStatus'],
             'seriesData'             => $loans['seriesData'],
             'repaidCapitalLabel'     => $this->get('translator')->trans('lender-operations_operations-table-repaid-capital-amount-collapse-details'),
             'repaidInterestsLabel'   => $this->get('translator')->trans('lender-operations_operations-table-repaid-interests-amount-collapse-details'),
@@ -660,12 +650,11 @@ class LenderOperationsController extends Controller
 
         /** @var UserLender $user */
         $user               = $this->getUser();
-        $availableStatus    = self::$loanStatus + self::$loanStatusFilter;
         $projectsInDept     = $project->getProjectsInDebt();
         $filters            = $request->request->get('filter', []);
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
-        $status             = isset($filters['status']) && isset($availableStatus[$filters['status']]) ? $availableStatus[$filters['status']] : null;
-        $loanStatus         = array_fill_keys(array_keys(self::$loanStatus), 0);
+        $status             = isset($filters['status']) && isset(self::$loanStatusFilter[$filters['status']]) ? self::$loanStatusFilter[$filters['status']] : null;
+        $loanStatus         = array_fill_keys(array_keys(self::$loanStatusFilter), 0);
         $lenderLoans        = $loanEntity->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
         $lenderProjectLoans = [];
 
@@ -701,27 +690,27 @@ class LenderOperationsController extends Controller
                     break;
                 case \projects_status::RECOUVREMENT:
                     $loanData['status'] = 'completing';
-                    ++$loanStatus['recovery'];
+                    ++$loanStatus['problem'];
                     break;
                 case \projects_status::PROCEDURE_SAUVEGARDE:
                 case \projects_status::REDRESSEMENT_JUDICIAIRE:
                 case \projects_status::LIQUIDATION_JUDICIAIRE:
                     $loanData['status'] = 'problem';
-                    ++$loanStatus['collective-proceeding'];
+                    ++$loanStatus['problem'];
                     break;
                 case \projects_status::DEFAUT:
                     $loanData['status'] = 'defaulted';
-                    ++$loanStatus['default'];
+                    ++$loanStatus['problem'];
                     break;
                 case \projects_status::REMBOURSE:
                 case \projects_status::REMBOURSEMENT_ANTICIPE:
                     $loanData['status'] = 'completed';
-                    ++$loanStatus['refund-finished'];
+                    ++$loanStatus['refund'];
                     break;
                 case \projects_status::REMBOURSEMENT:
                 default:
                     $loanData['status'] = 'inprogress';
-                    ++$loanStatus['no-problem'];
+                    ++$loanStatus['repayment'];
                     break;
             }
             $loanData['activity'] = [
@@ -761,12 +750,10 @@ class LenderOperationsController extends Controller
 
         $seriesData  = [];
         $chartColors = [
-            'late-repayment'        => '#5FC4D0',
-            'recovery'              => '#FFCA2C',
-            'collective-proceeding' => '#F2980C',
-            'default'               => '#F76965',
-            'refund-finished'       => '#1B88DB',
-            'no-problem'            => '#428890'
+            'late-repayment' => '#5FC4D0',
+            'problem'        => '#F2980C',
+            'refund'         => '#1B88DB',
+            'repayment'      => '#428890'
         ];
 
         foreach ($loanStatus as $status => $count) {
@@ -781,7 +768,7 @@ class LenderOperationsController extends Controller
             }
         }
 
-        return ['lenderLoans' => $lenderProjectLoans, 'loanStatus' => $loanStatus, 'seriesData' => $seriesData];
+        return ['lenderLoans' => $lenderProjectLoans, 'seriesData' => $seriesData];
     }
 
     /**
