@@ -1,9 +1,11 @@
 {% extends 'partner_account/_layout.html.twig' %}
 
 {% set page = {
-    id: 'partner-account-project-request',
-    classNames: 'partner-account'
+id: 'partner-account-project-request',
+classNames: 'partner-account'
 } %}
+
+{% set rejectReason = 1 %}
 
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
@@ -13,8 +15,7 @@
                     <header class="panel-header">
                         <h3>{% trans %} partner-project-request_title-eligibility {% endtrans %}</h3>
                     </header>
-                     <form action="{{ path('partner_project_request_details', {'hash': hash}) }} "method="post" id="partner-simulator" class="simulator">
-                    <form action="{{ path('partner_project_request_details_test') }}" method="post" id="partner-simulator" class="simulator">
+                    <form action="{{ path('partner_project_request_details', {'hash': hash}) }} "method="post" id="partner-simulator" class="simulator">
                         <fieldset class="simulator-pane-inner recap" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                             <div class="form-validation-notifications"></div>
                             <div class="row columns-with-space">
@@ -37,28 +38,47 @@
                              </div>
                         </fieldset><!-- /.simulator-pane-inner -->
                         <div class="simulator-pane-inner results bg-p1 c-bg5">
-                            {% trans %} partner-project-request_simulator-eligibility-message {% endtrans %}
-                            <dl class="list-2col">
-                                <dt id="simulator-label-amount">{% trans %} partner-project-request_simulator-eligibility-amount-label {% endtrans %}</dt>
-                                <dd id="simulator-output-amount">{{ amount|localizednumber }}&nbsp;€</dd>
-                                <dt id="simulator-label-duration">{% trans %} partner-project-request_simulator-eligibility-estimated-funding-time-label {% endtrans %}</dt>
-                                <dd id="simulator-output-duration">{% transchoice fundingDuration with {'%numberDays%': fundingDuration} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
-                            </dl>
+                            {% if rejectReason is defined %}
+                                {% if rejectReason == 1 %}
+                                    {% trans %} partner-project-request_reject-reason-type-1 {% endtrans %}
+                                {% elseif rejectReason == 2 %}
+                                    {% trans %} partner-project-request_reject-reason-type-2 {% endtrans %}
+                                {% elseif rejectReason == 3 %}
+                                    {% trans %} partner-project-request_reject-reason-type-3 {% endtrans %}
+                                {% elseif rejectReason == 4 %}
+                                    {% trans %} partner-project-request_reject-reason-type-4 {% endtrans %}
+                                {% elseif rejectReason == 5 %}
+                                    {% trans %} partner-project-request_reject-reason-type-5 {% endtrans %}
+                                {% endif %}
+                            {% else %}
+                                {% trans %} partner-project-request_simulator-eligibility-message {% endtrans %}
+                                <dl class="list-2col">
+                                    <dt id="simulator-label-amount">{% trans %} partner-project-request_simulator-eligibility-amount-label {% endtrans %}</dt>
+                                    <dd id="simulator-output-amount">{{ amount|localizednumber }}&nbsp;€</dd>
+                                    <dt id="simulator-label-duration">{% trans %} partner-project-request_simulator-eligibility-estimated-funding-time-label {% endtrans %}</dt>
+                                    <dd id="simulator-output-duration">{% transchoice fundingDuration with {'%numberDays%': fundingDuration} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
+                                </dl>
+                            {% endif %}
                         </div><!-- /.simulator-pane-inner -->
                         <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-center">
-                            <button type="button" class="btn-abandon btn-alternate" data-equal-width data-modal-toggle="#modal-partner-prospect-abandon">
-                                {% trans %} partner-project-request_simulator-footer-abandon-button {% endtrans %}
-                            </button>
-                            <a href="{{ path('partner_projects_list') }}" class="btn-prospect btn-alternate" data-equal-width>
-                                {% if prospect %}
-                                    {% trans %} partner-project-request_simulator-footer-prospect-button {% endtrans %}
-                                {% else %}
-                                    {% trans %} partner-project-request_simulator-footer-pause-button {% endtrans %}
-                                {% endif %}
-                            </a>
-                            <button type="submit" class="btn-submit btn-alternate" data-equal-width data-spinnerbutton>
-                                {% trans %} partner-project-request_simulator-footer-submit-button {% endtrans %}
-                            </button>
+                            {% if rejectReason is defined %}
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn-alternate">Déposer un autre dossier</button>
+                            {% else %}
+                                <button type="button" class="btn-abandon btn-alternate" data-equal-width data-modal-toggle="#modal-partner-prospect-abandon">
+                                    {% trans %} partner-project-request_simulator-footer-abandon-button {% endtrans %}
+                                </button>
+                                <a href="{{ path('partner_projects_list') }}" class="btn-prospect btn-alternate" data-equal-width>
+                                    {% if prospect %}
+                                        {% trans %} partner-project-request_simulator-footer-prospect-button {% endtrans %}
+                                    {% else %}
+                                        {% trans %} partner-project-request_simulator-footer-pause-button {% endtrans %}
+                                    {% endif %}
+                                </a>
+                                <button type="submit" class="btn-submit btn-alternate" data-equal-width data-spinnerbutton>
+                                    {% trans %} partner-project-request_simulator-footer-submit-button {% endtrans %}
+                                </button>
+                            {% endif %}
                         </footer><!-- /.simulator-pane-inner -->
                     </form><!-- /.simulator -->
                 </div>
