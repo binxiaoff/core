@@ -218,7 +218,25 @@ class PartnerAccountController extends Controller
         $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::SIMULATION, $project);
 
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+        $riskCheck             = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+
+        if (null === $riskCheck) {
+            try {
+                $productManager = $this->get('unilend.service_product.product_manager');
+                $products       = $productManager->findEligibleProducts($project);
+
+                if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
+                    $project->id_product = $products[0]->id_product;
+                    $project->update();
+                }
+
+                if (empty($products)) {
+                    $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::NOT_ELIGIBLE, $project, 0, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                }
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
+            }
+        }
 
         return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->hash]);
     }
@@ -255,10 +273,18 @@ class PartnerAccountController extends Controller
      * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details", requirements={"hash":"[0-9a-z]{32}"})
      * @Security("has_role('ROLE_PARTNER')")
      *
+     * @param string  $hash
+     * @param Request $request
+     *
      * @return Response
      */
-    public function projectRequestDetailsAction()
+    public function projectRequestDetailsAction($hash, Request $request)
     {
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var Projects $project */
+        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['hash' => $hash]);
+
         return $this->render('/partner_account/project_request_details.html.twig');
     }
 

@@ -454,7 +454,8 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $this->project->hash]);
         }
 
-        $this->saveContactDetails($request->request->get('contact')['email'],
+        $this->saveContactDetails(
+            $request->request->get('contact')['email'],
             $request->request->get('contact')['civility'],
             $request->request->get('contact')['firstname'],
             $request->request->get('contact')['lastname'],
