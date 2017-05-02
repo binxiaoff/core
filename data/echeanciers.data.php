@@ -712,7 +712,12 @@ class echeanciers extends echeanciers_crud
             SELECT
               c.id_client,
               e.id_lender,
-              c.type,
+              CASE c.type
+                WHEN 1 THEN 1
+                WHEN 3 THEN 1
+                WHEN 2 THEN 2
+                WHEN 4 THEN 2
+              END AS type,
               (
                 SELECT p.iso
                 FROM lenders_imposition_history lih
@@ -723,17 +728,18 @@ class echeanciers extends echeanciers_crud
                 LIMIT 1
               ) AS iso_pays,
               /*if the lender is FR resident and it is a physical person then it is not taxed at source : taxed_at_source = 0*/
-              CASE
-                  IFNULL((SELECT resident_etranger
-                     FROM lenders_imposition_history lih
-                     WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
-                     ORDER BY added DESC
-                     LIMIT 1
-                  ), 0) = 0 AND 1 = c.type
-                  WHEN TRUE
-                    THEN 0
+                CASE
+                  (IFNULL(
+                      (SELECT resident_etranger
+                          FROM lenders_imposition_history lih
+                          WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
+                          ORDER BY added DESC
+                          LIMIT 1)
+                      , 0) = 0 AND (1 = c.type OR 3 = c.type))
+                WHEN TRUE
+                  THEN 0
                   ELSE 1
-              END AS taxed_at_source,
+                END AS taxed_at_source,
               CASE
                   WHEN lte.year IS NULL THEN
                       0
@@ -811,7 +817,9 @@ class echeanciers extends echeanciers_crud
                 l.id_type_contract,
                 CASE c.type
                     WHEN ' . Clients::TYPE_LEGAL_ENTITY . ' THEN "legal_entity"
-                    WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN "person"
+                    WHEN ' . Clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN "legal_entity"
+                    WHEN ' . Clients::TYPE_PERSON . ' THEN "person"
+                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN "person"
                 END AS client_type,
                 CASE IFNULL(
                     (SELECT resident_etranger
