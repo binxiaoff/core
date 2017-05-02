@@ -101,7 +101,7 @@
         margin-top: 10px;
     }
     .btn-controls {
-        margin: 25px 0 5px;
+        margin: 20px 0 0;
     }
     .btn-abandon {
         margin-right: 5px;
@@ -111,15 +111,15 @@
     }
 }
 .form-project-details-fieldset {
-    padding-top: 15px;
-    padding-bottom: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     border-bottom: solid 2px #eceaed;
     &.first {
         padding-top: 0;
     }
     @include devices('md', 'lg') {
-        padding-top: 30px;
-        padding-bottom: 30px;
+        padding-top: 20px;
+        padding-bottom: 20px;
     }
 }
 .simulator-mini {

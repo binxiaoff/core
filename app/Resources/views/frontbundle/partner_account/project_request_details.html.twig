@@ -254,7 +254,7 @@ id_motive: 2
                                 <div class="row">
                                     <div class="btn-controls text-align-center">
                                         <input type="hidden" id="simulator-input-status" name="simulator[status]" value="request-completed">
-                                        <button type="button" class="btn-default btn-abandon" data-equal-width data-equal-width-group="form-actions">
+                                        <button type="button" class="btn-default btn-abandon" data-equal-width data-equal-width-group="form-actions" data-modal-toggle="#modal-partner-prospect-abandon">
                                             {% trans %} partner-project-details_abandon-button {% endtrans %}
                                         </button>
                                         <button type="submit" class="btn-primary btn-submit" data-equal-width data-equal-width-group="form-actions" data-spinnerbutton>
@@ -293,27 +293,30 @@ id_motive: 2
 {% block modals %}
 
     <div id="modal-partner-prospect-abandon" data-modal>
-        <div class="modal-body text-align-center">
-            <p>{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</p>
-            <div class="form-field">
-                <select name="prospect-abandon-motif" id="prospect-abandon-motif" class="input-field">
-                    <option value="0">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
-                    {% for motive in abandonMotives %}
-                        <option value="{{ motive.id_motive }}">{{ ('partner-project-request_abandon-motif-' ~ motive.id_motive)|trans }}</option>
-                    {% endfor %}
-                </select>
+        <form action="{{ path('partner_project_request_end') }}" method="post" data-formvalidation>
+            <input type="hidden" name="action" value="abandon">
+            <div class="modal-body text-align-center">
+                <p>{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</p>
+                <div class="form-field">
+                    <select name="prospect-abandon-motif" id="prospect-abandon-motif" class="input-field">
+                        <option value="0">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
+                        {% for motive in abandonMotives %}
+                            <option value="{{ motive.id_motive }}">{{ ('partner-project-request_abandon-motif-' ~ motive.id_motive)|trans }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-        </div>
-        <footer class="modal-footer">
-            <div class="btn-controls">
-                <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
-                    {% trans %} partner-project-request_popup-abandon-cancel-ko {% endtrans %}
-                </a>
-                <a href="javascript:;" class="btn-primary" data-modal-doactionsubmit data-form-target="#form-project-details">
-                    {% trans %} partner-project-request_popup-abandon-cancel-ok {% endtrans %}
-                </a>
-            </div>
-        </footer>
+            <footer class="modal-footer">
+                <div class="btn-controls">
+                    <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
+                        {% trans %} partner-project-request_popup-abandon-cancel-ko {% endtrans %}
+                    </a>
+                    <button type="submit" href="javascript:;" class="btn-primary">
+                        {% trans %} partner-project-request_popup-abandon-cancel-ok {% endtrans %}
+                    </button>
+                </div>
+            </footer>
+        </form>
     </div><!-- /#modal-partner-prospect-cancel -->
 
 {% endblock %}
