@@ -119,7 +119,7 @@ id_motive: 2
                                             <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-radio {% endtrans %}</li></ul>
                                         {% endif %}
                                     </div><!-- /.form-field -->
-                                    <div class="row">
+                                    <div class="row columns-with-space">
                                         <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.lastname is defined %} ui-formvalidation-error{% endif %}">
                                             <label for="form-project-details-identity-nom">
                                                 {% trans %} common_name {% endtrans %}
@@ -143,7 +143,7 @@ id_motive: 2
                                         </div><!-- /.form-field -->
                                     </div>
 
-                                    <div class="row">
+                                    <div class="row columns-with-space">
                                         <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.email is defined %} ui-formvalidation-error{% endif %}">
                                             <label for="form-project-details-identity-email">
                                                 {% trans %} common_email {% endtrans %}
@@ -156,7 +156,7 @@ id_motive: 2
                                         </div><!-- /.form-field -->
                                     </div>
 
-                                    <div class="row">
+                                    <div class="row columns-with-space">
                                         <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.mobile is defined %} ui-formvalidation-error{% endif %}">
                                             <label for="form-project-details-identity-mobile">
                                                 {% trans %} common_phone {% endtrans %}
@@ -265,11 +265,11 @@ id_motive: 2
                             </div><!-- /.col-main -->
                             <div class="col-sim col-md-4 col-lg-4">
                                 <div class="hide-xs hide-sm">
-                                    <div class="simulator simulator-mini ui-has-sticky" data-sticky-bufferbottom="156" data-sticky-buffertop="-100">
-                                        <header class="simulator-header simulator-mini-header">
-                                            <h4 class="simulator-title simulator-mini-title">{% trans %} partner-project-details_simulator-panel-title {% endtrans %}</h4>
+                                    <div class="simulator-mini ui-has-sticky" data-sticky-bufferbottom="164" data-sticky-buffertop="-100">
+                                        <header class="simulator-mini-header">
+                                            <h4 class="simulator-mini-title">{% trans %} partner-project-details_simulator-panel-title {% endtrans %}</h4>
                                         </header>
-                                        <div class="simulator-content simulator-mini-content">
+                                        <div class="simulator-mini-content">
                                             <dl>
                                                 <dt id="simulator-label-amount">{% trans %} partner-project-details_simulator-panel-amount-label {% endtrans %}</dt>
                                                 <dd id="simulator-output-amount">{{ project.amount|localizednumber }}&nbsp;€</dd>
