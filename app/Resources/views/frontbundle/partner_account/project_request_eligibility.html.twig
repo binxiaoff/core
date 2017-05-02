@@ -5,25 +5,6 @@
     classNames: 'partner-account'
 } %}
 
-{# Keep for testing purposes #}
-{% set amount = 100000 %}
-{% set duration = 3 %}
-{% set reasonId = 1 %}
-{% set siren = '326300159' %}
-{% set company = 'Télévison Française' %}
-{% set email = 'prospect@uncar.fr' %}
-{% set fundingDuration = 2 %}
-{% set prospect = true %}
-{% set abandonReasons = [
-{
-label: 1
-},
-{
-label: 2
-}
-] %}
-{# End Keep #}
-
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -32,9 +13,7 @@ label: 2
                     <header class="panel-header">
                         <h3>{% trans %} partner-project-request_title-eligibility {% endtrans %}</h3>
                     </header>
-                    {# Uncomment when finished testing #}
-                    {# <form action="{{ path('partner_project_request_details', {'hash': hash}) }} "method="post" id="partner-simulator" class="simulator">#}
-                    {# End Uncomment #}
+                     <form action="{{ path('partner_project_request_details', {'hash': hash}) }} "method="post" id="partner-simulator" class="simulator">
                     <form action="{{ path('partner_project_request_details_test') }}" method="post" id="partner-simulator" class="simulator">
                         <fieldset class="simulator-pane-inner recap" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                             <div class="form-validation-notifications"></div>
