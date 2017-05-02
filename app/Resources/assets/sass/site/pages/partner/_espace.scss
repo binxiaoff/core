@@ -154,3 +154,13 @@
     }
 }
 
+.partner-project-request-reject-message {
+  p:last-child {
+    margin-bottom: 0;
+  }
+  a {
+    color: $c-white;
+    text-decoration: underline;
+  }
+}
+
