@@ -24,7 +24,7 @@ class CheckWireTransferOutValidationCommand extends ContainerAwareCommand
                                         ->getRepository('UnilendCoreBusinessBundle:Virements')
                                         ->findWireTransferBefore(Virements::STATUS_PENDING, new \DateTime('2 days ago'));
         foreach ($pendingWireTransferOuts as $wireTransferOut) {
-            $wireTransferOutManager->sendWireTransferOutNotification($wireTransferOut);
+            $wireTransferOutManager->sendToValidateNotificationToClient($wireTransferOut);
         }
     }
 }

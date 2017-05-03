@@ -43,6 +43,9 @@ class WireTransferOutManager
     /** @var string */
     private $frontUrl;
 
+    /** @var string */
+    private $adminUrl;
+
     /**
      * WireTransferOutManager constructor.
      *
@@ -55,6 +58,7 @@ class WireTransferOutManager
      * @param Packages                $assetsPackages
      * @param OperationManager        $operationManager
      * @param string                  $frontUrl
+     * @param string                  $adminUrl
      */
     public function __construct(
         EntityManager $entityManager,
@@ -65,7 +69,8 @@ class WireTransferOutManager
         RouterInterface $router,
         Packages $assetsPackages,
         OperationManager $operationManager,
-        $frontUrl
+        $frontUrl,
+        $adminUrl
     ) {
         $this->entityManager     = $entityManager;
         $this->projectManager    = $projectManager;
@@ -76,45 +81,7 @@ class WireTransferOutManager
         $this->assetsPackages    = $assetsPackages;
         $this->operationManager  = $operationManager;
         $this->frontUrl          = $frontUrl;
-    }
-
-    /**
-     * @param Virements $wireTransferOut
-     */
-    public function sendWireTransferOutNotification(Virements $wireTransferOut)
-    {
-        if ($wireTransferOut->getProject() && Virements::TYPE_BORROWER === $wireTransferOut->getType()) {
-            $restFunds   = $this->projectManager->getRestOfFundsToRelease($wireTransferOut->getProject(), false);
-            $bankAccount = $wireTransferOut->getBankAccount();
-
-            if ($bankAccount) {
-                $facebook       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook']);
-                $twitter        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter']);
-                $universignLink = $this->router->generate(
-                    'wire_transfer_out_request_pdf',
-                    ['clientHash' => $wireTransferOut->getClient()->getHash(), 'wireTransferOutId' => $wireTransferOut->getIdVirement()],
-                    UrlGeneratorInterface::ABSOLUTE_PATH
-                );
-
-                $varMail = array(
-                    'surl'              => $this->assetsPackages->getUrl(''),
-                    'url'               => $this->frontUrl,
-                    'first_name'        => $wireTransferOut->getClient()->getPrenom(),
-                    'rest_funds'        => $this->currencyFormatter->formatCurrency($restFunds, 'EUR'),
-                    'amount'            => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
-                    'iban'              => chunk_split($bankAccount->getIban(), 4, ' '),
-                    'bank_account_name' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
-                    'universign_link'   => $this->frontUrl . $universignLink,
-                    'lien_fb'           => $facebook->getValue(),
-                    'lien_tw'           => $twitter->getValue()
-                );
-
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $varMail);
-                $message->setTo($wireTransferOut->getClient()->getEmail());
-                $this->mailer->send($message);
-            }
-        }
+        $this->adminUrl          = $adminUrl;
     }
 
     /**
@@ -172,17 +139,36 @@ class WireTransferOutManager
             $this->validateTransfer($wireTransferOut);
         } else {
             if ($bankAccount && $bankAccount->getIdClient() === $wallet->getIdClient()) {
-                $wireTransferOut->setStatus(Virements::STATUS_CLIENT_VALIDATED);
+                $this->clientValidateTransfer($wireTransferOut);
             }
         }
 
         $this->entityManager->flush($wireTransferOut);
 
         if (Virements::STATUS_PENDING === $wireTransferOut->getStatus()) {
-            $this->sendWireTransferOutNotification($wireTransferOut);
+            $this->sendToValidateNotificationToClient($wireTransferOut);
         }
 
         return $wireTransferOut;
+    }
+
+    /**
+     * @param Virements $wireTransferOut
+     */
+    public function clientValidateTransfer(Virements $wireTransferOut)
+    {
+        $wireTransferOut->setStatus(Virements::STATUS_CLIENT_VALIDATED);
+        $this->entityManager->flush($wireTransferOut);
+        $this->sendToValidateNotificationToStaff($wireTransferOut);
+    }
+
+    /**
+     * @param Virements $wireTransferOut
+     */
+    public function clientDeniedTransfer(Virements $wireTransferOut)
+    {
+        $wireTransferOut->setStatus(Virements::STATUS_CLIENT_DENIED);
+        $this->entityManager->flush($wireTransferOut);
     }
 
     /**
@@ -198,5 +184,65 @@ class WireTransferOutManager
         $this->entityManager->flush($wireTransferOut);
 
         $this->operationManager->withdraw($wireTransferOut);
+    }
+
+    /**
+     * @param Virements $wireTransferOut
+     */
+    public function sendToValidateNotificationToClient(Virements $wireTransferOut)
+    {
+        if ($wireTransferOut->getProject() && Virements::TYPE_BORROWER === $wireTransferOut->getType()) {
+            $restFunds   = $this->projectManager->getRestOfFundsToRelease($wireTransferOut->getProject(), false);
+            $bankAccount = $wireTransferOut->getBankAccount();
+
+            if ($bankAccount) {
+                $facebook       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook']);
+                $twitter        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter']);
+                $universignLink = $this->router->generate(
+                    'wire_transfer_out_request_pdf',
+                    ['clientHash' => $wireTransferOut->getClient()->getHash(), 'wireTransferOutId' => $wireTransferOut->getIdVirement()],
+                    UrlGeneratorInterface::ABSOLUTE_PATH
+                );
+
+                $varMail = array(
+                    'surl'              => $this->assetsPackages->getUrl(''),
+                    'url'               => $this->frontUrl,
+                    'first_name'        => $wireTransferOut->getClient()->getPrenom(),
+                    'rest_funds'        => $this->currencyFormatter->formatCurrency($restFunds, 'EUR'),
+                    'amount'            => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
+                    'iban'              => chunk_split($bankAccount->getIban(), 4, ' '),
+                    'bank_account_name' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
+                    'universign_link'   => $this->frontUrl . $universignLink,
+                    'lien_fb'           => $facebook->getValue(),
+                    'lien_tw'           => $twitter->getValue()
+                );
+
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $varMail);
+                $message->setTo($wireTransferOut->getClient()->getEmail());
+                $this->mailer->send($message);
+            }
+        }
+    }
+
+    /**
+     * @param Virements $wireTransferOut
+     */
+    private function sendToValidateNotificationToStaff(Virements $wireTransferOut)
+    {
+        if ($wireTransferOut->getProject() && Virements::TYPE_BORROWER === $wireTransferOut->getType()) {
+
+            $varMail = array(
+                'amount'  => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
+                'project' => $wireTransferOut->getProject()->getTitle(),
+                'url'     => $this->adminUrl
+            );
+
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->messageProvider->newMessage('wire-transfer-out-to-validate-staff-notification', $varMail);
+            $message->setTo($wireTransferOut->getClient()->getEmail());
+            $this->mailer->send($message);
+
+        }
     }
 }

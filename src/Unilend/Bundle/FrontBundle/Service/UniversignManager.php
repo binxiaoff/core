@@ -10,11 +10,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager;
 use Unilend\Bundle\FrontBundle\Controller\UniversignController;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use PhpXmlRpc\Client;
@@ -52,6 +52,7 @@ class UniversignManager
      * @param \Swift_Mailer           $mailer
      * @param string                  $universignURL
      * @param string                  $rootDir
+     * @param WireTransferOutManager  $wireTransferOutManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -61,6 +62,7 @@ class UniversignManager
         LoggerInterface $logger,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
+        WireTransferOutManager $wireTransferOutManager,
         $universignURL,
         $rootDir
     ) {
@@ -71,6 +73,7 @@ class UniversignManager
         $this->logger                 = $logger;
         $this->messageProvider        = $messageProvider;
         $this->mailer                 = $mailer;
+        $this->wireTransferOutManager = $wireTransferOutManager;
         $this->universignURL          = $universignURL;
         $this->rootDir                = $rootDir;
     }
@@ -294,16 +297,15 @@ class UniversignManager
         if ($wireTransferOut) {
             switch ($wireTransferOutUniversign->getStatus()) {
                 case UniversignEntityInterface::STATUS_CANCELED:
-                    $wireTransferOut->setStatus(Virements::STATUS_CLIENT_DENIED);
+                    $this->wireTransferOutManager->clientDeniedTransfer($wireTransferOut);
                     break;
                 case UniversignEntityInterface::STATUS_SIGNED:
-                    $wireTransferOut->setStatus(Virements::STATUS_CLIENT_VALIDATED);
+                    $this->wireTransferOutManager->clientValidateTransfer($wireTransferOut);
                     break;
                 default:
                     //nothing
                     break;
             }
-            $this->entityManager->flush($wireTransferOut);
         }
     }
 
