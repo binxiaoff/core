@@ -669,10 +669,12 @@ class ProjectRequestController extends Controller
             }
         }
 
+        $projectManager = $this->get('unilend.service.project_manager');
+
         $template['project'] = [
             'amount'                   => $this->project->amount,
-            'averageFundingDuration'   => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
-            'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
+            'averageFundingDuration'   => $projectManager->getAverageFundingDuration($this->project->amount),
+            'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($this->project->amount, $this->project->period, $this->project->commission_rate_repayment),
             'hash'                     => $this->project->hash
         ];
 
@@ -1159,11 +1161,13 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
+        $projectManager = $this->get('unilend.service.project_manager');
+
         $template = [
             'project' => [
                 'amount'                   => $this->project->amount,
-                'averageFundingDuration'   => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
-                'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
+                'averageFundingDuration'   => $projectManager->getAverageFundingDuration($this->project->amount),
+                'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($this->project->amount, $this->project->period, $this->project->commission_rate_repayment),
                 'hash'                     => $this->project->hash
             ]
         ];

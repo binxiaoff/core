@@ -2,7 +2,9 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Psr\Log\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -14,6 +16,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TemporaryLinksLogin;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -73,40 +76,36 @@ class PartnerAccountController extends Controller
         $email    = null;
 
         try {
-            if (empty($request->request->get('esim')) || false === is_array($request->request->get('esim'))) {
-                throw new \InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
+            if (empty($request->request->get('simulator')) || false === is_array($request->request->get('simulator'))) {
+                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
-            $formData = $request->request->get('esim');
+            $formData = $request->request->get('simulator');
 
             if (empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration']) || empty($formData['siren']) || empty($formData['email'])) {
-                throw new \InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
+                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
-            // Amount
             $minimumAmount = $projectManager->getMinProjectAmount();
             $maximumAmount = $projectManager->getMaxProjectAmount();
             $amount        = str_replace([' ', '€'], '', $formData['amount']);
 
             if (false === filter_var($amount, FILTER_VALIDATE_INT, ['options' => ['min_range' => $minimumAmount, 'max_range' => $maximumAmount]])) {
-                throw new \InvalidArgumentException($translator->trans('partner-project-request_amount-value-error'));
+                throw new InvalidArgumentException($translator->trans('partner-project-request_amount-value-error'));
             }
 
-            // Motive
             if (false === filter_var($formData['motive'], FILTER_VALIDATE_INT)) {
-                throw new \InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
+                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
             $motive = $formData['motive'];
 
-            // Duration
             if (false === filter_var($formData['duration'], FILTER_VALIDATE_INT)) {
-                throw new \InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
+                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
             $duration = $formData['duration'];
 
-            // SIREN
             $siren       = str_replace(' ', '', $formData['siren']);
             $sirenLength = strlen($siren);
 
@@ -114,18 +113,17 @@ class PartnerAccountController extends Controller
                 1 !== preg_match('/^[0-9]*$/', $siren)
                 || false === in_array($sirenLength, [9, 14]) // SIRET numbers also allowed
             ) {
-                throw new \InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
+                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
             $siren = substr($siren, 0, 9);
 
-            // Email
             if (false === filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
-                throw new \InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
+                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
             $email = $formData['email'];
-        } catch (\InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException $exception) {
             $this->addFlash('partnerProjectRequestErrors', $exception->getMessage());
 
             $request->getSession()->set('partnerProjectRequest', [
@@ -243,6 +241,7 @@ class PartnerAccountController extends Controller
 
     /**
      * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility", requirements={"hash":"[0-9a-z]{32}"})
+     * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string $hash
@@ -251,26 +250,72 @@ class PartnerAccountController extends Controller
      */
     public function projectRequestEligibilityAction($hash)
     {
+        $project = $this->checkProjectHash($hash);
+
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
+        if ($project->getStatus() > ProjectsStatus::SIMULATION) {
+            return $this->redirectToRoute('partner_project_request_details', ['hash' => $project->getHash()]);
+        }
+
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $projectManager = $this->get('unilend.service.project_manager');
-        /** @var Projects $project */
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['hash' => $hash]);
+        $template       = [
+            'amount'   => $project->getAmount(),
+            'duration' => $project->getPeriod(),
+            'company'  => $project->getIdCompany()->getName(),
+            'siren'    => $project->getIdCompany()->getSiren(),
+            'hash'     => $project->getHash()
+        ];
 
-        return $this->render('/partner_account/project_request_eligibility.html.twig', [
-            'eligible'        => $project->getStatus() != \projects_status::NOT_ELIGIBLE,
-            'amount'          => $project->getAmount(),
-            'duration'        => $project->getPeriod(),
-            'company'         => $project->getIdCompany()->getName(),
-            'siren'           => $project->getIdCompany()->getSiren(),
-            'hash'            => $project->getHash(),
-            'fundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
-            'abandonReasons'  => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
-            'prospect'        => !$this->getUser()->getPartner()->getProspect()
-        ]);
+        if ($project->getStatus() == ProjectsStatus::NOT_ELIGIBLE) {
+            // @todo en attente spéc sur les cas à prendre en compte
+            $template['rejectionReason'] = 'plop';
+        } else {
+            $template = $template + [
+                'averageFundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
+                'abandonReasons'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
+                'prospect'               => ! $this->getUser()->getPartner()->getProspect()
+            ];
+        }
+
+        return $this->render('/partner_account/project_request_eligibility.html.twig', $template);
+    }
+
+    /**
+     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility_form", requirements={"hash":"[0-9a-z]{32}"})
+     * @Method("POST")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @param string $hash
+     *
+     * @return Response
+     */
+    public function projectRequestEligibilityFormAction($hash)
+    {
+        $project = $this->checkProjectHash($hash);
+
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
+        if ($project->getStatus() == ProjectsStatus::SIMULATION) {
+            /** @var \projects $projectData */
+            $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
+            $projectData->get($project->getIdProject());
+
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $projectData);
+        }
+
+        return $this->redirectToRoute('partner_project_request_details', ['hash' => $project->getHash()]);
     }
 
     /**
      * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details", requirements={"hash":"[0-9a-z]{32}"})
+     * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string  $hash
@@ -280,12 +325,155 @@ class PartnerAccountController extends Controller
      */
     public function projectRequestDetailsAction($hash, Request $request)
     {
+        $project = $this->checkProjectHash($hash);
+
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
+        if ($project->getStatus() == ProjectsStatus::SIMULATION) {
+            return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->getHash()]);
+        }
+
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $projectManager = $this->get('unilend.service.project_manager');
-        /** @var Projects $project */
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['hash' => $hash]);
+        $client         = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $template       = [
+            'project'        => [
+                'amount'                   => $project->getAmount(),
+                'hash'                     => $project->getHash(),
+                'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
+                'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment())
+            ],
+            'abandonReasons' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
+            'attachments'    => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $this->getUser()->getPartner()], ['rank' => 'ASC'])
+        ];
 
-        return $this->render('/partner_account/project_request_details.html.twig');
+        $session = $request->getSession()->get('partnerProjectRequest');
+        $errors  = isset($session['errors']) ? $session['errors'] : [];
+        $values  = isset($session['values']) ? $session['values'] : [];
+
+        $request->getSession()->remove('partnerProjectRequest');
+
+        $template['form'] = [
+            'errors' => $errors,
+            'values' => [
+                'contact' => [
+                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $client->getCivilite(),
+                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $client->getNom(),
+                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $client->getPrenom(),
+                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $client->getTelephone(),
+                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $client->getFonction()
+                ],
+                'project' => [
+                    'description' => isset($values['project']['description']) ? $values['project']['description'] : $project->getComments()
+                ]
+            ]
+        ];
+
+        return $this->render('/partner_account/project_request_details.html.twig', $template);
+    }
+
+    /**
+     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details_form", requirements={"hash":"[0-9a-z]{32}"})
+     * @Method("POST")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @param string  $hash
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function projectRequestDetailsFormAction($hash, Request $request)
+    {
+        $project = $this->checkProjectHash($hash);
+
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
+        $errors = [];
+
+        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
+            $errors['contact']['civility'] = true;
+        }
+        if (empty($request->request->get('contact')['lastname'])) {
+            $errors['contact']['lastname'] = true;
+        }
+        if (empty($request->request->get('contact')['firstname'])) {
+            $errors['contact']['firstname'] = true;
+        }
+        if (empty($request->request->get('contact')['mobile'])) {
+            $errors['contact']['mobile'] = true;
+        }
+        if (empty($request->request->get('contact')['function'])) {
+            $errors['contact']['function'] = true;
+        }
+        if (empty($request->request->get('project')['description'])) {
+            $errors['project']['description'] = true;
+        }
+
+        $documents                   = $request->files->get('documents');
+        $entityManager               = $this->get('doctrine.orm.entity_manager');
+        $partnerAttachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment');
+        $partnerAttachments          = $partnerAttachmentRepository->findBy(['idPartner' => $this->getUser()->getPartner()]);
+
+        foreach ($partnerAttachments as $partnerAttachment) {
+            if ($partnerAttachment->getMandatory() && (false === isset($documents[$partnerAttachment->getAttachmentType()->getId()]) || false === ($documents[$partnerAttachment->getAttachmentType()->getId()] instanceof UploadedFile))) {
+                $errors['documents'][$partnerAttachment->getAttachmentType()->getId()] = true;
+            }
+        }
+
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $client           = $clientRepository->find($project->getIdCompany()->getIdClientOwner());
+
+        if (empty($errors)) {
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
+
+            foreach ($partnerAttachments as $partnerAttachment) {
+                if (isset($documents[$partnerAttachment->getAttachmentType()->getId()]) && $documents[$partnerAttachment->getAttachmentType()->getId()] instanceof UploadedFile) {
+                    try {
+                        $attachment = $attachmentManager->upload($client, $partnerAttachment->getAttachmentType(), $documents[$partnerAttachment->getAttachmentType()->getId()]);
+                        $attachmentManager->attachToProject($attachment, $project);
+                    } catch (\Exception $exception) {
+                        $errors['documents'][$partnerAttachment->getAttachmentType()->getId()] = true;
+                    }
+                }
+            }
+        }
+
+        if (false === empty($errors)) {
+            $request->getSession()->set('partnerProjectRequest', [
+                'errors' => $errors,
+                'values' => $request->request->all()
+            ]);
+
+            return $this->redirectToRoute('partner_project_request_details', ['hash' => $hash]);
+        }
+
+        $client->setCivilite($request->request->get('contact')['civility']);
+        $client->setNom($request->request->get('contact')['lastname']);
+        $client->setPrenom($request->request->get('contact')['firstname']);
+        $client->setTelephone($request->request->get('contact')['mobile']);
+        $client->setFonction($request->request->get('contact')['function']);
+
+        $entityManager->persist($client);
+
+        $project->setComments($request->request->get('project')['description']);
+
+        $entityManager->persist($project);
+        $entityManager->flush();
+
+        if ($project->getStatus() != ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION) {
+            /** @var \projects $projectData */
+            $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
+            $projectData->get($project->getIdProject());
+
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $projectData);
+        }
+
+        return $this->redirectToRoute('partner_projects_list');
     }
 
     /**
@@ -307,15 +495,8 @@ class PartnerAccountController extends Controller
      */
     public function projectsListAction()
     {
-        /** @var UserPartner $user */
-        $user          = $this->getUser();
         $entityManager = $this->get('doctrine.orm.entity_manager');
-
-        $companies = [$user->getCompany()];
-
-        if (in_array('ROLE_PARTNER_ADMIN', $user->getRoles())) {
-            $companies = $this->getCompanyTree($user->getCompany(), $companies);
-        }
+        $companies     = $this->getUserCompanies();
 
         $prospects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
             ->findBy(
@@ -469,6 +650,22 @@ class PartnerAccountController extends Controller
     }
 
     /**
+     * @return Companies[]
+     */
+    private function getUserCompanies()
+    {
+        /** @var UserPartner $user */
+        $user      = $this->getUser();
+        $companies = [$user->getCompany()];
+
+        if (in_array('ROLE_PARTNER_ADMIN', $user->getRoles())) {
+            $companies = $this->getCompanyTree($user->getCompany(), $companies);
+        }
+
+        return $companies;
+    }
+
+    /**
      * @param Companies $rootCompany
      * @param array     $tree
      *
@@ -558,5 +755,24 @@ class PartnerAccountController extends Controller
             || count($notes) && $lastLoginDate < $project->getNotes()[0]->getAdded()
             || $lastLoginDate < $projectStatusRepositoryHistory->findOneBy(['idProject' => $project->getIdProject()], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC'])->getAdded()
         );
+    }
+
+    /**
+     * @param string $hash
+     *
+     * @return RedirectResponse|Projects
+     */
+    private function checkProjectHash($hash)
+    {
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $project           = $projectRepository->findOneBy(['hash' => $hash]);
+        $userCompanies     = $this->getUserCompanies();
+
+        if (false === ($project instanceof Projects) || false === in_array($project->getIdCompanySubmitter(), $userCompanies)) {
+            return $this->redirectToRoute('partner_projects_list');
+        }
+
+        return $project;
     }
 }
