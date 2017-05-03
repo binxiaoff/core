@@ -1079,7 +1079,15 @@ class transfertsController extends bootstrap
                 } else {
                     $date = null;
                 }
-                $amount    = $this->loadLib('ficelle')->cleanFormatedNumber($this->request->request->get('amount'));
+                $amount = $this->loadLib('ficelle')->cleanFormatedNumber($this->request->request->get('amount'));
+
+                if ($amount <= 0) {
+                    $_SESSION['freeow']['title']   = 'Transfer de fonds';
+                    $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a pas été créé. Montant n\'est pas valide.';
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    die;
+                }
+
                 $restFunds = $projectManager->getRestOfFundsToRelease($this->project, true);
                 if ($amount > $restFunds) {
                     $_SESSION['freeow']['title']   = 'Transfer de fonds';
