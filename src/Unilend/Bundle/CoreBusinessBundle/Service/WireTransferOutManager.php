@@ -81,36 +81,39 @@ class WireTransferOutManager
     /**
      * @param Virements $wireTransferOut
      */
-    public function sendWireTransferOutNotificationToBorrower(Virements $wireTransferOut)
+    public function sendWireTransferOutNotification(Virements $wireTransferOut)
     {
-        $restFunds   = $this->projectManager->getRestOfFundsToRelease($wireTransferOut->getProject(), false);
-        $bankAccount = $wireTransferOut->getBankAccount();
-        if ($bankAccount) {
-            $facebook       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook']);
-            $twitter        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter']);
-            $universignLink = $this->router->generate(
-                'wire_transfer_out_request_pdf',
-                ['clientHash' => $wireTransferOut->getClient()->getHash(), 'wireTransferOutId' => $wireTransferOut->getIdVirement()],
-                UrlGeneratorInterface::ABSOLUTE_PATH
-            );
+        if ($wireTransferOut->getProject() && Virements::TYPE_BORROWER === $wireTransferOut->getType()) {
+            $restFunds   = $this->projectManager->getRestOfFundsToRelease($wireTransferOut->getProject(), false);
+            $bankAccount = $wireTransferOut->getBankAccount();
 
-            $varMail = array(
-                'surl'              => $this->assetsPackages->getUrl(''),
-                'url'               => $this->frontUrl,
-                'first_name'        => $wireTransferOut->getClient()->getPrenom(),
-                'rest_funds'        => $this->currencyFormatter->formatCurrency($restFunds, 'EUR'),
-                'amount'            => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
-                'iban'              => chunk_split($bankAccount->getIban(), 4, ' '),
-                'bank_account_name' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
-                'universign_link'   => $this->frontUrl . $universignLink,
-                'lien_fb'           => $facebook->getValue(),
-                'lien_tw'           => $twitter->getValue()
-            );
+            if ($bankAccount) {
+                $facebook       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook']);
+                $twitter        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter']);
+                $universignLink = $this->router->generate(
+                    'wire_transfer_out_request_pdf',
+                    ['clientHash' => $wireTransferOut->getClient()->getHash(), 'wireTransferOutId' => $wireTransferOut->getIdVirement()],
+                    UrlGeneratorInterface::ABSOLUTE_PATH
+                );
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $varMail);
-            $message->setTo($wireTransferOut->getClient()->getEmail());
-            $this->mailer->send($message);
+                $varMail = array(
+                    'surl'              => $this->assetsPackages->getUrl(''),
+                    'url'               => $this->frontUrl,
+                    'first_name'        => $wireTransferOut->getClient()->getPrenom(),
+                    'rest_funds'        => $this->currencyFormatter->formatCurrency($restFunds, 'EUR'),
+                    'amount'            => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
+                    'iban'              => chunk_split($bankAccount->getIban(), 4, ' '),
+                    'bank_account_name' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
+                    'universign_link'   => $this->frontUrl . $universignLink,
+                    'lien_fb'           => $facebook->getValue(),
+                    'lien_tw'           => $twitter->getValue()
+                );
+
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $varMail);
+                $message->setTo($wireTransferOut->getClient()->getEmail());
+                $this->mailer->send($message);
+            }
         }
     }
 
@@ -165,24 +168,27 @@ class WireTransferOutManager
 
         $this->entityManager->persist($wireTransferOut);
 
-        if (
-            WalletType::UNILEND === $wallet->getIdType()->getLabel()
-            || (Virements::TYPE_LENDER === $wireTransferOut->getType()
-                && $bankAccount
-                && $bankAccount->getIdClient() === $wallet->getIdClient())
-        ) {
+        if (WalletType::UNILEND === $wallet->getIdType()->getLabel() || WalletType::LENDER === $wallet->getIdType()->getLabel()) {
             $this->validateTransfer($wireTransferOut);
+        } else {
+            if ($bankAccount && $bankAccount->getIdClient() === $wallet->getIdClient()) {
+                $wireTransferOut->setStatus(Virements::STATUS_CLIENT_VALIDATED);
+            }
         }
 
         $this->entityManager->flush($wireTransferOut);
 
-        if (Virements::STATUS_PENDING === $wireTransferOut->getStatus() && Virements::TYPE_BORROWER === $wireTransferOut->getType()) {
-            $this->sendWireTransferOutNotificationToBorrower($wireTransferOut);
+        if (Virements::STATUS_PENDING === $wireTransferOut->getStatus()) {
+            $this->sendWireTransferOutNotification($wireTransferOut);
         }
 
         return $wireTransferOut;
     }
 
+    /**
+     * @param Virements  $wireTransferOut
+     * @param Users|null $validationUser
+     */
     public function validateTransfer(Virements $wireTransferOut, Users $validationUser = null)
     {
         $wireTransferOut->setStatus(Virements::STATUS_VALIDATED)
