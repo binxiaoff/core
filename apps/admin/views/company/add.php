@@ -48,7 +48,7 @@
                 <td colspan="3"><input type="text" name="invoice_email" id="invoice_email" class="input_large"></td>
             </tr>
             <tr>
-                <th><label for="iban1">IBAN</label></th>
+                <th><label for="iban1">IBAN*</label></th>
                 <td colspan="3">
                     <input type="text" name="iban1" id="iban1" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big">
                     <input type="text" name="iban2" id="iban2" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big">
@@ -60,10 +60,10 @@
                 </td>
             </tr>
             <tr>
-                <th><label for="bic">BIC</label></th>
-                <td><input type="text" name="bic" id="bic" class="input_large"></td>
-                <th><label for="rib">RIB</label></th>
-                <td><input type="file" name="rib" id="rib" class="input_large"></td>
+                <th><label for="bic">BIC*</label></th>
+                <td><input type="text" name="bic" id="bic" class="input_large" required></td>
+                <th><label for="rib">RIB*</label></th>
+                <td><input type="file" name="rib" id="rib" class="input_large" required></td>
             </tr>
             <tr>
                 <th><label for="kbis">KBIS</label></th>
