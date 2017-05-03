@@ -272,7 +272,7 @@ id_motive: 2
                                         <div class="simulator-mini-content">
                                             <dl>
                                                 <dt id="simulator-label-amount">{% trans %} partner-project-details_simulator-panel-amount-label {% endtrans %}</dt>
-                                                <dd id="simulator-output-amount">{{ project.amount|localizednumber }}&nbsp;€</dd>
+                                                <dd id="simulator-output-amount"><strong>{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
                                                 <dt id="simulator-label-duration">{% trans %} partner-project-details_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
                                                 <dd id="simulator-output-duration"><strong>{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} partner-project-details_simulator-panel-estimated-funding-time-value {% endtranschoice %}</strong></dd>
                                                 <dt id="simulator-label-monthly">{% trans %} partner-project-details_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
