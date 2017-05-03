@@ -352,7 +352,6 @@ class clients extends clients_crud
                 clsh.id_client_status_history,
                 com.id_company as id_company,
                 w.wire_transfer_pattern as motif,
-                w.id as id_lender,
                 w.available_balance as balance
             FROM clients c
             INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history FROM clients_status_history GROUP BY id_client) clsh ON c.id_client = clsh.id_client

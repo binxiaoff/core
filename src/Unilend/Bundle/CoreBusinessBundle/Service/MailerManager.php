@@ -71,7 +71,8 @@ class MailerManager
         $frontHost,
         $adminHost,
         TranslatorInterface $translator
-    ) {
+    )
+    {
         $this->container              = $container;
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
@@ -109,7 +110,7 @@ class MailerManager
         $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
 
         if (null !== $bid) {
-            $mailTemplate = empty($bid->getAutobid()) ? 'confirmation-bid' : 'confirmation-autobid';
+            $mailTemplate = $bid->getAutobid() ? 'confirmation-bid' : 'confirmation-autobid';
             $pageProjects = $tree->getSlug(4, substr($this->locale, 0, 2));
 
             $varMail = [
@@ -148,10 +149,7 @@ class MailerManager
             $wallet = $bid->getIdLenderAccount();
             if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
                 $fBalance = $wallet->getAvailableBalance();
-                $sAdded   = strtotime($bid->getAdded());
-                $month    = $this->oDate->tableauMois['fr'][date('n', $sAdded)];
-
-                $varMail = array(
+                $varMail = [
                     'surl'                  => $this->sSUrl,
                     'url'                   => $this->sFUrl,
                     'prenom_p'              => $wallet->getIdClient()->getPrenom(),
@@ -159,14 +157,14 @@ class MailerManager
                     'projet'                => $oProject->title,
                     'montant'               => $this->oFicelle->formatNumber($bid->getAmount() / 100),
                     'proposition_pret'      => $this->oFicelle->formatNumber($bid->getAmount() / 100),
-                    'date_proposition_pret' => date('d', $sAdded) . ' ' . $month . ' ' . date('Y', $sAdded),
+                    'date_proposition_pret' => strftime('%d %B %G', $bid->getAdded()->getTimestamp()),
                     'taux_proposition_pret' => $bid->getRate(),
                     'compte-p'              => '/projets-a-financer',
                     'motif_virement'        => $wallet->getWireTransferPattern(),
                     'solde_p'               => $fBalance,
                     'lien_fb'               => $this->getFacebookLink(),
                     'lien_tw'               => $this->getTwitterLink()
-                );
+                ];
 
                 /** @var TemplateMessage $message */
                 $message = $this->messageProvider->newMessage('preteur-dossier-funding-ko', $varMail);
@@ -455,7 +453,7 @@ class MailerManager
             $bidManager   = $this->container->get('unilend.service.bid_manager');
             $projectRates = $bidManager->getProjectRateRange($project);
 
-            if (empty($bid->getAutobid())) {
+            if ($bid->getAutobid()) {
                 if ($bid->getProject()->getDateFin() <= $now) {
                     $mailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
                 } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
@@ -774,7 +772,7 @@ class MailerManager
 
             if ($clientNotifications->getNotif($loan->getIdLender()->getIdClient()->getIdClient(), \notifications::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                 $lenderLoans         = $loans->select('id_project = ' . $loan->getProject()->getIdProject() . ' AND id_lender = ' . $loan->getIdLender()->getId(), 'id_type_contract DESC');
-                $iSumMonthlyPayments = $paymentSchedule->getTotalAmount(['id_lender' => $loan->getIdLender(), 'id_project' => $loan->getProject()->getIdProject(), 'ordre' => 1]);
+                $iSumMonthlyPayments = $paymentSchedule->getTotalAmount(['id_lender' => $loan->getIdLender()->getId(), 'id_project' => $loan->getProject()->getIdProject(), 'ordre' => 1]);
                 $aFirstPayment       = $paymentSchedule->getPremiereEcheancePreteur($loan->getProject()->getIdProject(), $loan->getIdLender()->getId());
                 $sDateFirstPayment   = $aFirstPayment['date_echeance'];
                 $sLoansDetails       = '';

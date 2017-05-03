@@ -79,7 +79,8 @@ class PaylineManager
         $environment,
         $merchantId,
         $accessKey
-    ) {
+    )
+    {
         require_once $paylineFile;
 
         $this->entityManagerSimulator = $entityManagerSimulator;

@@ -192,61 +192,43 @@ class ClientsRepository extends EntityRepository
     public function getLendersToMatchCity($limit)
     {
         $query = 'SELECT * FROM (
-                                  SELECT
-                                      c.id_client, 
-                                      ca.id_adresse, 
-                                      c.prenom, 
-                                      c.nom, 
-                                      ca.cp_fiscal AS zip, 
-                                      ca.ville_fiscal AS city, 
-                                      ca.cp, 
-                                      ca.ville, 
-                                      0 AS is_company
-                                  FROM clients_adresses ca
-                                      INNER JOIN clients c ON ca.id_client = c.id_client
-                                      INNER JOIN wallet w ON c.id_client = w.id_client
-                                      INNER JOIN wallet_type wt ON w.id_type = wt.id
-                                  WHERE c.status = ' . Clients::STATUS_ONLINE . '
-                                      AND wt.label = "' . WalletType::LENDER . '"
-                                      AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
-                                      AND (
-                                        NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
-                                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
-                                      )
-                                      AND NOT EXISTS (SELECT id_company FROM companies WHERE id_client_owner = c.id_client)
-                                  LIMIT :limit
-                                ) perso
+                    SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, ca.cp_fiscal AS zip, ca.ville_fiscal AS city, ca.cp, ca.ville, 0 AS is_company
+                    FROM clients_adresses ca
+                    INNER JOIN clients c ON ca.id_client = c.id_client
+                    INNER JOIN wallet w ON c.id_client = w.id_client
+                    INNER JOIN wallet_type wt ON w.id_type = wt.id
+                    WHERE c.status = ' . Clients::STATUS_ONLINE . '
+                      AND wt.label = "' . WalletType::LENDER . '"
+                      AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
+                      AND la.id_company_owner = 0
+                      AND (
+                        NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
+-                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
+                      )
+                  LIMIT :limit
+                ) perso
                 UNION
                 SELECT * FROM (
-                                SELECT 
-                                    c.id_client, 
-                                    ca.id_adresse, 
-                                    c.prenom, 
-                                    c.nom, 
-                                    co.zip, 
-                                    co.city, 
-                                    ca.cp, 
-                                    ca.ville, 
-                                    1 AS is_company
-                                FROM clients_adresses ca
-                                    INNER JOIN clients c ON ca.id_client = c.id_client
-                                    INNER JOIN wallet w ON c.id_client = w.id_client
-                                    INNER JOIN wallet_type wt ON w.id_type = wt.id
-                                    INNER JOIN companies co ON co.id_client_owner = ca.id_client
-                                WHERE c.status = ' . Clients::STATUS_ONLINE . '
-                                    AND wt.label = "' . WalletType::LENDER . '"
-                                    AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
-                                    AND (
-                                      NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = co.zip)
-                                      OR (SELECT COUNT(*) FROM villes v WHERE v.cp = co.zip AND v.ville = co.city) <> 1
-                                    ) 
-                                LIMIT :limit
-                            ) company';
+                  SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, co.zip, co.city, ca.cp, ca.ville, 1 AS is_company
+                  FROM clients_adresses ca
+                    INNER JOIN clients c ON ca.id_client = c.id_client
+                    INNER JOIN wallet w ON c.id_client = w.id_client
+                    INNER JOIN wallet_type wt ON w.id_type = wt.id
+                    INNER JOIN companies co ON co.id_client_owner = ca.id_client
+                  WHERE c.status = ' . Clients::STATUS_ONLINE . '
+                    AND wt.label = "' . WalletType::LENDER . '"
+                    AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
+                    AND (
+                      NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = co.zip)
+                      OR (SELECT COUNT(*) FROM villes v WHERE v.cp = co.zip AND v.ville = co.city) <> 1
+                    )  LIMIT :limit
+                ) company';
 
-        return $this->getEntityManager()
-        ->getConnection()
-        ->executeQuery($query, ['limit' => floor($limit / 2)], ['limit' => PDO::PARAM_INT])
-        ->fetchAll(\PDO::FETCH_ASSOC);
+        $result =  $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['limit' => floor($limit / 2)], ['limit' => PDO::PARAM_INT])
+            ->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
     }
 
     /**
@@ -299,7 +281,7 @@ class ClientsRepository extends EntityRepository
 
     /**
      * @param array $clientType
-     * @param bool $onlyActive
+     * @param bool  $onlyActive
      *
      * @return int
      */
@@ -322,6 +304,4 @@ class ClientsRepository extends EntityRepository
 
         return $qb->getQuery()->getSingleScalarResult();
     }
-
-
 }

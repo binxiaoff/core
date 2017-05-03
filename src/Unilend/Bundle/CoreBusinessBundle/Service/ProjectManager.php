@@ -58,7 +58,8 @@ class ProjectManager
         ContractAttributeManager $contractAttributeManager,
         SlackManager $slackManager,
         $universignUrl
-    ) {
+    )
+    {
         $this->entityManagerSimulator     = $entityManagerSimulator;
         $this->entityManager              = $entityManager;
         $this->bidManager                 = $bidManager;

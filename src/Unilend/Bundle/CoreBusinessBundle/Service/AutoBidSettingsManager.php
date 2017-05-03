@@ -63,7 +63,8 @@ class AutoBidSettingsManager
         LenderManager $oLenderManager,
         ProductManager $productManager,
         ContractManager $contractManager
-    ) {
+    )
+    {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
@@ -394,7 +395,7 @@ class AutoBidSettingsManager
             return false;
         }
 
-        return (bool)$this->oClientSettingsManager->getSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
+        return (bool) $this->oClientSettingsManager->getSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
     }
 
     /**

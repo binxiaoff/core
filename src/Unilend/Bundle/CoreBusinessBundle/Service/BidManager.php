@@ -84,14 +84,15 @@ class BidManager
         CIPManager $cipManager,
         EntityManager $entityManager,
         WalletManager $walletManager
-    ) {
-        $this->entityManagerSimulator          = $entityManagerSimulator;
+    )
+    {
+        $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->oNotificationManager    = $oNotificationManager;
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
         $this->oLenderManager          = $oLenderManager;
         $this->productManager          = $productManager;
         $this->cipManager              = $cipManager;
-        $this->entityManager                      = $entityManager;
+        $this->entityManager           = $entityManager;
         $this->walletManager           = $walletManager;
 
         $this->oDate    = Loader::loadLib('dates');
@@ -108,7 +109,6 @@ class BidManager
 
     /**
      * @param Wallet       $wallet
-     * @param integer      $iLenderId for compatibility
      * @param Projects     $project
      * @param              $amount
      * @param              $rate

@@ -2342,7 +2342,7 @@ class dossiersController extends bootstrap
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             /** @var \loans $loans */
             $loans = $this->loadData('loans');
-            /** @var \echeanciers_emprunteur $oRepaymentSchedule */
+            /** @var \echeanciers_emprunteur $repaymentSchedule */
             $repaymentSchedule = $this->loadData('echeanciers_emprunteur');
 
             $this->nbPeteurs = $loans->getNbPreteurs($this->projects->id_project);

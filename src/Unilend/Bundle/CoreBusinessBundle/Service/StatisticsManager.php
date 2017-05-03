@@ -39,7 +39,8 @@ class StatisticsManager
         IRRManager $IRRManager,
         MemcacheCachePool $cachePool,
         LocationManager $locationManager
-    ) {
+    )
+    {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
         $this->IRRManager             = $IRRManager;

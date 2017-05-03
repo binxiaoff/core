@@ -587,7 +587,7 @@ class Echeanciers
      *
      * @return Echeanciers
      */
-    public function setIdLoan(\Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan = null)
+    public function setIdLoan(Loans $idLoan)
     {
         $this->idLoan = $idLoan;
 
@@ -611,7 +611,7 @@ class Echeanciers
      *
      * @return Echeanciers
      */
-    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender = null)
+    public function setIdLender(Wallet $idLender)
     {
         $this->idLender = $idLender;
 

@@ -49,7 +49,8 @@ class CIPManager
         EntityManagerSimulator $entityManagerSimulator,
         TranslatorInterface $translator,
         EntityManager $entityManager
-    ) {
+    )
+    {
         $this->productManager         = $productManager;
         $this->contractManager        = $contractManager;
         $this->entityManagerSimulator = $entityManagerSimulator;
@@ -219,6 +220,8 @@ class CIPManager
     }
 
     /**
+     * @param Clients $client
+     */
     public function endLenderEvaluation(Clients $client)
     {
         $evaluation = $this->getCurrentEvaluation($client);

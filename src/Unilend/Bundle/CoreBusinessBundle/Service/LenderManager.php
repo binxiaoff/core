@@ -35,7 +35,8 @@ class LenderManager
      */
     public function canBid(Clients $client)
     {
-        if ($client->isLender()
+        if (
+            $client->isLender()
             && Clients::STATUS_ONLINE == $client->getStatus()
             && $this->isValidated($client)
         ) {
@@ -46,6 +47,7 @@ class LenderManager
 
     /**
      * @param Clients $client
+     *
      * @return int
      * @throws \Exception
      */
@@ -54,8 +56,8 @@ class LenderManager
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
+        $wallet               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $projectsRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $numberOfCompanies    = $projectsRepository->countCompaniesLenderInvestedIn($wallet->getId());
         $diversificationLevel = 0;
@@ -102,7 +104,7 @@ class LenderManager
         /** @var \transfer $transfer */
         $transfer = $this->entityManagerSimulator->getRepository('transfer');
         /** @var \loan_transfer $loanTransfer */
-        $loanTransfer = $this->entityManagerSimulator->getRepository('loan_transfer');
+        $loanTransfer                = $this->entityManagerSimulator->getRepository('loan_transfer');
         $transfersWithLenderInvolved = $transfer->select('id_client_origin = ' . $client->getIdClient() . ' OR id_client_receiver = ' . $client->getIdClient());
         foreach ($transfersWithLenderInvolved as $transfer) {
             if ($loanTransfer->exist($transfer['id_transfer'], 'id_transfer')){

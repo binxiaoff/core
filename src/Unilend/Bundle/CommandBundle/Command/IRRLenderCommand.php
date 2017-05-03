@@ -109,7 +109,7 @@ EOF
     private function addLenderToStatisticQueue($lender)
     {
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $lenderWallet = null;
+        $lenderWallet  = null;
 
         if ($lender instanceof Wallet) {
             $lenderWallet = $lender;

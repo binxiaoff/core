@@ -84,17 +84,7 @@ class protectedController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $loan          = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
 
-        if (null === $loan) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        if (empty($loan->getProject())) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        if (empty($loan->getIdLender())) {
+        if (null === $loan || empty($loan->getProject()) || empty($loan->getIdLender())) {
             header('Location: ' . $this->lurl);
             exit;
         }
@@ -124,7 +114,11 @@ class protectedController extends bootstrap
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByHash($this->params[0]);
             $loan   = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
 
-            if ($client !== $loan->getIdLender()->getIdClient()) {
+            if (
+                null === $client
+                || null === $loan
+                || $client !== $loan->getIdLender()->getIdClient()
+            ) {
                 header('location: ' . $this->url . '/protected/document_not_found');
                 die;
             }

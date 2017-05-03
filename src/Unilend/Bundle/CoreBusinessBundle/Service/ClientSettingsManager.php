@@ -27,7 +27,6 @@ class ClientSettingsManager
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->cachePool              = $cachePool;
-        $this->entityManagerSimulator->getRepository('client_setting_type'); //load for use of constants
     }
 
     /**

@@ -236,7 +236,7 @@ class LenderPanelPreference
      *
      * @return LenderPanelPreference
      */
-    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender = null)
+    public function setIdLender(Wallet $idLender)
     {
         $this->idLender = $idLender;
 

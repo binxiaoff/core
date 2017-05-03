@@ -134,7 +134,7 @@ class rootController extends bootstrap
 
             $this->settings->get('Date nouvelles CGV avec 2 mandats', 'type');
             $sNewTermsOfServiceDate = $this->settings->value;
-
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
             $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER);
 
             /** @var \loans $oLoans */

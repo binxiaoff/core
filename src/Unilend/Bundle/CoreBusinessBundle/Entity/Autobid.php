@@ -267,7 +267,7 @@ class Autobid
      *
      * @return Autobid
      */
-    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender = null)
+    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender)
     {
         $this->idLender = $idLender;
 

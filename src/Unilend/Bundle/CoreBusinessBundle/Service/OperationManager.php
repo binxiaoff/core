@@ -55,7 +55,8 @@ class OperationManager
         EntityManagerSimulator $entityManagerSimulator,
         WalletManager $walletManager,
         TaxManager $taxManager
-    ) {
+    )
+    {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
         $this->walletManager          = $walletManager;

@@ -283,7 +283,7 @@ EOF
                             $sAutobidInsufficientBalance = '';
 
                             if (
-                                in_array($aLender['id_lender'], $aNoAutobidPlaced)
+                                in_array($wallet->getId(), $aNoAutobidPlaced)
                                 && $oAutobidSettingsManager->isOn($wallet->getIdClient())
                                 && $wallet->getAvailableBalance() < $aAutobiders[$wallet->getId()]
                             ) {

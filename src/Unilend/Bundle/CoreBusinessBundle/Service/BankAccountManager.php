@@ -44,7 +44,8 @@ class BankAccountManager
         LenderManager $lenderManager,
         LoggerInterface $logger,
         ValidatorInterface $validator
-    ) {
+    )
+    {
         $this->entityManager          = $entityManager;
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->lenderManager          = $lenderManager;

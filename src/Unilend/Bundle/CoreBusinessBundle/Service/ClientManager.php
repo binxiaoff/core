@@ -61,7 +61,8 @@ class ClientManager
         EntityManager $entityManager,
         LoggerInterface $logger,
         RouterInterface $router
-    ) {
+    )
+    {
         $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->clientSettingsManager   = $clientSettingsManager;
         $this->tokenStorage            = $tokenStorage;
@@ -89,7 +90,7 @@ class ClientManager
 
     /**
      * @param \clients|Clients $client
-     * @param                  $legalDocId
+     * @param int              $legalDocId
      *
      * @return bool
      */

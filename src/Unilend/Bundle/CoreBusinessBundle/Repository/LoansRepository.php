@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
-
 
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -11,7 +9,6 @@ use Unilend\librairies\CacheKeys;
 
 class LoansRepository extends EntityRepository
 {
-
     /**
      * @param Wallet $wallet
      *
@@ -96,8 +93,8 @@ class LoansRepository extends EntityRepository
                       ELSE "0"
                       END AS insee_region_code,
                       COUNT(*) AS count,
-                      sum(client_base.amount) / 100 AS loaned_amount,
-                      avg(client_base.rate) AS average_rate
+                      SUM(client_base.amount) / 100 AS loaned_amount,
+                      AVG(client_base.rate) AS average_rate
                     FROM (SELECT
                             companies.zip AS cp,
                             loans.amount,

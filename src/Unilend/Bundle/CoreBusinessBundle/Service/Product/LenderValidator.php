@@ -27,7 +27,8 @@ class LenderValidator
         ProductAttributeManager $productAttributeManager,
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager
-    ) {
+    )
+    {
         $this->productAttributeManager = $productAttributeManager;
         $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->entityManager           = $entityManager;
@@ -41,17 +42,8 @@ class LenderValidator
      */
     public function isEligible(Clients $client, \projects $project)
     {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is no Lender');
-        }
-
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        if (null === $wallet) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' has no lender wallet');
-        }
-
         $eligible = true;
-        $reason = [];
+        $reason   = [];
         /** @var \product $product */
         $product = $this->entityManager->getRepository('product');
         if (false === $product->get($project->id_product)) {
@@ -63,7 +55,7 @@ class LenderValidator
             $eligible = false;
         }
 
-        if (false === $this->isLenderEligibleForMaxTotalAmount($wallet, $project, $this->productAttributeManager, $this->entityManagerSimulator)) {
+        if (false === $this->isLenderEligibleForMaxTotalAmount($client, $project, $this->productAttributeManager, $this->entityManagerSimulator, $this->entityManager)) {
             $reason[] = \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO;
             $eligible = false;
         }

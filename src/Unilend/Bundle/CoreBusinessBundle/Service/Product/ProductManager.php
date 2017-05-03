@@ -41,7 +41,8 @@ abstract class ProductManager
         ProductAttributeManager $productAttributeManager,
         ContractManager $contractManager,
         EntityManager $entityManager
-    ) {
+    )
+    {
         $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->projectValidator        = $projectValidator;
         $this->bidValidator            = $bidValidator;
@@ -135,14 +136,9 @@ abstract class ProductManager
      * @param \product $product
      *
      * @return int|null
-     * @throws \Exception
      */
     public function getAutobidMaxEligibleAmount(Clients $client, \product $product)
     {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
-        }
-
         return $this->lenderValidator->getAutobidMaxEligibleAmount($client, $product, $this->entityManagerSimulator, $this->contractManager);
     }
 
@@ -151,14 +147,9 @@ abstract class ProductManager
      * @param \projects $project
      *
      * @return mixed
-     * @throws \Exception
      */
     public function getLenderEligibilityWithReasons(Clients $client, \projects $project)
     {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
-        }
-
         return $this->lenderValidator->isEligible($client, $project)['reason'];
     }
 
@@ -167,14 +158,9 @@ abstract class ProductManager
      * @param \projects $project
      *
      * @return mixed
-     * @throws \Exception
      */
     public function getLenderEligibility(Clients $client, \projects $project)
     {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
-        }
-
         return $this->lenderValidator->isEligible($client, $project)['eligible'];
     }
 
@@ -182,7 +168,6 @@ abstract class ProductManager
      * @param \bids    $bid
      *
      * @return mixed
-     * @throws \Exception
      */
     public function getBidEligibilityWithReasons(\bids $bid)
     {
@@ -194,14 +179,9 @@ abstract class ProductManager
      * @param \projects $project
      *
      * @return null|string
-     * @throws \Exception
      */
     public function getAmountLenderCanStillBid(Clients $client, \projects $project)
     {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
-        }
-
         return $this->lenderValidator->getAmountLenderCanStillBid($client, $project, $this->productAttributeManager, $this->entityManagerSimulator, $this->entityManager);
     }
 

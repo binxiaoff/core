@@ -25,7 +25,8 @@ class NotificationManager
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         MailerManager $mailerManager
-    ) {
+    )
+    {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
         $this->mailerManager          = $mailerManager;

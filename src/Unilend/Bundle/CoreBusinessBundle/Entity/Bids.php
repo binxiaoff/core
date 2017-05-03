@@ -163,7 +163,7 @@ class Bids
      *
      * @return Bids
      */
-    public function setIdLenderAccount(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLenderAccount = null)
+    public function setIdLenderAccount(Wallet $idLenderAccount)
     {
         $this->idLenderAccount = $idLenderAccount;
 

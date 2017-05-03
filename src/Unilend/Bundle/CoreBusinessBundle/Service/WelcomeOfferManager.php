@@ -63,10 +63,10 @@ class WelcomeOfferManager
 
         $offerIsValid                    = false;
         $enoughMoneyLeft                 = false;
-        $virtualWelcomeOfferTransactions = array(
+        $virtualWelcomeOfferTransactions = [
             \transactions_types::TYPE_WELCOME_OFFER,
             \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION
-        );
+        ];
         $return                          = [];
 
         if ($welcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue')) {

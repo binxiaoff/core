@@ -25,7 +25,8 @@ class WalletCreationManager
     public function __construct(
         EntityManager $entityManager,
         LoggerInterface $logger
-    ) {
+    )
+    {
         $this->entityManager = $entityManager;
         $this->logger        = $logger;
     }

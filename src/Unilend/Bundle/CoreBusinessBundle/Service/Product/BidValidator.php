@@ -24,7 +24,8 @@ class BidValidator
         EntityManagerSimulator $entityManagerSimulator,
         ContractManager $contractManager,
         EntityManager $entityManager
-    ) {
+    )
+    {
         $this->productAttributeManager = $productAttributeManager;
         $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->contractManager         = $contractManager;
@@ -58,7 +59,7 @@ class BidValidator
             $eligible = false;
         }
 
-        if (false === empty($bidEntity->getAutobid())) {
+        if ($bidEntity->getAutobid()) {
             if (false === $this->isAutobidEligibleForMaxTotalAmount($bidEntity, $product, $this->entityManagerSimulator, $this->contractManager)) {
                 $reason[] = \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO;
                 $eligible = false;

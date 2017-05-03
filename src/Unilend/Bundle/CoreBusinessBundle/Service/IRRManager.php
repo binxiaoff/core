@@ -38,7 +38,8 @@ class IRRManager
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         LoggerInterface $logger
-    ) {
+    )
+    {
         $this->logger                 = $logger;
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;

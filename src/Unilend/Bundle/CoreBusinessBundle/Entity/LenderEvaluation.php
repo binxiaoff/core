@@ -153,7 +153,7 @@ class LenderEvaluation
      *
      * @return LenderEvaluation
      */
-    public function setIdLenderQuestionnaire(\Unilend\Bundle\CoreBusinessBundle\Entity\LenderQuestionnaire $idLenderQuestionnaire = null)
+    public function setIdLenderQuestionnaire(LenderQuestionnaire $idLenderQuestionnaire)
     {
         $this->idLenderQuestionnaire = $idLenderQuestionnaire;
 
@@ -177,7 +177,7 @@ class LenderEvaluation
      *
      * @return LenderEvaluation
      */
-    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender = null)
+    public function setIdLender(Wallet $idLender)
     {
         $this->idLender = $idLender;
 

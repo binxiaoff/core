@@ -18,7 +18,8 @@ class ContractManager
         LenderValidator $lenderValidator,
         AutoBidSettingsValidator $autoBidSettingsValidator,
         ContractAttributeManager $contractAttributeManager
-    ) {
+    )
+    {
         $this->lenderValidator          = $lenderValidator;
         $this->autoBidSettingsValidator = $autoBidSettingsValidator;
         $this->contractAttributeManager = $contractAttributeManager;
@@ -29,14 +30,9 @@ class ContractManager
      * @param \underlying_contract $contract
      *
      * @return bool
-     * @throws \Exception
      */
     public function isLenderEligible(Clients $client, \underlying_contract $contract)
     {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
-        }
-
         return $this->lenderValidator->isEligible($client, $contract);
     }
 

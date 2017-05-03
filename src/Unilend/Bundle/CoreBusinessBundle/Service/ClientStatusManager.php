@@ -32,7 +32,8 @@ class ClientStatusManager
         NotificationManager $notificationManager,
         AutoBidSettingsManager $autoBidSettingsManager,
         EntityManager $entityManager
-    ) {
+    )
+    {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->notificationManager    = $notificationManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;

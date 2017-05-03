@@ -155,5 +155,4 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $clientEntity = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         $taxManager->addTaxToApply($clientEntity, $clientAddress, Users::USER_ID_CRON);
     }
-
 }
