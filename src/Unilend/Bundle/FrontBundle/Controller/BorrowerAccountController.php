@@ -652,6 +652,8 @@ class BorrowerAccountController extends Controller
                     $client->update();
 
                     return $this->redirectToRoute('login');
+                } else {
+                    return $this->redirectToRoute('borrower_account_security');
                 }
             }
         }

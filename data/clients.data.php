@@ -602,12 +602,13 @@ class clients extends clients_crud
                 id_project IN (' . implode(',', $aProjects) . ')
                 AND id_client = ' . $iClientId . '
                 AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
-                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
-            GROUP BY id_project';
+                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDataForBorrowerOperations[] = $record;
+            if ($record['montant'] != 0) {
+                $aDataForBorrowerOperations[] = $record;
+            }
         }
         return $aDataForBorrowerOperations;
     }
