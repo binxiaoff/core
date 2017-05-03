@@ -31,6 +31,12 @@
                 {% trans with {'%date%': loan.final_repayment_date|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}
             </em>
         </td>
+    {% elseif loan.project_status in [constant('\\projects_status::PROCEDURE_SAUVEGARDE'), constant('\\projects_status::REDRESSEMENT_JUDICIAIRE'), constant('\\projects_status::LIQUIDATION_JUDICIAIRE'), constant('\\projects_status::RECOUVREMENT')] %}
+        <td colspan="4" class="table-myloans-item-next">
+            <em class="c-t2">
+                {% transchoice loan.count.declaration %} lender-operations_loans-table-project-procedure-in-progress {% endtranschoice %}
+            </em>
+        </td>
     {% else %}
         <td class="table-myloans-item-monthly">
             {{ loan.monthly_repayment_amount|localizedcurrency('EUR') }}
