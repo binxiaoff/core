@@ -9,12 +9,52 @@
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
             <article class="dashboard-tab-pane">
-                <div class="panel">
+                <div id="partner-projects-users" class="panel">
                     <header class="panel-header">
                         <h3>{% trans %} partner-project-request_title {% endtrans %}</h3>
                     </header>
-                </div>
-            </article><!-- /.panel -->
+                    <h3>{% trans %} partner-project-list_projects-title {% endtrans %}</h3>
+                    <div class="table-scroll">
+                        <table class="table table-projects-users" data-table data-table-paging="false" data-table-info="false" data-table-lengthchange="false" data-table-languagesearch="Rechercher&nbsp;:" data-table-languagezerorecords="[Aucun &eacute;l&eacute;ment &agrave; afficher">
+                            <thead>
+                            <tr>
+                                <th>Sample 1</th>
+                                <th>Sample 2</th>
+                                <th>Sample 3</th>
+                                <th>Sample 4</th>
+                                <th>Sample 5</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>a</td>
+                                <td>1</td>
+                                <td>a</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>b</td>
+                                <td>2</td>
+                                <td>a</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>c</td>
+                                <td>3</td>
+                                <td>a</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>d</td>
+                                <td>4</td>
+                                <td>a</td>
+                                <td>1</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
 {% endblock %}
