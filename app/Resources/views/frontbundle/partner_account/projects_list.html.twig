@@ -5,6 +5,19 @@
     classNames: 'partner-account'
 } %}
 
+{% set abandonReasons = [
+    {
+        label: 'Reason 1'
+    },
+    {
+        label: 'Reason 2'
+    },
+    {
+        label: 'Reason 3'
+    }
+] %}
+
+
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -14,11 +27,6 @@
                         <div id="partner-prospects-panel">
                             <h3>{% trans %} partner-project-list_prospects-title {% endtrans %}</h3>
                             {% if prospects|length > 0 %}
-                                <form id="submit-partner-prospect" action="{{ path('partner_projects_list') }}" method="post" style="visibility: hidden">
-                                    <input type="hidden" name="esim[amount]" value="">
-                                    <input type="hidden" name="esim[duration]" value="">
-                                    <input type="hidden" name="esim[email]" value="">
-                                </form>
                                 <div class="table-scroll">
                                     <table class="table table-prospects" data-sortable>
                                         <thead class="table-sortable-columns">
@@ -92,7 +100,7 @@
                             <h3>{% trans %} partner-project-list_projects-title {% endtrans %}</h3>
                             {% if borrowers|length > 0 %}
                                 <div class="table-scroll">
-                                    <table class="table table-projects" data-sortable>
+                                    <table class="table table-projects table-clickable" data-sortable>
                                         <thead class="table-sortable-columns">
                                         <tr>
                                             <th class="table-projects-item-borrower table-sortable-column" data-sortable-by="borrower" colspan="2">
@@ -180,54 +188,52 @@
 
 {% block modals %}
 
-    <div id="modal-partner-prospect-cancel" data-modal>
-        <div class="modal-body text-align-center">
-            {# TODO The translation below needs to be added #}
-            {# I am not sure if this is correct and don't know how to pass the parameters in the SQL query #}
-            {# Also, since companyName is generated using AJAX on step 2, there is a JS which will look for <span class="companyName"></span> #}
-            {# and will replace it with the AJAX response. #}
-            <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-cancel-message {% endtrans %}</p>
-            {# TODO END #}
-            <div class="form-field">
-                <select name="prospect-cancel-motif" id="prospect-cancel-motif" class="input-field">
-                    <option value="0">Sélectionnez</option>
-                    <option value="1">Option 1</option>
-                    <option value="2">Option 2</option>
-                    <option value="3">Option 3</option>
-                    <option value="4">Option 4</option>
-                </select>
+    <div id="modal-partner-prospect-abandon" data-modal>
+        <form action="{{ path('partner_project_list') }}" data-formvalidation>
+            <input type="hidden" name="action" value="abandon">
+            <div class="modal-body text-align-center">
+                <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-cancel-message {% endtrans %}</p>
+                <div class="form-field">
+                    <select name="prospect-abandon-motif" id="prospect-abandon-motif" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        <option value="">{% trans %} partner-project-list_simulator-abandon-motif-select {% endtrans %}</option>
+                        {% for reason in abandonReasons %}
+                            <option value="{{ reason.label }}">{{ reason.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-        </div>
-        <footer class="modal-footer">
-            <div class="btn-controls">
-                <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
-                    {% trans %} partner-project-list_popup-prospect-cancel-ko {% endtrans %}
-                </a>
-                <a href="javascript:;" class="btn-primary" data-modal-doactionsubmit>
-                    {% trans %} partner-project-list_popup-prospect-cancel-ok {% endtrans %}
-                </a>
-            </div>
-        </footer>
+            <footer class="modal-footer">
+                <div class="btn-controls">
+                    <button type="button" class="btn-default" data-modal-doactioncancel>
+                        {% trans %} partner-project-list_popup-prospect-cancel-ko {% endtrans %}
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        {% trans %} partner-project-list_popup-prospect-cancel-ok {% endtrans %}
+                    </button>
+                </div>
+            </footer>
+        </form>
     </div><!-- /#modal-partner-prospect-cancel -->
 
     <div id="modal-partner-prospect-submit" data-modal>
-        <div class="modal-body text-align-center">
-            {# TODO The translation below needs to be added #}
-            {# I am not sure if this is correct and don't know how to pass the parameters in the SQL query #}
-            {# Also, since companyName is generated using AJAX on step 2, there is a JS which will look for <span class="companyName"></span> #}
-            {# and will replace it with the AJAX response. #}
-            <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-submit-message {% endtrans %}</p>
-            {# TODO END #}
-        </div>
-        <footer class="modal-footer">
-            <div class="btn-controls">
-                <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
-                    {% trans %} partner-project-list_popup-prospect-submit-ko {% endtrans %}
-                </a>
-                <a href="javascript:;" class="btn-primary" data-modal-doactionsubmit>
-                    {% trans %} partner-project-list_popup-prospect-submit-ok {% endtrans %}
-                </a>
+        <form action="{{ path('partner_project_request_eligibility_test') }}">
+            <input type="hidden" name="simulator[company]" value>
+            <input type="hidden" name="simulator[amount]" value>
+            <input type="hidden" name="simulator[duration]" value>
+            <input type="hidden" name="simulator[motif]" value>
+            <div class="modal-body text-align-center">
+                <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-submit-message {% endtrans %}</p>
             </div>
-        </footer>
+            <footer class="modal-footer">
+                <div class="btn-controls">
+                    <button type="button" class="btn-default" data-modal-doactioncancel>
+                        {% trans %} partner-project-list_popup-prospect-submit-ko {% endtrans %}
+                    </button>
+                    <button type="submit" class="btn-primary" data-spinnerbutton>
+                        {% trans %} partner-project-list_popup-prospect-submit-ok {% endtrans %}
+                    </button>
+                </div>
+            </footer>
+        </form>
     </div><!-- /#modal-partner-prospect -->
 {% endblock %}

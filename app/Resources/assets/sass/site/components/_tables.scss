@@ -156,6 +156,15 @@ td {
     }
   }
 }
+.table-clickable {
+  tbody {
+    tr {
+      td {
+        cursor: pointer;
+      }
+    }
+  }
+}
 
 // Sortable table columns
 thead.table-sortable-columns {
