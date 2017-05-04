@@ -3,7 +3,7 @@ var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var DataTable = require('DataTable')
 
-var DataTable = function (elem, options) {
+var DataTables = function (elem, options) {
     var self = this
     self.$elem = $(elem)
 
@@ -11,7 +11,7 @@ var DataTable = function (elem, options) {
     if (self.$elem.length === 0) return false
 
     // Return existing instance
-    if (elem.hasOwnProperty('DataTable')) return elem.DataTable
+    if (elem.hasOwnProperty('DataTables')) return elem.DataTables
 
     /*
      * Settings
@@ -22,18 +22,23 @@ var DataTable = function (elem, options) {
             info: false,
             paging: false,
             lengthChange: false,
-            tableLanguagesearch: 'Rechercher&nbsp;:',
-            tableLanguagezerorecords: '',
-            processing: "Traitement en cours...",
-            zeroRecords: "Aucun &eacute;l&eacute;ment &agrave; afficher"
+            language: {
+                search: '_INPUT_',
+                searchPlaceholder: 'Rech&eacute;rcher',
+                zeroRecords: "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                processing: "Traitement en cours..."
+            }
+        }, {
+            info: self.$elem.data('table-info'),
+            paging: self.$elem.data('table-paging'),
+            lengthChange: self.$elem.data('table-lengthchange'),
+            language: {
+                search: self.$elem.data('table-languagesearch'),
+                searchPlaceholder: self.$elem.data('table-languagesearchplaceholder'),
+                zeroRecords: self.$elem.data('table-languagezerorecords'),
+                processing: self.$elem.data('table-languageprocessing')
+            }
         },
-        // Data Attributes
-        ElementAttrsObject(elem, {
-            info: 'data-table-info',
-            paging: 'data-table-paging',
-            lengthChange: 'data-table-lengthchange',
-            tableLanguagezerorecords: 'data-table-languagezerorecords'
-        }),
         // JS invocation overrides
         options)
 
@@ -44,16 +49,19 @@ var DataTable = function (elem, options) {
      * Initialisation
      */
 
-    // Assign instance of class to the element
-    self.$elem[0].DataTable = self
+    // Adjust datatables plugin class names
+    $.fn.dataTableExt.oStdClasses["sWrapper"] = "table-scroll";
+    $.fn.dataTableExt.oStdClasses["sFilter"] = "form-field col-sm-6 col-md-4 col-lg-3";
+    $.fn.dataTableExt.oStdClasses["sFilterInput"] = "input-field";
 
-    // @trigger elem `datatable:initialised` [elemdatatable, settings]
-    self.$elem.trigger('datatable:initialised', [self, self.settings])
-
-    // @debug
-    console.log('new DataTable', self.settings)
-
+    // Plugin init function
     self.$elem.DataTable(self.settings)
+
+    // Assign instance of class to the element
+    self.$elem[0].DataTables = self
+
+    // @trigger elem `DataTables:initialised` [elemdatatable, settings]
+    self.$elem.trigger('DataTables:initialised', [self, self.settings])
 
     return self
 }
@@ -71,7 +79,7 @@ $.fn.uiDatatable = function (op) {
 
         // Fire command on each returned elem instance
         return this.each(function (i, elem) {
-            if (elem.hasOwnProperty('DataTable') && typeof elem.DataTable[op] === 'function') {
+            if (elem.hasOwnProperty('DataTables') && typeof elem.DataTable[op] === 'function') {
                 elem.DataTable[op].apply(elem.DataTable, args)
             }
         })
@@ -80,8 +88,8 @@ $.fn.uiDatatable = function (op) {
     } else {
 
         return this.each(function (i, elem) {
-            if (!elem.hasOwnProperty('DataTable')) {
-                new DataTable(elem, op)
+            if (!elem.hasOwnProperty('DataTables')) {
+                new DataTables(elem, op)
             }
         })
 
@@ -92,6 +100,8 @@ $.fn.uiDatatable = function (op) {
  * jQuery Events
  */
 $('[data-table]').not('.ui-datatable').uiDatatable()
+
+
 
 
 

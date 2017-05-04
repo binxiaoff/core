@@ -150,6 +150,9 @@
 // Generic input field style
 .input-field {
   @include input;
+  &:focus {
+    outline: 0;
+  }
 }
 
 // Single line text inputs need height set

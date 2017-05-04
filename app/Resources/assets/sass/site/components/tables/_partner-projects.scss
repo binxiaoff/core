@@ -1,4 +1,4 @@
-.table-prospects, .table-projects {
+.table-prospects, .table-projects, .table-users {
     td, th {
         padding-left: 20px;
         padding-right: 20px;
@@ -6,16 +6,25 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    .last-name {
+        text-transform: uppercase;
+    }
 }
-.table-prospects-item-action {
+.table-prospects-item-action, .table-users-item-action {
     padding-top: 5px;
     padding-bottom: 5px;
-    a {
-        display: inline-block;
-        box-sizing: border-box;
-        width: 30px;
-        height: 30px;
-        padding: 7px;
+    text-align: right;
+    .btn-default {
+        padding: 5px;
+        margin-right: 2px;
+        min-height: 28px;
+        min-width: 28px;
+        line-height: 1;
+        font-size: 14px;
+        color: $c-t3;
+        &:last-child {
+            margin-right: 0;
+        }
     }
 }
 .table-prospects-item-borrower, .table-projects-item-borrower {
