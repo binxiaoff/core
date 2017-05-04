@@ -5,7 +5,6 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 var Templating = require('Templating')
-var ProjectNotifications = require('../components/ProjectNotifications')
 var __ = require('__')
 
 var $doc = $(document)
