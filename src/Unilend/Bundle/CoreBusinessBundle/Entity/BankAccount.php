@@ -316,7 +316,7 @@ class BankAccount
      *
      * @return $this
      */
-    public function setAttachment(Attachment $attachment)
+    public function setAttachment(Attachment $attachment = null)
     {
         $this->idAttachment = $attachment;
 
