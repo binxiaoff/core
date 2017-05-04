@@ -93,8 +93,8 @@ function Paginate(elem, options) {
 
     }
 
+    // If there are notifications, mark them as read or open them
     self.markRead = function(pageIndex) {
-        console.log('markread ' + pageIndex)
         var $targetPage  = self.$el.find('[data-page-index="' + pageIndex + '"]')
         var $notifs = $targetPage.find('[data-proj-notification]')
         $notifs.each(function(){
@@ -106,6 +106,7 @@ function Paginate(elem, options) {
         })
     }
 
+    // Trigger Initialised event
     self.$el.trigger('Paginate:initialised', 1)
 
 }
@@ -144,7 +145,6 @@ $doc.on('click', '.ui-paginate .pagination-index a', function(){
 
 // Open / mark read notifications on page 1
 $doc.on('Paginate:initialised', '.ui-paginate', function(event, pageIndex){
-    console.log(pageIndex)
     if ($(this).is('.list-notifications')) {
         $(this).uiPaginate('markRead', pageIndex)
     }
