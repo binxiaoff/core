@@ -890,9 +890,15 @@ class LenderOperationsController extends Controller
     public function loadProjectNotifications($projectId)
     {
         try {
-            $notificationDisplayManager = $this->get('unilend.frontbundle.notification_display_manager');
-            $data                       = $notificationDisplayManager->getLenderNotificationsByProject($this->getUser()->getClientId(), $projectId);
-            $code                       = Response::HTTP_OK;
+            $notificationDisplayManager   = $this->get('unilend.frontbundle.notification_display_manager');
+            $lenderNotificationsByProject = $notificationDisplayManager->getLenderNotificationsByProject($this->getUser()->getClientId(), $projectId);
+            $projectInformation           = $this->getProjectInformation($projectId);
+            $data                         = array_merge($projectInformation, $lenderNotificationsByProject);
+
+            if (false === empty($projectInformation) && false === empty($lenderNotificationsByProject)) {
+                usort($data, [$this, 'sortArrayByDate']);
+            }
+            $code = Response::HTTP_OK;
         } catch (\Exception $exception) {
             $data = [];
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
@@ -905,5 +911,43 @@ class LenderOperationsController extends Controller
             ],
             $code
         );
+    }
+
+    /**
+     * @param int $projectId
+     *
+     * @return array
+     */
+    private function getProjectInformation($projectId)
+    {
+        $entityManager        = $this->get('doctrine.orm.entity_manager');
+        $project              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        $projectNotifications = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNotification')->findBy(['idProject' => $project], ['notificationDate' => 'DESC']);
+        $data                 = [];
+
+        foreach ($projectNotifications as $projectNotification) {
+            $data[] = [
+                'id'       => $projectNotification->getId(),
+                'image'    => 'information',
+                'type'     => 'information',
+                'title'    => $projectNotification->getSubject(),
+                'datetime' => $projectNotification->getNotificationDate(),
+                'iso-8601' => $projectNotification->getNotificationDate()->format('c'),
+                'content'  => $projectNotification->getContent(),
+                'status'   => 'read'
+            ];
+        }
+        return $data;
+    }
+
+    /**
+     * @param array $a
+     * @param array $b
+     *
+     * @return mixed
+     */
+    private function sortArrayByDate(array $a, array $b)
+    {
+        return $b['datetime']->getTimestamp() - $a['datetime']->getTimestamp();
     }
 }
