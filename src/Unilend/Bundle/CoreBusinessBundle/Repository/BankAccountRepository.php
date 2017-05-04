@@ -18,7 +18,7 @@ class BankAccountRepository extends EntityRepository
     public function getLastModifiedBankAccount($idClient)
     {
         $cb = $this->createQueryBuilder('ba');
-        $cb->select('ba', 'COALESCE(ba.dateValidated, ba.datePending) AS HIDDEN dateOrder')
+        $cb->select('ba', 'COALESCE(ba.updated, ba.datePending) AS HIDDEN dateOrder')
            ->where('ba.idClient = :idClient')
            ->andWhere('ba.dateArchived is NULL')
            ->orderBy('dateOrder', 'DESC')
