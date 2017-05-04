@@ -1,15 +1,9 @@
 {% extends 'partner_account/_layout.html.twig' %}
 
 {% set page = {
-id: 'partner-account-project-request',
-classNames: 'partner-account'
+    id: 'partner-account-project-request',
+    classNames: 'partner-account'
 } %}
-
-{% set project = {
-    hash: '127571a8db6076d82e7643c4835dbe98',
-    status: 'abandon'
-}
-%}
 
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
@@ -17,22 +11,11 @@ classNames: 'partner-account'
             <article class="dashboard-tab-pane">
                 <div class="panel">
                     <header class="panel-header">
-                        {% if project.status == 'request-completed' %}
-                            <h3>{% trans %} partner-project-end_status-completed-title {% endtrans %}</h3>
-                        {% else %}
-                            <h3>{% trans %} partner-project-end_status-abandon-title {% endtrans %}</h3>
-                        {% endif %}
+                        <h3>{{ title }}</h3>
                     </header>
-                    <div class="partner-project-request-end">
-                        {% if project.status == 'request-completed' %}
-                            {% trans %} partner-project-end_status-completed-message {% endtrans %}
-                        {% else %}
-                            {% trans %} partner-project-end_status-abandon-message {% endtrans %}
-                        {% endif %}
-                    </div>
+                    <div class="partner-project-request-end">{{ message|raw }}</div>
                 </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
 {% endblock %}
-

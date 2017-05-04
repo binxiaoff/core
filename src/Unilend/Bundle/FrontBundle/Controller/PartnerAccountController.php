@@ -464,7 +464,7 @@ class PartnerAccountController extends Controller
         $entityManager->persist($project);
         $entityManager->flush();
 
-        if ($project->getStatus() != ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION) {
+        if (false === in_array($project->getStatus(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::COMPLETE_REQUEST])) {
             /** @var \projects $projectData */
             $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
             $projectData->get($project->getIdProject());
@@ -473,18 +473,45 @@ class PartnerAccountController extends Controller
             $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $projectData);
         }
 
-        return $this->redirectToRoute('partner_projects_list');
+        return $this->redirectToRoute('partner_project_request_end', ['hash' => $hash]);
     }
 
     /**
-     * @Route("partenaire/depot/fin", name="partner_project_request_end")
+     * @Route("partenaire/depot/fin/{hash}", name="partner_project_request_end", requirements={"hash":"[0-9a-z]{32}"})
      * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @param string $hash
      *
      * @return Response
      */
-    public function projectRequestEndAction()
+    public function projectRequestEndAction($hash)
     {
-        return $this->render('/partner_account/project_request_end.html.twig');
+        $project = $this->checkProjectHash($hash);
+
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
+        $translator = $this->get('translator');
+
+        switch ($project->getStatus()) {
+            case ProjectsStatus::NOT_ELIGIBLE:
+                $template = [
+                    'title' => $translator->trans('partner-project-end_status-abandon-title'),
+                    'message' => $translator->trans('partner-project-end_status-abandon-message'),
+                ];
+                break;
+            case ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION:
+            case ProjectsStatus::COMPLETE_REQUEST:
+            default:
+                $template = [
+                    'title' => $translator->trans('partner-project-end_status-completed-title'),
+                    'message' => $translator->trans('partner-project-end_status-completed-message'),
+                ];
+                break;
+        }
+
+        return $this->render('/partner_account/project_request_end.html.twig', $template);
     }
 
     /**

@@ -2610,8 +2610,9 @@ class dossiersController extends bootstrap
             $oProjectCgv->id_tree    = $iTreeId;
             $oProjectCgv->name       = $oProjectCgv->generateFileName();
             $oProjectCgv->status     = project_cgv::STATUS_NO_SIGN;
-            $oProjectCgv->id         = $oProjectCgv->create();
-            $sCgvLink                = $this->surl . $oProjectCgv->getUrlPath();
+            $oProjectCgv->create();
+
+            $sCgvLink = $this->surl . $oProjectCgv->getUrlPath();
         }
 
         // Recuperation du pdf du tree
