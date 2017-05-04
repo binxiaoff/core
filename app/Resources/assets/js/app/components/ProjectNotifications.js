@@ -56,6 +56,13 @@ var ProjectNotifications = {
         $notification.toggleClass('ui-notification-open')
     },
 
+    openNotification: function(notification) {
+        var $notification = $(notification)
+        if (!$notification.is('.ui-notification-open')) {
+            $notification.addClass('ui-notification-open')
+        }
+    },
+
     track: {
         actions: {
             markedRead: [],
