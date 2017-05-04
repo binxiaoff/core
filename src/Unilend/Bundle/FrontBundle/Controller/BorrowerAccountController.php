@@ -639,7 +639,11 @@ class BorrowerAccountController extends Controller
                     $error = true;
                     $this->addFlash('error', $translator->trans('common-validator_secret-answer-invalid'));
                 }
+
                 if (false === $error) {
+                    $client->status = 1;
+                    $client->update();
+
                     $formData['question'] = filter_var($formData['question'], FILTER_SANITIZE_STRING);
 
                     $borrower = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
@@ -648,12 +652,11 @@ class BorrowerAccountController extends Controller
                     $client->password         = $password;
                     $client->secrete_question = $formData['question'];
                     $client->secrete_reponse  = md5($formData['answer']);
-                    $client->status           = 1;
                     $client->update();
 
                     return $this->redirectToRoute('login');
                 } else {
-                    return $this->redirectToRoute('borrower_account_security');
+                    return $this->redirectToRoute('borrower_account_security', ['token' => $token]);
                 }
             }
         }
