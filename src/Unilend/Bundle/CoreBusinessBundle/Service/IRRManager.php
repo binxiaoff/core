@@ -63,7 +63,7 @@ class IRRManager
 
 
     /**
-     * @param $aValuesIRR
+     * @param $valuesIRR
      * @return string
      * @throws \Exception
      */
@@ -144,7 +144,7 @@ class IRRManager
 
     /**
      * @param Wallet $wallet
-     * @param int    $lenderId
+     * @param int    $idLender
      */
     public function addIRRLender(Wallet $wallet, $idLender)
     {
