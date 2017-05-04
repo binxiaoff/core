@@ -238,9 +238,11 @@ class WireTransferOutManager
                 'url'     => $this->adminUrl
             );
 
+            $settings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
+
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->messageProvider->newMessage('wire-transfer-out-to-validate-staff-notification', $varMail);
-            $message->setTo($wireTransferOut->getClient()->getEmail());
+            $message->setTo($settings->getValue());
             $this->mailer->send($message);
 
         }
