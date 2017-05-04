@@ -1,7 +1,7 @@
 <div id="popup" class="takeover-popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
     <?php if (empty($this->companies)) : ?>
-        <h1>Aucun société trouvé</h1>
+        <h1>Aucunne société trouvée</h1>
         <a href="/company/add/<?= $this->siren ?>" class="btn_link" target="_blank">Créer la société</a>
     <?php else : ?>
         <h1>Sélectionnez une société pour attacher à <?= $this->partner->getName() ?></h1>
