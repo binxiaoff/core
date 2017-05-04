@@ -492,6 +492,7 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param int $projectId
+     *
      * @return array
      */
     public function getMonthlyScheduleByProject($projectId)
@@ -501,6 +502,7 @@ class echeanciers extends echeanciers_crud
                 SUM(montant) AS montant,
                 SUM(capital) AS capital,
                 SUM(interets) AS interets,
+                date_echeance_emprunteur,
                 status_emprunteur
             FROM echeanciers
             WHERE id_project = :id_project 
@@ -508,19 +510,24 @@ class echeanciers extends echeanciers_crud
 
         $res       = [];
         $statement = $this->bdd->executeQuery($sql,
-            array('id_project' => $projectId),
-            array('id_project' => \PDO::PARAM_INT),
-            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::SHORT_TIME, md5(__METHOD__)));
+            ['id_project' => $projectId],
+            ['id_project' => \PDO::PARAM_INT],
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::SHORT_TIME, md5(__METHOD__))
+        );
+
         $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
         $statement->closeCursor();
-        foreach ($result as $key => $aRow) {
-            $res[$aRow['ordre']] = array(
-                'montant'           => bcdiv($aRow['montant'], 100, 2),
-                'capital'           => bcdiv($aRow['capital'], 100, 2),
-                'interets'          => bcdiv($aRow['interets'], 100, 2),
-                'status_emprunteur' => $aRow['status_emprunteur']
-            );
+
+        foreach ($result as $record) {
+            $res[$record['ordre']] = [
+                'montant'                  => bcdiv($record['montant'], 100, 2),
+                'capital'                  => bcdiv($record['capital'], 100, 2),
+                'interets'                 => bcdiv($record['interets'], 100, 2),
+                'date_echeance_emprunteur' => $record['date_echeance_emprunteur'],
+                'status_emprunteur'        => $record['status_emprunteur']
+            ];
         }
+
         return $res;
     }
 
