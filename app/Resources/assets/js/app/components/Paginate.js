@@ -10,6 +10,7 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
+var ProjectNotifications = require('../components/ProjectNotifications')
 
 var $doc = $(document)
 
@@ -65,6 +66,7 @@ function Paginate(elem, options) {
                 pageIndex++;
             }
         }
+
     }
     self.init()
 
@@ -86,15 +88,33 @@ function Paginate(elem, options) {
         self.$nav.find('.active').removeClass('active')
         self.$nav.find('li').eq(pageIndex - 1).addClass('active')
 
-        self.$el.trigger('Paginate:goto', [self, pageIndex])
+        // Trigger goto event
+        self.$el.trigger('Paginate:goto', pageIndex)
+
     }
+
+    self.markRead = function(pageIndex) {
+        console.log('markread ' + pageIndex)
+        var $targetPage  = self.$el.find('[data-page-index="' + pageIndex + '"]')
+        var $notifs = $targetPage.find('[data-proj-notification]')
+        $notifs.each(function(){
+            if ($(this).is('.ui-notification-status-unread')) {
+                ProjectNotifications.markRead(this)
+            } else {
+                ProjectNotifications.openNotification(this)
+            }
+        })
+    }
+
+    self.$el.trigger('Paginate:initialised', 1)
+
 }
 
 /*
  * jQuery Plugin
  */
 $.fn.uiPaginate = function(op) {
-    if (typeof op === 'string' && /^(perpage|destroy|goto)$/.test(op)) {
+    if (typeof op === 'string' && /^(perpage|destroy|goto|markRead)$/.test(op)) {
         // Get further additional arguments to apply to the matched command method
         var args = Array.prototype.slice.call(arguments)
         args.shift()
@@ -120,6 +140,20 @@ $.fn.uiPaginate = function(op) {
 $doc.on('click', '.ui-paginate .pagination-index a', function(){
     var index = parseInt($(this).text(), 10)
     $(this).closest('.ui-paginate').uiPaginate('goto', index)
+})
+
+// Open / mark read notifications on page 1
+$doc.on('Paginate:initialised', '.ui-paginate', function(event, pageIndex){
+    console.log(pageIndex)
+    if ($(this).is('.list-notifications')) {
+        $(this).uiPaginate('markRead', pageIndex)
+    }
+})
+// Open / mark read notifications on any other page
+$doc.on('Paginate:goto', '.ui-paginate', function(event, pageIndex){
+    if ($(this).is('.list-notifications')) {
+        $(this).uiPaginate('markRead', pageIndex)
+    }
 })
 
 // Init the components when ready
