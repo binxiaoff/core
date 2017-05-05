@@ -9,6 +9,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 
 class ProjectsListController extends Controller
@@ -24,22 +25,18 @@ class ProjectsListController extends Controller
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $companies     = $this->getUserCompanies();
 
-        $prospects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
-            ->findBy(
-                ['status' => \projects_status::SIMULATION, 'idCompanySubmitter' => $companies],
-                ['added' => 'DESC']
-            );
+        /** @var ProjectsRepository $projectRepository */
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $prospects         = $projectRepository->getPartnerProspects($companies);
+        $borrowers         = $projectRepository->getPartnerProjects($companies);
+        $abandonedRejected = $projectRepository->getPartnerAbandonedRejected($companies);
 
-        $borrowers = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
-            ->getPartnerProjects($companies);
-
-        $template = [
-            'prospects'      => $this->formatProject($prospects),
-            'borrowers'      => $this->formatProject($borrowers),
-            'abandonReasons' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
-        ];
-
-        return $this->render('/partner_account/projects_list.html.twig', $template);
+        return $this->render('/partner_account/projects_list.html.twig', [
+            'prospects'         => $this->formatProject($prospects, false),
+            'borrowers'         => $this->formatProject($borrowers),
+            'abandonedRejected' => $this->formatProject($abandonedRejected),
+            'abandonReasons'    => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
+        ]);
     }
 
     /**
@@ -80,14 +77,14 @@ class ProjectsListController extends Controller
 
     /**
      * @param Projects[] $projects
+     * @param bool       $loadNotes
+     *
      * @return array
      */
-    private function formatProject(array $projects)
+    private function formatProject(array $projects, $loadNotes = true)
     {
-        $display                 = [];
-        $translator              = $this->get('translator');
-        $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+        $display    = [];
+        $translator = $this->get('translator');
 
         foreach ($projects as $project) {
             $display[$project->getIdProject()] = [
@@ -96,15 +93,15 @@ class ProjectsListController extends Controller
                 'name'       => empty($project->getTitle()) ? $project->getIdCompany()->getName() : $project->getTitle(),
                 'amount'     => $project->getAmount(),
                 'duration'   => $project->getPeriod(),
-                'status'     => $projectStatusRepository->findOneBy(['status' => $project->getStatus()])->getLabel(),
+                'status'     => $project->getStatus(),
                 'submitter'  => [
                     'firstName' => $project->getIdClientSubmitter()->getPrenom(),
                     'lastName'  => $project->getIdClientSubmitter()->getNom(),
                     'entity'    => $project->getIdCompanySubmitter()->getName()
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
-                'memos'      => $this->formatNotes($project->getNotes()),
-                'hasChanged' => $this->hasProjectChanged($project)
+                'memos'      => $loadNotes ? $this->formatNotes($project->getNotes()) : [],
+                'hasChanged' => $loadNotes ? $this->hasProjectChanged($project) : false
             ];
         }
 
