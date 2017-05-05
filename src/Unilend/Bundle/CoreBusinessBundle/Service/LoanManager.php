@@ -1,7 +1,11 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -10,51 +14,56 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
  */
 class LoanManager
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $oLogger;
-    /**
-     * @var EntityManagerSimulator
-     */
-    private $oEntityManager;
+    /** @var LoggerInterface */
+    private $logger;
+    /** @var EntityManagerSimulator  */
+    private $entityManagerSimulator;
+    /** @var EntityManager */
+    private $entityManager;
 
-    public function __construct(EntityManagerSimulator $oEntityManager)
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager)
     {
-        $this->oEntityManager   = $oEntityManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+
     }
     /**
-     * @param LoggerInterface $oLogger
+     * @param LoggerInterface $logger
      */
-    public function setLogger(LoggerInterface $oLogger)
+    public function setLogger(LoggerInterface $logger)
     {
-        $this->oLogger = $oLogger;
+        $this->logger = $logger;
     }
 
-    public function create(\loans $oLoan)
+    /**
+     * @param \loans $loan
+     *
+     * @return bool
+     */
+    public function create(\loans $loan)
     {
-        $aAcceptedBids = $oLoan->getAcceptedBids();
-        if (empty($aAcceptedBids)) {
+        $acceptedBids = $loan->getAcceptedBids();
+        if (empty($acceptedBids)) {
             return false;
         }
-        $oLoan->create();
+        $loan->create();
 
-        if (empty($oLoan->id_loan)) {
+        if (empty($loan->id_loan)) {
             return false;
         }
-        /** @var \accepted_bids $oAcceptedBid */
-        $oAcceptedBid = $this->oEntityManager->getRepository('accepted_bids');
-        foreach ($oLoan->getAcceptedBids() as $aAcceptedBid) {
-            $oAcceptedBid->unsetData();
-            $oAcceptedBid->id_bid  = $aAcceptedBid['bid_id'];
-            $oAcceptedBid->id_loan = $oLoan->id_loan;
-            $oAcceptedBid->amount  = $aAcceptedBid['amount'] * 100;
-            $oAcceptedBid->create();
+        /** @var \accepted_bids $acceptedBid */
+        $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
+        foreach ($acceptedBids  as $aAcceptedBid) {
+            $acceptedBid->unsetData();
+            $acceptedBid->id_bid  = $aAcceptedBid['bid_id'];
+            $acceptedBid->id_loan = $loan->id_loan;
+            $acceptedBid->amount  = $aAcceptedBid['amount'] * 100;
+            $acceptedBid->create();
 
-            if ($oAcceptedBid->id_accepted_bid > 0 && $this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info(
-                    'Loan ' . $oLoan->id_loan . ' generated from bid ' . $aAcceptedBid['bid_id'] . ' with amount ' . $aAcceptedBid['amount'],
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oLoan->id_project, 'id_loan' => $oLoan->id_loan, 'id_bid' => $aAcceptedBid['bid_id'])
+            if ($acceptedBid->id_accepted_bid > 0 && $this->logger instanceof LoggerInterface) {
+                $this->logger->info(
+                    'Loan ' . $loan->id_loan . ' generated from bid ' . $aAcceptedBid['bid_id'] . ' with amount ' . $aAcceptedBid['amount'],
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $loan->id_project, 'id_loan' => $loan->id_loan, 'id_bid' => $aAcceptedBid['bid_id'])
                 );
             }
         }
@@ -64,33 +73,31 @@ class LoanManager
 
     /**
      * @param \loans $loan
-     * @return \lenders_accounts
+     *
+     * @return Clients
      */
     public function getFormerOwner(\loans $loan)
     {
         /** @var \loan_transfer $loanTransfer */
-        $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
+        $loanTransfer = $this->entityManagerSimulator->getRepository('loan_transfer');
         $loanTransfer->get($loan->id_transfer);
 
         /** @var \transfer $transfer */
-        $transfer = $this->oEntityManager->getRepository('transfer');
+        $transfer = $this->entityManagerSimulator->getRepository('transfer');
         $transfer->get($loanTransfer->id_transfer);
 
-        /** @var \lenders_accounts $lender */
-        $lender = $this->oEntityManager->getRepository('lenders_accounts');
-        $lender->get($transfer->id_client_origin, 'id_client_owner');
-
-        return $lender;
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($transfer->id_client_origin);
     }
 
     /**
      * @param \loans $loan
+     *
      * @return \DateTime
      */
     public function getLoanTransferDate(\loans $loan)
     {
         /** @var \loan_transfer $loanTransfer */
-        $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
+        $loanTransfer = $this->entityManagerSimulator->getRepository('loan_transfer');
         $loanTransfer->get($loan->id_transfer);
 
         $transferDate = new \DateTime($loanTransfer->added);
@@ -99,24 +106,21 @@ class LoanManager
 
     /**
      * @param \loans $loan
-     * @return \lenders_accounts
+     *
+     * @return Clients
      */
     public function getFirstOwner(\loans $loan)
     {
         /** @var \loan_transfer $loanTransfer */
-        $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
+        $loanTransfer  = $this->entityManagerSimulator->getRepository('loan_transfer');
         $firstTransfer = $loanTransfer->select('id_loan = ' . $loan->id_loan, 'added ASC', null, 1)[0];
         $loanTransfer->get($firstTransfer['id_loan_transfer']);
 
         /** @var \transfer $transfer */
-        $transfer = $this->oEntityManager->getRepository('transfer');
+        $transfer = $this->entityManagerSimulator->getRepository('transfer');
         $transfer->get($loanTransfer->id_transfer);
 
-        /** @var \lenders_accounts $lender */
-        $lender = $this->oEntityManager->getRepository('lenders_accounts');
-        $lender->get($transfer->id_client_origin, 'id_client_owner');
-
-        return $lender;
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($transfer->id_client_origin);
     }
 
 }

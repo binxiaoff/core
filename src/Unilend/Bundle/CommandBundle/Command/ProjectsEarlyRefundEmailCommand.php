@@ -3,6 +3,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Input\InputOption;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -42,10 +44,6 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $borrowerTransaction = $entityManagerSimulator->getRepository('transactions');
         /** @var \transactions $lenderTransaction */
         $lenderTransaction = $entityManagerSimulator->getRepository('transactions');
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManagerSimulator->getRepository('lenders_accounts');
-        /** @var \clients $client */
-        $client = $entityManagerSimulator->getRepository('clients');
         /** @var \clients_gestion_mails_notif $emailNotification */
         $emailNotification = $entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $notificationSettings */
@@ -106,11 +104,9 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
             $mailer->send($message);
 
             foreach ($projectLenders as $projectLender) {
-                $lender->get($projectLender['id_lender'], 'id_lender_account');
-                $client->get($lender->id_client_owner, 'id_client');
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
 
-                if ($client->status == 1) {
+                if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
                     $lenderRemainingCapital = $borrowerTransaction->sum('type_transaction = ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT .' AND id_client = ' . $client->id_client . ' AND id_loan_remb = ' . $projectLender['id_loan'] . ' AND id_project = ' . $project->id_project, 'montant');
 
                     $notification->type       = \notifications::TYPE_REPAYMENT;
@@ -122,13 +118,13 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                     $lenderTransaction->get($projectLender['id_loan'], 'id_loan_remb');
 
                     $emailNotification->unsetData();
-                    $emailNotification->id_client       = $client->id_client;
+                    $emailNotification->id_client       = $wallet->getIdClient()->getIdClient();
                     $emailNotification->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
                     $emailNotification->date_notif      = $lenderTransaction->added;
                     $emailNotification->id_notification = $notification->id_notification;
                     $emailNotification->id_transaction  = $lenderTransaction->id_transaction;
 
-                    if ($notificationSettings->getNotif($client->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
+                    if ($notificationSettings->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
                         $emailNotification->immediatement = 1;
 
                         $loan->get($projectLender['id_loan'], 'id_loan');
@@ -137,12 +133,12 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                         $keywords       = [
                             'surl'                 => $staticUrl,
                             'url'                  => $frontUrl,
-                            'prenom_p'             => $client->prenom,
+                            'prenom_p'             => $wallet->getIdClient()->getPrenom(),
                             'nomproject'           => $project->title,
                             'nom_entreprise'       => $company->name,
                             'taux_bid'             => $ficelle->formatNumber($loan->rate),
                             'nbecheancesrestantes' => $remainingRepaymentsCount,
-                            'interetsdejaverses'   => $ficelle->formatNumber($lenderRepaymentSchedule->getRepaidInterests(array('id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender']))),
+                            'interetsdejaverses'   => $ficelle->formatNumber($lenderRepaymentSchedule->getRepaidInterests(['id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender']])),
                             'crdpreteur'           => $ficelle->formatNumber($lenderRemainingCapital / 100) . (($lenderRemainingCapital / 100) >= 2 ? ' euros' : ' euro'),
                             'Datera'               => date('d/m/Y'),
                             'solde_p'              => $ficelle->formatNumber($accountBalance) . ($accountBalance >= 2 ? ' euros' : ' euro'),
@@ -154,7 +150,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement-anticipe', $keywords);
-                        $message->setTo($client->email);
+                        $message->setTo($wallet->getIdClient()->getEmail());
                         $mailer = $this->getContainer()->get('mailer');
                         $mailer->send($message);
                     }

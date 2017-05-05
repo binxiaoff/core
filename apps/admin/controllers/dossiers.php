@@ -120,7 +120,6 @@ class dossiersController extends bootstrap
         $this->clients_adresses              = $this->loadData('clients_adresses');
         $this->loans                         = $this->loadData('loans');
         $this->projects_pouvoir              = $this->loadData('projects_pouvoir');
-        $this->lenders_accounts              = $this->loadData('lenders_accounts');
         $this->echeanciers                   = $this->loadData('echeanciers');
         $this->notifications                 = $this->loadData('notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
@@ -357,10 +356,6 @@ class dossiersController extends bootstrap
                     $loans = $this->loadData('loans');
                     /** @var \transactions $transactions */
                     $transactions = $this->loadData('transactions');
-                    /** @var \lenders_accounts $lenders */
-                    $lenders = $this->loadData('lenders_accounts');
-                    /** @var \clients $clients */
-                    $clients = $this->loadData('clients');
                     /** @var \echeanciers $echeanciers */
                     $echeanciers = $this->loadData('echeanciers');
 
@@ -379,8 +374,8 @@ class dossiersController extends bootstrap
 
                     foreach ($loans->select('id_project = ' . $this->projects->id_project) as $l) {
                         if (false === $transactions->get($l['id_loan'], 'id_loan_remb')) {
-                            $lenders->get($l['id_lender'], 'id_lender_account');
-                            $clients->get($lenders->id_client_owner, 'id_client');
+                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+                            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($l['id_lender']);
 
                             $loans->get($l['id_loan'], 'id_loan');
                             $loans->status = \loans::STATUS_REJECTED;
@@ -392,18 +387,18 @@ class dossiersController extends bootstrap
                             $varMail = [
                                 'surl'              => $this->surl,
                                 'url'               => $this->furl,
-                                'prenom_p'          => $clients->prenom,
+                                'prenom_p'          => $wallet->getIdClient()->getPrenom(),
                                 'valeur_bid'        => $this->ficelle->formatNumber($l['amount'] / 100, 0),
                                 'nom_entreprise'    => $this->companies->name,
                                 'nb_preteurMoinsUn' => $lendersCount - 1,
-                                'motif_virement'    => $this->clients->getLenderPattern($clients->id_client),
+                                'motif_virement'    => $wallet->getWireTransferPattern(),
                                 'lien_fb'           => $facebookLink,
                                 'lien_tw'           => $twitterLink
                             ];
 
                             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $varMail);
-                            $message->setTo($clients->email);
+                            $message->setTo($wallet->getIdClient()->getEmail());
                             $mailer = $this->get('mailer');
                             $mailer->send($message);
                         }
@@ -962,6 +957,8 @@ class dossiersController extends bootstrap
 
     private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
     {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository $walletRepository */
+        $walletRepository   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
         $this->transactions = $this->loadData('transactions');
 
         $this->settings->get('Facebook', 'type');
@@ -1038,7 +1035,7 @@ class dossiersController extends bootstrap
         $aRepaymentStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $aCommonReplacements['annee_projet'] = date('Y', strtotime($aRepaymentStatus[0]['added']));
 
-        if (in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
+        if (in_array($iStatus, [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE])) {
             $oMaxClaimsSendingDate = new \DateTime($projectStatusHistoryDetails->date);
             $aCommonReplacements['date_max_envoi_declaration_creances'] = date('d/m/Y', $oMaxClaimsSendingDate->add(new \DateInterval('P2M'))->getTimestamp());
         }
@@ -1049,8 +1046,8 @@ class dossiersController extends bootstrap
             $aNextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND date_echeance > "' . date('Y-m-d') . '"', 'date_echeance ASC', 0, 1);
 
             foreach ($aLenderLoans as $aLoans) {
-                $this->lenders_accounts->get($aLoans['id_lender'], 'id_lender_account');
-                $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+                $wallet = $walletRepository->find($aLoans['id_lender']);
 
                 $fTotalPayedBack = 0.0;
                 $iLoansCount     = $aLoans['cnt'];
@@ -1068,10 +1065,10 @@ class dossiersController extends bootstrap
                 $this->notifications->create();
 
                 if (
-                    in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT))
-                    || $this->clients_gestion_notifications->getNotif($this->clients->id_client, \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM, 'immediatement')
+                    in_array($iStatus, [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT])
+                    || $this->clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM, 'immediatement')
                 ) {
-                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
+                    $this->clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
                     $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM;
                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                     $this->clients_gestion_mails_notif->id_transaction  = 0;
@@ -1081,7 +1078,7 @@ class dossiersController extends bootstrap
                     $this->clients_gestion_mails_notif->create();
 
                     $aReplacements = $aCommonReplacements + [
-                        'prenom_p'                    => $this->clients->prenom,
+                        'prenom_p'                    => $wallet->getIdClient()->getPrenom(),
                         'entreprise'                  => $this->companies->name,
                         'montant_pret'                => $this->ficelle->formatNumber($fLoansAmount / 100, 0),
                         'montant_rembourse'           => '<span style=\'color:#b20066;\'>' . $this->ficelle->formatNumber($fTotalPayedBack / 100) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
@@ -1090,8 +1087,8 @@ class dossiersController extends bootstrap
                         'CRD'                         => $this->ficelle->formatNumber(($fLoansAmount - $fTotalPayedBack) / 100)
                     ];
 
-                    $sMailType = (in_array($this->clients->type, array(1, 3))) ? $sEmailTypePerson : $sEmailTypeSociety;
-                    $locale  = $this->getParameter('locale');
+                    $sMailType = ($wallet->getIdClient()->isNaturalPerson()) ? $sEmailTypePerson : $sEmailTypeSociety;
+                    $locale    = $this->getParameter('locale');
                     $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
                     $aReplacements['sujet'] = $this->mail_template->subject;
 
@@ -1101,7 +1098,7 @@ class dossiersController extends bootstrap
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
-                    $message->setTo($this->clients->email);
+                    $message->setTo($wallet->getIdClient()->getEmail());
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
                 }
@@ -1697,7 +1694,6 @@ class dossiersController extends bootstrap
         $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
         $this->transactions                  = $this->loadData('transactions');
         $this->wallets_lines                 = $this->loadData('wallets_lines');
-        $this->lenders_accounts              = $this->loadData('lenders_accounts');
         $this->notifications                 = $this->loadData('notifications');
         $this->bank_unilend                  = $this->loadData('bank_unilend');
         $this->projects_remb                 = $this->loadData('projects_remb');
@@ -1837,9 +1833,8 @@ class dossiersController extends bootstrap
                         if (false === $this->transactions->exist($e['id_echeancier'], 'id_echeancier')) {
                             $montant += $e['montant'];
                             $repaymentNb ++;
-                            $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
-                            $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-                            $lenderWallet = $walletRepository->getWalletByType($this->clients->id_client, WalletType::LENDER);
+                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $lenderWallet */
+                            $lenderWallet = $walletRepository->find($e['id_lender']);
 
                             $lenderRepayment->id_lender  = $e['id_lender'];
                             $lenderRepayment->id_company = $this->projects->id_company;
@@ -1857,7 +1852,7 @@ class dossiersController extends bootstrap
                             $this->echeanciers->date_echeance_reel  = $repaymentDate;
                             $this->echeanciers->update();
 
-                            $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
+                            $this->transactions->id_client        = $lenderWallet->getIdClient()->getIdClient();
                             $this->transactions->montant          = $e['capital'];
                             $this->transactions->id_echeancier    = $e['id_echeancier'];
                             $this->transactions->id_langue        = 'fr';
@@ -1879,7 +1874,7 @@ class dossiersController extends bootstrap
                             $this->wallets_lines->unsetData();
 
                             $this->transactions->unsetData();
-                            $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
+                            $this->transactions->id_client        = $lenderWallet->getIdClient()->getIdClient();
                             $this->transactions->montant          = $e['interets'];
                             $this->transactions->id_echeancier    = $e['id_echeancier'];
                             $this->transactions->id_langue        = 'fr';
@@ -1904,13 +1899,13 @@ class dossiersController extends bootstrap
 
                             $iTotalEAT                       = $e['montant'] - $iTaxOnInterests - $iTaxOnCapital;
                             $this->notifications->type       = \notifications::TYPE_REPAYMENT;
-                            $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
+                            $this->notifications->id_lender  = $lenderWallet->getId();
                             $this->notifications->id_project = $this->projects->id_project;
                             $this->notifications->amount     = $iTotalEAT;
                             $this->notifications->create();
 
                             $this->clients_gestion_mails_notif->id_transaction  = $capitalTransactionId;
-                            $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
+                            $this->clients_gestion_mails_notif->id_client       = $lenderWallet->getIdClient()->getIdClient();
                             $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
                             $this->clients_gestion_mails_notif->date_notif      = $repaymentDate;
                             $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
@@ -1925,7 +1920,7 @@ class dossiersController extends bootstrap
                                 $varMail = array(
                                     'surl'             => $this->surl,
                                     'url'              => $this->furl,
-                                    'prenom_p'         => $this->clients->prenom,
+                                    'prenom_p'         => $lenderWallet->getIdClient()->getPrenom(),
                                     'cab_recouvrement' => $sRecoveryCompany,
                                     'mensualite_p'     => $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100, 2)),
                                     'nom_entreprise'   => $this->companies->name,
@@ -1940,7 +1935,7 @@ class dossiersController extends bootstrap
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dossier-recouvre', $varMail);
-                                $message->setTo($this->clients->email);
+                                $message->setTo($lenderWallet->getIdClient()->getEmail());
                                 $mailer = $this->get('mailer');
                                 $mailer->send($message);
 
@@ -1966,7 +1961,7 @@ class dossiersController extends bootstrap
                                 $timeAdd = strtotime($dateDernierStatut);
                                 $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-                                $varMail = array(
+                                $varMail = [
                                     'surl'                  => $this->surl,
                                     'url'                   => $this->furl,
                                     'prenom_p'              => $this->clients->prenom,
@@ -1979,7 +1974,7 @@ class dossiersController extends bootstrap
                                     'motif_virement'        => $lenderWallet->getWireTransferPattern(),
                                     'lien_fb'               => $lien_fb,
                                     'lien_tw'               => $lien_tw
-                                );
+                                ];
 
                                 $oLogger->info('Manual repayment, Send preteur-regularisation-remboursement. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $e['id_project']]);
 
@@ -2016,7 +2011,7 @@ class dossiersController extends bootstrap
                                 $timeAdd = strtotime($dateDernierStatut);
                                 $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-                                $varMail = array(
+                                $varMail = [
                                     'surl'                  => $this->surl,
                                     'url'                   => $this->furl,
                                     'prenom_p'              => $this->clients->prenom,
@@ -2029,7 +2024,7 @@ class dossiersController extends bootstrap
                                     'motif_virement'        => $lenderWallet->getWireTransferPattern(),
                                     'lien_fb'               => $lien_fb,
                                     'lien_tw'               => $lien_tw
-                                );
+                                ];
 
                                 if ($lastProjectRepayment) {
                                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -2223,14 +2218,13 @@ class dossiersController extends bootstrap
                 $this->receptions             = $this->loadData('receptions');
                 $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                 $this->transactions           = $this->loadData('transactions');
-                $this->lenders_accounts       = $this->loadData('lenders_accounts');
                 $this->clients                = $this->loadData('clients');
                 $this->wallets_lines          = $this->loadData('wallets_lines');
                 $this->mail_template          = $this->loadData('mail_templates');
                 $this->companies              = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
-                $loanRepo        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans');
+                $loanRepository  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
@@ -2270,7 +2264,7 @@ class dossiersController extends bootstrap
                     $montant_total = 0;
 
                     foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $item) {
-                        $loan = $loanRepo->find($item['id_loan']);
+                        $loan               = $loanRepository->find($item['id_loan']);
                         $outstandingCapital = $operationManager->earlyRepayment($loan);
                         $montant_total += $outstandingCapital;
                     }
@@ -2335,7 +2329,6 @@ class dossiersController extends bootstrap
     {
         $this->clients          = $this->loadData('clients');
         $this->echeanciers      = $this->loadData('echeanciers');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->projects         = $this->loadData('projects');
         /** @var \loans loan */
         $this->loan = $this->loadData('loans');
@@ -2343,11 +2336,13 @@ class dossiersController extends bootstrap
         $this->lenderManager = $this->get('unilend.service.lender_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
         $this->loanManager = $this->get('unilend.service.loan_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository walletRepository */
+        $this->walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            /** @var \loans $oLoans */
+            /** @var \loans $loans */
             $loans = $this->loadData('loans');
-            /** @var \echeanciers_emprunteur $oRepaymentSchedule */
+            /** @var \echeanciers_emprunteur $repaymentSchedule */
             $repaymentSchedule = $this->loadData('echeanciers_emprunteur');
 
             $this->nbPeteurs = $loans->getNbPreteurs($this->projects->id_project);
@@ -2362,11 +2357,12 @@ class dossiersController extends bootstrap
         $this->clients                 = $this->loadData('clients');
         $this->loans                   = $this->loadData('loans');
         $this->echeanciers             = $this->loadData('echeanciers');
-        $this->lenders_accounts        = $this->loadData('lenders_accounts');
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions              = $this->loadData('receptions');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository walletRepository */
+        $this->walletRepository        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         /** @var \loans loan */
         $this->loan = $this->loadData('loans');

@@ -29,17 +29,16 @@ class LenderManager
     }
 
     /**
-     * @param \lenders_accounts $oLenderAccount
+     * @param Clients $client
      *
      * @return bool
      */
-    public function canBid(\lenders_accounts $oLenderAccount)
+    public function canBid(Clients $client)
     {
-        /** @var \clients $oClient */
-        $oClient = $this->entityManagerSimulator->getRepository('clients');
-
-        if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == Clients::STATUS_ONLINE
-            && $this->isValidated($oClient)
+        if (
+            $client->isLender()
+            && Clients::STATUS_ONLINE == $client->getStatus()
+            && $this->isValidated($client)
         ) {
             return true;
         }
@@ -47,12 +46,20 @@ class LenderManager
     }
 
     /**
-     * @param \lenders_accounts $lenderAccount
+     * @param Clients $client
+     *
      * @return int
+     * @throws \Exception
      */
-    public function getDiversificationLevel(\lenders_accounts $lenderAccount)
+    public function getDiversificationLevel(Clients $client)
     {
-        $numberOfCompanies    = $lenderAccount->countCompaniesLenderInvestedIn($lenderAccount->id_lender_account);
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+
+        $wallet               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $projectsRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $numberOfCompanies    = $projectsRepository->countCompaniesLenderInvestedIn($wallet->getId());
         $diversificationLevel = 0;
 
         if ($numberOfCompanies === 0) {
@@ -83,60 +90,22 @@ class LenderManager
     }
 
     /**
-     * @param \lenders_accounts $lender
-     * @param null              $projectRates optional, for optimize the performance.
+     * @param Clients $client
      *
-     * @return array
-     */
-    public function getBadAutoBidSettings(\lenders_accounts $lender, $projectRates = null)
-    {
-        /** @var \autobid $autoBid */
-        $autoBid = $this->entityManagerSimulator->getRepository('autobid');
-
-        if ($projectRates == null) {
-            /** @var \project_rate_settings $projectRateSettings */
-            $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
-            $projectRates        = $projectRateSettings->getSettings();
-        }
-
-        $projectMaxRate = [];
-        foreach ($projectRates as $rate) {
-            $projectMaxRate[$rate['id_period']][$rate['evaluation']] = $rate['rate_max'];
-        }
-
-        $autoBidSettings = $autoBid->getSettings($lender->id_lender_account);
-        $badSettings     = [];
-        foreach ($autoBidSettings as $setting) {
-            if (false === isset($projectMaxRate[$setting['id_period']][$setting['evaluation']])) {
-                continue;
-            }
-            if (bccomp($setting['rate_min'], $projectMaxRate[$setting['id_period']][$setting['evaluation']], 1) > 0) {
-                $badSettings[] = [
-                    'period_min'       => $setting['period_min'],
-                    'period_max'       => $setting['period_max'],
-                    'evaluation'       => $setting['evaluation'],
-                    'rate_min_autobid' => $setting['rate_min'],
-                    'rate_max_project' => $projectMaxRate[$setting['id_period']][$setting['evaluation']],
-                ];
-            }
-        }
-
-        return $badSettings;
-    }
-
-
-    /**
-     * @param \lenders_accounts $lender
      * @return bool
+     * @throws \Exception
      */
-    public function hasTransferredLoans(\lenders_accounts $lender)
+    public function hasTransferredLoans(Clients $client)
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+
         /** @var \transfer $transfer */
         $transfer = $this->entityManagerSimulator->getRepository('transfer');
         /** @var \loan_transfer $loanTransfer */
-        $loanTransfer = $this->entityManagerSimulator->getRepository('loan_transfer');
-        $transfersWithLenderInvolved = $transfer->select('id_client_origin = ' . $lender->id_client_owner . ' OR id_client_receiver = ' . $lender->id_client_owner);
-
+        $loanTransfer                = $this->entityManagerSimulator->getRepository('loan_transfer');
+        $transfersWithLenderInvolved = $transfer->select('id_client_origin = ' . $client->getIdClient() . ' OR id_client_receiver = ' . $client->getIdClient());
         foreach ($transfersWithLenderInvolved as $transfer) {
             if ($loanTransfer->exist($transfer['id_transfer'], 'id_transfer')){
                return true;
@@ -163,28 +132,37 @@ class LenderManager
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
+     *
      * @return bool
      */
-    public function isValidated(\clients $client)
+    public function isValidated(Clients $client)
     {
         /** @var \clients_status $lastClientStatus */
         $lastClientStatus = $this->entityManagerSimulator->getRepository('clients_status');
-        $lastClientStatus->getLastStatut($client->id_client);
+        $lastClientStatus->getLastStatut($client->getIdClient());
+
         return $lastClientStatus->status == \clients_status::VALIDATED;
     }
 
     /**
-     * @param \lenders_accounts $lender
+     * @param Clients $client
      *
      * @return null|string
+     * @throws \Exception
      */
-    public function getLossRate(\lenders_accounts $lender)
+    public function getLossRate(Clients $client)
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+
+        $wallet                      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $lostAmount                  = $repaymentScheduleRepository->getLostCapitalForLender($lender->id_lender_account);
+        $loansRepository             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+        $lostAmount                  = $repaymentScheduleRepository->getLostCapitalForLender($wallet->getId());
         $remainingDueCapital         = round(bcdiv($lostAmount, 100, 3), 2);
-        $sumOfLoans                  = $lender->sumLoansOfProjectsInRepayment($lender->id_lender_account);
+        $sumOfLoans                  = $loansRepository->sumLoansOfProjectsInRepayment($wallet);
 
         $lossRate = $sumOfLoans > 0 ? bcmul(round(bcdiv($remainingDueCapital, $sumOfLoans, 3), 2), 100) : null ;
 

@@ -39,35 +39,36 @@
             </thead>
             <tbody>
                 <?php $i = 1; ?>
-                <?php foreach ($this->lRemb as $r) : ?>
+                <?php foreach ($this->lRemb as $repayment) : ?>
                     <?php
-                        $this->projects->get($r['id_project'], 'id_project');
-                        $this->lenders_accounts->get($r['id_lender'], 'id_lender_account');
-                        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                        $this->projects->get($repayment['id_project'], 'id_project');
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+                        $wallet = $this->walletRepository->find($repayment['id_lender']);
+                        $this->clients->get($wallet->getIdClient()->getIdClient(), 'id_client');
 
                         if (false === empty($this->loan->id_transfer)) {
                             /** @var \DateTime $transferDate */
                             $transferDate = $this->loanManager->getLoanTransferDate($this->loan);
-                            $paymentDate = new \DateTime($r['date_echeance_reel']);
-                            if ($r['date_echeance_reel'] !== '0000-00-00 00:00:00' && $paymentDate <= $transferDate) {
-                                /** @var \lenders_accounts $formerOwner */
+                            $paymentDate = new \DateTime($repayment['date_echeance_reel']);
+                            if ($repayment['date_echeance_reel'] !== '0000-00-00 00:00:00' && $paymentDate <= $transferDate) {
+                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
                                 $formerOwner = $this->loanManager->getFormerOwner($this->loan);
-                                $this->clients->get($formerOwner->id_client_owner, 'id_client');
+                                $this->clients->get($formerOwner->getIdClient(), 'id_client');
                             }
                         }
                     ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td><?= $this->clients->nom ?></td>
                         <td><?= $this->clients->prenom ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['montant'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['capital'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['capital_rembourse'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['interets'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['interets_rembourses'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['tax'] / 100) ?></td>
-                        <td><?= $this->dates->formatDate($r['date_echeance'], 'd/m/Y') ?></td>
-                        <td><?= $r['status'] == \echeanciers::STATUS_REPAID ? $this->dates->formatDate($r['date_echeance_reel'], 'd/m/Y') : '' ?></td>
-                        <td><?php switch ($r['status']) {
+                        <td><?= $this->ficelle->formatNumber($repayment['montant'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($repayment['capital'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($repayment['capital_rembourse'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($repayment['interets'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($repayment['interets_rembourses'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($repayment['tax'] / 100) ?></td>
+                        <td><?= $this->dates->formatDate($repayment['date_echeance'], 'd/m/Y') ?></td>
+                        <td><?= $repayment['status'] == \echeanciers::STATUS_REPAID ? $this->dates->formatDate($repayment['date_echeance_reel'], 'd/m/Y') : '' ?></td>
+                        <td><?php switch ($repayment['status']) {
                                 case \echeanciers::STATUS_PENDING:
                                     echo 'A venir';
                                     break;
@@ -95,7 +96,7 @@
                         <td><?= $this->dates->formatDate($this->date_ra, 'd/m/Y') ?></td>
                         <td>
                             <?php
-                                switch ($r['status']) {
+                                switch ($repayment['status']) {
                                     case \echeanciers::STATUS_PENDING:
                                         echo 'A venir';
                                         break;

@@ -727,7 +727,7 @@ class echeanciers extends echeanciers_crud
               CASE
                   IFNULL((SELECT resident_etranger
                      FROM lenders_imposition_history lih
-                     WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
+                     WHERE lih.id_lender = w.id AND lih.added <= e.date_echeance_reel
                      ORDER BY added DESC
                      LIMIT 1
                   ), 0) = 0 AND 1 = c.type
@@ -743,7 +743,7 @@ class echeanciers extends echeanciers_crud
               END AS exonere,
               (SELECT group_concat(lte.year SEPARATOR ", ")
                FROM lender_tax_exemption lte
-               WHERE lte.id_lender = la.id_lender_account) AS annees_exoneration,
+               WHERE lte.id_lender = w.id) AS annees_exoneration,
               e.id_project,
               e.id_loan,
               l.id_type_contract,
@@ -765,8 +765,8 @@ class echeanciers extends echeanciers_crud
               e.date_echeance_emprunteur_reel
             FROM echeanciers e
               INNER JOIN loans l ON l.id_loan = e.id_loan
-              INNER JOIN lenders_accounts la ON la.id_lender_account = e.id_lender
-              INNER JOIN clients c ON c.id_client = la.id_client_owner
+              INNER JOIN wallet w ON w.id = e.id_lender
+              INNER JOIN clients c ON c.id_client = w.id_client
               LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance_reel)
               INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
               LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
@@ -817,7 +817,7 @@ class echeanciers extends echeanciers_crud
                 CASE IFNULL(
                     (SELECT resident_etranger
                         FROM lenders_imposition_history lih
-                        WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
+                        WHERE lih.id_lender = w.id AND lih.added <= e.date_echeance_reel
                         ORDER BY added DESC
                         LIMIT 1), 0
                     )
@@ -832,11 +832,11 @@ class echeanciers extends echeanciers_crud
                 SUM(ROUND(e.interets_rembourses / 100, 2)) AS interests
             FROM echeanciers e
               INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = 0
-              INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-              INNER JOIN clients c ON la.id_client_owner = c.id_client
+              INNER JOIN wallet w ON l.id_lender = w.id
+              INNER JOIN clients c ON w.id_client = c.id_client
               INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
               ' . $taxDynamicJoin['tax_join'] . '
-              LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel)
+              LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(e.date_echeance_reel)
             WHERE e.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND e.status_ra = 0
                 AND DATE(e.date_echeance_reel) BETWEEN :start_date AND :end_date
@@ -911,20 +911,20 @@ class echeanciers extends echeanciers_crud
 
         switch ($exempted) {
             case 0:
-                $taxExemptionJoin = ' LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel) ';
+                $taxExemptionJoin = ' LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(e.date_echeance_reel) ';
                 $sExemptionWhere  = 'AND lte.id_lender IS NULL';
                 break;
             case 1:
-                $taxExemptionJoin = ' INNER JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel) ';
+                $taxExemptionJoin = ' INNER JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(e.date_echeance_reel) ';
                 break;
             default:
-                $taxExemptionJoin = ' LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account ';
+                $taxExemptionJoin = ' LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id ';
                 break;
         }
 
         if (true === $foreigner) {
             $sForeignerWhere = '
-            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0 ';
+            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = w.id AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0 ';
         } else {
             $sForeignerWhere = '';
         }
@@ -938,8 +938,8 @@ class echeanciers extends echeanciers_crud
             SUM(e.interets_rembourses) AS interets
         FROM echeanciers e
             INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = ' . \loans::STATUS_ACCEPTED . '
-            INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-            INNER JOIN clients c ON la.id_client_owner = c.id_client
+            INNER JOIN wallet w ON l.id_lender = w.id
+            INNER JOIN clients c ON w.id_client = c.id_client
             INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS
             . $taxDynamicJoin['tax_join']
             . $taxExemptionJoin . '
@@ -985,10 +985,11 @@ class echeanciers extends echeanciers_crud
         $sql = '
             SELECT SUM(capital - capital_rembourse)
             FROM echeanciers
-            INNER JOIN lenders_accounts ON lenders_accounts.id_lender_account = echeanciers.id_lender
+              INNER JOIN wallet w ON w.id = echeanciers.id_lender
             WHERE (date_echeance_reel >= "' . $year . '-01-01" OR echeanciers.status IN (' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . '))
                 AND id_project IN (' . implode(',', $projectIds) . ')
-                AND lenders_accounts.id_client_owner = ' . $clientId;
+                AND w.id_client = ' . $clientId;
+
         return bcdiv($this->bdd->executeQuery($sql)->fetchColumn(0), 100, 2);
     }
 
@@ -1178,8 +1179,8 @@ class echeanciers extends echeanciers_crud
                             SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2))
                     END                           AS upcomingTaxes
                 FROM echeanciers e
-                INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-                LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                INNER JOIN wallet w ON e.id_lender = w.id
+                LEFT JOIN clients c ON w.id_client = c.id_client
                 LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance)
                 LEFT JOIN lenders_imposition_history lih ON lih.id_lenders_imposition_history = (SELECT MAX(id_lenders_imposition_history) FROM lenders_imposition_history WHERE id_lender = e.id_lender)
                 LEFT JOIN projects p ON e.id_project = p.id_project
@@ -1202,8 +1203,8 @@ class echeanciers extends echeanciers_crud
             ) AS t
             GROUP BY t.year, t.quarter, t.month';
 
-        /** @var \Doctrine\DBAL\Cache\QueryCacheProfile $oQCProfile */ //TODO @Anna Put the right cache in place DAY and delete account_matching
-        $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(1, md5(__METHOD__));
+        /** @var \Doctrine\DBAL\Cache\QueryCacheProfile $oQCProfile */
+        $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__));
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($query, $bind, $type, $oQCProfile);
         $data      = [];

@@ -3,6 +3,7 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class pdfController extends bootstrap
 {
@@ -28,11 +29,6 @@ class pdfController extends bootstrap
      * @var loans
      */
     public $oLoans;
-
-    /**
-     * @var lenders_accounts
-     */
-    public $oLendersAccounts;
 
     /**
      * @var echeanciers_emprunteur
@@ -250,10 +246,8 @@ class pdfController extends bootstrap
     private function GenerateWarrantyHtml()
     {
         $this->pays             = $this->loadData('pays');
-        $this->oLendersAccounts = $this->loadData('lenders_accounts');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
         $this->pays->get($this->clients->id_langue, 'id_langue');
 
@@ -491,10 +485,12 @@ class pdfController extends bootstrap
         $this->companies_bilans       = $this->loadData('companies_bilans');
         $this->echeanciers            = $this->loadData('echeanciers');
         $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
-        $this->oLendersAccounts       = $this->loadData('lenders_accounts');
         $this->oLoans                 = $this->loadData('loans');
         /** @var underlying_contract $contract */
         $contract                     = $this->loadData('underlying_contract');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $this->walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         $contract->get(\underlying_contract::CONTRACT_BDC, 'label');
         $BDCContractId = $contract->id_contract;
@@ -563,17 +559,10 @@ class pdfController extends bootstrap
 
         /** @var \loans $loans */
         $loans           = $this->loadData('loans');
-        /** @var \lenders_accounts $lendersAccounts */
-        $lendersAccounts = $this->loadData('lenders_accounts');
         /** @var \projects $projects */
         $projects        = $this->loadData('projects');
 
         if (false === $loans->get($this->params[1], 'id_loan')) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        if (false === $lendersAccounts->get($loans->id_lender, 'id_lender_account')) {
             header('Location: ' . $this->lurl);
             exit;
         }
@@ -590,9 +579,9 @@ class pdfController extends bootstrap
             if (false === empty($loans->id_transfer)) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
                 $loanManager = $this->get('unilend.service.loan_manager');
-                /** @var \lenders_accounts $formerOwner */
+                /** @var Clients $formerOwner */
                 $formerOwner = $loanManager->getFirstOwner($loans);
-                $clients->get($formerOwner->id_client_owner, 'id_client');
+                $clients->get($formerOwner->getIdClient(), 'id_client');
             }
             $this->GenerateContractHtml($clients, $loans, $projects);
             $this->WritePdf($filePath, 'contract');
@@ -602,11 +591,11 @@ class pdfController extends bootstrap
     }
 
     /**
-     * @param clients $oClients
+     * @param \clients $oClients
      * @param $oLoans
      * @param projects $oProjects
      */
-    private function GenerateContractHtml(\ clients $oClients, \loans $oLoans, \projects $oProjects)
+    private function GenerateContractHtml(\clients $oClients, \loans $oLoans, \projects $oProjects)
     {
         $this->emprunteur              = $this->loadData('clients');
         $this->companiesEmprunteur     = $this->loadData('companies');
@@ -704,13 +693,18 @@ class pdfController extends bootstrap
         $this->oLoans          = $this->loadData('loans');
         $this->companiesEmp    = $this->loadData('companies');
         $this->emprunteur      = $this->loadData('clients');
-        $this->lender          = $this->loadData('lenders_accounts');
         $this->preteur         = $this->loadData('clients');
         $this->preteurCompanie = $this->loadData('companies');
         $this->preteur_adresse = $this->loadData('clients_adresses');
         $this->echeanciers     = $this->loadData('echeanciers');
 
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
         if (isset($iIdLoan) && $this->oLoans->get($iIdLoan, 'status = "0" AND id_loan')) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_lender);
+
             $this->settings->get('Declaration contrat pret - adresse', 'type');
             $this->adresse = $this->settings->value;
 
@@ -720,9 +714,8 @@ class pdfController extends bootstrap
             $this->projects->get($this->oLoans->id_project, 'id_project');
             $this->companiesEmp->get($this->projects->id_company, 'id_company');
             $this->emprunteur->get($this->companiesEmp->id_client_owner, 'id_client');
-            $this->lender->get($this->oLoans->id_lender, 'id_lender_account');
-            $this->preteur->get($this->lender->id_client_owner, 'id_client');
-            $this->preteur_adresse->get($this->lender->id_client_owner, 'id_client');
+            $this->preteur->get($wallet->getIdClient()->getIdClient(), 'id_client');
+            $this->preteur_adresse->get($this->preteur->id_client, 'id_client');
 
             $this->lEcheances = array_values($this->echeanciers->getYearlySchedule(array('id_loan' => $this->oLoans->id_loan)));
             $this->lenderCountry = '';
@@ -953,27 +946,25 @@ class pdfController extends bootstrap
         $clients = $this->loadData('clients');
         /** @var \loans $loans */
         $loans = $this->loadData('loans');
-        /** @var \lenders_accounts $lendersAccounts */
-        $lendersAccounts = $this->loadData('lenders_accounts');
         /** @var \projects $projects */
         $projects = $this->loadData('projects');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (false === $loans->get($this->params[1], 'id_loan')) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if (false === $lendersAccounts->get($loans->id_lender, 'id_lender_account')) {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_lender);
+
+        if (false === $wallet->getIdClient()->isLender()) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if (false === $projects->get($loans->id_project, 'id_project')) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        $clients->get($lendersAccounts->id_client_owner, 'id_client');
+        $clients->get($wallet->getIdClient()->getIdClient(), 'id_client');
 
         $filePath      = $this->path . 'protected/pdf/declaration_de_creances/' . $loans->id_project . '/';
         $filePath      = ($loans->id_project == '1456') ? $filePath : $filePath . $clients->id_client . '/';
@@ -1011,9 +1002,10 @@ class pdfController extends bootstrap
         $this->contract = $this->loadData('underlying_contract');
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
-        /** @var \lenders_accounts oLendersAccounts */
-        $this->oLendersAccounts = $this->loadData('lenders_accounts');
-        $this->oLendersAccounts->get($this->oLoans->id_lender, 'id_lender_account');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_lender);
 
         $status = [
             \projects_status::PROCEDURE_SAUVEGARDE,
@@ -1027,17 +1019,17 @@ class pdfController extends bootstrap
 
             if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
-                $iCountryId = $this->clients_adresses->id_pays_fiscal;
+                $countryId = $this->clients_adresses->id_pays_fiscal;
             } else {
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
-                $iCountryId = $this->companies->id_pays;
+                $countryId = $this->companies->id_pays;
             }
 
-            if ($iCountryId == 0) {
-                $iCountryId = 1;
+            if ($countryId == 0) {
+                $countryId = 1;
             }
 
-            $this->pays->get($iCountryId, 'id_pays');
+            $this->pays->get($countryId, 'id_pays');
             $this->pays_fiscal = $this->pays->fr;
 
             /** @var \projects_status_history $projectStatusHistory */
@@ -1079,25 +1071,25 @@ class pdfController extends bootstrap
 
             /** @var \echeanciers $repaymentSchedule */
             $repaymentSchedule = $this->loadData('echeanciers');
-            $this->echu   = $repaymentSchedule->getNonRepaidAmountInDateRange($this->oLendersAccounts->id_lender_account, new \DateTime($this->oLoans->added), $expiration, $this->oLoans->id_loan);
-            $this->echoir = $repaymentSchedule->getTotalComingCapital($this->oLendersAccounts->id_lender_account, $this->oLoans->id_loan, $expiration);
+            $this->echu        = $repaymentSchedule->getNonRepaidAmountInDateRange($wallet->getId(), new \DateTime($this->oLoans->added), $expiration, $this->oLoans->id_loan);
+            $this->echoir      = $repaymentSchedule->getTotalComingCapital($wallet->getId(), $this->oLoans->id_loan, $expiration);
 
             if (false === empty($recoveryStatus)) {
                 /** @var \transactions $transaction */
                 $transaction     = $this->loadData('transactions');
-                $where           = 'id_client = ' . $this->oLendersAccounts->id_client_owner . ' AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+                $where           = 'id_client = ' . $wallet->getIdClient()->getIdClient() . ' AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
 
                 if (false === empty($this->oLoans->id_transfer)) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
                     $loanManager = $this->get('unilend.service.loan_manager');
-                    /** @var \lenders_accounts $formerOwner */
+                    /** @var Clients $formerOwner */
                     $formerOwner = $loanManager->getFirstOwner($this->oLoans);
-                    $where           = 'id_client IN (' . implode(',', [$this->oLendersAccounts->id_client_owner, $formerOwner->id_client_owner]) . ') AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+                    $where       = 'id_client IN (' . implode(',', [$wallet->getIdClient()->getIdClient(), $formerOwner->getIdClient()]) . ') AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
                 }
 
                 $totalAmountRecovered = bcdiv($transaction->sum($where, 'montant'), 100, 2);
-                $allLoans             = $this->oLoans->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project);
-                $totalLoans           = $this->oLoans->sumPretsProjet($this->projects->id_project . ' AND id_lender = ' . $this->oLendersAccounts->id_lender_account);
+                $allLoans             = $this->oLoans->select('id_lender = ' . $wallet->getId() . ' AND id_project = ' . $this->projects->id_project);
+                $totalLoans           = $this->oLoans->sumPretsProjet($this->projects->id_project . ' AND id_lender = ' . $wallet->getId());
 
                 $recoveryAmountsTaxExcl = [];
                 foreach ($allLoans as $index => $loan) {
@@ -1119,7 +1111,7 @@ class pdfController extends bootstrap
             }
 
             $this->total        = bcadd($this->echu, $this->echoir, 2);
-            $lastEcheance       = $this->echeanciers->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
+            $lastEcheance       = $this->echeanciers->select('id_lender = ' . $wallet->getId() . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
 
             $this->contract->get($this->oLoans->id_type_contract);
@@ -1176,22 +1168,30 @@ class pdfController extends bootstrap
     {
         $this->echeanciers = $this->loadData('echeanciers');
         $this->loans       = $this->loadData('loans');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->lenders_accounts->get($clientId, 'id_client_owner');
-        $this->clients = $this->loadData('clients');
+        $this->clients     = $this->loadData('clients');
+        $this->companies   = $this->loadData('companies');
         $this->clients->get($clientId);
+        if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            $this->companies->get($this->clients->id_client, 'id_client_owner');
+        }
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
+
+
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
-        $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'debut DESC, p.title ASC');
+        $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');
 
-        $this->aLoansStatuses = array(
+        $this->aLoansStatuses = [
             'no-problem'            => 0,
             'late-repayment'        => 0,
             'recovery'              => 0,
             'collective-proceeding' => 0,
             'default'               => 0,
             'refund-finished'       => 0,
-        );
+        ];
 
         foreach ($this->lSumLoans as $iLoandIndex => $aProjectLoans) {
             switch ($aProjectLoans['project_status']) {
@@ -1251,7 +1251,6 @@ class pdfController extends bootstrap
         /** @var $this->recoveryManager recoveryManager */
         $this->recoveryManager         = $this->get('unilend.service.recovery_manager');
         $this->echeanciers             = $this->loadData('echeanciers');
-        $this->oLendersAccounts        = $this->loadData('lenders_accounts');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
@@ -1263,7 +1262,6 @@ class pdfController extends bootstrap
 
         $this->clients->get($id_client, 'id_client');
         $this->clients_adresses->get($id_client, 'id_client');
-        $this->oLendersAccounts->get($id_client, 'id_client_owner');
 
         $this->date_debut     = $savedFilters['startDate']->format('Y-m-d');
         $this->date_fin       = $savedFilters['endDate']->format('Y-m-d');

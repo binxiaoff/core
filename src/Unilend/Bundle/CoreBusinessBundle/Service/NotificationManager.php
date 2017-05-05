@@ -1,25 +1,35 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class NotificationManager
 {
     /** @var MailerManager */
     private $mailerManager;
-    /** @var EntityManager  */
+    /** @var  EntityManager */
     private $entityManager;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
 
     /**
      * NotificationManager constructor.
+     * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManager $entityManager
      * @param MailerManager $mailerManager
      */
-    public function __construct(EntityManager $entityManager, MailerManager $mailerManager)
+    public function __construct(
+        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager,
+        MailerManager $mailerManager
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->mailerManager = $mailerManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->mailerManager          = $mailerManager;
     }
 
     /**
@@ -45,9 +55,9 @@ class NotificationManager
         $loanId = null
     ) {
         /** @var \clients_gestion_notifications $notificationSettings */
-        $notificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
+        $notificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $mailNotification */
-        $mailNotification = $this->entityManager->getRepository('clients_gestion_mails_notif');
+        $mailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
 
         $notification = $this->createNotification($notificationType, $clientId, $projectId, $amount, $bidId);
 
@@ -80,14 +90,13 @@ class NotificationManager
      */
     public function createNotification($notificationType, $clientId, $projectId = null, $amount = null, $bidId = null)
     {
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
         /** @var \notifications $notification */
-        $notification = $this->entityManager->getRepository('notifications');
+        $notification = $this->entityManagerSimulator->getRepository('notifications');
+        $wallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
 
         $lenderId = '';
-        if ($lenderAccount->get($clientId, 'id_client_owner')) {
-            $lenderId = $lenderAccount->id_lender_account;
+        if (null !== $wallet) {
+            $lenderId = $wallet->getId();
         }
         $notification->type       = $notificationType;
         $notification->id_lender  = $lenderId;
@@ -110,7 +119,7 @@ class NotificationManager
     public function createEmailNotification($notificationId, $mailType, $clientId, $transactionId = null, $projectId = null, $loanId = null)
     {
         /** @var \clients_gestion_mails_notif $mailNotification */
-        $mailNotification = $this->entityManager->getRepository('clients_gestion_mails_notif');
+        $mailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
 
         $mailNotification->id_client       = $clientId;
         $mailNotification->id_project      = $projectId;
@@ -130,12 +139,10 @@ class NotificationManager
     public function countUnreadNotificationsForClient(\clients $client)
     {
         /** @var \notifications $notifications */
-        $notifications  = $this->entityManager->getRepository('notifications');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
+        $notifications = $this->entityManagerSimulator->getRepository('notifications');
+        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
 
-        return $notifications->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND status = ' . \notifications::STATUS_UNREAD);
+        return $notifications->counter('id_lender = ' . $wallet->getId() . ' AND status = ' . \notifications::STATUS_UNREAD);
     }
 
     /**
@@ -145,14 +152,14 @@ class NotificationManager
     {
         if ($client instanceof Clients) {
             $clientEntity = $client;
-            $client = $this->entityManager->getRepository('clients');
+            $client = $this->entityManagerSimulator->getRepository('clients');
             $client->get($clientEntity->getIdClient());
             unset($clientEntity);
         }
 
         $notificationTypes = $this->getNotificationTypes();
         /** @var \clients_gestion_notifications $clientNotificationSettings */
-        $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
+        $clientNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
 
         foreach ($notificationTypes as $notification) {
             if ($clientNotificationSettings->exist(['id_client' => $client->id_client, 'id_notif'  => $notification['id_client_gestion_type_notif']])) {
@@ -194,7 +201,7 @@ class NotificationManager
     public function getNotificationTypes()
     {
         /** @var \clients_gestion_type_notif $clientNotificationTypes */
-        $clientNotificationTypes = $this->entityManager->getRepository('clients_gestion_type_notif');
+        $clientNotificationTypes = $this->entityManagerSimulator->getRepository('clients_gestion_type_notif');
         return $clientNotificationTypes->select();
     }
 
@@ -204,7 +211,7 @@ class NotificationManager
     public function deactivateAllNotificationSettings(\clients $client)
     {
         /** @var \clients_gestion_notifications $clientNotificationSettings */
-        $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
+        $clientNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
 
         foreach ($clientNotificationSettings->getNotifs($client->id_client) as $idNotification => $notification){
             $clientNotificationSettings->get(['id_notif' => $idNotification]);

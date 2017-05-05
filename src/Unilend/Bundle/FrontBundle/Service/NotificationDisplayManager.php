@@ -1,7 +1,10 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -9,60 +12,86 @@ use Unilend\core\Loader;
 
 class NotificationDisplayManager
 {
-    /** @var EntityManager $entityManager */
-    private $entityManager;
+    /** @var EntityManagerSimulator $entityManagerSimulator */
+    private $entityManagerSimulator;
     /** @var AutoBidSettingsManager */
     private $autoBidSettingsManager;
     /** @var TranslatorInterface */
     private $translator;
     /** @var RouterInterface */
     private $router;
+    /** @var  EntityManager */
+    private $entityManager;
 
-    public function __construct(EntityManager $entityManager, AutoBidSettingsManager $autoBidSettingsManager, TranslatorInterface $translator, RouterInterface $router)
-    {
-        $this->entityManager          = $entityManager;
+    /**
+     * NotificationDisplayManager constructor.
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param AutoBidSettingsManager $autoBidSettingsManager
+     * @param TranslatorInterface    $translator
+     * @param RouterInterface        $router
+     * @param EntityManager          $entityManager
+     */
+    public function __construct(
+        EntityManagerSimulator $entityManagerSimulator,
+        AutoBidSettingsManager $autoBidSettingsManager,
+        TranslatorInterface $translator,
+        RouterInterface $router,
+        EntityManager $entityManager
+    ) {
+        $this->entityManagerSimulator = $entityManagerSimulator;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->translator             = $translator;
         $this->router                 = $router;
+        $this->entityManager          = $entityManager;
     }
 
     /**
-     * @param \lenders_accounts $lender
+     * @param Clients $client
+     *
      * @return array
+     * @throws \Exception
      */
-    public function getLastLenderNotifications(\lenders_accounts $lender)
+    public function getLastLenderNotifications(Clients $client)
     {
-        return $this->getLenderNotifications($lender, 1, 20);
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+
+        return $this->getLenderNotifications($client, 1, 20);
     }
 
     /**
-     * @param \lenders_accounts $lender
-     * @param int $offset
-     * @param int $length
+     * @param Clients $client
+     * @param int     $offset
+     * @param int     $length
+     *
      * @return array
+     * @throws \Exception
      */
-    public function getLenderNotifications(\lenders_accounts $lender, $offset, $length)
+    public function getLenderNotifications(Clients $client, $offset, $length)
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         /** @var \accepted_bids $acceptedBid */
-        $acceptedBid = $this->entityManager->getRepository('accepted_bids');
+        $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
         /** @var \autobid $autobid */
-        $autobid = $this->entityManager->getRepository('autobid');
+        $autobid = $this->entityManagerSimulator->getRepository('autobid');
         /** @var \bids $bid */
-        $bid = $this->entityManager->getRepository('bids');
-        /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
+        $bid = $this->entityManagerSimulator->getRepository('bids');
         /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
+        $company = $this->entityManagerSimulator->getRepository('companies');
         /** @var \notifications $notifications */
-        $notifications = $this->entityManager->getRepository('notifications');
+        $notifications = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \projects $project */
-        $project = $this->entityManager->getRepository('projects');
+        $project = $this->entityManagerSimulator->getRepository('projects');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
         $result = [];
 
-        foreach ($notifications->select('id_lender = ' . $lender->id_lender_account, 'added DESC', $offset - 1, $length) as $notification) {
+        foreach ($notifications->select('id_lender = ' . $wallet->getId(), 'added DESC', $offset - 1, $length) as $notification) {
             $type    = ''; // Style of title (account, offer-accepted, offer-rejected, remboursement)
             $title   = ''; // Title (translation)
             $content = ''; // Main message (translation)
@@ -283,13 +312,11 @@ class NotificationDisplayManager
                     ]);
                     break;
                 case \notifications::TYPE_AUTOBID_FIRST_ACTIVATION:
-                    $client->get($lender->id_client_owner);
-
                     $type    = 'offer-accepted';
                     $image   = 'circle-accepted';
                     $title   = $this->translator->trans('lender-notifications_autolend-first-activation-title');
                     $content = $this->translator->trans('lender-notifications_autolend-first-activation-content', [
-                        '%activationDate%' => $this->autoBidSettingsManager->getActivationTime($client)->format('G\hi'),
+                        '%activationDate%' => $this->autoBidSettingsManager->getActivationTime($wallet->getIdClient())->format('G\hi'),
                         '%settingsUrl%'    => $this->router->generate('autolend')
                     ]);
                     break;

@@ -162,9 +162,9 @@
                                 <?php if ($this->hasTransferredLoans) : ?>
                                 <td>
                                     <?php if ($this->loan->get($aProjectLoans['id_loan_if_one_loan']) && false === empty($this->loan->id_transfer)) :
-                                        /** @var \lenders_accounts $formerOwner */
+                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
                                         $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
-                                        <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_client_owner ?>"><?= $formerOwner->id_client_owner ?></a>
+                                        <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->getIdClient() ?>"><?= $formerOwner->getIdClient() ?></a>
                                     <?php endif; ?>
                                 </td>
                                 <?php endif; ?>
@@ -176,7 +176,7 @@
                             <?php endif; ?>
                         </tr>
                         <?php if ($aProjectLoans['nb_loan'] > 1) : ?>
-                            <?php foreach ($this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan) : ?>
+                            <?php foreach ($this->loans->select('id_lender = ' . $this->wallet->getId() . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan) : ?>
                                 <tr class="sub_loan<?= $iLoanIndex % 2 ? '' : ' odd' ?>">
                                     <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['amount']/100, 0) ?> €</td>
                                     <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['rate'], 1) ?> %</td>
@@ -199,9 +199,9 @@
                                         <td>
                                             <?php if (false === empty($aLoan['id_transfer'])) :
                                                 $this->loan->get($aLoan['id_loan']);
-                                                /** @var \lenders_accounts $formerOwner */
+                                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
                                                 $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
-                                                <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_client_owner ?>"><?= $formerOwner->id_client_owner ?></a>
+                                                <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->getIdClient() ?>"><?= $formerOwner->getIdClient() ?></a>
                                             <?php endif; ?>
                                         </td>
                                     <?php endif; ?>
