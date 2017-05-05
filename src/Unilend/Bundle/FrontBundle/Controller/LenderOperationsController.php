@@ -44,9 +44,7 @@ class LenderOperationsController extends Controller
         /** @var LenderOperationsManager $lenderOperationsManager */
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
-        $match  = $entityManager->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet->getId()]);
-
+        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         $filters                = $this->getOperationFilters($request);
         $operations             = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $lenderOperations       = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
@@ -62,7 +60,7 @@ class LenderOperationsController extends Controller
                 'lenderOperations'       => $lenderOperations,
                 'projectsFundedByLender' => $projectsFundedByLender,
                 'loansStatusFilter'      => $projectStatus->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC'),
-                'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($match->getIdLenderAccount()->getIdLenderAccount()),
+                'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($wallet->getId()),
                 'lenderLoans'            => $loans['lenderLoans'],
                 'loanStatus'             => $loans['loanStatus'],
                 'seriesData'             => $loans['seriesData'],
@@ -79,23 +77,24 @@ class LenderOperationsController extends Controller
      */
     public function filterLoansAction(Request $request)
     {
-        /** @var \lenders_accounts $lender */
-        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \projects_status $projectStatus */
-        $projectStatus = $this->get('unilend.service.entity_manager')->getRepository('projects_status');
-
-        $lender->get($this->getUser()->getClientId(), 'id_client_owner');
-        $loans = $this->commonLoans($request, $lender);
+        $projectStatus = $entityManagerSimulator->getRepository('projects_status');
+        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $loans         = $this->commonLoans($request, $wallet);
 
         return $this->json(
             [
                 'target'   => 'loans',
                 'template' => $this->render('/pages/lender_operations/my_loans.html.twig',
                     [
-                        'clientId'          => $lender->id_client_owner,
+                        'clientId'          => $this->getUser()->getClientId(),
                         'hash'              => $this->getUser()->getHash(),
                         'loansStatusFilter' => $projectStatus->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC'),
-                        'firstLoanYear'     => $this->get('unilend.service.entity_manager')->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
+                        'firstLoanYear'     => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($wallet->getId()),
                         'lenderLoans'       => $loans['lenderLoans'],
                         'loanStatus'        => $loans['loanStatus'],
                         'seriesData'        => $loans['seriesData'],
@@ -187,16 +186,16 @@ class LenderOperationsController extends Controller
      */
     public function exportLoansCsvAction(Request $request)
     {
-        /** @var \lenders_accounts $lender */
-        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lender->get($this->getUser()->getClientId(), 'id_client_owner');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->get('unilend.service.entity_manager')->getRepository('echeanciers');
-        $loans             = $this->commonLoans($request, $lender);
+        $loans             = $this->commonLoans($request, $wallet);
 
         \PHPExcel_Settings::setCacheStorageMethod(
             \PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+            ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
         );
 
         $oDocument    = new \PHPExcel();
@@ -224,9 +223,9 @@ class LenderOperationsController extends Controller
             $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['start_date'])));
             $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_payment_date'])));
             $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['end_date'])));
-            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
-            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
-            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
+            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
+            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
+            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
 
             $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
             $sNote = $this->getProjectNote($sRisk);
@@ -292,8 +291,6 @@ class LenderOperationsController extends Controller
      */
     private function commonLoans(Request $request, Wallet $wallet)
     {
-        $match  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet->getId()]);
-
         /** @var \loans $loanEntity */
         $loanEntity = $this->get('unilend.service.entity_manager')->getRepository('loans');
         /** @var \projects $project */
@@ -338,7 +335,7 @@ class LenderOperationsController extends Controller
         $filters        = $request->request->get('filter', []);
         $year           = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
         $status         = isset($filters['status']) && false !== filter_var($filters['status'], FILTER_VALIDATE_INT) ? $filters['status'] : null;
-        $lenderLoans    = $loanEntity->getSumLoansByProject($match->getIdLenderAccount()->getIdLenderAccount(), $sOrderBy, $year, $status);
+        $lenderLoans    = $loanEntity->getSumLoansByProject($wallet->getId(), $sOrderBy, $year, $status);
         $loanStatus     = [
             'no-problem'            => 0,
             'late-repayment'        => 0,
@@ -443,7 +440,7 @@ class LenderOperationsController extends Controller
                     )
                 ];
             } else {
-                $projectLoans                            = $loanEntity->select('id_lender = ' . $match->getIdLenderAccount()->getIdLenderAccount() . ' AND id_project = ' . $aProjectLoans['id_project']);
+                $projectLoans                            = $loanEntity->select('id_lender = ' . $wallet->getId() . ' AND id_project = ' . $aProjectLoans['id_project']);
                 $lenderLoans[$loanIndex]['contracts']    = [];
                 $lenderLoans[$loanIndex]['loan_details'] = [];
 

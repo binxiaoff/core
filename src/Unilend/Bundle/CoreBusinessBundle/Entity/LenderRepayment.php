@@ -53,11 +53,11 @@ class LenderRepayment
     private $idCompany;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id_lender_account")
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
      * })
      */
     private $idLender;
@@ -173,11 +173,11 @@ class LenderRepayment
     /**
      * Set idLender
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts $idLender
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
      *
      * @return LenderRepayment
      */
-    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts $idLender = null)
+    public function setIdLender(Wallet $idLender)
     {
         $this->idLender = $idLender;
 
@@ -187,7 +187,7 @@ class LenderRepayment
     /**
      * Get idLender
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      */
     public function getIdLender()
     {

@@ -37,8 +37,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
         $companies = $entityManager->getRepository('companies');
         /** @var \transactions $transactions */
         $transactions = $entityManager->getRepository('transactions');
-        /** @var \lenders_accounts $lenders */
-        $lenders = $entityManager->getRepository('lenders_accounts');
         /** @var \projects_status_history $projects_status_history */
         $projects_status_history = $entityManager->getRepository('projects_status_history');
         /** @var \wallets_lines $wallets_lines */
@@ -54,12 +52,11 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
         /** @var LoggerInterface $logger */
-        $logger                = $this->getContainer()->get('monolog.logger.console');
-        $stopWatch             = $this->getContainer()->get('debug.stopwatch');
-        $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
-
-        $repaymentScheduleRepo = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $paymentScheduleRepo   = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $logger                      = $this->getContainer()->get('monolog.logger.console');
+        $stopWatch                   = $this->getContainer()->get('debug.stopwatch');
+        $operationManager            = $this->getContainer()->get('unilend.service.operation_manager');
+        $repaymentScheduleRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $paymentScheduleRepository   = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
         $url       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
@@ -98,8 +95,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                         if (false === $transactions->exist($e['id_echeancier'], 'id_echeancier')) {
                             $montant += $e['montant'];
                             $nb_pret_remb++;
-
-                            $lenders->get($e['id_lender'], 'id_lender_account');
                             $projects->get($e['id_project'], 'id_project');
 
                             $lenderRepayment->id_lender  = $e['id_lender'];
@@ -107,7 +102,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $lenderRepayment->amount     = $e['montant'];
                             $lenderRepayment->create();
 
-                            $repaymentSchedule = $repaymentScheduleRepo->find($e['id_echeancier']);
+                            $repaymentSchedule = $repaymentScheduleRepository->find($e['id_echeancier']);
                             $operationManager->repayment($repaymentSchedule);
 
                             $echeanciers->get($e['id_echeancier'], 'id_echeancier');
@@ -117,7 +112,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $echeanciers->date_echeance_reel  = $repaymentDate;
                             $echeanciers->update();
 
-                            $transactions->id_client        = $lenders->id_client_owner;
+                            $transactions->id_client        = $repaymentSchedule->getIdLender()->getIdClient()->getIdClient();
                             $transactions->montant          = $e['capital'];
                             $transactions->id_echeancier    = $e['id_echeancier'];
                             $transactions->id_langue        = 'fr';
@@ -138,7 +133,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $wallets_lines->unsetData();
 
                             $transactions->unsetData();
-                            $transactions->id_client        = $lenders->id_client_owner;
+                            $transactions->id_client        = $repaymentSchedule->getIdLender()->getIdClient()->getIdClient();
                             $transactions->montant          = $e['interets'];
                             $transactions->id_echeancier    = $e['id_echeancier'];
                             $transactions->id_langue        = 'fr';
@@ -216,7 +211,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
                 $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
 
-                $paymentSchedule = $paymentScheduleRepo->find($echeanciers_emprunteur->id_echeancier_emprunteur);
+                $paymentSchedule = $paymentScheduleRepository->find($echeanciers_emprunteur->id_echeancier_emprunteur);
                 $operationManager->repaymentCommission($paymentSchedule);
 
                 /** @var \settings $settings */
@@ -229,7 +224,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 /** @var \ficelle $ficelle */
                 $ficelle = Loader::loadLib('ficelle');
 
-                $varMail = array(
+                $varMail = [
                     'surl'            => $staticUrl,
                     'url'             => $url,
                     'prenom'          => $emprunteur->prenom,
@@ -245,7 +240,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     'lien_fb'         => $sFB,
                     'lien_tw'         => $sTwitter,
                     'montantRemb'     => $ficelle->formatNumber(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 2))
-                );
+                ];
 
                 $logger->debug('Automatic repayment, send email : facture-emprunteur-remboursement. Data to use: ' . json_encode($varMail), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $r['id_project'] ]);
 
@@ -331,7 +326,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
                 $logger->error(
                     'The total repayment amount is zero for the project ' . $r['id_project'] . ' (order: ' . $r['ordre'] . '). Please see previous logs for more details.',
-                    array('class' => __CLASS__, 'function' => __FUNCTION__)
+                    ['class' => __CLASS__, 'function' => __FUNCTION__]
                 );
 
                 continue;

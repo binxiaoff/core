@@ -4,8 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class TaxManager
@@ -13,22 +14,22 @@ class TaxManager
     /**
      * @var EntityManagerSimulator
      */
-    private $entityManager;
+    private $entityManagerSimulator;
     /**
      * @var EntityManager
      */
-    private $em;
+    private $entityManager;
 
     /**
      * TaxManager constructor.
      *
-     * @param EntityManagerSimulator $entityManager
-     * @param EntityManager $em
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManager $entityManager
      */
-    public function __construct(EntityManagerSimulator $entityManager, EntityManager $em)
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager)
     {
-        $this->entityManager = $entityManager;
-        $this->em = $em;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
     }
 
     /**
@@ -54,9 +55,9 @@ class TaxManager
     private function applyTaxes(\transactions &$transaction, array $taxesTypes)
     {
         /** @var \tax $tax */
-        $tax = $this->entityManager->getRepository('tax');
+        $tax = $this->entityManagerSimulator->getRepository('tax');
         /** @var \tax_type $taxType */
-        $taxType = $this->entityManager->getRepository('tax_type');
+        $taxType = $this->entityManagerSimulator->getRepository('tax_type');
 
         $taxes          = [];
         $totalTaxAmount = 0;
@@ -90,7 +91,7 @@ class TaxManager
     private function taxLenderRepaymentInterests(\transactions $transaction)
     {
         /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
+        $client = $this->entityManagerSimulator->getRepository('clients');
 
         if (false === $client->get($transaction->id_client)) {
             throw new \Exception('Unable to load client ' . $transaction->id_client);
@@ -114,17 +115,16 @@ class TaxManager
      */
     private function taxNaturalPersonLenderRepaymentInterests(\transactions $transaction)
     {
-        /** @var \lenders_accounts $lender */
-        $lender = $this->entityManager->getRepository('lenders_accounts');
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($transaction->id_client, WalletType::LENDER);
 
-        if (false === $lender->get($transaction->id_client, 'id_client_owner')) {
-            throw new \Exception('Unable to load lender with client ID ' . $transaction->id_client);
+        if (null === $wallet) {
+            throw new \Exception('Unable to load lender wallet with client ID ' . $transaction->id_client);
         }
 
         /** @var \lenders_imposition_history $lenderTaxationHistory */
-        $lenderTaxationHistory = $this->entityManager->getRepository('lenders_imposition_history');
+        $lenderTaxationHistory = $this->entityManagerSimulator->getRepository('lenders_imposition_history');
 
-        if (false === $lenderTaxationHistory->loadLastTaxationHistory($lender->id_lender_account)) {
+        if (false === $lenderTaxationHistory->loadLastTaxationHistory($wallet->getId())) {
             /**
              * throw new \Exception('Unable to load lender taxation history with lender ID ' . $lender->id_lender_account);
              */
@@ -134,30 +134,30 @@ class TaxManager
 
         if (0 == $lenderTaxationHistory->resident_etranger) {
             /** @var \lender_tax_exemption $taxExemption */
-            $taxExemption = $this->entityManager->getRepository('lender_tax_exemption');
+            $taxExemption = $this->entityManagerSimulator->getRepository('lender_tax_exemption');
 
-            if ($taxExemption->get($lender->id_lender_account . '" AND year = "' . substr($transaction->added, 0, 4) . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
+            if ($taxExemption->get($wallet->getId() . '" AND year = "' . substr($transaction->added, 0, 4) . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
                 return $this->applyTaxes($transaction, [\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS]);
             } else {
                 return $this->applyTaxes($transaction, [\tax_type::TYPE_INCOME_TAX, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS]);
             }
         } else {
             /** @var \echeanciers $repayment */
-            $repayment = $this->entityManager->getRepository('echeanciers');
+            $repayment = $this->entityManagerSimulator->getRepository('echeanciers');
 
             if (false === $repayment->get($transaction->id_echeancier, 'id_echeancier')) {
                 throw new \Exception('Unable to load lender repayment ' . $transaction->id_echeancier);
             }
 
             /** @var \loans $loan */
-            $loan = $this->entityManager->getRepository('loans');
+            $loan = $this->entityManagerSimulator->getRepository('loans');
 
             if (false === $loan->get($repayment->id_loan, 'id_loan')) {
                 throw new \Exception('Unable to load loan ' . $repayment->id_loan);
             }
 
             /** @var \underlying_contract $contract */
-            $contract = $this->entityManager->getRepository('underlying_contract');
+            $contract = $this->entityManagerSimulator->getRepository('underlying_contract');
 
             if (false === $contract->get($loan->id_type_contract)) {
                 throw new \Exception('Unable to load underlying contract ' . $loan->id_type_contract);
@@ -179,22 +179,28 @@ class TaxManager
     }
 
     /**
-     * @param \clients $client
-     * @param \lenders_accounts $lenderAccount
+     * @param Clients           $client
      * @param \clients_adresses $clientAddress
-     * @param int $userId
+     *
+     * @param $userId
+     * @throws \Exception
      */
-    public function addTaxToApply(\clients $client, \lenders_accounts $lenderAccount, \clients_adresses $clientAddress, $userId)
+    public function addTaxToApply(Clients $client, \clients_adresses $clientAddress, $userId)
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+
         $foreigner = 0;
-        if ($client->id_nationalite <= 1 && $clientAddress->id_pays_fiscal > 1) {
+        if ($client->getIdNationalite() <= \nationalites_v2::NATIONALITY_FRENCH && $clientAddress->id_pays_fiscal > PaysV2::COUNTRY_FRANCE) {
             $foreigner = 1;
-        } elseif ($client->id_nationalite > 1 && $clientAddress->id_pays_fiscal > 1) {
+        } elseif ($client->getIdNationalite() > \nationalites_v2::NATIONALITY_FRENCH && $clientAddress->id_pays_fiscal > PaysV2::COUNTRY_FRANCE) {
             $foreigner = 2;
         }
         /** @var \lenders_imposition_history $lenderImpositionHistory */
-        $lenderImpositionHistory                    = $this->entityManager->getRepository('lenders_imposition_history');
-        $lenderImpositionHistory->id_lender         = $lenderAccount->id_lender_account;
+        $lenderImpositionHistory                    = $this->entityManagerSimulator->getRepository('lenders_imposition_history');
+        $lenderImpositionHistory->id_lender         = $wallet->getId();
         $lenderImpositionHistory->resident_etranger = $foreigner;
         $lenderImpositionHistory->id_pays           = $clientAddress->id_pays_fiscal;
         $lenderImpositionHistory->id_user           = $userId;
@@ -229,17 +235,15 @@ class TaxManager
 
     private function getNaturalPersonLenderRepaymentInterestsTax(Clients $client, $interestsGross, \DateTime $taxDate, UnderlyingContract $underlyingContract = null)
     {
-        /** @var \lenders_accounts $lender */
-        $lender = $this->entityManager->getRepository('lenders_accounts');
-
-        if (false === $lender->get($client->getIdClient(), 'id_client_owner')) {
-            throw new \Exception('Unable to load lender with client ID ' . $client->getIdClient());
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+        if (null !== $wallet) {
+            throw new \Exception('Unable to load lender wallet with client ID ' . $client->getIdClient());
         }
 
         /** @var \lenders_imposition_history $lenderTaxationHistory */
-        $lenderTaxationHistory = $this->entityManager->getRepository('lenders_imposition_history');
+        $lenderTaxationHistory = $this->entityManagerSimulator->getRepository('lenders_imposition_history');
 
-        if (false === $lenderTaxationHistory->loadLastTaxationHistory($lender->id_lender_account)) {
+        if (false === $lenderTaxationHistory->loadLastTaxationHistory($wallet->getId())) {
             /**
              * throw new \Exception('Unable to load lender taxation history with lender ID ' . $lender->id_lender_account);
              */
@@ -249,9 +253,9 @@ class TaxManager
 
         if (0 == $lenderTaxationHistory->resident_etranger) {
             /** @var \lender_tax_exemption $taxExemption */
-            $taxExemption = $this->entityManager->getRepository('lender_tax_exemption');
+            $taxExemption = $this->entityManagerSimulator->getRepository('lender_tax_exemption');
 
-            if ($taxExemption->get($lender->id_lender_account . '" AND year = "' . $taxDate->format('Y') . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
+            if ($taxExemption->get($wallet->getId() . '" AND year = "' . $taxDate->format('Y') . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
                 return $this->calculateTaxes($interestsGross, [
                     \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
                     \tax_type::TYPE_CRDS,
@@ -278,9 +282,15 @@ class TaxManager
         return [];
     }
 
+    /**
+     * @param float $amount
+     * @param array $taxTypes
+     *
+     * @return array
+     */
     public function calculateTaxes($amount, array $taxTypes)
     {
-        $taxTypeRepo = $this->em->getRepository('UnilendCoreBusinessBundle:TaxType');
+        $taxTypeRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType');
         $taxes       = [];
 
         foreach ($taxTypes as $taxTypeId) {

@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -32,21 +33,20 @@ trait BidChecker
     }
 
     /**
-     * @param \bids             $bid
-     * @param \lenders_accounts $lender
+     * @param Bids              $bid
      * @param \product          $product
      * @param EntityManager     $entityManager
      * @param ContractManager   $contractManager
      *
      * @return bool
      */
-    public function isAutobidEligibleForMaxTotalAmount(\bids $bid, \lenders_accounts $lender, \product $product, EntityManager $entityManager, ContractManager $contractManager)
+    public function isAutobidEligibleForMaxTotalAmount(Bids $bid, \product $product, EntityManager $entityManager, ContractManager $contractManager)
     {
-        $bidMaxAmount = $this->getAutobidMaxEligibleAmount($lender, $product, $entityManager, $contractManager);
+        $bidMaxAmount = $this->getAutobidMaxEligibleAmount($bid->getIdLenderAccount()->getIdClient(), $product, $entityManager, $contractManager);
         if (null === $bidMaxAmount) {
             return true;
         }
 
-        return bcdiv($bid->amount, 100, 2) <= $bidMaxAmount;
+        return bcdiv($bid->getAmount(), 100, 2) <= $bidMaxAmount;
     }
 }
