@@ -12,7 +12,7 @@
                     <nav class="dashboard-nav">
                         {% block dashboardNav %}
                             <ul>
-@                                <li role="presentation" class="dashboard-nav-project-request{% if app.request.get('_route') in ['partner_project_request', 'partner_project_request_eligibility', 'partner_project_request_details', 'partner_project_request_end'] %} active{% endif %}">
+                                <li role="presentation" class="dashboard-nav-project-request{% if app.request.get('_route') in ['partner_project_request', 'partner_project_request_eligibility', 'partner_project_request_details', 'partner_project_request_end'] %} active{% endif %}">
                                     <a href="{{ path('partner_project_request') }}">
                                         <span class="icon fa-pen-u"></span>
                                         <span class="label">{% trans %} partner-account-nav_project-request {% endtrans %}</span>
