@@ -156,9 +156,9 @@ class LocationManager
 
     /**
      * $frenchRegions taken from http://www.insee.fr/fr/methodes/nomenclatures/cog/default.asp
-
      *
      * @param array $countByRegion
+     *
      * @return array
      */
     private function getPercentageByRegion($countByRegion)
@@ -167,34 +167,15 @@ class LocationManager
         $frenchRegions = $this->getFrenchRegions();
 
         $regions = [];
+        $total   = array_sum(array_column($countByRegion, 'count'));
 
-        if (isset($countByRegion[1]) && is_array($countByRegion[1]) && array_key_exists('insee_region_code', $countByRegion[0])) {
-            array_shift($countByRegion);
-            $total = array_sum(array_column($countByRegion, 'count'));
-        } else {
-            $total = array_sum($countByRegion);
-        }
-
-        foreach ($countByRegion as $insee => $row) {
-            if (is_array($row) && array_key_exists('insee_region_code', $row)) {
-                if ($row['insee_region_code'] != 0) {
-                    $region = array(
-                        'name' => $frenchRegions[$row['insee_region_code']],
-                        'insee' => $row['insee_region_code'],
-                        'value' => (float)round(bcmul(bcdiv($row['count'], $total, 3) , 100, 1))
-                    );
-                    $regions[] = $region;
-                }
-            } else {
-                if ($insee > 0) {
-                    $region = array(
-                        'name' => $frenchRegions[$insee],
-                        'insee' => (string)$insee,
-                        'value' => (float)round(bcmul(bcdiv($row, $total, 4), 100, 1))
-                    );
-                    $regions[] = $region;
-                }
-            }
+        foreach ($countByRegion as $regionDetails) {
+            $region    = array(
+                'name'  => $frenchRegions[$regionDetails['insee_region_code']],
+                'insee' => $regionDetails['insee_region_code'],
+                'value' => (float) round(bcmul(bcdiv($regionDetails['count'], $total, 4), 100, 4), 1)
+            );
+            $regions[] = $region;
         }
 
         return $regions;

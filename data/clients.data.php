@@ -1091,12 +1091,13 @@ class clients extends clients_crud
                              INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner
                          WHERE clients.status = '. ClientEntity::STATUS_ONLINE .' AND lenders_accounts.status = 1
                          AND (clients_adresses.id_pays_fiscal = ' . \pays_v2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . \pays_v2::COUNTRY_FRANCE . ')) AS client_base
-                    GROUP BY insee_region_code';
+                    GROUP BY insee_region_code
+                    HAVING insee_region_code != "0"';
 
         $statement = $this->bdd->executeQuery($query);
         $regionsCount  = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $regionsCount[$row['insee_region_code']] = $row['count'];
+            $regionsCount[] = $row;
         }
 
         return $regionsCount;
