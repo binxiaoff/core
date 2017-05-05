@@ -6,29 +6,6 @@
             <link rel="stylesheet" href="{{ absolute_url(asset('fonts/style.css', 'gulp')) }}"/>
             <link rel="stylesheet" href="{{ absolute_url(asset('css/main.css', 'gulp')) }}"/>
             <style>
-                /* Visible on screen devices only */
-                @media screen {
-                    .pdf-layout {
-                        background: #ccc;
-                    }
-                    .pdf-layout  .site {
-                        max-width: 960px;
-                        box-sizing: border-box;
-                        padding: 60px;
-                        height: 1358px;
-                        margin: 0 auto;
-                        background: #fff;
-                        overflow-y: visible;
-                    }
-                }
-
-                /* Visible when printed only */
-                @media print {
-                    p, table, tr, td, th, tbody, thead, tfoot {
-                        page-break-inside: avoid !important;
-                    }
-                }
-
                 /* Adjust common styles */
                 .pdf-layout .logo {
                     margin: 0 0 1.25rem;
