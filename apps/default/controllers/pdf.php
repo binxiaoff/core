@@ -602,11 +602,11 @@ class pdfController extends bootstrap
     }
 
     /**
-     * @param clients $oClients
+     * @param \clients $oClients
      * @param $oLoans
      * @param projects $oProjects
      */
-    private function GenerateContractHtml(\ clients $oClients, \loans $oLoans, \projects $oProjects)
+    private function GenerateContractHtml(\clients $oClients, \loans $oLoans, \projects $oProjects)
     {
         $this->emprunteur              = $this->loadData('clients');
         $this->companiesEmprunteur     = $this->loadData('companies');
@@ -1027,17 +1027,17 @@ class pdfController extends bootstrap
 
             if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
-                $iCountryId = $this->clients_adresses->id_pays_fiscal;
+                $countryId = $this->clients_adresses->id_pays_fiscal;
             } else {
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
-                $iCountryId = $this->companies->id_pays;
+                $countryId = $this->companies->id_pays;
             }
 
-            if ($iCountryId == 0) {
-                $iCountryId = 1;
+            if ($countryId == 0) {
+                $countryId = 1;
             }
 
-            $this->pays->get($iCountryId, 'id_pays');
+            $this->pays->get($countryId, 'id_pays');
             $this->pays_fiscal = $this->pays->fr;
 
             /** @var \projects_status_history $projectStatusHistory */
