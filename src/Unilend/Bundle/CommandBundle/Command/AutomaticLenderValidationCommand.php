@@ -95,18 +95,16 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
      */
     private function validateLender(\clients $client, array $attachment)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var EntityManager $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var \clients_adresses $clientAddress */
-        $clientAddress = $entityManager->getRepository('clients_adresses');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $entityManager->getRepository('lenders_accounts');
+        $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
         /** @var \users_history $userHistory */
-        $userHistory = $entityManager->getRepository('users_history');
+        $userHistory = $entityManagerSimulator->getRepository('users_history');
         /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $entityManager->getRepository('clients_status_history');
+        $clientStatusHistory = $entityManagerSimulator->getRepository('clients_status_history');
         /** @var WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->getContainer()->get('unilend.service.welcome_offer_manager');
         /** @var MailerManager $mailerManager */
@@ -143,10 +141,9 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
             $response = $welcomeOfferManager->createWelcomeOffer($client);
             $logger->info('Client ID: ' . $client->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $client->id_client]);
         }
-        $lenderAccount->get($client->id_client, 'id_client_owner');
         $clientAddress->get($client->id_client, 'id_client');
         $clientStatusManager->addClientStatus($client, Users::USER_ID_CRON, \clients_status::VALIDATED, 'Validation automatique basée sur Green Point');
-        $serialize = serialize(array('id_client' => $client->id_client, 'attachment_data' => $attachment));
+        $serialize = serialize(['id_client' => $client->id_client, 'attachment_data' => $attachment]);
         $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
 
         if ($clientStatusHistory->counter('id_client = ' . $client->id_client . ' AND id_client_status = 5') > 0) {
@@ -154,7 +151,8 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         } else {
             $mailerManager->sendClientValidationEmail($client, 'preteur-confirmation-activation');
         }
-        $taxManager->addTaxToApply($client, $lenderAccount, $clientAddress, Users::USER_ID_CRON);
-    }
 
+        $clientEntity = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        $taxManager->addTaxToApply($clientEntity, $clientAddress, Users::USER_ID_CRON);
+    }
 }

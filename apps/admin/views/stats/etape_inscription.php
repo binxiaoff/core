@@ -81,7 +81,7 @@
                         <td><?= $u['email'] ?></td>
                         <td><?= $u['telephone'] . ' ' . $u['mobile'] ?></td>
                         <td><?= $this->dates->formatDate($u['added'], 'd/m/Y') ?></td>
-                        <td><?= $u['etape_inscription_preteur2']; ?></td>
+                        <td><?= $u['etape_inscription_preteur'] ?></td>
                         <td><?= $u['source'] ?></td>
                         <td><?= $u['source2'] ?></td>
                     </tr>

@@ -15,10 +15,12 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Doctrine\ORM\EntityManager;
@@ -39,24 +41,12 @@ class LenderWalletController extends Controller
      */
     public function walletDepositAction()
     {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-
-        /** @var \clients $client */
-        $client = $entityManagerSimulator->getRepository('clients');
-        $clientData = $client->select('id_client = ' . $this->getUser()->getClientId())[0];
-
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManagerSimulator->getRepository('lenders_accounts');
-        $lenderData = $lender->select('id_client_owner = ' . $clientData['id_client'])[0];
-
         $template = [
             'balance'          => $this->getUser()->getBalance(),
             'maxDepositAmount' => self::MAX_DEPOSIT_AMOUNT,
             'minDepositAmount' => self::MIN_DEPOSIT_AMOUNT,
-            'client'           => $clientData,
-            'lender'           => $lenderData,
-            'lenderBankMotif'  => $client->getLenderPattern($clientData['id_client']),
+            'client'           => $this->getClient(),
+            'lenderBankMotif'  => $this->getWallet()->getWireTransferPattern(),
             'showNavigation'   => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ];
 
@@ -77,7 +67,7 @@ class LenderWalletController extends Controller
         /** @var UserLender $user */
         $user = $this->getUser();
         if ($user) {
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
+            $wallet = $this->getWallet();
             if ($wallet && $backPayline && $backPayline->getWallet() === $wallet) {
                 return $this->render('pages/lender_wallet/deposit_result.html.twig', [
                     'depositAmount'  => round(bcdiv($backPayline->getAmount(), 100, 4), 2),
@@ -102,26 +92,20 @@ class LenderWalletController extends Controller
         if (\clients_status::VALIDATED > $this->getUser()->getClientStatus()) {
             return $this->redirectToRoute('lender_completeness');
         }
-
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \clients $client */
-        $client = $entityManagerSimulator->getRepository('clients');
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManagerSimulator->getRepository('lenders_accounts');
+        $client = $this->getClient();
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
-
-        $clientData = $client->select('id_client = ' . $this->getUser()->getClientId())[0];
-        $lenderData = $lender->select('id_client_owner = ' . $clientData['id_client'])[0];
-
-        $form = $this->createForm(LenderWithdrawalType::class);
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var BankAccount $bankAccount */
+        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+        $form        = $this->createForm(LenderWithdrawalType::class);
 
         $template = [
             'balance'         => $this->getUser()->getBalance(),
-            'client'          => $clientData,
-            'lender'          => $lenderData,
-            'lenderBankMotif' => $client->getLenderPattern($clientData['id_client']),
+            'client'          => $client,
+            'bankAccount'     => $bankAccount,
+            'lenderBankMotif' => $this->getWallet()->getWireTransferPattern(),
             'withdrawalForm'  => $form->createView()
         ];
 
@@ -155,8 +139,6 @@ class LenderWalletController extends Controller
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \transactions $transaction */
         $transaction = $entityManagerSimulator->getRepository('transactions');
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \notifications $notification */
         $notification = $entityManagerSimulator->getRepository('notifications');
         /** @var \clients_gestion_notifications $clientNotification */
@@ -172,7 +154,9 @@ class LenderWalletController extends Controller
         $entityManager       = $this->get('doctrine.orm.entity_manager');
         $formManager         = $this->get('unilend.frontbundle.service.form_manager');
 
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $client = $this->getClient();
+        /** @var BankAccount $bankAccount */
+        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
 
         if ($client) {
             $serialize = serialize(['id_client' => $client->getIdClient(), 'montant' => $post['amount'], 'mdp' => md5($post['password'])]);
@@ -181,8 +165,6 @@ class LenderWalletController extends Controller
             if ($clientStatusManager->getLastClientStatus($client) < \clients_status::VALIDATED) {
                 $this->redirectToRoute('lender_wallet_withdrawal');
             }
-
-            $lender->get($client->getIdClient(), 'id_client_owner');
 
             $amount = $post['amount'];
 
@@ -195,7 +177,7 @@ class LenderWalletController extends Controller
             } else {
                 if (false === is_numeric($amount)) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
-                } elseif (empty($lender->bic) || empty($lender->iban)) {
+                } elseif (empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 } else {
                     $sumOffres = $this->get('unilend.service.welcome_offer_manager')->getCurrentWelcomeOfferAmount($client);
@@ -210,15 +192,11 @@ class LenderWalletController extends Controller
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
                 $logger->warning('Wrong parameters submitted, id_client=' . $client->getIdClient() . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
             } else {
-                $entityManager = $this->get('doctrine.orm.entity_manager');
-                /** @var WalletRepository $walletRepository */
-                $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-                $wallet           = $walletRepository->getWalletByType($client->getIdClient(), WalletType::LENDER);
-                $bankAccount      = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($wallet->getIdClient());
+                $wallet = $this->getWallet();
 
                 if ($bankAccount) {
                     $wireTransferOut = new Virements();
-                    $wireTransferOut->setClient($wallet->getIdClient());
+                    $wireTransferOut->setClient($client);
                     $wireTransferOut->setMontant(bcmul($amount, 100));
                     $wireTransferOut->setMotif($wallet->getWireTransferPattern());
                     $wireTransferOut->setType(Virements::TYPE_LENDER);
@@ -230,7 +208,7 @@ class LenderWalletController extends Controller
                     $transaction->get($wireTransferOut->getIdTransaction());
 
                     $notification->type      = \notifications::TYPE_DEBIT;
-                    $notification->id_lender = $lender->id_lender_account;
+                    $notification->id_lender = $wallet->getId();
                     $notification->amount    = $amount * 100;
                     $notification->create();
 
@@ -272,8 +250,6 @@ class LenderWalletController extends Controller
             return $this->redirectToRoute('lender_wallet_deposit');
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \clients $client */
@@ -300,8 +276,7 @@ class LenderWalletController extends Controller
             $formManager = $this->get('unilend.frontbundle.service.form_manager');
             $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_PROVISION_BY_CREDIT_CARD, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]), $request->getClientIp());
 
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $wallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
+            $wallet     = $this->getWallet();
             $successUrl = $this->generateUrl('wallet_payment', [], UrlGeneratorInterface::ABSOLUTE_URL);
             $cancelUrl  = $this->generateUrl('wallet_payment', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
@@ -375,5 +350,21 @@ class LenderWalletController extends Controller
         $message->setTo($client->getEmail());
         $mailer = $this->get('mailer');
         $mailer->send($message);
+    }
+
+    /**
+     * @return Clients
+     */
+    private function getClient()
+    {
+        return $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+    }
+
+    /**
+     * @return Wallet
+     */
+    private function getWallet()
+    {
+        return $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getClient(), WalletType::LENDER);
     }
 }

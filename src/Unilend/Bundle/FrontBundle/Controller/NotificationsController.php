@@ -1,13 +1,15 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
@@ -34,19 +36,19 @@ class NotificationsController extends Controller
             ]);
         }
 
-        /** @var UserLender $user */
-        $user = $this->getUser();
+        /** @var EntityManagerSimulator $entityManager */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \notifications $notifications */
-        $notifications = $entityManager->getRepository('notifications');
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManager->getRepository('lenders_accounts');
-        $lender->get($user->getClientId(), 'id_client_owner');
+        $notifications = $entityManagerSimulator->getRepository('notifications');
+        /** @var UserLender $user */
+        $user   = $this->getUser();
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
 
         switch ($action) {
             case 'all_read':
-                $notifications->markAllLenderNotificationsAsRead($lender);
+                $notifications->markAllLenderNotificationsAsRead($wallet->getId());
                 break;
             case 'read':
                 if (false === is_array($list)) {
@@ -57,7 +59,7 @@ class NotificationsController extends Controller
                     ]);
                 }
 
-                $notifications->markLenderNotificationsAsRead($lender, $list);
+                $notifications->markLenderNotificationsAsRead($wallet->getId(), $list);
                 break;
         }
 
@@ -87,21 +89,19 @@ class NotificationsController extends Controller
             ]);
         }
 
-        /** @var UserLender $user */
-        $user = $this->getUser();
         /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var NotificationDisplayManager $notificationsDisplayManager */
         $notificationsDisplayManager = $this->get('unilend.frontbundle.notification_display_manager');
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManager->getRepository('lenders_accounts');
-        $lender->get($user->getClientId(), 'id_client_owner');
+        /** @var UserLender $user */
+        $user   = $this->getUser();
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
 
         $start  = $perPage * ($currentPage - 1) + 1;
         $length = $perPage;
 
         return new JsonResponse([
-            'notifications' => $notificationsDisplayManager->getLenderNotifications($lender, $start, $length),
+            'notifications' => $notificationsDisplayManager->getLenderNotifications($wallet->getIdClient(), $start, $length),
             'pagination'    => [
                 'perPage'     => $perPage,
                 'currentPage' => $currentPage

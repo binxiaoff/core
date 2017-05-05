@@ -614,33 +614,26 @@ class ajaxController extends bootstrap
         }
     }
 
-    // supprime le bid dans la gestion du preteur et raffiche sa liste de bid mis a jour
     public function _deleteBidPreteur()
     {
         $this->autoFireView = true;
-
-        /** @var \lenders_accounts $lender */
-        $lender = $this->loadData('lenders_accounts');
         /** @var \bids $bids */
         $bids = $this->loadData('bids');
-        /** @var \transactions $transactions */
-        $transactions = $this->loadData('transactions');
-        /** @var \wallets_lines $wallets_lines */
-        $wallets_lines = $this->loadData('wallets_lines');
         /** @var \projects projects */
         $this->projects = $this->loadData('projects');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManger */
+        $bidManger = $this->get('unilend.serbvice.bid_manager');
 
-        if (isset($_POST['id_lender'], $_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid') && $lender->get($_POST['id_lender'], 'id_lender_account')) {
+        if (isset($_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid')) {
             $serialize = serialize($_POST);
             $this->users_history->histo(4, 'Bid en cours delete', $_SESSION['user']['id_user'], $serialize);
 
-            $wallets_lines->get($bids->id_lender_wallet_line, 'id_wallet_line');
+            $bid = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($_POST['id_bid']);
+            $bidManger->reject($bid, false);
 
-            $transactions->delete($wallets_lines->id_transaction, 'id_transaction');
-            $wallets_lines->delete($wallets_lines->id_wallet_line, 'id_wallet_line');
-            $bids->delete($bids->id_bid, 'id_bid');
-
-            $this->lBids = $bids->select('id_lender_account = ' . $_POST['id_lender'] . ' AND status = 0', 'added DESC');
+            $this->lBids = $bids->select('id_lender_account = ' . $bid->getIdLenderAccount()->getId() . ' AND status = 0', 'added DESC');
         }
     }
 

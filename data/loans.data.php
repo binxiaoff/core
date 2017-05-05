@@ -142,8 +142,8 @@ class loans extends loans_crud
                 SUM(IF(DATE(e.date_echeance) > "' . $dateDER . '" AND e.date_echeance < DATE_ADD("' . $dateDER . '", INTERVAL 45 DAY), interets, 0)) AS interets_next
             FROM loans l
             LEFT JOIN echeanciers e ON e.id_lender = l.id_lender AND e.id_project = l.id_project
-            LEFT JOIN lenders_accounts la ON l.id_lender = la.id_lender_account
-            LEFT JOIN clients c ON la.id_client_owner = c.id_client
+            LEFT JOIN wallet w ON e.id_lender = w.id
+            LEFT JOIN clients c ON w.id_client = c.id_client
             WHERE l.id_project = ' . $id_project . ' AND l.status = ' . self::STATUS_ACCEPTED . '
             GROUP BY id_lender';
 
