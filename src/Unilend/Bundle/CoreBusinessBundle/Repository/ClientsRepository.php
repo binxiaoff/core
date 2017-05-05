@@ -186,7 +186,7 @@ class ClientsRepository extends EntityRepository
     {
         $query = "SELECT
                       c.id_client as 'IDClient',
-                      la.id_lender_account as 'IDPreteur',
+                      c.id_client as 'IDPreteur',
                       c.id_langue as 'Langue',
                       REPLACE(c.source,',','') as 'Source1',
                       REPLACE(c.source2,',','') as 'Source2',
@@ -255,12 +255,12 @@ class ClientsRepository extends EntityRepository
                       '0012400000K0Bxw' as 'Sfcompte'
                     FROM
                       clients c
-                      INNER JOIN lenders_accounts la on la.id_client_owner = c.id_client
+                      INNER JOIN wallet w on w.id_client = c.id_client
                       LEFT JOIN clients_adresses ca on c.id_client = ca.id_client
                       LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
                       LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
                       LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
-                      LEFT JOIN loans l on la.id_lender_account = l.id_lender and l.status = 0
+                      LEFT JOIN loans l on w.id = l.id_lender and l.status = 0
                       LEFT JOIN clients_status cs on c.status = cs.id_client_status
                       LEFT JOIN prospects p ON p.email = c.email
                     WHERE c.status = 1
