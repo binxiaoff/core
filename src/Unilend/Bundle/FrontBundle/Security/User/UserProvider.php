@@ -105,14 +105,13 @@ class UserProvider implements UserProviderInterface
     {
         /** @var Clients $clientEntity */
         $clientEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        $initials     = $this->clientManager->getClientInitials($client);
+        $isActive     = $this->clientManager->isActive($client);
+        $roles        = ['ROLE_USER'];
 
-
-            $initials = $this->clientManager->getClientInitials($client);
-            $isActive = $this->clientManager->isActive($client);
-            $roles    = ['ROLE_USER'];
-
-            if ($clientEntity->isLender()) {/** @var Wallet $wallet */
-                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientEntity,WalletType::LENDER );
+        if ($clientEntity->isLender()) {
+            /** @var Wallet $wallet */
+            $wallet                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientEntity, WalletType::LENDER);
             $clientStatus            = $this->clientStatusManager->getLastClientStatus($client);
             $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
             $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($clientEntity);
@@ -142,27 +141,27 @@ class UserProvider implements UserProviderInterface
         }
 
         if ($clientEntity->isBorrower()) {
-        /** @var Wallet $wallet */
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientEntity,WalletType::BORROWER);
-        /** @var \companies $company */
-        $company = $this->entityManagerSimulator->getRepository('companies');
-        $company->get($client->id_client, 'id_client_owner');
-        $roles[] = 'ROLE_BORROWER';
+            /** @var Wallet $wallet */
+            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientEntity, WalletType::BORROWER);
+            /** @var \companies $company */
+            $company = $this->entityManagerSimulator->getRepository('companies');
+            $company->get($client->id_client, 'id_client_owner');
+            $roles[] = 'ROLE_BORROWER';
 
-        return new UserBorrower(
-            $client->email,
-            $client->password,
-            $client->email,
-            '',
-            $roles,
-            $isActive,
-            $client->id_client,
-            $client->hash,
-            $client->prenom,
-            $client->nom,
-            $company->siren,
-            $wallet->getAvailableBalance(),
-            $client->lastlogin
+            return new UserBorrower(
+                $client->email,
+                $client->password,
+                $client->email,
+                '',
+                $roles,
+                $isActive,
+                $client->id_client,
+                $client->hash,
+                $client->prenom,
+                $client->nom,
+                $company->siren,
+                $wallet->getAvailableBalance(),
+                $client->lastlogin
             );
         }
     }
