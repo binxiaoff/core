@@ -189,19 +189,19 @@ class LenderDashboardController extends Controller
                     'capital'   => array_column($lenderRepaymentsData, 'capital'),
                     'interests' => array_column($lenderRepaymentsData, 'netInterests'),
                     'tax'       => array_column($lenderRepaymentsData, 'taxes'),
-                    'max'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getMaxRepaymentAmountForLender($lender->id_lender_account, self::REPAYMENT_TIME_FRAME_MONTH)
+                    'max'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_MONTH)
                 ],
                 'quarterSum'         => [
                     'capital'   => $repaymentDataPerPeriod['quarterCapital'],
                     'interests' => $repaymentDataPerPeriod['quarterInterests'],
                     'tax'       => $repaymentDataPerPeriod['quarterTax'],
-                    'max'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getMaxRepaymentAmountForLender($lender->id_lender_account, self::REPAYMENT_TIME_FRAME_QUARTER)
+                    'max'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_QUARTER)
                 ],
                 'yearSum'            => [
                     'capital'   => $repaymentDataPerPeriod['yearCapital'],
                     'interests' => $repaymentDataPerPeriod['yearInterests'],
                     'tax'       => $repaymentDataPerPeriod['yearTax'],
-                    'max'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getMaxRepaymentAmountForLender($lender->id_lender_account, self::REPAYMENT_TIME_FRAME_YEAR)
+                    'max'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_YEAR)
                 ],
                 'bandOrigin'         => [
                     'month'   => $monthAxisData['monthBandOrigin'],

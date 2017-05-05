@@ -1145,8 +1145,7 @@ class echeanciers extends echeanciers_crud
                 FROM operation o_capital
                   INNER JOIN operation_type ot_capital ON o_capital.id_type = ot_capital.id AND ot_capital.label = "' . OperationType::CAPITAL_REPAYMENT . '"
                   LEFT JOIN operation o_interest ON o_capital.id_repayment_schedule = o_interest.id_repayment_schedule AND o_interest.id_type = (SELECT id FROM operation_type ot_interest WHERE ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
-                  INNER JOIN account_matching am ON o_capital.id_wallet_creditor = am.id_wallet
-                WHERE am.id_lender_account = :id_lender
+                WHERE o_capital.id_wallet_creditor = :id_lender
                 GROUP BY year, quarter, month
 
                 UNION ALL
@@ -1248,7 +1247,7 @@ class echeanciers extends echeanciers_crud
         ];
 
         $type = [
-            'limit' => \PDO::PARAM_INT,
+            'limit'  => \PDO::PARAM_INT,
             'offset' => \PDO::PARAM_INT,
         ];
         /** @var \Doctrine\DBAL\Statement $statement */
