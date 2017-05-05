@@ -13,7 +13,8 @@
                     <header class="panel-header">
                         <h3>{% trans %} partner-project-request_title-eligibility {% endtrans %}</h3>
                     </header>
-                    <form action="{{ path('partner_project_request_eligibility_form', {'hash': hash}) }}" method="post" id="partner-simulator" class="simulator">
+                    <form action="{{ path('partner_project_request_submit') }}" method="post" id="partner-simulator" class="simulator">
+                        <input type="hidden" name="hash" value="{{ hash }}">
                         <fieldset class="simulator-pane-inner recap" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                             <div class="form-validation-notifications"></div>
                             <div class="row columns-with-space">
@@ -77,15 +78,15 @@
 {% block modals %}
     {% if abandonReasons is defined %}
         <div id="modal-partner-prospect-abandon" data-modal>
-            <form action="{{ path('partner_project_request_end') }}" method="post" data-formvalidation>
-                <input type="hidden" name="action" value="abandon">
+            <form action="{{ path('partner_project_request_abandon') }}" method="post" data-formvalidation>
+                <input type="hidden" name="hash" value="{{ hash }}">
                 <div class="modal-body text-align-center">
                     <p><label for="prospect-abandon-motif">{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</label></p>
                     <div class="form-field">
-                        <select name="prospect-abandon-motif" id="prospect-abandon-motif" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        <select name="reason" id="prospect-abandon-motif" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                             <option value="">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
                             {% for reason in abandonReasons %}
-                                <option value="{{ reason.label }}">{{ reason.label }}</option>
+                                <option value="{{ reason.idAbandon }}">{{ reason.label }}</option>
                             {% endfor %}
                         </select>
                     </div>

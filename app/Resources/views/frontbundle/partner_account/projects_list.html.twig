@@ -5,19 +5,6 @@
     classNames: 'partner-account'
 } %}
 
-{% set abandonReasons = [
-    {
-        label: 'Reason 1'
-    },
-    {
-        label: 'Reason 2'
-    },
-    {
-        label: 'Reason 3'
-    }
-] %}
-
-
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -26,6 +13,7 @@
                     <div class="panel-content">
                         <div id="partner-prospects-panel">
                             <h3>{% trans %} partner-project-list_prospects-title {% endtrans %}</h3>
+
                             {% if prospects|length > 0 %}
                                 <div class="table-scroll">
                                     <table class="table table-prospects" data-sortable>
@@ -68,6 +56,7 @@
                                         <tbody data-sortable-content>
                                         {% for project in prospects %}
                                             <tr id="prospect-{{ project.id }}" class="table-prospects-item"
+                                                data-hash="{{ project.hash }}"
                                                 data-sortable-borrower="{{ project.name }}"
                                                 {% if is_granted('ROLE_PARTNER_ADMIN') %}
                                                     data-sortable-submitter="{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.entity|length %}- {{ project.submitter.entity }}{% endif %}"
@@ -83,7 +72,7 @@
                                                 <td class="table-prospects-item-duration">{% trans with {'%duration%': project.duration} %} partner-project-list_prospects-table-duration-value {% endtrans %}</td>
                                                 <td class="table-prospects-item-motif" colspan="2" title="{{ project.motive }}" data-toggle="tooltip">{{ project.motive }}</td>
                                                 <td class="table-prospects-item-action">
-                                                    <a role="button" class="btn-default" title="{{ 'partner-project-list_prospects-table-action-cancel'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="cancel"><span class="icon fa-ban-u16"></span></a>
+                                                    <a role="button" class="btn-default" title="{{ 'partner-project-list_prospects-table-action-cancel'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="abandon"><span class="icon fa-ban-u16"></span></a>
                                                     <a role="button" class="btn-default" title="{{ 'partner-project-list_prospects-table-action-submit'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="submit"><span class="icon fa-check-u16"></span></a>
                                                 </td>
                                             </tr>
@@ -96,6 +85,7 @@
                                 <div class="message-info after">{{ 'partner-project-list_prospects-not-found-message'|trans }}</div>
                             {% endif %}
                         </div><!-- /#partner-prospects-panel -->
+
                         <div id="partner-projects-panel">
                             <h3>{% trans %} partner-project-list_projects-title {% endtrans %}</h3>
                             {% if borrowers|length > 0 %}
@@ -187,17 +177,16 @@
 {% endblock %}
 
 {% block modals %}
-
     <div id="modal-partner-prospect-abandon" data-modal>
-        <form action="{{ path('partner_project_list') }}" data-formvalidation>
-            <input type="hidden" name="action" value="abandon">
+        <form action="{{ path('partner_project_request_abandon') }}" method="post" data-formvalidation>
+            <input type="hidden" name="hash" value>
             <div class="modal-body text-align-center">
                 <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-cancel-message {% endtrans %}</p>
                 <div class="form-field">
-                    <select name="prospect-abandon-motif" id="prospect-abandon-motif" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                    <select name="reason" id="prospect-abandon-motif" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                         <option value="">{% trans %} partner-project-list_simulator-abandon-motif-select {% endtrans %}</option>
                         {% for reason in abandonReasons %}
-                            <option value="{{ reason.label }}">{{ reason.label }}</option>
+                            <option value="{{ reason.idAbandon }}">{{ reason.label }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -216,11 +205,8 @@
     </div><!-- /#modal-partner-prospect-cancel -->
 
     <div id="modal-partner-prospect-submit" data-modal>
-        <form action="{{ path('partner_project_request_eligibility_test') }}">
-            <input type="hidden" name="simulator[company]" value>
-            <input type="hidden" name="simulator[amount]" value>
-            <input type="hidden" name="simulator[duration]" value>
-            <input type="hidden" name="simulator[motif]" value>
+        <form action="{{ path('partner_project_request_submit') }}" method="post">
+            <input type="hidden" name="hash" value>
             <div class="modal-body text-align-center">
                 <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-submit-message {% endtrans %}</p>
             </div>

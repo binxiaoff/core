@@ -285,16 +285,22 @@ class PartnerAccountController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility_form", requirements={"hash":"[0-9a-z]{32}"})
+     * @Route("partenaire/depot/eligibilite", name="partner_project_request_submit")
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param string $hash
+     * @param Request $request
      *
      * @return Response
      */
-    public function projectRequestEligibilityFormAction($hash)
+    public function projectRequestSubmitAction(Request $request)
     {
+        $hash = $request->request->getAlnum('hash');
+
+        if (1 !== preg_match('/^[0-9a-f]{32}$/', $hash)) {
+            return $this->redirect($request->headers->get('referer'));
+        }
+
         $project = $this->checkProjectHash($hash);
 
         if ($project instanceof RedirectResponse) {
@@ -477,6 +483,48 @@ class PartnerAccountController extends Controller
     }
 
     /**
+     * @Route("partenaire/depot/abandon", name="partner_project_request_abandon")
+     * @Method("POST")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function projectRequestAbandon(Request $request)
+    {
+        $hash = $request->request->getAlnum('hash');
+
+        if (1 !== preg_match('/^[0-9a-f]{32}$/', $hash)) {
+            return $this->redirect($request->headers->get('referer'));
+        }
+
+        $project = $this->checkProjectHash($hash);
+
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $abandonReasonRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason');
+
+        if (
+            $project->getStatus() != ProjectsStatus::ABANDONED
+            && $request->request->getInt('reason')
+            && ($abandonReason = $abandonReasonRepository->find($request->request->getInt('reason')))
+        ) {
+            /** @var \projects $projectData */
+            $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
+            $projectData->get($project->getIdProject());
+
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::ABANDONED, $projectData, 0, $abandonReason->getLabel());
+        }
+
+        return $this->redirectToRoute('partner_project_request_end', ['hash' => $hash]);
+    }
+
+    /**
      * @Route("partenaire/depot/fin/{hash}", name="partner_project_request_end", requirements={"hash":"[0-9a-z]{32}"})
      * @Security("has_role('ROLE_PARTNER')")
      *
@@ -495,7 +543,7 @@ class PartnerAccountController extends Controller
         $translator = $this->get('translator');
 
         switch ($project->getStatus()) {
-            case ProjectsStatus::NOT_ELIGIBLE:
+            case ProjectsStatus::ABANDONED:
                 $template = [
                     'title' => $translator->trans('partner-project-end_status-abandon-title'),
                     'message' => $translator->trans('partner-project-end_status-abandon-message'),
@@ -535,23 +583,12 @@ class PartnerAccountController extends Controller
             ->getPartnerProjects($companies);
 
         $template = [
-            'prospects' => $this->formatProject($prospects),
-            'borrowers' => $this->formatProject($borrowers)
+            'prospects'      => $this->formatProject($prospects),
+            'borrowers'      => $this->formatProject($borrowers),
+            'abandonReasons' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
         ];
 
         return $this->render('/partner_account/projects_list.html.twig', $template);
-    }
-
-    /**
-     * @Route("partenaire/depot/abandon", name="partner_projects_abandon")
-     * @Security("has_role('ROLE_PARTNER')")
-     *
-     * @return Response
-     */
-    public function projectRequestAbandon()
-    {
-        // Must return a response to initial Depot de dossier page - projectAbandoned = true
-        return $this->redirectToRoute('partner_project_request');
     }
 
     /**
@@ -726,16 +763,17 @@ class PartnerAccountController extends Controller
         foreach ($projects as $project) {
             $display[$project->getIdProject()] = [
                 'id'         => $project->getIdProject(),
+                'hash'       => $project->getHash(),
                 'name'       => empty($project->getTitle()) ? $project->getIdCompany()->getName() : $project->getTitle(),
+                'amount'     => $project->getAmount(),
+                'duration'   => $project->getPeriod(),
+                'status'     => $projectStatusRepository->findOneBy(['status' => $project->getStatus()])->getLabel(),
                 'submitter'  => [
                     'firstName' => $project->getIdClientSubmitter()->getPrenom(),
                     'lastName'  => $project->getIdClientSubmitter()->getNom(),
                     'entity'    => $project->getIdCompanySubmitter()->getName()
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
-                'amount'     => $project->getAmount(),
-                'duration'   => $project->getPeriod(),
-                'status'     => $projectStatusRepository->findOneBy(['status' => $project->getStatus()])->getLabel(),
                 'memos'      => $this->formatNotes($project->getNotes()),
                 'hasChanged' => $this->hasProjectChanged($project)
             ];
