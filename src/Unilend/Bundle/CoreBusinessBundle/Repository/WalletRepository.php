@@ -23,16 +23,7 @@ class WalletRepository extends EntityRepository
         $cb->select('w')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
             ->where('wt.label IN (:taxWallets)')
-            ->setParameter(
-                'taxWallets', [
-                WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE,
-                WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
-                WalletType::TAX_FR_CRDS,
-                WalletType::TAX_FR_CSG,
-                WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS,
-                WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS,
-                WalletType::TAX_FR_SOCIAL_DEDUCTIONS
-            ], Connection::PARAM_INT_ARRAY);
+            ->setParameter('taxWallets', WalletType::TAX_FR_WALLETS, Connection::PARAM_STR_ARRAY);
         $query = $cb->getQuery();
 
         return $query->getResult();

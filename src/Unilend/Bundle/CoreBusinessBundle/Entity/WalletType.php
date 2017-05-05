@@ -25,6 +25,16 @@ class WalletType
     const UNILEND                              = 'unilend';
     const UNILEND_PROMOTIONAL_OPERATION        = 'unilend_promotional_operation';
 
+    const TAX_FR_WALLETS = [
+        WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE,
+        WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
+        WalletType::TAX_FR_CRDS,
+        WalletType::TAX_FR_CSG,
+        WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS,
+        WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS,
+        WalletType::TAX_FR_SOCIAL_DEDUCTIONS
+    ];
+
     /**
      * @var string
      *

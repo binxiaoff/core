@@ -1,11 +1,20 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use PHPExcel_Cell;
+use PHPExcel_Shared_Date;
+use PHPExcel_Style_Border;
+use PHPExcel_Style_Color;
+use PHPExcel_Style_NumberFormat;
+use PHPExcel_Worksheet;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Psr\Log\LoggerInterface;
@@ -27,10 +36,325 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             );
     }
 
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $requestedDate = \DateTime::createFromFormat('Y-m-d', $input->getArgument('day'));
+        $firstDay      = new \DateTime('first day of ' . $requestedDate->format('Y-m'));
+
+        /** @var \PHPExcel $document */
+        $document    = new \PHPExcel();
+        $activeSheet = $document->setActiveSheetIndex(0);
+        $this->addHeaders($activeSheet, $requestedDate, 1);
+
+        $maxCoordinates          = $activeSheet->getHighestRowAndColumn();
+        $previousMonthBalanceRow = $maxCoordinates['row'];
+        $firstDateRow            = $previousMonthBalanceRow + 1;
+        $this->addDates($activeSheet, $firstDay, $requestedDate, $firstDateRow);
+
+        $maxCoordinates = $activeSheet->getHighestRowAndColumn();
+        $maxColumn      = PHPExcel_Cell::columnIndexFromString($maxCoordinates['column']);
+        $separationRow  = $maxCoordinates['row'] + 1;
+        $activeSheet->mergeCellsByColumnAndRow(0, $separationRow, $maxColumn, $separationRow);
+
+        $daySectionTotalRow = $separationRow + 1;
+        $separationRow      = $daySectionTotalRow + 1;
+        $activeSheet->mergeCellsByColumnAndRow(0, $separationRow, $maxColumn, $separationRow);
+
+        $monthHeaderStart = $separationRow + 1;
+        $this->addHeaders($activeSheet, $requestedDate, $monthHeaderStart);
+
+        $maxCoordinates         = $activeSheet->getHighestRowAndColumn();
+        $previousYearBalanceRow = $maxCoordinates['row'];
+        $firstMonthRow          = $previousYearBalanceRow + 1;
+        $this->addMonths($activeSheet, $requestedDate, $firstMonthRow);
+        //$this->addStyleToWorksheet($activeSheet);
+
+
+        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
+        $movements                      = $operationRepository->sumFinancialMovementsForDailyState($firstDay, $requestedDate);
+        $balance = [
+            'lender_borrower'     => $walletBalanceHistoryRepository->sumBalanceForDailyState($firstDay, $requestedDate, [WalletType::LENDER,WalletType::BORROWER]),
+            'unilend_promotional' => $walletBalanceHistoryRepository->sumBalanceForDailyState($firstDay, $requestedDate, [WalletType::UNILEND_PROMOTIONAL_OPERATION]),
+            'unilend'             => $walletBalanceHistoryRepository->sumBalanceForDailyState($firstDay, $requestedDate, [WalletType::UNILEND]),
+            'tax'                 => $walletBalanceHistoryRepository->sumBalanceForDailyState($firstDay, $requestedDate, WalletType::TAX_FR_WALLETS)
+        ];
+
+        $this->addMovementsLine($activeSheet, $movements, $firstDateRow, $daySectionTotalRow);
+        $this->addBalanceColumns($activeSheet, $movements, $balance, $previousMonthBalanceRow, $firstDay, $requestedDate);
+
+
+
+        $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_' . $requestedDate->format('Ymd') . '.xlsx';
+        /** @var \PHPExcel_Writer_CSV $writer */
+        $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
+        $writer->save(str_replace(__FILE__, $filePath ,__FILE__));
+    }
+
+
+    private function addHeaders(PHPExcel_Worksheet $activeSheet, \DateTime $date, $startRow)
+    {
+        $mainSectionRow       = $startRow + 1;
+        $secondarySectionRow  = $mainSectionRow + 1;
+        $previousBalanceRow   = $secondarySectionRow + 1;
+
+        $activeSheet->mergeCells('A' . $startRow . ':AH' . $startRow)->setCellValue('A' . $startRow, 'UNILEND');
+        if (2 == $mainSectionRow) {
+            $activeSheet->mergeCells('A' . $mainSectionRow . ':A' . $secondarySectionRow)->setCellValue('A' . $mainSectionRow, $date->format('d/m/Y'));
+            $activeSheet->mergeCells('A' . $previousBalanceRow . ':P' . $previousBalanceRow)->setCellValue('A' . $previousBalanceRow, 'Début du mois');
+        } else {
+            $activeSheet->mergeCells('A' . $mainSectionRow . ':A' . $secondarySectionRow)->setCellValue('A' . $mainSectionRow, $date->format('Y'));
+            $activeSheet->mergeCells('A' . $previousBalanceRow . ':P' . $previousBalanceRow)->setCellValue('A' . $previousBalanceRow, 'Début d\'année');
+        }
+        $activeSheet->mergeCells('B' . $mainSectionRow . ':D' . $mainSectionRow)->setCellValue('B' . $mainSectionRow, 'Chargements comptes prêteurs');
+        $activeSheet->setCellValue('E' . $mainSectionRow, 'Chargement offres');
+        $activeSheet->setCellValue('F' . $mainSectionRow, 'Echeances Emprunteur');
+        $activeSheet->setCellValue('G' . $mainSectionRow, 'Octroi prêt');
+        $activeSheet->setCellValue('H' . $mainSectionRow, 'Commission octroi prêt');
+        $activeSheet->setCellValue('I' . $mainSectionRow, 'Commission restant dû');
+        $activeSheet->mergeCells('J' . $mainSectionRow . ':P' . $mainSectionRow)->setCellValue('J' . $mainSectionRow, 'Retenues fiscales');
+        $activeSheet->setCellValue('Q' . $mainSectionRow, 'Remboursement aux prêteurs');
+        $activeSheet->setCellValue('R' . $mainSectionRow, '');
+        $activeSheet->mergeCells('S' . $mainSectionRow . ':X' . $mainSectionRow)->setCellValue('S' . $mainSectionRow, 'Soldes');
+        $activeSheet->mergeCells('Y' . $mainSectionRow . ':AD' . $mainSectionRow)->setCellValue('Y' . $mainSectionRow, 'Mouvements internes');
+        $activeSheet->mergeCells('AE' . $mainSectionRow . ':AG' . $mainSectionRow)->setCellValue('AE' . $mainSectionRow, 'Virements');
+        $activeSheet->setCellValue('AH' . $mainSectionRow, 'Prélèvements');
+        $activeSheet->setCellValue('B' . $secondarySectionRow,'Carte bancaire');
+        $activeSheet->setCellValue('C' . $secondarySectionRow,'Virement');
+        $activeSheet->setCellValue('D' . $secondarySectionRow, 'Prélèvement');
+        $activeSheet->setCellValue('E' . $secondarySectionRow, 'Virement');
+        $activeSheet->setCellValue('F' . $secondarySectionRow, 'Virement');
+        $activeSheet->setCellValue('G' . $secondarySectionRow, 'Prélèvement');
+        $activeSheet->setCellValue('H' . $secondarySectionRow, 'Virement');
+        $activeSheet->setCellValue('I' . $secondarySectionRow, 'Virement');
+        $activeSheet->setCellValue('J' . $secondarySectionRow, 'Prélèvements obligatoires');
+        $activeSheet->setCellValue('K' . $secondarySectionRow, 'Retenues à la source');
+        $activeSheet->setCellValue('L' . $secondarySectionRow, 'CSG');
+        $activeSheet->setCellValue('M' . $secondarySectionRow, 'Prélèvements sociaux');
+        $activeSheet->setCellValue('N' . $secondarySectionRow, 'Contributions additionnelles');
+        $activeSheet->setCellValue('O' . $secondarySectionRow, 'Prélèvements solidarité');
+        $activeSheet->setCellValue('P' . $secondarySectionRow, 'CRDS');
+        $activeSheet->setCellValue('Q' . $secondarySectionRow, 'Virement');
+        $activeSheet->setCellValue('R' . $secondarySectionRow, 'Total mouvements');
+        $activeSheet->setCellValue('S' . $secondarySectionRow, 'Solde théorique');
+        $activeSheet->setCellValue('T' . $secondarySectionRow, 'Solde réel');
+        $activeSheet->setCellValue('U' . $secondarySectionRow, 'Ecart global');
+        $activeSheet->setCellValue('V' . $secondarySectionRow, 'Solde Promotions');
+        $activeSheet->setCellValue('W' . $secondarySectionRow, 'Solde Unilend');
+        $activeSheet->setCellValue('X' . $secondarySectionRow, 'Solde Admin. Fiscale');
+        $activeSheet->setCellValue('Y' . $secondarySectionRow, 'Offre promo');
+        $activeSheet->setCellValue('Z' . $secondarySectionRow, 'Octroi prêt');
+        $activeSheet->setCellValue('AA' . $secondarySectionRow, 'Retour prêteur (Capital)');
+        $activeSheet->setCellValue('AB' . $secondarySectionRow, 'Retour prêteur (Intêréts nets)');
+        $activeSheet->setCellValue('AC' . $secondarySectionRow, 'Affectation Ech. Empr.');
+        $activeSheet->setCellValue('AD' . $secondarySectionRow, 'Ecart fiscal');
+        $activeSheet->setCellValue('AE' . $secondarySectionRow, 'Fichier virements');
+        $activeSheet->setCellValue('AF' . $secondarySectionRow, 'Dont SFF PME');
+        $activeSheet->setCellValue('AG' . $secondarySectionRow, 'Administration Fiscale');
+        $activeSheet->setCellValue('AH' . $secondarySectionRow, 'Fichier prélèvements');
+        $activeSheet->mergeCells('Y' . $previousBalanceRow . ':AH' . $previousBalanceRow);
+    }
+
+    private function addDates(PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, $row)
+    {
+        $lastDay = new \DateTime('last day of ' . $requestedDate->format('Y-m'));
+        $lastDay->add(new \DateInterval('P1D')); // first day of the next month for the interval
+        $dayInterval   = \DateInterval::createFromDateString('1 day');
+        $month         = new \DatePeriod($firstDay, $dayInterval, $lastDay);
+
+        /** @var \DateTime $day */
+        foreach ($month as $day) {
+            $activeSheet->setCellValueExplicitByColumnAndRow(0, $row, PHPExcel_Shared_Date::PHPToExcel($day), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->getCellByColumnAndRow(0, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
+            $row++;
+        }
+    }
+
+    private function addMonths(PHPExcel_Worksheet $activeSheet, \DateTime $requestedDate, $row)
+    {
+        $monthInterval = \DateInterval::createFromDateString('1 month');
+        $year          = new \DatePeriod(new \Datetime('First day of January ' . $requestedDate->format('Y')), $monthInterval, new \DateTime('Last day of december ' . $requestedDate->format('Y')));
+
+        /** @var \DateTime $month */
+        foreach ($year as $month) {
+            $activeSheet->setCellValueByColumnAndRow(0, $row, strftime('%B', $month->getTimestamp()));
+            $row ++;
+        }
+    }
+
+    private function addStyleToWorksheet(PHPExcel_Worksheet $activeSheet)
+    {
+        $style = [
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => ['argb' => PHPExcel_Style_Color::COLOR_BLACK]
+                ]
+            ]
+        ];
+
+        //TODO format date
+        $maxCoordinates = $activeSheet->getHighestRowAndColumn();
+        $activeSheet->getStyle('A1:' . $maxCoordinates['column'] . $maxCoordinates['row'])->applyFromArray($style);
+        $activeSheet->getStyle('A1:' . $maxCoordinates['column'] . '1')->getFont()->setBold(true);
+    }
+
+    private function addMovementsLine(PHPExcel_Worksheet $activeSheet, array $movements, $row, $daySectionTotalRow)
+    {
+        $total = 0;
+        foreach ($movements as $day => $dailyMovements) {
+            $lenderProvisionCreditCard   = empty($movements['lender_provision_credit_card']) ? 0 : $movements['lender_provision_credit_card'];
+            $lenderProvisionWireTransfer = empty($movements['lender_provision_wire_transfer_in']) ? 0 : $movements['lender_provision_wire_transfer_in'];
+            $promotionProvision          = empty($movements[OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION]) ? 0 : $movements[OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION];
+            $borrowerProvision           = empty($movements[OperationType::BORROWER_PROVISION]) ? 0 : $movements[OperationType::BORROWER_PROVISION];
+            $borrowerWithdraw            = empty($movements[OperationType::BORROWER_WITHDRAW]) ? 0 : $movements[OperationType::BORROWER_WITHDRAW];
+            $borrowerCommissionProject   = empty($movements['borrower_commission_project']) ? 0 : $movements['borrower_commission_project'];
+            $borrowerCommissionPayment   = empty($movements['borrower_commission_payment']) ? 0 : $movements['borrower_commission_payment'];
+            $statutoryContributions      = empty($movements[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS]) ? 0 : $movements[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS];
+            $incomeTax                   = empty($movements[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE]) ? 0 : $movements[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE];
+            $csg                         = empty($movements[OperationType::TAX_FR_CSG]) ? 0 : $movements[OperationType::TAX_FR_CSG];
+            $socialDeductions            = empty($movements[OperationType::TAX_FR_SOCIAL_DEDUCTIONS]) ? 0 : $movements[OperationType::TAX_FR_SOCIAL_DEDUCTIONS];
+            $additionalContributions     = empty($movements[OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS]) ? 0 : $movements[OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS];
+            $solidarityDeductions        = empty($movements[OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS]) ? 0 : $movements[OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS];
+            $crds                        = empty($movements[OperationType::TAX_FR_CRDS]) ? 0 : $movements[OperationType::TAX_FR_CRDS];
+            $lenderWithdraw              = empty($movements[OperationType::LENDER_WITHDRAW]) ? 0 : $movements[OperationType::LENDER_WITHDRAW];
+
+            $totalIncoming = bcadd($borrowerProvision, bcadd($promotionProvision, bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 2), 2), 2);
+            $totalTax      = bcadd($crds, bcadd($solidarityDeductions, bcadd($additionalContributions, bcadd($socialDeductions, bcadd($csg, bcadd($statutoryContributions, $incomeTax, 2), 2), 2), 2), 2), 2);
+            $totalOutgoing = bcadd($totalTax, bcadd($borrowerCommissionPayment, bcadd($borrowerCommissionProject, bcadd($borrowerWithdraw, $lenderWithdraw, 2), 2), 2), 2);
+            $totalDay      = bcsub($totalIncoming, $totalOutgoing, 2);
+            $total         = bcadd($total, $totalDay, 2);
+
+            $activeSheet->setCellValueExplicitByColumnAndRow(1, $row, $lenderProvisionCreditCard, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, $lenderProvisionWireTransfer, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(3, $row, 0, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $promotionProvision, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, $borrowerProvision, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, $borrowerWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(7, $row, $borrowerCommissionProject, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(8, $row, $borrowerCommissionPayment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(9, $row, $statutoryContributions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(10, $row, $incomeTax, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(11, $row, $csg, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(12, $row, $socialDeductions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(13, $row, $additionalContributions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(14, $row, $solidarityDeductions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(15, $row, $crds, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(16, $row, $lenderWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(17, $row, $totalDay, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+            $row++;
+        }
+        $this->addTotalMovementsLine($activeSheet, $movements, $daySectionTotalRow, $total);
+    }
+
+    private function addTotalMovementsLine(PHPExcel_Worksheet $activeSheet, array $movements, $row, $total)
+    {
+        $activeSheet->setCellValueByColumnAndRow(0, $row, 'Total mois');
+        $activeSheet->setCellValueExplicitByColumnAndRow(1, $row, array_sum(array_column($movements, 'lender_provision_credit_card')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, array_sum(array_column($movements,'lender_provision_wire_transfer_in')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(3, $row, 0, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, array_sum(array_column($movements, OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, array_sum(array_column($movements, OperationType::BORROWER_PROVISION)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, array_sum(array_column($movements, OperationType::BORROWER_WITHDRAW)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(7, $row, array_sum(array_column($movements, 'borrower_commission_project')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(8, $row, array_sum(array_column($movements, 'borrower_commission_payment')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(9, $row, array_sum(array_column($movements, OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(10, $row, array_sum(array_column($movements, OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(11, $row, array_sum(array_column($movements, OperationType::TAX_FR_CSG)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(12, $row, array_sum(array_column($movements, OperationType::TAX_FR_SOCIAL_DEDUCTIONS)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(13, $row, array_sum(array_column($movements, OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(14, $row, array_sum(array_column($movements, OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(15, $row, array_sum(array_column($movements, OperationType::TAX_FR_CRDS)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(16, $row, array_sum(array_column($movements, OperationType::LENDER_WITHDRAW)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicitByColumnAndRow(17, $row, $total, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+    }
+
+    private function addBalanceColumns(PHPExcel_Worksheet $activeSheet, array $movements, array $balances, $row, \DateTime $firstDayOfTheMonth, \DateTime $date)
+    {
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        /** @var OperationRepository $operationRepository */
+        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
+        $theoreticalBalance = 0;
+        $availableBalance   = 0;
+        $difference         = 0;
+        $promotionalBalance = 0;
+        $unilendBalance     = 0;
+        $taxBalance         = 0;
+
+        foreach ($balances as $balanceType => $balanceByDay) {
+            if ($balanceType == 'lender_borrower') {
+                $lenderBorrowerRow = $row;
+                foreach ($balanceByDay as $day => $balance) {
+                    $dataDay  = \DateTime::createFromFormat('Y-m-d', $day);
+                    $dataDay->setTime(0,0,0);
+                    if (2 == $dataDay->diff($firstDayOfTheMonth)->days) {
+                        continue;
+                    }
+                    if (1 == $dataDay->diff($firstDayOfTheMonth)->days) {
+                        $dataDayStart      = $dataDay;
+                        $dataDayEnd        = $dataDay;
+                        $movementsOfTheDay = $operationRepository->sumFinancialMovementsForDailyState($dataDayStart, $dataDayEnd);
+                    } else {
+                        $movementsOfTheDay = $movements[$day];
+                    }
+
+                    $previousDay = new \DateTime($day);
+                    $previousDay->sub(new \DateInterval('P1D'));
+                    $theoreticalBalance = bcadd($balanceByDay[$previousDay->format('Y-m-d')], array_sum($movementsOfTheDay), 2);
+                    if ($day !== $date->format('Y-m-d')) {
+                        $availableBalance = 'va venir plus tard';
+                    } else {
+                        $availableBalance = $balance;
+                    }
+                    $difference = bcsub($availableBalance, $theoreticalBalance, 2);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(18, $row, $theoreticalBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(19, $row, $availableBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(20, $row, $difference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $lenderBorrowerRow++;
+                }
+            }
+            if ($balanceType == 'unilend_promotional') {
+                $unilendPromotionalRow = $row;
+                foreach ($balanceByDay as $day => $balance) {
+                    if ($day !== $date->format('Y-m-d')) {
+                        $promotionalBalance = empty($balance[$day]) ? $promotionalBalance : $balances[$day];
+                        $activeSheet->setCellValueExplicitByColumnAndRow(21, $row, $promotionalBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $unilendPromotionalRow ++;
+                    }
+                }
+            }
+            if ($balanceType == 'unilend') {
+                $unilendRow = $row;
+                foreach ($balanceByDay as $day => $balance) {
+                    if ($day !== $date->format('Y-m-d')) {
+                        $unilendBalance = empty($balance[$day]) ? $unilendBalance : $balances[$day];
+                        $activeSheet->setCellValueExplicitByColumnAndRow(22, $row, $unilendBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $unilendRow ++;
+                    }
+                }
+            }
+            if ($balanceType == 'tax') {
+                $taxRow = $row;
+                foreach ($balanceByDay as $day => $balance) {
+                    if ($day !== $date->format('Y-m-d')) {
+                        $taxBalance = empty($balance[$day]) ? $taxBalance : $balances[$day];
+                        $activeSheet->setCellValueExplicitByColumnAndRow(23, $row, $taxBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $taxRow ++;
+                    }
+                }
+            }
+        }
+    }
+
+
+
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function executeOld(InputInterface $input, OutputInterface $output)
     {
         try {
             /** @var EntityManager $entityManager */
