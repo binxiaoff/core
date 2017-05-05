@@ -188,14 +188,14 @@ class LenderOperationsController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->get('unilend.service.entity_manager')->getRepository('echeanciers');
         $loans             = $this->commonLoans($request, $wallet);
 
         \PHPExcel_Settings::setCacheStorageMethod(
             \PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+            ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
         );
 
         $oDocument    = new \PHPExcel();

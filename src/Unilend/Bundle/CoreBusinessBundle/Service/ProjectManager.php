@@ -596,8 +596,8 @@ class ProjectManager
             }
 
             foreach ($lLoans as $l) {
-                $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($l['id_lender']);
-                $oClientAdresse->get($wallet->getIdClient()->getWallets(), 'id_client');
+                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($l['id_lender']);
+                $oClientAdresse->get($wallet->getIdClient()->getIdClient(), 'id_client');
                 $oLoan->get($l['id_loan']);
 
                 $aRepaymentSchedule = array();

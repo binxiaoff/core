@@ -101,7 +101,7 @@ class NotificationsController extends Controller
         $length = $perPage;
 
         return new JsonResponse([
-            'notifications' => $notificationsDisplayManager->getLenderNotifications($wallet->getId(), $start, $length),
+            'notifications' => $notificationsDisplayManager->getLenderNotifications($wallet->getIdClient(), $start, $length),
             'pagination'    => [
                 'perPage'     => $perPage,
                 'currentPage' => $currentPage
