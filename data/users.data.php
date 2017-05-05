@@ -99,7 +99,7 @@ class users extends users_crud
 
                 $this->lastlogin = date('Y-m-d H:i:s');
                 $this->update();
-                $this->checkExpiredPassword(\DateTime::createFromFormat('Y-m-d H:i:s', $user['password_edited']));
+                $this->checkExpiredPassword();
 
                 if (isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login' && $_SESSION['request_url'] != 'captcha') {
                     header('Location: ' . $_SESSION['request_url']);
@@ -116,14 +116,11 @@ class users extends users_crud
         }
     }
 
-    /**
-     * @param \DateTime $lastPasswordUpdate
-     */
-    private function checkExpiredPassword(\DateTime $lastPasswordUpdate)
+    private function checkExpiredPassword()
     {
         $maxEditDate = new \DateTime('3 months ago');
 
-        if ($maxEditDate >= $lastPasswordUpdate) {
+        if ($maxEditDate->format('Y-m-d H:i:s') >= $this->password_edited) {
             $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
             $_SESSION['freeow']['message'] = 'Votre mot de passe doit être mis à jour afin de conserver un niveau de sécurité optimal!';
 
