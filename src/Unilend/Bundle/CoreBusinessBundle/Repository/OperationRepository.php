@@ -103,17 +103,20 @@ class OperationRepository extends EntityRepository
      *
      * @return mixed
      */
-    public function sumCreditOperationsByTypeAndYear(Wallet $creditorWallet, $operationTypes, $year)
+    public function sumCreditOperationsByTypeAndYear(Wallet $creditorWallet, $operationTypes, $year = null)
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:operationTypes)')
             ->andWhere('o.idWalletCreditor = :idWallet')
-            ->andWhere('YEAR(o.added) = :year')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idWallet', $creditorWallet)
-            ->setParameter('year', $year);
+            ->setParameter('idWallet', $creditorWallet);
+
+        if (null !== $year) {
+            $qb->andWhere('YEAR(o.added) = :year')
+                ->setParameter('year', $year);
+        }
 
         return $qb->getQuery()->getSingleScalarResult();
     }
@@ -125,17 +128,20 @@ class OperationRepository extends EntityRepository
      *
      * @return mixed
      */
-    public function sumDebitOperationsByTypeAndYear(Wallet $debtorWallet, $operationTypes, $year)
+    public function sumDebitOperationsByTypeAndYear(Wallet $debtorWallet, $operationTypes, $year = null)
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:operationTypes)')
             ->andWhere('o.idWalletDebtor = :idWallet')
-            ->andWhere('YEAR(o.added) = :year')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idWallet', $debtorWallet)
-            ->setParameter('year', $year);
+            ->setParameter('idWallet', $debtorWallet);
+
+        if (null !== $year) {
+            $qb->andWhere('YEAR(o.added) = :year')
+                ->setParameter('year', $year);
+        }
 
         return $qb->getQuery()->getSingleScalarResult();
     }

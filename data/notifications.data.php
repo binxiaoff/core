@@ -92,25 +92,25 @@ class notifications extends notifications_crud
     }
 
     /**
-     * @param lenders_accounts $lender
+     * @param int $idLender
      */
-    public function markAllLenderNotificationsAsRead(\lenders_accounts $lender)
+    public function markAllLenderNotificationsAsRead($idLender)
     {
         $queryBuilder = $this->bdd->createQueryBuilder();
         $queryBuilder->update('notifications')
             ->set('status', self::STATUS_READ)
             ->where('status = ' . self::STATUS_UNREAD)
             ->andWhere('id_lender = :id_lender')
-            ->setParameter('id_lender', $lender->id_lender_account);
+            ->setParameter('id_lender', $idLender);
 
         $queryBuilder->execute();
     }
 
     /**
-     * @param lenders_accounts $lender
-     * @param array            $notifications
+     * @param int    $idLender
+     * @param array  $notifications
      */
-    public function markLenderNotificationsAsRead(\lenders_accounts $lender, array $notifications)
+    public function markLenderNotificationsAsRead($idLender, array $notifications)
     {
         $queryBuilder = $this->bdd->createQueryBuilder();
         $queryBuilder->update('notifications')
@@ -118,7 +118,7 @@ class notifications extends notifications_crud
             ->where('status = ' . self::STATUS_UNREAD)
             ->andWhere('id_lender = :id_lender')
             ->andWhere('id_notification IN (:notifications)')
-            ->setParameter('id_lender', $lender->id_lender_account, \PDO::PARAM_INT)
+            ->setParameter('id_lender', $idLender, \PDO::PARAM_INT)
             ->setParameter('notifications', $notifications, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
 
         $queryBuilder->execute();

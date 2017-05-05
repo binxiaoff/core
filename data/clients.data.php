@@ -308,7 +308,7 @@ class clients extends clients_crud
                     ELSE ""
                   END AS nom_usage
                 FROM clients c
-                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = ' . WalletType::LENDER . ' ")
+                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
                   LEFT JOIN companies co ON co.id_client_owner = c.id_client
             ' . $where . '
             GROUP BY c.id_client
@@ -350,18 +350,15 @@ class clients extends clients_crud
                 cs.label AS label_status,
                 csh.added AS added_status,
                 clsh.id_client_status_history,
-                l.id_company_owner as id_company,
-                l.type_transfert as type_transfert,
+                com.id_company as id_company,
                 w.wire_transfer_pattern as motif,
-                l.fonds,
-                l.id_lender_account as id_lender,
                 w.available_balance as balance
             FROM clients c
             INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history FROM clients_status_history GROUP BY id_client) clsh ON c.id_client = clsh.id_client
             INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
             INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
-            INNER JOIN lenders_accounts l ON c.id_client = l.id_client_owner
             INNER JOIN wallet w ON c.id_client = w.id_client
+            LEFT JOIN companies com ON c.id_client = com.id_client_owner
             ' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
@@ -449,8 +446,13 @@ class clients extends clients_crud
 
     public function isLender()
     {
-        $oLendersAccounts = new \lenders_accounts($this->bdd);
-        return $oLendersAccounts->exist($this->id_client, 'id_client_owner');
+        $query = 'SELECT COUNT(*) FROM wallet w
+                    INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = ' . WalletType::LENDER . '
+                  WHERE w.id_client = :idClient';
+
+        $statement =  $this->bdd->executeQuery($query, ['idClient' => $this->id_client]);
+
+        return ($statement->fetchColumn(0) == 1);
     }
 
     public function isBorrower()
@@ -794,8 +796,9 @@ class clients extends clients_crud
                          FROM clients
                              LEFT JOIN clients_adresses USING (id_client)
                              LEFT JOIN companies ON clients.id_client = companies.id_client_owner
-                             INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner
-                         WHERE clients.status = '. ClientEntity::STATUS_ONLINE .' AND lenders_accounts.status = 1
+                             INNER JOIN wallet w ON clients.id_client = w.id_client
+                             INNER JOIN wallet_type wt ON w.id_type = wt.id
+                         WHERE clients.status = '. ClientEntity::STATUS_ONLINE .'
                          AND (clients_adresses.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . PaysV2::COUNTRY_FRANCE . ')) AS client_base
                     GROUP BY insee_region_code';
 

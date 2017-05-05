@@ -32,7 +32,8 @@ class ClientStatusManager
         NotificationManager $notificationManager,
         AutoBidSettingsManager $autoBidSettingsManager,
         EntityManager $entityManager
-    ) {
+    )
+    {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->notificationManager    = $notificationManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
@@ -54,14 +55,11 @@ class ClientStatusManager
         }
 
         $this->notificationManager->deactivateAllNotificationSettings($client);
-        $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
-
-        $this->autoBidSettingsManager->off($lenderAccount);
+        $this->autoBidSettingsManager->off($wallet->getIdClient());
 
         $client->changePassword($client->email, mt_rand());
 
-        if ($client->status == Clients::STATUS_ONLINE) {
+        if (Clients::STATUS_ONLINE == $client->status) {
             $client->status = Clients::STATUS_OFFLINE;
             $client->update();
         }

@@ -2,8 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class LenderValidator
 {
@@ -11,23 +12,23 @@ class LenderValidator
 
     /** @var ContractAttributeManager */
     private $contractAttributeManager;
-    /** @var EntityManager */
-    private $entityManager;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
 
-    public function __construct(ContractAttributeManager $contractAttributeManager, EntityManager $entityManager)
+    public function __construct(ContractAttributeManager $contractAttributeManager, EntityManagerSimulator $entityManagerSimulator)
     {
         $this->contractAttributeManager = $contractAttributeManager;
-        $this->entityManager            = $entityManager;
+        $this->entityManagerSimulator   = $entityManagerSimulator;
     }
 
     /**
-     * @param \lenders_accounts    $lender
+     * @param Clients              $client
      * @param \underlying_contract $contract
      *
      * @return bool
      */
-    public function isEligible(\lenders_accounts $lender, \underlying_contract $contract)
+    public function isEligible(Clients $client, \underlying_contract $contract)
     {
-        return $this->isEligibleForLenderType($lender, $contract, $this->entityManager, $this->contractAttributeManager);
+        return $this->isEligibleForLenderType($client, $contract, $this->contractAttributeManager);
     }
 }

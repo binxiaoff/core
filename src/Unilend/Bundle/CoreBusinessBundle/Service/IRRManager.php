@@ -38,7 +38,8 @@ class IRRManager
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         LoggerInterface $logger
-    ) {
+    )
+    {
         $this->logger                 = $logger;
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
@@ -93,10 +94,10 @@ class IRRManager
      *
      * @return string
      */
-    public function calculateIRRForLender(Wallet $wallet, $lenderId)
+    public function calculateIRRForLender(Wallet $wallet)
     {
         $lenderStatisticRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
-        $valuesIRR                 = $lenderStatisticRepository->getValuesForIRR($wallet->getId(), $lenderId);
+        $valuesIRR                 = $lenderStatisticRepository->getValuesForIRR($wallet->getId());
 
         return $this->calculateIRR($valuesIRR);
     }
@@ -146,12 +147,12 @@ class IRRManager
      * @param Wallet $wallet
      * @param int    $lenderId
      */
-    public function addIRRLender(Wallet $wallet, $idLender)
+    public function addIRRLender(Wallet $wallet)
     {
         $status = LenderStatistic::STAT_VALID_OK;
 
         try {
-            $lenderIRR = $this->calculateIRRForLender($wallet, $idLender);
+            $lenderIRR = $this->calculateIRRForLender($wallet);
         } catch (\Exception $irrException) {
             $status    = LenderStatistic::STAT_VALID_NOK;
             $lenderIRR = 0;

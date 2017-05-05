@@ -2,6 +2,8 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
@@ -65,14 +67,15 @@ class ProjectDisplayManager
     }
 
     /**
-     * @param array                  $projectStatus
-     * @param array                  $sort
-     * @param int|null               $start
-     * @param int|null               $limit
-     * @param \lenders_accounts|null $lenderAccount
+     * @param array        $projectStatus
+     * @param array        $sort
+     * @param int|null     $start
+     * @param int|null     $limit
+     * @param Clients|null $client
+     *
      * @return array
      */
-    public function getProjectsList(array $projectStatus = [], array $sort = [], $start = null, $limit = null, \lenders_accounts $lenderAccount = null)
+    public function getProjectsList(array $projectStatus = [], array $sort = [], $start = null, $limit = null, Clients $client = null)
     {
         /** @var \projects $projectsEntity */
         $projectsEntity = $this->entityManager->getRepository('projects');
@@ -93,9 +96,9 @@ class ProjectDisplayManager
             $projectsData[$project->id_project] = $this->getBaseData($project);
             $projectsData[$project->id_project]['bidsCount'] = $bids->counter('id_project = ' . $project->id_project);
 
-            if (false === empty($lenderAccount->id_lender_account)) {
-                $projectsData[$project->id_project]['lender']['bids']      = $this->lenderAccountDisplayManager->getBidsForProject($project->id_project, $lenderAccount);
-                $projectsData[$project->id_project]['lender']['isAdvised'] = $this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $lenderAccount);
+            if ($client->isLender()) {
+                $projectsData[$project->id_project]['lender']['bids']      = $this->lenderAccountDisplayManager->getBidsForProject($project->id_project, $client);
+                $projectsData[$project->id_project]['lender']['isAdvised'] = $this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $client);
             }
         }
 

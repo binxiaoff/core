@@ -6,8 +6,10 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class ClientsRepository extends EntityRepository
@@ -180,6 +182,127 @@ class ClientsRepository extends EntityRepository
            ->setParameter(':lender', WalletType::LENDER)
            ->setParameter('status', $status, Connection::PARAM_INT_ARRAY);
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param $limit
+     *
+     * @return array
+     */
+    public function getLendersToMatchCity($limit)
+    {
+        $query = 'SELECT * FROM (
+                    SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, ca.cp_fiscal AS zip, ca.ville_fiscal AS city, ca.cp, ca.ville, 0 AS is_company
+                    FROM clients_adresses ca
+                    INNER JOIN clients c ON ca.id_client = c.id_client
+                    INNER JOIN wallet w ON c.id_client = w.id_client
+                    INNER JOIN wallet_type wt ON w.id_type = wt.id
+                    WHERE c.status = ' . Clients::STATUS_ONLINE . '
+                      AND wt.label = "' . WalletType::LENDER . '"
+                      AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
+                      AND la.id_company_owner = 0
+                      AND (
+                        NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
+-                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
+                      )
+                  LIMIT :limit
+                ) perso
+                UNION
+                SELECT * FROM (
+                  SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, co.zip, co.city, ca.cp, ca.ville, 1 AS is_company
+                  FROM clients_adresses ca
+                    INNER JOIN clients c ON ca.id_client = c.id_client
+                    INNER JOIN wallet w ON c.id_client = w.id_client
+                    INNER JOIN wallet_type wt ON w.id_type = wt.id
+                    INNER JOIN companies co ON co.id_client_owner = ca.id_client
+                  WHERE c.status = ' . Clients::STATUS_ONLINE . '
+                    AND wt.label = "' . WalletType::LENDER . '"
+                    AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
+                    AND (
+                      NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = co.zip)
+                      OR (SELECT COUNT(*) FROM villes v WHERE v.cp = co.zip AND v.ville = co.city) <> 1
+                    )  LIMIT :limit
+                ) company';
+
+        $result =  $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['limit' => floor($limit / 2)], ['limit' => PDO::PARAM_INT])
+            ->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
+    }
+
+    /**
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function getLendersToMatchBirthCity($limit)
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('c.idClient, c.prenom, c.nom, c.villeNaissance')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->andWhere('wt.label = :lender')
+            ->andWhere('c.status = :statusOnline')
+            ->andWhere('c.idPaysNaissance = :France')
+            ->andWhere('c.inseeBirth IS NULL')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('France', PaysV2::COUNTRY_FRANCE)
+            ->setMaxResults($limit);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * if true only lenders activated at least once (active lenders)
+     * if false all online lender (Community)
+     * @param bool $onlyActive
+     *
+     * @return int
+     */
+    public function countLenders($onlyActive = false)
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('COUNT(DISTINCT(c.idClient))')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->andWhere('wt.label = :lender')
+            ->andWhere('c.status = :statusOnline')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('statusOnline', Clients::STATUS_ONLINE);
+
+        if ($onlyActive) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param array $clientType
+     * @param bool  $onlyActive
+     *
+     * @return int
+     */
+    public function countLendersByClientType(array $clientType, $onlyActive = false)
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('COUNT(DISTINCT(c.idClient))')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->andWhere('wt.label = :lender')
+            ->andWhere('c.status = :statusOnline')
+            ->andWhere('c.type IN (:types)')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY);
+
+        if ($onlyActive) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
     }
 
     public function getLendersSalesForce()

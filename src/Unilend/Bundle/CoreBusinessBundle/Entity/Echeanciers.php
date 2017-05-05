@@ -15,26 +15,9 @@ class Echeanciers
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_lender", type="integer", nullable=false)
-     */
-    private $idLender;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="id_project", type="integer", nullable=false)
      */
     private $idProject;
-
-    /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
-     * })
-     */
-    private $idLoan;
 
     /**
      * @var integer
@@ -157,31 +140,27 @@ class Echeanciers
      */
     private $idEcheancier;
 
-
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
+     * })
+     */
+    private $idLoan;
 
     /**
-     * Set idLender
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @param integer $idLender
-     *
-     * @return Echeanciers
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     * })
      */
-    public function setIdLender($idLender)
-    {
-        $this->idLender = $idLender;
+    private $idLender;
 
-        return $this;
-    }
 
-    /**
-     * Get idLender
-     *
-     * @return integer
-     */
-    public function getIdLender()
-    {
-        return $this->idLender;
-    }
 
     /**
      * Set idProject
@@ -205,30 +184,6 @@ class Echeanciers
     public function getIdProject()
     {
         return $this->idProject;
-    }
-
-    /**
-     * Set idLoan
-     *
-     * @param Loans $idLoan
-     *
-     * @return Echeanciers
-     */
-    public function setIdLoan($idLoan)
-    {
-        $this->idLoan = $idLoan;
-
-        return $this;
-    }
-
-    /**
-     * Get idLoan
-     *
-     * @return Loans
-     */
-    public function getIdLoan()
-    {
-        return $this->idLoan;
     }
 
     /**
@@ -450,7 +405,7 @@ class Echeanciers
     /**
      * Set statusEmailRemb
      *
-     * @param integer $statusEmailRemb
+     * @param boolean $statusEmailRemb
      *
      * @return Echeanciers
      */
@@ -464,7 +419,7 @@ class Echeanciers
     /**
      * Get statusEmailRemb
      *
-     * @return integer
+     * @return boolean
      */
     public function getStatusEmailRemb()
     {
@@ -623,5 +578,53 @@ class Echeanciers
     public function getIdEcheancier()
     {
         return $this->idEcheancier;
+    }
+
+    /**
+     * Set idLoan
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan
+     *
+     * @return Echeanciers
+     */
+    public function setIdLoan(Loans $idLoan)
+    {
+        $this->idLoan = $idLoan;
+
+        return $this;
+    }
+
+    /**
+     * Get idLoan
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
+     */
+    public function getIdLoan()
+    {
+        return $this->idLoan;
+    }
+
+    /**
+     * Set idLender
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     *
+     * @return Echeanciers
+     */
+    public function setIdLender(Wallet $idLender)
+    {
+        $this->idLender = $idLender;
+
+        return $this;
+    }
+
+    /**
+     * Get idLender
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLender()
+    {
+        return $this->idLender;
     }
 }
