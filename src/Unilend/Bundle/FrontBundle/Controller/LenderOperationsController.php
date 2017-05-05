@@ -887,7 +887,7 @@ class LenderOperationsController extends Controller
      *
      * @return Response
      */
-    public function loadProjectNotifications($projectId)
+    public function loadProjectNotificationsAction($projectId)
     {
         try {
             $notificationDisplayManager = $this->get('unilend.frontbundle.notification_display_manager');
