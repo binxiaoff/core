@@ -42,7 +42,7 @@
                 </tr>
             </table>
             <div style="text-align: center">
-                <button onclick="parent.$.fn.colorbox.close();" class='btn' style="margin-left:15px;">Fermer</button>
+                <button onclick="parent.$.fn.colorbox.close();" class='btn btn_link btnDisabled' style="margin-left:15px;">Fermer</button>
                 <input type="submit" class="btn" value="Valider">
             </div>
         </form>

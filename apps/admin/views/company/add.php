@@ -2,6 +2,4 @@
 <div id="contenu">
     <h1>Création de société</h1>
     <?php $this->fireview('blocks/identity'); ?>
-    <br/><br/>
-    * Champs obligatoires
 </div>

@@ -31,15 +31,7 @@ class companyController extends bootstrap
 
     public function _add()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-        $attachmentManager = $this->get('unilend.service.attachment_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
-        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-
-        $this->sectors = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanySector')->findAll();
-        $this->siren   = '';
+        $this->siren = '';
 
         if (isset($this->params[0])) {
             $this->siren = $this->params[0];
@@ -47,84 +39,16 @@ class companyController extends bootstrap
         $this->client  = new Clients();
         $this->company = new Companies();
 
-        $entityManager->persist($this->client);
-        $entityManager->persist($this->company);
-
         if ($this->request->isMethod('POST')) {
-            $siren               = substr(filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING), 0, 9);
-            $corporateName       = filter_var($this->request->request->get('corporate_name'), FILTER_SANITIZE_STRING);
-            $title               = filter_var($this->request->request->get('title'), FILTER_SANITIZE_STRING);
-            $name                = filter_var($this->request->request->get('name'), FILTER_SANITIZE_STRING);
-            $firstName           = filter_var($this->request->request->get('firstname'), FILTER_SANITIZE_STRING);
-            $email               = filter_var($this->request->request->get('email'), FILTER_SANITIZE_EMAIL);
-            $phone               = filter_var($this->request->request->get('phone'), FILTER_SANITIZE_STRING);
-            $address             = filter_var($this->request->request->get('address'), FILTER_SANITIZE_STRING);
-            $postCode            = filter_var($this->request->request->get('postCode'), FILTER_SANITIZE_STRING);
-            $city                = filter_var($this->request->request->get('city'), FILTER_SANITIZE_STRING);
-            $invoiceEmail        = filter_var($this->request->request->get('invoice_email'), FILTER_SANITIZE_EMAIL);
-            $invoiceEmail        = empty($invoiceEmail) ? $email : $invoiceEmail;
-            $bic                 = filter_var($this->request->request->get('bic'), FILTER_SANITIZE_STRING);
-            $iban                = $this->request->request->get('iban1')
-                . $this->request->request->get('iban2')
-                . $this->request->request->get('iban3')
-                . $this->request->request->get('iban4')
-                . $this->request->request->get('iban5')
-                . $this->request->request->get('iban6')
-                . $this->request->request->get('iban7');
-            $iban                = filter_var($iban, FILTER_SANITIZE_STRING);
-            $bankAccountDocument = $this->request->files->get('rib');
-            $registryForm        = $this->request->files->get('kbis');
-
-            if (1 !== preg_match('/^\d{9}$/', $siren)) {
-                $_SESSION['freeow']['title']   = 'Une erreur survenue !';
-                $_SESSION['freeow']['message'] = 'SIREN n\'est pas valide.';
-                header('Location: ' . $this->url . '/company/add' . (isset($this->params[0]) ? '/' . $this->params[0] : ''));
-            }
-
-            $entityManager->beginTransaction();
-            try {
-                $this->client->setEmail($email)
-                             ->setIdLangue('fr')
-                             ->setStatus(Clients::STATUS_ONLINE)
-                             ->setCivilite($title)
-                             ->setNom($name)
-                             ->setPrenom($firstName);
-
-                $entityManager->flush($this->client);
-
-                $this->company->setSiren($siren)
-                              ->setName($corporateName)
-                              ->setStatusAdresseCorrespondance(Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL)
-                              ->setEmailDirigeant($email)
-                              ->setEmailFacture($invoiceEmail)
-                              ->setIdClientOwner($this->client->getIdClient())
-                              ->setAdresse1($address)
-                              ->setZip($postCode)
-                              ->setCity($city)
-                              ->setPhone($phone);
-
-                $entityManager->flush($this->company);
-
-                if ($iban && $bic && $bankAccountDocument) {
-                    $attachmentTypeRib = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::RIB);
-                    $attachmentRib     = $attachmentManager->upload($this->client, $attachmentTypeRib, $bankAccountDocument);
-                    $bankAccount       = $bankAccountManager->saveBankInformation($this->client, $bic, $iban, $attachmentRib);
-                    $bankAccountManager->validateBankAccount($bankAccount);
-                }
-                if ($registryForm) {
-                    $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::KBIS);
-                    $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
-                }
-
-                $entityManager->commit();
-
+            if ($this->save()) {
                 $_SESSION['freeow']['title']   = 'Société créée.';
                 $_SESSION['freeow']['message'] = 'La Société est bien créée !';
-                header('Location: ' . $this->url . '/company');
-            } catch (\Exception $exception) {
-                $entityManager->getConnection()->rollBack();
+
+                header('Location: ' . $this->url . '/company/edit/' . $this->company->getIdCompany());
+            } else {
                 $_SESSION['freeow']['title']   = 'Une erreur survenue !';
                 $_SESSION['freeow']['message'] = 'La Société n\'est pas créée !';
+
                 header('Location: ' . $this->url . '/company/add' . (isset($this->params[0]) ? '/' . $this->params[0] : ''));
             }
             die;
@@ -166,6 +90,127 @@ class companyController extends bootstrap
             $serializer = $this->get('jms_serializer');
 
             echo $serializer->serialize($companyIdentity, 'json');
+        }
+    }
+
+    public function _edit()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        if (empty($this->params[0])) {
+            header('Location: ' . $this->url . '/company');
+            die;
+        }
+        $this->company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[0]);
+
+        if (null === $this->company) {
+            header('Location: ' . $this->url . '/company');
+            die;
+        }
+        $this->client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
+
+        if (null === $this->client) {
+            header('Location: ' . $this->url . '/company');
+            die;
+        }
+        $this->siren                = $this->company->getSiren();
+        $this->bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->client);
+        $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
+            'idClient' => $this->client,
+            'idType'   => AttachmentType::RIB
+        ]);
+
+        if ($this->request->isMethod('POST')) {
+            if ($this->save()) {
+                $_SESSION['freeow']['title']   = 'Société sauvegardée.';
+                $_SESSION['freeow']['message'] = 'La Société est bien sauvegardée !';
+            } else {
+                $_SESSION['freeow']['title']   = 'Une erreur survenue !';
+                $_SESSION['freeow']['message'] = 'La Société n\'est pas sauvegardée !';
+            }
+
+            header('Location: ' . $this->url . '/company/edit/' . $this->company->getIdCompany());
+            die;
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    private function save()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+
+        $siren               = substr(filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING), 0, 9);
+        $corporateName       = filter_var($this->request->request->get('corporate_name'), FILTER_SANITIZE_STRING);
+        $title               = filter_var($this->request->request->get('title'), FILTER_SANITIZE_STRING);
+        $name                = filter_var($this->request->request->get('name'), FILTER_SANITIZE_STRING);
+        $firstName           = filter_var($this->request->request->get('firstName'), FILTER_SANITIZE_STRING);
+        $email               = filter_var($this->request->request->get('email'), FILTER_SANITIZE_EMAIL);
+        $phone               = filter_var($this->request->request->get('phone'), FILTER_SANITIZE_STRING);
+        $address             = filter_var($this->request->request->get('address'), FILTER_SANITIZE_STRING);
+        $postCode            = filter_var($this->request->request->get('postCode'), FILTER_SANITIZE_STRING);
+        $city                = filter_var($this->request->request->get('city'), FILTER_SANITIZE_STRING);
+        $invoiceEmail        = filter_var($this->request->request->get('invoice_email'), FILTER_SANITIZE_EMAIL);
+        $invoiceEmail        = empty($invoiceEmail) ? $email : $invoiceEmail;
+        $bankAccountDocument = $this->request->files->get('rib');
+        $registryForm        = $this->request->files->get('kbis');
+
+        if (1 !== preg_match('/^\d{9}$/', $siren)) {
+            $_SESSION['freeow']['title']   = 'Une erreur survenue !';
+            $_SESSION['freeow']['message'] = 'SIREN n\'est pas valide.';
+            header('Location: ' . $this->url . '/company/add' . (isset($this->params[0]) ? '/' . $this->params[0] : ''));
+        }
+
+        $entityManager->beginTransaction();
+        try {
+            $this->client->setEmail($email)
+                         ->setIdLangue('fr')
+                         ->setStatus(Clients::STATUS_ONLINE)
+                         ->setCivilite($title)
+                         ->setNom($name)
+                         ->setPrenom($firstName);
+
+            if (false === $entityManager->contains($this->client)) {
+                $entityManager->persist($this->client);
+            }
+            $entityManager->flush($this->client);
+
+            $this->company->setSiren($siren)
+                          ->setName($corporateName)
+                          ->setStatusAdresseCorrespondance(Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL)
+                          ->setEmailDirigeant($email)
+                          ->setEmailFacture($invoiceEmail)
+                          ->setIdClientOwner($this->client->getIdClient())
+                          ->setAdresse1($address)
+                          ->setZip($postCode)
+                          ->setCity($city)
+                          ->setPhone($phone);
+
+            if (false === $entityManager->contains($this->company)) {
+                $entityManager->persist($this->company);
+            }
+            $entityManager->flush($this->company);
+
+            if ($bankAccountDocument) {
+                $attachmentTypeRib = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::RIB);
+                $attachmentManager->upload($this->client, $attachmentTypeRib, $bankAccountDocument);
+            }
+            if ($registryForm) {
+                $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::KBIS);
+                $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
+            }
+
+            $entityManager->commit();
+
+            return true;
+        } catch (\Exception $exception) {
+            $entityManager->getConnection()->rollBack();
+            return false;
         }
     }
 }
