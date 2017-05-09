@@ -22,16 +22,18 @@ var DataTables = function (elem, options) {
             info: false,
             paging: false,
             lengthChange: false,
+            order: [[ 0, 'asc' ]],
             language: {
                 search: '_INPUT_',
-                searchPlaceholder: 'Rech&eacute;rcher',
-                zeroRecords: "Aucun &eacute;l&eacute;ment &agrave; afficher",
-                processing: "Traitement en cours..."
+                searchPlaceholder: 'Rechercher',
+                zeroRecords: 'Aucun résultat trouvé.',
+                processing: 'Traitement en cours...'
             }
         }, {
             info: self.$elem.data('table-info'),
             paging: self.$elem.data('table-paging'),
             lengthChange: self.$elem.data('table-lengthchange'),
+            order: [[ self.$elem.data('table-order'), 'asc' ]],
             language: {
                 search: self.$elem.data('table-languagesearch'),
                 searchPlaceholder: self.$elem.data('table-languagesearchplaceholder'),
