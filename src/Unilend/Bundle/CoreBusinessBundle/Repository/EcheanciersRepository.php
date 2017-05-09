@@ -7,6 +7,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
 
 class EcheanciersRepository extends EntityRepository
 {
@@ -30,7 +31,48 @@ class EcheanciersRepository extends EntityRepository
             ->setParameter('projectStatus', $projectStatusCollectiveProceeding, Connection::PARAM_INT_ARRAY);
 
         $amount = $qb->getQuery()->getSingleScalarResult();
+
         return $amount;
+    }
+
+    /**
+     * @param int $idLender
+     * @param string $timeFrame
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public function getMaxRepaymentAmountForLender($idLender, $timeFrame)
+    {
+        $qb = $this->createQueryBuilder('e');
+        $qb->select('ROUND(SUM((e.capital + e.interets) / 100), 2) AS amount')
+            ->where('e.idLender = :idLender')
+            ->orderBy('amount', 'DESC')
+            ->groupBy('timeFrame')
+            ->setMaxResults(1)
+            ->setParameter('idLender', $idLender);
+
+        switch ($timeFrame) {
+            case LenderDashboardController::REPAYMENT_TIME_FRAME_MONTH :
+                $qb->addSelect('LPAD(e.dateEcheance, 7, \' \' ) AS timeFrame');
+                break;
+            case LenderDashboardController::REPAYMENT_TIME_FRAME_QUARTER:
+                $qb->addSelect('QUARTER(e.dateEcheance) AS timeFrame');
+                break;
+            case LenderDashboardController::REPAYMENT_TIME_FRAME_YEAR:
+                $qb->addSelect('YEAR(e.dateEcheance) AS timeFrame');
+                break;
+            default:
+                throw new \Exception('Time frame is not supported, see LenderDashboardController for possibilities');
+                break;
+        }
+
+        $result = $qb->getQuery()->getResult();
+        if (empty($result)) {
+            return 0;
+        }
+
+        return $result[0]['amount'];
     }
 
 }
