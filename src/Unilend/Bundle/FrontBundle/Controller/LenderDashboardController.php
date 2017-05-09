@@ -167,7 +167,7 @@ class LenderDashboardController extends Controller
                     'loaned_amount'     => round($loan->sumPrets($wallet->getId()), 2),
                     'blocked_amount'    => round($ongoingBidsSum, 2),
                     'expected_earnings' => round($repaidGrossInterests + $upcomingGrossInterests - $problematicProjects['interests'], 2),
-                    'deposited_amount'  => 0//$wallet_line->getSumDepot($wallet->getId(), '10,30')
+                    'deposited_amount'  => $wallet_line->getSumDepot($wallet->getId(), '10,30')
                 ],
                 'capitalDetails'     => [
                     'repaid_capital'        => round($lenderRepayment->getRepaidCapital(['id_lender' => $wallet->getId()]), 2),

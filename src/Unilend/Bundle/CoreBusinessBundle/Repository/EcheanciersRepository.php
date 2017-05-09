@@ -8,7 +8,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
-use function var_dump;
 
 class EcheanciersRepository extends EntityRepository
 {
