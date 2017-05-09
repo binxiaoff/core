@@ -57,8 +57,10 @@
     </style>
 {% endblock %}
 
-{% block content %}
 
+{% set hasAcceptedOffers = false %}
+
+{% block content %}
     <div class="row">
         <div class="col-md-6 col-lg-6">
             <p>
@@ -88,7 +90,7 @@
     <div class="row">
         <div class="col-md-8 col-lg-8">
             <p>
-                <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with { 'idClient' : client.idClient } %}lender-operations_pdf-subject-line{% endtrans %}</b><br/>
+                <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with { '%idClient%' : client.idClient } %}lender-operations_pdf-subject-line{% endtrans %}</b><br/>
                 {% trans %}lender-operations_pdf-owner-line{% endtrans %} {{ client.prenom }} {{ client.nom }}
             </p>
         </div>
@@ -134,10 +136,16 @@
                         {{ op.date|date('d/m/y') }}
                     </td>
                     <td class="item-amount {{ colorClass }}">
-                        {{ op.amount|localizedcurrency('EUR') }}&nbsp;€
+                        {{ op.amount|localizedcurrency('EUR') }}&nbsp
                     </td>
                     <td class="item-balance">
-                        {{ op.available_balance|localizedcurrency('EUR') }}&nbsp;€
+                        {% spaceless %}
+                        {{ op.available_balance|localizedcurrency('EUR') }}&nbsp
+                        {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN') %}
+                            {% set hasAcceptedOffers = true %}
+                            *
+                        {% endif %}
+                        {% endspaceless %}
                     </td>
                 </tr>
                 {% if op.detail is defined %}
@@ -150,7 +158,7 @@
                         <tr class="details transaction-{{ op.label }}-details {{ backgroundClass }} {% if loop.index == op.detail|length + 1 %} last {% endif %}">
                             <td colspan="3">{{ item.label }}</td>
                             <td>&nbsp;</td>
-                            <td style="text-align: right" class="{{ colorClass }}">{{ item.value|localizednumber }}&nbsp;€</td>
+                            <td style="text-align: right" class="{{ colorClass }}">{{ item.value|localizednumber }}&nbsp</td>
                             <td>&nbsp;</td>
                         </tr>
                     {% endfor %}
@@ -161,16 +169,18 @@
                     Solde de votre compte
                 </td>
                 <td class="tf tf-date text-aling-left" colspan="2">
-                    Le 31/03/2017
+                    {{ 'NOW'|date('d/m/Y') }}
                 </td>
                 <td class="tf tf-amount text-aling-left">
-                    30.72 €
+                    {{ available_balance|localizedcurrency('EUR') }}
                 </td>
             </tr>
         </tbody>
     </table>
     <div class="footer">
-        <p class="legend">* Votre solde disponible reste inchangé lorsque l’offre est acceptée car votre argent avait déjà été bloqué lorsque vous avez proposél’offre</p>
+        {% if hasAcceptedOffers %}
+            <p class="legend">* Votre solde disponible reste inchangé lorsque l’offre est acceptée car votre argent avait déjà été bloqué lorsque vous avez proposé l’offre</p>
+        {% endif %}
         <p class="small">
             Agent prestataire de services de paiement : Unilend, SAS au capital de 515 350 euros dont le siège social est situé 6 rue du Général Clergerie, 75116 Paris, France.SIREN : 790 766 034. Enregistrée auprès de l'Autorité de Contrôle Prudentiel et de Résolution (ACPR) sous le numéro 790766034. Unilend est Intermédiaire enFinancement Participatif, inscrit à l’ORIAS sous le numéro 15006955.Prestataire de services de paiement : Société Financière du Porte-Monnaie Electronique Interbancaire, SAS au capital de 3 732 089 euros, dont le siège social estsitué 29 rue du Louvre - 75002 Paris, France. SIREN : 422 721 274
         </p>

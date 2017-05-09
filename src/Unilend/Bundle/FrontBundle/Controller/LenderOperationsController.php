@@ -634,10 +634,11 @@ class LenderOperationsController extends Controller
         $lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
         $fileName         = 'vos_operations_' . date('Y-m-d') . '.pdf';
         $pdfContent = $this->renderView('pdf/lender_operations.html.twig', [
-            'lenderOperations' => $lenderOperations,
-            'client'           => $wallet->getIdClient(),
-            'clientAddress'    => $clientAddress,
-            'company'          => empty($company) ? null : $company
+            'lenderOperations'  => $lenderOperations,
+            'client'            => $wallet->getIdClient(),
+            'clientAddress'     => $clientAddress,
+            'company'           => empty($company) ? null : $company,
+            'available_balance' => $wallet->getAvailableBalance()
         ]);
 
 
