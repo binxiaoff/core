@@ -7,7 +7,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TemporaryLinksLogin;
+use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
 
 class UsersController extends Controller
@@ -20,7 +22,20 @@ class UsersController extends Controller
      */
     public function usersAction()
     {
-        return $this->render('/partner_account/users.html.twig');
+        $template                = ['users' => []];
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $users                   = $companyClientRepository->findBy(['idCompany' => $this->getUserCompanies()]);
+
+        foreach ($users as $user) {
+            $template['users'][] = [
+                'client' => $user->getIdClient(),
+                'role'   => $user->getRole() === 'ROLE_PARTNER_ADMIN' ? 'admin' : 'agent',
+                'entity' => $user->getIdCompany()
+            ];
+        }
+
+        return $this->render('/partner_account/users.html.twig', $template);
     }
 
     /**
@@ -110,5 +125,41 @@ class UsersController extends Controller
         }
 
         return $this->render('partner_account/security.html.twig', ['expired' => $isLinkExpired, 'token' => $token]);
+    }
+
+    /**
+     * @return Companies[]
+     */
+    private function getUserCompanies()
+    {
+        /** @var UserPartner $user */
+        $user      = $this->getUser();
+        $companies = [$user->getCompany()];
+
+        if (in_array('ROLE_PARTNER_ADMIN', $user->getRoles())) {
+            $companies = $this->getCompanyTree($user->getCompany(), $companies);
+        }
+
+        return $companies;
+    }
+
+    /**
+     * @param Companies $rootCompany
+     * @param array     $tree
+     *
+     * @return Companies[]
+     */
+    private function getCompanyTree(Companies $rootCompany, array $tree)
+    {
+        $childCompanies = $this->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Companies')
+            ->findBy(['idParentCompany' => $rootCompany]);
+
+        foreach ($childCompanies as $company) {
+            $tree[] = $company;
+            $tree = $this->getCompanyTree($company, $tree);
+        }
+
+        return $tree;
     }
 }
