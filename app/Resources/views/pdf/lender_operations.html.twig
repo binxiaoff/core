@@ -79,7 +79,7 @@
                     {{ clientAddress.cp }} {{ clientAddress.ville }}
                 {% else %}
                     <b>{{ company.name }}</b><br/>
-                    <b>{{ client.prenom }} {{ client.nom }}</b><br/>
+                    <b>{% trans %} lender-operations_pdf-company-representative {% endtrans %}{{ client.civilite }} {{ client.prenom }} {{ client.nom }}</b><br/>
                     {{ company.adresse1 }} <br/>
                     {{ company.zip }} {{ company.city }}
                 {% endif %}
@@ -92,7 +92,7 @@
         <div class="col-md-8 col-lg-8">
             <p>
                 <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with { '%idClient%' : client.idClient } %}lender-operations_pdf-subject-line{% endtrans %}</b><br/>
-                {% trans %}lender-operations_pdf-owner-line{% endtrans %} {{ client.prenom }} {{ client.nom }}
+                {% trans with {'%name' => client.nom, '%firstName%' => client.prenom }%}lender-operations_pdf-owner-line{% endtrans %}
             </p>
         </div>
     </div>
@@ -167,7 +167,7 @@
             {% endfor %}
             <tr class="tfooter">
                 <td class="tf tf-label" colspan="3">
-                    Solde de votre compte
+                    {% trans %}lender-operations_pdf-balance{% endtrans %}
                 </td>
                 <td class="tf tf-date text-aling-left" colspan="2">
                     {{ 'NOW'|date('d/m/Y') }}
@@ -180,10 +180,13 @@
     </table>
     <div class="footer">
         {% if hasAcceptedOffers %}
-            <p class="legend">* Votre solde disponible reste inchangé lorsque l’offre est acceptée car votre argent avait déjà été bloqué lorsque vous avez proposé l’offre</p>
+            <p class="legend">{% trans %} lender-operations_pdf-accepted-offer-legend {% endtrans %}</p>
         {% endif %}
         <p class="small">
-            Agent prestataire de services de paiement : Unilend, SAS au capital de 515 350 euros dont le siège social est situé 6 rue du Général Clergerie, 75116 Paris, France.SIREN : 790 766 034. Enregistrée auprès de l'Autorité de Contrôle Prudentiel et de Résolution (ACPR) sous le numéro 790766034. Unilend est Intermédiaire enFinancement Participatif, inscrit à l’ORIAS sous le numéro 15006955.Prestataire de services de paiement : Société Financière du Porte-Monnaie Electronique Interbancaire, SAS au capital de 3 732 089 euros, dont le siège social estsitué 29 rue du Louvre - 75002 Paris, France. SIREN : 422 721 274
+            {% trans %} lender-operations_pdf-unilend-description {% endtrans %}
+        </p>
+        <p class="small">
+            {% trans %} lender-operations_pdf-spfmei-description {% endtrans %}
         </p>
     </div>
 {% endblock %}
