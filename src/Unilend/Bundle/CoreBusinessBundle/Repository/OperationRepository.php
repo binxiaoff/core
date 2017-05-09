@@ -370,19 +370,10 @@ class OperationRepository extends EntityRepository
      *
      * @return array
      */
-    public function sumFinancialMovementsForDailyState(\DateTime $start, \DateTime $end)
+    public function sumMovementsForDailyState(\DateTime $start, \DateTime $end, array $operationTypes)
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
-
-        $operationTypes = array_merge([
-            OperationType::BORROWER_PROVISION,
-            OperationType::LENDER_PROVISION,
-            OperationType::BORROWER_WITHDRAW,
-            OperationType::BORROWER_COMMISSION,
-            OperationType::LENDER_WITHDRAW,
-            OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION
-        ], OperationType::TAX_TYPES_FR);
 
         $query = 'SELECT
                   LEFT(o.added, 10) AS day,
@@ -416,5 +407,46 @@ class OperationRepository extends EntityRepository
         }
 
         return $movements;
+    }
+
+    public function sumMovementsForDailyStateByMonth($year, array $operationTypes)
+    {
+        $start = new \DateTime('First day of january ' . $year);
+        $start->setTime(0,0,0);
+        $end = new \DateTime('Last day of december' . $year);
+        $end->setTime(23,59,59);
+
+        $query = 'SELECT
+                  MONTHNAME(o.added) AS month,
+                  SUM(o.amount) AS amount,
+                  CASE ot.label
+                   WHEN "'. OperationType::LENDER_PROVISION . '" THEN
+                      IF(o.id_backpayline IS NOT NULL,
+                       "lender_provision_credit_card",
+                        IF(o.id_wire_transfer_in IS NOT NULL,
+                           "lender_provision_wire_transfer_in",
+                           NULL)
+                        )
+                     WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
+                       IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
+                      ELSE ot.label END AS movement
+                FROM operation o USE INDEX (idx_operation_added_id_type)
+                INNER JOIN operation_type ot ON o.id_type = ot.id
+                WHERE
+                  o.added BETWEEN :start AND :end
+                  AND ot.label IN ("' . implode('","', $operationTypes) . '")
+                GROUP BY month, movement
+                ORDER BY o.added ASC;';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])->fetchAll(\PDO::FETCH_ASSOC);
+
+        $movements = [];
+        foreach ($result as $row) {
+            $movements[$row['month']][$row['movement']] = $row['amount'];
+        }
+
+        return $movements;
+
     }
 }

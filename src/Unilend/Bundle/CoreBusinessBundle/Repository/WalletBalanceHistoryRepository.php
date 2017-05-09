@@ -221,31 +221,31 @@ class WalletBalanceHistoryRepository extends EntityRepository
      */
     public function sumBalanceForDailyState(\DateTime $start, \DateTime $end, array $walletTypes)
     {
-        $dateForPreviousBalances = new \DateTime($start->format('Y-m-d') . ' - 2 days');
-        $dateForPreviousBalances->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
         $query = 'SELECT
-                    t.day,
-                    SUM(available_balance) AS available_balance
-                    FROM (
-                         SELECT
-                          LEFT(wbh.added, 10) AS day,
-                          MAX(wbh.id),
-                          wbh.available_balance
-                        FROM wallet_balance_history wbh FORCE INDEX (idx_added)
-                        INNER JOIN wallet w ON wbh.id_wallet = w.id
-                          INNER JOIN wallet_type wt ON w.id_type = wt.id
-                        WHERE wbh.added BETWEEN :start AND :end
-                          AND wt.label IN (:walletLabels)
-                        GROUP BY DATE(wbh.added), w.id) as t
+                      t.day,
+                      SUM(available_balance) AS available_balance
+                  FROM (
+                       SELECT
+                         LEFT(wbh_line.added, 10) AS day,
+                         wbh_line.available_balance
+                       FROM wallet_balance_history wbh_line
+                         INNER JOIN (
+                                      SELECT MAX(wbh_max.id) AS id FROM wallet_balance_history wbh_max FORCE INDEX (idx_added)
+                                        INNER JOIN wallet w ON wbh_max.id_wallet = w.id
+                                        INNER JOIN wallet_type wt ON w.id_type = wt.id
+                                      WHERE wbh_max.added >= :end
+                                            AND wt.label IN (:walletLabels)
+                                      GROUP BY DATE(wbh_max.added), wbh_max.id_wallet
+                                    ) wbh_max ON wbh_line.id = wbh_max.id) as t
                     GROUP BY t.day
                     ORDER BY t.day ASC';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query,
-                ['start' => $dateForPreviousBalances->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s'), 'walletLabels' => $walletTypes],
-                ['start' => \PDO::PARAM_STR, 'end' => \PDO::PARAM_STR, 'walletLabels' => Connection::PARAM_STR_ARRAY]
+                ['end' => $end->format('Y-m-d H:i:s'), 'walletLabels' => $walletTypes],
+                ['end' => \PDO::PARAM_STR, 'walletLabels' => Connection::PARAM_STR_ARRAY]
             )->fetchAll(\PDO::FETCH_ASSOC);
 
         $balances = [];
