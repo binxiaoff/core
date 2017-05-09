@@ -20,11 +20,12 @@ class CheckRestFundsCommand extends ContainerAwareCommand
         $projects      = $this->getContainer()->get('doctrine.orm.entity_manager')
                               ->getRepository('UnilendCoreBusinessBundle:Projects')
                               ->findPartiallyReleasedProjects(new \DateTime('1 month ago'));
-        $projectsTexts = '';
+        $projectsTexts = '<ul>';
+        $adminHost = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_admin');
         foreach ($projects as $project) {
-            $projectsTexts .= $project->getTitle() . ' (id : ' . $project->getIdProject() . ')<br><br>';
+            $projectsTexts .= '<li><a href="'.$adminHost . '/dossiers/edit/' . $project->getIdProject() . '">'.$project->getTitle() . ' (id : ' . $project->getIdProject() . ')</a></li>';
         }
-
+        $projectsTexts .= '</ul>';
         if ($projectsTexts) {
             $variables = ['projects' => $projectsTexts];
             $message   = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-project-rest-funds', $variables);

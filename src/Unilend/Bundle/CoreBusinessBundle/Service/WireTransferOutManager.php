@@ -214,7 +214,8 @@ class WireTransferOutManager
                     'bank_account_name' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
                     'universign_link'   => $this->frontUrl . $universignLink,
                     'lien_fb'           => $facebook->getValue(),
-                    'lien_tw'           => $twitter->getValue()
+                    'lien_tw'           => $twitter->getValue(),
+                    'annee'             => date('Y')
                 );
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
