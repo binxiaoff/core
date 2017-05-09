@@ -17,19 +17,21 @@ class CheckRestFundsCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $projects      = $this->getContainer()->get('doctrine.orm.entity_manager')
-                              ->getRepository('UnilendCoreBusinessBundle:Projects')
-                              ->findPartiallyReleasedProjects(new \DateTime('1 month ago'));
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projects      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findPartiallyReleasedProjects(new \DateTime('1 month ago'));
+        $adminHost     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_admin');
+
         $projectsTexts = '<ul>';
-        $adminHost = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_admin');
         foreach ($projects as $project) {
-            $projectsTexts .= '<li><a href="'.$adminHost . '/dossiers/edit/' . $project->getIdProject() . '">'.$project->getTitle() . ' (id : ' . $project->getIdProject() . ')</a></li>';
+            $projectsTexts .= '<li><a href="' . $adminHost . '/dossiers/edit/' . $project->getIdProject() . '">' . $project->getTitle() . ' (id : ' . $project->getIdProject() . ')</a></li>';
         }
         $projectsTexts .= '</ul>';
+
         if ($projectsTexts) {
+            $settings  = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
             $variables = ['projects' => $projectsTexts];
             $message   = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-project-rest-funds', $variables);
-            $message->setTo('controle_interne@unilend.fr');
+            $message->setTo($settings->getValue());
             $this->getContainer()->get('mailer')->send($message);
         }
     }
