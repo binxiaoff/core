@@ -42,7 +42,7 @@
       }
     }
   }
-  &.recap {
+  &.summary {
     dl {
       margin-bottom: 1em;
     }
@@ -129,9 +129,15 @@
 .form-project-details-fieldset {
   padding-top: 10px;
   padding-bottom: 10px;
-  border-bottom: solid 2px #eceaed;
+  border-bottom: solid 2px $c-bg2;
   &.first {
-    padding-top: 0;
+    padding: 0 0 10px;
+  }
+  &.last {
+    border: 0;
+  }
+  dl {
+    margin-bottom: 20px;
   }
   @include devices('md', 'lg') {
     padding-top: 20px;
@@ -164,6 +170,12 @@
       }
     }
   }
+}
+
+.ui-list-instructions {
+  margin-top: 0;
+  line-height: 1.5em;
+  font-size: 16px;
 }
 
 // Project Request End

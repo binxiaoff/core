@@ -5,6 +5,14 @@
     classNames: 'partner-account'
 } %}
 
+{% set company = 'Television Francaise 1' %}
+{% set siren = '326300159' %}
+{% set amount = 100000 %}
+{% set duration = 12 %}
+
+{% set descriptionInstructions = 'Isdem diebus Apollinaris Domitiani gener, paulo ante agens palatii Caesaris curam, ad Mesopotamiam missus a socero per militares .' %}
+{% set documentsInstructions = 'Numeros immodice scrutabatur, an quaedam altiora meditantis iam. <br> Galli secreta susceperint scripta.' %}
+
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -16,6 +24,7 @@
                     <form id="form-project-details" action="{{ path('partner_project_request_details_form', {'hash' : project.hash}) }}" method="post" enctype="multipart/form-data" class="form-project-details" data-formvalidation data-formvalidation-notificationselem="#form-project-details-notifications">
                         <div class="row" ui-sticky-parent>
                             <div class="col-main col-md-8 col-lg-8">
+
                                 <div id="form-project-details-notifications" class="ui-formvalidation-notifications">
                                     {% if form.errors is not empty %}
                                         <div class="message-error"><p>{% trans %} form-validation_error-group-has-errors {% endtrans %}</p></div>
@@ -23,6 +32,27 @@
                                 </div>
 
                                 <fieldset class="form-project-details-fieldset first">
+                                    <div class="row columns-with-space">
+                                        <dl class="col-sm-4 col-md-6 col-lg-6">
+                                            <dt>{% trans %} partner-project-details_summary-company-field-label {% endtrans %}</dt>
+                                            <dd><strong class="ui-simulator-output-company">{{ company }}</strong></dd>
+                                        </dl>
+                                        <dl class="col-sm-4 col-md-6 col-lg-6">
+                                            <dt>{% trans %} partner-project-details_summary-siren-field-label {% endtrans %}</dt>
+                                            <dd><strong class="ui-simulator-output-siren">{{ siren }}</strong></dd>
+                                        </dl>
+                                        <dl class="col-sm-4 col-md-6 col-lg-6">
+                                            <dt>{% trans %} partner-project-details_summary-amount-field-label {% endtrans %}</dt>
+                                            <dd><strong class="ui-simulator-output-cost">{{ amount|localizednumber }}&nbsp;€</strong></dd>
+                                        </dl>
+                                        <dl class="col-sm-4 col-md-6 col-lg-6">
+                                            <dt>{% trans %} partner-project-details_summary-duration-field-label {% endtrans %}</dt>
+                                            <dd><strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%' : duration} %} partner-project-details_simulator-eligibility-duration-value {% endtrans %}</strong></dd>
+                                        </dl>
+                                    </div>
+                                </fieldset><!-- /.form-project-details-fieldset -->
+
+                                <fieldset class="form-project-details-fieldset">
                                     <h4>{% trans %} partner-project-details_identity-section-title {% endtrans %}</h4>
 
                                     <div class="form-field form-field-multi{% if form.errors.contact.civility is defined %} ui-formvalidation-error{% endif %}">
@@ -91,10 +121,14 @@
 
                                 <fieldset class="form-project-details-fieldset">
                                     <h4>{% trans %} partner-project-details_description-section-title {% endtrans %}</h4>
-
                                     <div class="row">
                                         <div class="form-field col-lg-12 col-md-12{% if form.errors.project.description is defined %} ui-formvalidation-error{% endif %}">
                                             <label for="form-project-details-description">{% trans %} partner-project-details_description-label {% endtrans %}</label>
+                                            {% if descriptionInstructions is defined %}
+                                                <div class="message">
+                                                    <p>{{ descriptionInstructions|raw }}</p>
+                                                </div>
+                                            {% endif %}
                                             <textarea id="form-project-details-description" name="project[description]" class="input-field" rows="5" placeholder="{{ 'partner-project-details_description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
                                             {% if form.errors.project.description is defined %}
                                                 <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -103,8 +137,18 @@
                                     </div>
                                 </fieldset><!-- /.form-project-details-fieldset -->
 
-                                <fieldset class="form-project-details-fieldset">
+                                <fieldset class="form-project-details-fieldset last">
                                     <h4>{% trans %} partner-project-details_documents-section-title {% endtrans %}</h4>
+
+                                    <div class="message-info">
+                                        <p>{% trans %} lender-subscription_documents-accepted-attachment-formats {% endtrans %}</p>
+                                    </div><!-- /.message-info -->
+
+                                    {% if documentsInstructions is defined %}
+                                        <div class="message">
+                                            <p>{{ documentsInstructions|raw }}</p>
+                                        </div>
+                                    {% endif %}
 
                                     {% for attachment in attachments %}
                                         <div class="row">
@@ -130,10 +174,10 @@
 
                                 <div class="row">
                                     <div class="btn-controls text-align-center">
-                                        <button type="button" class="btn-default btn-abandon" data-equal-width data-equal-width-group="form-actions" data-modal-toggle="#modal-partner-prospect-abandon">
+                                        <button type="button" class="btn-default btn-abandon btn-shape-default" data-equal-width data-equal-width-group="form-actions" data-modal-toggle="#modal-partner-prospect-abandon">
                                             {% trans %} partner-project-details_abandon-button {% endtrans %}
                                         </button>
-                                        <button type="submit" class="btn-primary btn-submit" data-equal-width data-equal-width-group="form-actions" data-spinnerbutton>
+                                        <button type="submit" class="btn-primary btn-submit btn-shape-default" data-equal-width data-equal-width-group="form-actions" data-spinnerbutton>
                                             {% trans %} partner-project-details_validate-button {% endtrans %}
                                         </button>
                                     </div>
