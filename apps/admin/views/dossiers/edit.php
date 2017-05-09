@@ -1005,7 +1005,7 @@
                             <?php endif; ?>
                         </h2>
                         <p>
-                            Fonds restant : <?= $this->restFunds ?>
+                            Fonds restants : <?= $this->restFunds ?>
                         </p>
                         <?php if (count($this->wireTransferOuts) > 0) : ?>
                             <table class="tablesorter">
@@ -1015,8 +1015,8 @@
                                     <th>Bénéficiaire</th>
                                     <th>Motif</th>
                                     <th>Montant</th>
-                                    <th>Status</th>
-                                    <th></th>
+                                    <th>Statut</th>
+                                    <th>Action</th>
                                 </tr>
                                 </thead>
                                 <tbody>

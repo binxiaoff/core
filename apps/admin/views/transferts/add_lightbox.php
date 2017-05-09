@@ -1,9 +1,10 @@
 <div id="popup">
     <h1>Création du transfert</h1>
+    <p>Fonds restants : <?= $this->restFunds ?></p>
     <form method="post" enctype="multipart/form-data" action="/transferts/add_lightbox/<?= $this->project->getIdProject() ?>">
         <table class="formColor">
             <tr>
-                <th>Mode transfert</th>
+                <th>Date transfert</th>
                 <td>
                     <input type="radio" name="mode" id="mode_immediate" value="0" checked>
                     <label for="mode_immediate">Dés validation</label>
@@ -29,7 +30,7 @@
             </tr>
             <tr>
                 <th>
-                    <label for="beneficiary">Bénéficiaire:</label>
+                    <label for="beneficiary">Bénéficiaire</label>
                 </th>
                 <td>
                     <select id="bank_account" class="input_large" name="bank_account">
@@ -53,8 +54,8 @@
             </tr>
         </table>
         <div style="text-align: center">
-            <input type="submit" class="btn" value="Valider">
             <a href="javascript:parent.$.fn.colorbox.close()" class="btn btn_link btnDisabled">Annuler</a>
+            <input type="submit" class="btn" value="Valider">
         </div>
     </form>
 </div>

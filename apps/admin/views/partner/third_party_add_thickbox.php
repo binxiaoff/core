@@ -4,7 +4,7 @@
         <h1>Aucunne société trouvée</h1>
         <a href="/company/add/<?= $this->siren ?>" class="btn_link" target="_blank">Créer la société</a>
     <?php else : ?>
-        <h1>Sélectionnez une société pour attacher à <?= $this->partner->getName() ?></h1>
+        <h1>Sélectionnez une société attacher à <?= $this->partner->getName() ?></h1>
         <form method="post" action="<?= $this->lurl ?>/partner/third_party_add/<?= $this->partner->getId() ?>">
             <fieldset>
                 <?php

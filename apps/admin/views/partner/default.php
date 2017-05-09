@@ -24,7 +24,7 @@
         <table class="tablesorter">
             <thead>
             <tr>
-                <th>Name</th>
+                <th>Nom</th>
                 <th>Type</th>
                 <th>Ajouté le</th>
                 <th>Action</th>
@@ -38,7 +38,7 @@
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $partner->getName() ?></td>
                     <td><?= $partner->getType()->getName() ?></td>
-                    <td><?= $partner->getAdded()->format('m/d/Y') ?></td>
+                    <td><?= $partner->getAdded()->format('d/m/Y') ?></td>
                     <td><a href="/partner/third_party/<?= $partner->getId() ?>">Tiers</a></td>
                 </tr>
                 <?php $i++; ?>

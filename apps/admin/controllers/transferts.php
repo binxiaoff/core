@@ -1063,12 +1063,18 @@ class transfertsController extends bootstrap
             $partnerManager = $this->get('unilend.service.partner_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
             $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+            /** @var \NumberFormatter $currencyFormatter */
+            $currencyFormatter = $this->get('currency_formatter');
 
             $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
             $this->project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
             $this->borrowerMotif     = $borrowerManager->getBorrowerBankTransferLabel($this->project);
             $this->bankAccounts[]    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->project->getIdCompany()->getIdClientOwner());
             $this->bankAccounts      = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getPartner()));
+            $restFunds               = $projectManager->getRestOfFundsToRelease($this->project, true);
+            $this->restFunds         = $currencyFormatter->formatCurrency($restFunds, 'EUR');
 
             if ($this->request->isMethod('POST')) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */

@@ -110,7 +110,7 @@
         <?php endif; ?>
         <?php if (in_array('transferts', $this->lZonesHeader)) : ?>
             <li class="last">
-                <span<?= ($this->menu_admin == 'transferts' ? ' class="active"' : '') ?>>Dépôt de fonds</span>
+                <span<?= ($this->menu_admin == 'transferts' ? ' class="active"' : '') ?>>Contrôle interne</span>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/transferts/preteurs" title="Prêteurs">Prêteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/emprunteurs" title="Emprunteurs">Emprunteurs</a></li>

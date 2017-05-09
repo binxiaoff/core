@@ -82,65 +82,8 @@
     </form>
     <br /><br />
 
-    <h2>RIB emprunteur en vigueur</h2>
-    <?php if ($this->bankAccount) : ?>
-        <table class="tablesorter" style="width: 775px;margin:auto;">
-            <tr>
-                <td>Document</td>
-                <td>
-                    <?php if ($this->bankAccount->getAttachment()) : ?>
-                        <a href="<?= $this->url ?>/attachment/download/id/<?= $this->bankAccount->getAttachment()->getId() ?>/file/<?= urlencode($this->bankAccount->getAttachment()->getPath()) ?>"><?= $this->bankAccount->getAttachment()->getPath() ?></a>
-                    <?php else : ?>
-                        pas de document fourni.
-                    <?php endif; ?>
-                </td>
-            </tr>
-            <tr>
-                <td>IBAN</td>
-                <td>
-                    <?= chunk_split($this->bankAccount->getIban(), 4, ' '); ?>
-                </td>
-            </tr>
-            <tr>
-                <td>BIC</td>
-                <td><?= $this->bankAccount->getBic() ?></td>
-            </tr>
-        </table>
-    <?php else : ?>
-        Pas de RIB en vigueur.
-    <?php endif; ?>
-    <br><br>
-
-    <h2>Autre RIBs</h2>
-    <table class="formColor" style="width: 775px;">
-        <?php use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount; ?>
-        <?php if (false === empty($this->bankAccountDocuments)) : ?>
-            <?php foreach ($this->bankAccountDocuments as $attachment) : ?>
-                <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */ ?>
-                <?php $bankAccount = $attachment->getBankAccount(); ?>
-                <?php if (null === $bankAccount || BankAccount::STATUS_PENDING === $bankAccount->getStatus() || BankAccount::STATUS_ARCHIVED === $bankAccount->getStatus()) :  ?>
-        <tr>
-            <td style="padding-bottom:20px">
-                <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>"><?= $attachment->getPath() ?></a>
-            </td>
-            <td>
-                <?php if ($bankAccount) : ?>
-                    <?= chunk_split($bankAccount->getIban(), 4, ' '); ?>
-                <?php endif; ?>
-            </td>
-            <td>
-                <?php if ($bankAccount) : ?>
-                    <a href="/emprunteurs/validate_rib_lightbox/<?= $bankAccount->getId(); ?>" class="btn_link thickbox cboxElement">Mettre en vigueur</a>
-                <?php else : ?>
-                    <a href="/emprunteurs/extraction_rib_lightbox/<?= $attachment->getId(); ?>" class="btn_link extract_rib_btn">Extraire</a>
-                <?php endif; ?>
-            </td>
-        </tr>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </table>
-    <br><br>
+    <?php $this->fireView('../bank_account/blocks/validated_bank_account'); ?>
+    <?php $this->fireView('../bank_account/blocks/other_bank_account'); ?>
 
     <h2>Liste des projets</h2>
     <?php if (count($this->lprojects) > 0) : ?>

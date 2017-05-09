@@ -21,7 +21,7 @@ $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $b
                 <th>Bénéficiaire</th>
                 <th>Motif</th>
                 <th>Montant</th>
-                <th>Status</th>
+                <th>Statut</th>
             </tr>
             </thead>
             <tbody>
@@ -41,8 +41,8 @@ $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $b
         <br>
         <br>
         <div style="text-align: center">
-            <input type="submit" class="btn" value="Valider">
             <a href="javascript:parent.$.fn.colorbox.close()" class="btn btn_link btnDisabled">Annuler</a>
+            <input type="submit" class="btn" value="Valider">
         </div>
     </form>
 </div>

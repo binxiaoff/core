@@ -53,7 +53,7 @@ if (empty($this->wireTransferOuts)) : ?>
             <th>Bénéficiaire</th>
             <th>Motif</th>
             <th>Montant</th>
-            <th>Status</th>
+            <th>Statut</th>
             <th>Action</th>
         </tr>
         </thead>

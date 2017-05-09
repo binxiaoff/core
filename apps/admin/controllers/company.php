@@ -40,9 +40,15 @@ class companyController extends bootstrap
 
         $this->sectors = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanySector')->findAll();
         $this->siren   = '';
+
         if (isset($this->params[0])) {
             $this->siren = $this->params[0];
         }
+        $this->client  = new Clients();
+        $this->company = new Companies();
+
+        $entityManager->persist($this->client);
+        $entityManager->persist($this->company);
 
         if ($this->request->isMethod('POST')) {
             $siren               = substr(filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING), 0, 9);
@@ -77,39 +83,37 @@ class companyController extends bootstrap
 
             $entityManager->beginTransaction();
             try {
-                $client = new Clients();
-                $client->setEmail($email)
-                       ->setIdLangue('fr')
-                       ->setStatus(Clients::STATUS_ONLINE)
-                       ->setCivilite($title)
-                       ->setNom($name)
-                       ->setPrenom($firstName);
-                $entityManager->persist($client);
-                $entityManager->flush($client);
+                $this->client->setEmail($email)
+                             ->setIdLangue('fr')
+                             ->setStatus(Clients::STATUS_ONLINE)
+                             ->setCivilite($title)
+                             ->setNom($name)
+                             ->setPrenom($firstName);
 
-                $company = new Companies();
-                $company->setSiren($siren)
-                        ->setName($corporateName)
-                        ->setStatusAdresseCorrespondance(Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL)
-                        ->setEmailDirigeant($email)
-                        ->setEmailFacture($invoiceEmail)
-                        ->setIdClientOwner($client->getIdClient())
-                        ->setAdresse1($address)
-                        ->setZip($postCode)
-                        ->setCity($city)
-                        ->setPhone($phone);
-                $entityManager->persist($company);
-                $entityManager->flush($company);
+                $entityManager->flush($this->client);
+
+                $this->company->setSiren($siren)
+                              ->setName($corporateName)
+                              ->setStatusAdresseCorrespondance(Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL)
+                              ->setEmailDirigeant($email)
+                              ->setEmailFacture($invoiceEmail)
+                              ->setIdClientOwner($this->client->getIdClient())
+                              ->setAdresse1($address)
+                              ->setZip($postCode)
+                              ->setCity($city)
+                              ->setPhone($phone);
+
+                $entityManager->flush($this->company);
 
                 if ($iban && $bic && $bankAccountDocument) {
                     $attachmentTypeRib = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::RIB);
-                    $attachmentRib     = $attachmentManager->upload($client, $attachmentTypeRib, $bankAccountDocument);
-                    $bankAccount       = $bankAccountManager->saveBankInformation($client, $bic, $iban, $attachmentRib);
+                    $attachmentRib     = $attachmentManager->upload($this->client, $attachmentTypeRib, $bankAccountDocument);
+                    $bankAccount       = $bankAccountManager->saveBankInformation($this->client, $bic, $iban, $attachmentRib);
                     $bankAccountManager->validateBankAccount($bankAccount);
                 }
                 if ($registryForm) {
                     $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::KBIS);
-                    $attachmentManager->upload($client, $attachmentTypeKbis, $registryForm);
+                    $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
                 }
 
                 $entityManager->commit();
