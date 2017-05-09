@@ -8,33 +8,16 @@ use Doctrine\ORM\Mapping as ORM;
  * Loans
  *
  * @ORM\Table(name="loans", indexes={@ORM\Index(name="id_lender", columns={"id_lender"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="idx_loans_added", columns={"added"}), @ORM\Index(name="idx_loans_id_type_contract", columns={"id_type_contract"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoansRepository")
  */
 class Loans
 {
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_lender", type="integer", nullable=false)
-     */
-    private $idLender;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="id_transfer", type="integer", nullable=false)
      */
     private $idTransfer;
-
-    /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
-     * })
-     */
-    private $idProject;
 
     /**
      * @var integer
@@ -123,6 +106,26 @@ class Loans
     private $idLoan;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     * })
+     */
+    private $idLender;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
+     */
+    private $idProject;
+
+    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract")
@@ -133,30 +136,6 @@ class Loans
     private $idTypeContract;
 
 
-
-    /**
-     * Set idLender
-     *
-     * @param integer $idLender
-     *
-     * @return Loans
-     */
-    public function setIdLender($idLender)
-    {
-        $this->idLender = $idLender;
-
-        return $this;
-    }
-
-    /**
-     * Get idLender
-     *
-     * @return integer
-     */
-    public function getIdLender()
-    {
-        return $this->idLender;
-    }
 
     /**
      * Set idTransfer
@@ -478,6 +457,30 @@ class Loans
     public function getIdLoan()
     {
         return $this->idLoan;
+    }
+
+    /**
+     * Set idLender
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     *
+     * @return Loans
+     */
+    public function setIdLender(Wallet $idLender)
+    {
+        $this->idLender = $idLender;
+
+        return $this;
+    }
+
+    /**
+     * Get idLender
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLender()
+    {
+        return $this->idLender;
     }
 
     /**

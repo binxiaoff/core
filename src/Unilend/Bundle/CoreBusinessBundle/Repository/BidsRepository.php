@@ -27,17 +27,23 @@ class BidsRepository extends EntityRepository
         return $query->getSingleScalarResult();
     }
 
+    /**
+     * @param \DateTime $from
+     * @param \DateTime $to
+     * @param int       $clientId
+     *
+     * @return mixed
+     */
     public function countByClientInPeriod(\DateTime $from, \DateTime $to, $clientId)
     {
         $qb = $this->createQueryBuilder('b')
             ->select('COUNT(b.idBid) AS bidNumber')
-            ->innerJoin('UnilendCoreBusinessBundle:LendersAccounts', 'la', Join::WITH, 'la.idLenderAccount = b.idLenderAccount')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = b.idLenderAccount')
             ->where('b.added BETWEEN :fromDate AND :toDate')
-            ->andWhere('la.idClientOwner = :idClientOwner')
-            ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClientOwner' => $clientId]);
+            ->andWhere('w.idClient = :idClient')
+            ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClient' => $clientId]);
 
-        $bidCount =  $qb->getQuery()
-            ->getResult(AbstractQuery::HYDRATE_SINGLE_SCALAR);
+        $bidCount =  $qb->getQuery()->getScalarResult();
 
         return $bidCount;
     }

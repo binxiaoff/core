@@ -60,8 +60,7 @@ EOF
         /** @var LenderStatisticQueue $queueEntry */
         foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue')->findBy([], ['added' => 'DESC'], $amountOfLenderAccounts) as $queueEntry) {
             $wallet = $queueEntry->getIdWallet();
-            $match  = $entityManager->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet->getId()]);
-            $irrManager->addIRRLender($wallet, $match->getIdLenderAccount()->getIdLenderAccount());
+            $irrManager->addIRRLender($wallet);
             $entityManager->remove($queueEntry);
             $entityManager->flush();
             $calculatedIRRs += 1;
@@ -110,6 +109,7 @@ EOF
     private function addLenderToStatisticQueue($lender)
     {
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $lenderWallet  = null;
 
         if ($lender instanceof Wallet) {
             $lenderWallet = $lender;
@@ -118,11 +118,12 @@ EOF
         if (is_array($lender) && array_key_exists('id_lender', $lender)) {
            $lenderWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($lender['id_lender']);
            if (null === $lenderWallet) {
-               $lenderWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['id_lender_account' => $lender['id_lender']]);
+               /** @var Wallet $lenderWallet */
+               $lenderWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['id' => $lender['id_lender']]);
             }
         }
 
-        if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue')->findOneBy(['idWallet' => $lenderWallet->getId()])) {
+        if (null !== $lenderWallet && null === $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue')->findOneBy(['idWallet' => $lenderWallet->getId()])) {
             $lenderInQueue = new LenderStatisticQueue();
             $lenderInQueue->setIdWallet($lenderWallet);
             $entityManager->persist($lenderInQueue);

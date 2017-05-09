@@ -1,7 +1,10 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class LenderValidator
 {
@@ -9,43 +12,56 @@ class LenderValidator
 
     /** @var ProductAttributeManager */
     private $productAttributeManager;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
     /** @var EntityManager */
     private $entityManager;
 
-    public function __construct(ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    /**
+     * LenderValidator constructor.
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManagerSimulator  $entityManagerSimulator
+     * @param EntityManager           $entityManager
+     */
+    public function __construct(
+        ProductAttributeManager $productAttributeManager,
+        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager
+    )
     {
         $this->productAttributeManager = $productAttributeManager;
+        $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->entityManager           = $entityManager;
     }
 
     /**
-     * @param \lenders_accounts $lender
-     * @param \projects         $project
+     * @param Clients   $client
+     * @param \projects $project
      *
      * @return array
      */
-    public function isEligible(\lenders_accounts $lender, \projects $project)
+    public function isEligible(Clients $client, \projects $project)
     {
         $eligible = true;
-        $reason = [];
+        $reason   = [];
         /** @var \product $product */
         $product = $this->entityManager->getRepository('product');
         if (false === $product->get($project->id_product)) {
             throw new \InvalidArgumentException('The product id ' . $project->id_product . ' does not exist');
         }
 
-        if (false === $this->isLenderEligibleForType($lender, $product, $this->productAttributeManager, $this->entityManager)) {
+        if (false === $this->isLenderEligibleForType($client, $product, $this->productAttributeManager)) {
             $reason[] = \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE;
             $eligible = false;
         }
 
-        if (false === $this->isLenderEligibleForMaxTotalAmount($lender, $project, $this->productAttributeManager, $this->entityManager)) {
+        if (false === $this->isLenderEligibleForMaxTotalAmount($client, $project, $this->productAttributeManager, $this->entityManagerSimulator, $this->entityManager)) {
             $reason[] = \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO;
             $eligible = false;
         }
 
         return [
-            'reason' => $reason,
+            'reason'   => $reason,
             'eligible' => $eligible
         ];
     }

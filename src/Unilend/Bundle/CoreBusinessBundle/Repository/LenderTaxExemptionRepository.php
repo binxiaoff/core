@@ -12,13 +12,11 @@ class LenderTaxExemptionRepository extends EntityRepository
 
     public function isLenderExemptedInYear(Wallet $wallet, $year)
     {
-        $match = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idWallet' => $wallet]);
-
         $qb = $this->createQueryBuilder('lte');
         $qb->select('COUNT(lte.idLenderTaxExemption)')
             ->where('lte.idLender = :idLender')
             ->andWhere('lte.year = :year')
-            ->setParameter('idLender', $match->getIdLenderAccount()->getIdLenderAccount())
+            ->setParameter('idLender', $wallet)
             ->setParameter('year', $year);
 
         $result =  $qb->getQuery()->getSingleScalarResult();
