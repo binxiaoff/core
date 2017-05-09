@@ -30,7 +30,7 @@
                         </thead>
                         <tbody>
                             {% for user in users %}
-                                <tr class="table-users-item{% if user.client.status == 0 %} ui-table-users-item-inactive{% endif %}" data-user-id="{{ user.client.idClient }}">
+                                <tr class="table-users-item{% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_OFFLINE') %} ui-table-users-item-inactive{% endif %}" data-user-id="{{ user.client.hash }}">
                                     <td class="table-users-item-name">
                                         <span class="first-name">{{ user.client.prenom }}</span> <span class="last-name">{{ user.client.nom }}</span>
                                     </td>
@@ -43,18 +43,20 @@
                                     </td>
                                     <td class="table-users-item-perimeter">{{ user.entity.name }}</td>
                                     <td class="table-users-item-status">
-                                        {% if user.client.status == 1 %}
+                                        {% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}
                                             {% trans %} partner-users-list_table-item-status-active-label {% endtrans %}
                                         {% else %}
                                             {% trans %} partner-users-list_table-item-status-inactive-label {% endtrans %}
                                         {% endif %}
                                     </td>
                                     <td class="table-users-item-action">
-                                        {% if user.client.status == 1 %}
-                                            <a role="button" class="btn-default" data-action="password" title="{{ 'partner-users-list_table-item-action-password'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-envelope"></span></a>
-                                            <a role="button" class="btn-default" data-action="deactivate" title="{{ 'partner-users-list_table-item-action-deactivate'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-close"></span></a>
-                                        {% else %}
-                                            <a role="button" class="btn-default" data-action="activate" title="{{ 'partner-users-list_table-item-action-activate'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-repeat"></span></a>
+                                        {% if user.client.hash != app.user.hash %}
+                                            {% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}
+                                                <a role="button" class="btn-default" data-action="password" title="{{ 'partner-users-list_table-item-action-password'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-envelope"></span></a>
+                                                <a role="button" class="btn-default" data-action="deactivate" title="{{ 'partner-users-list_table-item-action-deactivate'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-close"></span></a>
+                                            {% else %}
+                                                <a role="button" class="btn-default" data-action="activate" title="{{ 'partner-users-list_table-item-action-activate'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-repeat"></span></a>
+                                            {% endif %}
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -69,9 +71,9 @@
 
 {% block modals %}
     <div id="modal-partner-users-password" data-modal>
-        <form action="" method="post">
+        <form action="{{ path('partner_user_form') }}" method="post">
             <input type="hidden" name="action" value="password">
-            <input type="hidden" name="partner-user-id" value>
+            <input type="hidden" name="user" value>
             <div class="modal-body text-align-center">
                 <p>{% trans with {'%firstName%' : '<span class="ui-modal-output-firstname"></span>', '%lastName%' : '<span class="ui-modal-output-lastname"></span>'} %} partner-users-list_popup-user-password-message {% endtrans %}</p>
             </div>
@@ -89,9 +91,9 @@
     </div><!-- /#modal-partner-users-password -->
 
     <div id="modal-partner-users-deactivate" data-modal>
-        <form action="" method="post">
+        <form action="{{ path('partner_user_form') }}" method="post">
             <input type="hidden" name="action" value="deactivate">
-            <input type="hidden" name="partner-user-id" value>
+            <input type="hidden" name="user" value>
             <div class="modal-body text-align-center">
                 <p>{% trans with {'%firstName%' : '<span class="ui-modal-output-firstname"></span>', '%lastName%' : '<span class="ui-modal-output-lastname"></span>'} %} partner-users-list_popup-user-deactivate-message {% endtrans %}</p>
             </div>
@@ -109,9 +111,9 @@
     </div><!-- /#modal-partner-users-deactivate -->
 
     <div id="modal-partner-users-activate" data-modal>
-        <form action="" method="post">
+        <form action="{{ path('partner_user_form') }}" method="post">
             <input type="hidden" name="action" value="activate">
-            <input type="hidden" name="partner-user-id" value>
+            <input type="hidden" name="user" value>
             <div class="modal-body text-align-center">
                 <p>{% trans with {'%firstName%' : '<span class="ui-modal-output-firstname"></span>', '%lastName%' : '<span class="ui-modal-output-lastname"></span>'} %} partner-users-list_popup-user-activate-message {% endtrans %}</p>
             </div>

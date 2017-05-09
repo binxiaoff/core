@@ -5,8 +5,11 @@ namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TemporaryLinksLogin;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
@@ -16,6 +19,7 @@ class UsersController extends Controller
 {
     /**
      * @Route("partenaire/utilisateurs", name="partner_users")
+     * @Method("GET")
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
      * @return Response
@@ -36,6 +40,60 @@ class UsersController extends Controller
         }
 
         return $this->render('/partner_account/users.html.twig', $template);
+    }
+
+    /**
+     * @Route("partenaire/utilisateurs", name="partner_user_form")
+     * @Method("POST")
+     * @Security("has_role('ROLE_PARTNER_ADMIN')")
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function userFormAction(Request $request)
+    {
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $clientRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $clientHash         = $request->request->get('user');
+        $action             = $request->request->get('action');
+
+        if (false === empty($clientHash) && false === empty($action) && ($client = $clientRepository->findOneBy(['hash' => $clientHash]))) {
+            switch ($action) {
+                case 'password':
+                    /** @var \temporary_links_login $temporaryLink */
+                    $temporaryLink = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
+                    $token         = $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
+                    $keywords      = [
+                        'surl'          => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+                        'url'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+                        'prenom'        => $client->getPrenom(),
+                        'login'         => $client->getEmail(),
+                        'link_password' => $this->generateUrl('partner_security', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+                        'lien_fb'       => $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue(),
+                        'lien_tw'       => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue()
+                    ];
+
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
+                    $message->setTo($client->getEmail());
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
+                    break;
+                case 'deactivate':
+                    $client->setStatus(Clients::STATUS_OFFLINE);
+                    $entityManager->persist($client);
+                    $entityManager->flush();
+                    break;
+                case 'activate':
+                    $client->setStatus(Clients::STATUS_ONLINE);
+                    $entityManager->persist($client);
+                    $entityManager->flush();
+                    break;
+            }
+        }
+
+        return $this->redirectToRoute('partner_users');
     }
 
     /**
