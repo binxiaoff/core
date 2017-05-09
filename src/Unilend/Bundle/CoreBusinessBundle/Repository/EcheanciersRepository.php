@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
+use function var_dump;
 
 class EcheanciersRepository extends EntityRepository
 {
@@ -45,7 +46,7 @@ class EcheanciersRepository extends EntityRepository
     public function getMaxRepaymentAmountForLender($idLender, $timeFrame)
     {
         $qb = $this->createQueryBuilder('e');
-        $qb->select('ROUND(SUM((e.capital+e.interets)/100), 2) AS amount')
+        $qb->select('ROUND(SUM((e.capital + e.interets) / 100), 2) AS amount')
             ->where('e.idLender = :idLender')
             ->orderBy('amount', 'DESC')
             ->groupBy('timeFrame')
@@ -68,6 +69,9 @@ class EcheanciersRepository extends EntityRepository
         }
 
         $result = $qb->getQuery()->getResult();
+        if (empty($result)) {
+            return 0;
+        }
 
         return $result[0]['amount'];
     }
