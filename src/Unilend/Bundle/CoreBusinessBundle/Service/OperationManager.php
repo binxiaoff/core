@@ -810,7 +810,7 @@ class OperationManager
         $amount            = round(bcdiv(bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2), 100, 4), 2);
 
         $operationType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
-        $operationSubType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_REPAYMENT]);
+        $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_REPAYMENT]);
 
         $this->newOperation($amount, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, $paymentSchedule);
     }
@@ -828,7 +828,7 @@ class OperationManager
         $outstandingCapital = $repaymentSchedule->getOwedCapital(['id_loan' => $loan->getIdLoan()]);
         $borrowerWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($loan->getProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $lenderWallet       = $loan->getIdLender();
-        $operationSubType   = $this->em->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
+        $operationSubType   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
 
         $this->repaymentGeneric($borrowerWallet, $lenderWallet, $outstandingCapital, 0, $operationSubType, $loan);
 
@@ -881,7 +881,7 @@ class OperationManager
         $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
         $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
         $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
-        $operationSubType  = $this->em->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_FUNDS]);
+        $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_FUNDS]);
 
         $this->newOperation($commission, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, $project);
     }
@@ -1066,7 +1066,7 @@ class OperationManager
         if (null === $borrower) {
             return false;
         }
-        $operationSubType = $this->em->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
+        $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
 
         return $this->repaymentGeneric($borrower, $lender, $amount, 0, $operationSubType, $project);
     }

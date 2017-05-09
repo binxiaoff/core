@@ -35,7 +35,7 @@ class OperationSubType
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType
+     * @var OperationType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\OperationType")
      * @ORM\JoinColumns({
@@ -81,11 +81,11 @@ class OperationSubType
     /**
      * Set idParent
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType $idParent
+     * @param OperationType $idParent
      *
      * @return OperationSubType
      */
-    public function setIdParent(\Unilend\Bundle\CoreBusinessBundle\Entity\OperationType $idParent = null)
+    public function setIdParent(OperationType $idParent = null)
     {
         $this->idParent = $idParent;
 
@@ -95,7 +95,7 @@ class OperationSubType
     /**
      * Get idParent
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType
+     * @return OperationType
      */
     public function getIdParent()
     {
