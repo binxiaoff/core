@@ -1,7 +1,7 @@
 <?php
 
 use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
-
+use \Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
 
 class ajaxController extends bootstrap
 {
@@ -283,7 +283,23 @@ class ajaxController extends bootstrap
                 $eligibleProducts = $productManager->findEligibleProducts($project, true);
 
                 if (1 === count($eligibleProducts)) {
+                    /** @var \Doctrine\ORM\EntityManager $entityManager */
+                    $entityManager = $this->get('doctrine.orm.entity_manager');
+                    $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($project->id_partner);
+                    $product       = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($eligibleProducts[0]->id_product);
+                    /** @var PartnerProduct $partnerProduct */
+                    $partnerProduct      = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $partner, 'idProduct' => $product]);
                     $project->id_product = $eligibleProducts[0]->id_product;
+
+                    if (null != $partnerProduct) {
+                        $project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
+                        $project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
+                    } else {
+                        $this->get('logger')->warning(
+                            'No data found in partner_product using: id_partner=' . $project->id_partner . ', id_product=' . $eligibleProducts[0]->id_product,
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
+                        );
+                    }
                     $project->update();
                 }
 
