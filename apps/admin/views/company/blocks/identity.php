@@ -2,7 +2,7 @@
 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients client */
 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies company */
 ?>
-<form method="post" name="edit_company" id="edit_company" enctype="multipart/form-data" action="<?= $this->url ?>/company/add">
+<form method="post" name="edit_company" id="edit_company" enctype="multipart/form-data">
     <table class="formColor" style="width: 775px;margin:auto;">
         <tr>
             <th><label for="siren">SIREN*</label></th>

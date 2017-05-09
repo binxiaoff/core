@@ -18,7 +18,9 @@
             <?php if (null === $bankAccount || BankAccount::STATUS_PENDING === $bankAccount->getStatus() || BankAccount::STATUS_ARCHIVED === $bankAccount->getStatus()) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td style="padding-bottom:20px">
-                        <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>"><?= $attachment->getPath() ?></a>
+                        <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
+                            <?= empty($attachment->getOriginalName()) ? $attachment->getPath() : $attachment->getOriginalName() ?>
+                        </a>
                     </td>
                     <td>
                         <?php if ($bankAccount) : ?>
