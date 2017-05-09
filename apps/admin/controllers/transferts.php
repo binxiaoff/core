@@ -1088,16 +1088,16 @@ class transfertsController extends bootstrap
                 $amount = $this->loadLib('ficelle')->cleanFormatedNumber($this->request->request->get('amount'));
 
                 if ($amount <= 0) {
-                    $_SESSION['freeow']['title']   = 'Transfer de fonds';
-                    $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a pas été créé. Montant n\'est pas valide.';
+                    $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Montant n\'est pas valide.';
                     header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                     die;
                 }
 
                 $restFunds = $projectManager->getRestOfFundsToRelease($this->project, true);
                 if ($amount > $restFunds) {
-                    $_SESSION['freeow']['title']   = 'Transfer de fonds';
-                    $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a pas été créé. Montant trop élévé.';
+                    $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Montant trop élévé.';
                     header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                     die;
                 }
@@ -1110,15 +1110,15 @@ class transfertsController extends bootstrap
                     $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount, $this->project, $user, $date, $this->request->request->get('pattern'));
                 } catch (\Exception $exception) {
                     $this->get('logger')->error($exception->getMessage(), ['methode' => __METHOD__]);
-                    $_SESSION['freeow']['title']   = 'Transfer de fonds échoué';
-                    $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a pas été créé';
+                    $_SESSION['freeow']['title']   = 'Transfert de fonds échoué';
+                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé';
 
                     header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                     die;
                 }
 
-                $_SESSION['freeow']['title']   = 'Transfer de fonds';
-                $_SESSION['freeow']['message'] = 'Le transfer de fonds a été créé avec succès ';
+                $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfert de fonds a été créé avec succès ';
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
@@ -1136,11 +1136,11 @@ class transfertsController extends bootstrap
             if (false === in_array($wireTransferOut->getStatus(), $forbiddenStatus)) {
                 $wireTransferOut->setStatus(Virements::STATUS_DENIED);
                 $entityManager->flush($wireTransferOut);
-                $_SESSION['freeow']['title']   = 'Refus de transfer de fonds';
-                $_SESSION['freeow']['message'] = 'Le transfer de fonds a été refusé avec succès ';
+                $_SESSION['freeow']['title']   = 'Refus de transfert de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfert de fonds a été refusé avec succès ';
             } else {
-                $_SESSION['freeow']['title']   = 'Refus de transfer de fonds';
-                $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a été refusé.';
+                $_SESSION['freeow']['title']   = 'Refus de transfert de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a été refusé.';
             }
             if (false === empty($this->params[1]) && 'project' === $this->params[1]) {
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $wireTransferOut->getProject()->getIdProject());
@@ -1169,11 +1169,11 @@ class transfertsController extends bootstrap
                 $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
                 $wireTransferOutManager->validateTransfer($wireTransferOut, $user);
 
-                $_SESSION['freeow']['title']   = 'Transfer de fonds';
-                $_SESSION['freeow']['message'] = 'Le transfer de fonds a été validé avec succès ';
+                $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfert de fonds a été validé avec succès ';
             } else {
-                $_SESSION['freeow']['title']   = 'Transfer de fonds';
-                $_SESSION['freeow']['message'] = 'Le transfer de fonds n\'a été validé.';
+                $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a été validé.';
             }
 
             header('Location: ' . $this->lurl . '/transferts/virement_emprunteur');
