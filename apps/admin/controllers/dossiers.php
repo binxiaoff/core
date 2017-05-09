@@ -192,7 +192,7 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
-            $this->rejectionReasonMessage = $projectStatusManager->getRejectionMotiveTranslation($this->projects_status_history->content);
+            $this->rejectionReasonMessage = $projectStatusManager->getRejectionReasonTranslation($this->projects_status_history->content);
             $this->bHasAdvisor            = false;
 
             if ($this->projects->status == \projects_status::FUNDE) {

@@ -18,6 +18,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -268,8 +269,47 @@ class ProjectRequestController extends Controller
         ];
 
         if ($project->getStatus() == ProjectsStatus::NOT_ELIGIBLE) {
-            // @todo en attente spéc sur les cas à prendre en compte
-            $template['rejectionReason'] = 'plop';
+            /** @var \projects_status_history $projectStatusHistory */
+            $projectStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('projects_status_history');
+            $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
+
+            /** @var ProjectStatusManager $projectStatusManager */
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+            $reason               = $projectStatusManager->getMainRejectionReason($projectStatusHistory->content);
+            $translator           = $this->get('translator');
+
+            switch ($reason) {
+                case \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN:
+                case \projects_status::NON_ELIGIBLE_REASON_INACTIVE:
+                    $template['rejectionReason'] = $translator->trans('partner-project-request_not-eligible-reason-unknown-or-inactive-siren');
+                    break;
+                case \projects_status::NON_ELIGIBLE_REASON_PROCEEDING:
+                    $template['rejectionReason'] = $translator->trans('partner-project-request_not-eligible-reason-collective-proceeding');
+                    break;
+                case \projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE:
+                case \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
+                case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE:
+                case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE:
+                case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT:
+                case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE:
+                case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI:
+                case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
+                case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
+                case \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER:
+                case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK:
+                case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL:
+                case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES:
+                case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
+                case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_UNKNOWN_PRIVILEGES:
+                case \projects_status::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT:
+                case \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT:
+                    $template['rejectionReason'] = $translator->trans('partner-project-request_not-eligible-reason-');
+                    break;
+                case \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
+                default:
+                    $template['rejectionReason'] = $translator->trans('partner-project-request_not-eligible-reason-product-not-found');
+                    break;
+            }
         } else {
             $template = $template + [
                 'averageFundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
