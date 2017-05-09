@@ -105,11 +105,13 @@ class WalletBalanceHistoryRepository extends EntityRepository
                       wbh.id_autobid,
                       IF(wbh.id_loan IS NOT NULL, wbh.id_loan, IF(o.id_loan IS NOT NULL, o.id_loan, IF(e.id_loan IS NOT NULL, e.id_loan, ""))) AS id_loan,
                       o.id_repayment_schedule,
-                      p.title
+                      p.title,
+                      ost.label as sub_type_label
                     FROM wallet_balance_history wbh
                       INNER JOIN wallet w ON wbh.id_wallet = w.id
                       LEFT JOIN operation o ON wbh.id_operation = o.id
                       LEFT JOIN operation_type ot ON ot.id = o.id_type
+                      LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id
                       LEFT JOIN echeanciers e ON e.id_echeancier = o.id_repayment_schedule
                       LEFT JOIN bids b ON wbh.id_bid = b.id_bid
                       LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
@@ -180,7 +182,11 @@ class WalletBalanceHistoryRepository extends EntityRepository
                                 THEN -SUM(o.amount) 
                                 ELSE SUM(o.amount)
                             END AS amount, 
-                            ot.label, 
+                            CASE 
+                                WHEN o.idSubType IS NULL
+                                THEN ot.label
+                                ELSE ost.label
+                            END AS label, 
                             IDENTITY(o.idProject) AS idProject, 
                             IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
                             DATE(o.added) AS date,
@@ -189,6 +195,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                             e.ordre')
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->leftJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
             ->leftJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'o.idPaymentSchedule = ee.idEcheancierEmprunteur')
             ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.ordre = f.ordre AND ee.idProject = f.idProject')
             ->leftJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'o.idRepaymentSchedule = e.idEcheancier')

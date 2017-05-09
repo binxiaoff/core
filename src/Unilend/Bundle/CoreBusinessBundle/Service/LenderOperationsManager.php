@@ -13,6 +13,7 @@ use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
@@ -51,26 +52,27 @@ class LenderOperationsManager
     const REPAYMENT_TYPES = [
         self::OP_REPAYMENT,
         self::OP_EARLY_REPAYMENT,
-        self::OP_RECOVERY_REPAYMENT
+        self::OP_RECOVERY_REPAYMENT,
+        OperationType::COLLECTION_COMMISSION_LENDER
     ];
 
     const ALL_TYPES = [
-            OperationType::LENDER_PROVISION,
-            OperationType::LENDER_PROVISION_CANCEL,
-            OperationType::LENDER_TRANSFER,
-            OperationType::LENDER_WITHDRAW,
-            OperationType::UNILEND_PROMOTIONAL_OPERATION,
-            OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL,
-            OperationType::UNILEND_LENDER_REGULARIZATION,
-            self::OP_REPAYMENT,
-            self::OP_EARLY_REPAYMENT,
-            self::OP_RECOVERY_REPAYMENT,
-            self::OP_BID,
-            self::OP_REFUSED_BID,
-            self::OP_AUTOBID,
-            self::OP_REFUSED_AUTOBID,
-            OperationType::LENDER_LOAN,
-            self::OP_REFUSED_LOAN
+        OperationType::LENDER_PROVISION,
+        OperationType::LENDER_PROVISION_CANCEL,
+        OperationType::LENDER_TRANSFER,
+        OperationType::LENDER_WITHDRAW,
+        OperationType::UNILEND_PROMOTIONAL_OPERATION,
+        OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL,
+        OperationType::UNILEND_LENDER_REGULARIZATION,
+        self::OP_REPAYMENT,
+        self::OP_EARLY_REPAYMENT,
+        self::OP_RECOVERY_REPAYMENT,
+        self::OP_BID,
+        self::OP_REFUSED_BID,
+        self::OP_AUTOBID,
+        self::OP_REFUSED_AUTOBID,
+        OperationType::LENDER_LOAN,
+        self::OP_REFUSED_LOAN
     ];
 
     const FILTER_ALL                = 1;
@@ -87,6 +89,7 @@ class LenderOperationsManager
 
     /**
      * LenderOperationsManager constructor.
+     *
      * @param EntityManager $entityManager
      * @param Translator    $translator
      */
@@ -116,7 +119,6 @@ class LenderOperationsManager
         $walletBalanceHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
         $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $taxExemptionRepository         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
-        $projectRepository              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $walletHistory                  = $walletBalanceHistoryRepository->getLenderOperationHistory($wallet, $start, $end);
         $lenderOperations               = [];
 
@@ -129,7 +131,7 @@ class LenderOperationsManager
                 $historyLine['label']             = 'repayment';
                 $historyLine['amount']            = bcsub(bcadd($repaymentDetail['capital'], $repaymentDetail['interest'], 2), $repaymentDetail['taxes'], 2);
                 $historyLine['available_balance'] = $repaymentDetail['available_balance'];
-                $historyLine['detail'] = [
+                $historyLine['detail']            = [
                     'label' => $this->translator->trans('lender-operations_operations-table-repayment-collapse-details'),
                     'items' => [
                         [
@@ -143,16 +145,14 @@ class LenderOperationsManager
                     ]
                 ];
 
-                if (null === $repaymentDetail['taxes']) {
-                    unset($repaymentDetail['taxes']);
-                } else {
+                if ($repaymentDetail['taxes']) {
                     $taxLabel = $this->translator->trans('lender-operations_tax-and-social-deductions-label');
                     if ($wallet->getIdClient()->getType() == Clients::TYPE_PERSON || $wallet->getIdClient()->getType() == Clients::TYPE_PERSON_FOREIGNER) {
                         if ($taxExemptionRepository->isLenderExemptedInYear($wallet, substr($historyLine['date'], 0, 4))) {
-                            $taxLabel  = $this->translator->trans('lender-operations_social-deductions-label');
+                            $taxLabel = $this->translator->trans('lender-operations_social-deductions-label');
                         }
                     } else {
-                        $taxLabel  = $this->translator->trans('preteur-operations-vos-operations_retenues-a-la-source');
+                        $taxLabel = $this->translator->trans('preteur-operations-vos-operations_retenues-a-la-source');
                     }
                     $historyLine['detail']['items'][] = [
                         'label' => $taxLabel,
@@ -162,37 +162,14 @@ class LenderOperationsManager
             }
 
             if (
-                (in_array(self::OP_EARLY_REPAYMENT, $operations)  || in_array(self::OP_RECOVERY_REPAYMENT, $operations))
-                && OperationType::CAPITAL_REPAYMENT === $historyLine['label']
-                && empty($historyLine['id_repayment_schedule'])
+                (in_array(self::OP_EARLY_REPAYMENT, $operations) || in_array(self::OP_RECOVERY_REPAYMENT, $operations))
+                && in_array($historyLine['sub_type_label'], [OperationSubType::CAPITAL_REPAYMENT_EARLY, OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION])
             ) {
-                $project = $projectRepository->find($historyLine['id_project']);
-
-                if (\projects_status::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
+                if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $historyLine['sub_type_label']) {
                     $historyLine['label'] = 'early-repayment';
                 } else {
-                    $recoveryDetail = $operationRepository->getLenderRecoveryRepaymentDetailByDate($wallet, $historyLine['operationDate']);
                     $historyLine['label']             = 'recovery-repayment';
-                    $historyLine['amount']            = bcsub($recoveryDetail['capital'], $recoveryDetail['commission'], 2);
-                    $historyLine['available_balance'] = $recoveryDetail['available_balance'];
-                    $historyLine['detail'] = [
-                        'label' => $this->translator->trans('lender-operations_operations-table-repayment-collapse-details'),
-                        'items' => [
-                            [
-                                'label' => $this->translator->trans('lender-operations_operations-table-repaid-capital-amount-collapse-details'),
-                                'value' => $recoveryDetail['capital']
-                            ],
-                            [
-                                'label' => $this->translator->trans('lender-operations_operations-table-recovery-commission'),
-                                'value' => -$recoveryDetail['commission']
-                            ]
-                        ]
-                    ];
                 }
-            }
-
-            if (OperationType::COLLECTION_COMMISSION_LENDER === $historyLine['label']) {
-                continue;
             }
 
             if (self::OP_REFUSED_BID === $historyLine['label']) {
@@ -213,7 +190,7 @@ class LenderOperationsManager
             $lenderOperations[] = $historyLine;
         }
 
-        if (null !== $idProject || null !== $operations){
+        if (null !== $idProject || null !== $operations) {
             return $this->filterLenderOperations($lenderOperations, $idProject, $operations);
         }
 
@@ -227,7 +204,7 @@ class LenderOperationsManager
      */
     public function getOperationsAccordingToFilter($filter)
     {
-        switch($filter) {
+        switch ($filter) {
             case self::FILTER_ALL:
                 return self::ALL_TYPES;
             case self:: FILTER_PROVISION_WITHDRAW;
@@ -280,16 +257,16 @@ class LenderOperationsManager
     public function getOperationsExcelFile(Wallet $wallet, $start, $end, $idProject, $operationTypes)
     {
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $lenderOperations = $this->getLenderOperations($wallet, $start, $end, $idProject, $operationTypes);
-        $taxColumns = [];
+        $lenderOperations    = $this->getLenderOperations($wallet, $start, $end, $idProject, $operationTypes);
+        $taxColumns          = [];
 
         $style = [
-          'borders' => [
-              'allborders' => [
-                  'style' => PHPExcel_Style_Border::BORDER_THIN,
-                  'color' => ['argb' => PHPExcel_Style_Color::COLOR_BLACK]
-              ]
-          ]
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => ['argb' => PHPExcel_Style_Color::COLOR_BLACK]
+                ]
+            ]
         ];
 
         /** @var \PHPExcel $document */
@@ -311,18 +288,18 @@ class LenderOperationsManager
         foreach (OperationType::TAX_TYPES_FR as $label) {
             $activeSheet->setCellValueByColumnAndRow($column, $row, $this->translator->trans('lender-operations_operations-csv-' . $label));
             $taxColumns[$label] = $column;
-            $column ++;
+            $column++;
         }
         $balanceColumn = $column;
         $activeSheet->setCellValueByColumnAndRow($balanceColumn, $row, $this->translator->trans('lender-operations_operations-csv-account-balance-column'));
-        $row ++;
+        $row++;
 
         foreach ($lenderOperations as $operation) {
             $activeSheet->setCellValueByColumnAndRow(0, $row, $this->translator->trans('lender-operations_operation-label-' . $operation['label']));
             $activeSheet->setCellValueByColumnAndRow(1, $row, $operation['id_loan']);
             $activeSheet->setCellValueByColumnAndRow(2, $row, $operation['id_project']);
             $activeSheet->setCellValueByColumnAndRow(3, $row, $operation['title']);
-            $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, PHPExcel_Shared_Date::PHPToExcel(strtotime($operation['operationDate'])),\PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, PHPExcel_Shared_Date::PHPToExcel(strtotime($operation['operationDate'])), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->getCellByColumnAndRow(4, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
             $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, $operation['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->getCellByColumnAndRow(5, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -331,11 +308,11 @@ class LenderOperationsManager
             if (self::OP_REPAYMENT === $operation['label']) {
                 $details = $operationRepository->findBy(['idRepaymentSchedule' => $operation['id_repayment_schedule']]);
                 /** @var Operation $operationDetail */
-                foreach ($details as $operationDetail){
+                foreach ($details as $operationDetail) {
                     if (in_array($operationDetail->getType()->getLabel(), OperationType::TAX_TYPES_FR)) {
                         $column = $taxColumns[$operationDetail->getType()->getLabel()];
                     } else {
-                        switch ($operationDetail->getType()->getLabel()){
+                        switch ($operationDetail->getType()->getLabel()) {
                             case OperationType::CAPITAL_REPAYMENT:
                                 $column = 6;
                                 break;
@@ -354,22 +331,25 @@ class LenderOperationsManager
                 }
             }
 
-            if (self::OP_RECOVERY_REPAYMENT === $operation['label']) {
-                $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, $operation['detail']['items']['0']['value'],\PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION === $operation['sub_type_label']) {
+                $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, $operation['amount'],\PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 $activeSheet->getCellByColumnAndRow(6, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                $activeSheet->setCellValueExplicitByColumnAndRow(8, $row, $operation['detail']['items']['1']['value'],\PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            }
+
+            if (OperationType::COLLECTION_COMMISSION_LENDER === $operation['label']) {
+                $activeSheet->setCellValueExplicitByColumnAndRow(8, $row, $operation['amount'],\PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 $activeSheet->getCellByColumnAndRow(8, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             }
 
             if (self::OP_EARLY_REPAYMENT === $operation['label']) {
-                $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, $operation['amount'],\PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, $operation['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 $activeSheet->getCellByColumnAndRow(6, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             }
 
             $activeSheet->setCellValueExplicitByColumnAndRow($balanceColumn, $row, $operation['available_balance'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->getCellByColumnAndRow($balanceColumn, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
-            $row ++;
+            $row++;
         }
         $activeSheet->setCellValueByColumnAndRow(0, $row, $this->translator->trans('lender-operations_operation-label-accepted-offer'));
 
