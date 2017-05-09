@@ -1357,7 +1357,7 @@ class ProjectRequestController extends Controller
         }
 
         $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'Client pas intéressé');
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'Désinscription relance email');
 
         return $this->render('pages/project_request/emails.html.twig');
     }
