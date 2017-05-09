@@ -9,12 +9,6 @@
         .item-date {
             text-align: left;
         }
-        .item-operation {
-            width: 25%;
-        }
-        .item-project {
-            width: 20%;
-        }
         .table {
             margin-bottom: 2em;
         }
@@ -37,13 +31,20 @@
             padding-top: 0.5em;
             padding-bottom: 0.5em;
         }
+        .table tr td.item-project {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
         .table tr.details {
             color: #9f9d9f;
+        }
+        .table tr.details > td:first-child {
+            padding-left: 30px!important;
         }
         .table tr, .table tr td {
             page-break-inside: avoid;
         }
-
         .table tr td.tf {
             padding-top: 1em;
             padding-bottom: 1em;
@@ -102,8 +103,8 @@
         <tbody>
             <tr>
                 <td class="th item-operation">{% trans %} lender-operations_operations-table-operation-column {% endtrans %}</td>
-                <td class="th item-project">{% trans %} lender-operations_operations-table-project-column {% endtrans %}</td>
                 <td class="th item-contract">{% trans %} lender-operations_loans-table-contract-column {% endtrans %}</td>
+                <td class="th item-project">{% trans %} lender-operations_operations-table-project-column {% endtrans %}</td>
                 <td class="th item-date">{% trans %} lender-operations_operations-table-date-column {% endtrans %}</td>
                 <td class="th item-amount">{% trans %} lender-operations_operations-table-amount-column {% endtrans %}</td>
                 <td class="th item-balance">{% trans %} lender-operations_operations-table-account-balance-column {% endtrans %}</td>
@@ -126,11 +127,11 @@
                     <td class="item-operation">
                         {{ ('lender-operations_operation-label-'~op.label)|trans }}
                     </td>
-                    <td class="item-project">
-                        {{ op.title }}
-                    </td>
                     <td class="item-contract">
                         {{ op.id_loan }}
+                    </td>
+                    <td class="item-project">
+                        {{ op.title }}
                     </td>
                     <td class="item-date">
                         {{ op.date|date('d/m/y') }}
