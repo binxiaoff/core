@@ -663,17 +663,11 @@ class LenderSubscriptionController extends Controller
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $client->get($clientHash, 'hash');
-
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
-
         $client->etape_inscription_preteur = Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT;
         $client->update();
 
         $template = [
             'client'           => $client->select('id_client = ' . $client->id_client)[0],
-            'lenderAccount'    => $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0],
             'maxDepositAmount' => LenderWalletController::MAX_DEPOSIT_AMOUNT,
             'minDepositAmount' => LenderWalletController::MIN_DEPOSIT_AMOUNT,
             'lenderBankMotif'  => $client->getLenderPattern($client->id_client)

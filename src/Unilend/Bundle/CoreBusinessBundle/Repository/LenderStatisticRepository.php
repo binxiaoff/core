@@ -11,11 +11,10 @@ class LenderStatisticRepository extends EntityRepository
 
     /**
      * @param int $idWallet
-     * @param int $idLender
      *
      * @return array
      */
-    public function getValuesForIRR($idWallet, $idLender)
+    public function getValuesForIRR($idWallet)
     {
         $query = '
             SELECT
@@ -25,7 +24,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN operation_type ot ON o.id_type = ot.id
               INNER JOIN loans l ON o.id_loan = l.id_loan
             WHERE ot.label = "' . OperationType::LENDER_LOAN . '"
-              AND l.id_lender = :idLender
+              AND l.id_lender = :idWallet
 
         UNION ALL
 
@@ -36,7 +35,7 @@ class LenderStatisticRepository extends EntityRepository
               echeanciers e
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-              l.id_lender = :idLender
+              l.id_lender = :idWallet
               AND e.status = ' . \echeanciers::STATUS_REPAID . '
 
         UNION ALL
@@ -48,7 +47,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN projects p ON e.id_project = p.id_project
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                l.id_lender = :idLender
+                l.id_lender = :idWallet
                 AND e.status = ' . \echeanciers::STATUS_PENDING . '
                 AND p.status = ' . \projects_status::REMBOURSEMENT . '
 
@@ -61,7 +60,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN projects p ON e.id_project = p.id_project
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                l.id_lender = :idLender
+                l.id_lender = :idWallet
                 AND e.status = ' . \echeanciers::STATUS_PENDING . '
                 AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X]) . ')
 
@@ -87,7 +86,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN projects p ON e.id_project = p.id_project
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                l.id_lender = :idLender
+                l.id_lender = :idWallet
                 AND e.status = ' . \echeanciers::STATUS_PENDING . '
                 AND p.status = ' . \projects_status::RECOUVREMENT . '
 
@@ -100,7 +99,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN projects p ON e.id_project = p.id_project
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                l.id_lender = :idLender
+                l.id_lender = :idWallet
                 AND e.status = ' . \echeanciers::STATUS_PENDING . '
                 AND p.status IN (' . implode(',', [
                 \projects_status::PROCEDURE_SAUVEGARDE,
@@ -129,15 +128,12 @@ class LenderStatisticRepository extends EntityRepository
                                         LEFT JOIN loan_transfer lt ON l.id_transfer = lt.id_loan_transfer
                                         LEFT JOIN transfer ON lt.id_transfer = transfer.id_transfer
                                         INNER JOIN wallet ON transfer.id_client_origin = wallet.id_client
-                                      WHERE l.id_lender = :idLender)
+                                      WHERE l.id_lender = :idWallet)
                 OR o_capital.id_wallet_creditor = :idWallet)
             GROUP BY IF(o_capital.id_repayment_schedule IS NOT NULL, o_capital.id_repayment_schedule, o_capital.id)
         )';
 
-        $values = $this->getEntityManager()->getConnection()->executeQuery($query, [
-                'idLender' => $idLender,
-                'idWallet' => $idWallet
-            ])->fetchAll(\PDO::FETCH_ASSOC);
+        $values = $this->getEntityManager()->getConnection()->executeQuery($query, ['idWallet' => $idWallet])->fetchAll(\PDO::FETCH_ASSOC);
 
         return $values;
     }

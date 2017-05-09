@@ -1507,4 +1507,12 @@ class Clients
     {
         return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::LENDER;
     }
+
+    /**
+     * @return bool
+     */
+    public function isNaturalPerson()
+    {
+        return in_array($this->type, [self::TYPE_PERSON, self::TYPE_PERSON_FOREIGNER]);
+    }
 }

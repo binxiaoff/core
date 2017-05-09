@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 
 class statsController extends bootstrap
 {
@@ -37,8 +38,8 @@ class statsController extends bootstrap
             $d1    = explode('/', $_POST['date1']);
             $date1 = $d1[2] . '-' . $d1[1] . '-' . $d1[0];
         } else {
-            $_POST['date1'] = date('d/m/Y', strtotime('first day of this month')); //"01/08/2014";
-            $date1          = date('Y-m-d', strtotime('first day of this month')); //"2014-08-01";
+            $_POST['date1'] = date('d/m/Y', strtotime('first day of this month'));
+            $date1          = date('Y-m-d', strtotime('first day of this month'));
 
         }
 
@@ -46,12 +47,11 @@ class statsController extends bootstrap
             $d2    = explode('/', $_POST['date2']);
             $date2 = $d2[2] . '-' . $d2[1] . '-' . $d2[0];
         } else {
-            $_POST['date2'] = date('d/m/Y', strtotime('last day of this month')); //"31/08/2014";
-            $date2          = date('Y-m-d', strtotime('last day of this month')); //"2014-08-31";
+            $_POST['date2'] = date('d/m/Y', strtotime('last day of this month'));
+            $date2          = date('Y-m-d', strtotime('last day of this month'));
 
         }
 
-        // récup de tous les clients créés depuis le 1 aout
         $sql = 'SELECT
                         c.id_client,
                         c.nom,
@@ -60,17 +60,16 @@ class statsController extends bootstrap
                         c.telephone,
                         c.mobile,
                         c.added,
-                            IF (
-                                c.etape_inscription_preteur = 3,
-                                IF (
-                                    la.type_transfert = 1, "3. Virement","3. CB"),
-                                    c.etape_inscription_preteur
-                                    ) as etape_inscription_preteur2,
+                        c.etape_inscription_preteur,
                         c.source,
                         c.source2
-                            FROM clients c
-                            LEFT JOIN lenders_accounts la ON (la.id_client_owner = c.id_client)
-                            WHERE c.etape_inscription_preteur > 0 AND c.status = 1 AND c.added >= "' . $date1 . ' 00:00:00' . '" AND c.added <= "' . $date2 . ' 23:59:59";';
+                    FROM clients c
+                      INNER JOIN wallet w ON c.id_client = w.id_client
+                      INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
+                    WHERE c.etape_inscription_preteur > 0 
+                        AND c.status = 1 
+                        AND c.added >= "' . $date1 . ' 00:00:00' . '"
+                        AND c.added <= "' . $date2 . ' 23:59:59"';
 
         $result = $this->bdd->query($sql);
 
@@ -86,19 +85,18 @@ class statsController extends bootstrap
             header("Content-type: application/vnd.ms-excel");
             header("Content-disposition: attachment; filename=\"Export_etape_inscription.csv\"");
 
-            // Récup des dates
             if ($_POST['spy_date1'] != '') {
                 $d1    = explode('/', $_POST['spy_date1']);
                 $date1 = $d1[2] . '-' . $d1[1] . '-' . $d1[0];
             } else {
-                $date1 = date('Y-m-d', strtotime('first day of this month')); //"2014-08-01";
+                $date1 = date('Y-m-d', strtotime('first day of this month'));
             }
 
             if ($_POST['spy_date2'] != '') {
                 $d2    = explode('/', $_POST['spy_date2']);
                 $date2 = $d2[2] . '-' . $d2[1] . '-' . $d2[0];
             } else {
-                $date2 = date('Y-m-d', strtotime('last day of this month')); //"2014-08-31";
+                $date2 = date('Y-m-d', strtotime('last day of this month'));
             }
 
             $sql = 'SELECT
@@ -109,17 +107,16 @@ class statsController extends bootstrap
                         c.telephone,
                         c.mobile,
                         c.added,
-                            IF (
-                                c.etape_inscription_preteur = 3,
-                                IF (
-                                    la.type_transfert = 1, "3. Virement","3. CB"),
-                                    c.etape_inscription_preteur
-                                    ) as etape_inscription_preteur2,
+                        c.etape_inscription_preteur,
                         c.source,
                         c.source2
-                            FROM clients c
-                            LEFT JOIN lenders_accounts la ON (la.id_client_owner = c.id_client)
-                            WHERE c.etape_inscription_preteur > 0 AND c.status = 1 AND c.added >= "' . $date1 . ' 00:00:00' . '" AND c.added <= "' . $date2 . ' 23:59:59";';
+                    FROM clients c
+                      INNER JOIN wallet w ON c.id_client = w.id_client
+                      INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
+                    WHERE c.etape_inscription_preteur > 0 
+                        AND c.status = 1 
+                        AND c.added >= "' . $date1 . ' 00:00:00' . '"
+                        AND c.added <= "' . $date2 . ' 23:59:59"';
 
             $result = $this->bdd->query($sql);
 
@@ -129,10 +126,9 @@ class statsController extends bootstrap
             }
 
             $csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2;\n";
-            // construction de chaque ligne
+
             foreach ($this->L_clients as $u) {
-                // on concatene a $csv
-                $csv .= utf8_decode($u['id_client']) . ';' . utf8_decode($u['nom']) . ';' . utf8_decode($u['prenom']) . ';' . utf8_decode($u['email']) . ';' . utf8_decode($u['telephone'] . ' ' . $u['mobile']) . ';' . utf8_decode($this->dates->formatDate($u['added'], 'd/m/Y')) . ';' . utf8_decode($u['etape_inscription_preteur2']) . ';' . $u['source'] . ';' . $u['source2'] . ';' . "\n";
+                $csv .= utf8_decode($u['id_client']) . ';' . utf8_decode($u['nom']) . ';' . utf8_decode($u['prenom']) . ';' . utf8_decode($u['email']) . ';' . utf8_decode($u['telephone'] . ' ' . $u['mobile']) . ';' . utf8_decode($this->dates->formatDate($u['added'], 'd/m/Y')) . ';' . utf8_decode($u['etape_inscription_preteur']) . ';' . $u['source'] . ';' . $u['source2'] . ';' . "\n";
             }
 
             print($csv);
@@ -340,16 +336,25 @@ class statsController extends bootstrap
         ];
     }
 
+    /**
+     * Also an IFU query, should contain the same clients as the beneficiary and revenue queries
+     */
     public function _requete_infosben()
     {
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-
-        $iYear = date('Y');
+        $year = date('Y');
         if (isset($this->params[0]) && is_numeric($this->params[0])) {
-            $iYear = (int) $this->params[0];
+            $year = (int) $this->params[0];
         }
 
-        $this->aLenders = $oLendersAccounts->getInfosben($iYear);
+        $operationTypes       = [
+            OperationType::LENDER_LOAN,
+            OperationType::CAPITAL_REPAYMENT,
+            OperationType::GROSS_INTEREST_REPAYMENT
+        ];
+
+        /** @var WalletRepository $walletRepository */
+        $walletRepository           = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $this->walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
     }
 
     public function _requete_infosben_csv()
@@ -357,28 +362,29 @@ class statsController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-
-        $iYear = date('Y');
+        $year = date('Y');
         if (isset($this->params[0]) && is_numeric($this->params[0])) {
-            $iYear = (int) $this->params[0];
+            $year = (int) $this->params[0];
         }
 
-        $this->aLenders = $oLendersAccounts->getInfosben($iYear);
+        $operationTypes       = [
+            OperationType::LENDER_LOAN,
+            OperationType::CAPITAL_REPAYMENT,
+            OperationType::GROSS_INTEREST_REPAYMENT
+        ];
+
+        /** @var WalletRepository $walletRepository */
+        $walletRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
 
         $header = "Cdos;Cbéné;CEtabl;CGuichet;RéfCompte;NatCompte;TypCompte;CDRC;";
 
         $csv = "";
         $csv .= $header . " \n";
 
-        foreach ($this->aLenders as $aLender) {
-            // Motif
-            $sPrenom   = substr($this->ficelle->stripAccents(trim($aLender['prenom'])), 0, 1);
-            $sNom      = $this->ficelle->stripAccents(trim($aLender['nom']));
-            $motif     = mb_strtoupper($aLender['id_client'] . $sPrenom . $sNom, 'UTF-8');
-            $motif     = substr($motif, 0, 10);
-
-            $csv .= "1;" . $motif . ";14378;;" . $aLender['id_client'] . ";4;6;P;";
+        /** @var Wallet $wallet */
+        foreach ($walletsWithMovements as $wallet) {
+            $csv .= "1;" . $wallet->getWireTransferPattern() . ";14378;;" . $wallet->getIdClient()->getIdClient() . ";4;6;P;";
             $csv .= " \n";
         }
 
@@ -430,7 +436,14 @@ class statsController extends bootstrap
         $csv = "";
         $csv .= $header . " \n";
 
-        $sql = 'SELECT id_project, id_bid, (SELECT id_client_owner FROM lenders_accounts la WHERE la.id_lender_account = b.id_lender_account) as id_client, added, (case status when 0 then "En cours" when 1 then "OK" when 2 then "KO" end) as Statut, ROUND((amount/100),0), REPLACE(rate,".",",") as rate FROM bids b';
+        $sql = 'SELECT 
+                  id_project, 
+                  id_bid, 
+                  (SELECT id_client FROM wallet w WHERE w.id = b.id_lender_account) AS id_client, 
+                  added, 
+                  (CASE status WHEN ' . Bids::STATUS_BID_PENDING . ' THEN "En cours" WHEN ' . Bids::STATUS_BID_ACCEPTED . ' THEN "OK" WHEN ' . Bids::STATUS_BID_REJECTED . ' THEN "KO" END) AS Statut, 
+                  ROUND((amount/100),0), REPLACE(rate,".",",") as rate 
+                FROM bids b';
 
         $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($resultat)) {

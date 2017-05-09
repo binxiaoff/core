@@ -22,25 +22,25 @@
             </thead>
             <tbody>
                 <?php foreach ($this->aLenders as $i => $aLender) : ?>
-                    <tr<?=($i % 2 == 1 ? '' : ' class="odd"')?> id="row_"<?= $aLender['id_client'] ?>>
-                        <td><?= $aLender['id_client'] ?></td>
-                        <td id="td_city_<?= $aLender['id_client'] ?>"><?= $aLender['ville_naissance'] ?></td>
+                    <tr<?=($i % 2 == 1 ? '' : ' class="odd"')?> id="row_"<?= $aLender['idClient'] ?>>
+                        <td><?= $aLender['idClient'] ?></td>
+                        <td id="td_city_<?= $aLender['idClient'] ?>"><?= $aLender['villeNaissance'] ?></td>
                         <td><?= $aLender['nom'] ?></td>
                         <td><?= $aLender['prenom'] ?></td>
                         <td align="center">
-                            <a href="#" class="edit_lender" data-clientId="<?= $aLender['id_client'] ?>">
+                            <a href="#" class="edit_lender" data-clientId="<?= $aLender['idClient'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $aLender['nom'] . ' ' . $aLender['prenom'] ?>" />
                             </a>
                         </td>
                     </tr>
-                    <tr id="edit_lenders_<?= $aLender['id_client'] ?>" style="display: none">
+                    <tr id="edit_lenders_<?= $aLender['idClient'] ?>" style="display: none">
                         <td colspan="3">
-                            <label for="city_<?= $aLender['id_client'] ?>">Ville ou CP de Naissance :</label>
-                            <input type="text" class="input_large" name="city" id="city_<?= $aLender['id_client'] ?>" data-autocomplete="birth_city" >
-                            <input type="hidden" name="insee_birth" id="insee_<?= $aLender['id_client'] ?>">
+                            <label for="city_<?= $aLender['idClient'] ?>">Ville ou CP de Naissance :</label>
+                            <input type="text" class="input_large" name="city" id="city_<?= $aLender['idClient'] ?>" data-autocomplete="birth_city" >
+                            <input type="hidden" name="insee_birth" id="insee_<?= $aLender['idClient'] ?>">
                         </td>
-                        <td><a href="#" class="save_lender btn_link" data-clientId="<?= $aLender['id_client'] ?>">Sauvegarder</a></td>
-                        <td><a href="#" class="close_edit btn_link" data-clientId="<?= $aLender['id_client'] ?>">Fermer</a></td>
+                        <td><a href="#" class="save_lender btn_link" data-clientId="<?= $aLender['idClient'] ?>">Sauvegarder</a></td>
+                        <td><a href="#" class="close_edit btn_link" data-clientId="<?= $aLender['idClient'] ?>">Fermer</a></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -87,7 +87,7 @@
         var city = $('#city_'+clientId).val();
         $.post(
             '<?= $this->lurl ?>/ajax/patchClient/' + clientId,
-            {insee_birth: insee, ville_naissance: city}
+            {insee_birth: insee, villeNaissance: city}
         ).done(function(data){
             if (data == 'ok') {
                 $('#td_city_'+clientId).html(city);

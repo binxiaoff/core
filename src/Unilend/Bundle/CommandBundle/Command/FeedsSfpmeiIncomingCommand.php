@@ -509,8 +509,6 @@ EOF
     {
         /** @var \ficelle $oFicelle */
         $oFicelle = Loader::loadLib('ficelle');
-        /** @var \lenders_accounts $lenders */
-        $lenders = $this->entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \notifications $notifications */
         $notifications = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
@@ -522,14 +520,8 @@ EOF
             preg_match('/([0-9]{6}) ?[A-Z]+/', $motif, $matches)
             && $clients->get((int) $matches[1], 'id_client')
             && $clients->isLenderPattern($clients->id_client, $motif)
-            && $lenders->get($clients->id_client, 'id_client_owner')
             && false === $transactions->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
         ) {
-            if (1 != $lenders->status) {
-                $lenders->status = 1;
-                $lenders->update();
-            }
-
             $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
             $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clients->id_client, WalletType::LENDER);
 
@@ -549,18 +541,18 @@ EOF
                 $transactions->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND id_virement');
 
                 $notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
-                $notifications->id_lender = $lenders->id_lender_account;
+                $notifications->id_lender = $wallet->getId();
                 $notifications->amount    = $reception->getMontant();
                 $notifications->create();
 
-                $clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
+                $clients_gestion_mails_notif->id_client       = $clients->id_client;
                 $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
                 $clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                 $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
                 $clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
                 $clients_gestion_mails_notif->create();
 
-                if ($clients_gestion_notifications->getNotif($lenders->id_client_owner, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
+                if ($clients_gestion_notifications->getNotif($clients->id_client, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
                     $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                     $clients_gestion_mails_notif->immediatement = 1;
                     $clients_gestion_mails_notif->update();
@@ -574,7 +566,7 @@ EOF
                         'prenom_p'        => $clients->prenom,
                         'fonds_depot'     => $oFicelle->formatNumber(bcdiv($reception->getMontant(), 100, 2)),
                         'solde_p'         => $oFicelle->formatNumber($wallet->getAvailableBalance()),
-                        'motif_virement'  => $clients->getLenderPattern($clients->id_client),
+                        'motif_virement'  => $wallet->getWireTransferPattern(),
                         'projets'         => $sUrl . '/projets-a-financer',
                         'gestion_alertes' => $sUrl . '/profile',
                         'lien_fb'         => $sFacebookLink,

@@ -19,12 +19,6 @@ class Bids
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_lender_account", type="integer", nullable=false)
-     */
-    private $idLenderAccount;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
@@ -81,7 +75,6 @@ class Bids
      */
     private $status;
 
-
     /**
      * @var \DateTime
      *
@@ -105,30 +98,15 @@ class Bids
      */
     private $idBid;
 
-
     /**
-     * Set idLenderAccount
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @param integer $idLenderAccount
-     *
-     * @return Bids
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender_account", referencedColumnName="id")
+     * })
      */
-    public function setIdLenderAccount($idLenderAccount)
-    {
-        $this->idLenderAccount = $idLenderAccount;
-
-        return $this;
-    }
-
-    /**
-     * Get idLenderAccount
-     *
-     * @return integer
-     */
-    public function getIdLenderAccount()
-    {
-        return $this->idLenderAccount;
-    }
+    private $idLenderAccount;
 
     /**
      * Set Project
@@ -176,6 +154,30 @@ class Bids
     public function getAutobid()
     {
         return $this->idAutobid;
+    }
+
+    /**
+     * Set idLenderAccount
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLenderAccount
+     *
+     * @return Bids
+     */
+    public function setIdLenderAccount(Wallet $idLenderAccount)
+    {
+        $this->idLenderAccount = $idLenderAccount;
+
+        return $this;
+    }
+
+    /**
+     * Get idLenderAccount
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLenderAccount()
+    {
+        return $this->idLenderAccount;
     }
 
     /**

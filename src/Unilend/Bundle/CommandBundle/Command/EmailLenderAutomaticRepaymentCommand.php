@@ -5,6 +5,7 @@ use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
@@ -29,10 +30,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         $echeanciers = $entityManagerSimulator->getRepository('echeanciers');
         /** @var \transactions $transactions */
         $transactions = $entityManagerSimulator->getRepository('transactions');
-        /** @var \lenders_accounts $lenders */
-        $lenders = $entityManagerSimulator->getRepository('lenders_accounts');
-        /** @var \clients $clients */
-        $clients = $entityManagerSimulator->getRepository('clients');
         /** @var \companies $companies */
         $companies = $entityManagerSimulator->getRepository('companies');
         /** @var \notifications $notifications */
@@ -65,14 +62,12 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
             if (
                 $echeanciers->get($e['id_echeancier'], 'id_echeancier')
                 && $loans->get($echeanciers->id_loan)
-                && $lenders->get($loans->id_lender, 'id_lender_account')
-                && $clients->get($lenders->id_client_owner, 'id_client')
             ) {
                 $rembNet = bcdiv($transactions->sum(' id_echeancier = ' . $echeanciers->id_echeancier, 'montant'), 100, 2);
                 $transactions->get($echeanciers->id_echeancier, 'type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' AND id_echeancier');
 
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clients->id_client, WalletType::LENDER);
-                if (1 == $clients->status && null !== $wallet) {
+                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($loans->id_lender);
+                if (null !== $wallet && Clients::STATUS_ONLINE == $wallet->getIdClient()->getStatus()) {
                     $projects->get($echeanciers->id_project, 'id_project');
                     $companies->get($projects->id_company, 'id_company');
 
@@ -96,23 +91,23 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $notifications->amount     = bcmul($rembNet, 100);
                     $notifications->create();
 
-                    $clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
+                    $clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
                     $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
                     $clients_gestion_mails_notif->date_notif      = $echeanciers->date_echeance_reel;
                     $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
                     $clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
                     $clients_gestion_mails_notif->create();
 
-                    if (true === $clients_gestion_notifications->getNotif($clients->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
+                    if (true === $clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
                         $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                         $clients_gestion_mails_notif->immediatement = 1;
                         $clients_gestion_mails_notif->update();
 
                         $sUrl    = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-                        $varMail = array(
+                        $varMail = [
                             'surl'                  => $sUrl,
                             'url'                   => $sUrl,
-                            'prenom_p'              => $clients->prenom,
+                            'prenom_p'              => $wallet->getIdClient()->getPrenom(),
                             'mensualite_p'          => $rembNetEmail,
                             'mensualite_avantfisca' => bcdiv($echeanciers->montant, 100, 2),
                             'nom_entreprise'        => $companies->name,
@@ -123,7 +118,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                             'lien_tw'               => $sTwitter,
                             'annee'                 => date('Y'),
                             'date_pret'             => $dates->formatDateComplete($loans->added)
-                        );
+                        ];
 
                         if ($lastRepaymentLender) {
                             /** @var TemplateMessage $message */
@@ -133,7 +128,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
                         }
 
-                        $message->setTo($clients->email);
+                        $message->setTo($wallet->getIdClient()->getEmail());
                         $mailer = $this->getContainer()->get('mailer');
                         $mailer->send($message);
                     }

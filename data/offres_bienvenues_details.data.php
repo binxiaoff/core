@@ -96,10 +96,10 @@ class offres_bienvenues_details extends offres_bienvenues_details_crud
         $query = '
                 SELECT obd.*
                 FROM offres_bienvenues_details obd
-                  INNER JOIN lenders_accounts la ON obd.id_client = la.id_client_owner
+                  INNER JOIN wallet w ON obd.id_client = w.id_client
                 WHERE obd.status = 0 
                   AND DATE(obd.added) < :dateLimit
-                  AND 0 = (SELECT COUNT(*) FROM bids b WHERE b.id_lender_account = la.id_lender_account AND b.status != ' . \bids::STATUS_BID_REJECTED . ')';
+                  AND 0 = (SELECT COUNT(*) FROM bids b WHERE b.id_lender_account = w.id AND b.status != ' . \bids::STATUS_BID_REJECTED . ')';
 
         return $this->bdd->executeQuery($query, ['dateLimit' => $date->format('Y-m-d')])->fetchAll(PDO::FETCH_ASSOC);
     }

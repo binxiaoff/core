@@ -10,9 +10,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 
 class preteursController extends bootstrap
 {
@@ -126,7 +127,6 @@ class preteursController extends bootstrap
         $this->echeanciers      = $this->loadData('echeanciers');
         $this->projects         = $this->loadData('projects');
         $this->clients_mandats  = $this->loadData('clients_mandats');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->companies        = $this->loadData('companies');
         /** @var \loans $loans */
         $loans  = $this->loadData('loans');
@@ -139,40 +139,42 @@ class preteursController extends bootstrap
             && $this->clients->get($this->params[0], 'id_client')
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
-            $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
             }
 
-            $this->nb_pret  = $loans->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = ' . \loans::STATUS_ACCEPTED);
-            $this->txMoyen  = $loans->getAvgPrets($this->lenders_accounts->id_lender_account);
-            $this->sumPrets = $loans->sumPrets($this->lenders_accounts->id_lender_account);
+            $this->nb_pret  = $loans->counter('id_lender = ' . $wallet->getId() . ' AND status = ' . \loans::STATUS_ACCEPTED);
+            $this->txMoyen  = $loans->getAvgPrets($wallet->getId());
+            $this->sumPrets = $loans->sumPrets($wallet->getId());
 
             if (isset($this->params[1])) {
-                $this->lEncheres = $loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . \loans::STATUS_ACCEPTED);
+                $this->lEncheres = $loans->select('id_lender = ' . $wallet->getId() . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . \loans::STATUS_ACCEPTED);
             } else {
-                $this->lEncheres = $loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . \loans::STATUS_ACCEPTED);
+                $this->lEncheres = $loans->select('id_lender = ' . $wallet->getId() . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . \loans::STATUS_ACCEPTED);
             }
 
-            $this->SumDepot       = $this->transactions->getLenderDepositedAmount($this->lenders_accounts);
-            $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
+            $this->SumDepot = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]);
+            $provisionType  = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
+            $firstProvision       = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $wallet, 'idType' => $provisionType], ['id' => 'ASC']);
+            $this->SumInscription = null !== $firstProvision ? $firstProvision->getAmount() : 0;
 
             $this->echeanciers = $this->loadData('echeanciers');
-            $this->sumRembInte = $this->echeanciers->getRepaidInterests(['id_lender' => $this->lenders_accounts->id_lender_account]);
+            $this->sumRembInte = $this->echeanciers->getRepaidInterests(['id_lender' => $wallet->getId()]);
 
             try {
-                $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange($this->lenders_accounts->id_lender_account, (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'));
+                $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange($wallet->getId(), (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'));
             } catch (\Exception $exception) {
-                $logger->error('Could not get next repayment amount (id_client = ' . $this->clients->id_client . ')', ['class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->lenders_accounts->id_lender_account ]);
+                $logger->error('Could not get next repayment amount (id_client = ' . $this->clients->id_client . ')', ['class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $wallet->getId() ]);
                 $this->nextRemb = 0;
             }
 
-            $this->sumRembMontant = $this->echeanciers->getRepaidAmount(['id_lender' => $this->lenders_accounts->id_lender_account]);
-            $this->avgPreteur     = $bids->getAvgPreteur($this->lenders_accounts->id_lender_account, 'amount', '1,2');
-            $this->sumBidsEncours = $bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
-            $this->lBids          = $bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0', 'added DESC');
+            $this->sumRembMontant = $this->echeanciers->getRepaidAmount(['id_lender' => $wallet->getId()]);
+            $this->avgPreteur     = $bids->getAvgPreteur($wallet->getId(), 'amount', implode([Bids::STATUS_BID_ACCEPTED, Bids::STATUS_BID_REJECTED]));
+            $this->sumBidsEncours = $bids->sumBidsEncours($wallet->getId());
+            $this->lBids          = $bids->select('id_lender_account = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_BID_PENDING, 'added DESC');
             $this->NbBids         = count($this->lBids);
 
             $this->attachments     = $wallet->getIdClient()->getAttachments();
@@ -180,19 +182,16 @@ class preteursController extends bootstrap
 
             /** @var \lender_tax_exemption $lenderTaxExemption */
             $lenderTaxExemption   = $this->loadData('lender_tax_exemption');
-            $this->exemptionYears = array_column($lenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
+            $this->exemptionYears = array_column($lenderTaxExemption->select('id_lender = ' . $wallet->getId(), 'year DESC'), 'year');
 
             $this->solde        = $wallet->getAvailableBalance();
             $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_WITHDRAWAL . ' AND id_client = ' . $this->clients->id_client, 'montant');
             $this->soldeRetrait = abs($this->soldeRetrait / 100);
 
-            //TODO after merge of different branches check that there are not several wallets
-            $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, WalletType::LENDER);
             $start                  = new \DateTime('First day of january this year');
             $end                    = new \DateTime('NOW');
             $this->lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES);
-
-            $this->transfers = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($wallet->getIdClient());
+            $this->transfers        = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($wallet->getIdClient());
 
             $this->getMessageAboutClientStatus();
             $this->setClientVigilanceStatusData();
@@ -292,7 +291,6 @@ class preteursController extends bootstrap
         $this->pays                     = $this->loadData('pays_v2');
         $this->acceptations_legal_docs  = $this->loadData('acceptations_legal_docs');
         $this->settings                 = $this->loadData('settings');
-        $lenderAccount                  = $this->loadData('lenders_accounts');
         $this->clients                  = $this->loadData('clients');
         $this->clients_adresses         = $this->loadData('clients_adresses');
         $this->clients_status           = $this->loadData('clients_status');
@@ -323,7 +321,6 @@ class preteursController extends bootstrap
             && $this->clients->get($this->params[0], 'id_client')
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
-            $lenderAccount->get($this->params[0], 'id_client_owner');
             $client = $wallet->getIdClient();
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
@@ -347,7 +344,7 @@ class preteursController extends bootstrap
 
                 /** @var \lender_tax_exemption $oLenderTaxExemption */
                 $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
-                $this->taxExemption    = $oLenderTaxExemption->getLenderExemptionHistory($lenderAccount->id_lender_account);
+                $this->taxExemption    = $oLenderTaxExemption->getLenderExemptionHistory($wallet->getId());
                 $this->aExemptionYears = array_column($this->taxExemption, 'year');
                 $this->iNextYear       = date('Y') + 1;
 
@@ -382,14 +379,15 @@ class preteursController extends bootstrap
 
             $this->clients_status->getLastStatut($this->clients->id_client);
             $this->lActions                 = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
-            $this->aTaxationCountryHistory  = $this->getTaxationHistory($lenderAccount->id_lender_account);
+            $this->aTaxationCountryHistory  = $this->getTaxationHistory($wallet->getId());
 
             $this->getMessageAboutClientStatus();
 
             $attachments     = $client->getAttachments();
             $attachmentTypes = $attachmentManager->getAllTypesForLender();
             $this->setAttachments($attachments, $attachmentTypes);
-            $this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
+            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
+            $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
             $identityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE);
             if ($identityDocument && $identityDocument->getGreenpointAttachment()) {
@@ -510,7 +508,7 @@ class preteursController extends bootstrap
                             if (false === in_array($iExemptionYear, $this->aExemptionYears)) {
                                 /** @var \lender_tax_exemption $oLenderTaxExemption */
                                 $oLenderTaxExemption              = $this->loadData('lender_tax_exemption');
-                                $oLenderTaxExemption->id_lender   = $lenderAccount->id_lender_account;
+                                $oLenderTaxExemption->id_lender   = $wallet->getId();
                                 $oLenderTaxExemption->iso_country = 'FR';
                                 $oLenderTaxExemption->year        = $iExemptionYear;
                                 $oLenderTaxExemption->id_user     = $_SESSION['user']['id_user'];
@@ -521,7 +519,7 @@ class preteursController extends bootstrap
                     }
 
                     if (in_array($this->iNextYear, $this->aExemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
-                        $oLenderTaxExemption->get($lenderAccount->id_lender_account . '" AND year = ' . $this->iNextYear . ' AND iso_country = "FR', 'id_lender');
+                        $oLenderTaxExemption->get($wallet->getId() . '" AND year = ' . $this->iNextYear . ' AND iso_country = "FR', 'id_lender');
                         $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'deletion'];
                         $oLenderTaxExemption->delete($oLenderTaxExemption->id_lender_tax_exemption);
                     }
@@ -572,7 +570,7 @@ class preteursController extends bootstrap
                     }
 
                     if (true === $applyTaxCountry) {
-                        $taxManager->addTaxToApply($this->clients, $lenderAccount, $this->clients_adresses, $_SESSION['user']['id_user']);
+                        $taxManager->addTaxToApply($wallet->getIdClient(), $this->clients_adresses, $_SESSION['user']['id_user']);
                     }
                     header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                     die;
@@ -1071,7 +1069,6 @@ class preteursController extends bootstrap
     public function _portefeuille()
     {
         $this->clients          = $this->loadData('clients');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->loans            = $this->loadData('loans');
         $this->projects         = $this->loadData('projects');
         $this->echeanciers      = $this->loadData('echeanciers');
@@ -1097,8 +1094,8 @@ class preteursController extends bootstrap
             && $this->clients->get($this->params[0], 'id_client')
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
-            $this->lenders_accounts->get($this->params[0], 'id_client_owner');
-            $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account);
+            $this->wallet          = $wallet;
+            $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId());
             $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
 
             /** @var LenderStatistic $lastIRR */
@@ -1107,8 +1104,8 @@ class preteursController extends bootstrap
             $statusOk                = [\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE];
             $statusKo                = [\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE];
             $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOk, $statusKo));
-            $this->problProjects     = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
-            $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
+            $this->problProjects     = $this->projects->countProjectsByStatusAndLender($wallet->getId(), $statusKo);
+            $this->totalProjects     = $this->loans->getProjectsCount($wallet->getId());
 
             $this->getMessageAboutClientStatus();
 
@@ -1117,45 +1114,44 @@ class preteursController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
             $oClientManager            = $this->get('unilend.service.client_manager');
 
-            $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->lenders_accounts);
+            $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($wallet->getIdClient());
             $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
             if (0 < count($this->aSettingsDates)) {
-                $this->sValidationDate = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts)->format('d/m/Y');
+                $this->sValidationDate = $oAutoBidSettingsManager->getValidationDate($wallet->getIdClient())->format('d/m/Y');
             }
             $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
             $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
 
             $this->settings->get('date-premier-projet-tunnel-de-taux', 'type');
-            $startingDate = $this->settings->value;
+            $startingDate           = $this->settings->value;
             $this->aAutoBidSettings = [];
             /** @var autobid $autobid */
             $autobid          = $this->loadData('autobid');
-            $aAutoBidSettings = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
+            $aAutoBidSettings = $autobid->getSettings($wallet->getId(), null, null, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
             foreach ($aAutoBidSettings as $aSetting) {
                 $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
                 $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
             }
 
-            $this->hasTransferredLoans = $lenderManager->hasTransferredLoans($this->lenders_accounts);
-
+            $this->hasTransferredLoans = $lenderManager->hasTransferredLoans($wallet->getIdClient());
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CIPManager $cipManager */
             $cipManager       = $this->get('unilend.service.cip_manager');
-            $this->cipEnabled = $cipManager->hasValidEvaluation($this->lenders_accounts);
+            $this->cipEnabled = $cipManager->hasValidEvaluation($wallet->getIdClient());
         }
     }
 
     public function _control_fiscal_city()
     {
-        /** @var lenders_accounts $oLenders */
-        $oLenders       = $this->loadData('lenders_accounts');
-        $this->aLenders = $oLenders->getLendersToMatchCity(200);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $this->aLenders = $clientRepository->getLendersToMatchCity(200);
     }
 
     public function _control_birth_city()
     {
-        /** @var lenders_accounts $oLenders */
-        $oLenders       = $this->loadData('lenders_accounts');
-        $this->aLenders = $oLenders->getLendersToMatchBirthCity(200);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $this->aLenders = $clientRepository->getLendersToMatchBirthCity(200);
     }
 
     public function _email_history_preview()
@@ -1316,23 +1312,21 @@ class preteursController extends bootstrap
 
     private function setClientVigilanceStatusData()
     {
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $client                       = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
-        $this->vigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $client], ['id' => 'DESC']);
+        $client                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
+        $this->vigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $client], ['id' => 'DESC']);
 
         if (empty($this->vigilanceStatusHistory)) {
             $this->vigilanceStatus = [
                 'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
                 'message' => 'Vigilance standard'
             ];
-            $this->userEntity      = $em->getRepository('UnilendCoreBusinessBundle:Users');
-            $this->lendersAccount  = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
-
+            $this->userEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
             return;
         }
-        $this->clientAtypicalOperations = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $client], ['added' => 'DESC']);
+        $this->clientAtypicalOperations = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $client], ['added' => 'DESC']);
 
         switch ($this->vigilanceStatusHistory[0]->getVigilanceStatus()) {
             case VigilanceRule::VIGILANCE_STATUS_LOW:
@@ -1364,9 +1358,8 @@ class preteursController extends bootstrap
         }
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator                   = $this->get('translator');
-        $this->userEntity                   = $em->getRepository('UnilendCoreBusinessBundle:Users');
-        $this->lendersAccount               = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
-        $this->clientVigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
+        $this->userEntity                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->clientVigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
     }
 
     public function _saveBetaTesterSetting()
@@ -1376,15 +1369,13 @@ class preteursController extends bootstrap
 
         $oClientSettingsManager = $this->get('unilend.service.client_settings_manager');
         $oClient                = $this->loadData('clients');
-        $oLendersAccount        = $this->loadData('lenders_accounts');
 
          if(isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], ['on', 'off'])){
              $oClient->get($this->params[0]);
-             $oLendersAccount->get($oClient->id_client, 'id_client_owner');
              $sValue = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
              $oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_BETA_TESTER, $sValue);
 
-             header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $oLendersAccount->id_lender_account);
+             header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $oClient->id_client);
              die;
          }
     }
@@ -1432,7 +1423,6 @@ class preteursController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $lenderAccount = $this->loadData('lenders_accounts');
         $this->clients = $this->loadData('clients');
         /** @var \bids $bids */
         $bids = $this->loadData('bids');
@@ -1443,7 +1433,6 @@ class preteursController extends bootstrap
             && $this->clients->get($this->params[0], 'id_client')
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
-            $lenderAccount->get($this->params[0], 'id_client_owner');
             $this->getMessageAboutClientStatus();
 
             if (isset($_POST['send_dates'])) {
@@ -1469,7 +1458,7 @@ class preteursController extends bootstrap
             $this->bidList               = [];
 
 
-            foreach ($bids->getBidsByLenderAndDates($lenderAccount, $dateTimeStart, $dateTimeEnd) as $key => $value) {
+            foreach ($bids->getBidsByLenderAndDates($wallet, $dateTimeStart, $dateTimeEnd) as $key => $value) {
                 $this->bidList[$key] = $value;
             }
         }
@@ -1481,43 +1470,47 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         /** @var \bids $bids */
         $bids = $this->loadData('bids');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->loadData('lenders_accounts');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $lenderAccount->get($this->params[0], 'id_client_owner');
-        $lenderBids = $bids->getBidsByLenderAndDates($lenderAccount);
+        if (
+            isset($this->params[0])
+            && is_numeric($this->params[0])
+            && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
+        ){
+            $lenderBids = $bids->getBidsByLenderAndDates($wallet);
 
-        $header = ['Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
+            PHPExcel_Settings::setCacheStorageMethod(
+                PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+                ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
+            );
 
-        PHPExcel_Settings::setCacheStorageMethod(
-            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
-        );
+            $header      = ['Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
+            $document    = new PHPExcel();
+            $activeSheet = $document->setActiveSheetIndex(0);
 
-        $document    = new PHPExcel();
-        $activeSheet = $document->setActiveSheetIndex(0);
-
-        foreach ($header as $index => $columnName) {
-            $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
-        }
-
-        foreach ($lenderBids as $rowIndex => $row) {
-            $colIndex = 0;
-            foreach ($row as $cellValue) {
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+            foreach ($header as $index => $columnName) {
+                $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
             }
+
+            foreach ($lenderBids as $rowIndex => $row) {
+                $colIndex = 0;
+                foreach ($row as $cellValue) {
+                    $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+                }
+            }
+
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment;filename=bids_client_' . $wallet->getIdClient()->getIdClient() . '.csv');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Expires: 0');
+
+            /** @var \PHPExcel_Writer_CSV $writer */
+            $writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
+            $writer->setUseBOM(true);
+            $writer->setDelimiter(';');
+            $writer->save('php://output');
         }
-
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename=bids_client_' . $lenderAccount->id_client_owner . '.csv');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Expires: 0');
-
-        /** @var \PHPExcel_Writer_CSV $writer */
-        $writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
-        $writer->setUseBOM(true);
-        $writer->setDelimiter(';');
-        $writer->save('php://output');
     }
 
     /**
@@ -1570,9 +1563,9 @@ class preteursController extends bootstrap
      */
     private function validateBankAccount($idBankAccount)
     {
-        $em = $this->get('doctrine.orm.entity_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var BankAccount $currentBankAccount */
-        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
+        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
 
         if (null === $bankAccount) {
             throw new Exception('BankAccount could not be found with id : ' . $idBankAccount );

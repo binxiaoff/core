@@ -30,12 +30,12 @@
             })
         })
 
-        // Delete Bid
-        function deleteBid(id_bid) {
-            if (confirm('Etes vous sur de vouloir supprimer ce bid ?')) {
+        // Reject Bid
+        $('.deleteBidBtn').click(function () {
+            var id_bid = $(this).data('bid')
+            if (confirm('Etes vous sur de vouloir rejeter ce bid ?')) {
                 var val = {
-                    id_bid: id_bid,
-                    id_lender: <?= $this->lenders_accounts->id_lender_account ?>
+                    id_bid: id_bid
                 };
                 $.post(add_url + '/ajax/deleteBidPreteur', val).done(function (data) {
                     if (data != 'nok') {
@@ -43,7 +43,7 @@
                     }
                 });
             }
-        }
+        })
 
         // Datepickers
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
@@ -424,7 +424,7 @@
                             <td align="center"><?= $this->projects->period ?></td>
 
                             <td align="center">
-                                <img style="cursor:pointer;" onclick="deleteBid(<?= $e['id_bid'] ?>);" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
+                                <a role="button" class="deleteBidBtn" data-bid="<?= $e['id_bid'] ?>">Rejeter ce bid</a>
                             </td>
                         </tr>
                         <?php
