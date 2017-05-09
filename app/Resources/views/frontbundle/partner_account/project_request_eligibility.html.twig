@@ -38,7 +38,7 @@
                         </fieldset><!-- /.simulator-pane-inner -->
                         <div class="simulator-pane-inner results bg-p1 c-bg5">
                             {% if rejectionReason is defined %}
-                                <div class="project-request-reject-message">{{ rejectionReason }}</div>
+                                <div class="project-request-reject-message">{{ rejectionReason|raw }}</div>
                             {% else %}
                                 {% trans %} partner-project-request_simulator-eligibility-message {% endtrans %}
                                 <dl class="list-2col">
