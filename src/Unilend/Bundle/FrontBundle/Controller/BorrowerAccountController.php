@@ -884,14 +884,6 @@ class BorrowerAccountController extends Controller
                 }
             }
 
-            if (OperationType::BORROWER_COMMISSION === $operation['label'] && null !== $operation['idPaymentSchedule']) {
-                $operation['label'] =  self::OP_MONTHLY_COMMISSION;
-            }
-
-            if (OperationType::CAPITAL_REPAYMENT === $operation['label'] && null === $operation['ordre']) {
-                $operation['label'] = self::OP_LENDER_RECOVERY_REPAYMENT;
-            }
-
             if (OperationType::BORROWER_PROVISION === $operation['label']) {
                 foreach ($recoveryCommissionKeys as $key) {
                     if ($walletHistory[$key]['date'] === $operation['date'] && false === empty($walletHistory[$key]['amount'])) {

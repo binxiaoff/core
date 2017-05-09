@@ -122,7 +122,7 @@
                         {% set classAmount = op.label != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN') ? op.amount >= 0 ? 'ui-amount-positive' : 'ui-amount-negative' : '' %}
                         {% set classBalance = op.label != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN') ? op.available_balance >= 0 ? 'ui-balance-positive' : 'ui-balance-negative' : '' %}
                         <tr id="operation-{{ op.id }}" class="table-myoperations-item {{ classAmount }} {{ classBalance }}"
-                            {% if op.label in ['repayment', 'recovery-repayment']  %} data-details='{{ op.detail|json_encode|escape('html_attr') }}'{% endif %}
+                            {% if op.detail is defined  %} data-details='{{ op.detail|json_encode|escape('html_attr') }}'{% endif %}
                             data-sortable-type="{{ op.label }}"
                             data-sortable-contract="{{ op.id_loan }}"
                             data-sortable-project="{{ op.id_project }}"

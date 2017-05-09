@@ -52,7 +52,9 @@
                                                 <td>{{ ('borrower-projects_' ~ project.project_status_label)|trans }}</td>
                                                 <td>{% if project.predict_autobid > 0 %} {{ project.predict_autobid|localizednumber }}&nbsp;% {% endif %}</td>
                                                 <td class="center">
-                                                    <a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="ui-has-tooltip" data-original-title="{% trans %} borrower-projects_add-documents-icon {% endtrans %}"><span class="icon fa-file-u16"></span></a>
+                                                    {% if project.hash %}
+                                                        <a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="ui-has-tooltip" data-original-title="{% trans %} borrower-projects_add-documents-icon {% endtrans %}"><span class="icon fa-file-u16"></span></a>
+                                                    {% endif %}
                                                 </td>
                                             </tr>
                                         {% endfor %}

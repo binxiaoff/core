@@ -63,15 +63,15 @@ class OperationRepository extends EntityRepository
     public function getWithdrawAndProvisionOperationByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
         $qb = $this->createQueryBuilder('o')
-            ->where('o.idType IN (:walletType)')
-            ->setParameter('walletType', [
-                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
-                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
-            ])
-            ->andWhere('o.idWalletCreditor = :idWallet OR o.idWalletDebtor = :idWallet')
-            ->setParameter('idWallet', $wallet)
-            ->andWhere('o.added >= :added')
-            ->setParameter('added', $date);
+                   ->where('o.idType IN (:walletType)')
+                   ->setParameter('walletType', [
+                       $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
+                       $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
+                   ])
+                   ->andWhere('o.idWalletCreditor = :idWallet OR o.idWalletDebtor = :idWallet')
+                   ->setParameter('idWallet', $wallet)
+                   ->andWhere('o.added >= :added')
+                   ->setParameter('added', $date);
 
         return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
@@ -89,7 +89,7 @@ class OperationRepository extends EntityRepository
 
         foreach ($criteria as $field => $value) {
             $qb->andWhere('op.' . $field . $operator[$field] . ':' . $field)
-                ->setParameter($field, $value);
+               ->setParameter($field, $value);
         }
         $qb->orderBy('op.added', 'ASC');
 
@@ -107,15 +107,13 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->where('ot.label IN (:operationTypes)')
-            ->andWhere('o.idWalletCreditor = :idWallet')
-            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idWallet', $creditorWallet);
-
+           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+           ->where('ot.label IN (:operationTypes)')
+           ->andWhere('o.idWalletCreditor = :idWallet')
+           ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+           ->setParameter('idWallet', $creditorWallet);
         if (null !== $year) {
-            $qb->andWhere('YEAR(o.added) = :year')
-                ->setParameter('year', $year);
+            $qb->andWhere('YEAR(o.added) = :year')->setParameter('year', $year);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -132,15 +130,13 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->where('ot.label IN (:operationTypes)')
-            ->andWhere('o.idWalletDebtor = :idWallet')
-            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idWallet', $debtorWallet);
-
+           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+           ->where('ot.label IN (:operationTypes)')
+           ->andWhere('o.idWalletDebtor = :idWallet')
+           ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+           ->setParameter('idWallet', $debtorWallet);
         if (null !== $year) {
-            $qb->andWhere('YEAR(o.added) = :year')
-                ->setParameter('year', $year);
+            $qb->andWhere('YEAR(o.added) = :year')->setParameter('year', $year);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -148,7 +144,7 @@ class OperationRepository extends EntityRepository
 
     /**
      * @param Wallet $wallet
-     * @param int $year
+     * @param int    $year
      *
      * @return bool|string
      */
@@ -177,9 +173,10 @@ class OperationRepository extends EntityRepository
             'idWallet'     => $wallet->getId(),
             'eeaCountries' => PaysV2::EUROPEAN_ECONOMIC_AREA
         ];
-        $types = ['year'         => \PDO::PARAM_INT,
-                  'idWallet'     => \PDO::PARAM_INT,
-                  'eeaCountries' => Connection::PARAM_INT_ARRAY
+        $types = [
+            'year'         => \PDO::PARAM_INT,
+            'idWallet'     => \PDO::PARAM_INT,
+            'eeaCountries' => Connection::PARAM_INT_ARRAY
         ];
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $types)->fetchColumn();
@@ -282,12 +279,12 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(amount')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->where('ot.label IN (:taxTypes)')
-            ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
-            ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
-            ->setCacheable(true);
+           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+           ->where('ot.label IN (:taxTypes)')
+           ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
+           ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
+           ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
+           ->setCacheable(true);
 
         return $qb->getQuery()->getSingleScalarResult();
     }
@@ -321,44 +318,4 @@ class OperationRepository extends EntityRepository
 
         return $result;
     }
-
-    /**
-     * @param Wallet           $wallet
-     * @param string|\DateTime $date
-     *
-     * @return mixed
-     */
-    public function getLenderRecoveryRepaymentDetailByDate(Wallet $wallet, $date)
-    {
-        if ($date instanceof \DateTime) {
-            $date = $date->format('y-m-d H:i:s');
-        }
-
-        $query = '
-                    SELECT
-                      o_capital.amount AS capital,
-                      o_recovery.amount AS commission,
-                      (SELECT available_balance
-                       FROM wallet_balance_history wbh
-                      WHERE wbh.id_operation = o_recovery.id AND wbh.id_wallet = o_recovery.id_wallet_debtor) AS available_balance
-                    FROM operation o_capital
-                      INNER JOIN operation o_recovery ON o_capital.id_project = o_recovery.id_project AND
-                                                         o_capital.id_wallet_creditor = o_recovery.id_wallet_debtor AND
-                                                         o_recovery.id_type = (SELECT id
-                                                                               FROM operation_type
-                                                                               WHERE label = "' . OperationType::COLLECTION_COMMISSION_LENDER . '")
-                                                         AND o_capital.added = o_recovery.added
-                    WHERE o_capital.id_wallet_creditor = :idWallet
-                      AND o_capital.added = :date
-                      AND o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
-                    GROUP BY IF(o_capital.id_repayment_schedule IS NOT NULL, o_capital.id_repayment_schedule, o_capital.id)';
-
-        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__ . $wallet->getId()));
-        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idWallet' => $wallet->getId(), 'date' => $date], ['idWallet' => \PDO::PARAM_INT, 'date' => \PDO::PARAM_STR], $qcProfile);
-        $result    = $statement->fetch();
-        $statement->closeCursor();
-
-        return $result;
-    }
-
 }

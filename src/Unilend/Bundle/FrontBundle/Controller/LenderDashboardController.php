@@ -20,6 +20,10 @@ use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 
 class LenderDashboardController extends Controller
 {
+    const REPAYMENT_TIME_FRAME_MONTH   = 'month';
+    const REPAYMENT_TIME_FRAME_QUARTER = 'quarter';
+    const REPAYMENT_TIME_FRAME_YEAR    = 'year';
+
     /**
      * @Route("synthese", name="lender_dashboard")
      * @Security("has_role('ROLE_LENDER')")
@@ -38,6 +42,8 @@ class LenderDashboardController extends Controller
         $lenderManager = $this->get('unilend.service.lender_manager');
         /** @var EntityManagerSimulator $entityManager */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \loans $loan */
         $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers $lenderRepayment */
@@ -52,6 +58,8 @@ class LenderDashboardController extends Controller
         $wallet_line = $entityManagerSimulator->getRepository('wallets_lines');
         /** @var \clients $client */
         $client = $entityManagerSimulator->getRepository('clients');
+
+        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
         $client->get($this->getUser()->getClientId());
         $wallet          = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
@@ -183,16 +191,19 @@ class LenderDashboardController extends Controller
                     'capital'   => array_column($lenderRepaymentsData, 'capital'),
                     'interests' => array_column($lenderRepaymentsData, 'netInterests'),
                     'tax'       => array_column($lenderRepaymentsData, 'taxes'),
+                    'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_MONTH)
                 ],
                 'quarterSum'         => [
                     'capital'   => $repaymentDataPerPeriod['quarterCapital'],
                     'interests' => $repaymentDataPerPeriod['quarterInterests'],
                     'tax'       => $repaymentDataPerPeriod['quarterTax'],
+                    'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_QUARTER)
                 ],
                 'yearSum'            => [
                     'capital'   => $repaymentDataPerPeriod['yearCapital'],
                     'interests' => $repaymentDataPerPeriod['yearInterests'],
                     'tax'       => $repaymentDataPerPeriod['yearTax'],
+                    'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_YEAR)
                 ],
                 'bandOrigin'         => [
                     'month'   => $monthAxisData['monthBandOrigin'],
