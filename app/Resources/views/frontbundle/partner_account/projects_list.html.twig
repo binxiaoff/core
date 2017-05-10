@@ -5,6 +5,36 @@
     classNames: 'partner-account'
 } %}
 
+{% set borrowers = [
+{
+    id: '128732',
+    name: 'Television Francaise 2',
+    submitter: {
+        lastName: 'Slaev',
+        firstName: 'Dimitar',
+        entity: 'Axxa Nancy'
+    },
+    motive: 'Achat de materiel',
+    amount: 400000,
+    duration: 6,
+    status: 'Demande Complete',
+    memos: [
+        {
+            id: '1238823',
+            author: 'JIRA Lauren',
+            date: '15 Avril 2017',
+            text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.'
+        },
+        {
+            id: '12388233',
+            author: 'JIRA Lauren',
+            date: '15 Avril 2017',
+            text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.'
+        }
+    ]
+}
+] %}
+
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -134,7 +164,7 @@
                                         </thead>
                                         <tbody data-sortable-content>
                                         {% for project in borrowers %}
-                                            <tr id="project-{{ project.id }}" class="table-projects-item" data-details
+                                            <tr id="project-{{ project.id }}" class="table-projects-item"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
                                                 {% if is_granted('ROLE_PARTNER_ADMIN') %}
                                                     data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
@@ -142,7 +172,8 @@
                                                 data-sortable-motif="{{ project.motive|e('html_attr') }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}"
-                                                data-sortable-status="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}">
+                                                data-sortable-status="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}"
+                                                data-details="{{ project.memos|json_encode|escape('html_attr') }}" >
                                                 <td class="table-projects-item-borrower" title="{{ project.name|e('html_attr') }}" data-toggle="tooltip" colspan="2">{{ project.name }}</td>
                                                 {% if is_granted('ROLE_PARTNER_ADMIN') %}
                                                     <td class="table-projects-item-submitter" title="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.entity|length %}- {{ project.submitter.entity }}{% endif %}</td>
@@ -190,7 +221,7 @@
                                                 </th>
                                             {% endif %}
                                             <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-rejected-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                <span class="label" title=  "{{ 'partner-project-list_sr-sort-abandoned-rejected-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_abandoned-rejected-table-amount {% endtrans %}
                                                 </span>
                                             </th>

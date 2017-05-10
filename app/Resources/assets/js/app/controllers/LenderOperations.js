@@ -132,62 +132,31 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
 
       // Partner project details
       else if ($item.is('.table-projects-item')) {
-        // TODO - Uncomment Ajax Part Below (Currently using simulated response)
-        var response = {
-          memos: [
-            {
-              id: '1238823',
-              author: 'JIRA Lauren',
-              date: '15 Avril 2017',
-              text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.'
-            },
-            {
-              id: '12388233',
-              author: 'JIRA Lauren',
-              date: '15 Avril 2017',
-              text: 'L\'emprunteur sera de retour de congé début Mars. Point téléphonique planifié 02/03 14h30.'
-            }
-          ]
-        }
 
-        function AjaxMemosSuccess(response) {
-          $.each(response.memos, function (i, memo) {
-            detailsItemsHtml += '<tr><td class="details-memo-author" title="' + memo.author + '" data-toggle="tooltip">' + memo.author + '</td>' +
-                '<td class="details-memo-date" title="' + memo.date + '" data-toggle="tooltip">' + memo.date + '</td>' +
-                '<td class="details-memo-text" title="' + memo.text + '" data-toggle="tooltip" colspan="5">' + memo.text + '</td></tr>'
+        // Generate HTML for memos
+        $.each(details, function (i, item) {
+          detailsItemsHtml += Templating.replace('<tr class="table-myloans-details-item">\
+            <td class="details-memo-author" title="{{ author }}" data-toggle="tooltip">{{ author }}</td>\
+            <td class="details-memo-date" title="{{ date }}" data-toggle="tooltip">{{ date }}</td>\
+            <td class="details-memo-text" title="{{ text }}" data-toggle="tooltip" colspan="5">{{ text }}</td>\
+          </tr>', {
+            author: item.author,
+            date: item.date,
+            text: item.text
           })
-          // Build element and add to DOM
-          var colspan = 8
-          if (!$('body').is('.ui-user-type-partner-admin')) {
-            colspan = 7
-          }
-          $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="' + colspan + '"><table>' + detailsItemsHtml + '</table></td></tr>')
-          $item.after($details)
+        })
+
+        // Check columns to show depending on user level
+        var colspan = 8
+        if (!$('body').is('.ui-user-type-partner-admin')) {
+          colspan = 7
         }
-        AjaxMemosSuccess(response)
 
-        // Don't run if another Ajax is running
-        // if (ajaxIsComplete) {
-        //   ajaxIsComplete = false
-        //
-        //   // New Ajax Request - get Memos for this project
-        //   $.ajax({
-        //     type: 'POST',
-        //     url: '',
-        //     data: $item.attr('id'), // project-12033
-        //     success: function(response) {
-        //       ajaxIsComplete = true
-        //       AjaxMemosSuccess(response)
-        //     },
-        //     error: function() {
-        //       console.log("error retrieving data");
-        //       ajaxIsComplete = true
-        //     }
-        //   });
-        // }
-
-        // TODO END
+        $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="' + colspan + '"><table>' + detailsItemsHtml + '</table></td></tr>')
       }
+
+      // Attach details for all cases above
+      $item.after($details)
     }
 
     // Show
