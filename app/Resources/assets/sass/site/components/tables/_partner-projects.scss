@@ -94,6 +94,14 @@
     width: 10%;
     padding-right: 0;
 }
+.ui-user-type-partner-admin {
+    .details-memo-date {
+        width: auto;
+    }
+    .details-memo-author {
+        width: 20%;
+    }
+}
 #prospect-cancel-motif {
     max-width: 290px;
     margin: 0 auto;

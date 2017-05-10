@@ -297,4 +297,40 @@ Dictionary.prototype.localizedPrice = function (input, limitDecimal, lang) {
   return self.formatNumber(input, limitDecimal, true, lang)
 }
 
+// TODO - to be refactored completely - should have same behaviour as localizeddate twig function
+Dictionary.prototype.localizedDate = function (date) {
+  var dateTime = date.split(' ')
+  var date = dateTime[0]
+  date = date.split('-')
+
+  var year = parseInt(date[0])
+  var month = parseInt(date[1])
+  var day = parseInt('01')
+
+  console.log(month)
+
+  console.log(day)
+
+  if (month === 1) { month = 'janv.' }
+  if (month === 2) { month = 'févr.' }
+  if (month === 3) { month = 'mars' }
+  if (month === 4) { month = 'avr.' }
+  if (month === 5) { month = 'mai' }
+  if (month === 6) { month = 'juin' }
+  if (month === 7) { month = 'juil.' }
+  if (month === 8) { month = 'août' }
+  if (month === 9) { month = 'sept.' }
+  if (month == 10) { month = 'oct.' }
+  if (month === 11) { month = 'nov.' }
+  if (month === 12) { month = 'déc.' }
+
+  if (day === 1) {
+    day = '1er'
+  }
+
+  date = 'Le ' + day + ' ' + month + ' ' + year
+
+  return date
+}
+
 module.exports = Dictionary

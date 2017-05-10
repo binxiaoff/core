@@ -133,26 +133,34 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
       // Partner project details
       else if ($item.is('.table-projects-item')) {
 
+        // Check columns to show depending on user level
+        var colspanAuthor = 1
+        var colspanText   = 5
+        if (!$('body').is('.ui-user-type-partner-admin')) {
+          colspanAuthor = 2
+          colspanText   = 4
+        }
+
         // Generate HTML for memos
         $.each(details, function (i, item) {
           detailsItemsHtml += Templating.replace('<tr class="table-myloans-details-item">\
-            <td class="details-memo-author" title="{{ author }}" data-toggle="tooltip">{{ author }}</td>\
+            <td class="details-memo-author" title="{{ author }}" data-toggle="tooltip" colspan="' + colspanAuthor + '">{{ author }}</td>\
             <td class="details-memo-date" title="{{ date }}" data-toggle="tooltip">{{ date }}</td>\
-            <td class="details-memo-text" title="{{ text }}" data-toggle="tooltip" colspan="5">{{ text }}</td>\
+            <td class="details-memo-text" title="{{ text }}" data-toggle="tooltip" colspan="' + colspanText + '">{{ text }}</td>\
           </tr>', {
             author: item.author,
-            date: item.date,
-            text: item.text
+            date: __.localizedDate(item.date.date),
+            text: item.content
           })
         })
 
         // Check columns to show depending on user level
-        var colspan = 8
+        var colspanDetails = 8
         if (!$('body').is('.ui-user-type-partner-admin')) {
-          colspan = 7
+          colspanDetails = 7
         }
 
-        $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="' + colspan + '"><table>' + detailsItemsHtml + '</table></td></tr>')
+        $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="' + colspanDetails + '"><table>' + detailsItemsHtml + '</table></td></tr>')
       }
 
       // Attach details for all cases above
