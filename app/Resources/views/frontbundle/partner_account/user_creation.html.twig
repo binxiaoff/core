@@ -5,20 +5,6 @@
     classNames: 'partner-account'
 } %}
 
-{% set form = {
-    errors: {},
-    values: {
-        user: {
-            firstname: '',
-            lastname: '',
-            email: '',
-            phone: '',
-            role: ''
-        }
-    }
-}
-%}
-
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -35,37 +21,37 @@
                                 <div class="message-error"><p>{% trans %} form-validation_error-group-has-errors {% endtrans %}</p></div>
                             {% endif %}
                         </div>
-                        
+
                         <fieldset class="form-project-add-user-fieldset row columns-with-space">
                             <div class="col-sm-4 col-lg-6 col-md-6">
-                                <div class="form-field{% if form.errors.user.lastname is defined %} ui-formvalidation-error{% endif %}">
+                                <div class="form-field{% if form.errors.lastname is defined %} ui-formvalidation-error{% endif %}">
                                     <label for="form-project-add-user-last-lastname">{% trans %} common_name {% endtrans %}</label>
-                                    <input id="form-project-add-user-last-lastname" type="text" name="user[lastname]" value="{{ form.values.user.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
-                                    {% if form.errors.user.lastname is defined %}
+                                    <input id="form-project-add-user-last-lastname" type="text" name="lastname" value="{{ form.values.lastname|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
+                                    {% if form.errors.lastname is defined %}
                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                     {% endif %}
                                 </div><!-- /.form-field -->
 
-                                <div class="form-field{% if form.errors.user.firstname is defined %} ui-formvalidation-error{% endif %}">
+                                <div class="form-field{% if form.errors.firstname is defined %} ui-formvalidation-error{% endif %}">
                                     <label for="form-project-add-user-firstname">{% trans %} common_firstname {% endtrans %}</label>
-                                    <input id="form-project-add-user-firstname" type="text" name="user[firstname]" value="{{ form.values.user.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
-                                    {% if form.errors.user.firstname is defined %}
+                                    <input id="form-project-add-user-firstname" type="text" name="firstname" value="{{ form.values.firstname|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
+                                    {% if form.errors.firstname is defined %}
                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                     {% endif %}
                                 </div><!-- /.form-field -->
 
-                                <div class="form-field{% if form.errors.user.email is defined %} ui-formvalidation-error{% endif %}">
+                                <div class="form-field{% if form.errors.email is defined %} ui-formvalidation-error{% endif %}">
                                     <label for="form-project-add-user-email">{% trans %} common_email {% endtrans %}</label>
-                                    <input id="form-project-add-user-email" type="text" name="user[email]" value="{{ form.values.user.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
-                                    {% if form.errors.user.email is defined %}
+                                    <input id="form-project-add-user-email" type="text" name="email" value="{{ form.values.email|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                    {% if form.errors.email is defined %}
                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                     {% endif %}
                                 </div><!-- /.form-field -->
 
-                                <div class="form-field{% if form.errors.user.phone is defined %} ui-formvalidation-error{% endif %}">
+                                <div class="form-field{% if form.errors.phone is defined %} ui-formvalidation-error{% endif %}">
                                     <label for="form-project-add-user-phone">{% trans %} common_phone {% endtrans %}</label>
-                                    <input id="form-project-add-user-phone" type="text" name="user[phone]" value="{{ form.values.user.phone }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="phone">
-                                    {% if form.errors.user.phone is defined %}
+                                    <input id="form-project-add-user-phone" type="text" name="phone" value="{{ form.values.phone|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="phone">
+                                    {% if form.errors.phone is defined %}
                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                     {% endif %}
                                 </div><!-- /.form-field -->
@@ -73,40 +59,35 @@
                             <div class="col-sm-4 col-lg-6 col-md-6">
                                 <div class="form-field">
                                     <label for="form-project-add-user-entity">{% trans %} partner-users-add_form-label-user-entity {% endtrans %}</label>
-                                    <select id="form-project-add-user-entity" name="user[entity]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="entity">
+                                    <select id="form-project-add-user-entity" name="entity" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="entity">
                                         <option value="">{% trans %} partner-users-add_form-select-user-entity {% endtrans %}</option>
-                                        <optgroup label="Ucar Paris">
-                                            <option value="ucar:paris-centre">Paris Centre</option>
-                                            <option value='ucar:paris-montrouge'>Paris Montrouge</option>
-                                        </optgroup>
-                                        <optgroup label="Ucar Nancy">
-                                            <option value="ucar:nancy-centre">Nancy Centre</option>
-                                            <option value='ucar:nancy-montrouge'>Nancy Montrouge</option>
-                                        </optgroup>
+                                        {% for entity in entities %}
+                                            <option value="{{ entity.idCompany }}"{% if entity.idCompany == form.values.entity %} selected{% endif %}>{{ entity.name|e('html_attr') }}</option>
+                                        {% endfor %}
                                     </select>
-                                    {% if form.errors.user.email is defined %}
+                                    {% if form.errors.email is defined %}
                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                     {% endif %}
                                 </div><!-- /.form-field -->
-                                <div class="form-field{% if form.errors.user.role is defined %} ui-formvalidation-error{% endif %}">
+                                <div class="form-field{% if form.errors.role is defined %} ui-formvalidation-error{% endif %}">
                                     <div class="field-label">
                                         <label>{% trans %} partner-users-add_form-label-user-role {% endtrans %}</label>
                                     </div><!-- /.field-label -->
                                     <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                         <li>
                                             <label>
-                                                <input type="radio" name="user[role]" value="collaborateur"{% if 'collaborateur' == form.values.user.role %} checked{% endif %}>
+                                                <input type="radio" name="role" value="agent"{% if 'agent' == form.values.role %} checked{% endif %}>
                                                 {% trans %} partner-users-add_form-label-user-role-collaborator {% endtrans %}
                                             </label>
                                         </li>
                                         <li>
                                             <label>
-                                                <input type="radio" name="user[role]" value="administrateur"{% if 'administrateur' == form.values.user.role %} checked{% endif %}>
+                                                <input type="radio" name="role" value="admin"{% if 'admin' == form.values.role %} checked{% endif %}>
                                                 {% trans %} partner-users-add_form-label-user-role-administrator {% endtrans %}
                                             </label>
                                         </li>
                                     </ul>
-                                    {% if form.errors.user.role is defined %}
+                                    {% if form.errors.role is defined %}
                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-radio {% endtrans %}</li></ul>
                                     {% endif %}
                                 </div><!-- /.form-field -->
@@ -117,7 +98,6 @@
                             <button type="submit" class="btn-primary btn-shape-medium">{% trans %} partner-users-add_form-button-submit {% endtrans %}</button>
                         </div>
                     </form><!-- /#form-project-add-user -->
-
                 </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->

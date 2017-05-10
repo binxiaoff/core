@@ -24,8 +24,8 @@
                                         <span class="label">{% trans %} partner-account-nav_projects-list {% endtrans %}</span>
                                     </a>
                                 </li>
-                                {% if is_granted('ROLE_PARTNER_ADMIN') %}
-                                    <li role="presentation" class="dashboard-nav-users{% if app.request.get('_route') == 'partner_users' %} active{% endif %}">
+                                {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                    <li role="presentation" class="dashboard-nav-users{% if app.request.get('_route') in ['partner_users', 'partner_user_creation'] %} active{% endif %}">
                                         <a href="{{ path('partner_users') }}">
                                             <span class="icon fa-profile-u"></span>
                                             <span class="label">{% trans %} partner-account-nav_users {% endtrans %}</span>

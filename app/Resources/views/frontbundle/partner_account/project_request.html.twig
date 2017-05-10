@@ -21,7 +21,7 @@
                                     <label for="simulator-input-amount">{% trans %} partner-project-request_simulator-amount-field-title {% endtrans %}
                                         <span class="c-t3">{% trans %} partner-project-request_simulator-amount-field-addition {% endtrans %}</span>
                                     </label>
-                                    <input id="simulator-input-amount" type="text" step="any" name="simulator[amount]" value="{% if form.values.amount is defined %}{{ form.values.amount }}{% endif %}"
+                                    <input id="simulator-input-amount" type="text" step="any" name="simulator[amount]" value="{% if form.values.amount is defined %}{{ form.values.amount|e('html_attr') }}{% endif %}"
                                            placeholder="{% trans %} partner-project-request_simulator-amount-field-placeholder {% endtrans %}"
                                            class="input-field"
                                            data-formvalidation-minvalue="{{ projectAmountMin }}" data-formvalidation-maxvalue="{{ projectAmountMax }}" data-formvalidation-input
@@ -56,12 +56,12 @@
                             <div class="row columns-with-space">
                                 <div class="form-field bottom col-lg-6 col-md-6">
                                     <label for="simulator-input-siren">{% trans %} partner-project-request_simulator-siren-field-label {% endtrans %}</label>
-                                    <input type="text" id="simulator-input-siren" name="simulator[siren]" value="{% if form.values.siren is defined %}{{ form.values.siren }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siren">
+                                    <input type="text" id="simulator-input-siren" name="simulator[siren]" value="{% if form.values.siren is defined %}{{ form.values.siren|e('html_attr') }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siren">
                                 </div><!-- /.form-field -->
                                 <div class="form-field bottom col-lg-6 col-md-6">
                                     <label for="simulator-input-email">{% trans %} partner-project-request_simulator-email-field-label {% endtrans %}</label>
                                     <div class="input-group">
-                                        <input type="email" id="simulator-input-email" name="simulator[email]" value="{% if form.values.email is defined %}{{ form.values.email }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                        <input type="email" id="simulator-input-email" name="simulator[email]" value="{% if form.values.email is defined %}{{ form.values.email|e('html_attr') }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
                                     </div><!-- /.input-group -->
                                 </div><!-- /.form-field -->
                             </div>

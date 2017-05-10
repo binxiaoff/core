@@ -15,7 +15,7 @@
                     </header>
 
                     <div class="partner-projects-add-user text-align-right">
-                        <a href="" class="btn-default btn-shape-md"><span class="icon fa-plus"></span> {% trans %} partner-users-list_add-user-button {% endtrans %}</a>
+                        <a href="{{ path('partner_user_creation') }}" class="btn-default btn-shape-md"><span class="icon fa-plus"></span> {% trans %} partner-users-list_add-user-button {% endtrans %}</a>
                     </div>
 
                     <table class="table table-users" data-table data-table-paging="false" data-table-info="false" data-table-lengthchange="false" data-table-languagesearch="" data-table-languagesearchplaceholder="{{ 'partner-users-list_table-filter-search-placeholder'|trans|e('html_attr') }}" data-table-languagezerorecords="{{ 'partner-users-list_table-filter-zerorecords-placeholder'|trans|e('html_attr') }}" data-table-order="1" data-table-custom>

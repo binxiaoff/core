@@ -11,6 +11,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TemporaryLinksLogin;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
@@ -34,7 +35,7 @@ class UsersController extends Controller
         foreach ($users as $user) {
             $template['users'][] = [
                 'client' => $user->getIdClient(),
-                'role'   => $user->getRole() === 'ROLE_PARTNER_ADMIN' ? 'admin' : 'agent',
+                'role'   => $user->getRole() === UserPartner::ROLE_ADMIN ? 'admin' : 'agent',
                 'entity' => $user->getIdCompany()
             ];
         }
@@ -92,6 +93,113 @@ class UsersController extends Controller
                     break;
             }
         }
+
+        return $this->redirectToRoute('partner_users');
+    }
+
+    /**
+     * @Route("partenaire/utilisateurs/creation", name="partner_user_creation")
+     * @Method("GET")
+     * @Security("has_role('ROLE_PARTNER_ADMIN')")
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function userCreationAction(Request $request)
+    {
+        $session = $request->getSession()->get('partnerUserCreation');
+        $errors  = isset($session['errors']) ? $session['errors'] : [];
+        $values  = isset($session['values']) ? $session['values'] : [];
+
+        $request->getSession()->remove('partnerUserCreation');
+
+        $template = [
+            'entities'  => $this->getUserCompanies(),
+            'form'      => [
+                'errors' => $errors,
+                'values' => [
+                    'firstname' => isset($values['firstname']) ? $values['firstname'] : '',
+                    'lastname'  => isset($values['lastname']) ? $values['lastname'] : '',
+                    'email'     => isset($values['email']) ? $values['email'] : '',
+                    'phone'     => isset($values['phone']) ? $values['phone'] : '',
+                    'entity'    => isset($values['entity']) ? $values['entity'] : '',
+                    'role'      => isset($values['role']) ? $values['role'] : ''
+                ]
+            ]
+        ];
+
+        return $this->render('/partner_account/user_creation.html.twig', $template);
+    }
+
+    /**
+     * @Route("partenaire/utilisateurs/creation", name="partner_user_creation_form")
+     * @Method("POST")
+     * @Security("has_role('ROLE_PARTNER_ADMIN')")
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function userCreationFormAction(Request $request)
+    {
+        $errors            = [];
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $clientRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+
+        if (empty($request->request->get('lastname'))) {
+            $errors['lastname'] = true;
+        }
+        if (empty($request->request->get('firstname'))) {
+            $errors['firstname'] = true;
+        }
+        if (
+            empty($request->request->get('email'))
+            || false === filter_var($request->request->get('email'), FILTER_VALIDATE_EMAIL)
+            || $clientRepository->existEmail($request->request->get('email'))
+        ) {
+            $errors['email'] = true;
+        }
+        if (empty($request->request->get('phone'))) {
+            $errors['phone'] = true;
+        }
+        if (empty($request->request->getInt('entity')) || null === ($company = $companyRepository->find($request->request->getInt('entity')))) {
+            $errors['entity'] = true;
+        }
+        if (empty($request->request->get('role')) || false === in_array($request->request->get('role'), ['admin', 'agent'])) {
+            $errors['role'] = true;
+        }
+
+        if (false === empty($errors)) {
+            $request->getSession()->set('partnerUserCreation', [
+                'errors' => $errors,
+                'values' => $request->request->all()
+            ]);
+
+            return $this->redirectToRoute('partner_user_creation');
+        }
+
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        $client = new Clients();
+        $client->setNom($request->request->get('lastname'))
+            ->setPrenom($request->request->get('firstname'))
+            ->setEmail($request->request->get('email'))
+            ->setTelephone($request->request->get('phone'))
+            ->setIdLangue('fr')
+            ->setSlug($ficelle->generateSlug($request->request->get('firstname') . '-' . $request->request->get('lastname')))
+            ->setStatus(Clients::STATUS_ONLINE);
+
+        $companyClient = new CompanyClient();
+        $companyClient->setIdCompany($company);
+        $companyClient->setIdClient($client);
+        $companyClient->setRole('admin' === $request->request->get('role') ? UserPartner::ROLE_ADMIN : UserPartner::ROLE_USER);
+
+        $entityManager->persist($client);
+        $entityManager->persist($companyClient);
+        $entityManager->flush();
 
         return $this->redirectToRoute('partner_users');
     }
@@ -194,7 +302,7 @@ class UsersController extends Controller
         $user      = $this->getUser();
         $companies = [$user->getCompany()];
 
-        if (in_array('ROLE_PARTNER_ADMIN', $user->getRoles())) {
+        if (in_array(UserPartner::ROLE_ADMIN, $user->getRoles())) {
             $companies = $this->getCompanyTree($user->getCompany(), $companies);
         }
 

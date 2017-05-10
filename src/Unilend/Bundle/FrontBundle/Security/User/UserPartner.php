@@ -7,6 +7,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 
 class UserPartner extends BaseUser
 {
+    const ROLE_DEFAULT = 'ROLE_PARTNER';
+    const ROLE_ADMIN   = 'ROLE_PARTNER_ADMIN';
+    const ROLE_USER    = 'ROLE_PARTNER_USER';
+
     /** @var string */
     private $firstName;
     /** @var string */

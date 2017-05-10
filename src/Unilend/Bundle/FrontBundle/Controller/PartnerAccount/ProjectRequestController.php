@@ -614,7 +614,7 @@ class ProjectRequestController extends Controller
         $user      = $this->getUser();
         $companies = [$user->getCompany()];
 
-        if (in_array('ROLE_PARTNER_ADMIN', $user->getRoles())) {
+        if (in_array(UserPartner::ROLE_ADMIN, $user->getRoles())) {
             $companies = $this->getCompanyTree($user->getCompany(), $companies);
         }
 

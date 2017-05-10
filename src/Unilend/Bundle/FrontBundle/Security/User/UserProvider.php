@@ -172,7 +172,7 @@ class UserProvider implements UserProviderInterface
             $this->clientManager->isPartner($clientEntity)
             && ($partnerRole = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findOneBy(['idClient' => $clientEntity]))
         ) {
-            $roles[] = 'ROLE_PARTNER';
+            $roles[] = UserPartner::ROLE_DEFAULT;
             $roles[] = $partnerRole->getRole();
 
             $rootCompany = $partnerRole->getIdCompany();
