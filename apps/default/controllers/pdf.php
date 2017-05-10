@@ -1086,22 +1086,22 @@ class pdfController extends bootstrap
                 $allLoans                        = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findLoansByClients($this->projects->id_project, $clients);
                 $totalLoans                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLoansSumByClients($this->projects->id_project, $clients);
 
-                $recoveryAmountsTaxExcl = [];
+                $debtCollectionAmountsTaxExcl = [];
                 foreach ($allLoans as $loan) {
-                    $prorataRecovery                          = round(bcdiv(bcmul(bcdiv($loan->getAmount(), 100, 3), $totalNetDebtCollectionRepayment), $totalLoans, 3), 2);
-                    $recoveryAmountsTaxExcl[$loan->getIdLoan()] = $prorataRecovery;
+                    $prorataDebtCollection                          = round(bcdiv(bcmul(bcdiv($loan->getAmount(), 100, 3), $totalNetDebtCollectionRepayment), $totalLoans, 3), 2);
+                    $debtCollectionAmountsTaxExcl[$loan->getIdLoan()] = $prorataDebtCollection;
                 }
 
-                $roundDifference = round(bcsub(array_sum($recoveryAmountsTaxExcl), $totalNetDebtCollectionRepayment, 3), 2);
+                $roundDifference = round(bcsub(array_sum($debtCollectionAmountsTaxExcl), $totalNetDebtCollectionRepayment, 3), 2);
                 if (abs($roundDifference) > 0) {
-                    $maxAmountLoanId                          = array_keys($recoveryAmountsTaxExcl, max($recoveryAmountsTaxExcl))[0];
-                    $recoveryAmountsTaxExcl[$maxAmountLoanId] = bcsub($recoveryAmountsTaxExcl[$maxAmountLoanId], $roundDifference, 2);
+                    $maxAmountLoanId                          = array_keys($debtCollectionAmountsTaxExcl, max($debtCollectionAmountsTaxExcl))[0];
+                    $debtCollectionAmountsTaxExcl[$maxAmountLoanId] = bcsub($debtCollectionAmountsTaxExcl[$maxAmountLoanId], $roundDifference, 2);
                 }
 
-                $recoveryTaxExcl = $recoveryAmountsTaxExcl[$this->oLoans->id_loan];
-                // 0.844 is the rate for getting the total amount including the MCS commission and tax. Todo: replace it when doing the Recovery project
-                $recoveryTaxIncl = bcdiv($recoveryTaxExcl, 0.844, 5);
-                $this->echu      = bcsub(bcadd($this->echu, $this->echoir, 2), $recoveryTaxIncl, 2);
+                $debtCollectionTaxExcl = $debtCollectionAmountsTaxExcl[$this->oLoans->id_loan];
+                // 0.844 is the rate for getting the total amount including the MCS commission and tax. Todo: replace it when doing the Debt Collection project
+                $debtCollectionTaxIncl = bcdiv($debtCollectionTaxExcl, 0.844, 5);
+                $this->echu      = bcsub(bcadd($this->echu, $this->echoir, 2), $debtCollectionTaxIncl, 2);
                 $this->echoir    = 0;
             }
 
