@@ -41,7 +41,7 @@
                                             {% trans %} partner-users-list_table-item-user-label {% endtrans %}
                                         {% endif %}
                                     </td>
-                                    <td class="table-users-item-perimeter">{{ user.entity.name }}</td>
+                                    <td class="table-users-item-entity">{{ user.entity.name }}</td>
                                     <td class="table-users-item-status">
                                         {% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}
                                             {% trans %} partner-users-list_table-item-status-active-label {% endtrans %}

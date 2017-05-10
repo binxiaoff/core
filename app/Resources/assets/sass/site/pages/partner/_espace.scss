@@ -220,3 +220,10 @@
   }
 }
 
+.form-project-add-user-fieldset {
+    margin-bottom: 30px;
+    @include devices('sm', 'md', 'lg') {
+        margin-bottom: 60px;
+    }
+}
+
