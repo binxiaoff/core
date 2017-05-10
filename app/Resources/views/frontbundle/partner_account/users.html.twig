@@ -18,14 +18,14 @@
                         <a href="" class="btn-default btn-shape-md"><span class="icon fa-plus"></span> {% trans %} partner-users-list_add-user-button {% endtrans %}</a>
                     </div>
 
-                    <table class="table table-users" data-table data-table-paging="false" data-table-info="false" data-table-lengthchange="false" data-table-languagesearch="" data-table-languagesearchplaceholder="{{ 'partner-users-list_table-filter-search-placeholder'|trans|e('html_attr') }}" data-table-languagezerorecords="{{ 'partner-users-list_table-filter-zerorecords-placeholder'|trans|e('html_attr') }}" data-table-order="2" data-table-custom>
+                    <table class="table table-users" data-table data-table-paging="false" data-table-info="false" data-table-lengthchange="false" data-table-languagesearch="" data-table-languagesearchplaceholder="{{ 'partner-users-list_table-filter-search-placeholder'|trans|e('html_attr') }}" data-table-languagezerorecords="{{ 'partner-users-list_table-filter-zerorecords-placeholder'|trans|e('html_attr') }}" data-table-order="1" data-table-custom>
                         <thead class="table-sortable-columns">
                         <tr>
                             <th class="table-users-item-name table-sortable-column">{% trans %} partner-users-list_table-column-name {% endtrans %}</th>
-                            <th class="table-users-item-role table-sortable-column">{% trans %} partner-users-list_table-column-role {% endtrans %}</th>
                             <th class="table-users-item-entity table-sortable-column">{% trans %} partner-users-list_table-column-entity {% endtrans %}</th>
+                            <th class="table-users-item-role table-sortable-column">{% trans %} partner-users-list_table-column-role {% endtrans %}</th>
                             <th class="table-users-item-status table-sortable-column">{% trans %} partner-users-list_table-column-status {% endtrans %}</th>
-                            <th class="table-users-item-action">&nbsp;</th>
+                            <th class="table-users-item-action">{% trans %} partner-users-list_table-column-action {% endtrans %}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -34,6 +34,7 @@
                                     <td class="table-users-item-name">
                                         <span class="first-name">{{ user.client.prenom }}</span> <span class="last-name">{{ user.client.nom }}</span>
                                     </td>
+                                    <td class="table-users-item-entity">{{ user.entity.name }}</td>
                                     <td class="table-users-item-role">
                                         {% if user.role == 'admin' %}
                                             {% trans %} partner-users-list_table-item-admin-label {% endtrans %}
@@ -41,7 +42,6 @@
                                             {% trans %} partner-users-list_table-item-user-label {% endtrans %}
                                         {% endif %}
                                     </td>
-                                    <td class="table-users-item-entity">{{ user.entity.name }}</td>
                                     <td class="table-users-item-status">
                                         {% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}
                                             {% trans %} partner-users-list_table-item-status-active-label {% endtrans %}
