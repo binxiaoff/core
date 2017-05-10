@@ -135,6 +135,7 @@
                                         <tbody data-sortable-content>
                                         {% for project in borrowers %}
                                             <tr id="project-{{ project.id }}" class="table-projects-item"
+                                                data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
@@ -142,8 +143,7 @@
                                                 data-sortable-motif="{{ project.motive|e('html_attr') }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}"
-                                                data-sortable-status="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}"
-                                                data-details="{{ project.memos|json_encode|escape('html_attr') }}" >
+                                                data-sortable-status="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}">
                                                 <td class="table-projects-item-borrower" title="{{ project.name|e('html_attr') }}" data-toggle="tooltip" colspan="2">{{ project.name }}</td>
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     <td class="table-projects-item-submitter" title="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.entity|length %}- {{ project.submitter.entity }}{% endif %}</td>
@@ -219,7 +219,8 @@
                                         </thead>
                                         <tbody data-sortable-content>
                                         {% for project in abandonedRejected %}
-                                            <tr id="project-{{ project.id }}" class="table-projects-item" data-details
+                                            <tr id="project-{{ project.id }}" class="table-projects-item"
+                                                data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
