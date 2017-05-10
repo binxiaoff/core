@@ -5,11 +5,6 @@
     classNames: 'partner-account'
 } %}
 
-{% set company = 'Television Francaise 1' %}
-{% set siren = '326300159' %}
-{% set amount = 100000 %}
-{% set duration = 12 %}
-
 {% set descriptionInstructions = 'Isdem diebus Apollinaris Domitiani gener, paulo ante agens palatii Caesaris curam, ad Mesopotamiam missus a socero per militares .' %}
 {% set documentsInstructions = 'Numeros immodice scrutabatur, an quaedam altiora meditantis iam. <br> Galli secreta susceperint scripta.' %}
 
@@ -35,19 +30,19 @@
                                     <div class="row columns-with-space">
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-company-field-label {% endtrans %}</dt>
-                                            <dd><strong class="ui-simulator-output-company">{{ company }}</strong></dd>
+                                            <dd><strong class="ui-simulator-output-company">{{ project.company }}</strong></dd>
                                         </dl>
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-siren-field-label {% endtrans %}</dt>
-                                            <dd><strong class="ui-simulator-output-siren">{{ siren }}</strong></dd>
+                                            <dd><strong class="ui-simulator-output-siren">{{ project.siren }}</strong></dd>
                                         </dl>
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-amount-field-label {% endtrans %}</dt>
-                                            <dd><strong class="ui-simulator-output-cost">{{ amount|localizednumber }}&nbsp;€</strong></dd>
+                                            <dd><strong class="ui-simulator-output-cost">{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
                                         </dl>
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-duration-field-label {% endtrans %}</dt>
-                                            <dd><strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%' : duration} %} partner-project-details_simulator-eligibility-duration-value {% endtrans %}</strong></dd>
+                                            <dd><strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%': project.duration} %} partner-project-details_simulator-eligibility-duration-value {% endtrans %}</strong></dd>
                                         </dl>
                                     </div>
                                 </fieldset><!-- /.form-project-details-fieldset -->

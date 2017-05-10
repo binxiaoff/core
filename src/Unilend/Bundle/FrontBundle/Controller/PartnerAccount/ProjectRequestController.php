@@ -351,7 +351,10 @@ class ProjectRequestController extends Controller
         $client         = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
         $template       = [
             'project'        => [
+                'company'                  => $project->getIdCompany()->getName(),
+                'siren'                    => $project->getIdCompany()->getSiren(),
                 'amount'                   => $project->getAmount(),
+                'duration'                 => $project->getPeriod(),
                 'hash'                     => $project->getHash(),
                 'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
                 'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment())
