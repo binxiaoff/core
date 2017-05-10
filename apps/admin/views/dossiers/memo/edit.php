@@ -7,6 +7,12 @@
                 <textarea name="content" id="content_memo" autofocus style="width:500px; height:150px;" class="select"><?= $this->content ?></textarea>
             </td>
         </tr>
+        <tr>
+            <td>
+                <label><input type="radio" name="public_memo" value="0"<?php if (false === $this->public) : ?> checked<?php endif; ?>> Privé</label>
+                <label><input type="radio" name="public_memo" value="1"<?php if ($this->public) : ?> checked<?php endif; ?>> Public</label>
+            </td>
+        </tr>
     </table>
     <?php if ($this->type === 'add') : ?>
         <button style="float:right" class="btn_link" onclick="editMemo(<?= $this->params['0'] ?>)">Ajouter</button>

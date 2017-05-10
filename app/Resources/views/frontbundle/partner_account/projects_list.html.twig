@@ -185,7 +185,7 @@
                                                     <span class="ui-project-status" title="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}" data-toggle="tooltip">{{ ('partner-project-list_status-' ~ project.status)|trans }}</span>
                                                 </td>
                                                 <td class="table-projects-item-memos">
-                                                    {% if project.memos > 0 %}
+                                                    {% if project.memos|length > 0 %}
                                                         <a role="button"><span class="icon fa-angle-r-u16"></span></a>
                                                     {% else %}
                                                         &nbsp;
@@ -269,7 +269,7 @@
                                                     <span class="ui-project-status" title="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}" data-toggle="tooltip">{{ ('partner-project-list_status-' ~ project.status)|trans }}</span>
                                                 </td>
                                                 <td class="table-projects-item-memos">
-                                                    {% if project.memos > 0 %}
+                                                    {% if project.memos|length > 0 %}
                                                         <a role="button"><span class="icon fa-angle-r-u16"></span></a>
                                                     {% else %}
                                                         &nbsp;

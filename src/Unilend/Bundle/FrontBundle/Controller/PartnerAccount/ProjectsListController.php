@@ -100,7 +100,7 @@ class ProjectsListController extends Controller
                     'entity'    => $project->getIdCompanySubmitter()->getName()
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
-                'memos'      => $loadNotes ? $this->formatNotes($project->getNotes()) : [],
+                'memos'      => $loadNotes ? $this->formatNotes($project->getPublicNotes()) : [],
                 'hasChanged' => $loadNotes ? $this->hasProjectChanged($project) : false
             ];
         }
@@ -137,13 +137,13 @@ class ProjectsListController extends Controller
     {
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
         $projectStatusRepositoryHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
-        $lastLoginDate = $this->getUser()->getLastLoginDate();
-        $lastLoginDate = $lastLoginDate ? new \DateTime($lastLoginDate) : null;
-        $notes = $project->getNotes();
+        $lastLoginDate                  = $this->getUser()->getLastLoginDate();
+        $lastLoginDate                  = $lastLoginDate ? new \DateTime($lastLoginDate) : null;
+        $notes                          = $project->getPublicNotes();
 
         return (
             null === $lastLoginDate
-            || count($notes) && $lastLoginDate < $project->getNotes()[0]->getAdded()
+            || count($notes) && $lastLoginDate < $notes[0]->getAdded()
             || $lastLoginDate < $projectStatusRepositoryHistory->findOneBy(['idProject' => $project->getIdProject()], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC'])->getAdded()
         );
     }

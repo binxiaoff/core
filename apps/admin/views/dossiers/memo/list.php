@@ -2,6 +2,7 @@
     <table class="tablesorter">
         <thead>
         <tr>
+            <th width="16">&nbsp;</th>
             <th width="120" align="center">Date</th>
             <th width="150" align="center">Auteur</th>
             <th align="center">Contenu</th>
@@ -13,6 +14,7 @@
         <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments $comment */ ?>
         <?php foreach ($this->projectComments as $comment) : ?>
             <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
+                <td><?php if (false == $comment->getPublic()) : ?><img src="<?= $this->surl ?>/images/admin/lock.png" alt="Privé" style="margin: 0"><?php endif; ?></td>
                 <td>
                     <?= $comment->getAdded()->format('d/m/Y H:i') ?>
                     <?php if ($comment->getUpdated()) : ?>
