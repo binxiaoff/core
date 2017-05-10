@@ -10,25 +10,33 @@
         text-transform: uppercase;
     }
 }
-.table-prospects-item-action, .table-users-item-action {
+.table-prospects-item-action, .table-users-item-action, .table-projects-item-memos {
     padding-top: 5px;
     padding-bottom: 5px;
     text-align: right;
     .btn-default {
-        padding: 5px;
+        padding: 4px;
         margin-right: 2px;
-        min-height: 28px;
-        min-width: 28px;
+        min-height: 0;
+        min-width: 0;
+        height: 28px;
+        width: 28px;
         line-height: 1;
         font-size: 14px;
         color: $c-t3;
         &:last-child {
             margin-right: 0;
         }
+        &:hover {
+            color: $c-p1;
+        }
+    }
+    .icon {
+        line-height: 16px;
     }
 }
 .table-prospects-item-borrower, .table-projects-item-borrower {
-    width: 20%;
+    width: 25%;
 }
 .table-prospects-item-submitter, .table-prospects-item-amount,
 .table-projects-item-submitter, .table-projects-item-amount {
@@ -38,11 +46,16 @@
     width: 14%;
 }
 .table-prospects-item-duration, .table-projects-item-duration {
-    width: 9%;
+    width: 11%;
 }
-.table-prospects-item-action, .table-projects-item-memos {
-    text-align: center;
-    width: 12%;
+.ui-user-type-partner-admin {
+    .table-prospects-item-submitter, .table-prospects-item-amount,
+    .table-projects-item-submitter, .table-projects-item-amount {
+        width: 16%;
+    }
+    .table-prospects-item-borrower, .table-projects-item-borrower {
+        width: 20%;
+    }
 }
 .table-projects-item-memos {
     .icon {
