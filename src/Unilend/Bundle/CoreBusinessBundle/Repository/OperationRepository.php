@@ -7,9 +7,12 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
 
@@ -317,5 +320,63 @@ class OperationRepository extends EntityRepository
         $statement->closeCursor();
 
         return $result;
+    }
+
+    /**
+     * @param Projects  $project
+     * @param Clients[] $clients
+     *
+     * @return mixed
+     */
+    public function getTotalGrossDebtCollectionRepayment($project, array $clients)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+           ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+           ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor')
+           ->where('ost.label = :operationSubType')
+           ->andWhere('w.idClient in (:clients)')
+           ->andWhere('o.idProject = :project')
+           ->setParameter('operationSubType', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION)
+           ->setParameter('clients', $clients)
+           ->setParameter('project', $project);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|int  $project
+     * @param Clients[]|array $clients
+     *
+     * @return mixed
+     */
+    public function getTotalDebtCollectionCommission($project, array $clients)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+           ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletDebtor')
+           ->where('ot.label = :operationType')
+           ->andWhere('w.idClient in (:clients)')
+           ->andWhere('o.idProject = :project')
+           ->setParameter('clients', $clients)
+           ->setParameter('operationType', OperationType::COLLECTION_COMMISSION_LENDER)
+           ->setParameter('project', $project);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|int  $project
+     * @param Clients[]|array $clients
+     *
+     * @return mixed
+     */
+    public function getTotalNetDebtCollectionRepayment($project, array $clients)
+    {
+        $grossRepayment = $this->getTotalGrossDebtCollectionRepayment($project, $clients);
+        $commission     = $this->getTotalDebtCollectionCommission($project, $clients);
+
+        return bcsub($grossRepayment, $commission, 2);
     }
 }
