@@ -39,8 +39,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
         $transactions = $entityManager->getRepository('transactions');
         /** @var \projects_status_history $projects_status_history */
         $projects_status_history = $entityManager->getRepository('projects_status_history');
-        /** @var \wallets_lines $wallets_lines */
-        $wallets_lines = $entityManager->getRepository('wallets_lines');
         /** @var \bank_unilend $bank_unilend */
         $bank_unilend = $entityManager->getRepository('bank_unilend');
         /** @var \platform_account_unilend $oAccountUnilend */
@@ -123,15 +121,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
                             $iTaxOnCapital = $taxManager->taxTransaction($transactions);
 
-                            $wallets_lines->id_lender                = $e['id_lender'];
-                            $wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
-                            $wallets_lines->id_transaction           = $transactions->id_transaction;
-                            $wallets_lines->status                   = 1;
-                            $wallets_lines->type                     = \wallets_lines::VIRTUAL;
-                            $wallets_lines->amount                   = $transactions->montant;
-                            $wallets_lines->create();
-                            $wallets_lines->unsetData();
-
                             $transactions->unsetData();
                             $transactions->id_client        = $repaymentSchedule->getIdLender()->getIdClient()->getIdClient();
                             $transactions->montant          = $e['interets'];
@@ -144,14 +133,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
                             $iTaxOnInterests = $taxManager->taxTransaction($transactions);
                             $iTotalTaxAmount = bcadd($iTotalTaxAmount, bcadd($iTaxOnCapital, $iTaxOnInterests));
-
-                            $wallets_lines->id_lender                = $e['id_lender'];
-                            $wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
-                            $wallets_lines->id_transaction           = $transactions->id_transaction;
-                            $wallets_lines->status                   = 1;
-                            $wallets_lines->type                     = \wallets_lines::VIRTUAL;
-                            $wallets_lines->amount                   = $transactions->montant;
-                            $wallets_lines->create();
                         } else {
                             $logger->error(
                                 'The transaction has already been created for the repayment (id_echeancier: ' . $e['id_echeancier'] . '). The repayment may have been repaid manually.',

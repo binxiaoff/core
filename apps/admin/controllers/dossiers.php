@@ -1693,7 +1693,6 @@ class dossiersController extends bootstrap
         $this->echeanciers                   = $this->loadData('echeanciers');
         $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
         $this->transactions                  = $this->loadData('transactions');
-        $this->wallets_lines                 = $this->loadData('wallets_lines');
         $this->notifications                 = $this->loadData('notifications');
         $this->bank_unilend                  = $this->loadData('bank_unilend');
         $this->projects_remb                 = $this->loadData('projects_remb');
@@ -1864,15 +1863,6 @@ class dossiersController extends bootstrap
 
                             $iTaxOnCapital = $taxManager->taxTransaction($this->transactions);
 
-                            $this->wallets_lines->id_lender                = $e['id_lender'];
-                            $this->wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
-                            $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                            $this->wallets_lines->status                   = 1;
-                            $this->wallets_lines->type                     = \wallets_lines::VIRTUAL;
-                            $this->wallets_lines->amount                   = $this->transactions->montant;
-                            $this->wallets_lines->create();
-                            $this->wallets_lines->unsetData();
-
                             $this->transactions->unsetData();
                             $this->transactions->id_client        = $lenderWallet->getIdClient()->getIdClient();
                             $this->transactions->montant          = $e['interets'];
@@ -1886,14 +1876,6 @@ class dossiersController extends bootstrap
 
                             $iTaxOnInterests = $taxManager->taxTransaction($this->transactions);
                             $iTotalTaxAmount = bcadd($iTotalTaxAmount, bcadd($iTaxOnCapital, $iTaxOnInterests));
-
-                            $this->wallets_lines->id_lender                = $e['id_lender'];
-                            $this->wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
-                            $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                            $this->wallets_lines->status                   = 1;
-                            $this->wallets_lines->type                     = \wallets_lines::VIRTUAL;
-                            $this->wallets_lines->amount                   = $this->transactions->montant;
-                            $this->wallets_lines->create();
 
                             $oLogger->debug('Manual repayment : repayment amount= ' . $e['montant'] . ' Interests tax= ' . $iTaxOnInterests . ' Capital tax= ' . $iTaxOnCapital, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
 
@@ -2219,7 +2201,6 @@ class dossiersController extends bootstrap
                 $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                 $this->transactions           = $this->loadData('transactions');
                 $this->clients                = $this->loadData('clients');
-                $this->wallets_lines          = $this->loadData('wallets_lines');
                 $this->mail_template          = $this->loadData('mail_templates');
                 $this->companies              = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */

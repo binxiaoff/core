@@ -121,7 +121,6 @@ class preteursController extends bootstrap
         $logger = $this->get('logger');
 
         $this->transactions     = $this->loadData('transactions');
-        $this->wallets_lines    = $this->loadData('wallets_lines');
         $this->clients          = $this->loadData('clients');
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->echeanciers      = $this->loadData('echeanciers');
