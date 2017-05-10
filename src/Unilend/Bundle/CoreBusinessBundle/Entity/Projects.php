@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -1537,5 +1538,18 @@ class Projects
     public function getNotes()
     {
         return $this->notes;
+    }
+
+    /**
+     * Get project public notes
+     *
+     * @return ProjectsComments[]
+     */
+    public function getPublicNotes()
+    {
+        $criteria = Criteria::create()
+            ->where(Criteria::expr()->eq('public', true));
+
+        return $this->notes->matching($criteria);
     }
 }

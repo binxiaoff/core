@@ -1313,11 +1313,14 @@ class dossiersController extends bootstrap
             && ($projectCommentEntity = $projectCommentRepository->find($this->params[1]))
             && $projectCommentEntity->getIdProject()->getIdProject() == $this->params[0]
         ) {
+            /** @var ProjectsComments $projectCommentEntity */
             $this->type    = 'edit';
             $this->content = $projectCommentEntity->getContent();
+            $this->public  = $projectCommentEntity->getPublic();
         } else {
             $this->type    = 'add';
             $this->content = '';
+            $this->public  = false;
         }
 
         $this->setView('memo/edit');
@@ -1347,18 +1350,21 @@ class dossiersController extends bootstrap
                 && $_SESSION['user']['id_user'] == $projectCommentEntity->getIdUser()->getIdUser()
             ) {
                 $projectCommentEntity->setContent($_POST['content']);
+                $projectCommentEntity->setPublic($_POST['public']);
 
-                $entityManager->flush($projectCommentEntity);
+                $entityManager->persist($projectCommentEntity);
+                $entityManager->flush();
 
                 $slackNotification = 'édité';
             } else {
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity->setIdProject($projectEntity);
                 $projectCommentEntity->setContent($_POST['content']);
+                $projectCommentEntity->setPublic($_POST['public']);
                 $projectCommentEntity->setIdUser($this->userEntity);
 
                 $entityManager->persist($projectCommentEntity);
-                $entityManager->flush($projectCommentEntity);
+                $entityManager->flush();
 
                 $slackNotification = 'ajouté';
             }
