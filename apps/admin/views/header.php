@@ -103,12 +103,14 @@
                     <li><a href="<?= $this->lurl ?>/dossiers/no_remb" title="Erreurs remboursements">Erreurs remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/status" title="Suivi statuts projets">Suivi statuts projets</a></li>
                     <li><a href="<?= $this->lurl ?>/product" title="Produits">Produits</a></li>
+                    <li><a href="<?= $this->lurl ?>/company" title="Produits">Sociétés</a></li>
+                    <li><a href="<?= $this->lurl ?>/partner" title="Produits">Partenaires</a></li>
                 </ul>
             </li>
         <?php endif; ?>
         <?php if (in_array('transferts', $this->lZonesHeader)) : ?>
             <li class="last">
-                <span<?= ($this->menu_admin == 'transferts' ? ' class="active"' : '') ?>>Dépôt de fonds</span>
+                <span<?= ($this->menu_admin == 'transferts' ? ' class="active"' : '') ?>>Contrôle interne</span>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/transferts/preteurs" title="Prêteurs">Prêteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/emprunteurs" title="Emprunteurs">Emprunteurs</a></li>
@@ -117,6 +119,7 @@
                     <li><a href="<?= $this->lurl ?>/transferts/deblocage" title="Déblocage">Déblocage des fonds</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/succession" title="Succession">Succession (Transfert de solde et prêts)</a></li>
                     <li><a href="<?= $this->lurl ?>/client_atypical_operation" title="Lutte Anti-Balanchiment">Opérations atypiques</a></li>
+                    <li><a href="<?= $this->lurl ?>/transferts/virement_emprunteur" title="Transfert des fons">Transfert des fonds</a></li>
                 </ul>
             </li>
         <?php endif; ?>

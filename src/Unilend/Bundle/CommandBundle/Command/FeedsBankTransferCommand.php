@@ -26,8 +26,8 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        $entityManager            = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $logger        = $this->getContainer()->get('monolog.logger.console');
+        $entityManager          = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $logger                 = $this->getContainer()->get('monolog.logger.console');
 
         /** @var \compteur_transferts $counter */
         $counter = $entityManagerSimulator->getRepository('compteur_transferts');
@@ -54,7 +54,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $settings->get('Retrait Unilend - Titulaire du compte', 'type');
         $unilendAccountHolder = utf8_decode($settings->value);
 
-        $pendingBankTransfers      = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findBy(['status' => Virements::STATUS_PENDING, 'addedXml' => null]);
+        $pendingBankTransfers      = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findWireTransferReadyToSend();
         $pendingBankTransfersCount = 0;
         $totalAmount               = 0;
         $counterId                 = $counter->counter('type = 1') + 1;
@@ -72,18 +72,15 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
             if (\DateTime::createFromFormat('Y-m-d H:i:s', $transaction->date_transaction) < new \DateTime('today')) {
                 $bankAccount = $pendingBankTransfer->getBankAccount();
                 $client      = $pendingBankTransfer->getClient();
-                if ($client) {
+                if ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
                     if (null === $bankAccount) {
-                        // todo: for backward compatibility only, can be replaced by an error message in the next release.
-                        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($pendingBankTransfer->getClient());
-                        if (null === $bankAccount) {
-                            $logger->error('The bank account is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
-                            continue;
-                        }
+                        $logger->error('The bank account is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
+                        continue;
                     }
-                } elseif ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
-                    $logger->error('The client is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
-                    continue;
+                    if (null === $client) {
+                        $logger->error('The client is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
+                        continue;
+                    }
                 }
 
                 if ($pendingBankTransfer->getType() == Virements::TYPE_UNILEND) {

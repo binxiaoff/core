@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
@@ -17,10 +17,10 @@ class LocationManager
     /** @var string */
     private $mapboxToken;
 
-    /** @var MemcacheCachePool */
+    /** @var CacheItemPoolInterface */
     private $cachePool;
 
-    public function __construct(EntityManager $entityManager, $mapboxToken, MemcacheCachePool $cachePool)
+    public function __construct(EntityManager $entityManager, $mapboxToken, CacheItemPoolInterface $cachePool)
     {
         $this->entityManager = $entityManager;
         $this->mapboxToken   = $mapboxToken;

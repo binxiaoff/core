@@ -31,19 +31,20 @@
             </tr>
         </thead>
         <tbody>
-            <?php $i = 1; ?>
-            <?php foreach ($this->aOperations as $aOperation) : ?>
+            <?php $i = 1;
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
+            foreach ($this->nonAttributedReceptions as $reception) : ?>
                 <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><?= $aOperation['id_reception'] ?></td>
-                    <td><?= $aOperation['motif'] ?></td>
-                    <td><?= $this->ficelle->formatNumber($aOperation['montant'] / 100) ?> €</td>
-                    <td class="statut_operation_<?= $aOperation['id_reception'] ?>"><?= $this->statusOperations[$aOperation['status_bo']] ?></td>
-                    <td><?= date('d/m/Y', strtotime($aOperation['added'])) ?></td>
+                    <td><?= $reception->getIdReception() ?></td>
+                    <td><?= $reception->getMotif() ?></td>
+                    <td><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
+                    <td class="statut_operation_<?= $reception->getIdReception() ?>"><?= $this->statusOperations[$reception->getStatusBo()] ?></td>
+                    <td><?= $reception->getAdded()->format('d/m/Y') ?></td>
                     <td align="center">
-                        <a class="thickbox ajouter_<?= $aOperation['id_reception'] ?>" href="<?= $this->lurl ?>/transferts/attribution/<?= $aOperation['id_reception'] ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Attribuer"/></a>
-                        <a class="inline" href="#inline_content_<?= $aOperation['id_reception'] ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher la ligne de réception"/></a>
+                        <a class="thickbox ajouter_<?= $reception->getIdReception() ?>" href="<?= $this->lurl ?>/transferts/attribution/<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Attribuer"/></a>
+                        <a class="inline" href="#inline_content_<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher la ligne de réception"/></a>
                         <div style="display:none;">
-                            <div id="inline_content_<?= $aOperation['id_reception'] ?>" style="white-space: nowrap; padding:10px; background:#fff;"><?= $aOperation['ligne'] ?></div>
+                            <div id="inline_content_<?= $reception->getIdReception() ?>" style="white-space: nowrap; padding:10px; background:#fff;"><?= $reception->getLigne() ?></div>
                         </div>
                     </td>
                 </tr>
