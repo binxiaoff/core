@@ -417,7 +417,7 @@ class OperationRepository extends EntityRepository
         $end->setTime(23,59,59);
 
         $query = 'SELECT
-                  MONTHNAME(o.added) AS month,
+                  MONTH(o.added) AS month,
                   SUM(o.amount) AS amount,
                   CASE ot.label
                    WHEN "'. OperationType::LENDER_PROVISION . '" THEN
@@ -447,6 +447,5 @@ class OperationRepository extends EntityRepository
         }
 
         return $movements;
-
     }
 }

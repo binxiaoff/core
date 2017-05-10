@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Virements
  *
  * @ORM\Table(name="virements", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_bank_account", columns={"id_bank_account"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\VirementsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Virements
