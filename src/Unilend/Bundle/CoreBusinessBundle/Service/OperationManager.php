@@ -459,7 +459,7 @@ class OperationManager
         $transaction->id_project       = $wireTransferOut->getProject()->getIdProject();
         $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->ip_client        = $_SERVER['REMOTE_ADDR'];
+        $transaction->ip_client        = (isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : '';
         $transaction->type_transaction = \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
         $transaction->create();
 

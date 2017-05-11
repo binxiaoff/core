@@ -57,12 +57,13 @@ class DevDoBorrowerRegularisationCommand extends ContainerAwareCommand
                             ->setStatus(Virements::STATUS_PENDING)
                             ->setBankAccount($bankAccount);
             $entityManager->persist($wireTransferOut);
+            $entityManager->flush($wireTransferOut);
 
             $output->writeln('Created wire transfer out ID: ' . $wireTransferOut->getIdVirement());
 
-            $operationManager->withdrawBorrowerWallet($borrowerWallet, $wireTransferOut, -1 * $wireTransferOut->getMontant());
+            $operationManager->withdrawBorrowerWallet($borrowerWallet, $wireTransferOut, -1 * $amount);
 
-            $output->writeln('regularization done. Remains to do: update the factures table and generate the correct invoice pdf');
+            $output->writeln('regularization done. Remains to do: update the factures table and generate the correct invoice pdf. -Insert a line in the table regularization_operation_history');
 
         } catch (\Exception $exception) {
             $output->writeln('error while doing the regularisation: ' . $exception->getMessage() . ' ' . $exception->getCode());
