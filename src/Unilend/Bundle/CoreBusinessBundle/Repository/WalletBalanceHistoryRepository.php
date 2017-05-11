@@ -217,13 +217,18 @@ class WalletBalanceHistoryRepository extends EntityRepository
      * @param \DateTime $end
      * @param array     $walletTypes
      *
-     * @return array
+     * @return float
      */
-    public function sumBalanceForDailyState(\DateTime $end, array $walletTypes)
+    public function sumBalanceForDailyState(\DateTime $date, array $walletTypes)
     {
-        $end->setTime(23, 59, 59);
+        $date->setTime(23, 59, 59);
 
-        $query = 'SELECT SUM(wbh_line.available_balance)
+        $query = 'SELECT
+                    IF(
+                          SUM(wbh_line.committed_balance) IS NOT NULL,
+                          (SUM(wbh_line.available_balance) + SUM(wbh_line.committed_balance)),
+                          SUM(wbh_line.available_balance)
+                      ) AS balance
                   FROM wallet_balance_history wbh_line
                     INNER JOIN (
                                    SELECT MAX(wbh_max.id) AS id FROM wallet_balance_history wbh_max
@@ -232,13 +237,17 @@ class WalletBalanceHistoryRepository extends EntityRepository
                                    WHERE wbh_max.added <= :end
                                          AND wt.label IN (:walletLabels)
                                    GROUP BY wbh_max.id_wallet
-                                 ) wbh_max ON wbh_line.id = wbh_max.id;';
+                                 ) wbh_max ON wbh_line.id = wbh_max.id';
 
-        $result = $this->getEntityManager()->getConnection()
+        $result = $this->getEntityManager->getConnection()
             ->executeQuery($query,
-                ['end' => $end->format('Y-m-d H:i:s'), 'walletLabels' => $walletTypes],
+                ['end' => $date->format('Y-m-d H:i:s'), 'walletLabels' => $walletTypes],
                 ['end' => \PDO::PARAM_STR, 'walletLabels' => Connection::PARAM_STR_ARRAY]
-            )->fetchAll(\PDO::FETCH_ASSOC);
+            )->fetchColumn(0);
+
+        if ($result === null) {
+            return '0.00';
+        }
 
         return $result;
     }
