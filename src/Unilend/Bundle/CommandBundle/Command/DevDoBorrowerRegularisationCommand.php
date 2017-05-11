@@ -24,7 +24,7 @@ class DevDoBorrowerRegularisationCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $projectId = $input->getOption('project-id');
-        $amount    = $commission = filter_var($input->getOption('amount'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $amount    = filter_var($input->getOption('amount'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
         $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
         $borrowerManager = $this->getContainer()->get('unilend.service.borrower_manager');
@@ -41,10 +41,10 @@ class DevDoBorrowerRegularisationCommand extends ContainerAwareCommand
         }
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
         try {
-            $operationManager->borrowerRegularisation($project, $amount);
+            $entityManager->getConnection()->beginTransaction();
             /** @var Wallet $borrowerWallet */
             $borrowerWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
-
+            $operationManager->borrowerRegularisation($borrowerWallet, $amount, $project);
             /** @var BankAccount $bankAccount */
             $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($borrowerWallet->getIdClient());
 
@@ -62,10 +62,11 @@ class DevDoBorrowerRegularisationCommand extends ContainerAwareCommand
             $output->writeln('Created wire transfer out ID: ' . $wireTransferOut->getIdVirement());
 
             $operationManager->withdrawBorrowerWallet($borrowerWallet, $wireTransferOut, -1 * $amount);
+            $entityManager->getConnection()->commit();
 
             $output->writeln('regularization done. Remains to do: update the factures table and generate the correct invoice pdf. -Insert a line in the table regularization_operation_history');
-
         } catch (\Exception $exception) {
+            $entityManager->getConnection()->rollBack();
             $output->writeln('error while doing the regularisation: ' . $exception->getMessage() . ' ' . $exception->getCode());
         }
     }
