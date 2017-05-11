@@ -64,7 +64,7 @@
                                                 data-sortable-motif="{{ project.motive|e('html_attr') }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}">
-                                                <td class="table-prospects-item-borrower" title="{{ project.name|e('html_attr') }}" data-toggle="tooltip" colspan="2">{{ project.name }}</td>
+                                                <td class="table-prospects-item-borrower" title="{{ project.name|e('html_attr') }}" data-toggle="tooltip" colspan="2">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     <td class="table-prospects-item-submitter" title="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }}{% if project.submitter.entity|length %} - {{ project.submitter.entity }}{% endif %}</td>
                                                 {% endif %}
@@ -144,7 +144,7 @@
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}"
                                                 data-sortable-status="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}">
-                                                <td class="table-projects-item-borrower" title="{{ project.name|e('html_attr') }}" data-toggle="tooltip" colspan="2">{{ project.name }}</td>
+                                                <td class="table-projects-item-borrower" title="{{ project.name|e('html_attr') }}" data-toggle="tooltip" colspan="2">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     <td class="table-projects-item-submitter" title="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.entity|length %}- {{ project.submitter.entity }}{% endif %}</td>
                                                 {% endif %}
@@ -229,7 +229,7 @@
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}"
                                                 data-sortable-status="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}">
-                                                <td class="table-projects-item-borrower" title="{{ project.name|e('html_attr') }}" data-toggle="tooltip" colspan="2">{{ project.name }}</td>
+                                                <td class="table-projects-item-borrower" title="{{ project.name|e('html_attr') }}" data-toggle="tooltip" colspan="2">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     <td class="table-projects-item-submitter" title="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}" data-toggle="tooltip">{{ project.submitter.lastName }} {{ project.submitter.firstName }} {% if project.submitter.entity|length %}- {{ project.submitter.entity }}{% endif %}</td>
                                                 {% endif %}
