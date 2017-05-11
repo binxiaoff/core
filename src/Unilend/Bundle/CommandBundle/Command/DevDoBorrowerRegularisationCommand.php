@@ -40,8 +40,8 @@ class DevDoBorrowerRegularisationCommand extends ContainerAwareCommand
             return;
         }
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+        $entityManager->getConnection()->beginTransaction();
         try {
-            $entityManager->getConnection()->beginTransaction();
             /** @var Wallet $borrowerWallet */
             $borrowerWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
             $operationManager->borrowerRegularisation($borrowerWallet, $amount, $project);
