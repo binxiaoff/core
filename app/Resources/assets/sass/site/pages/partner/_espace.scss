@@ -10,6 +10,7 @@
 }
 
 // Project Request
+
 .simulator {
   border: 1px solid $c-bg2;
   > .row {
@@ -23,6 +24,7 @@
 }
 
 // Project Request Eligibility
+
 .simulator-pane-inner {
   padding: 20px;
   @include devices('laptop') {
@@ -111,6 +113,7 @@
 }
 
 // Project Request Details
+
 .form-project-details {
   h4 {
     margin-top: 10px;
@@ -173,6 +176,7 @@
 }
 
 // Project Request End
+
 .partner-project-request-end {
   @include devices('md', 'lg') {
     min-height: 400px;
@@ -180,6 +184,7 @@
 }
 
 // Modals
+
 .ui-user-type-partner {
   [data-modal] {
     p {
@@ -192,6 +197,7 @@
 }
 
 // Utilisateurs
+
 .partner-projects-add-user {
   .btn-default {
     padding-left: 45px;
@@ -214,6 +220,7 @@
     text-align: center;
   }
 }
+
 .ui-table-users-item-inactive {
   td {
     color: $c-t3;
@@ -221,9 +228,103 @@
 }
 
 .form-project-add-user-fieldset {
-    margin-bottom: 30px;
-    @include devices('sm', 'md', 'lg') {
-        margin-bottom: 60px;
-    }
+  margin-bottom: 30px;
+  @include devices('sm', 'md', 'lg') {
+    margin-bottom: 60px;
+  }
 }
+
+// Statistiques
+
+.partner-statistics-tabs {
+  padding-top: 1em;
+}
+
+.partner-statistics-tabs-nav {
+  &.nav-tabs-text {
+    > li {
+      white-space: normal;
+    }
+  }
+  > li {
+    display: block;
+    margin-bottom: 15px;
+    > a {
+      border: 0;
+      padding: 10px 45px 10px 15px;
+      position: relative;
+      font-size: 16px;
+      line-height: 20px;
+      background: $c-bg3;
+      &:after {
+        content: '\e91f';
+        font-family: unilend-fontawesome;
+        font-size: 17px;
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        color: $c-bg3;
+      }
+      &:hover {
+        background: $c-bg2;
+        &:after {
+          color: #c5c3c5;
+        }
+      }
+    }
+    &.active {
+      > a {
+        background: $c-bg2;
+        position: relative;
+        &:after {
+          color: #1a87da;
+        }
+      }
+      .difference {
+        opacity: 1;
+      }
+    }
+  }
+  .difference {
+    display: block;
+    margin: 5px 5px 0;
+    font-size: 14px;
+    line-height: 15px;
+    opacity: .5;
+  }
+  .count {
+    &:before {
+      content: '(';
+    }
+    &:after {
+      content: ')';
+    }
+  }
+  @include devices('mobile-l', 'tablet-p') {
+    margin-left: -15px;
+    margin-right: -15px;
+    li {
+      box-sizing: border-box;
+      float: left;
+      width: 50%;
+      padding: 0 15px;
+    }
+  }
+  @include devices('tablet-p') {
+    li {
+      width: 33.3333333%;
+    }
+  }
+}
+
+.partner-statistics-tabs-footer {
+  clear: both;
+  border-bottom: 2px solid $c-bg2;
+  margin: 0 15px;
+  > * {
+    padding: 5px 0;
+    margin: 0 -15px;
+  }
+}
+
 
