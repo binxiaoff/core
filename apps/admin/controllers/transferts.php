@@ -660,7 +660,7 @@ class transfertsController extends bootstrap
                         $projectLoanAmount              = $loans->sumPretsProjet($project->id_project);
                         $commissionFundsRateVATIncluded = bcmul(
                             bcadd(1, round(bcdiv($vatTax->getRate(), 100, 4), 2), 2),
-                            round(bcdiv($projectEntity->getCommissionRateFunds(), 100, 4), 2),
+                            round(bcdiv($projectEntity->getCommissionRateFunds(), 100, 4), 4),
                             4
                         );
                         $commission                     = round(bcmul($projectLoanAmount, $commissionFundsRateVATIncluded, 4), 2);
