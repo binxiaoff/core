@@ -1,7 +1,7 @@
 <div id="popup">
     <h1>Création du transfert</h1>
     <p>Fonds restants : <?= $this->restFunds ?></p>
-    <form method="post" enctype="multipart/form-data" action="/transferts/add_lightbox/<?= $this->project->getIdProject() ?>">
+    <form method="post" enctype="multipart/form-data" action="/dossiers/add_wire_transfer_out_lightbox/<?= $this->project->getIdProject() ?>">
         <table class="formColor">
             <tr>
                 <th>Date transfert</th>

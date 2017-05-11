@@ -86,7 +86,7 @@ if (empty($this->wireTransferOuts)) : ?>
                     <td><?= $this->translator->trans('wire-transfer-out_status-' . $wireTransferOut->getStatus()) ?></td>
                     <td>
                         <?php if (false === in_array($wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_VALIDATED, Virements::STATUS_SENT])) : ?>
-                            <a href="<?= $this->lurl ?>/transferts/refuse_lightbox/<?= $wireTransferOut->getIdVirement() ?>" class="thickbox cboxElement">
+                            <a href="<?= $this->lurl ?>/dossiers/refuse_wire_transfer_out_lightbox/<?= $wireTransferOut->getIdVirement() ?>/control/" class="thickbox cboxElement">
                                 <img src="<?= $this->surl ?>/images/admin/delete.png">
                             </a>
                         <?php endif; ?>

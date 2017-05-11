@@ -10,7 +10,7 @@ $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $b
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
     <h1>Refus du transfert</h1>
     <p>Voulez-vous rejeter le transfert ci-dessus :
-    <form method="post" enctype="multipart/form-data" action="/transferts/refuse_lightbox/<?= $this->params[0] ?>/<?= $this->params[1] ?>">
+    <form method="post" enctype="multipart/form-data" action="/dossiers/refuse_wire_transfer_out_lightbox/<?= $this->params[0] ?>/<?= $this->params[1] ?>">
         <table class="tablesorter">
             <thead>
             <tr>

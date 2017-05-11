@@ -1001,7 +1001,7 @@
                         <h2>
                             Transfert
                             <?php if ($this->displayAddButton) : ?>
-                                <a href="<?= $this->lurl ?>/transferts/add_lightbox/<?= $this->projects->id_project ?>" class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                                <a href="<?= $this->lurl ?>/dossiers/add_wire_transfer_out_lightbox/<?= $this->projects->id_project ?>" class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
                             <?php endif; ?>
                         </h2>
                         <p>
@@ -1046,7 +1046,7 @@
                                             <?php if (false === in_array($wireTransferOut->getStatus(),
                                                     [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_VALIDATED, Virements::STATUS_SENT])
                                             ) : ?>
-                                                <a href="<?= $this->lurl ?>/transferts/refuse_lightbox/<?= $wireTransferOut->getIdVirement() ?>/project" class="thickbox cboxElement">
+                                                <a href="<?= $this->lurl ?>/dossiers/refuse_wire_transfer_out_lightbox/<?= $wireTransferOut->getIdVirement() ?>/project/" class="thickbox cboxElement">
                                                     <img src="<?= $this->surl ?>/images/admin/delete.png">
                                                 </a>
                                             <?php endif; ?>

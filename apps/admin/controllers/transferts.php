@@ -1050,124 +1050,33 @@ class transfertsController extends bootstrap
         }
     }
 
-    public function _add_lightbox()
+    public function _validate_lightbox()
     {
         $this->hideDecoration();
 
-        if (false === empty($this->params[0])) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
-            $borrowerManager = $this->get('unilend.service.borrower_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-            $partnerManager = $this->get('unilend.service.partner_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
-            $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-            $projectManager = $this->get('unilend.service.project_manager');
-            /** @var \NumberFormatter $currencyFormatter */
-            $currencyFormatter = $this->get('currency_formatter');
-
-            $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-            $this->project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
-            $this->borrowerMotif     = $borrowerManager->getBorrowerBankTransferLabel($this->project);
-            $this->bankAccounts[]    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->project->getIdCompany()->getIdClientOwner());
-            $this->bankAccounts      = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getPartner()));
-            $restFunds               = $projectManager->getRestOfFundsToRelease($this->project, true);
-            $this->restFunds         = $currencyFormatter->formatCurrency($restFunds, 'EUR');
-
-            if ($this->request->isMethod('POST')) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-                $projectManager = $this->get('unilend.service.project_manager');
-
-                if ($this->request->request->get('date')) {
-                    $date = DateTime::createFromFormat('d/m/Y', $this->request->request->get('date'));
-                } else {
-                    $date = null;
-                }
-                $amount = $this->loadLib('ficelle')->cleanFormatedNumber($this->request->request->get('amount'));
-
-                if ($amount <= 0) {
-                    $_SESSION['freeow']['title']   = 'Transfert de fonds';
-                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Montant n\'est pas valide.';
-                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
-                    die;
-                }
-
-                $restFunds = $projectManager->getRestOfFundsToRelease($this->project, true);
-                if ($amount > $restFunds) {
-                    $_SESSION['freeow']['title']   = 'Transfert de fonds';
-                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Montant trop élévé.';
-                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
-                    die;
-                }
-
-                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($this->request->request->get('bank_account'));
-                $wallet      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
-                $user        = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-
-                try {
-                    $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount, $this->project, $user, $date, $this->request->request->get('pattern'));
-                } catch (\Exception $exception) {
-                    $this->get('logger')->error($exception->getMessage(), ['methode' => __METHOD__]);
-                    $_SESSION['freeow']['title']   = 'Transfert de fonds échoué';
-                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé';
-
-                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
-                    die;
-                }
-
-                $_SESSION['freeow']['title']   = 'Transfert de fonds';
-                $_SESSION['freeow']['message'] = 'Le transfert de fonds a été créé avec succès ';
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
-                die;
-            }
-        }
-    }
-
-    public function _refuse_lightbox()
-    {
-        $wireTransferOut = $this->prepareDisplayWireTransferOut();
-        if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $wireTransferOut) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager   = $this->get('doctrine.orm.entity_manager');
-
-            $forbiddenStatus = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_VALIDATED, Virements::STATUS_SENT];
-            if (false === in_array($wireTransferOut->getStatus(), $forbiddenStatus)) {
-                $wireTransferOut->setStatus(Virements::STATUS_DENIED);
-                $entityManager->flush($wireTransferOut);
-                $_SESSION['freeow']['title']   = 'Refus de transfert de fonds';
-                $_SESSION['freeow']['message'] = 'Le transfert de fonds a été refusé avec succès ';
-            } else {
-                $_SESSION['freeow']['title']   = 'Refus de transfert de fonds';
-                $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a été refusé.';
-            }
-            if (false === empty($this->params[1]) && 'project' === $this->params[1]) {
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $wireTransferOut->getProject()->getIdProject());
-            } else {
-                header('Location: ' . $this->lurl . '/transferts/virement_emprunteur');
-            }
-            die;
-        }
-    }
-
-    public function _validate_lightbox()
-    {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $wireTransferOut       = $this->prepareDisplayWireTransferOut();
-        $this->displayWarning  = false;
-        if ($wireTransferOut->getBankAccount()->getIdClient() !== $wireTransferOut->getClient()) {
-            $this->displayWarning = false === $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->isBankAccountValidatedOnceTime($wireTransferOut);
+        if (false === empty($this->params[0])) {
+            /** @var \NumberFormatTest currencyFormatter */
+            $this->currencyFormatter = $this->get('currency_formatter');
+
+            $this->wireTransferOut       = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($this->params[0]);
+            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+            $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
         }
 
-        if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $wireTransferOut) {
+        $this->displayWarning  = false;
+        if ($this->wireTransferOut->getBankAccount()->getIdClient() !== $this->wireTransferOut->getClient()) {
+            $this->displayWarning = false === $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->isBankAccountValidatedOnceTime($this->wireTransferOut);
+        }
+
+        if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $this->wireTransferOut) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
             $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
-            if (in_array($wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_VALIDATED])) {
+            if (in_array($this->wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_VALIDATED])) {
                 $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-                $wireTransferOutManager->validateTransfer($wireTransferOut, $user);
+                $wireTransferOutManager->validateTransfer($this->wireTransferOut, $user);
 
                 $_SESSION['freeow']['title']   = 'Transfert de fonds';
                 $_SESSION['freeow']['message'] = 'Le transfert de fonds a été validé avec succès ';
@@ -1179,24 +1088,6 @@ class transfertsController extends bootstrap
             header('Location: ' . $this->lurl . '/transferts/virement_emprunteur');
             die;
         }
-    }
-
-    private function prepareDisplayWireTransferOut()
-    {
-        $this->hideDecoration();
-
-        if (false === empty($this->params[0])) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \NumberFormatTest currencyFormatter */
-            $this->currencyFormatter = $this->get('currency_formatter');
-
-            $this->wireTransferOut       = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($this->params[0]);
-            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
-            $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-        }
-
-        return $this->wireTransferOut;
     }
 
     public function _virement_emprunteur()
