@@ -1,19 +1,27 @@
 .table-prospects, .table-projects, .table-users {
+    table-layout: fixed;
+
     td, th {
-        padding-left: 20px;
-        padding-right: 20px;
+        padding-left: 10px;
+        padding-right: 10px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    td {
+        font-size: 12px;
+    }
+
     .last-name {
         text-transform: uppercase;
     }
 }
-.table-prospects-item-action, .table-users-item-action, .table-projects-item-memos {
+.table-prospects-item-action, .table-projects-item-memos, .table-users-item-action {
     padding-top: 5px;
     padding-bottom: 5px;
     text-align: right;
+
     .btn-default {
         padding: 4px;
         margin-right: 2px;
@@ -24,6 +32,7 @@
         line-height: 1;
         font-size: 14px;
         color: $c-t3;
+
         &:last-child {
             margin-right: 0;
         }
@@ -35,19 +44,80 @@
         line-height: 16px;
     }
 }
-.table-prospects-item-borrower, .table-projects-item-borrower {
-    width: 25%;
+
+/* Prospects table columns width */
+.table-prospects-item-borrower {
+    width: 50%;
 }
-.table-prospects-item-submitter, .table-prospects-item-amount,
-.table-projects-item-submitter, .table-projects-item-amount {
-    width: 18%;
+.table-prospects-item-amount {
+    width: 110px;
 }
-.table-prospects-item-amount, .table-projects-item-amount {
-    width: 14%;
+.table-prospects-item-duration {
+    width: 80px;
 }
-.table-prospects-item-duration, .table-projects-item-duration {
-    width: 11%;
+.table-prospects-item-motif {
+    width: 50%;
 }
+.table-prospects-item-action {
+    width: 80px;
+}
+
+.ui-user-type-partner-admin {
+    .table-prospects-item-borrower {
+        width: 35%;
+    }
+    .table-prospects-item-submitter {
+        width: 30%;
+    }
+    .table-prospects-item-motif {
+        width: 35%;
+    }
+}
+
+/* Prospects tables columns width */
+.table-projects-item-borrower {
+    width: 35%;
+}
+.table-projects-item-amount {
+    width: 110px;
+}
+.table-projects-item-duration {
+    width: 80px;
+}
+.table-projects-item-motif {
+    width: 35%;
+}
+.table-projects-item-status {
+    width: 30%;
+}
+.table-projects-item-memos {
+    width: 75px;
+}
+
+.ui-user-type-partner-admin {
+    .table-projects-item-borrower {
+        width: 25%;
+    }
+    .table-projects-item-submitter {
+        width: 25%;
+    }
+    .table-projects-item-motif {
+        width: 25%;
+    }
+    .table-projects-item-status {
+        width: 25%;
+    }
+}
+
+.table-prospects-item-action, .table-projects-item-memos {
+    .icon {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        transition: transform 150ms;
+    }
+}
+
 .table-users-item-name {
     width: 25%;
 }
@@ -57,37 +127,13 @@
 .table-users-item-status, .table-users-item-role {
     width: 18%;
 }
-.ui-user-type-partner-admin {
-    .table-prospects-item-submitter, .table-prospects-item-amount,
-    .table-projects-item-submitter, .table-projects-item-amount {
-        width: 16%;
-    }
-    .table-prospects-item-borrower, .table-projects-item-borrower {
-        width: 20%;
-    }
-}
-.table-projects-item-memos {
-    .icon {
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        transition: transform 150ms;
-    }
-}
+
 .ui-details-open .table-projects-item-memos .icon {
     transform: rotate(90deg);
 }
 .table-projects-details {
     > td {
         padding: 0;
-    }
-    td {
-        font-size: 12px;
-    }
-    @include devices('lg') {
-        td {
-            font-size: 14px;
-        }
     }
 }
 .details-memo-date, .details-memo-author {
