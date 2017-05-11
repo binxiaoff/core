@@ -241,45 +241,16 @@
 }
 
 .partner-statistics-tabs-nav {
-  &.nav-tabs-text {
-    > li {
-      white-space: normal;
-    }
-  }
   > li {
     display: block;
+    margin-right: 0;
     margin-bottom: 15px;
     > a {
-      border: 0;
-      padding: 10px 45px 10px 15px;
-      position: relative;
+      display: block;
       font-size: 16px;
       line-height: 20px;
-      background: $c-bg3;
-      &:after {
-        content: '\e91f';
-        font-family: unilend-fontawesome;
-        font-size: 17px;
-        position: absolute;
-        top: 8px;
-        right: 12px;
-        color: $c-bg3;
-      }
-      &:hover {
-        background: $c-bg2;
-        &:after {
-          color: #c5c3c5;
-        }
-      }
     }
     &.active {
-      > a {
-        background: $c-bg2;
-        position: relative;
-        &:after {
-          color: #1a87da;
-        }
-      }
       .difference {
         opacity: 1;
       }
@@ -287,7 +258,7 @@
   }
   .difference {
     display: block;
-    margin: 5px 5px 0;
+    margin: 5px 0 0;
     font-size: 14px;
     line-height: 15px;
     opacity: .5;
@@ -300,19 +271,28 @@
       content: ')';
     }
   }
-  @include devices('mobile-l', 'tablet-p') {
+  @include devices('mobile-l', 'sm') {
     margin-left: -15px;
     margin-right: -15px;
-    li {
+    > li {
       box-sizing: border-box;
-      float: left;
       width: 50%;
       padding: 0 15px;
     }
   }
-  @include devices('tablet-p') {
-    li {
-      width: 33.3333333%;
+  @include devices('tablet-l') {
+    > li {
+      > a {
+        font-size: 14px;
+      }
+    }
+    .difference {
+      font-size: 13px;
+    }
+  }
+  @include devices('md', 'lg') {
+    > li {
+      float: none;
     }
   }
 }

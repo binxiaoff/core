@@ -10,6 +10,10 @@
     capital: {
         name: 'Capital',
         color: '#1A87DA'
+    },
+    projects: {
+        name: 'Dossiers',
+        color: '#1A87DA'
     }
 } %}
 
@@ -21,14 +25,14 @@
 {# Simulated - Month Sum Values #}
 {% set monthSum = {
     submitted: {
-        projects: [ 30, 35, 50, 107, 187, 254, 380, 384, 340, 520, 420, 490 ],
+        projects: [ 3, 4, 5, 10, 20, 25, 38, 39, 34, 52, 42, 49 ],
         capital: [ 291.4, 203.91, 565, 1007, 1877, 2534, 3630, 3686, 3489, 5471, 4390, 4000 ]
     },
     accepted: {
-        projects: [ 14, 20, 30, 59, 100, 154, 180, 176, 120, 200, 180, 170 ]
+        projects: [ 2, 2, 3, 5, 11, 15, 20, 18, 16, 25, 23, 21 ]
     },
     repayment: {
-        projects: [ 7, 10, 15, 30, 50, 75, 90, 106, 60, 120, 90, 110 ],
+        projects: [ 1, 1, 3, 4, 5, 11, 12, 12, 13, 17, 24, 26 ],
         capital: [ 50.4, 40.91, 185, 650, 720, 834, 1230, 1586, 1889, 1971, 1990, 1977 ]
     }
 } %}
@@ -48,7 +52,6 @@
             title: {
                 text: ''
             },
-            units: '€',
             gridLineColor: '#efefef'
         },
         plotOptions: {
@@ -56,16 +59,16 @@
                 stacking: 'normal'
             }
         },
+        legend: {
+            enabled: false
+        },
         series: [
             {
-                name: seriesLegend.capital.name,
-                color: seriesLegend.capital.color,
+                name: seriesLegend.projects.name,
+                color: seriesLegend.projects.color,
                 data: monthSum.submitted.projects
             }
-        ],
-        tooltip: {
-            valueSuffix: ' €'
-        }
+        ]
     }
 } %}
 {% set partnerAcceptedChart = {
@@ -83,7 +86,6 @@
                 title: {
                     text: ''
                 },
-            units: '€',
             gridLineColor: '#efefef'
         },
         plotOptions: {
@@ -96,14 +98,11 @@
         },
         series: [
             {
-                name: seriesLegend.capital.name,
-                color: seriesLegend.capital.color,
+                name: seriesLegend.projects.name,
+                color: seriesLegend.projects.color,
                 data: monthSum.accepted.projects
             }
-        ],
-        tooltip: {
-            valueSuffix: ' €'
-        }
+        ]
     }
 } %}
 {% set partnerRepaymentChart = {
@@ -121,7 +120,6 @@
             title: {
                 text: ''
             },
-            units: '€',
             gridLineColor: '#efefef'
         },
         plotOptions: {
@@ -129,16 +127,16 @@
                 stacking: 'normal'
             }
         },
+        legend: {
+            enabled: false
+        },
         series: [
             {
-                name: seriesLegend.capital.name,
-                color: seriesLegend.capital.color,
+                name: seriesLegend.projects.name,
+                color: seriesLegend.projects.color,
                 data: monthSum.repayment.projects
             }
-        ],
-        tooltip: {
-            valueSuffix: ' €'
-        }
+        ]
     }
 } %}
 {% set partnerSubmittedAmountChart = {
@@ -163,6 +161,9 @@
             column: {
                 stacking: 'normal'
             }
+        },
+        legend: {
+            enabled: false
         },
         series: [
             {
@@ -199,6 +200,9 @@
                 stacking: 'normal'
             }
         },
+        legend: {
+            enabled: false
+        },
         series: [
             {
                 name: seriesLegend.capital.name,
@@ -206,6 +210,7 @@
                 data: monthSum.repayment.capital
             }
         ],
+
         tooltip: {
             valueSuffix: ' €'
         }
@@ -224,44 +229,40 @@
             <article class="dashboard-tab-pane">
                 <div class="panel">
                     <header class="panel-header">
-                        <h3>{% trans %} partner-statistics_title {% endtrans %}</h3>
+                        <h3>Votre performance</h3>
+                        {#<h3>{% trans %} partner-statistics_title {% endtrans %}</h3>#}
                     </header>
 
                     <div class="tabs nested-tabs partner-statistics-tabs row columns-with-space">
                         <div class="tab-navigation col-md-3 col-lg-3">
-                            <ul class="nav nav-tabs-text partner-statistics-tabs-nav">
+                            <ul class="nav nav-tabs partner-statistics-tabs-nav">
                                 <li role="presentation" class="active">
                                     <a href="#projects-submitted-control" role="tab" data-toggle="tab">
                                         Dossiers envoyés
-                                        <span class="count">6</span>
                                         <span class="difference c-success">+ 20% mois précedent</span>
                                     </a>
                                 </li>
                                 <li role="presentation">
                                     <a href="#projects-accepted-control" role="tab" data-toggle="tab">
                                         Dossiers acceptés
-                                        <span class="count">6</span>
                                         <span class="difference c-error">- 10% mois précedent</span>
                                     </a>
                                 </li>
                                 <li role="presentation">
                                     <a href="#projects-repayment-control" role="tab" data-toggle="tab">
                                         Dossiers décaissés
-                                        <span class="count">6</span>
                                         <span class="difference c-success">+ 10% mois précedent</span>
                                     </a>
                                 </li>
                                 <li role="presentation">
                                     <a href="#projects-submitted-amount-control" role="tab" data-toggle="tab">
                                         Montant envoyés
-                                        <span class="count">€ 333, 000</span>
                                         <span class="difference c-error">- 18% mois précedent</span>
                                     </a>
                                 </li>
                                 <li role="presentation">
                                     <a href="#projects-repayment-amount-control" role="tab" data-toggle="tab">
                                         Montant décaissé
-                                        <span class="count">€ 440, 000</span>
                                         <span class="difference c-t3">~ 0% mois précedent</span>
                                     </a>
                                 </li>
@@ -295,6 +296,7 @@
                             </div><!-- /.tab-pane -->
                         </div><!-- /.tab-content -->
                         <div class="tab-footer partner-statistics-tabs-footer">
+
                         </div>
                     </div><!-- /.nested-tabs -->
                 </div>
