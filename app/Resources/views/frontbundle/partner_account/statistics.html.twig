@@ -237,59 +237,59 @@
                         <div class="tab-navigation col-md-3 col-lg-3">
                             <ul class="nav nav-tabs partner-statistics-tabs-nav">
                                 <li role="presentation" class="active">
-                                    <a href="#projects-submitted-control" role="tab" data-toggle="tab">
+                                    <a href="#projects-submitted-tab" role="tab" data-toggle="tab">
                                         Dossiers envoyés
-                                        <span class="difference c-success">+ 20% mois précedent</span>
+                                        <span class="difference">+ 20% mois précedent</span>
                                     </a>
                                 </li>
                                 <li role="presentation">
-                                    <a href="#projects-accepted-control" role="tab" data-toggle="tab">
+                                    <a href="#projects-accepted-tab" role="tab" data-toggle="tab">
                                         Dossiers acceptés
-                                        <span class="difference c-error">- 10% mois précedent</span>
+                                        <span class="difference">- 10% mois précedent</span>
                                     </a>
                                 </li>
                                 <li role="presentation">
-                                    <a href="#projects-repayment-control" role="tab" data-toggle="tab">
+                                    <a href="#projects-repayment-tab" role="tab" data-toggle="tab">
                                         Dossiers décaissés
-                                        <span class="difference c-success">+ 10% mois précedent</span>
+                                        <span class="difference">+ 10% mois précedent</span>
                                     </a>
                                 </li>
                                 <li role="presentation">
-                                    <a href="#projects-submitted-amount-control" role="tab" data-toggle="tab">
+                                    <a href="#projects-submitted-amount-tab" role="tab" data-toggle="tab">
                                         Montant envoyés
-                                        <span class="difference c-error">- 18% mois précedent</span>
+                                        <span class="difference">- 18% mois précedent</span>
                                     </a>
                                 </li>
                                 <li role="presentation">
-                                    <a href="#projects-repayment-amount-control" role="tab" data-toggle="tab">
+                                    <a href="#projects-repayment-amount-tab" role="tab" data-toggle="tab">
                                         Montant décaissé
-                                        <span class="difference c-t3">~ 0% mois précedent</span>
+                                        <span class="difference">~ 0% mois précedent</span>
                                     </a>
                                 </li>
                             </ul>
                         </div><!-- /.tab-navigation -->
                         <div class="tab-content partner-statistics-tabs-content col-md-9 col-lg-9">
-                            <div id="projects-submitted-control" role="tabpanel" class="tab-pane active">
+                            <div id="projects-submitted-tab" role="tabpanel" class="tab-pane active">
                                 <div class="overflow-wrap">
                                     <div class="chart chart-partner" data-chartview='{{ partnerSubmittedChart|json_encode|escape('html_attr') }}'></div>
                                 </div>
                             </div><!-- /.tab-pane -->
-                            <div id="projects-accepted-control" role="tabpanel" class="tab-pane">
+                            <div id="projects-accepted-tab" role="tabpanel" class="tab-pane">
                                 <div class="overflow-wrap">
                                     <div class="chart chart-partner" data-chartview='{{ partnerAcceptedChart|json_encode|escape('html_attr') }}'></div>
                                 </div>
                             </div><!-- /.tab-pane -->
-                            <div id="projects-repayment-control" role="tabpanel" class="tab-pane">
+                            <div id="projects-repayment-tab" role="tabpanel" class="tab-pane">
                                 <div class="overflow-wrap">
                                     <div class="chart chart-partner" data-chartview='{{ partnerRepaymentChart|json_encode|escape('html_attr') }}'></div>
                                 </div>
                             </div><!-- /.tab-pane -->
-                            <div id="projects-submitted-amount-control" role="tabpanel" class="tab-pane">
+                            <div id="projects-submitted-amount-tab" role="tabpanel" class="tab-pane">
                                 <div class="overflow-wrap">
                                     <div class="chart chart-partner" data-chartview='{{ partnerSubmittedAmountChart|json_encode|escape('html_attr') }}'></div>
                                 </div>
                             </div><!-- /.tab-pane -->
-                            <div id="projects-repayment-amount-control" role="tabpanel" class="tab-pane">
+                            <div id="projects-repayment-amount-tab" role="tabpanel" class="tab-pane">
                                 <div class="overflow-wrap">
                                     <div class="chart chart-partner" data-chartview='{{ partnerRepaymentAmountChart|json_encode|escape('html_attr') }}'></div>
                                 </div>

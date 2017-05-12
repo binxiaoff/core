@@ -8,7 +8,7 @@ var Utility = require('Utility')
 
 // Partner Prospects Table
 $doc
-    .on(Utility.clickEvent, '.table-prospects [data-action]', function() {
+    .on(Utility.clickEvent, '.table-prospects [data-action]', function () {
         var $prospect = $(this).closest('tr')
         var action = $(this).data('action')
         var $modal = $('#modal-partner-prospect-' + action)
@@ -22,7 +22,7 @@ $doc
     })
 // Partner Users Table
 $doc
-    .on(Utility.clickEvent, '.table-users [data-action]', function() {
+    .on(Utility.clickEvent, '.table-users [data-action]', function () {
         var $item = $(this).closest('tr')
         var action = $(this).data('action')
         var $modal = $('#modal-partner-users-' + action)
@@ -33,3 +33,26 @@ $doc
         $modal.find('.ui-modal-output-lastname').html($item.find('.last-name').text())
         $modal.uiModal('open')
     })
+
+
+// Partner Statistics
+var partnerStatisticsTabs = $('.partner-statistics-tabs')
+
+// Open last month tooltip by default
+var showChartTooltip = function ($chart) {
+    var chart = $chart.highcharts()
+    var pointIndex = chart.series[0].data.length - 1;
+    var tooltipPoint = chart.series[0].points[pointIndex];
+    chart.series[0].data[pointIndex].setState('hover');
+    chart.tooltip.refresh(tooltipPoint);
+}
+$doc
+    .on('ready UI:visible UI:update', function (event) {
+        if (partnerStatisticsTabs.length) {
+            var $chart = partnerStatisticsTabs.find('.tab-pane.active .chart')
+            showChartTooltip($chart)
+        }
+    })
+
+
+
