@@ -30,7 +30,7 @@
                         </thead>
                         <tbody>
                             {% for user in users %}
-                                <tr class="table-users-item{% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_OFFLINE') %} ui-table-users-item-inactive{% endif %}" data-user-id="{{ user.client.hash }}">
+                                <tr class="table-users-item{% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_OFFLINE') %} ui-table-users-item-inactive{% endif %} {% if loop.index is divisibleby(2) %}even{% else %}odd{% endif %}" data-user-id="{{ user.client.hash }}">
                                     <td class="table-users-item-name">
                                         <span class="first-name">{{ user.client.prenom }}</span> <span class="last-name">{{ user.client.nom }}</span>
                                     </td>

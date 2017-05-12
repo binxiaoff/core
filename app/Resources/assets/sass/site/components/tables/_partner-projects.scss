@@ -1,6 +1,12 @@
 .table-prospects, .table-projects, .table-users {
     table-layout: fixed;
 
+    tr {
+        &.odd {
+            background-color: #fbf9fb;
+        }
+    }
+
     td, th {
         padding-left: 10px;
         padding-right: 10px;

@@ -141,9 +141,15 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
           colspanText   = 4
         }
 
+        // Inherit parent row color
+        var oddEvenClass = 'odd'
+        if ($item.is('.even')) {
+          oddEvenClass = 'even'
+        }
+
         // Generate HTML for memos
         $.each(details, function (i, item) {
-          detailsItemsHtml += Templating.replace('<tr class="table-myloans-details-item">\
+          detailsItemsHtml += Templating.replace('<tr class="' + oddEvenClass + '">\
             <td class="details-memo-author" title="{{ author }}" data-toggle="tooltip" colspan="' + colspanAuthor + '">{{ author }}</td>\
             <td class="details-memo-date" title="{{ date }}" data-toggle="tooltip">{{ date }}</td>\
             <td class="details-memo-text" title="{{ text }}" data-toggle="tooltip" colspan="' + colspanText + '">{{ text }}</td>\

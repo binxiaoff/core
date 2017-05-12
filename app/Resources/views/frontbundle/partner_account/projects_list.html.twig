@@ -55,7 +55,7 @@
                                         </thead>
                                         <tbody data-sortable-content>
                                         {% for project in prospects %}
-                                            <tr id="prospect-{{ project.id }}" class="table-prospects-item"
+                                            <tr id="prospect-{{ project.id }}" class="table-prospects-item{% if loop.index is divisibleby(2) %}even{% else %}odd{% endif %}"
                                                 data-hash="{{ project.hash }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
@@ -134,7 +134,7 @@
                                         </thead>
                                         <tbody data-sortable-content>
                                         {% for project in borrowers %}
-                                            <tr id="project-{{ project.id }}" class="table-projects-item"
+                                            <tr id="project-{{ project.id }}" class="table-projects-item {% if loop.index is divisibleby(2) %}even{% else %}odd{% endif %}"
                                                 data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
@@ -219,7 +219,7 @@
                                         </thead>
                                         <tbody data-sortable-content>
                                         {% for project in abandonedRejected %}
-                                            <tr id="project-{{ project.id }}" class="table-projects-item"
+                                            <tr id="project-{{ project.id }}" class="table-projects-item {% if loop.index is divisibleby(2) %}even{% else %}odd{% endif %}"
                                                 data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
