@@ -27,6 +27,7 @@
                 <th>Code postale</th>
                 <th>Ville</th>
                 <th>Téléphone</th>
+                <th>Action</th>
             </tr>
             </thead>
             <tbody>
@@ -41,6 +42,11 @@
                     <td><?= $company->getZip() ?></td>
                     <td><?= $company->getCity() ?></td>
                     <td><?= $company->getPhone() ?></td>
+                    <td align="center">
+                        <a href="<?= $this->lurl ?>/company/edit/<?= $company->getIdCompany() ?>">
+                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $company->getName() ?>">
+                        </a>
+                    </td>
                 </tr>
                 <?php $i++; ?>
             <?php endforeach; ?>

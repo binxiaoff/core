@@ -3614,8 +3614,15 @@ class dossiersController extends bootstrap
                 } else {
                     $date = null;
                 }
-                $amount = $this->loadLib('ficelle')->cleanFormatedNumber($this->request->request->get('amount'));
 
+                if (null !== $date && $date <= new DateTime()) {
+                    $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. La date de transfert n\'est pas valide.';
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    die;
+                }
+
+                $amount = $this->loadLib('ficelle')->cleanFormatedNumber($this->request->request->get('amount'));
                 if ($amount <= 0) {
                     $_SESSION['freeow']['title']   = 'Transfert de fonds';
                     $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Montant n\'est pas valide.';
