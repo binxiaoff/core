@@ -4,6 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 
 use Doctrine\ORM\EntityRepository;
+use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
@@ -67,5 +69,27 @@ class ReceptionsRepository extends EntityRepository
         $result = $qb->getQuery()->getResult();
 
         return $result;
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return Receptions[]
+     */
+    public function getBorrowerAnticipatedRepaymentWireTransfer(Projects $project)
+    {
+        $qb = $this->createQueryBuilder('r');
+        $qb->where('r.idProject = :projectId')
+            ->andWhere('r.statusBo IN (:assignmentType)')
+            ->andWhere('r.typeRemb = :earlyRepayment')
+            ->andWhere('r.type = :wireTransfer')
+            ->andWhere('r.statusVirement = :wireTransferReceived')
+            ->setParameter('projectId', $project)
+            ->setParameter('assignmentType', [Receptions::STATUS_MANUALLY_ASSIGNED, Receptions::STATUS_AUTO_ASSIGNED], Connection::PARAM_INT_ARRAY)
+            ->setParameter('earlyRepayment', Receptions::REPAYMENT_TYPE_EARLY)
+            ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
+            ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED);
+
+        return $qb->getQuery()->getResult();
     }
 }
