@@ -142,6 +142,9 @@
 {% set partnerSubmittedAmountChart = {
     type: 'partnerProjects',
     highcharts: {
+        chart: {
+            type: 'column'
+        },
         title: {
             text: 'partner-statistics_graph-projects-submitted-amount-title'|trans,
         },
@@ -180,6 +183,9 @@
 {% set partnerRepaymentAmountChart = {
     type: 'partnerProjects',
     highcharts: {
+        chart: {
+            type: 'column'
+        },
         title: {
             text: 'partner-statistics_graph-projects-repayment-amount-title'|trans,
         },
@@ -210,7 +216,6 @@
                 data: monthSum.repayment.capital
             }
         ],
-
         tooltip: {
             valueSuffix: ' €'
         }
