@@ -218,13 +218,12 @@ class UniversignController extends Controller
     /**
      * @Route("/pdf/virement_emprunteurs/{wireTransferOutId}/demande_virement_tiers_{clientHash}.pdf", name="wire_transfer_out_request_pdf", requirements={"wireTransferOutId":"\d+", "clientHash": "[0-9a-f-]{32,36}"})
      *
-     * @param Request $request
      * @param string  $clientHash
      * @param int     $wireTransferOutId
      *
      * @return Response
      */
-    public function createWireTransferOutRequestPdfAction(Request $request, $clientHash, $wireTransferOutId)
+    public function createWireTransferOutRequestPdfAction($clientHash, $wireTransferOutId)
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
@@ -251,16 +250,17 @@ class UniversignController extends Controller
         if (null === $universign) {
             $universign = new WireTransferOutUniversign();
             $universign->setIdWireTransferOut($wireTransferOut)
-                       ->setName('demande-virement-tiers-' . $clientHash . '-' . $wireTransferOutId . '.pdf')
-                       ->setStatus(UniversignEntityInterface::STATUS_PENDING);
+                ->setName('demande-virement-tiers-' . $clientHash . '-' . $wireTransferOutId . '.pdf')
+                ->setStatus(UniversignEntityInterface::STATUS_PENDING);
             $entityManager->persist($universign);
             $entityManager->flush($universign);
         }
         if (false === file_exists($wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName())) {
-            $company           = $wireTransferOut->getProject()->getIdCompany();
-            $companyManager    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
-            $bankAccount       = $wireTransferOut->getBankAccount();
-            $pdfContent = $this->renderView('/pdf/wire_transfer_out/borrower_request_third_party.html.twig', [
+            $company            = $wireTransferOut->getProject()->getIdCompany();
+            $companyManager     = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+            $bankAccount        = $wireTransferOut->getBankAccount();
+            $destinationCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $bankAccount->getIdClient()->getIdClient()]);
+            $pdfContent         = $this->renderView('/pdf/wire_transfer_out/borrower_request_third_party.html.twig', [
                 'companyManagerName'      => $companyManager->getNom(),
                 'companyManagerFirstName' => $companyManager->getPrenom(),
                 'companyManagerFunction'  => $companyManager->getFonction(),
@@ -268,11 +268,12 @@ class UniversignController extends Controller
                 'amount'                  => $this->get('currency_formatter')->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
                 'destinationName'         => $bankAccount->getIdClient()->getNom(),
                 'destinationFirstName'    => $bankAccount->getIdClient()->getPrenom(),
+                'destinationCompanyName'  => $destinationCompany->getName(),
                 'iban'                    => $bankAccount->getIban(),
             ]);
-            $snappy     = $this->get('knp_snappy.pdf');
-            $outputFile = $wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName();
-            $options    = [
+            $snappy             = $this->get('knp_snappy.pdf');
+            $outputFile         = $wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName();
+            $options            = [
                 'footer-html'   => '',
                 'header-html'   => '',
                 'margin-top'    => 20,
