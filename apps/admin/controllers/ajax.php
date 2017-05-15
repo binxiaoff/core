@@ -285,10 +285,8 @@ class ajaxController extends bootstrap
                 if (1 === count($eligibleProducts)) {
                     /** @var \Doctrine\ORM\EntityManager $entityManager */
                     $entityManager = $this->get('doctrine.orm.entity_manager');
-                    $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($project->id_partner);
-                    $product       = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($eligibleProducts[0]->id_product);
                     /** @var PartnerProduct $partnerProduct */
-                    $partnerProduct      = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $partner, 'idProduct' => $product]);
+                    $partnerProduct      = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $project->id_partner, 'idProduct' => $eligibleProducts[0]->id_product]);
                     $project->id_product = $eligibleProducts[0]->id_product;
 
                     if (null != $partnerProduct) {
@@ -296,8 +294,8 @@ class ajaxController extends bootstrap
                         $project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
                     } else {
                         $this->get('logger')->warning(
-                            'No data found in partner_product using: id_partner=' . $project->id_partner . ', id_product=' . $eligibleProducts[0]->id_product,
-                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
+                            'Relation between partner and product not found' . $project->id_partner . ', id_product=' . $eligibleProducts[0]->id_product,
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project, 'id_partner' => $project->id_partner, 'id_product' => $eligibleProducts[0]->id_product]
                         );
                     }
                     $project->update();

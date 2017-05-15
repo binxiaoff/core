@@ -551,10 +551,8 @@ class ProjectRequestController extends Controller
 
             if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
                 $entityManager = $this->get('doctrine.orm.entity_manager');
-                $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->project->id_partner);
-                $product       = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($products[0]->id_product);
                 /** @var PartnerProduct $partnerProduct */
-                $partnerProduct            = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $partner, 'idProduct' => $product]);
+                $partnerProduct            = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $this->project->id_partner, 'idProduct' => $products[0]->id_product]);
                 $this->project->id_product = $products[0]->id_product;
 
                 if (null != $partnerProduct) {
@@ -562,8 +560,8 @@ class ProjectRequestController extends Controller
                     $this->project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
                 } else {
                     $this->get('logger')->warning(
-                        'No data found in partner_product using: id_partner=' . $this->project->id_partner . ', id_product=' . $products[0]->id_product,
-                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->project->id_project]
+                        'Relation between partner and product not found',
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->project->id_project, 'id_partner' => $this->project->id_partner, 'id_product' => $products[0]->id_product]
                     );
                 }
                 $this->project->update();
