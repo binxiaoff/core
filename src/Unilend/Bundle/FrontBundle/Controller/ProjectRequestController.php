@@ -15,6 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -1385,7 +1386,7 @@ class ProjectRequestController extends Controller
 
         /** @var \tax_type $taxType */
         $taxType = $entityManager->getRepository('tax_type');
-        $taxType->get(\tax_type::TYPE_VAT);
+        $taxType->get(TaxType::TYPE_VAT);
         $vatRate = $taxType->rate / 100;
 
         if (false === empty($this->project->commission_rate_repayment)) {

@@ -5,6 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -340,13 +341,13 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                     $totalVirementUnilend_bienvenue += $unilend_bienvenue[$date]['montant'];
                     $totalCommission += $commission;
 
-                    $totalPrelevements_obligatoires += isset($aDailyTax[\tax_type::TYPE_INCOME_TAX]) ? $aDailyTax[\tax_type::TYPE_INCOME_TAX] : 0.0;
-                    $totalRetenues_source += isset($aDailyTax[\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]) ? $aDailyTax[\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE] : 0.0;
-                    $totalCsg += isset($aDailyTax[\tax_type::TYPE_CSG]) ? $aDailyTax[\tax_type::TYPE_CSG] : 0.0;
-                    $totalPrelevements_sociaux += isset($aDailyTax[\tax_type::TYPE_SOCIAL_DEDUCTIONS]) ? $aDailyTax[\tax_type::TYPE_SOCIAL_DEDUCTIONS] : 0.0;
-                    $totalContributions_additionnelles += isset($aDailyTax[\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS]) ? $aDailyTax[\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS] : 0.0;
-                    $totalPrelevements_solidarite += isset($aDailyTax[\tax_type::TYPE_SOLIDARITY_DEDUCTIONS]) ? $aDailyTax[\tax_type::TYPE_SOLIDARITY_DEDUCTIONS] : 0.0;
-                    $totalCrds += isset($aDailyTax[\tax_type::TYPE_CRDS]) ? $aDailyTax[\tax_type::TYPE_CRDS] : 0.0;
+                    $totalPrelevements_obligatoires += isset($aDailyTax[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]) ? $aDailyTax[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] : 0.0;
+                    $totalRetenues_source += isset($aDailyTax[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]) ? $aDailyTax[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE] : 0.0;
+                    $totalCsg += isset($aDailyTax[TaxType::TYPE_CSG]) ? $aDailyTax[TaxType::TYPE_CSG] : 0.0;
+                    $totalPrelevements_sociaux += isset($aDailyTax[TaxType::TYPE_SOCIAL_DEDUCTIONS]) ? $aDailyTax[TaxType::TYPE_SOCIAL_DEDUCTIONS] : 0.0;
+                    $totalContributions_additionnelles += isset($aDailyTax[TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS]) ? $aDailyTax[TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS] : 0.0;
+                    $totalPrelevements_solidarite += isset($aDailyTax[TaxType::TYPE_SOLIDARITY_DEDUCTIONS]) ? $aDailyTax[TaxType::TYPE_SOLIDARITY_DEDUCTIONS] : 0.0;
+                    $totalCrds += isset($aDailyTax[TaxType::TYPE_CRDS]) ? $aDailyTax[TaxType::TYPE_CRDS] : 0.0;
 
                     $totalRetraitPreteur += $retraitPreteur[$date]['montant'];
                     $totalSommeMouvements += $sommeMouvements;
@@ -378,13 +379,13 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                     <td class="right">' . $ficelle->formatNumber(abs($virementEmprunteur[$date]['montant'])) . '</td>
                     <td class="right">' . $ficelle->formatNumber($virementEmprunteur[$date]['montant_unilend']) . '</td>
                     <td class="right">' . $ficelle->formatNumber($commission) . '</td>
-                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[\tax_type::TYPE_INCOME_TAX]) ? $aDailyTax[\tax_type::TYPE_INCOME_TAX] : 0) . '</td>
-                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]) ? $aDailyTax[\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE] : 0.0) . '</td>
-                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[\tax_type::TYPE_CSG]) ? $aDailyTax[\tax_type::TYPE_CSG] : 0.0) . '</td>
-                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[\tax_type::TYPE_SOCIAL_DEDUCTIONS]) ? $aDailyTax[\tax_type::TYPE_SOCIAL_DEDUCTIONS] : 0.0) . '</td>
-                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS]) ? $aDailyTax[\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS] : 0.0) . '</td>
-                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[\tax_type::TYPE_SOLIDARITY_DEDUCTIONS]) ? $aDailyTax[\tax_type::TYPE_SOLIDARITY_DEDUCTIONS] : 0.0) . '</td>
-                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[\tax_type::TYPE_CRDS]) ? $aDailyTax[\tax_type::TYPE_CRDS] : 0.0) . '</td>
+                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]) ? $aDailyTax[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] : 0) . '</td>
+                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]) ? $aDailyTax[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE] : 0.0) . '</td>
+                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[TaxType::TYPE_CSG]) ? $aDailyTax[TaxType::TYPE_CSG] : 0.0) . '</td>
+                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[TaxType::TYPE_SOCIAL_DEDUCTIONS]) ? $aDailyTax[TaxType::TYPE_SOCIAL_DEDUCTIONS] : 0.0) . '</td>
+                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS]) ? $aDailyTax[TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS] : 0.0) . '</td>
+                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[TaxType::TYPE_SOLIDARITY_DEDUCTIONS]) ? $aDailyTax[TaxType::TYPE_SOLIDARITY_DEDUCTIONS] : 0.0) . '</td>
+                    <td class="right">' . $ficelle->formatNumber(isset($aDailyTax[TaxType::TYPE_CRDS]) ? $aDailyTax[TaxType::TYPE_CRDS] : 0.0) . '</td>
                     <td class="right">' . $ficelle->formatNumber(abs($retraitPreteur[$date]['montant'])) . '</td>
                     <td class="right">' . $ficelle->formatNumber($sommeMouvements) . '</td>
                     <td class="right">' . $ficelle->formatNumber($soldeTheorique) . '</td>

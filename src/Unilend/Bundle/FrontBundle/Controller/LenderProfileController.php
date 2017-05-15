@@ -21,6 +21,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -521,7 +522,7 @@ class LenderProfileController extends Controller
             $lenderTaxExemption = $this->get('unilend.service.entity_manager')->getRepository('lender_tax_exemption');
             /** @var \tax_type $taxType */
             $taxType = $this->get('unilend.service.entity_manager')->getRepository('tax_type');
-            $taxType->get(\tax_type::TYPE_INCOME_TAX);
+            $taxType->get(TaxType::TYPE_STATUTORY_CONTRIBUTIONS);
             $templateData['clientAddress']                = $clientAddress->select('id_client = ' . $client->id_client)[0];
             $templateData['currentYear']                  = date('Y');
             $templateData['lastYear']                     = $templateData['currentYear'] - 1;

@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
@@ -674,7 +675,7 @@ class ProjectManager
         $taxType = $this->entityManagerSimulator->getRepository('tax_type');
 
         $taxRate = $taxType->getTaxRateByCountry('fr');
-        $fVAT    = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $fVAT    = $taxRate[TaxType::TYPE_VAT] / 100;
 
         $fAmount           = $oProject->amount;
         $iMonthNb          = $oProject->period;

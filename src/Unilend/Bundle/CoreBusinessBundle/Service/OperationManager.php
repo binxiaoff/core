@@ -759,7 +759,7 @@ class OperationManager
             $operationType = '';
             $walletType    = '';
             switch ($type) {
-                case TaxType::TYPE_INCOME_TAX :
+                case TaxType::TYPE_STATUTORY_CONTRIBUTIONS :
                     $operationType = OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS;
                     $walletType    = WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS;
                     break;
