@@ -1548,7 +1548,8 @@ class Projects
     public function getPublicNotes()
     {
         $criteria = Criteria::create()
-            ->where(Criteria::expr()->eq('public', true));
+            ->where(Criteria::expr()->eq('public', true))
+            ->orderBy(['added' => Criteria::DESC]);
 
         return $this->notes->matching($criteria);
     }

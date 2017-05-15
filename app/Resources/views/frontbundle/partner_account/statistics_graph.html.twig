@@ -1,0 +1,260 @@
+{% set submittedChart = {
+    type: 'partnerProjects',
+    highcharts: {
+        title: {
+            text: 'Dossiers envoyés',
+        },
+        xAxis: {
+            categories: timeAxis,
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: ''
+            },
+            gridLineColor: '#efefef'
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal'
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        series: [
+            {
+                name: 'Total',
+                color: '#1A87DA',
+                data: submittedProjects
+            }
+        ]
+    }
+} %}
+
+{% set acceptedChart = {
+    type: 'partnerProjects',
+    highcharts: {
+        title: {
+            text: 'Dossiers acceptés',
+        },
+        xAxis: {
+            categories: timeAxis,
+            crosshair: true
+        },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: ''
+                },
+            gridLineColor: '#efefef'
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal'
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        series: [
+            {
+                name: 'Total',
+                color: '#1A87DA',
+                data: acceptedProjects
+            }
+        ]
+    }
+} %}
+
+{% set repaymentChart = {
+    type: 'partnerProjects',
+    highcharts: {
+        title: {
+            text: 'Dossiers décaissés',
+        },
+        xAxis: {
+            categories: timeAxis,
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: ''
+            },
+            gridLineColor: '#efefef'
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal'
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        series: [
+            {
+                name: 'Total',
+                color: '#1A87DA',
+                data: repaymentProjects
+            }
+        ]
+    }
+} %}
+
+{% set submittedAmountChart = {
+    type: 'partnerProjects',
+    highcharts: {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'Montant envoyé',
+        },
+        xAxis: {
+            categories: timeAxis,
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: ''
+            },
+            units: '€',
+            gridLineColor: '#efefef'
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal'
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        series: [
+            {
+                name: 'Montant',
+                color: '#1A87DA',
+                data: submittedAmount
+            }
+        ],
+        tooltip: {
+            valueSuffix: ' €'
+        }
+    }
+} %}
+
+{% set repaymentAmountChart = {
+    type: 'partnerProjects',
+    highcharts: {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'Montant décaissé',
+        },
+        xAxis: {
+            categories: timeAxis,
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: ''
+            },
+            units: '€',
+            gridLineColor: '#efefef'
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal'
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        series: [
+            {
+                name: 'Montant',
+                color: '#1A87DA',
+                data: repaymentAmount
+            }
+        ],
+        tooltip: {
+            valueSuffix: ' €'
+        }
+    }
+} %}
+
+<article class="dashboard-tab-pane">
+    <div class="panel">
+        <header class="panel-header">
+            <h3>{{ graphTitle }}</h3>
+        </header>
+
+        <div class="tabs nested-tabs partner-statistics-tabs row columns-with-space">
+            <div class="tab-navigation col-md-3 col-lg-3">
+                <ul class="nav nav-tabs partner-statistics-tabs-nav">
+                    <li role="presentation" class="active">
+                        <a href="#{{ graphType }}-projects-submitted-tab" role="tab" data-toggle="tab">
+                            Dossiers envoyés
+                            <span class="difference">+ 20% mois précedent</span>
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#{{ graphType }}-projects-accepted-tab" role="tab" data-toggle="tab">
+                            Dossiers acceptés
+                            <span class="difference">- 10% mois précedent</span>
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#{{ graphType }}-projects-repayment-tab" role="tab" data-toggle="tab">
+                            Dossiers décaissés
+                            <span class="difference">+ 10% mois précedent</span>
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#{{ graphType }}-projects-submitted-amount-tab" role="tab" data-toggle="tab">
+                            Montant envoyé
+                            <span class="difference">- 18% mois précedent</span>
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#{{ graphType }}-projects-repayment-amount-tab" role="tab" data-toggle="tab">
+                            Montant décaissé
+                            <span class="difference">~ 0% mois précedent</span>
+                        </a>
+                    </li>
+                </ul>
+            </div><!-- /.tab-navigation -->
+            <div class="tab-content partner-statistics-tabs-content col-md-9 col-lg-9">
+                <div id="{{ graphType }}-projects-submitted-tab" role="tabpanel" class="tab-pane active">
+                    <div class="overflow-wrap">
+                        <div class="chart chart-partner" data-chartview="{{ submittedChart|json_encode|escape('html_attr') }}"></div>
+                    </div>
+                </div><!-- /.tab-pane -->
+                <div id="{{ graphType }}-projects-accepted-tab" role="tabpanel" class="tab-pane">
+                    <div class="overflow-wrap">
+                        <div class="chart chart-partner" data-chartview="{{ acceptedChart|json_encode|escape('html_attr') }}"></div>
+                    </div>
+                </div><!-- /.tab-pane -->
+                <div id="{{ graphType }}-projects-repayment-tab" role="tabpanel" class="tab-pane">
+                    <div class="overflow-wrap">
+                        <div class="chart chart-partner" data-chartview="{{ repaymentChart|json_encode|escape('html_attr') }}"></div>
+                    </div>
+                </div><!-- /.tab-pane -->
+                <div id="{{ graphType }}-projects-submitted-amount-tab" role="tabpanel" class="tab-pane">
+                    <div class="overflow-wrap">
+                        <div class="chart chart-partner" data-chartview="{{ submittedAmountChart|json_encode|escape('html_attr') }}"></div>
+                    </div>
+                </div><!-- /.tab-pane -->
+                <div id="{{ graphType }}-projects-repayment-amount-tab" role="tabpanel" class="tab-pane">
+                    <div class="overflow-wrap">
+                        <div class="chart chart-partner" data-chartview="{{ repaymentAmountChart|json_encode|escape('html_attr') }}"></div>
+                    </div>
+                </div><!-- /.tab-pane -->
+            </div><!-- /.tab-content -->
+        </div><!-- /.nested-tabs -->
+    </div>
+</article><!-- /.panel -->

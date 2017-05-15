@@ -57,7 +57,8 @@
                         </div><!-- /.simulator-pane-inner -->
                         <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-center">
                             {% if rejectionReason is defined %}
-                                <a href="{{ path('partner_project_request') }}" class="btn-alternate">{% trans %} partner-project-request_simulator-footer-request-another-button {% endtrans %}</a>
+                                <a href="{{ path('partner_projects_list') }}" class="btn-alternate" data-equal-width>{% trans %} partner-project-request_simulator-footer-projects-list-button {% endtrans %}</a>
+                                <a href="{{ path('partner_project_request') }}" class="btn-alternate" data-equal-width>{% trans %} partner-project-request_simulator-footer-request-another-button {% endtrans %}</a>
                             {% else %}
                                 <button type="button" class="btn-abandon btn-alternate" data-equal-width data-modal-toggle="#modal-partner-prospect-abandon">
                                     {% trans %} partner-project-request_simulator-footer-abandon-button {% endtrans %}

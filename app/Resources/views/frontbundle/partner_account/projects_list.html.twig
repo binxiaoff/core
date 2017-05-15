@@ -171,9 +171,9 @@
                             {% endif %}
                         </div><!-- /#partner-projects-panel -->
 
-                        <div id="partner-abandoned-rejected-projects-panel">
-                            <h3>{% trans %} partner-project-list_abandoned-rejected-title {% endtrans %}</h3>
-                            {% if abandonedRejected|length > 0 %}
+                        {% if abandonedRejected|length > 0 %}
+                            <div id="partner-abandoned-rejected-projects-panel">
+                                <h3>{% trans %} partner-project-list_abandoned-rejected-title {% endtrans %}</h3>
                                 <div class="table-scroll">
                                     <table class="table table-projects table-clickable" data-sortable>
                                         <thead class="table-sortable-columns">
@@ -251,10 +251,8 @@
                                         </tbody>
                                     </table><!-- /.table-projects -->
                                 </div><!-- /.table-scroll -->
-                            {% else %}
-                                <div class="message-info after">{{ 'partner-project-list_abandoned-rejected-not-found-message'|trans }}</div>
-                            {% endif %}
-                        </div><!-- /#partner-projects-panel -->
+                            </div><!-- /#partner-abandoned-rejected-projects-panel -->
+                        {% endif %}
                     </div><!-- /.panel-content -->
                 </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->

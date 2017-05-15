@@ -13,6 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TemporaryLinksLogin;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
 
@@ -197,9 +198,20 @@ class UsersController extends Controller
         $companyClient->setIdClient($client);
         $companyClient->setRole('admin' === $request->request->get('role') ? UserPartner::ROLE_ADMIN : UserPartner::ROLE_USER);
 
-        $entityManager->persist($client);
-        $entityManager->persist($companyClient);
-        $entityManager->flush();
+        $entityManager->beginTransaction();
+
+        try {
+            $entityManager->persist($client);
+            $entityManager->persist($companyClient);
+            $entityManager->flush();
+
+            $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::PARTNER);
+
+            $entityManager->commit();
+        } catch (\Exception $exception) {
+            $entityManager->getConnection()->rollBack();
+            $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+        }
 
         return $this->redirectToRoute('partner_users');
     }

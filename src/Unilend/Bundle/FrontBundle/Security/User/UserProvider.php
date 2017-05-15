@@ -59,7 +59,7 @@ class UserProvider implements UserProviderInterface
             false !== filter_var($username, FILTER_VALIDATE_EMAIL)
             && ($clientEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['email' => $username, 'status' => Clients::STATUS_ONLINE]))
         ) {
-           return $this->setUser($clientEntity);
+            return $this->setUser($clientEntity);
         }
 
         throw new UsernameNotFoundException(
