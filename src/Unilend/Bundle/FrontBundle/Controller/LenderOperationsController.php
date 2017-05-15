@@ -65,7 +65,7 @@ class LenderOperationsController extends Controller
         ]
     ];
 
-    public static $loanStatusFilter = [
+    CONST LOAN_STATUS_FILTER = [
         'repayment'      => [\projects_status::REMBOURSEMENT],
         'refund'         => [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE],
         'late-repayment' => [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X],
@@ -107,7 +107,7 @@ class LenderOperationsController extends Controller
             'lenderOperations'       => $lenderOperations,
             'projectsFundedByLender' => $projectsFundedByLender,
             'detailedOperations'     => [self::TYPE_REPAYMENT_TRANSACTION],
-            'loansStatusFilter'      => self::$loanStatusFilter,
+            'loansStatusFilter'      => self::LOAN_STATUS_FILTER,
             'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
             'lenderLoans'            => $loans['lenderLoans'],
             'seriesData'             => $loans['seriesData'],
@@ -604,14 +604,15 @@ class LenderOperationsController extends Controller
     private function commonLoans(Request $request, \lenders_accounts $lender)
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        $notificationManager    = $this->get('unilend.service.notification_manager');
-        /** @var \loans $loanEntity */
-        $loanEntity = $entityManagerSimulator->getRepository('loans');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        /** @var \loans $loan */
+        $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \projects $project */
         $project = $entityManagerSimulator->getRepository('projects');
         /** @var \clients $client */
         $client = $entityManagerSimulator->getRepository('clients');
         $client->get($lender->id_client_owner);
+        $notificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
 
         $orderField     = $request->request->get('type', 'start');
         $orderDirection = strtoupper($request->request->get('order', 'ASC'));
@@ -653,9 +654,9 @@ class LenderOperationsController extends Controller
         $projectsInDept     = $project->getProjectsInDebt();
         $filters            = $request->request->get('filter', []);
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
-        $status             = isset($filters['status']) && isset(self::$loanStatusFilter[$filters['status']]) ? self::$loanStatusFilter[$filters['status']] : null;
-        $loanStatus         = array_fill_keys(array_keys(self::$loanStatusFilter), 0);
-        $lenderLoans        = $loanEntity->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
+        $status             = isset($filters['status']) && in_array($filters['status'], array_keys(self::LOAN_STATUS_FILTER)) ? self::LOAN_STATUS_FILTER[$filters['status']] : null;
+        $loanStatus         = array_fill_keys(array_keys(self::LOAN_STATUS_FILTER), 0);
+        $lenderLoans        = $loan->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
         $lenderProjectLoans = [];
 
         foreach ($lenderLoans as $projectLoans) {
@@ -713,11 +714,22 @@ class LenderOperationsController extends Controller
                     ++$loanStatus['repayment'];
                     break;
             }
-            $loanData['activity'] = [
-                'unread_count' => $notificationManager->countUnreadNotificationsForClient($client, $projectLoans['id_project'])
-            ];
+            try {
+                $loanData['activity'] = [
+                    'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($lender->id_lender_account, $projectLoans['id_project'])
+                ];
+            } catch (\Exception $exception) {
+                unset($exception);
+                $loanData['activity'] = [
+                    'unread_count' => 0
+                ];
+            }
 
-            $projectLoansDetails = $loanEntity->select('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $projectLoans['id_project']);
+            $projectLoansDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')
+                ->findBy([
+                    'idLender' => $lender->id_lender_account,
+                    'idProject' => $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectLoans['id_project'])
+                ]);
             $loans               = [];
             $loanData['count']   = [
                 'bond'        => 0,
@@ -726,16 +738,16 @@ class LenderOperationsController extends Controller
             ];
 
             foreach ($projectLoansDetails as $partialLoan) {
-                (1 == $partialLoan['id_type_contract']) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
+                (1 == $partialLoan->getIdTypeContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
 
                 $loans[] = [
-                    'rate'      => round($partialLoan['rate'], 1),
-                    'amount'    => bcdiv($partialLoan['amount'], 100, 0),
+                    'rate'      => round($partialLoan->getRate(), 1),
+                    'amount'    => bcdiv($partialLoan->getAmount(), 100, 0),
                     'documents' => $this->getDocumentDetail(
                         $projectLoans['project_status'],
                         $user->getHash(),
-                        $partialLoan['id_loan'],
-                        $partialLoan['id_type_contract'],
+                        $partialLoan->getIdLoan(),
+                        $partialLoan->getIdTypeContract()->getIdContract(),
                         $projectsInDept,
                         $projectLoans['id_project'],
                         $loanData['count']['declaration']

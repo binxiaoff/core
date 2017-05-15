@@ -124,28 +124,6 @@ class NotificationManager
     }
 
     /**
-     * @param \clients $client
-     * @param null|int $projectId
-     *
-     * @return int
-     */
-    public function countUnreadNotificationsForClient(\clients $client, $projectId = null)
-    {
-        /** @var \notifications $notifications */
-        $notifications = $this->entityManager->getRepository('notifications');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
-        $where = 'id_lender = ' . $lenderAccount->id_lender_account . ' AND status = ' . Notifications::STATUS_UNREAD;
-
-        if (false === empty($projectId)) {
-            $where .= ' AND id_project = ' . $projectId;
-        }
-
-        return $notifications->counter($where);
-    }
-
-    /**
      * @param \clients|Clients $client
      */
     public function generateDefaultNotificationSettings($client)

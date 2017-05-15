@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Notifications
  *
  * @ORM\Table(name="notifications", indexes={@ORM\Index(name="id_lender", columns={"id_lender"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\NotificationsRepository")
  */
 class Notifications
 {
