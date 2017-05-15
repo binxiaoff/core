@@ -27,6 +27,7 @@
 // **************************************************************************************************** //
 
 use \Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 
 class echeanciers extends echeanciers_crud
 {
@@ -1096,37 +1097,20 @@ class echeanciers extends echeanciers_crud
     /**
      * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a lender
      * takes into account regular past payments at their real date
-     * recovery payments including commission (fixed value, as done in 'declaration de créances')
+     * recovery payments including commission
      * future payments of healthy (according to stats definition) only projects
      * @param int $lenderId
+     *
      * @return array
      */
     public function getDataForRepaymentWidget($lenderId)
     {
-        $taxTypeForExemptedLender    = [
-            \tax_type::TYPE_CSG,
-            \tax_type::TYPE_SOCIAL_DEDUCTIONS,
-            \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-            \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
-            \tax_type::TYPE_CRDS
-        ];
-        $taxTypeForTaxableLender     = [
-            \tax_type::TYPE_INCOME_TAX,
-            \tax_type::TYPE_CSG,
-            \tax_type::TYPE_SOCIAL_DEDUCTIONS,
-            \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-            \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
-            \tax_type::TYPE_CRDS
-        ];
-        $taxTypeForForeignerLender   = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
-        $taxTypeForLegalEntityLender = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
-
         $bind  = [
             'id_lender'                    => $lenderId,
-            'tax_type_exempted_lender'     => $taxTypeForExemptedLender,
-            'tax_type_taxable_lender'      => $taxTypeForTaxableLender,
-            'tax_type_foreigner_lender'    => $taxTypeForForeignerLender,
-            'tax_type_legal_entity_lender' => $taxTypeForLegalEntityLender
+            'tax_type_exempted_lender'     => \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager::TAX_TYPE_EXEMPTED_LENDER,
+            'tax_type_taxable_lender'      => \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager::TAX_TYPE_TAXABLE_LENDER,
+            'tax_type_foreigner_lender'    => \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager::TAX_TYPE_FOREIGNER_LENDER,
+            'tax_type_legal_entity_lender' => \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager::TAX_TYPE_LEGAL_ENTITY_LENDER
         ];
         $type  = [
             'id_lender'                    => \PDO::PARAM_INT,
@@ -1137,44 +1121,31 @@ class echeanciers extends echeanciers_crud
         ];
         $query = '
             SELECT
-                t.month                        AS month,
-                t.quarter                      AS quarter,
-                t.year                         AS year,
-                ROUND(SUM(t.capital), 2)       AS capital,
+                t.month                          AS month,
+                t.quarter                        AS quarter,
+                t.year                           AS year,
+                ROUND(SUM(t.capital), 2)         AS capital,
                 ROUND(SUM(t.grossInterests), 2)  AS grossInterests,
-                ROUND(SUM(t.netInterests), 2)  AS netInterests,
-                ROUND(SUM(t.repaidTaxes), 2)   AS repaidTaxes,
-                ROUND(SUM(t.upcomingTaxes), 2) AS upcomingTaxes
+                ROUND(SUM(t.netInterests), 2)    AS netInterests,
+                ROUND(SUM(t.repaidTaxes), 2)     AS repaidTaxes,
+                ROUND(SUM(t.upcomingTaxes), 2)   AS upcomingTaxes
             FROM (
                 SELECT
-                    LEFT(t_capital.date_transaction, 7)                                                                                AS month,
-                    QUARTER(t_capital.date_transaction)                                                                                AS quarter,
-                    YEAR(t_capital.date_transaction)                                                                                   AS year,
-                    ROUND(SUM(t_capital.montant) / 100, 2)                                                                             AS capital,
-                    NULL                                                                                                               AS grossInterests,
-                    ROUND(SUM(t_interest.montant) / 100, 2)                                                                            AS netInterests,
-                    SUM((SELECT ROUND(IFNULL(SUM(tax.amount), 0) / 100, 2) FROM tax WHERE id_transaction = t_interest.id_transaction)) AS repaidTaxes,
-                    0                                                                                                                  AS upcomingTaxes
-                FROM wallet w
-                INNER JOIN transactions t_capital ON t_capital.id_client = w.id_client AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
-                LEFT JOIN transactions t_interest ON t_interest.id_echeancier = t_capital.id_echeancier AND t_interest.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                WHERE w.id = :id_lender 
-                GROUP BY year, quarter, month
-
-                UNION ALL
-
-                SELECT
-                    LEFT(t.date_transaction, 7)            AS month,
-                    QUARTER(t.date_transaction)            AS quarter,
-                    YEAR(t.date_transaction)               AS year,
-                    ROUND(SUM(t.montant) / 100 / 0.844, 2) AS capital,
-                    0                                      AS grossInterests,
-                    NULL                                   AS netInterests,
-                    0                                      AS repaidTaxes,
-                    0                                      AS upcomingTaxes
-                FROM wallet w
-                INNER JOIN transactions t ON t.id_client = w.id_client AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
-                WHERE w.id = :id_lender
+                  LEFT(o_capital.added, 7)     AS month,
+                  QUARTER(o_capital.added)     AS quarter,
+                  YEAR(o_capital.added)        AS year,
+                  SUM(o_capital.amount)        AS capital,
+                  SUM(o_interest.amount)       AS grossInterests,
+                  NULL                         AS netInterests,
+                  SUM((SELECT SUM(amount)
+                       FROM operation o_taxes
+                        INNER JOIN operation_type ot_taxes ON o_taxes.id_type = ot_taxes.id AND ot_taxes.label IN ("' . implode('","', OperationType::TAX_TYPES_FR) . '") 
+                    WHERE o_taxes.id_repayment_schedule = o_interest.id_repayment_schedule)) AS repaidTaxes,
+                  0                          AS upcomingTaxes
+                FROM operation o_capital
+                  INNER JOIN operation_type ot_capital ON o_capital.id_type = ot_capital.id AND ot_capital.label = "' . OperationType::CAPITAL_REPAYMENT . '"
+                  LEFT JOIN operation o_interest ON o_capital.id_repayment_schedule = o_interest.id_repayment_schedule AND o_interest.id_type = (SELECT id FROM operation_type ot_interest WHERE ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
+                WHERE o_capital.id_wallet_creditor = :id_lender
                 GROUP BY year, quarter, month
 
                 UNION ALL
@@ -1276,7 +1247,7 @@ class echeanciers extends echeanciers_crud
         ];
 
         $type = [
-            'limit' => \PDO::PARAM_INT,
+            'limit'  => \PDO::PARAM_INT,
             'offset' => \PDO::PARAM_INT,
         ];
         /** @var \Doctrine\DBAL\Statement $statement */
