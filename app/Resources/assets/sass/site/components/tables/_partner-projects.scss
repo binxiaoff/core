@@ -21,6 +21,7 @@
         text-transform: uppercase;
     }
 }
+
 .table-projects-item-borrower, .table-prospects-item-borrower,
 .table-projects-item-submitter, .table-prospects-item-submitter,
 .details-memo-author {
@@ -71,17 +72,30 @@
         transition: transform 150ms;
     }
 }
-
-.ui-details-open .table-projects-item-memos .icon {
-    transform: rotate(90deg);
-}
 .table-projects-details {
     > td {
         padding: 0;
     }
 }
 
-#prospect-cancel-motif {
-    max-width: 290px;
-    margin: 0 auto;
+// UI States for details and memos
+.ui-details-open .table-projects-item-memos .icon {
+    transform: rotate(90deg);
+}
+.ui-details-memo-closed {
+    .details-memo-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+.ui-details-memo-unread {
+    td {
+        font-weight: bold;
+    }
+}
+.ui-table-projects-item-memos-unread {
+    .btn-default {
+        color: $c-p1;
+    }
 }
