@@ -1,17 +1,17 @@
 <?php
 
-
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
-
 
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
 
 class EcheanciersRepository extends EntityRepository
 {
-
     public function getLostCapitalForLender($idLender)
     {
         $projectStatusCollectiveProceeding = [
@@ -36,7 +36,7 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param int $idLender
+     * @param int    $idLender
      * @param string $timeFrame
      *
      * @return string
@@ -75,4 +75,53 @@ class EcheanciersRepository extends EntityRepository
         return $result[0]['amount'];
     }
 
+    /**
+     * @param Projects|integer     $project
+     * @param integer|null         $repaymentSequence
+     * @param Clients|integer|null $client
+     * @param integer|null         $status
+     * @param integer|null         $paymentStatus
+     * @param integer|null         $start
+     * @param integer|null         $limit
+     *
+     * @return Echeanciers[]
+     */
+    public function findByProject($project, $repaymentSequence = null, $client = null, $status = null, $paymentStatus = null, $start = null, $limit = null)
+    {
+        $qb = $this->createQueryBuilder('e');
+        $qb->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
+            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.idProject AND ee.ordre = e.ordre')
+            ->where('l.idProject = :project')
+            ->setParameter('project', $project);
+
+        if (null !== $repaymentSequence) {
+            $qb->andwhere('e.ordre = :repaymentSequence')
+                ->setParameter('repaymentSequence', $repaymentSequence);
+        }
+
+        if (null !== $client) {
+            $qb->andWhere('w.idClient = :client')
+                ->setParameter('client', $client);
+        }
+
+        if (null !== $status) {
+            $qb->andWhere('e.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        if (null !== $paymentStatus) {
+            $qb->andWhere('ee.statusEmprunteur = :paymentStatus')
+                ->setParameter('paymentStatus', $paymentStatus);
+        }
+
+        if (null !== $start) {
+            $qb->setFirstResult($start);
+        }
+
+        if (null !== $limit) {
+            $qb->setMaxResults($limit);
+        }
+        return $qb->getQuery()->getResult();
+    }
 }

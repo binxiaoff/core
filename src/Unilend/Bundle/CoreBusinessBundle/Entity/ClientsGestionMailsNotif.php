@@ -133,7 +133,15 @@ class ClientsGestionMailsNotif
      */
     private $idClientsGestionMailsNotif;
 
-
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_wallet_balance_history", referencedColumnName="id")
+     * })
+     */
+    private $idWalletBalanceHistory;
 
     /**
      * Set idClient
@@ -527,5 +535,29 @@ class ClientsGestionMailsNotif
     public function getIdClientsGestionMailsNotif()
     {
         return $this->idClientsGestionMailsNotif;
+    }
+
+    /**
+     * Set idWalletBalanceHistory
+     *
+     * @param WalletBalanceHistory $idWalletBalanceHistory
+     *
+     * @return ClientsGestionMailsNotif
+     */
+    public function setIdWalletBalanceHistory(WalletBalanceHistory $idWalletBalanceHistory)
+    {
+        $this->idWalletBalanceHistory = $idWalletBalanceHistory;
+
+        return $this;
+    }
+
+    /**
+     * Get idWalletBalanceHistory
+     *
+     * @return WalletBalanceHistory
+     */
+    public function getIdWalletBalanceHistory()
+    {
+        return $this->idWalletBalanceHistory;
     }
 }

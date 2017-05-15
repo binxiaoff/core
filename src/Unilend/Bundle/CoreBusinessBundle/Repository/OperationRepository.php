@@ -7,6 +7,7 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
@@ -271,20 +272,39 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param int $idRepaymentSchedule
+     * @param Echeanciers|int $idRepaymentSchedule
      *
      * @return null|float
      */
     public function getTaxAmountByRepaymentScheduleId($idRepaymentSchedule)
     {
         $qb = $this->createQueryBuilder('o');
-        $qb->select('SUM(amount')
+        $qb->select('SUM(o.amount)')
            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
            ->where('ot.label IN (:taxTypes)')
            ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
            ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
            ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
            ->setCacheable(true);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Echeanciers|int $idRepaymentSchedule
+     *
+     * @return null|float
+     */
+    public function getGrossAmountByRepaymentScheduleId($idRepaymentSchedule)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:repaymentTypes)')
+            ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
+            ->setParameter('repaymentTypes', [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT], Connection::PARAM_STR_ARRAY)
+            ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
+            ->setCacheable(true);
 
         return $qb->getQuery()->getSingleScalarResult();
     }

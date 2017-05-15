@@ -90,10 +90,10 @@ class OperationManager
         try {
             $operation = new Operation();
             $operation->setWalletDebtor($debtor)
-                      ->setWalletCreditor($creditor)
-                      ->setAmount($amount)
-                      ->setType($type)
-                      ->setSubType($subType);
+                ->setWalletCreditor($creditor)
+                ->setAmount($amount)
+                ->setType($type)
+                ->setSubType($subType);
 
             if (false === is_array($parameters)) {
                 $parameters = [$parameters];
@@ -203,37 +203,6 @@ class OperationManager
         $lenderWallet = $loan->getIdLender();
         $amount       = round(bcdiv($loan->getAmount(), 100, 4), 2);
         $this->walletManager->releaseBalance($lenderWallet, $amount, $loan);
-        $this->legacyRefuseLoan($loan, $lenderWallet);
-    }
-
-    /**
-     * @param Loans  $loan
-     * @param Wallet $lenderWallet
-     */
-    private function legacyRefuseLoan(Loans $loan, Wallet $lenderWallet)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $this->entityManagerSimulator->getRepository('wallets_lines');
-
-        $transaction->id_client        = $lenderWallet->getIdClient()->getIdClient();
-        $transaction->montant          = $loan->getAmount();
-        $transaction->id_langue        = 'fr';
-        $transaction->id_loan_remb     = $loan->getIdLoan();
-        $transaction->date_transaction = date('Y-m-d H:i:s');
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->ip_client        = $_SERVER['REMOTE_ADDR'];
-        $transaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
-        $transaction->create();
-
-        $walletLine->id_lender                = $lenderWallet->getId();
-        $walletLine->type_financial_operation = 20;
-        $walletLine->id_transaction           = $transaction->id_transaction;
-        $walletLine->status                   = 1;
-        $walletLine->type                     = 2;
-        $walletLine->amount                   = $loan->getAmount();
-        $walletLine->create();
     }
 
     public function withdraw(Virements $wireTransferOut)
@@ -257,67 +226,16 @@ class OperationManager
      * @param Virements $wireTransferOut
      *
      * @return bool
-     * @throws \Exception
      */
     private function withdrawLenderWallet(Virements $wireTransferOut)
     {
-        $this->entityManager->getConnection()->beginTransaction();
-        try {
-            $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW]);
-            $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::LENDER);
-            $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
+        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW]);
+        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::LENDER);
+        $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
-            $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
-            $this->legacyWithdrawLenderWallet($wallet, $wireTransferOut);
-            $this->entityManager->getConnection()->commit();
+        $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
 
-            return true;
-        } catch (\Exception $e) {
-            $this->entityManager->getConnection()->rollBack();
-            throw $e;
-        }
-    }
-
-    /**
-     * @param Wallet    $wallet
-     * @param Virements $wireTransferOut
-     */
-    private function legacyWithdrawLenderWallet(Wallet $wallet, Virements $wireTransferOut)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $this->entityManagerSimulator->getRepository('wallets_lines');
-        /** @var \bank_lines $bankLine */
-        $bankLine = $this->entityManagerSimulator->getRepository('bank_lines');
-
-        $amount                        = $wireTransferOut->getMontant();
-        $transaction->id_client        = $wallet->getIdClient()->getIdClient();
-        $transaction->montant          = -$amount;
-        $transaction->id_langue        = 'fr';
-        $transaction->date_transaction = date('Y-m-d H:i:s');
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->ip_client        = empty($_SERVER['REMOTE_ADDR']) ? '' : $_SERVER['REMOTE_ADDR'];
-        $transaction->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL;
-        $transaction->create();
-
-        $walletLine->id_lender                = $wallet->getId();
-        $walletLine->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-        $walletLine->id_transaction           = $transaction->id_transaction;
-        $walletLine->status                   = \wallets_lines::STATUS_VALID;
-        $walletLine->type                     = 1;
-        $walletLine->amount                   = $transaction->montant;
-        $walletLine->create();
-
-        $bankLine->id_wallet_line    = $walletLine->id_wallet_line;
-        $bankLine->id_lender_account = $walletLine->id_lender;
-        $bankLine->status            = 1;
-        $bankLine->amount            = $transaction->montant;
-        $bankLine->create();
-
-        $wireTransferOut->setIdTransaction($transaction->id_transaction);
-
-        $this->entityManager->flush($wireTransferOut);
+        return true;
     }
 
     /**
@@ -328,61 +246,14 @@ class OperationManager
      */
     private function withdrawUnilendWallet(Virements $wireTransferOut)
     {
-        $this->entityManager->getConnection()->beginTransaction();
-        try {
-            $walletType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
-            $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $walletType]);
-            $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_WITHDRAW]);
-            $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
+        $walletType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
+        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $walletType]);
+        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_WITHDRAW]);
+        $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
-            $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
-            $this->legacyWithdrawUnilendWallet($wireTransferOut);
-            $this->entityManager->getConnection()->commit();
+        $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
 
-            return true;
-        } catch (\Exception $e) {
-            $this->entityManager->getConnection()->rollBack();
-            throw $e;
-        }
-    }
-
-    /**
-     * @param Virements $wireTransferOut
-     */
-    private function legacyWithdrawUnilendWallet(Virements $wireTransferOut)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \bank_unilend $bankUnilend */
-        $bankUnilend = $this->entityManagerSimulator->getRepository('bank_unilend');
-        /** @var \platform_account_unilend $accountUnilend */
-        $accountUnilend = $this->entityManagerSimulator->getRepository('platform_account_unilend');
-
-        $total = $wireTransferOut->getMontant();
-
-        $transaction->id_client        = 0;
-        $transaction->montant          = $total;
-        $transaction->id_langue        = 'fr';
-        $transaction->date_transaction = date('Y-m-d H:i:s');
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->type_transaction = \transactions_types::TYPE_UNILEND_BANK_TRANSFER;
-        $transaction->create();
-
-        $wireTransferOut->setIdTransaction($transaction->id_transaction);
-        $this->entityManager->flush($wireTransferOut);
-
-        $bankUnilend->id_transaction         = $transaction->id_transaction;
-        $bankUnilend->id_echeance_emprunteur = 0;
-        $bankUnilend->id_project             = 0;
-        $bankUnilend->montant                = '-' . $total;
-        $bankUnilend->type                   = \bank_unilend::TYPE_DEBIT_UNILEND;
-        $bankUnilend->status                 = 3;
-        $bankUnilend->create();
-
-        $accountUnilend->id_transaction = $transaction->id_transaction;
-        $accountUnilend->type           = \platform_account_unilend::TYPE_WITHDRAW;
-        $accountUnilend->amount         = -$total;
-        $accountUnilend->create();
+        return true;
     }
 
     /**
@@ -393,67 +264,14 @@ class OperationManager
      */
     private function withdrawBorrowerWallet(Virements $wireTransferOut)
     {
-        $this->entityManager->getConnection()->beginTransaction();
-        try {
-            $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
-            $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::BORROWER);
-            $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
+        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
+        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::BORROWER);
+        $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
-            $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
-            $this->legacyWithdrawBorrowerWallet($wallet, $wireTransferOut->getProject()->getIdProject(), $wireTransferOut);
-            $this->entityManager->getConnection()->commit();
-            return $wireTransferOut;
-        } catch (\Exception $e) {
-            $this->entityManager->getConnection()->rollBack();
-            throw $e;
-        }
-    }
+        $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
 
-    /**
-     * @param Wallet    $wallet
-     * @param Virements $wireTransferOut
-     * @param Integer   $projectId
-     * @param           $partUnilend
-     */
-    private function legacyWithdrawBorrowerWallet(Wallet $wallet, $projectId, Virements $wireTransferOut = null, $partUnilend = 0)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \bank_unilend $bankUnilend */
-        $bankUnilend = $this->entityManagerSimulator->getRepository('bank_unilend');
-        /** @var \platform_account_unilend $accountUnilend */
-        $accountUnilend = $this->entityManagerSimulator->getRepository('platform_account_unilend');
+        return $wireTransferOut;
 
-        $transferredAmount = $wireTransferOut === null ? 0 : $wireTransferOut->getMontant();
-
-        $transaction->id_client        = $wallet->getIdClient()->getIdClient();
-        $transaction->montant          = -$transferredAmount;
-        $transaction->montant_unilend  = bcmul($partUnilend, 100);
-        $transaction->id_langue        = 'fr';
-        $transaction->id_project       = $projectId;
-        $transaction->date_transaction = date('Y-m-d H:i:s');
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->ip_client        = $_SERVER['REMOTE_ADDR'];
-        $transaction->type_transaction = \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
-        $transaction->create();
-
-        if ($partUnilend > 0) {
-            $bankUnilend->id_transaction = $transaction->id_transaction;
-            $bankUnilend->id_project     = $projectId;
-            $bankUnilend->montant        = bcmul($partUnilend, 100);
-            $bankUnilend->create();
-
-            $accountUnilend->id_transaction = $transaction->id_transaction;
-            $accountUnilend->id_project     = $projectId;
-            $accountUnilend->amount         = bcmul($partUnilend, 100);
-            $accountUnilend->type           = \platform_account_unilend::TYPE_COMMISSION_PROJECT;
-            $accountUnilend->create();
-        }
-
-        if ($wireTransferOut) {
-            $wireTransferOut->setIdTransaction($transaction->id_transaction);
-            $this->entityManager->flush($wireTransferOut);
-        }
     }
 
     /**
@@ -467,44 +285,6 @@ class OperationManager
         $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
         $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
         $this->newOperation($amount, $operationType, null, $unilendWallet, $wallet, $welcomeOffer);
-
-        $this->legacyNewWelcomeOffer($wallet, $welcomeOffer);
-    }
-
-    /**
-     * @param Wallet                  $wallet
-     * @param OffresBienvenuesDetails $welcomeOffer
-     */
-    private function legacyNewWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $this->entityManagerSimulator->getRepository('wallets_lines');
-        /** @var \bank_unilend $unilendBank */
-        $unilendBank = $this->entityManagerSimulator->getRepository('bank_unilend');
-
-        $transaction->id_client                 = $wallet->getIdClient()->getIdClient();
-        $transaction->montant                   = $welcomeOffer->getMontant();
-        $transaction->id_offre_bienvenue_detail = $welcomeOffer->getIdOffreBienvenueDetail();
-        $transaction->id_langue                 = 'fr';
-        $transaction->date_transaction          = date('Y-m-d H:i:s');
-        $transaction->status                    = \transactions::STATUS_VALID;
-        $transaction->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER;
-        $transaction->create();
-
-        $walletLine->id_lender                = $wallet->getId();
-        $walletLine->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-        $walletLine->id_transaction           = $transaction->id_transaction;
-        $walletLine->status                   = \wallets_lines::STATUS_VALID;
-        $walletLine->type                     = \wallets_lines::PHYSICAL;
-        $walletLine->amount                   = $welcomeOffer->getMontant();
-        $walletLine->create();
-
-        $unilendBank->id_transaction = $transaction->id_transaction;
-        $unilendBank->montant        = '-' . $welcomeOffer->getMontant();
-        $unilendBank->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
-        $unilendBank->create();
     }
 
     /**
@@ -518,44 +298,6 @@ class OperationManager
         $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
         $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
         $this->newOperation($amount, $operationType, null, $wallet, $unilendWallet, $welcomeOffer);
-
-        $this->legacyCancelWelcomeOffer($wallet, $welcomeOffer);
-    }
-
-    /**
-     * @param Wallet                  $wallet
-     * @param OffresBienvenuesDetails $welcomeOffer
-     */
-    private function legacyCancelWelcomeOffer(Wallet $wallet, OffresBienvenuesDetails $welcomeOffer)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $this->entityManagerSimulator->getRepository('wallets_lines');
-        /** @var \bank_unilend $unilendBank */
-        $unilendBank = $this->entityManagerSimulator->getRepository('bank_unilend');
-
-        $transaction->id_client                 = $wallet->getIdClient()->getIdClient();
-        $transaction->montant                   = -$welcomeOffer->getMontant();
-        $transaction->id_offre_bienvenue_detail = $welcomeOffer->getIdOffreBienvenueDetail();
-        $transaction->id_langue                 = 'fr';
-        $transaction->date_transaction          = date('Y-m-d H:i:s');
-        $transaction->status                    = \transactions::STATUS_VALID;
-        $transaction->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION;
-        $transaction->create();
-
-        $walletLine->id_lender                =  $wallet->getId();
-        $walletLine->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
-        $walletLine->id_transaction           = $transaction->id_transaction;
-        $walletLine->status                   = 1;
-        $walletLine->type                     = 1;
-        $walletLine->amount                   = -$welcomeOffer->getMontant();
-        $walletLine->create();
-
-        $unilendBank->id_transaction = $transaction->id_transaction;
-        $unilendBank->montant        = abs($welcomeOffer->getMontant());
-        $unilendBank->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
-        $unilendBank->create();
     }
 
     /**
@@ -568,7 +310,11 @@ class OperationManager
     public function cancelProvisionLenderWallet(Wallet $wallet, $amount, Receptions $reception)
     {
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION]);
-        $operation     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferIn' => $reception, 'idWalletCreditor' => $wallet, 'idType' => $operationType]);
+        $operation     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
+            'idWireTransferIn' => $reception,
+            'idWalletCreditor' => $wallet,
+            'idType'           => $operationType
+        ]);
         if (null === $operation) {
             return false;
         }
@@ -576,30 +322,7 @@ class OperationManager
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION_CANCEL]);
         $this->newOperation($amount, $operationType, null, $wallet, null, $reception);
 
-        $this->legacyCancelProvisionLenderWallet($reception);
-
         return true;
-    }
-
-    /**
-     * @param Receptions $reception
-     */
-    private function legacyCancelProvisionLenderWallet(Receptions $reception)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $this->entityManagerSimulator->getRepository('wallets_lines');
-        /** @var \bank_unilend $unilendBank */
-        $bankLine = $this->entityManagerSimulator->getRepository('bank_lines');
-
-        $transaction->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND id_virement');
-        $walletLine->get($transaction->id_transaction, 'id_transaction');
-        $bankLine->delete($walletLine->id_wallet_line, 'id_wallet_line');
-        $walletLine->delete($transaction->id_transaction, 'id_transaction');
-
-        $transaction->status = \transactions::STATUS_CANCELED;
-        $transaction->update();
     }
 
     /**
@@ -624,81 +347,7 @@ class OperationManager
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION_CANCEL]);
         $this->newOperation($amount, $operationType, null, $wallet, null, $reception);
 
-        $this->legacyCancelProvisionBorrowWallet($reception);
-
         return true;
-    }
-
-    /**
-     * @param Receptions $reception
-     */
-    private function legacyCancelProvisionBorrowWallet(Receptions $reception)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \bank_unilend $unilendBank */
-        $bankUnilend = $this->entityManagerSimulator->getRepository('bank_unilend');
-
-        $transaction->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement');
-        $bankUnilend->delete($transaction->id_transaction, 'id_transaction');
-        $transaction->status  = \transactions::STATUS_CANCELED;
-        $transaction->id_user = $_SESSION['user']['id_user'];
-        $transaction->update();
-    }
-
-    /**
-     * @param Wallet     $wallet
-     * @param float      $amount
-     * @param Receptions $reception
-     *
-     * @return bool
-     */
-    public function rejectProvisionBorrowerWallet(Wallet $wallet, $amount, Receptions $reception)
-    {
-        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
-        $operation     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
-            'idWireTransferIn' => $reception->getIdReception(),
-            'idWalletCreditor' => $wallet,
-            'idType'           => $operationType
-        ]);
-        if (null === $operation) {
-            return false;
-        }
-
-        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION_CANCEL]);
-        $this->newOperation($amount, $operationType, null, $wallet, null, $reception);
-
-        $this->legacyRejectProvisionBorrowerWallet($reception);
-
-        return true;
-    }
-
-    /**
-     * @param Receptions $reception
-     */
-    private function legacyRejectProvisionBorrowerWallet(Receptions $reception)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \bank_unilend $unilendBank */
-        $bankUnilend = $this->entityManagerSimulator->getRepository('bank_unilend');
-
-        $transaction->id_prelevement   = $reception->getIdReception();
-        $transaction->id_client        = $reception->getIdClient()->getIdClient();
-        $transaction->montant          = -$reception->getMontant();
-        $transaction->id_langue        = 'fr';
-        $transaction->date_transaction = date('Y-m-d H:i:s');
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
-        $transaction->ip_client        = $_SERVER['REMOTE_ADDR'];
-        $transaction->id_user          = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : '';
-        $transaction->create();
-
-        $bankUnilend->id_transaction = $transaction->id_transaction;
-        $bankUnilend->id_project     = $reception->getIdProject()->getIdProject();
-        $bankUnilend->montant        = -$reception->getMontant();
-        $bankUnilend->type           = 1;
-        $bankUnilend->create();
     }
 
     /**
@@ -774,14 +423,19 @@ class OperationManager
         $this->repaymentGeneric($borrowerWallet, $lenderWallet, $amountCapital, $amountInterestGross, null, $repaymentSchedule);
     }
 
-    public function tax(Wallet $lender, Loans $loan, $amountInterestGross, $origin)
+    /**
+     * @param Loans  $loan
+     * @param        $amountInterestGross
+     * @param        $origin
+     */
+    private function tax(Loans $loan, $amountInterestGross, $origin)
     {
         $walletRepo        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $walletTypeRepo    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType');
         $operationTypeRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType');
 
         $underlyingContract = $loan->getIdTypeContract();
-        $taxes              = $this->taxManager->getLenderRepaymentInterestTax($lender->getIdClient(), $amountInterestGross, new \DateTime(), $underlyingContract);
+        $taxes              = $this->taxManager->getLenderRepaymentInterestTax($loan->getIdLender()->getIdClient(), $amountInterestGross, new \DateTime(), $underlyingContract);
 
         foreach ($taxes as $type => $tax) {
             $operationType = '';
@@ -823,7 +477,7 @@ class OperationManager
             $walletTax     = $walletRepo->findOneBy(['idType' => $walletTaxType]);
             $operationType = $operationTypeRepo->findOneBy(['label' => $operationType]);
 
-            $this->newOperation($tax, $operationType, null, $lender, $walletTax, $origin);
+            $this->newOperation($tax, $operationType, null, $loan->getIdLender(), $walletTax, $origin);
         }
     }
 
@@ -860,43 +514,7 @@ class OperationManager
 
         $this->repaymentGeneric($borrowerWallet, $lenderWallet, $outstandingCapital, 0, $operationSubType, $loan);
 
-        $this->legacyEarlyRepayment($loan, $lenderWallet, $outstandingCapital);
-
         return $outstandingCapital;
-    }
-
-    /**
-     * @param Loans  $loan
-     * @param Wallet $lenderWallet
-     * @param        $amount
-     */
-    private function legacyEarlyRepayment(Loans $loan, Wallet $lenderWallet, $amount)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $this->entityManagerSimulator->getRepository('wallets_lines');
-
-        $transaction->id_client        = $lenderWallet->getIdClient()->getIdClient();
-        $transaction->montant          = bcmul($amount, 100);
-        $transaction->id_echeancier    = 0; // pas d'id_echeance car multiple
-        $transaction->id_loan_remb     = $loan->getIdLoan();
-        $transaction->id_project       = $loan->getProject()->getIdProject();
-        $transaction->id_langue        = 'fr';
-        $transaction->date_transaction = date('Y-m-d H:i:s');
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->ip_client        = $_SERVER['REMOTE_ADDR'];
-        $transaction->type_transaction = \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT;
-        $transaction->create();
-
-        $walletLine->id_lender                = $loan->getIdLender();
-        $walletLine->type_financial_operation = 40;
-        $walletLine->id_loan                  = $loan->getIdLoan();
-        $walletLine->id_transaction           = $transaction->id_transaction;
-        $walletLine->status                   = 1; // non utilisé
-        $walletLine->type                     = 2; // transaction virtuelle
-        $walletLine->amount                   = bcmul($amount, 100);
-        $walletLine->create();
     }
 
     /**
@@ -907,22 +525,13 @@ class OperationManager
      */
     public function projectCommission(Projects $project, $commission)
     {
-        $this->entityManager->getConnection()->beginTransaction();
-        try {
-            $borrowerWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
-            $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
-            $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
-            $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
-            $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_FUNDS]);
+        $borrowerWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
+        $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
+        $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_FUNDS]);
 
-            $this->newOperation($commission, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, $project);
-
-            $this->legacyWithdrawBorrowerWallet($borrowerWallet, $project->getIdProject(), null, $commission);
-            $this->entityManager->getConnection()->commit();
-        } catch (\Exception $e) {
-            $this->entityManager->getConnection()->rollBack();
-            throw $e;
-        }
+        $this->newOperation($commission, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, $project);
     }
 
     /**
@@ -941,39 +550,7 @@ class OperationManager
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_TRANSFER]);
         $this->newOperation($amount, $operationType, null, $debtor, $creditor, $transfer);
 
-        $this->legacyLenderTransfer($transfer, $amount);
-
         return true;
-    }
-
-    /**
-     * @param Transfer $transfer
-     * @param          $amount
-     */
-    private function legacyLenderTransfer(Transfer $transfer, $amount)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-
-        $transaction->id_client        = $transfer->getClientOrigin()->getIdClient();
-        $transaction->montant          = -$amount * 100;
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
-        $transaction->date_transaction = date('Y-m-d h:i:s');
-        $transaction->id_langue        = 'fr';
-        $transaction->id_transfer      = $transfer->getIdTransfer();
-        $transaction->create();
-
-        $transaction->unsetData();
-
-        $transaction->id_client        = $transfer->getClientReceiver()->getIdClient();
-        $transaction->montant          = $amount * 100;
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
-        $transaction->date_transaction = date('Y-m-d h:i:s');
-        $transaction->id_langue        = 'fr';
-        $transaction->id_transfer      = $transfer->getIdTransfer();
-        $transaction->create();
     }
 
     /**
@@ -986,35 +563,6 @@ class OperationManager
 
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION]);
         $this->newOperation($amount, $operationType, null, null, $unilendWallet);
-
-        $this->legacyProvisionUnilendWallet($amount);
-    }
-
-    /**
-     * @param $amount
-     */
-    private function legacyProvisionUnilendWallet($amount)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \bank_unilend $unilendBank */
-        $bankUnilend = $this->entityManagerSimulator->getRepository('bank_unilend');
-
-        $transaction->id_prelevement   = 0;
-        $transaction->id_client        = 0;
-        $transaction->montant          = $amount * 100;
-        $transaction->id_langue        = 'fr';
-        $transaction->date_transaction = date('Y-m-d H:i:s');
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->type_transaction = \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER;
-        $transaction->ip_client        = '';
-        $transaction->create();
-
-        $bankUnilend->id_transaction = $transaction->id_transaction;
-        $bankUnilend->id_project     = 0;
-        $bankUnilend->montant        = $amount * 100;
-        $bankUnilend->type           = 4; // Unilend welcome offer
-        $bankUnilend->create();
     }
 
     /**
@@ -1027,7 +575,6 @@ class OperationManager
      */
     public function provisionCollection(Wallet $collector, Wallet $borrower, Receptions $reception, $commission)
     {
-        $this->legacyProvisionCollection($borrower, $reception);
         if ($borrower->getIdType()->getLabel() !== WalletType::BORROWER) {
             return false;
         }
@@ -1041,26 +588,6 @@ class OperationManager
         $this->newOperation($amount, $operationType, null, null, $borrower, $reception);
 
         return true;
-    }
-
-    /**
-     * @param Wallet     $wallet
-     * @param Receptions $reception
-     */
-    private function legacyProvisionCollection(Wallet $wallet, Receptions $reception)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-
-        $transaction->id_virement      = $reception->getIdReception();
-        $transaction->id_client        = $wallet->getIdClient()->getIdClient();
-        $transaction->id_project       = $reception->getIdProject()->getIdProject();
-        $transaction->montant          = $reception->getMontant();
-        $transaction->id_langue        = 'fr';
-        $transaction->date_transaction = date('Y-m-d H:i:s');
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->type_transaction = \transactions_types::TYPE_RECOVERY_BANK_TRANSFER;
-        $transaction->create();
     }
 
     /**
@@ -1099,8 +626,6 @@ class OperationManager
      */
     public function repaymentCollection(Wallet $lender, Projects $project, $amount, $commission)
     {
-        $this->legacyRepaymentCollection($lender, $amount, $commission, $project);
-
         $borrower = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         if (null === $borrower) {
             return false;
@@ -1108,39 +633,6 @@ class OperationManager
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
 
         return $this->repaymentGeneric($borrower, $lender, $amount, 0, $operationSubType, $project);
-    }
-
-    /**
-     * @param Wallet   $wallet
-     * @param          $amount
-     * @param          $commission
-     * @param Projects $project
-     */
-    private function legacyRepaymentCollection(Wallet $wallet, $amount, $commission, Projects $project)
-    {
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $this->entityManagerSimulator->getRepository('wallets_lines');
-
-        $amount = bcsub($amount, $commission, 2);
-
-        $transaction->id_project       = $project->getIdProject();
-        $transaction->id_client        = $wallet->getIdClient()->getIdClient();
-        $transaction->montant          = bcmul($amount, 100);
-        $transaction->id_langue        = 'fr';
-        $transaction->date_transaction = date('Y-m-d H:i:s');
-        $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->type_transaction = \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
-        $transaction->create();
-
-        $walletLine->id_lender                = $wallet->getId();
-        $walletLine->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
-        $walletLine->id_transaction           = $transaction->id_transaction;
-        $walletLine->status                   = \wallets_lines::STATUS_VALID;
-        $walletLine->type                     = \wallets_lines::VIRTUAL;
-        $walletLine->amount                   = $transaction->montant;
-        $walletLine->create();
     }
 
     /**
@@ -1153,7 +645,7 @@ class OperationManager
      *
      * @return bool
      */
-    private function repaymentGeneric(Wallet $borrower, Wallet $lender, $capital, $interest, OperationSubType $operationSubType, $origins = [])
+    private function repaymentGeneric(Wallet $borrower, Wallet $lender, $capital, $interest, OperationSubType $operationSubType = null, $origins = [])
     {
         if ($borrower->getIdType()->getLabel() !== WalletType::BORROWER) {
             return false;
@@ -1184,7 +676,7 @@ class OperationManager
                 }
             }
             if ($loan instanceof Loans) {
-                $this->tax($lender, $loan, $interest, $origins);
+                $this->tax($loan, $interest, $origins);
             }
         }
         return true;

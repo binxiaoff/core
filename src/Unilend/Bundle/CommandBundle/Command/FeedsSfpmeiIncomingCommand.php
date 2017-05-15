@@ -373,22 +373,6 @@ EOF
 
                 $operationManager->provisionBorrowerWallet($reception);
 
-                $transactions->id_prelevement   = $reception->getIdReception();
-                $transactions->id_client        = $project->getIdCompany()->getIdClientOwner();
-                $transactions->montant          = $reception->getMontant();
-                $transactions->id_langue        = 'fr';
-                $transactions->date_transaction = date('Y-m-d H:i:s');
-                $transactions->status           = \transactions::STATUS_VALID;
-                $transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT;
-                $transactions->ip_client        = '';
-                $transactions->create();
-
-                $bank_unilend->id_transaction = $transactions->id_transaction;
-                $bank_unilend->id_project     = $project->getIdProject();
-                $bank_unilend->montant        = $reception->getMontant();
-                $bank_unilend->type           = 1;
-                $bank_unilend->create();
-
                 $this->updateRepayment($project->getIdProject(), bcdiv($reception->getMontant(), 100, 2));
             }
         }
@@ -415,23 +399,6 @@ EOF
         $entityManager->flush();
 
         $operationManager->provisionBorrowerWallet($reception);
-
-        $transactions->id_virement      = $reception->getIdReception();
-        $transactions->id_project       = $project->getIdProject();
-        $transactions->montant          = $reception->getMontant();
-        $transactions->id_langue        = 'fr';
-        $transactions->date_transaction = date('Y-m-d H:i:s');
-        $transactions->status           = \transactions::STATUS_VALID;
-        $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
-        $transactions->ip_client        = '';
-        $transactions->create();
-
-        $bank_unilend->id_transaction = $transactions->id_transaction;
-        $bank_unilend->id_project     = $project->getIdProject();
-        $bank_unilend->montant        = $reception->getMontant();
-        $bank_unilend->type           = 1; // remb emprunteur
-        $bank_unilend->status         = 0; // chez unilend
-        $bank_unilend->create();
         /** @var \settings $settings */
         $settings = $this->entityManagerSimulator->getRepository('settings');
         $settings->get('Adresse notification nouveau remboursement anticipe', 'type');
@@ -478,21 +445,6 @@ EOF
         $entityManager->flush();
 
         $operationManager->provisionBorrowerWallet($reception);
-
-        $transactions->id_virement      = $reception->getIdReception();
-        $transactions->montant          = $reception->getMontant();
-        $transactions->id_langue        = 'fr';
-        $transactions->date_transaction = date('Y-m-d H:i:s');
-        $transactions->status           = \transactions::STATUS_VALID;
-        $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
-        $transactions->ip_client        = '';
-        $transactions->create();
-
-        $bankUnilend->id_transaction = $transactions->id_transaction;
-        $bankUnilend->id_project     = $project->getIdProject();
-        $bankUnilend->montant        = $reception->getMontant();
-        $bankUnilend->type           = 1;
-        $bankUnilend->create();
 
         $this->updateRepayment($project->getIdProject(), bcdiv($reception->getMontant(), 100, 2));
     }
@@ -621,7 +573,7 @@ EOF
             $wallet           = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
             if ($wallet) {
                 $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
-                $operationManager->rejectProvisionBorrowerWallet($wallet, $amount, $reception); //todo: replace it by cancelProvisionBorrowerWallet
+                $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
                 $reception->setStatusBo(Receptions::STATUS_REJECTED);
                 $reception->setRemb(0);

@@ -368,6 +368,11 @@
             <argument type="constant">\NumberFormatter::CURRENCY</argument>
         </service>
 
+        <service id="number_formatter" class="NumberFormatter">
+            <argument>%kernel.default_locale%</argument>
+            <argument type="constant">\NumberFormatter::DEFAULT_STYLE</argument>
+        </service>
+
         <service id="unilend.service.wire_transfer_out_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>
@@ -384,6 +389,22 @@
         <service id="unilend.service.lender_operations_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager">
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="translator.default" />
+        </service>
+
+        <service id="unilend.service.project_repayment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.operation_manager"/>
+            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="unilend.service.email_manager"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="mailer"/>
+            <argument type="service" id="number_formatter"/>
+            <argument type="service" id="currency_formatter"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="assets.packages"/>
+            <argument>%router.request_context.scheme%://%url.host_default%</argument>
         </service>
     </services>
 </container>

@@ -86,36 +86,12 @@ class transfertsController extends bootstrap
 
                 if ($_POST['type_remb'] === 'remboursement_anticipe') {
                     $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
-                    $transactions->id_virement      = $reception->getIdReception();
-                    $transactions->id_project       = $project->getIdProject();
-                    $transactions->montant          = $reception->getMontant();
-                    $transactions->id_langue        = 'fr';
-                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = \transactions::STATUS_VALID;
-                    $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
-                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $transactions->create();
                 } elseif ($_POST['type_remb'] === 'regularisation') {
                     $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                    $transactions->id_virement      = $reception->getIdReception();
-                    $transactions->montant          = $reception->getMontant();
-                    $transactions->id_langue        = 'fr';
-                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = \transactions::STATUS_VALID;
-                    $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
-                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $transactions->create();
                     $this->updateEcheances($project->getIdProject(), $reception->getMontant());
                 }
 
                 $entityManager->flush();
-
-                $bank_unilend->id_transaction = $transactions->id_transaction;
-                $bank_unilend->id_project     = $project->getIdProject();
-                $bank_unilend->montant        = $reception->getMontant();
-                $bank_unilend->type           = 1; // remb emprunteur
-                $bank_unilend->status         = 0; // chez unilend
-                $bank_unilend->create();
             }
 
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');
@@ -404,7 +380,7 @@ class transfertsController extends bootstrap
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
-                    $operationManager->rejectProvisionBorrowerWallet($wallet, $amount, $reception); //todo: replace it by cancelProvisionBorrowerWallet
+                    $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
                     $reception->setStatusBo(Receptions::STATUS_REJECTED);
                     $reception->setRemb(0);
