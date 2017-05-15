@@ -124,7 +124,7 @@
                     - <?= $this->ficelle->formatNumber($this->tvaaVenir / 100) ?> € de TVA</i>
             </td>
         </tr>
-        <?php if ($this->projects->status == \projects_status::REMBOURSEMENT_ANTICIPE) : ?>
+        <?php if ($this->projects->status != \projects_status::REMBOURSEMENT_ANTICIPE) : ?>
             <tr>
                 <th>Prochain remboursement :</th>
                 <td><?= $this->dates->formatDate($this->nextRemb, 'd/m/Y') ?></td>

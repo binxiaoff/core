@@ -21,13 +21,12 @@ class ReceptionsRepository extends EntityRepository
         $from = new \DateTime($date->format("Y-m-d") . " 00:00:00");
         $to   = new \DateTime($date->format("Y-m-d") . " 23:59:59");
 
-        $qb = $this->createQueryBuilder("r");
-        $qb->andWhere('r.added BETWEEN :from AND :to')
-           ->setParameter('from', $from)
-           ->setParameter('to', $to);
-        $result = $qb->getQuery()->getResult();
+        $queryBuilder = $this->createQueryBuilder("r");
+        $queryBuilder->andWhere('r.added BETWEEN :from AND :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to);
 
-        return $result;
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -37,17 +36,16 @@ class ReceptionsRepository extends EntityRepository
      */
     public function getBorrowerAttributions()
     {
-        $qb = $this->createQueryBuilder('r');
-        $qb->andWhere('r.idProject IS NOT NULL')
-           ->andWhere('r.type = :directDebit AND r.statusPrelevement = :directDebitSent OR r.type = :wireTransfer AND r.statusVirement = :wireTransferReceived')
-           ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
-           ->setParameter('directDebitSent', Receptions::DIRECT_DEBIT_STATUS_SENT)
-           ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
-           ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED)
-           ->orderBy('r.idReception', 'DESC');
-        $result = $qb->getQuery()->getResult();
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->andWhere('r.idProject IS NOT NULL')
+            ->andWhere('r.type = :directDebit AND r.statusPrelevement = :directDebitSent OR r.type = :wireTransfer AND r.statusVirement = :wireTransferReceived')
+            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
+            ->setParameter('directDebitSent', Receptions::DIRECT_DEBIT_STATUS_SENT)
+            ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
+            ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED)
+            ->orderBy('r.idReception', 'DESC');
 
-        return $result;
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -57,18 +55,17 @@ class ReceptionsRepository extends EntityRepository
      */
     public function getLenderAttributions()
     {
-        $qb = $this->createQueryBuilder('r');
-        $qb->andWhere('r.idClient IS NOT NULL')
-           ->andWhere('r.idProject IS NULL')
-           ->andWhere('r.type = :directDebit AND r.statusPrelevement = :directDebitSent OR r.type = :wireTransfer AND r.statusVirement = :wireTransferReceived')
-           ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
-           ->setParameter('directDebitSent', Receptions::DIRECT_DEBIT_STATUS_SENT)
-           ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
-           ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED)
-           ->orderBy('r.idReception', 'DESC');
-        $result = $qb->getQuery()->getResult();
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->andWhere('r.idClient IS NOT NULL')
+            ->andWhere('r.idProject IS NULL')
+            ->andWhere('r.type = :directDebit AND r.statusPrelevement = :directDebitSent OR r.type = :wireTransfer AND r.statusVirement = :wireTransferReceived')
+            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
+            ->setParameter('directDebitSent', Receptions::DIRECT_DEBIT_STATUS_SENT)
+            ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
+            ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED)
+            ->orderBy('r.idReception', 'DESC');
 
-        return $result;
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -78,8 +75,8 @@ class ReceptionsRepository extends EntityRepository
      */
     public function getBorrowerAnticipatedRepaymentWireTransfer(Projects $project)
     {
-        $qb = $this->createQueryBuilder('r');
-        $qb->where('r.idProject = :projectId')
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->where('r.idProject = :projectId')
             ->andWhere('r.statusBo IN (:assignmentType)')
             ->andWhere('r.typeRemb = :earlyRepayment')
             ->andWhere('r.type = :wireTransfer')
@@ -90,6 +87,6 @@ class ReceptionsRepository extends EntityRepository
             ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
             ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED);
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getResult();
     }
 }
