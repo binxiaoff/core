@@ -38,15 +38,21 @@
                         </fieldset><!-- /.simulator-pane-inner -->
                         <div class="simulator-pane-inner results bg-p1 c-bg5">
                             {% if rejectionReason is defined %}
-                                <div class="project-request-reject-message">{{ rejectionReason|raw }}</div>
+                                <div class="message-error">
+                                    <h3>{% trans %} partner-project-request_simulator-rejection-title {% endtrans %}</h3>
+                                    {{ rejectionReason|raw }}
+                                </div>
                             {% else %}
-                                {% trans %} partner-project-request_simulator-eligibility-message {% endtrans %}
-                                <dl class="list-2col">
-                                    <dt id="simulator-label-amount">{% trans %} partner-project-request_simulator-eligibility-amount-label {% endtrans %}</dt>
-                                    <dd id="simulator-output-amount">{{ amount|localizednumber }}&nbsp;€</dd>
-                                    <dt id="simulator-label-duration">{% trans %} partner-project-request_simulator-eligibility-estimated-funding-time-label {% endtrans %}</dt>
-                                    <dd id="simulator-output-duration">{% transchoice averageFundingDuration with {'%numberDays%': averageFundingDuration} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
-                                </dl>
+                                <div class="message-success">
+                                    <h3>{% trans %} partner-project-request_simulator-eligibility-title {% endtrans %}</h3>
+                                    {% trans %} partner-project-request_simulator-eligibility-message {% endtrans %}
+                                    <dl class="list-2col">
+                                        <dt id="simulator-label-amount">{% trans %} partner-project-request_simulator-eligibility-amount-label {% endtrans %}</dt>
+                                        <dd id="simulator-output-amount">{{ amount|localizednumber }}&nbsp;€</dd>
+                                        <dt id="simulator-label-duration">{% trans %} partner-project-request_simulator-eligibility-estimated-funding-time-label {% endtrans %}</dt>
+                                        <dd id="simulator-output-duration">{% transchoice averageFundingDuration with {'%numberDays%': averageFundingDuration} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
+                                    </dl>
+                                </div>
                             {% endif %}
                         </div><!-- /.simulator-pane-inner -->
                         <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-center">
