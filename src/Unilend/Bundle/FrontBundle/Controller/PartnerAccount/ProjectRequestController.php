@@ -315,9 +315,10 @@ class ProjectRequestController extends Controller
             $template['rejectionReason'] = $this->get('translator')->trans($translation, ['%borrowerServiceEmail%' => $borrowerServiceEmail->getValue()]);
         } else {
             $template = $template + [
-                'averageFundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
-                'abandonReasons'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
-                'prospect'               => ! $this->getUser()->getPartner()->getProspect()
+                'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
+                'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
+                'abandonReasons'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
+                'prospect'                 => ! $this->getUser()->getPartner()->getProspect()
             ];
         }
 

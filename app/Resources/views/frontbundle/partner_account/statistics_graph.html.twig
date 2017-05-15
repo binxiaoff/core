@@ -199,31 +199,46 @@
                     <li role="presentation" class="active">
                         <a href="#{{ graphType }}-projects-submitted-tab" role="tab" data-toggle="tab">
                             Dossiers envoyés
-                            <span class="difference">+ 20% mois précedent</span>
+                            {% if submittedProjects[10] > 0 %}
+                                {% set variation = ((submittedProjects[11] - submittedProjects[10]) / submittedProjects[10]) * 100 %}
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                            {% endif %}
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#{{ graphType }}-projects-accepted-tab" role="tab" data-toggle="tab">
                             Dossiers acceptés
-                            <span class="difference">- 10% mois précedent</span>
+                            {% if acceptedProjects[10] > 0 %}
+                                {% set variation = ((acceptedProjects[11] - acceptedProjects[10]) / acceptedProjects[10]) * 100 %}
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                            {% endif %}
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#{{ graphType }}-projects-repayment-tab" role="tab" data-toggle="tab">
                             Dossiers décaissés
-                            <span class="difference">+ 10% mois précedent</span>
+                            {% if repaymentProjects[10] > 0 %}
+                                {% set variation = ((repaymentProjects[11] - repaymentProjects[10]) / repaymentProjects[10]) * 100 %}
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                            {% endif %}
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#{{ graphType }}-projects-submitted-amount-tab" role="tab" data-toggle="tab">
                             Montant envoyé
-                            <span class="difference">- 18% mois précedent</span>
+                            {% if submittedAmount[10] > 0 %}
+                                {% set variation = ((submittedAmount[11] - submittedAmount[10]) / submittedAmount[10]) * 100 %}
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                            {% endif %}
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#{{ graphType }}-projects-repayment-amount-tab" role="tab" data-toggle="tab">
                             Montant décaissé
-                            <span class="difference">~ 0% mois précedent</span>
+                            {% if repaymentAmount[10] > 0 %}
+                                {% set variation = ((repaymentAmount[11] - repaymentAmount[10]) / repaymentAmount[10]) * 100 %}
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                            {% endif %}
                         </a>
                     </li>
                 </ul>
