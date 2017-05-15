@@ -67,7 +67,7 @@ class LenderOperationsController extends Controller
 
     CONST LOAN_STATUS_FILTER = [
         'repayment'      => [\projects_status::REMBOURSEMENT],
-        'refund'         => [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE],
+        'repaid'         => [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE],
         'late-repayment' => [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X],
         'problem'        => [\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]
     ];
@@ -308,7 +308,7 @@ class LenderOperationsController extends Controller
                     \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('lender-operations_operation-label-money-deposit'),
                     \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('lender-operations_operation-label-money-deposit'),
                     self::TYPE_REPAYMENT_TRANSACTION                         => [
-                        1 => $translator->trans('lender-operations_operation-label-refund'),
+                        1 => $translator->trans('lender-operations_operation-label-repayment'),
                         2 => $translator->trans('lender-operations_operation-label-recovery')
                     ],
                     \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('lender-operations_operation-label-money-deposit'),
@@ -706,7 +706,7 @@ class LenderOperationsController extends Controller
                 case \projects_status::REMBOURSE:
                 case \projects_status::REMBOURSEMENT_ANTICIPE:
                     $loanData['status'] = 'completed';
-                    ++$loanStatus['refund'];
+                    ++$loanStatus['repaid'];
                     break;
                 case \projects_status::REMBOURSEMENT:
                 default:
@@ -764,7 +764,7 @@ class LenderOperationsController extends Controller
         $chartColors = [
             'late-repayment' => '#5FC4D0',
             'problem'        => '#F2980C',
-            'refund'         => '#1B88DB',
+            'repaid'         => '#1B88DB',
             'repayment'      => '#428890'
         ];
 
