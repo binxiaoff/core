@@ -28,28 +28,6 @@
 
 class notifications extends notifications_crud
 {
-    const TYPE_BID_REJECTED                   = 1;
-    const TYPE_REPAYMENT                      = 2;
-    const TYPE_BID_PLACED                     = 3;
-    const TYPE_LOAN_ACCEPTED                  = 4;
-    const TYPE_BANK_TRANSFER_CREDIT           = 5;
-    const TYPE_CREDIT_CARD_CREDIT             = 6;
-    const TYPE_DEBIT                          = 7;
-    const TYPE_NEW_PROJECT                    = 8;
-    const TYPE_PROJECT_PROBLEM                = 9;
-    const TYPE_PROJECT_PROBLEM_REMINDER       = 10;
-    const TYPE_PROJECT_RECOVERY               = 11;
-    const TYPE_PROJECT_PRECAUTIONARY_PROCESS  = 12;
-    const TYPE_PROJECT_RECEIVERSHIP           = 13;
-    const TYPE_PROJECT_COMPULSORY_LIQUIDATION = 14;
-    const TYPE_PROJECT_FAILURE                = 15;
-    const TYPE_AUTOBID_BALANCE_LOW            = 16;
-    const TYPE_AUTOBID_BALANCE_INSUFFICIENT   = 17;
-    const TYPE_AUTOBID_FIRST_ACTIVATION       = 18;
-
-    const STATUS_READ   = 1;
-    const STATUS_UNREAD = 0;
-
     public function __construct($bdd, $params = '')
     {
         parent::notifications($bdd, $params);
@@ -89,38 +67,5 @@ class notifications extends notifications_crud
         $sql    = 'SELECT * FROM `notifications` WHERE ' . $field . ' = "' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_assoc($result) > 0);
-    }
-
-    /**
-     * @param lenders_accounts $lender
-     */
-    public function markAllLenderNotificationsAsRead(\lenders_accounts $lender)
-    {
-        $queryBuilder = $this->bdd->createQueryBuilder();
-        $queryBuilder->update('notifications')
-            ->set('status', self::STATUS_READ)
-            ->where('status = ' . self::STATUS_UNREAD)
-            ->andWhere('id_lender = :id_lender')
-            ->setParameter('id_lender', $lender->id_lender_account);
-
-        $queryBuilder->execute();
-    }
-
-    /**
-     * @param lenders_accounts $lender
-     * @param array            $notifications
-     */
-    public function markLenderNotificationsAsRead(\lenders_accounts $lender, array $notifications)
-    {
-        $queryBuilder = $this->bdd->createQueryBuilder();
-        $queryBuilder->update('notifications')
-            ->set('status', self::STATUS_READ)
-            ->where('status = ' . self::STATUS_UNREAD)
-            ->andWhere('id_lender = :id_lender')
-            ->andWhere('id_notification IN (:notifications)')
-            ->setParameter('id_lender', $lender->id_lender_account, \PDO::PARAM_INT)
-            ->setParameter('notifications', $notifications, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
-
-        $queryBuilder->execute();
     }
 }

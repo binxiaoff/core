@@ -88,6 +88,7 @@
                     <li><a href="<?= $this->lurl ?>/preteurs/offres_de_bienvenue" title="Offre de bienvenue">Offre de bienvenue</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/control_fiscal_city" title="Matching ville fiscale">Matching ville fiscale</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/control_birth_city" title="Matching ville de naissance">Matching ville de naissance</a></li>
+                    <li><a href="<?= $this->lurl ?>/preteurs/notifications" title="Envoyer des notifications sur les projets">Notifications</a></li>
                 </ul>
             </li>
         <?php endif; ?>

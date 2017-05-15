@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -265,7 +266,7 @@ EOF
             foreach ($aLenders as $aLender) {
                 $oLenderAccount->get($aLender['id_lender']);
                 if ($productManager->getLenderEligibility($oLenderAccount, $project)) {
-                    $notifications->type       = \notifications::TYPE_NEW_PROJECT;
+                    $notifications->type       = Notifications::TYPE_NEW_PROJECT;
                     $notifications->id_lender  = $aLender['id_lender'];
                     $notifications->id_project = $project->id_project;
                     $notifications->create();

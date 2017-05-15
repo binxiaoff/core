@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -233,7 +234,7 @@ class PaylineManager
         $lenderAccount->get($client->id_client, 'id_client_owner');
         $transaction->get($backPayline->getIdBackpayline(), 'type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND id_backpayline');
 
-        $notification->type      = \notifications::TYPE_CREDIT_CARD_CREDIT;
+        $notification->type      = Notifications::TYPE_CREDIT_CARD_CREDIT;
         $notification->id_lender = $lenderAccount->id_lender_account;
         $notification->amount    = $backPayline->getAmount();
         $notification->create();

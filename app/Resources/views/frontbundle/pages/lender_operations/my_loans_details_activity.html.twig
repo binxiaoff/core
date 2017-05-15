@@ -1,0 +1,28 @@
+{% if projectNotifications|length > 0 %}
+    <div class="list-notifications">
+    {% for notification in projectNotifications %}
+        <div class="notification notification-type-{{ notification.type|default('message')|e('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" data-proj-notification>
+            <div class="notification-image">
+            {% if notification.image %}
+                <span class="svg-icon-wrap">{{ svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
+            {% endif %}
+            </div>
+            <div class="notification-info">
+                <h4 class="notification-title">{{ notification.title|raw }}</h4>
+                <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
+                <div class="notification-content">
+                    <p>{{ notification.content|raw|nl2br }}</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% elseif code == 200 %}
+    <div class="notification-content message-info">
+        <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
+    </div>
+{% else %}
+    <div class="notification-content message-alert">
+        <p>{% trans %} lender-notifications_error-label {% endtrans %}</p>
+    </div>
+{% endif %}

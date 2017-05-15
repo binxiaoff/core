@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
@@ -85,7 +86,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $euros             = ($getsolde >= 2) ? ' euros' : ' euro';
                     $solde             = $ficelle->formatNumber($getsolde) . $euros;
 
-                    $notifications->type       = \notifications::TYPE_REPAYMENT;
+                    $notifications->type       = Notifications::TYPE_REPAYMENT;
                     $notifications->id_lender  = $echeanciers->id_lender;
                     $notifications->id_project = $echeanciers->id_project;
                     $notifications->amount     = bcmul($rembNet, 100);
