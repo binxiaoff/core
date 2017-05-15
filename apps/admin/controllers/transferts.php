@@ -811,13 +811,18 @@ class transfertsController extends bootstrap
                 $this->aProjects[$index]['authority_status'] = $proxy->getStatus();
             }
 
-            $bankAccount                     = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());
-            $this->aProjects[$index]['bic']  = $bankAccount->getBic();
-            $this->aProjects[$index]['iban'] = $bankAccount->getIban();
-            $bankAccountAttachment           = $bankAccount->getAttachment();
+            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());
 
-            $this->aProjects[$index]['rib']     = '';
-            $this->aProjects[$index]['id_rib']  = '';
+            $this->aProjects[$index]['bic']  = '';
+            $this->aProjects[$index]['iban'] = '';
+            if ($bankAccount) {
+                $this->aProjects[$index]['bic']  = $bankAccount->getBic();
+                $this->aProjects[$index]['iban'] = $bankAccount->getIban();
+                $bankAccountAttachment           = $bankAccount->getAttachment();
+            }
+
+            $this->aProjects[$index]['rib']    = '';
+            $this->aProjects[$index]['id_rib'] = '';
 
             if (false === empty($bankAccountAttachment)) {
                 $this->aProjects[$index]['rib']    = $bankAccountAttachment->getPath();
