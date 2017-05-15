@@ -4,10 +4,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
+use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 
 class preteursController extends bootstrap
 {
@@ -520,7 +521,7 @@ class preteursController extends bootstrap
                             $this->clients_mandats->id_client     = $this->clients->id_client;
                             $this->clients_mandats->id_universign = 'no_universign';
                             $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
-                            $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
+                            $this->clients_mandats->status        = UniversignEntityInterface::STATUS_SIGNED;
 
                             if ($create == true) {
                                 $this->clients_mandats->create();
@@ -704,34 +705,6 @@ class preteursController extends bootstrap
                             }
                         }
                     }
-
-                    if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
-                        if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
-                            $create = false;
-                        } else {
-                            $create = true;
-                        }
-
-                        $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
-                        if ($this->upload->doUpload('mandat')) {
-                            if ($this->clients_mandats->name != '') {
-                                @unlink($this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name);
-                            }
-                            $this->clients_mandats->name          = $this->upload->getName();
-                            $this->clients_mandats->id_client     = $this->clients->id_client;
-                            $this->clients_mandats->id_universign = 'no_universign';
-                            $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
-                            $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
-
-                            if ($create == true) {
-                                $this->clients_mandats->create();
-                            } else {
-                                $this->clients_mandats->update();
-                            }
-                        }
-                    }
-
-                    // fin fichier //
 
                     // On met a jour le lender
                     $this->lenders_accounts->id_company_owner = $this->companies->id_company;

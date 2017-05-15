@@ -34,15 +34,15 @@
             <argument type="service" id="unilend.service.client_settings_manager"/>
             <argument type="service" id="security.token_storage"/>
             <argument type="service" id="request_stack"/>
-            <argument type="service" id="unilend.service.wallet_creation_manager" />
-            <argument type="service" id="doctrine.orm.entity_manager" />
-            <argument type="service" id="logger" />
-            <argument type="service" id="router" />
+            <argument type="service" id="unilend.service.wallet_creation_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="router"/>
         </service>
 
         <service id="unilend.service.lender_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderManager">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
         <service id="unilend.service.loan_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LoanManager">
@@ -60,6 +60,7 @@
         <service id="unilend.service.email_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\MailerManager">
             <argument type="service" id="service_container"/>
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="swiftmailer.mailer.default"/>
             <argument>%kernel.default_locale%</argument>
@@ -133,11 +134,11 @@
         </service>
 
         <service id="unilend.service.project_request_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="doctrine.orm.entity_manager" />
-            <argument type="service" id="unilend.service.project_manager" />
-            <argument type="service" id="unilend.service.wallet_creation_manager" />
-            <argument type="service" id="unilend.frontbundle.service.source_manager" />
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="unilend.service.wallet_creation_manager"/>
+            <argument type="service" id="unilend.frontbundle.service.source_manager"/>
             <argument type="service" id="unilend.service.partner_manager"/>
             <argument type="service" id="unilend.service.company_finance_check"/>
             <argument type="service" id="unilend.service.company_scoring_check"/>
@@ -202,10 +203,10 @@
         </service>
 
         <service id="unilend.service.client_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="unilend.service.notification_manager" />
-            <argument type="service" id="unilend.service.autobid_settings_manager" />
-            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.notification_manager"/>
+            <argument type="service" id="unilend.service.autobid_settings_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
         <service id="unilend.service.recovery_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager">
@@ -237,7 +238,7 @@
         </service>
 
         <service id="unilend.service.ekomi" class="Unilend\Bundle\CoreBusinessBundle\Service\Ekomi">
-            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="logger"/>
             <argument>%ekomi.url%</argument>
             <argument>%ekomi.shop_id%</argument>
@@ -254,7 +255,7 @@
         </service>
 
         <service id="unilend.service.partner_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
         <service id="unilend.service.wallet_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WalletManager">
@@ -270,32 +271,32 @@
         </service>
 
         <service id="unilend.service.wallet_creation_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WalletCreationManager">
-            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="logger" />
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="unilend.service.bank_account_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager">
-            <argument type="service" id="doctrine.orm.entity_manager" />
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="unilend.service.lender_manager" />
-            <argument type="service" id="logger" />
-            <argument type="service" id="validator" />
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.lender_manager"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="validator"/>
         </service>
 
         <service id="unilend.service.borrower_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager">
-            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service.entity_manager"/>
         </service>
 
         <service id="unilend.service.payline_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PaylineManager">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
-            <argument type="service" id="swiftmailer.mailer.default" />
-            <argument type="service" id="unilend.service.client_manager" />
-            <argument type="service" id="unilend.service.operation_manager" />
-            <argument type="service" id="router" />
-            <argument type="service" id="assets.packages" />
+            <argument type="service" id="swiftmailer.mailer.default"/>
+            <argument type="service" id="unilend.service.client_manager"/>
+            <argument type="service" id="unilend.service.operation_manager"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="assets.packages"/>
             <argument>%path.payline%include.php</argument>
             <argument>%kernel.environment%</argument>
             <argument>%payline.merchant_id%</argument>
@@ -349,9 +350,27 @@
         </service>
 
         <service id="unilend.service.attachment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager">
-            <argument type="service" id="doctrine.orm.entity_manager" />
-            <argument type="service" id="filesystem" />
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="filesystem"/>
             <argument>%path.protected%attachments</argument>
+        </service>
+
+        <service id="currency_formatter" class="NumberFormatter">
+            <argument>%kernel.default_locale%</argument>
+            <argument type="constant">\NumberFormatter::CURRENCY</argument>
+        </service>
+
+        <service id="unilend.service.wire_transfer_out_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="currency_formatter"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="mailer"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="assets.packages"/>
+            <argument type="service" id="unilend.service.operation_manager"/>
+            <argument>%router.request_context.scheme%://%url.host_default%</argument>
+            <argument>%router.request_context.scheme%://%url.host_admin%</argument>
         </service>
     </services>
 </container>

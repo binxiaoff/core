@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Projects
  *
  * @ORM\Table(name="projects", indexes={@ORM\Index(name="id_company", columns={"id_company"}), @ORM\Index(name="slug", columns={"slug"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="display", columns={"display"}), @ORM\Index(name="date_retrait", columns={"date_retrait"}), @ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}), @ORM\Index(name="id_commercial", columns={"id_commercial"}), @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectRepository")
  */
 class Projects
 {
@@ -356,12 +356,34 @@ class Projects
     private $mandats;
 
     /**
+     * @var ProjectsPouvoir
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir", mappedBy="idProject")
+     */
+    private $proxy;
+
+    /**
+     * @var ProjectCgv
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv", mappedBy="idProject")
+     */
+    private $termOfUser;
+
+    /**
+     * @var Virements[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Virements", mappedBy="idProject")
+     */
+    private $wireTransferOuts;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
     {
-        $this->attachments = new ArrayCollection();
-        $this->mandats     = new ArrayCollection();
+        $this->attachments      = new ArrayCollection();
+        $this->mandats          = new ArrayCollection();
+        $this->wireTransferOuts = new ArrayCollection();
     }
 
     /**
@@ -1448,5 +1470,33 @@ class Projects
     public function getMandats()
     {
         return $this->mandats;
+    }
+
+    /**
+     * Get project proxy
+     *
+     * @return ProjectsPouvoir
+     */
+    public function getProxy()
+    {
+        return $this->proxy;
+    }
+
+    /**
+     * Get project term of user
+     *
+     * @return ProjectCgv
+     */
+    public function getTermOfUser()
+    {
+        return $this->termOfUser;
+    }
+
+    /**
+     * @return Virements[]
+     */
+    public function getWireTransferOuts()
+    {
+        return $this->wireTransferOuts;
     }
 }

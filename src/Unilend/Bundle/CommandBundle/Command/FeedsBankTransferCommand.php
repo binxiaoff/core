@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -24,16 +25,16 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        $em            = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $logger        = $this->getContainer()->get('monolog.logger.console');
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager          = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $logger                 = $this->getContainer()->get('monolog.logger.console');
 
         /** @var \compteur_transferts $counter */
-        $counter = $entityManager->getRepository('compteur_transferts');
+        $counter = $entityManagerSimulator->getRepository('compteur_transferts');
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
+        $settings = $entityManagerSimulator->getRepository('settings');
         /** @var \transactions $transaction */
-        $transaction = $entityManager->getRepository('transactions');
+        $transaction = $entityManagerSimulator->getRepository('transactions');
 
         $settings->get('Virement - BIC', 'type');
         $bic = $settings->value;
@@ -53,7 +54,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $settings->get('Retrait Unilend - Titulaire du compte', 'type');
         $unilendAccountHolder = utf8_decode($settings->value);
 
-        $pendingBankTransfers      = $em->getRepository('UnilendCoreBusinessBundle:Virements')->findBy(['status' => Virements::STATUS_PENDING, 'addedXml' => null]);
+        $pendingBankTransfers      = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findWireTransferReadyToSend();
         $pendingBankTransfersCount = 0;
         $totalAmount               = 0;
         $counterId                 = $counter->counter('type = 1') + 1;
@@ -70,19 +71,16 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 
             if (\DateTime::createFromFormat('Y-m-d H:i:s', $transaction->date_transaction) < new \DateTime('today')) {
                 $bankAccount = $pendingBankTransfer->getBankAccount();
-                $client = $pendingBankTransfer->getClient();
-                if ($client) {
+                $client      = $pendingBankTransfer->getClient();
+                if ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
                     if (null === $bankAccount) {
-                        // todo: for backward compatibility only, can be replaced by an error message in the next release.
-                        $bankAccount = $em->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($pendingBankTransfer->getClient());
-                        if (null === $bankAccount) {
-                            $logger->error('The bank account is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
-                            continue;
-                        }
+                        $logger->error('The bank account is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
+                        continue;
                     }
-                } elseif ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
-                    $logger->error('The client is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
-                    continue;
+                    if (null === $client) {
+                        $logger->error('The client is null for transfer id: ' . $pendingBankTransfer->getIdVirement());
+                        continue;
+                    }
                 }
 
                 if ($pendingBankTransfer->getType() == Virements::TYPE_UNILEND) {
@@ -90,7 +88,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     $recipientBic  = $unilendBic;
                     $recipientName = $unilendAccountHolder;
                 } elseif ($client->isBorrower()) {
-                    $company       = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
+                    $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
                     $recipientIban = $bankAccount->getIban();
                     $recipientBic  = $bankAccount->getBic();
                     $recipientName = $company->getName();
@@ -103,7 +101,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     $recipientIban = $bankAccount->getIban();
                     $recipientBic  = $bankAccount->getBic();
                     if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                        $company       = $em->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
+                        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
                         $recipientName = $company->getName();
                     } else {
                         $recipientName = $client->getNom() . ' ' . $client->getPrenom();
@@ -114,7 +112,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 
                 $pendingBankTransfer->setStatus(Virements::STATUS_SENT);
                 $pendingBankTransfer->setAddedXml(new \DateTime());
-                $em->flush($pendingBankTransfer);
+                $entityManager->flush($pendingBankTransfer);
 
                 if (strncmp('FR', strtoupper(str_replace(' ', '', $recipientIban)), 2) === 0) {
                     $frenchBic = '';
@@ -151,7 +149,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 </RmtInf>
             </CdtTrfTxInf>';
 
-                $pendingBankTransfersCount ++;
+                $pendingBankTransfersCount++;
             }
         }
 
