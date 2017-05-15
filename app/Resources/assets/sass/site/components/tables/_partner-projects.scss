@@ -78,24 +78,12 @@
     }
 }
 
-// UI States for details and memos
+// UI States
 .ui-details-open .table-projects-item-memos .icon {
     transform: rotate(90deg);
 }
-.ui-details-memo-closed {
-    .details-memo-text {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-}
-.ui-details-memo-unread {
-    td {
+.ui-table-projects-item-changed {
+    > td {
         font-weight: bold;
-    }
-}
-.ui-table-projects-item-memos-unread {
-    .btn-default {
-        color: $c-p1;
     }
 }

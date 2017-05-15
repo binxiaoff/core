@@ -149,11 +149,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
 
         // Generate HTML for memos
         $.each(details, function (i, item) {
-          var isReadClass = 'ui-details-memo-unread'
-          if (item.status === 'read') {
-            isReadClass = 'ui-details-memo-read'
-          }
-          detailsItemsHtml += Templating.replace('<tr class="details-memo ui-details-memo-closed ' + oddEvenClass + ' ' + isReadClass +'">\
+          detailsItemsHtml += Templating.replace('<tr class="details-memo ' + oddEvenClass + '">\
             <td class="details-memo-author" colspan="' + colspanAuthor + '">{{ author }}</td>\
             <td class="details-memo-date">{{ date }}</td>\
             <td class="details-memo-text" colspan="' + colspanText + '">{{ text }}</td>\
@@ -174,7 +170,11 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
       }
 
       // Attach details for all cases above
-      $item.after($details)
+      if (details.length === 0 || details === '') {
+        // Item has no details
+      } else {
+        $item.after($details)
+      }
     }
 
     // Show
@@ -193,15 +193,4 @@ $doc.on('Sortable:sort:before', 'table.table-myoperations, table.table-myloans, 
 
   // Find any items which are "open" and remove the class
   $table.find('.ui-details-open').removeClass('ui-details-open')
-})
-
-$doc.on(Utility.clickEvent, '.ui-details-memo-unread', function () {
-  // TODO - AJAX FOR MARKING MEMO AS READ
-  $(this).removeClass('ui-details-memo-unread').addClass('ui-details-memo-read')
-})
-$doc.on(Utility.clickEvent, '.ui-details-memo-closed', function () {
-  $(this).removeClass('ui-details-memo-closed').addClass('ui-details-memo-open')
-})
-$doc.on(Utility.clickEvent, '.ui-table-projects-item-memos-unread', function () {
-  $(this).removeClass('ui-table-projects-item-memos-unread')
 })
