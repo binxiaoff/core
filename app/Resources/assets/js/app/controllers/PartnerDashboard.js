@@ -49,8 +49,10 @@ var showChartTooltip = function ($chart) {
 $doc
     .on('ready UI:visible UI:update', function (event) {
         if (partnerStatisticsTabs.length) {
-            var $chart = partnerStatisticsTabs.find('.tab-pane.active .chart')
-            showChartTooltip($chart)
+            partnerStatisticsTabs.each(function(){
+                var $chart = $(this).find('.tab-pane.active .chart')
+                showChartTooltip($chart)
+            })
         }
     })
 

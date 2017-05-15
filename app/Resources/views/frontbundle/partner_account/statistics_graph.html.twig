@@ -2,7 +2,7 @@
     type: 'partnerProjects',
     highcharts: {
         title: {
-            text: 'Dossiers envoyés',
+            text: 'partner-statistics_graph-submitted-projects'|trans,
         },
         xAxis: {
             categories: timeAxis,
@@ -37,7 +37,7 @@
     type: 'partnerProjects',
     highcharts: {
         title: {
-            text: 'Dossiers acceptés',
+            text: 'partner-statistics_graph-accepted-projects'|trans,
         },
         xAxis: {
             categories: timeAxis,
@@ -72,7 +72,7 @@
     type: 'partnerProjects',
     highcharts: {
         title: {
-            text: 'Dossiers décaissés',
+            text: 'partner-statistics_graph-repayment-projects'|trans,
         },
         xAxis: {
             categories: timeAxis,
@@ -110,7 +110,7 @@
             type: 'column'
         },
         title: {
-            text: 'Montant envoyé',
+            text: 'partner-statistics_graph-submitted-projects-amount'|trans,
         },
         xAxis: {
             categories: timeAxis,
@@ -152,7 +152,7 @@
             type: 'column'
         },
         title: {
-            text: 'Montant décaissé',
+            text: 'partner-statistics_graph-repayment-projects-amount'|trans,
         },
         xAxis: {
             categories: timeAxis,
@@ -198,46 +198,46 @@
                 <ul class="nav nav-tabs partner-statistics-tabs-nav">
                     <li role="presentation" class="active">
                         <a href="#{{ graphType }}-projects-submitted-tab" role="tab" data-toggle="tab">
-                            Dossiers envoyés
+                            {% trans %} partner-statistics_tabs-submitted-projects {% endtrans %}
                             {% if submittedProjects[10] > 0 %}
                                 {% set variation = ((submittedProjects[11] - submittedProjects[10]) / submittedProjects[10]) * 100 %}
-                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;{% trans %} partner-statistics_tabs-previous-month {% endtrans %}</span>
                             {% endif %}
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#{{ graphType }}-projects-accepted-tab" role="tab" data-toggle="tab">
-                            Dossiers acceptés
+                            {% trans %} partner-statistics_tabs-accepted-projects {% endtrans %}
                             {% if acceptedProjects[10] > 0 %}
                                 {% set variation = ((acceptedProjects[11] - acceptedProjects[10]) / acceptedProjects[10]) * 100 %}
-                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;{% trans %} partner-statistics_tabs-previous-month {% endtrans %}</span>
                             {% endif %}
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#{{ graphType }}-projects-repayment-tab" role="tab" data-toggle="tab">
-                            Dossiers décaissés
+                            {% trans %} partner-statistics_tabs-repayment-projects {% endtrans %}
                             {% if repaymentProjects[10] > 0 %}
                                 {% set variation = ((repaymentProjects[11] - repaymentProjects[10]) / repaymentProjects[10]) * 100 %}
-                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;{% trans %} partner-statistics_tabs-previous-month {% endtrans %}</span>
                             {% endif %}
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#{{ graphType }}-projects-submitted-amount-tab" role="tab" data-toggle="tab">
-                            Montant envoyé
+                            {% trans %} partner-statistics_tabs-submitted-projects-amount {% endtrans %}
                             {% if submittedAmount[10] > 0 %}
                                 {% set variation = ((submittedAmount[11] - submittedAmount[10]) / submittedAmount[10]) * 100 %}
-                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;{% trans %} partner-statistics_tabs-previous-month {% endtrans %}</span>
                             {% endif %}
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#{{ graphType }}-projects-repayment-amount-tab" role="tab" data-toggle="tab">
-                            Montant décaissé
+                            {% trans %} partner-statistics_tabs-repayment-projects-amount {% endtrans %}
                             {% if repaymentAmount[10] > 0 %}
                                 {% set variation = ((repaymentAmount[11] - repaymentAmount[10]) / repaymentAmount[10]) * 100 %}
-                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;% mois précedent</span>
+                                <span class="difference">{% if variation > 0 %}+{% else %}-{% endif %} {{ variation|abs|localizednumberwithprecision(0) }}&nbsp;{% trans %} partner-statistics_tabs-previous-month {% endtrans %}</span>
                             {% endif %}
                         </a>
                     </li>
