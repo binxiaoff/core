@@ -150,9 +150,9 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         // Generate HTML for memos
         $.each(details, function (i, item) {
           detailsItemsHtml += Templating.replace('<tr class="' + oddEvenClass + '">\
-            <td class="details-memo-author" title="{{ author }}" data-toggle="tooltip" colspan="' + colspanAuthor + '">{{ author }}</td>\
-            <td class="details-memo-date" title="{{ date }}" data-toggle="tooltip">{{ date }}</td>\
-            <td class="details-memo-text" title="{{ text }}" data-toggle="tooltip" colspan="' + colspanText + '">{{ text }}</td>\
+            <td class="details-memo-author" colspan="' + colspanAuthor + '">{{ author }}</td>\
+            <td class="details-memo-date">{{ date }}</td>\
+            <td class="details-memo-text" colspan="' + colspanText + '">{{ text }}</td>\
           </tr>', {
             author: item.author,
             date: __.localizedDate(item.date.date),

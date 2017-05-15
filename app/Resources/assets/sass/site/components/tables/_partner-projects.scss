@@ -10,9 +10,7 @@
     td, th {
         padding-left: 10px;
         padding-right: 10px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        vertical-align: top;
     }
 
     td {
@@ -23,6 +21,20 @@
         text-transform: uppercase;
     }
 }
+.table-projects-item-borrower, .table-prospects-item-borrower,
+.table-projects-item-submitter, .table-prospects-item-submitter,
+.details-memo-author {
+    width: 23%;
+}
+
+.ui-user-type-partner-admin {
+    .table-projects-item-borrower, .table-prospects-item-borrower,
+    .table-projects-item-submitter, .table-prospects-item-submitter,
+    .details-memo-author {
+        width: 18%;
+    }
+}
+
 .table-prospects-item-action, .table-projects-item-memos, .table-users-item-action {
     padding-top: 5px;
     padding-bottom: 5px;
@@ -51,70 +63,6 @@
     }
 }
 
-/* Prospects table columns width */
-.table-prospects-item-borrower {
-    width: 50%;
-}
-.table-prospects-item-amount {
-    width: 110px;
-}
-.table-prospects-item-duration {
-    width: 80px;
-}
-.table-prospects-item-motif {
-    width: 50%;
-}
-.table-prospects-item-action {
-    width: 80px;
-}
-
-.ui-user-type-partner-admin {
-    .table-prospects-item-borrower {
-        width: 35%;
-    }
-    .table-prospects-item-submitter {
-        width: 30%;
-    }
-    .table-prospects-item-motif {
-        width: 35%;
-    }
-}
-
-/* Prospects tables columns width */
-.table-projects-item-borrower {
-    width: 35%;
-}
-.table-projects-item-amount {
-    width: 110px;
-}
-.table-projects-item-duration {
-    width: 80px;
-}
-.table-projects-item-motif {
-    width: 35%;
-}
-.table-projects-item-status {
-    width: 30%;
-}
-.table-projects-item-memos {
-    width: 75px;
-}
-
-.ui-user-type-partner-admin {
-    .table-projects-item-borrower {
-        width: 25%;
-    }
-    .table-projects-item-submitter {
-        width: 25%;
-    }
-    .table-projects-item-motif {
-        width: 25%;
-    }
-    .table-projects-item-status {
-        width: 25%;
-    }
-}
-
 .table-prospects-item-action, .table-projects-item-memos {
     .icon {
         display: inline-block;
@@ -122,16 +70,6 @@
         height: 16px;
         transition: transform 150ms;
     }
-}
-
-.table-users-item-name {
-    width: 25%;
-}
-.table-users-item-entity {
-    width: 21%;
-}
-.table-users-item-status, .table-users-item-role {
-    width: 18%;
 }
 
 .ui-details-open .table-projects-item-memos .icon {
@@ -142,18 +80,7 @@
         padding: 0;
     }
 }
-.details-memo-date, .details-memo-author {
-    width: 10%;
-    padding-right: 0;
-}
-.ui-user-type-partner-admin {
-    .details-memo-date {
-        width: auto;
-    }
-    .details-memo-author {
-        width: 20%;
-    }
-}
+
 #prospect-cancel-motif {
     max-width: 290px;
     margin: 0 auto;
