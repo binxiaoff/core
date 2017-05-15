@@ -69,23 +69,20 @@ class WalletRepository extends EntityRepository
             ->select('MAX(wbh.added) AS lastOperationDate, IDENTITY(w.idClient) AS idClient, w.availableBalance, w.id AS walletId')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
             ->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
-            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
-            ->innerJoin('UnilendCoreBusinessBundle:LendersAccounts', 'la', Join::WITH, 'la.idClientOwner = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'b.idLenderAccount = la.idLenderAccount AND b.added >= :inactive_since')
-            ->where('wt.label = :wallet_type')
-            ->setParameter('wallet_type', WalletType::LENDER)
-            ->andWhere('ot.label IN (:operation_type)')
-            ->setParameter(':operation_type', [OperationType::LENDER_PROVISION, OperationType::LENDER_WITHDRAW]);
+            ->leftJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
+            ->leftJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType AND ot.label IN (:operationType)')
+            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'b.idBid = wbh.idBid AND b.idAutobid IS NULL')
+            ->where('wt.label = :lender')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter(':operationType', [OperationType::LENDER_PROVISION, OperationType::LENDER_WITHDRAW], Connection::PARAM_INT_ARRAY);
 
         if (null !== $minAvailableBalance) {
-            $qb->andWhere('w.availableBalance >= :available_balance')
-                ->setParameter('available_balance', $minAvailableBalance);
+            $qb->andWhere('w.availableBalance >= :availableBalance')
+                ->setParameter('availableBalance', $minAvailableBalance);
         }
-        $qb->andWhere('b.idBid IS NULL')
-            ->groupBy('w.id')
-            ->having('lastOperationDate <= :inactive_since')
-            ->setParameter('inactive_since', $inactiveSince);
+        $qb->groupBy('w.id')
+            ->having('lastOperationDate <= :inactiveSince')
+            ->setParameter('inactiveSince', $inactiveSince);
 
         return $qb->getQuery()
             ->getResult(AbstractQuery::HYDRATE_SCALAR);
