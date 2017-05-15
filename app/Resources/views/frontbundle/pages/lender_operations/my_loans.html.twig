@@ -55,7 +55,7 @@
         {% if lenderLoans|length > 0 %}
         <div class="panel-controls">
             <a href="/pdf/loans/{{ hash }}" class="btn-default">
-                <span class="icon fa-print-u32"></span>
+                <span class="icon fa-file-pdf-o"></span>
                 <span class="label"> {% trans %} lender-operations_print {% endtrans %} </span>
             </a>
             <a href="{{ path('export_loans_csv') }}" class="btn-default">
