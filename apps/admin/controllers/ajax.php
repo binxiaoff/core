@@ -294,7 +294,7 @@ class ajaxController extends bootstrap
                         $project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
                     } else {
                         $this->get('logger')->warning(
-                            'Relation between partner and product not found' . $project->id_partner . ', id_product=' . $eligibleProducts[0]->id_product,
+                            'Relation between partner and product not found',
                             ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project, 'id_partner' => $project->id_partner, 'id_product' => $eligibleProducts[0]->id_product]
                         );
                     }
