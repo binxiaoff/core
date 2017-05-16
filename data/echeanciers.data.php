@@ -790,66 +790,6 @@ class echeanciers extends echeanciers_crud
     }
 
     /**
-     * @param DateTime $startDate
-     * @param DateTime $endDate
-     * @param array $taxType
-     * @return array
-     * @throws Exception
-     */
-    public function getFiscalState(\DateTime $startDate, \DateTime $endDate, array $taxType)
-    {
-        $taxDynamicJoin = $this->getDynamicTaxJoins($taxType);
-        $aBind          = [
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date'   => $endDate->format('Y-m-d'),
-        ];
-        $aType          = [
-            'start_date' => \PDO::PARAM_STR,
-            'end_date'   => \PDO::PARAM_STR,
-        ];
-
-        $sql = '
-            SELECT
-                l.id_type_contract,
-                CASE c.type
-                    WHEN ' . Clients::TYPE_LEGAL_ENTITY . ' THEN "legal_entity"
-                    WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN "person"
-                END AS client_type,
-                CASE IFNULL(
-                    (SELECT resident_etranger
-                        FROM lenders_imposition_history lih
-                        WHERE lih.id_lender = w.id AND lih.added <= e.date_echeance_reel
-                        ORDER BY added DESC
-                        LIMIT 1), 0
-                    )
-                    WHEN 0 THEN "fr"
-                    ELSE "ww"
-                END AS fiscal_residence,
-                CASE lte.id_lender
-                    WHEN e.id_lender THEN "non_taxable"
-                    ELSE "taxable"
-                END AS exemption_status,
-                ' . $taxDynamicJoin['tax_columns'] . '
-                SUM(ROUND(e.interets_rembourses / 100, 2)) AS interests
-            FROM echeanciers e
-              INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = 0
-              INNER JOIN wallet w ON l.id_lender = w.id
-              INNER JOIN clients c ON w.id_client = c.id_client
-              INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-              ' . $taxDynamicJoin['tax_join'] . '
-              LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(e.date_echeance_reel)
-            WHERE e.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
-                AND e.status_ra = 0
-                AND DATE(e.date_echeance_reel) BETWEEN :start_date AND :end_date
-            GROUP BY l.id_type_contract, client_type, fiscal_residence, exemption_status';
-
-        $statement = $this->bdd->executeQuery($sql, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)));
-        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        $statement->closeCursor();
-        return $result;
-    }
-
-    /**
      * @param array $taxType
      * @param \DateTime $startDate
      * @param \DateTime $endDate

@@ -318,4 +318,99 @@ class OperationRepository extends EntityRepository
 
         return $result;
     }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function getInterestAndTaxForFiscalState(\DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0,0,0);
+        $end->setTime(23,59,59);
+
+        $query = 'SELECT
+                  CASE c.type
+                  WHEN 2 THEN "legal_entity"
+                  WHEN 4 THEN "legal_entity"
+                  WHEN 1 THEN "person"
+                  WHEN 3 THEN "person"
+                  END AS client_type,
+                  l.id_type_contract,
+                  CASE IFNULL((SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = w.id AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1), 0)
+                    WHEN 0 THEN "fr"
+                    ELSE "ww"
+                  END AS fiscal_residence,
+                  CASE lte.id_lender
+                    WHEN e.id_lender THEN "non_taxable"
+                    ELSE "taxable"
+                  END AS exemption_status,
+                  SUM(o_interest.amount) AS interests,
+                  SUM(o_tax_fr_prelevements_obligatoires.amount)    AS "' . OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS . '",
+                  SUM(o_tax_fr_csg.amount)                          AS "' . OperationType::TAX_FR_CSG . '",
+                  SUM(o_tax_fr_prelevements_sociaux.amount)         AS "' . OperationType::TAX_FR_SOCIAL_DEDUCTIONS . '",
+                  SUM(o_tax_fr_contributions_additionnelles.amount) AS "' . OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS . '",
+                  SUM(o_tax_fr_prelevements_de_solidarite.amount)   AS "' . OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS . '",
+                  SUM(o_tax_fr_crds.amount)                         AS "' . OperationType::TAX_FR_CRDS . '",
+                  SUM(o_tax_fr_retenues_a_la_source.amount)         AS "' . OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE . '"
+                FROM operation o_interest USE INDEX (idx_operation_added)
+                  INNER JOIN wallet w ON o_interest.id_wallet_creditor = w.id
+                  INNER JOIN clients c ON w.id_client = c.id_client
+                  INNER JOIN echeanciers e ON o_interest.id_repayment_schedule = e.id_echeancier
+                  INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = 0
+                  LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(o_interest.added)
+                  LEFT JOIN operation o_tax_fr_contributions_additionnelles
+                    ON o_tax_fr_contributions_additionnelles.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_contributions_additionnelles.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_contributions_additionnelles.id_type = (SELECT id
+                                                                            FROM operation_type
+                                                                            WHERE label = "' . OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS . '")
+                  LEFT JOIN operation o_tax_fr_crds
+                    ON o_tax_fr_crds.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_crds.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_crds.id_type = (SELECT id
+                                                    FROM operation_type
+                                                    WHERE label = "' . OperationType::TAX_FR_CRDS . '")
+                  LEFT JOIN operation o_tax_fr_csg
+                    ON o_tax_fr_csg.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_csg.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_csg.id_type = (SELECT id
+                                                   FROM operation_type
+                                                   WHERE label = "' . OperationType::TAX_FR_CSG . '")
+                  LEFT JOIN operation o_tax_fr_prelevements_de_solidarite
+                    ON o_tax_fr_prelevements_de_solidarite.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_prelevements_de_solidarite.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_prelevements_de_solidarite.id_type = (SELECT id
+                                                                          FROM operation_type
+                                                                          WHERE label = "' . OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS . '")
+                  LEFT JOIN operation o_tax_fr_prelevements_obligatoires
+                    ON o_tax_fr_prelevements_obligatoires.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_prelevements_obligatoires.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_prelevements_obligatoires.id_type = (SELECT id
+                                                                         FROM operation_type
+                                                                         WHERE label = "' . OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS . '")
+                  LEFT JOIN operation o_tax_fr_prelevements_sociaux
+                    ON o_tax_fr_prelevements_sociaux.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_prelevements_sociaux.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_prelevements_sociaux.id_type = (SELECT id
+                                                                    FROM operation_type
+                                                                    WHERE label = "' . OperationType::TAX_FR_SOCIAL_DEDUCTIONS . '")
+                  LEFT JOIN operation o_tax_fr_retenues_a_la_source
+                    ON o_tax_fr_retenues_a_la_source.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_retenues_a_la_source.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_retenues_a_la_source.id_type = (SELECT id
+                                                                    FROM operation_type
+                                                                    WHERE label = "' . OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE . '")
+                
+                WHERE o_interest.added BETWEEN :start AND :end
+                      AND o_interest.id_type = (SELECT id
+                                                FROM operation_type
+                                                WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
+                GROUP BY l.id_type_contract, client_type, fiscal_residence,  exemption_status';
+
+        $result = $this->getEntityManager()->getConnection()->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+    }
 }
