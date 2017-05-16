@@ -139,12 +139,12 @@ class LoansRepository extends EntityRepository
      * @param Projects|integer  $project
      * @param Clients[] $clients
      *
-     * @return Loans[]
+     * @return float
      */
     public function getLoansSumByClients($project, array $clients)
     {
         $queryBuilder = $this->createQueryBuilder('l');
-        $queryBuilder->select('SUM(l.amount)')
+        $queryBuilder->select('SUM(ROUND(l.amount/100, 2))')
            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
            ->where('l.idProject = :project')
            ->andWhere('w.idClient IN (:clients)')
