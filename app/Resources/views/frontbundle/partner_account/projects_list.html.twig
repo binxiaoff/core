@@ -5,6 +5,8 @@
     classNames: 'partner-account'
 } %}
 
+{% set cgvLastDate = 'May 16, 2017 14:43' %}
+
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -158,7 +160,7 @@
                                                     {% if project.memos|length > 0 %}
                                                         <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="memos"><span class="icon fa-info-u16"></span></a>
                                                     {% endif %}
-                                                    <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-cgv'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="cgv"><span class="icon fa-envelope"></span></a>
+                                                    <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-cgv'|trans|e('html_attr') }} - {{ cgvLastDate|localizeddate('short', 'none', app.request.locale) }}" data-toggle="tooltip" data-action="cgv"><span class="icon fa-envelope"></span></a>
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -210,8 +212,8 @@
                                                 </span>
                                             </th>
                                             <th class="table-projects-item-action">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-memos'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_abandoned-table-memos {% endtrans %}
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-action'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_abandoned-table-action {% endtrans %}
                                                 </span>
                                             </th>
                                         </tr>
