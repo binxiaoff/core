@@ -1229,45 +1229,4 @@ class pdfController extends bootstrap
 
         $this->setDisplay('loans');
     }
-
-    public function _vos_operations_pdf_indexation()
-    {
-        /** @var \Symfony\Component\HttpFoundation\Session\SessionInterface $session */
-        $session = $this->get('session');
-
-        if ($session->has('lenderOperationsFilters')) {
-            $savedFilters   = $session->get('lenderOperationsFilters');
-            $sPath          = $this->path . 'protected/operations_export_pdf/' . $savedFilters['id_client'] . '/';
-            $sNamePdfClient = 'vos_operations_' . date('Y-m-d') . '.pdf';
-
-            $this->GenerateOperationsHtml($savedFilters);
-            $this->WritePdf($sPath . $sNamePdfClient, 'operations');
-            $this->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
-        }
-    }
-
-    private function GenerateOperationsHtml(array $savedFilters)
-    {
-        /** @var $this->recoveryManager recoveryManager */
-        $this->recoveryManager         = $this->get('unilend.service.recovery_manager');
-        $this->echeanciers             = $this->loadData('echeanciers');
-        $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-
-        $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
-        $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
-
-        $tri_type_transac = \Unilend\Bundle\FrontBundle\Controller\LenderOperationsController::$transactionTypeList[$savedFilters['operation']];
-        $tri_project      = empty($savedFilters['project']) ? '' : ' AND id_projet = ' . $savedFilters['project'];
-        $id_client        = $savedFilters['id_client'];
-
-        $this->clients->get($id_client, 'id_client');
-        $this->clients_adresses->get($id_client, 'id_client');
-
-        $this->date_debut     = $savedFilters['startDate']->format('Y-m-d');
-        $this->date_fin       = $savedFilters['endDate']->format('Y-m-d');
-        $this->lTrans         = $this->indexage_vos_operations->select('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, 'date_operation DESC, id_transaction DESC');
-        $this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
-
-        $this->setDisplay('vos_operations_pdf_html_indexation');
-    }
 }
