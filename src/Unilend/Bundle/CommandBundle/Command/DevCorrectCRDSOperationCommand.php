@@ -37,9 +37,7 @@ class DevCorrectCRDSOperationCommand extends ContainerAwareCommand
             'idWalletCreditor' => null
         ], ['id' => 'ASC'], 10000);
 
-        /** @var Connection $dataBaseConnection */
-        $dataBaseConnection = $this->getContainer()->get('database_connection');
-        $dataBaseConnection->beginTransaction();
+        $entityManager->getConnection()->beginTransaction();
         try {
             $count = 0;
             /** @var Operation $operation */
@@ -55,10 +53,10 @@ class DevCorrectCRDSOperationCommand extends ContainerAwareCommand
                     $count ++;
                 }
             }
-            $dataBaseConnection->commit();
+            $entityManager->getConnection()->commit();
             $output->writeln($count . ' operations repaired and wbh lines created.');
         } catch (\Exception $exception){
-            $dataBaseConnection->rollBack();
+            $entityManager->getConnection()->rollBack();
             throw $exception;
         }
     }
