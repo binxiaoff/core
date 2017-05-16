@@ -800,12 +800,13 @@ class clients extends clients_crud
                              INNER JOIN wallet_type wt ON w.id_type = wt.id
                          WHERE clients.status = '. ClientEntity::STATUS_ONLINE .'
                          AND (clients_adresses.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . PaysV2::COUNTRY_FRANCE . ')) AS client_base
-                    GROUP BY insee_region_code';
+                    GROUP BY insee_region_code
+                    HAVING insee_region_code != "0"';
 
         $statement = $this->bdd->executeQuery($query);
         $regionsCount  = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $regionsCount[$row['insee_region_code']] = $row['count'];
+            $regionsCount[] = $row;
         }
 
         return $regionsCount;

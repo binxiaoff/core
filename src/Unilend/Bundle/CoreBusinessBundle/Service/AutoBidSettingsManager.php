@@ -1,8 +1,8 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -96,7 +96,7 @@ class AutoBidSettingsManager
 
             if (0 == $oAutoBid->counter('id_lender = ' . $wallet->getId())) {
                 $this->oNotificationManager->create(
-                    \notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
+                    Notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
                     \clients_gestion_type_notif::TYPE_AUTOBID_FIRST_ACTIVATION,
                     $client->getIdClient(),
                     'sendFirstAutoBidActivation'

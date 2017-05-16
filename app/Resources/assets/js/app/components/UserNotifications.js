@@ -851,12 +851,13 @@ $doc.on('ready', function () {
         var $notification = $(this)
         var notificationId = $notification.attr('data-notification-id')
 
-        // Toggle notification
-        UserNotifications.toggleNotification(notificationId)
-
-        // If notification unread, mark as read
-        if ($notification.is('.ui-notification-status-unread')) {
-          UserNotifications.markRead(notificationId)
+        // Toggle notification (if not a project or an ignore-toggle notification)
+        if ($target.closest('[data-ignore-toggle]').length === 0 && $target.closest('[data-proj-notification]').length === 0) {
+          UserNotifications.toggleNotification(notificationId)
+          // If notification unread, mark as read
+          if ($notification.is('.ui-notification-status-unread')) {
+            UserNotifications.markRead(notificationId)
+          }
         }
       }
     })

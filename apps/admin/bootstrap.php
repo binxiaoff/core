@@ -212,29 +212,5 @@ class bootstrap extends Controller
             $entityManager->persist($userAccessEntity);
             $entityManager->flush($userAccessEntity);
         }
-
-        // On vérifie ici si le mot de passe du user date de moins de 3 mois sinon on le redirige sur la page d'édition de mot de passe
-        if (
-            $this->current_function != 'edit_password'
-            && $this->current_function != 'login'
-            && $this->current_function != 'logout'
-            && $this->current_controller != 'thickbox'
-            && $this->current_controller != 'ajax'
-            && false === empty($_SESSION['user']['id_user'])
-        ) {
-            $ilya3mois             = mktime(0, 0, 0, date('m') - 3, date('d'), date('Y'));
-            $tab_date_pass         = explode(' ', $_SESSION['user']['password_edited']);
-            $date_pass_edited      = $tab_date_pass[0];
-            $tab_date_pass2        = explode('-', $date_pass_edited);
-            $derniere_edition_pass = mktime(0, 0, 0, $tab_date_pass2[1], $tab_date_pass2[2], $tab_date_pass2[0]);
-
-            if ($derniere_edition_pass < $ilya3mois) {
-                $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
-                $_SESSION['freeow']['message'] = 'Votre mot de passe doit &ecirc;tre mis &agrave; jour afin de conserver un niveau de s&eacute;curit&eacute; optimal!';
-
-                header('Location:' . $this->lurl . '/edit_password/');
-                die;
-            }
-        }
     }
 }

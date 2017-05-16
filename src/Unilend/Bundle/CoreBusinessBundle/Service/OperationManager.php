@@ -535,6 +535,19 @@ class OperationManager
     }
 
     /**
+     * @param Wallet $wallet
+     * @param float  $amount
+     * @param array
+     */
+    public function borrowerRegularisation(Wallet $wallet, $amount, $origins = [])
+    {
+        $unilendWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
+        $unilendWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $operationType     = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_BORROWER_REGULARIZATION]);
+        $this->newOperation($amount, $operationType, $unilendWallet, $wallet, $origins);
+    }
+
+    /**
      * @param Transfer $transfer
      * @param float    $amount
      *

@@ -6,6 +6,11 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
+use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 
 class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
@@ -47,7 +52,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
                 $wallet = $repaymentSchedule->getIdLoan()->getIdLender();
                 if (null !== $wallet && Clients::STATUS_ONLINE == $wallet->getIdClient()->getStatus()) {
-                    $notifications->type       = \notifications::TYPE_REPAYMENT;
+                    $notifications->type       = Notifications::TYPE_REPAYMENT;
                     $notifications->id_lender  = $wallet->getId();
                     $notifications->id_project = $repaymentSchedule->getIdLoan()->getProject()->getIdProject();
                     $notifications->amount     = bcmul($netRepayment, 100);
