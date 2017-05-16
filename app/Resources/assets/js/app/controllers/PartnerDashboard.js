@@ -20,6 +20,17 @@ $doc
         $modal.find('.ui-modal-output-company').html($prospect.data('sortable-borrower'))
         $modal.uiModal('open')
     })
+// Partner Projects Table
+$doc
+    .on(Utility.clickEvent, '.table-projects [data-action]:not([data-action="memos"])', function () {
+        var $project = $(this).closest('tr')
+        var action = $(this).data('action')
+        var $modal = $('#modal-partner-project-' + action)
+        var $form = $modal.find('form')
+
+        $form.find('[name="hash"]').val($project.data('hash'))
+        $modal.uiModal('open')
+    })
 // Partner Users Table
 $doc
     .on(Utility.clickEvent, '.table-users [data-action]', function () {

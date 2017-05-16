@@ -125,9 +125,9 @@
                                                     {% trans %} partner-project-list_projects-table-status {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-memos">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-memos'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_projects-table-memos {% endtrans %}
+                                            <th class="table-projects-item-action">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-projects-action'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_projects-table-action {% endtrans %}
                                                 </span>
                                             </th>
                                         </tr>
@@ -154,11 +154,10 @@
                                                 <td class="table-projects-item-status">
                                                     <span class="ui-project-status">{{ ('partner-project-list_status-' ~ project.status)|trans }}</span>
                                                 </td>
-                                                <td class="table-projects-item-memos">
+                                                <td class="table-projects-item-action">
+                                                    <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-cgv'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="cgv"><span class="icon fa-envelope"></span></a>
                                                     {% if project.memos|length > 0 %}
-                                                        <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-angle-r-u16"></span></a>
-                                                    {% else %}
-                                                        &nbsp;
+                                                        <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="memos"><span class="icon fa-info-u16"></span></a>
                                                     {% endif %}
                                                 </td>
                                             </tr>
@@ -210,9 +209,9 @@
                                                     {% trans %} partner-project-list_abandoned-rejected-table-status {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-memos">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-rejected-memos'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_abandoned-rejected-table-memos {% endtrans %}
+                                            <th class="table-projects-item-action">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-rejected-action'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_abandoned-rejected-table-action {% endtrans %}
                                                 </span>
                                             </th>
                                         </tr>
@@ -239,9 +238,9 @@
                                                 <td class="table-projects-item-status">
                                                     <span class="ui-project-status">{{ ('partner-project-list_status-' ~ project.status)|trans }}</span>
                                                 </td>
-                                                <td class="table-projects-item-memos">
+                                                <td class="table-projects-item-action">
                                                     {% if project.memos|length > 0 %}
-                                                        <a role="button" class="btn-default" title="{{ 'partner-project-list_abandoned-rejected-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-angle-r-u16"></span></a>
+                                                        <a role="button" class="btn-default" title="{{ 'partner-project-list_abandoned-rejected-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="memos"><span class="icon fa-info-u16"></span></a>
                                                     {% else %}
                                                         &nbsp;
                                                     {% endif %}
@@ -306,4 +305,23 @@
             </footer>
         </form>
     </div><!-- /#modal-partner-prospect -->
+
+    <div id="modal-partner-project-cgv" data-modal>
+        <form action="" method="post" data-formvalidation>
+            <input type="hidden" name="hash" value>
+            <div class="modal-body text-align-center">
+                <p>{% trans %} partner-project-list_popup-project-cgv {% endtrans %}</p>
+            </div>
+            <footer class="modal-footer">
+                <div class="btn-controls">
+                    <button type="button" class="btn-default" data-modal-doactioncancel>
+                        {% trans %} partner-project-list_popup-project-cgv-ko {% endtrans %}
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        {% trans %} partner-project-list_popup-project-cgv-ok {% endtrans %}
+                    </button>
+                </div>
+            </footer>
+        </form>
+    </div><!-- /#modal-partner-project-cgv -->
 {% endblock %}

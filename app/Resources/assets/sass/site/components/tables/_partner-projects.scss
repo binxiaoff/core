@@ -37,11 +37,10 @@
     }
 }
 
-.table-prospects-item-action, .table-projects-item-memos, .table-users-item-action {
+.table-prospects-item-action, .table-projects-item-action, .table-users-item-action {
     padding-top: 5px;
     padding-bottom: 5px;
     text-align: right;
-
     .btn-default {
         padding: 4px;
         margin-right: 2px;
@@ -52,7 +51,6 @@
         line-height: 1;
         font-size: 14px;
         color: $c-t3;
-
         &:last-child {
             margin-right: 0;
         }
@@ -65,12 +63,11 @@
     }
 }
 
-.table-prospects-item-action, .table-projects-item-memos {
+.table-prospects-item-action, .table-projects-item-action {
     .icon {
         display: inline-block;
         width: 16px;
         height: 16px;
-        transition: transform 150ms;
     }
 }
 .table-projects-details {
@@ -80,8 +77,10 @@
 }
 
 // UI States
-.ui-details-open .table-projects-item-memos .icon {
-    transform: rotate(90deg);
+.ui-details-open [data-action="memos"] {
+    background-color: darken($c-bg1, 10%);
+    border-color: darken($c-bg1, 10%);
+    color: $c-t1;
 }
 .ui-table-projects-item-changed {
     > td {
