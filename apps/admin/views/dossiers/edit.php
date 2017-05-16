@@ -621,6 +621,18 @@
                                 </select>
                             </td>
                         </tr>
+                        <?php if (false === empty($this->projectEntity->getIdCompanySubmitter())) : ?>
+                            <tr>
+                                <th><label>Agence</label></th>
+                                <td><?= $this->projectEntity->getIdCompanySubmitter()->getName() ?></td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php if (false === empty($this->projectEntity->getIdClientSubmitter())) : ?>
+                            <tr>
+                                <th><label>Déposant</label></th>
+                                <td><?= $this->projectEntity->getIdClientSubmitter()->getPrenom() ?> <?= $this->projectEntity->getIdClientSubmitter()->getNom() ?></td>
+                            </tr>
+                        <?php endif; ?>
                     </table>
                     <br><br>
                     <h2>Produit</h2>
