@@ -384,8 +384,6 @@ $doc
         var $elem = $(this)
         var form = event.target
         var $dialog = $('#autolend-table-dialog')
-        var outOfAbsoluteRange = false
-        var outOfUnilendRange = false
 
         emptyNotificationsDiv()
 
@@ -394,24 +392,10 @@ $doc
 
         $('.cell-input[data-autolendtable-cell]').each(function() {
             var cellData = getCellInfo($(this).attr('data-autolendtable-cell'))
-
-            if (parseFloat(cellData.currentRate, 1) < autolendAbsoluteMin || parseFloat(cellData.currentRate, 1) > autolendAbsoluteMax) {
-                outOfAbsoluteRange = true
-            }
-
             if (parseFloat(cellData.currentRate, 1) < parseFloat(cellData.min, 1) || parseFloat(cellData.currentRate, 1) > parseFloat(cellData.max, 1)) {
-                outOfUnilendRange = true
-            }
-        })
-
-        // If there are rates < 3.5% or > 10%, do not submit
-        if (outOfAbsoluteRange) {
-            $dialog = $('#autolend-out-of-absolute-range-table-dialog')
-        } else {
-            if (outOfUnilendRange) {
                 $dialog = $('#autolend-out-of-range-table-dialog')
             }
-        }
+        })
 
         // Show dialog
         $dialog.uiModal('open')
