@@ -67,7 +67,6 @@ class LenderOperationsController extends Controller
                 'loansStatusFilter'      => self::LOAN_STATUS_FILTER,
                 'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($wallet->getId()),
                 'lenderLoans'            => $loans['lenderLoans'],
-                'loanStatus'             => $loans['loanStatus'],
                 'seriesData'             => $loans['seriesData'],
                 'currentFilters'         => $filters
             ]

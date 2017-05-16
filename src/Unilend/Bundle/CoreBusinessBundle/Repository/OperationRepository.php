@@ -343,40 +343,4 @@ class OperationRepository extends EntityRepository
 
         return $qb->getQuery()->getSingleScalarResult();
     }
-
-    /**
-     * @param Projects|integer $project
-     * @param Clients[]|array  $clients
-     *
-     * @return float
-     */
-    public function getTotalDebtCollectionCommission($project, array $clients)
-    {
-        $qb = $this->createQueryBuilder('o');
-        $qb->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletDebtor')
-            ->where('ot.label = :operationType')
-            ->andWhere('w.idClient in (:clients)')
-            ->andWhere('o.idProject = :project')
-            ->setParameter('clients', $clients)
-            ->setParameter('operationType', OperationType::COLLECTION_COMMISSION_LENDER)
-            ->setParameter('project', $project);
-
-        return $qb->getQuery()->getSingleScalarResult();
-    }
-
-    /**
-     * @param Projects|integer $project
-     * @param Clients[]|array  $clients
-     *
-     * @return float
-     */
-    public function getTotalNetDebtCollectionRepayment($project, array $clients)
-    {
-        $grossRepayment = $this->getTotalGrossDebtCollectionRepayment($project, $clients);
-        $commission     = $this->getTotalDebtCollectionCommission($project, $clients);
-
-        return bcsub($grossRepayment, $commission, 2);
-    }
 }
