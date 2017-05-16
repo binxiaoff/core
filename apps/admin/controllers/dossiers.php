@@ -760,8 +760,7 @@ class dossiersController extends bootstrap
             if ($this->isTakeover()) {
                 $this->loadTargetCompany();
             }
-
-            $this->loadEarlyRepaymentInformation();
+            $this->loadEarlyRepaymentInformation(false);
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
             $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
@@ -2353,8 +2352,7 @@ class dossiersController extends bootstrap
                     die;
                 }
             }
-
-            $this->loadEarlyRepaymentInformation();
+            $this->loadEarlyRepaymentInformation(true);
         }
     }
 
@@ -2470,107 +2468,110 @@ class dossiersController extends bootstrap
         }
     }
 
-    //utilisé pour récup les infos affichées dans le cadre
-    private function loadEarlyRepaymentInformation()
+    /**
+     * @param boolean $displayActionButton
+     */
+    private function loadEarlyRepaymentInformation($displayActionButton)
     {
+        $this->earlyRepaymentPossible = true;
+        $this->displayActionButton    = $displayActionButton;
+
         if ($this->projects->status >= \projects_status::REMBOURSEMENT) {
-            $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-            $this->echeanciers            = $this->loadData('echeanciers');
-            $oBusinessDays                = $this->loadLib('jours_ouvres');
-
-            //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
-            $aLastOrder             = $this->echeanciers->getLastOrder($this->projects->id_project);
-            $iOrderEarlyRefund      = isset($aLastOrder['ordre']) ? $aLastOrder['ordre'] + 1 : 1;
-            $sLastOrderDate         = $aLastOrder['date_echeance'];
-            $iLastOrderDate         = strtotime($sLastOrderDate);
-            $sBusinessDaysOrderDate = '';
-
-            // Date 4 jours ouvrés avant $sLastOrderDate
-            if ($iLastOrderDate != '' && isset($iLastOrderDate)) {
-                $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
-            }
-
-            if (false === empty($aLastOrder)) {
-                // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
-                if ($sBusinessDaysOrderDate <= time()) {
-                    // Dans ce cas, on connait donc déjà la derniere echeance qui se déroulera normalement
-                    $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aLastOrder['date_echeance']);
-
-                    // on va recup la date de la derniere echeance qui suit le process de base
-                    $aNextEcheance = $this->echeanciers->select(" id_project = " . $this->projects->id_project . "
-                    AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW()
-                    AND id_lender = (SELECT id_lender
-                    FROM echeanciers where id_project = " . $this->projects->id_project . " LIMIT 1)
-                    AND ordre = " . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
-
-                    if (count($aNextEcheance) > 0) {
-                        // on refait le meme process pour la nouvelle date
-                        $aLastOrder             = $aNextEcheance[0];
-                        $sLastOrderDate         = $aLastOrder['date_echeance'];
-                        $iLastOrderDate         = strtotime($sLastOrderDate);
-                        $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
-                    } else {
-                        $this->nextRepaymentDate = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
-                    }
-                } else {
-                    // on va recup la date de la derniere echeance qui suit le process de base
-                    $aRepaymentSchedule                   = $this->echeanciers->select(' id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
-                    $this->date_derniere_echeance_normale = (false === empty($aRepaymentSchedule[0]['date_echeance'])) ? $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']) : '';
-                }
-            }
-
-            if (false === empty($sBusinessDaysOrderDate)) {
-                $this->nextRepaymentDate  = date('d/m/Y', $sBusinessDaysOrderDate);
-                $this->date_next_echeance = $this->dates->formatDateMysqltoFr_HourOut($sLastOrderDate);
-            }
-
-            $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($this->projects->id_project, $iOrderEarlyRefund);
-            $this->montant_restant_du_preteur    = $this->echeanciers->getRemainingCapitalAtDue($this->projects->id_project, $iOrderEarlyRefund);
-            $resultat_num                        = bcsub($this->montant_restant_du_preteur, $this->montant_restant_du_emprunteur, 2);
-            $this->ordre_echeance_ra             = $iOrderEarlyRefund;
-            $this->remb_anticipe_effectue        = false;
-
             if ($this->projects->status == \projects_status::REMBOURSEMENT_ANTICIPE) {
-                $this->phrase_resultat        = "<div style='color:green;'>Remboursement anticip&eacute; effectu&eacute;</div>";
-                $this->remb_anticipe_effectue = true;
+                $this->message                = '<div style="color:green;">Remboursement anticipé effectué</div>';
+                $this->earlyRepaymentPossible = false;
+
+                return;
+            }
+            /** @var \echeanciers $repaymentSchedule */
+            $repaymentSchedule = $this->loadData('echeanciers');
+            $lateRepayment     = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND DATE(date_echeance) <= "' . (new \DateTime())->format('Y-m-d') . '"', ' ordre ASC', 0, 1);
+
+            if (false === empty($lateRepayment)) {
+                $this->message                = '<div style="color:red;">Remboursement impossible. Toutes les échéances précédentes ne sont pas remboursées</div>';
+                $this->earlyRepaymentPossible = false;
+
+                return;
+            }
+            /** @var \echeanciers_emprunteur $paymentSchedule */
+            $paymentSchedule = $this->loadData('echeanciers_emprunteur');
+            $nextRepayment   = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $this->getLimitDate(new \DateTime('today midnight'))->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
+
+            if (false === empty($nextRepayment)) {
+                $this->earlyRepaymentLimitDate    = $this->getLimitDate(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), true);
+                $this->nextScheduledRepaymentDate = \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']);
+                $this->lenderOwedCapital          = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
+                $this->borrowerOwedCapital        = $paymentSchedule->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
+                $amountDifference                 = bcsub($this->lenderOwedCapital, $this->borrowerOwedCapital, 2);
+
+                if ($amountDifference == 0) {
+                    $this->message = '<div style="color:green;">Remboursement possible</div>';
+                } elseif ($amountDifference < 0) {
+                    $this->message = '<div style="color:orange;">Remboursement possible <br />(CRD Prêteurs :' . $this->lenderOwedCapital . '€ - CRD Emprunteur :' . $this->borrowerOwedCapital . '€)</div>';
+                } else {
+                    $this->earlyRepaymentPossible = false;
+                    $this->message                = '<div style="color:red;">Remboursement impossible <br />(CRD Prêteurs :' . $this->lenderOwedCapital . '€ - CRD Emprunteur :' . $this->borrowerOwedCapital . '€)</div>';
+
+                    return;
+                }
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ReceptionsRepository $receptionRepository */
+                $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+                $this->reception     = $receptionRepository->getBorrowerAnticipatedRepaymentWireTransfer(
+                    $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+                        ->find($this->projects->id_project)
+                );
+
+                if (1 === count($this->reception)) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions reception */
+                    $this->reception = $this->reception[0];
+
+                    if ($amountDifference == 0 && (bcdiv($this->reception->getMontant(), 100, 2)) >= $this->lenderOwedCapital) {
+                        $this->wireTransferAmountOk = true;
+                        $this->message              = '<div style="color:green;">Virement reçu conforme</div>';
+                    } elseif (bcdiv($this->reception->getMontant(), 100, 2) < $this->lenderOwedCapital) {
+                        $this->wireTransferAmountOk = false;
+                        $this->message              = '<div style="color:red;">Virement reçu - Probléme montant <br />(CRD Prêteurs :' . $this->lenderOwedCapital . '€ - Virement :' . ($this->reception->getMontant() / 100) . '€)</div>';
+                    }
+                }
             } else {
-                if ($resultat_num == 0) {
-                    $this->phrase_resultat = "<div style='color:green;'>Remboursement possible</div>";
-                } elseif ($resultat_num < 0) { // si emprunteur doit plus que les prets ==> Orange non bloquant
-                    $this->phrase_resultat = "<div style='color:orange;'>Remboursement possible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
-                } elseif ($resultat_num > 0) { // si preteurs doivent plus que les emprunteurs ==> rouge bloquant
-                    $this->phrase_resultat = "<div style='color:red;'>Remboursement impossible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
-                }
+                $this->message                = '<div style="color:orange;">Il n\'est plus possible de rembourser par anticipation</div>';
+                $this->earlyRepaymentPossible = false;
+
+                return;
             }
+        } else {
+            $this->earlyRepaymentPossible = false;
+            $this->message                = '<div>Le statut du projet ne  permet pas de faire un remboursement anticipé.</div>';
+        }
+    }
 
-            // on verifie si on a recu un virement anticipé pour ce projet
-            $this->receptions = $this->loadData('receptions');
-            $L_vrmt_anticipe  = $this->receptions->select('id_project = ' . $this->projects->id_project . ' AND status_bo IN(1, 2) AND type_remb = ' . \receptions::REPAYMENT_TYPE_EARLY . ' AND type = 2 AND status_virement = 1');
+    /**
+     * @param DateTime $date
+     * @param bool     $countDown
+     *
+     * @return DateTime
+     */
+    private function getLimitDate(\DateTime $date, $countDown = false)
+    {
+        /** @var \jours_ouvres $businessDays */
+        $businessDays = $this->loadLib('jours_ouvres');
+        $interval     = new DateInterval('P1D');
 
-            $this->virement_recu = false;
+        if ($countDown) {
+            $interval->invert = 1;
+        }
+        $workingDays = 1;
 
-            if (count($L_vrmt_anticipe) == 1 && $this->projects->status != \projects_status::REMBOURSEMENT_ANTICIPE) {
-                $this->virement_recu    = true;
-                $this->virement_recu_ok = false;
+        while ($workingDays <= 5) {
+            $date->add($interval);
 
-                $this->receptions->get($L_vrmt_anticipe[0]['id_reception']);
-                //on check si on a toujours le montant emprunteur Vs Preteur est toujours identique et si le virement recu est égal à ce qu'on doit
-                if ($resultat_num == 0 && ($this->receptions->montant / 100) >= $this->montant_restant_du_preteur) {
-                    $this->virement_recu_ok = true;
-                    $this->phrase_resultat  = "<div style='color:green;'>Virement re&ccedil;u conforme</div>";
-                } elseif (($this->receptions->montant / 100) < $this->montant_restant_du_preteur) {
-                    $this->phrase_resultat = "<div style='color:red;'>Virement re&ccedil;u - Probl&egrave;me montant <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - Virement :" . ($this->receptions->montant / 100) . "€)</div>";
-                }
-            }
-
-            // on check si les échéances avant le RA sont toutes payées - si on trouve quelque chose on bloque le RA
-            $L_echeance_avant            = $this->echeanciers->select(" id_project = " . $this->projects->id_project . " AND status = 0 AND ordre < " . $this->ordre_echeance_ra);
-            $this->ra_possible_all_payed = true;
-            if (count($L_echeance_avant) > 0) {
-                $this->phrase_resultat       = "<div style='color:red;'>Remboursement impossible <br />Toutes les &eacute;ch&eacute;ances pr&eacute;c&eacute;dentes ne sont pas rembours&eacute;es</div>";
-                $this->ra_possible_all_payed = false;
+            if ($businessDays->isHoliday($date->getTimestamp())) {
+                $workingDays++;
             }
         }
+        return $date;
     }
 
     public function _send_cgv_ajax()
