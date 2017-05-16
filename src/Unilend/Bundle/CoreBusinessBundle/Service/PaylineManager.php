@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -231,7 +232,7 @@ class PaylineManager
 
         $amount = round(bcdiv($backPayline->getAmount(), 100, 4), 2);
 
-        $notification->type      = \notifications::TYPE_CREDIT_CARD_CREDIT;
+        $notification->type      = Notifications::TYPE_CREDIT_CARD_CREDIT;
         $notification->id_lender = $backPayline->getWallet()->getId();
         $notification->amount    = $backPayline->getAmount();
         $notification->create();

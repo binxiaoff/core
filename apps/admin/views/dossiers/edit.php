@@ -932,6 +932,7 @@
                                 <td>
                                     <select name="pret_refuse" id="pret_refuse" class="select">
                                         <option value="0">Non</option>
+                                        <option value="1">Oui</option>
                                     </select>
                                 </td>
                             </tr>

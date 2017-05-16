@@ -13,6 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\core\Loader;
@@ -771,7 +772,7 @@ class MailerManager
                 $contractLabel[$contractType['id_contract']] = $this->translator->trans('contract-type-label_' . $contractType['label']);
             }
 
-            if ($clientNotifications->getNotif($loan->getIdLender()->getIdClient()->getIdClient(), \notifications::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
+            if ($clientNotifications->getNotif($loan->getIdLender()->getIdClient()->getIdClient(), Notifications::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                 $lenderLoans         = $loans->select('id_project = ' . $project->getIdProject() . ' AND id_lender = ' . $loan->getIdLender()->getId(), 'id_type_contract DESC');
                 $iSumMonthlyPayments = $paymentSchedule->getTotalAmount(['id_lender' => $loan->getIdLender()->getId(), 'id_project' => $project->getIdProject(), 'ordre' => 1]);
                 $aFirstPayment       = $paymentSchedule->getPremiereEcheancePreteur($project->getIdProject(), $loan->getIdLender()->getId());

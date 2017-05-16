@@ -10,6 +10,14 @@
   }
 }
 
+@mixin table-row-alt-2($row-bg: mix($c-bg3, $c-bg4)) {
+  &.alt,
+  &:nth-of-type(4n+1) {
+    background-color: $row-bg;
+    @content;
+  }
+}
+
 // Table scroll
 .table-scroll {
   width: 100%;

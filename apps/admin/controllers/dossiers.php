@@ -8,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -1006,27 +1007,27 @@ class dossiersController extends bootstrap
 
         switch ($iStatus) {
             case \projects_status::PROBLEME:
-                $iNotificationType = \notifications::TYPE_PROJECT_PROBLEM;
+                $iNotificationType = Notifications::TYPE_PROJECT_PROBLEM;
                 $sEmailTypePerson  = 'preteur-projet-statut-probleme';
                 $sEmailTypeSociety = 'preteur-projet-statut-probleme';
                 break;
             case \projects_status::PROBLEME_J_X:
-                $iNotificationType = \notifications::TYPE_PROJECT_PROBLEM_REMINDER;
+                $iNotificationType = Notifications::TYPE_PROJECT_PROBLEM_REMINDER;
                 $sEmailTypePerson  = 'preteur-projet-statut-probleme-j-x';
                 $sEmailTypeSociety = 'preteur-projet-statut-probleme-j-x';
                 break;
             case \projects_status::RECOUVREMENT:
-                $iNotificationType = \notifications::TYPE_PROJECT_RECOVERY;
+                $iNotificationType = Notifications::TYPE_PROJECT_RECOVERY;
                 $sEmailTypePerson  = 'preteur-projet-statut-recouvrement';
                 $sEmailTypeSociety = 'preteur-projet-statut-recouvrement';
                 break;
             case \projects_status::PROCEDURE_SAUVEGARDE:
-                $iNotificationType = \notifications::TYPE_PROJECT_PRECAUTIONARY_PROCESS;
+                $iNotificationType = Notifications::TYPE_PROJECT_PRECAUTIONARY_PROCESS;
                 $sEmailTypePerson  = 'preteur-projet-statut-procedure-sauvegarde';
                 $sEmailTypeSociety = 'preteur-projet-statut-procedure-sauvegarde';
                 break;
             case \projects_status::REDRESSEMENT_JUDICIAIRE:
-                $iNotificationType  = \notifications::TYPE_PROJECT_RECEIVERSHIP;
+                $iNotificationType  = Notifications::TYPE_PROJECT_RECEIVERSHIP;
                 $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROCEDURE_SAUVEGARDE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
@@ -1038,7 +1039,7 @@ class dossiersController extends bootstrap
                 }
                 break;
             case \projects_status::LIQUIDATION_JUDICIAIRE:
-                $iNotificationType  = \notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
+                $iNotificationType  = Notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
                 $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . \projects_status::PROCEDURE_SAUVEGARDE . ', ' . \projects_status::REDRESSEMENT_JUDICIAIRE . '))', 'added ASC, id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
@@ -1050,7 +1051,7 @@ class dossiersController extends bootstrap
                 }
                 break;
             case \projects_status::DEFAUT:
-                $iNotificationType = \notifications::TYPE_PROJECT_FAILURE;
+                $iNotificationType = Notifications::TYPE_PROJECT_FAILURE;
                 $sEmailTypePerson  = 'preteur-projet-statut-defaut-personne-physique';
                 $sEmailTypeSociety = 'preteur-projet-statut-defaut-personne-morale';
 
@@ -1909,7 +1910,7 @@ class dossiersController extends bootstrap
                             $oLogger->debug('Manual repayment : repayment amount= ' . $e['montant'] . ' Interests tax= ' . $iTaxOnInterests . ' Capital tax= ' . $iTaxOnCapital, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
 
                             $iTotalEAT                       = $e['montant'] - $iTaxOnInterests - $iTaxOnCapital;
-                            $this->notifications->type       = \notifications::TYPE_REPAYMENT;
+                            $this->notifications->type       = Notifications::TYPE_REPAYMENT;
                             $this->notifications->id_lender  = $lenderWallet->getId();
                             $this->notifications->id_project = $this->projects->id_project;
                             $this->notifications->amount     = $iTotalEAT;
@@ -3594,8 +3595,15 @@ class dossiersController extends bootstrap
                 } else {
                     $date = null;
                 }
-                $amount = $this->loadLib('ficelle')->cleanFormatedNumber($this->request->request->get('amount'));
 
+                if (null !== $date && $date <= new DateTime()) {
+                    $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. La date de transfert n\'est pas valide.';
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    die;
+                }
+
+                $amount = $this->loadLib('ficelle')->cleanFormatedNumber($this->request->request->get('amount'));
                 if ($amount <= 0) {
                     $_SESSION['freeow']['title']   = 'Transfert de fonds';
                     $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Montant n\'est pas valide.';

@@ -17,9 +17,11 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Doctrine\ORM\EntityManager;
@@ -60,7 +62,6 @@ class LenderWalletController extends Controller
      */
     public function walletDepositResultAction($token)
     {
-        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $backPayline   = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['token' => $token]);
         /** @var UserLender $user */
@@ -199,7 +200,7 @@ class LenderWalletController extends Controller
 
                         $transaction->get($wireTransferOut->getIdTransaction());
 
-                        $notification->type      = \notifications::TYPE_DEBIT;
+                        $notification->type      = Notifications::TYPE_DEBIT;
                         $notification->id_lender = $wallet->getId();
                         $notification->amount    = $amount * 100;
                         $notification->create();

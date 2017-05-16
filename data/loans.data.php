@@ -241,25 +241,28 @@ class loans extends loans_crud
     }
 
     // On recup la liste des loans d'un preteur en les regoupant par projet
-    public function getSumLoansByProject($iLenderAccountId, $sOrder = null, $iYear = null, $iProjectStatus = null)
+    public function getSumLoansByProject($lenderAccountId, $order = null, $year = null, $projectStatus = null)
     {
-        $aPyedRepayment = array(
+        if (is_array($projectStatus)) {
+            $projectStatus = implode(', ', $projectStatus);
+        }
+
+        $repaidStatus = [
             \echeanciers::STATUS_REPAID,
             \echeanciers::STATUS_PARTIALLY_REPAID
-        );
-        $result   = array();
-        $resultat = $this->bdd->query('
+        ];
+        $result       = [];
+        $query        = '
             SELECT
                 l.id_project,
                 p.title,
                 p.slug,
-                p.title AS name,
                 c.city,
                 c.zip,
                 p.risk,
                 p.status AS project_status,
                 ps.label AS project_status_label,
-                (SELECT psh.added FROM projects_status_history psh WHERE p.id_project = psh.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status_change,
+                IFNULL((SELECT added FROM projects_status_history WHERE id_project = p.id_project AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . implode(', ', [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE]) . '))), "") AS final_repayment_date,
                 SUM(ROUND(l.amount / 100, 2)) AS amount,
                 ROUND(SUM(rate * l.amount) / SUM(l.amount), 2) AS rate,
                 COUNT(l.id_loan) AS nb_loan,
@@ -274,26 +277,29 @@ class loans extends loans_crud
                    (SELECT SUM(IFNULL(tax.amount, 0) / 100)
                    FROM tax
                    WHERE tax.id_transaction =
-                         (SELECT t.id_transaction
-                          FROM transactions t
-                          WHERE t.id_echeancier = e3.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '))
-                    , 2)
-                ) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status IN (' . implode(', ', $aPyedRepayment) . ') AND e3.date_echeance = (SELECT MIN(e4.date_echeance) FROM echeanciers e4 WHERE e4.id_loan = l.id_loan AND e4.status IN (' . implode(', ', $aPyedRepayment) . ') ) LIMIT 1)) AS last_perceived_repayment,
-                (SELECT SUM(ROUND(e.montant / 100, 2)) FROM echeanciers e WHERE e.id_project = l.id_project AND e.ordre = 1 AND e.id_lender = l.id_lender) AS monthly_repayment_amount
+                     (SELECT t.id_transaction
+                      FROM transactions t
+                      WHERE t.id_echeancier = e3.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '))
+                , 2)
+                ) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status IN (' . implode(', ', $repaidStatus) . ') AND e3.date_echeance = (SELECT MIN(e4.date_echeance) FROM echeanciers e4 WHERE e4.id_loan = l.id_loan AND e4.status IN (' . implode(', ', $repaidStatus) . ') ) LIMIT 1)) AS last_perceived_repayment,
+                (SELECT SUM(ROUND(e.montant / 100, 2)) FROM echeanciers e WHERE e.id_project = l.id_project AND e.ordre = 1 AND e.id_lender = l.id_lender) AS monthly_repayment_amount,
+                (SELECT ROUND(SUM(e5.capital - e5.capital_rembourse) / 100, 2) FROM echeanciers e5 WHERE e5.id_loan = l.id_loan) AS remaining_capital
             FROM loans l
             INNER JOIN projects p ON l.id_project = p.id_project
             INNER JOIN companies c ON p.id_company = c.id_company
             INNER JOIN projects_status ps ON p.status = ps.status
-            WHERE id_lender = ' . $iLenderAccountId . '
+            WHERE l.id_lender = ' . $lenderAccountId . '
                 AND l.status = ' . self::STATUS_ACCEPTED . '
-                ' . (null === $iYear ? '' : 'AND YEAR(l.added) = "' . $iYear . '"') . '
-                ' . (null === $iProjectStatus ? '' : 'AND p.status = ' . $iProjectStatus) . '
+                ' . (null === $year ? '' : 'AND YEAR(l.added) = "' . $year . '"') . '
+                ' . (null === $projectStatus ? '' : 'AND p.status IN (' . $projectStatus . ')') . '
             GROUP BY l.id_project
-            ORDER BY ' . (null === $sOrder ? 'l.added DESC' : $sOrder)
-        );
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            ORDER BY ' . (null === $order ? 'l.added DESC' : $order);
+
+        $statement = $this->bdd->query($query);
+        while ($record = $this->bdd->fetch_assoc($statement)) {
             $result[] = $record;
         }
+
         return $result;
     }
 

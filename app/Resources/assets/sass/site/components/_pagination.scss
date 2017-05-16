@@ -62,7 +62,7 @@
 .pagination-index {
   @include inline-block-list;
   font-size: 18px;
-  line-height: $height-btn - 4px;
+  //line-height: $height-btn - 4px;
   vertical-align: middle;
 
   > li {
@@ -94,7 +94,7 @@
       text-align: center;
     }
 
-    &.current {
+    &.current, &.active {
       > a {
         background-color: $c-white;
         border-color: $c-white;
@@ -108,7 +108,7 @@
   }
 
   @include devices('md') {
-    line-height: $height-btn-md - 4px; // Minus the vertical border-width total
+    //line-height: $height-btn-md - 4px; // Minus the vertical border-width total
 
     > li {
       height: $height-btn-md;
@@ -116,7 +116,7 @@
   }
 
   @include devices('lg') {
-    line-height: $height-btn-lg - 4px;
+    //line-height: $height-btn-lg - 4px;
 
     > li {
       height: $height-btn-lg;
@@ -127,3 +127,14 @@
 .pagination-more {
   padding: 0 20px;
 }
+
+.ui-paginate {
+  .page {
+    display: none;
+    min-height: auto;
+    &.active {
+      display: block;
+    }
+  }
+}
+

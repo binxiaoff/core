@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
@@ -1579,5 +1580,71 @@ class preteursController extends bootstrap
 
             die;
         }
+    }
+
+    public function _notifications()
+    {
+        $this->autoFireHeader = true;
+        $this->autoFireHead   = true;
+        $this->autoFireFooter = true;
+
+        $this->projectList = [];
+
+        if (isset($_POST['searchProject'])) {
+            /** @var \projects $project */
+            $project = $this->loadData('projects');
+
+            if (false === empty($_POST['projectId'])) {
+                $this->projectList = $project->searchDossiers(null, null, null, null, null, null, null, $_POST['projectId']);
+            } elseif (false === empty($_POST['projectTitle'])) {
+                $this->projectList = $project->searchDossiers(null, null, null, null, null, null, null, null, filter_var($_POST['projectTitle'], FILTER_SANITIZE_STRING));
+            }
+            if (isset($this->projectList[0])) {
+                array_shift($this->projectList);
+            }
+        }
+    }
+
+    public function _addNotification()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+
+        header('Content-Type: application/json');
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        if (
+            false === empty($_POST['notificationSubject'])
+            && false === empty($_POST['notificationContent'])
+            && false === empty($_POST['selectedProjectId'])
+            && $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find(filter_var($_POST['selectedProjectId'], FILTER_SANITIZE_NUMBER_INT))
+        ) {
+            $user                = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            $projectNotification = new ProjectNotification();
+            $projectNotification->setIdProject($project)
+                ->setSubject(filter_var($_POST['notificationSubject'], FILTER_SANITIZE_STRING))
+                ->setContent(filter_var($_POST['notificationContent'], FILTER_SANITIZE_STRING))
+                ->setIdUser($user);
+
+            if (isset($_POST['notificationDate']) && ($notificationDate = \DateTime::createFromFormat('d/m/Y', $_POST['notificationDate']))) {
+                $projectNotification->setNotificationDate($notificationDate);
+            }
+            $entityManager->persist($projectNotification);
+            $entityManager->flush($projectNotification);
+            echo json_encode([
+                'message' => 'Notification ajouté avec succès',
+                'status'  => 'ok'
+            ]);
+
+            return;
+        }
+        echo json_encode([
+            'message' => 'Echec lors de l\'ajout de la notification',
+            'status'  => 'ko'
+        ]);
     }
 }

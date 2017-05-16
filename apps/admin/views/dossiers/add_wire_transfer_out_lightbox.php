@@ -63,6 +63,7 @@
   $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
   $('#date').datepicker({
+    minDate: 1,
     showOn: 'both',
     buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
     buttonImageOnly: true,

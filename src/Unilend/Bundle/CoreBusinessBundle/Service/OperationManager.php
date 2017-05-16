@@ -433,7 +433,7 @@ class OperationManager
         $transaction->id_project       = $projectId;
         $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->ip_client        = $_SERVER['REMOTE_ADDR'];
+        $transaction->ip_client        = (isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : '';
         $transaction->type_transaction = \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
         $transaction->create();
 
@@ -923,6 +923,19 @@ class OperationManager
             $this->entityManager->getConnection()->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param float  $amount
+     * @param array
+     */
+    public function borrowerRegularisation(Wallet $wallet, $amount, $origins = [])
+    {
+        $unilendWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
+        $unilendWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $operationType     = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_BORROWER_REGULARIZATION]);
+        $this->newOperation($amount, $operationType, $unilendWallet, $wallet, $origins);
     }
 
     /**

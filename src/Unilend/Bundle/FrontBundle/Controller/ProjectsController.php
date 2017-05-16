@@ -315,7 +315,6 @@ class ProjectsController extends Controller
             'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
             'finance'              => $isFullyConnectedUser,
-            'history'              => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
             'canBid'               => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
             'warningLending'       => true,
             'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
