@@ -9,6 +9,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 
@@ -29,13 +30,15 @@ class ProjectsListController extends Controller
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $prospects         = $projectRepository->getPartnerProspects($companies);
         $borrowers         = $projectRepository->getPartnerProjects($companies);
-        $abandonedRejected = $projectRepository->getPartnerAbandonedRejected($companies);
+        $abandoned         = $projectRepository->getPartnerAbandoned($companies);
+        $rejected          = $projectRepository->getPartnerRejected($companies);
 
         return $this->render('/partner_account/projects_list.html.twig', [
-            'prospects'         => $this->formatProject($prospects, false),
-            'borrowers'         => $this->formatProject($borrowers),
-            'abandonedRejected' => $this->formatProject($abandonedRejected),
-            'abandonReasons'    => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
+            'prospects'      => $this->formatProject($prospects, false),
+            'borrowers'      => $this->formatProject($borrowers, true),
+            'abandoned'      => $this->formatProject($abandoned, true, true),
+            'rejected'       => $this->formatProject($rejected, true),
+            'abandonReasons' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
         ]);
     }
 
@@ -78,13 +81,20 @@ class ProjectsListController extends Controller
     /**
      * @param Projects[] $projects
      * @param bool       $loadNotes
+     * @param bool       $abandoned
      *
      * @return array
      */
-    private function formatProject(array $projects, $loadNotes = true)
+    private function formatProject(array $projects, $loadNotes, $abandoned = false)
     {
-        $display    = [];
-        $translator = $this->get('translator');
+        $display       = [];
+        $translator    = $this->get('translator');
+
+        if ($abandoned) {
+            $entityManager        = $this->get('doctrine.orm.entity_manager');
+            $historyRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+            $abandonProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::ABANDONED]);
+        }
 
         foreach ($projects as $project) {
             $display[$project->getIdProject()] = [
@@ -103,6 +113,14 @@ class ProjectsListController extends Controller
                 'memos'      => $loadNotes ? $this->formatNotes($project->getPublicNotes()) : [],
                 'hasChanged' => $loadNotes ? $this->hasProjectChanged($project) : false
             ];
+
+            if ($abandoned) {
+                $history = $historyRepository->findOneBy([
+                    'idProject' => $project->getIdProject(),
+                    'idProjectStatus' => $abandonProjectStatus
+                ]);
+                $display[$project->getIdProject()]['abandonReason'] = $history ? $history->getContent() : '';
+            }
         }
 
         return $display;

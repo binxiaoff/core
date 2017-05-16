@@ -14,6 +14,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -222,7 +223,11 @@ class ProjectRequestController extends Controller
                 $products       = $productManager->findEligibleProducts($project);
 
                 if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
-                    $project->id_product = $products[0]->id_product;
+                    /** @var PartnerProduct $partnerProduct */
+                    $partnerProduct                     = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $user->getPartner(), 'idProduct' => $products[0]->id_product]);
+                    $project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
+                    $project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
+                    $project->id_product                = $products[0]->id_product;
                     $project->update();
                 }
 
@@ -314,12 +319,23 @@ class ProjectRequestController extends Controller
 
             $template['rejectionReason'] = $this->get('translator')->trans($translation, ['%borrowerServiceEmail%' => $borrowerServiceEmail->getValue()]);
         } else {
+            $monthlyPaymentBoundaries = $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment());
+
             $template = $template + [
-                'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
-                'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
-                'abandonReasons'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
-                'prospect'                 => ! $this->getUser()->getPartner()->getProspect()
-            ];
+                    'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
+                    'abandonReasons'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
+                    'prospect'                 => ! $this->getUser()->getPartner()->getProspect(),
+                    'payment'                  => [
+                        'monthly' => [
+                            'min' => $monthlyPaymentBoundaries['minimum'],
+                            'max' => $monthlyPaymentBoundaries['maximum']
+                        ],
+                        'interests' => [
+                            'min' => $monthlyPaymentBoundaries['minimum'] * $project->getPeriod() - $project->getAmount(),
+                            'max' => $monthlyPaymentBoundaries['maximum'] * $project->getPeriod() - $project->getAmount()
+                        ]
+                    ]
+                ];
         }
 
         return $this->render('/partner_account/project_request_eligibility.html.twig', $template);

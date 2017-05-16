@@ -79,7 +79,7 @@ class ProjectsRepository extends EntityRepository
      *
      * @return Projects[]
      */
-    public function getPartnerAbandonedRejected(array $companies)
+    public function getPartnerAbandoned(array $companies)
     {
         $queryBuilder = $this->createQueryBuilder('p');
 
@@ -87,7 +87,26 @@ class ProjectsRepository extends EntityRepository
             ->where('p.idCompanySubmitter IN (:userCompanies)')
             ->andWhere($queryBuilder->expr()->in('p.status', ':projectStatus'))
             ->setParameter('userCompanies', $companies)
-            ->setParameter('projectStatus', [ProjectsStatus::ABANDONED, ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
+            ->setParameter('projectStatus', [ProjectsStatus::ABANDONED])
+            ->orderBy('p.added', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param array $companies
+     *
+     * @return Projects[]
+     */
+    public function getPartnerRejected(array $companies)
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+
+        return $queryBuilder
+            ->where('p.idCompanySubmitter IN (:userCompanies)')
+            ->andWhere($queryBuilder->expr()->in('p.status', ':projectStatus'))
+            ->setParameter('userCompanies', $companies)
+            ->setParameter('projectStatus', [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
             ->orderBy('p.added', 'DESC')
             ->getQuery()
             ->getResult();

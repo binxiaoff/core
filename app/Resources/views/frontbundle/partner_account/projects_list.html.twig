@@ -155,10 +155,10 @@
                                                     <span class="ui-project-status">{{ ('partner-project-list_status-' ~ project.status)|trans }}</span>
                                                 </td>
                                                 <td class="table-projects-item-action">
-                                                    <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-cgv'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="cgv"><span class="icon fa-envelope"></span></a>
                                                     {% if project.memos|length > 0 %}
                                                         <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="memos"><span class="icon fa-info-u16"></span></a>
                                                     {% endif %}
+                                                    <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-cgv'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="cgv"><span class="icon fa-envelope"></span></a>
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -170,54 +170,54 @@
                             {% endif %}
                         </div><!-- /#partner-projects-panel -->
 
-                        {% if abandonedRejected|length > 0 %}
-                            <div id="partner-abandoned-rejected-projects-panel">
-                                <h3>{% trans %} partner-project-list_abandoned-rejected-title {% endtrans %}</h3>
+                        {% if abandoned|length > 0 %}
+                            <div id="partner-abandoned-projects-panel">
+                                <h3>{% trans %} partner-project-list_abandoned-title {% endtrans %}</h3>
                                 <div class="table-scroll">
                                     <table class="table table-projects table-clickable" data-sortable>
                                         <thead class="table-sortable-columns">
                                         <tr>
                                             <th class="table-projects-item-borrower table-sortable-column" data-sortable-by="borrower" colspan="2">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-rejected-borrower'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_abandoned-rejected-table-borrower {% endtrans %}
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-borrower'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_abandoned-table-borrower {% endtrans %}
                                                 </span>
                                             </th>
                                             {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                 <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
-                                                    <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-rejected-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                        {% trans %} partner-project-list_abandoned-rejected-table-submitter {% endtrans %}
+                                                    <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                        {% trans %} partner-project-list_abandoned-table-submitter {% endtrans %}
                                                     </span>
                                                 </th>
                                             {% endif %}
                                             <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
-                                                <span class="label" title=  "{{ 'partner-project-list_sr-sort-abandoned-rejected-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_abandoned-rejected-table-amount {% endtrans %}
+                                                <span class="label" title=  "{{ 'partner-project-list_sr-sort-abandoned-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_abandoned-table-amount {% endtrans %}
                                                 </span>
                                             </th>
                                             <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-rejected-duration'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_abandoned-rejected-table-duration {% endtrans %}
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-duration'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_abandoned-table-duration {% endtrans %}
                                                 </span>
                                             </th>
                                             <th class="table-projects-item-motif table-sortable-column" data-sortable-by="motif">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-rejected-motif'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_abandoned-rejected-table-motif {% endtrans %}
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-motif'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_abandoned-table-motif {% endtrans %}
                                                 </span>
                                             </th>
                                             <th class="table-projects-item-status table-sortable-column" data-sortable-by="status">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-rejected-status'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_abandoned-rejected-table-status {% endtrans %}
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-status'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_abandoned-table-status {% endtrans %}
                                                 </span>
                                             </th>
                                             <th class="table-projects-item-action">
-                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-rejected-action'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} partner-project-list_abandoned-rejected-table-action {% endtrans %}
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-memos'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_abandoned-table-memos {% endtrans %}
                                                 </span>
                                             </th>
                                         </tr>
                                         </thead>
                                         <tbody data-sortable-content>
-                                        {% for project in abandonedRejected %}
+                                        {% for project in abandoned %}
                                             <tr id="project-{{ project.id }}" class="table-projects-item {% if loop.index is divisibleby(2) %}even{% else %}odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
                                                 data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
@@ -227,20 +227,18 @@
                                                 data-sortable-motif="{{ project.motive|e('html_attr') }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}"
-                                                data-sortable-status="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}">
+                                                data-sortable-status="{{ project.abandonReason|e('html_attr') }}">
                                                 <td class="table-projects-item-borrower" colspan="2">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     <td class="table-projects-item-submitter">{{ project.submitter.lastName }} {{ project.submitter.firstName }}{% if project.submitter.entity|length %}<br>{{ project.submitter.entity }}{% endif %}</td>
                                                 {% endif %}
                                                 <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
-                                                <td class="table-projects-item-duration">{% trans with {'%duration%': project.duration} %} partner-project-list_abandoned-rejected-table-duration-value {% endtrans %}</td>
+                                                <td class="table-projects-item-duration">{% trans with {'%duration%': project.duration} %} partner-project-list_abandoned-table-duration-value {% endtrans %}</td>
                                                 <td class="table-projects-item-motif">{{ project.motive }}</td>
-                                                <td class="table-projects-item-status">
-                                                    <span class="ui-project-status">{{ ('partner-project-list_status-' ~ project.status)|trans }}</span>
-                                                </td>
+                                                <td class="table-projects-item-status">{{ project.abandonReason }}</td>
                                                 <td class="table-projects-item-action">
                                                     {% if project.memos|length > 0 %}
-                                                        <a role="button" class="btn-default" title="{{ 'partner-project-list_abandoned-rejected-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="memos"><span class="icon fa-info-u16"></span></a>
+                                                        <a role="button" class="btn-default" title="{{ 'partner-project-list_abandoned-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="memos"><span class="icon fa-info-u16"></span></a>
                                                     {% else %}
                                                         &nbsp;
                                                     {% endif %}
@@ -250,7 +248,81 @@
                                         </tbody>
                                     </table><!-- /.table-projects -->
                                 </div><!-- /.table-scroll -->
-                            </div><!-- /#partner-abandoned-rejected-projects-panel -->
+                            </div><!-- /#partner-abandoned-projects-panel -->
+                        {% endif %}
+
+                        {% if rejected|length > 0 %}
+                            <div id="partner-rejected-projects-panel">
+                                <h3>{% trans %} partner-project-list_rejected-title {% endtrans %}</h3>
+                                <div class="table-scroll">
+                                    <table class="table table-projects table-clickable" data-sortable>
+                                        <thead class="table-sortable-columns">
+                                        <tr>
+                                            <th class="table-projects-item-borrower table-sortable-column" data-sortable-by="borrower" colspan="2">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-rejected-borrower'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_rejected-table-borrower {% endtrans %}
+                                                </span>
+                                            </th>
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                                <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
+                                                    <span class="label" title="{{ 'partner-project-list_sr-sort-rejected-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                        {% trans %} partner-project-list_rejected-table-submitter {% endtrans %}
+                                                    </span>
+                                                </th>
+                                            {% endif %}
+                                            <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
+                                                <span class="label" title=  "{{ 'partner-project-list_sr-sort-rejected-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_rejected-table-amount {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-rejected-duration'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_rejected-table-duration {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-motif table-sortable-column" data-sortable-by="motif">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-rejected-motif'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_rejected-table-motif {% endtrans %}
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-action">
+                                                <span class="label" title="{{ 'partner-project-list_sr-sort-rejected-memos'|trans|e('html_attr') }}" data-toggle="tooltip">
+                                                    {% trans %} partner-project-list_rejected-table-memos {% endtrans %}
+                                                </span>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody data-sortable-content>
+                                        {% for project in rejected %}
+                                            <tr id="project-{{ project.id }}" class="table-projects-item {% if loop.index is divisibleby(2) %}even{% else %}odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
+                                                data-details="{{ project.memos|json_encode|escape('html_attr') }}"
+                                                data-sortable-borrower="{{ project.name|e('html_attr') }}"
+                                                {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                                    data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
+                                                {% endif %}
+                                                data-sortable-motif="{{ project.motive|e('html_attr') }}"
+                                                data-sortable-amount="{{ project.amount }}"
+                                                data-sortable-duration="{{ project.duration }}">
+                                                <td class="table-projects-item-borrower" colspan="2">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
+                                                {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                                    <td class="table-projects-item-submitter">{{ project.submitter.lastName }} {{ project.submitter.firstName }}{% if project.submitter.entity|length %}<br>{{ project.submitter.entity }}{% endif %}</td>
+                                                {% endif %}
+                                                <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                                <td class="table-projects-item-duration">{% trans with {'%duration%': project.duration} %} partner-project-list_rejected-table-duration-value {% endtrans %}</td>
+                                                <td class="table-projects-item-motif">{{ project.motive }}</td>
+                                                <td class="table-projects-item-action">
+                                                    {% if project.memos|length > 0 %}
+                                                        <a role="button" class="btn-default" title="{{ 'partner-project-list_rejected-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="memos"><span class="icon fa-info-u16"></span></a>
+                                                    {% else %}
+                                                        &nbsp;
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table><!-- /.table-projects -->
+                                </div><!-- /.table-scroll -->
+                            </div><!-- /#partner-rejected-projects-panel -->
                         {% endif %}
                     </div><!-- /.panel-content -->
                 </div><!-- /.panel -->
