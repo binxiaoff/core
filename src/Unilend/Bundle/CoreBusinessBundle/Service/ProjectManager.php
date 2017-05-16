@@ -1041,7 +1041,7 @@ class ProjectManager
      */
     public function getCommissionFunds(Projects $project, $inclTax)
     {
-        $commissionRate = bcdiv($project->getCommissionRateFunds(), 100, 4);
+        $commissionRate = round(bcdiv($project->getCommissionRateFunds(), 100, 5), 4);
         $commission     = round(bcmul($project->getAmount(), $commissionRate, 4), 2);
 
         if ($inclTax) {
