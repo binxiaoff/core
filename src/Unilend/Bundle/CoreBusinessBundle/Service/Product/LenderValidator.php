@@ -3,7 +3,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class LenderValidator
@@ -45,7 +44,7 @@ class LenderValidator
         $eligible = true;
         $reason   = [];
         /** @var \product $product */
-        $product = $this->entityManager->getRepository('product');
+        $product = $this->entityManagerSimulator->getRepository('product');
         if (false === $product->get($project->id_product)) {
             throw new \InvalidArgumentException('The product id ' . $project->id_product . ' does not exist');
         }

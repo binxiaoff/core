@@ -7,9 +7,12 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
 
@@ -63,15 +66,15 @@ class OperationRepository extends EntityRepository
     public function getWithdrawAndProvisionOperationByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
         $qb = $this->createQueryBuilder('o')
-                   ->where('o.idType IN (:walletType)')
-                   ->setParameter('walletType', [
-                       $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
-                       $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
-                   ])
-                   ->andWhere('o.idWalletCreditor = :idWallet OR o.idWalletDebtor = :idWallet')
-                   ->setParameter('idWallet', $wallet)
-                   ->andWhere('o.added >= :added')
-                   ->setParameter('added', $date);
+            ->where('o.idType IN (:walletType)')
+            ->setParameter('walletType', [
+                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
+                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
+            ])
+            ->andWhere('o.idWalletCreditor = :idWallet OR o.idWalletDebtor = :idWallet')
+            ->setParameter('idWallet', $wallet)
+            ->andWhere('o.added >= :added')
+            ->setParameter('added', $date);
 
         return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
@@ -89,7 +92,7 @@ class OperationRepository extends EntityRepository
 
         foreach ($criteria as $field => $value) {
             $qb->andWhere('op.' . $field . $operator[$field] . ':' . $field)
-               ->setParameter($field, $value);
+                ->setParameter($field, $value);
         }
         $qb->orderBy('op.added', 'ASC');
 
@@ -107,11 +110,11 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-           ->where('ot.label IN (:operationTypes)')
-           ->andWhere('o.idWalletCreditor = :idWallet')
-           ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-           ->setParameter('idWallet', $creditorWallet);
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletCreditor = :idWallet')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $creditorWallet);
         if (null !== $year) {
             $qb->andWhere('YEAR(o.added) = :year')->setParameter('year', $year);
         }
@@ -130,11 +133,11 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-           ->where('ot.label IN (:operationTypes)')
-           ->andWhere('o.idWalletDebtor = :idWallet')
-           ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-           ->setParameter('idWallet', $debtorWallet);
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletDebtor = :idWallet')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $debtorWallet);
         if (null !== $year) {
             $qb->andWhere('YEAR(o.added) = :year')->setParameter('year', $year);
         }
@@ -279,12 +282,12 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(amount')
-           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-           ->where('ot.label IN (:taxTypes)')
-           ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
-           ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
-           ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
-           ->setCacheable(true);
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:taxTypes)')
+            ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
+            ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
+            ->setCacheable(true);
 
         return $qb->getQuery()->getSingleScalarResult();
     }
@@ -317,5 +320,63 @@ class OperationRepository extends EntityRepository
         $statement->closeCursor();
 
         return $result;
+    }
+
+    /**
+     * @param Projects|integer $project
+     * @param Clients[]        $clients
+     *
+     * @return float
+     */
+    public function getTotalGrossDebtCollectionRepayment($project, array $clients)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor')
+            ->where('ost.label = :operationSubType')
+            ->andWhere('w.idClient IN (:clients)')
+            ->andWhere('o.idProject = :project')
+            ->setParameter('operationSubType', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION)
+            ->setParameter('clients', $clients)
+            ->setParameter('project', $project);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|integer $project
+     * @param Clients[]|array  $clients
+     *
+     * @return float
+     */
+    public function getTotalDebtCollectionCommission($project, array $clients)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletDebtor')
+            ->where('ot.label = :operationType')
+            ->andWhere('w.idClient in (:clients)')
+            ->andWhere('o.idProject = :project')
+            ->setParameter('clients', $clients)
+            ->setParameter('operationType', OperationType::COLLECTION_COMMISSION_LENDER)
+            ->setParameter('project', $project);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|integer $project
+     * @param Clients[]|array  $clients
+     *
+     * @return float
+     */
+    public function getTotalNetDebtCollectionRepayment($project, array $clients)
+    {
+        $grossRepayment = $this->getTotalGrossDebtCollectionRepayment($project, $clients);
+        $commission     = $this->getTotalDebtCollectionCommission($project, $clients);
+
+        return bcsub($grossRepayment, $commission, 2);
     }
 }
