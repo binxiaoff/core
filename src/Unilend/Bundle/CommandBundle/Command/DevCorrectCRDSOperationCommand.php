@@ -3,9 +3,11 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use DateInterval;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -33,23 +35,32 @@ class DevCorrectCRDSOperationCommand extends ContainerAwareCommand
         $operations = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findBy([
             'idType'           => $operationType,
             'idWalletCreditor' => null
-        ], ['id' => 'ASC']);
+        ], ['id' => 'ASC'], 10000);
 
-        $count = 0;
-        /** @var Operation $operation */
-        foreach ($operations as $index => $operation) {
-            $wbhEntry = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy(['idOperation' => $operation->getId(), 'idWallet' => $crdsWallet->getId()]);
-            if (null === $wbhEntry) {
-                if ($index > 0 && $operations[$index - 1]->getAdded()->format('m') < $operation->getAdded()->format('m')) {
-                    $this->createCRDSWithdrawOperation($crdsWallet, $operations[$index - 1]->getAdded());
+        /** @var Connection $dataBaseConnection */
+        $dataBaseConnection = $this->getContainer()->get('database_connection');
+        $dataBaseConnection->beginTransaction();
+        try {
+            $count = 0;
+            /** @var Operation $operation */
+            foreach ($operations as $index => $operation) {
+                $wbhEntry = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy(['idOperation' => $operation->getId(), 'idWallet' => $crdsWallet->getId()]);
+                if (null === $wbhEntry) {
+                    if ($index > 0 && $operations[$index - 1]->getAdded()->format('n') < $operation->getAdded()->format('n')) {
+                        $this->createCRDSWithdrawOperation($crdsWallet, $operations[$index - 1]->getAdded());
+                        $output->writeln('Withdraw created');
+                    }
+
+                    $this->createWalletBalanceHistory($crdsWallet, $operation);
+                    $count ++;
                 }
-
-                $this->createWalletBalanceHistory($crdsWallet, $operation);
-                $count ++;
             }
+            $dataBaseConnection->commit();
+            $output->writeln($count . ' operations repaired and wbh lines created.');
+        } catch (\Exception $exception){
+            $dataBaseConnection->rollBack();
+            throw $exception;
         }
-
-        $output->writeln($count . ' operations repaired and wbh lines created.');
     }
 
     private function createWalletBalanceHistory(Wallet $crdsWallet, Operation $operation)
@@ -78,10 +89,38 @@ class DevCorrectCRDSOperationCommand extends ContainerAwareCommand
     private function createCRDSWithdrawOperation(Wallet $crdsWallet, \DateTime $date)
     {
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationsManager = $this->getContainer()->get('unilend.service.operation_manager');
 
         /** @var WalletBalanceHistory $lastMonthWalletHistory */
         $lastMonthWalletHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getBalanceOfTheDay($crdsWallet, $date);
-        $operationsManager->withdrawTaxWallet($crdsWallet, $lastMonthWalletHistory->getAvailableBalance());
+        $operationType          = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::TAX_FR_CRDS_WITHDRAW);
+
+        $withdrawalDate = $date->add(DateInterval::createFromDateString('1 day'));
+        $withdrawalDate->setTime(1, 0, 0);
+
+        $operation = new Operation();
+        $operation->setWalletDebtor($crdsWallet)
+            ->setAmount($lastMonthWalletHistory->getAvailableBalance())
+            ->setType($operationType)
+            ->setAdded($withdrawalDate);
+
+        $entityManager->persist($operation);
+
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $balance       = bcsub($crdsWallet->getAvailableBalance(), $operation->getAmount(), 2);
+        $crdsWallet->setAvailableBalance($balance);
+        $entityManager->flush($crdsWallet);
+
+        $walletSnap = new WalletBalanceHistory();
+        $walletSnap->setIdWallet($crdsWallet)
+            ->setAvailableBalance($crdsWallet->getAvailableBalance())
+            ->setCommittedBalance($crdsWallet->getCommittedBalance())
+            ->setIdOperation($operation)
+            ->setLoan($operation->getLoan())
+            ->setProject($operation->getProject())
+            ->setAdded($operation->getAdded());
+
+        $entityManager->persist($walletSnap);
+        $entityManager->flush($walletSnap);
+        $entityManager->flush($operation);
     }
 }
