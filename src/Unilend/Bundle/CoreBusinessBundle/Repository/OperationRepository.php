@@ -387,7 +387,7 @@ class OperationRepository extends EntityRepository
                      WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
                        IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
                       ELSE ot.label END AS movement
-                FROM operation o USE INDEX (idx_operation_added_id_type)
+                FROM operation o USE INDEX (idx_operation_added)
                 INNER JOIN operation_type ot ON o.id_type = ot.id
                 WHERE
                   o.added BETWEEN :start AND :end
@@ -428,7 +428,7 @@ class OperationRepository extends EntityRepository
                      WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
                        IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
                       ELSE ot.label END AS movement
-                FROM operation o USE INDEX (idx_operation_added_id_type)
+                FROM operation o USE INDEX (idx_operation_added)
                 INNER JOIN operation_type ot ON o.id_type = ot.id
                 WHERE
                   o.added BETWEEN :start AND :end

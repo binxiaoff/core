@@ -246,7 +246,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                                    GROUP BY wbh_max.id_wallet
                                  ) wbh_max ON wbh_line.id = wbh_max.id';
 
-        $result = $this->getEntityManager->getConnection()
+        $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query,
                 ['end' => $date->format('Y-m-d H:i:s'), 'walletLabels' => $walletTypes],
                 ['end' => \PDO::PARAM_STR, 'walletLabels' => Connection::PARAM_STR_ARRAY]
