@@ -1036,7 +1036,7 @@ class pdfController extends bootstrap
             $projectStatusHistory->loadStatusForJudgementDate($this->projects->id_project, $status);
 
             $projectStatusHistoryDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistoryDetails')
-                                                         ->findOneBy(['idProjectStatusHistory' => $projectStatusHistory->id_project_status_history]);
+                ->findOneBy(['idProjectStatusHistory' => $projectStatusHistory->id_project_status_history]);
 
             $this->date            = $projectStatusHistoryDetails->getDate();
             $this->mandataires_var = $projectStatusHistoryDetails->getReceiver();
@@ -1046,7 +1046,7 @@ class pdfController extends bootstrap
             $projectStatusType->get(\projects_status::RECOUVREMENT, 'status');
 
             $debtCollectionStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
-                                                  ->findOneBy(['idProject' => $this->projects->id_project, 'idProjectStatus' => $projectStatusType->id_project_status]);
+                ->findOneBy(['idProject' => $this->projects->id_project, 'idProjectStatus' => $projectStatusType->id_project_status]);
             if ($debtCollectionStatus) {
                 $expiration = $debtCollectionStatus->getAdded();
             } else {
@@ -1082,9 +1082,10 @@ class pdfController extends bootstrap
                     $clients[]   = $loanManager->getFirstOwner($this->oLoans);
                 }
 
+                $loanRepository                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
                 $totalNetDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalNetDebtCollectionRepayment($this->projects->id_project, $clients);
-                $allLoans                        = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findLoansByClients($this->projects->id_project, $clients);
-                $totalLoans                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLoansSumByClients($this->projects->id_project, $clients);
+                $allLoans                        = $loanRepository->findLoansByClients($this->projects->id_project, $clients);
+                $totalLoans                      = $loanRepository->getLoansSumByClients($this->projects->id_project, $clients);
 
                 $debtCollectionAmountsTaxExcl = [];
                 foreach ($allLoans as $loan) {
