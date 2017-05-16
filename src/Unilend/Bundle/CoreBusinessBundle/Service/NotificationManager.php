@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class NotificationManager
@@ -129,20 +130,6 @@ class NotificationManager
         $mailNotification->id_transaction  = $transactionId;
         $mailNotification->id_loan         = $loanId;
         $mailNotification->create();
-    }
-
-    /**
-     * @param \clients $client
-     *
-     * @return int
-     */
-    public function countUnreadNotificationsForClient(\clients $client)
-    {
-        /** @var \notifications $notifications */
-        $notifications = $this->entityManagerSimulator->getRepository('notifications');
-        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
-
-        return $notifications->counter('id_lender = ' . $wallet->getId() . ' AND status = ' . \notifications::STATUS_UNREAD);
     }
 
     /**

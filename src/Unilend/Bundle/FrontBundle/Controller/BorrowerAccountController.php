@@ -13,10 +13,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletBalanceHistoryRepository;
@@ -142,7 +144,7 @@ class BorrowerAccountController extends Controller
                 $project->comments                             = $formData['message'];
                 $project->period                               = $formData['duration'];
                 $project->status                               = \projects_status::COMPLETE_REQUEST;
-                $project->id_partner                           = $partnerManager->getDefaultPartner()->id;
+                $project->id_partner                           = $partnerManager->getDefaultPartner()->getId();
                 $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
                 $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
                 $project->create();
@@ -252,22 +254,32 @@ class BorrowerAccountController extends Controller
 
         foreach ($clientsInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
-                case \factures::TYPE_COMMISSION_FINANCEMENT :
+                case Factures::TYPE_COMMISSION_FUNDS:
                     $clientsInvoices[$iKey]['url'] = '/pdf/facture_EF/' . $client->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
-                case \factures::TYPE_COMMISSION_REMBOURSEMENT:
+                case Factures::TYPE_COMMISSION_REPAYMENT:
                     $clientsInvoices[$iKey]['url'] = '/pdf/facture_ER/' . $client->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
             }
         }
 
+        $thirdPartyWireTransfersOuts = $this->get('doctrine.orm.entity_manager')
+                                            ->getRepository('UnilendCoreBusinessBundle:Virements')
+                                            ->findWireTransferToThirdParty($client->id_client, [
+                                                Virements::STATUS_PENDING,
+                                                Virements::STATUS_CLIENT_VALIDATED,
+                                                Virements::STATUS_VALIDATED,
+                                                Virements::STATUS_SENT
+                                            ]);
+
         return $this->render(
             'borrower_account/operations.html.twig', [
-                'default_filter_date'   => $defaultFilterDate,
-                'projects_ids'          => $projectsIds,
-                'invoices'              => $clientsInvoices,
-                'post_funding_projects' => $projectsPostFunding,
-                'operationTypes'        => $operationTypes
+                'default_filter_date'            => $defaultFilterDate,
+                'projects_ids'                   => $projectsIds,
+                'invoices'                       => $clientsInvoices,
+                'post_funding_projects'          => $projectsPostFunding,
+                'third_party_wire_transfer_outs' => $thirdPartyWireTransfersOuts,
+                'operationTypes'                 => $operationTypes
             ]
         );
     }
@@ -657,7 +669,11 @@ class BorrowerAccountController extends Controller
                     $error = true;
                     $this->addFlash('error', $translator->trans('common-validator_secret-answer-invalid'));
                 }
+
                 if (false === $error) {
+                    $client->status = 1;
+                    $client->update();
+
                     $formData['question'] = filter_var($formData['question'], FILTER_SANITIZE_STRING);
 
                     $borrower = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
@@ -666,10 +682,11 @@ class BorrowerAccountController extends Controller
                     $client->password         = $password;
                     $client->secrete_question = $formData['question'];
                     $client->secrete_reponse  = md5($formData['answer']);
-                    $client->status           = 1;
                     $client->update();
 
                     return $this->redirectToRoute('login');
+                } else {
+                    return $this->redirectToRoute('borrower_account_security', ['token' => $token]);
                 }
             }
         }

@@ -274,7 +274,7 @@ guzzle:
         euler:
             base_url: "%euler.url%"
             options:
-                timeout: 8
+                timeout: 16
                 http_errors: false
 
         codinf:

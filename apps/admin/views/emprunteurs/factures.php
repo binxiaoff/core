@@ -32,7 +32,7 @@
                                     <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="télécharger la facture"/>
                                 </a>
                             </td>
-                            <td><?= $aProjectInvoice['type_commission'] == \factures::TYPE_COMMISSION_FINANCEMENT ? 'Financement' : 'Remboursement' ?></td>
+                            <td><?= $aProjectInvoice['type_commission'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS ? 'Financement' : 'Remboursement' ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

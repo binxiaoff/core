@@ -218,7 +218,7 @@ class ProjectRequestController extends Controller
 
         if (empty($partnerId) || null === $em->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
             $partnerManager = $this->get('unilend.service.partner_manager');
-            $partnerId      = $partnerManager->getDefaultPartner()->id;
+            $partnerId      = $partnerManager->getDefaultPartner()->getId();
         }
 
         $this->project                                       = $entityManager->getRepository('projects');
@@ -1358,7 +1358,7 @@ class ProjectRequestController extends Controller
         }
 
         $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'client_not_interested');
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'Désinscription relance email');
 
         return $this->render('pages/project_request/emails.html.twig');
     }

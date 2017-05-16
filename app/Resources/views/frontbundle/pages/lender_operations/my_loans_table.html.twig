@@ -1,0 +1,56 @@
+{% if lenderLoans|length %}
+    <div class="table-scroll">
+        <table class="table table-myloans" data-sortable data-sortable-responsivefilters="false">
+            <thead>
+            <tr>
+                <th class="table-sortable-column table-myloans-item-project" data-sortable-by="project">
+                    <span class="label" title="{{ 'lender-operations_sr-sort-loan-project-name-column'|trans|e('html_attr') }}" data-toggle="tooltip">
+                        {% trans %} lender-operations_loans-table-project-column {% endtrans %}
+                    </span>
+                </th>
+                <th class="table-sortable-column table-myloans-item-amount" data-sortable-by="amount">
+                    <span class="label" title="{{ 'lender-operations_sr-sort-loan-loan-amount-column'|trans|e('html_attr') }}" data-toggle="tooltip">
+                        {% trans %} lender-operations_loans-table-amount-column {% endtrans %}
+                    </span>
+                </th>
+                <th class="table-sortable-column table-myloans-item-rate" data-sortable-by="rate">
+                    <span class="label" title="{{ 'lender-operations_sr-sort-loan-loan-rate-column'|trans|e('html_attr') }}" data-toggle="tooltip">
+                        {% trans %} lender-operations_loans-table-loan-rate-column {% endtrans %}
+                    </span>
+                </th>
+                <th class="table-sortable-column table-myloans-item-monthly" data-sortable-by="monthly">
+                    <span class="label" title="{{ 'lender-operations_sr-sort-loan-monthly-installment-column'|trans|e('html_attr') }}" data-toggle="tooltip">
+                        {% trans %} lender-operations_loans-table-monthly-installment-amount-column {% endtrans %}
+                    </span>
+                </th>
+                <th class="table-sortable-column table-myloans-item-next" data-sortable-by="next">
+                    <span class="label" title="{{ 'lender-operations_sr-sort-loan-next-monthly-installment-column'|trans|e('html_attr') }}" data-toggle="tooltip">
+                        {% trans %} lender-operations_loans-table-next-monthly-installment-date-column {% endtrans %}
+                    </span>
+                </th>
+                <th class="table-sortable-column table-myloans-item-remaining" data-sortable-by="remaining">
+                    <span class="label" title="{{ 'lender-operations_sr-sort-loan-total-repayment-remaining-amount-column'|trans|e('html_attr') }}" data-toggle="tooltip">
+                        {% trans %} lender-operations_loans-table-total-repayment-remaining-amount-column {% endtrans %}
+                    </span>
+                </th>
+                <th class="table-sortable-column table-myloans-item-duration" data-sortable-by="duration">
+                    <span class="label" title="{{ 'lender-operations_sr-sort-loan-remaining-monthly-installments-column'|trans|e('html_attr') }}" data-toggle="tooltip">
+                        {% trans %} lender-operations_loans-table-remaining-monthly-installments-column {% endtrans %}
+                    </span>
+                </th>
+                <th class="table-myloans-item-controls">
+                    &nbsp;
+                </th>
+            </tr>
+            </thead>
+            <tbody data-sortable-content>
+                {% for loan in lenderLoans %}
+                    {{ include('/pages/lender_operations/my_loans_rows.html.twig') }}
+                    {{ include('/pages/lender_operations/my_loans_details.html.twig') }}
+                {% endfor %}
+            </tbody>
+        </table><!-- /.table-myloans -->
+    </div><!-- /.table-scroll -->
+{% else %}
+    <div class="message-info after">{{ 'lender-operations_no-result-found-message'|trans }}</div>
+{% endif %}
