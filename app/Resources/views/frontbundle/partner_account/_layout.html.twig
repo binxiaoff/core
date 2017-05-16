@@ -12,7 +12,7 @@
                     <nav class="dashboard-nav">
                         {% block dashboardNav %}
                             <ul>
-                                <li role="branding" class="dashboard-nav-logo">
+                                <li role="branding" class="dashboard-nav-header">
                                     <img src="{{ siteurlmedia('partners/' ~ app.user.partner.logo) }}" alt="{{ app.user.partner.idCompany.name }}">
                                 </li>
                                 <li role="presentation" class="dashboard-nav-project-request{% if app.request.get('_route') in ['partner_project_request', 'partner_project_request_eligibility', 'partner_project_request_details', 'partner_project_request_end'] %} active{% endif %}">
