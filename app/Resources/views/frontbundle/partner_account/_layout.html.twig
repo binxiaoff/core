@@ -4,6 +4,8 @@
     {% include 'partner_account/_connected_header.html.twig' %}
 {% endblock %}
 
+{% set partnerName = 'AXXA' %}
+
 {% block siteContent %}
     <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
         <div class="dashboard-inner">
@@ -12,6 +14,11 @@
                     <nav class="dashboard-nav">
                         {% block dashboardNav %}
                             <ul>
+                                <li role="branding" class="dashboard-nav-logo">
+                                    <a href="{{ path('partner_project_request') }}">
+                                        <img src="{{ siteurlmedia('partners/axxa.png') }}" alt="{{ partnerName }}"/>
+                                    </a>
+                                </li>
                                 <li role="presentation" class="dashboard-nav-project-request{% if app.request.get('_route') in ['partner_project_request', 'partner_project_request_eligibility', 'partner_project_request_details', 'partner_project_request_end'] %} active{% endif %}">
                                     <a href="{{ path('partner_project_request') }}">
                                         <span class="icon fa-pen-u"></span>

@@ -9,6 +9,21 @@
   }
 }
 
+// Sidebar
+.dashboard-nav .dashboard-nav-logo {
+  border-bottom: 0;
+  margin-bottom: 5px;
+  a {
+    display: block;
+    border: 1px solid $c-bg1;
+    border-radius: 7px;
+    background: #fbf9fb;
+    padding: 12px;
+    line-height: 0;
+    text-align: center;
+  }
+}
+
 // Project Request
 
 .simulator {
