@@ -114,7 +114,7 @@
     "vinyl-transform": "1.0.0",
     "watchify": "3.7.0",
     "yargs": "4.3.2",
-    "DataTable": "latest"
+    "datatable": "latest"
   },
   "license": "MIT",
   "dependencies": {
@@ -178,7 +178,7 @@
     "gsap.TimelineMax": "./node_modules/gsap/src/uncompressed/TimelineMax.js",
     "gsap.CSSPlugin": "./node_modules/gsap/src/uncompressed/plugins/CSSPlugin.js",
     "gsap.jquery": "./node_modules/gsap/src/uncompressed/jquery.gsap.js",
-    "DataTable": "./app/Resources/assets/js/vendor/datatables/datatables.js"
+    "datatable": "./app/Resources/assets/js/vendor/datatables/datatables.js"
   },
   "browserify": {
     "transform": [
