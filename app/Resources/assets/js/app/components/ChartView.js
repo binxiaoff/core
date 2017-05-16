@@ -751,7 +751,33 @@ ChartView.prototype.render = function (data, schema) {
 
         // Preter Operations Pie/Donut Chart
         case 'preterOperations':
-          break
+            var $preterLoans = $('#dashboard-lender-operations #loans');
+            var $preterLoansKeys = $preterLoans.find('.chart-key');
+
+            // Map clicking on a pie piece to a legend item
+            Utility.extendObjProp(self.settings.highcharts, 'plotOptions.pie.point.events.click', function () {
+                var status = this.name;
+                $preterLoansKeys.each(function(){
+                    if ($(this).find('.label').text() === status) {
+                        $(this).trigger('click')
+                    }
+                })
+            });
+
+            // Map clicking on a legend item to an option in the select filter
+            $preterLoansKeys.click(function() {
+                var $btn = $(this)
+                var statusVal = $btn.data('filter-val')
+                var $filter = $preterLoans.find('#filter-status')
+
+                // Trigger filter select change
+                if (statusVal.toString() !== $filter.val()) { // Needs to be converted as $('#filter-status').val() returns text
+                    $filter.val(statusVal).change()
+                } else {
+                    $filter.val('').change()
+                }
+            })
+        break
       }
     }
 

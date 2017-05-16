@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -67,5 +68,25 @@ class ReceptionsRepository extends EntityRepository
         $result = $qb->getQuery()->getResult();
 
         return $result;
+    }
+
+    /**
+     * @return Receptions[]
+     */
+    public function findNonAttributed()
+    {
+        $qb = $this->createQueryBuilder('r');
+        $qb->where('r.idClient IS NULL')
+           ->andWhere('r.idProject IS NULL')
+           ->andWhere('r.type IN (:types)')
+           ->andWhere(
+               $qb->expr()->orX(
+                   'r.type = ' . Receptions::TYPE_DIRECT_DEBIT . ' AND r.statusPrelevement = ' . Receptions::DIRECT_DEBIT_STATUS_SENT,
+                   'r.type = ' . Receptions::TYPE_WIRE_TRANSFER . ' AND r.statusVirement = ' . Receptions::WIRE_TRANSFER_STATUS_RECEIVED
+               ))
+            ->orderBy('r.idReception', 'DESC')
+            ->setParameter('types', [Receptions::TYPE_DIRECT_DEBIT, Receptions::TYPE_WIRE_TRANSFER], Connection::PARAM_INT_ARRAY);
+
+        return $qb->getQuery()->getResult();
     }
 }

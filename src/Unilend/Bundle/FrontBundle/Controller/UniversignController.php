@@ -1,224 +1,138 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\FrontBundle\Service\UniversignManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 
 class UniversignController extends Controller
 {
+
+    const DOCUMENT_TYPE_PROXY             = 'pouvoir';
+    const DOCUMENT_TYPE_MANDATE           = 'mandat';
+    const DOCUMENT_TYPE_TERM_OF_USER      = 'cgv-emprunteurs';
+    const DOCUMENT_TYPE_WIRE_TRANSFER_OUT = 'virement-emprunteurs';
+
     /**
+     * As the status has been removed from the URL, we need this redirection action for the old callback url.
+     * It can be delete in the next release after the "deblocage progressif" project.
+     *
      * @Route(
-     *     "/universign/{status}/pouvoir/{documentId}/{clientHash}",
-     *     name="proxy_signature_status",
-     *     requirements={"status": "\w+"},
-     *     requirements={"documentId": "\d+"},
-     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
+     *     "/universign/{status}/{documentType}/{documentId}/{clientHash}",
+     *     name="legacy_universign_signature_status",
+     *     requirements={
+     *         "status": "^(success|fail|cancel)$",
+     *         "documentType": "^(pouvoir|mandat|cgv_emprunteurs|virement_emprunteurs)$",
+     *         "documentId": "\d+",
+     *         "clientHash": "[0-9a-f-]{32,36}"
+     *     }
      * )
      * @param string $status
-     * @param int $documentId
+     * @param int    $documentId
+     * @param string $documentType
      * @param string $clientHash
+     *
      * @return Response
      */
-    public function proxySignatureStatusAction($status, $documentId, $clientHash)
+    public function legacyUniversignStatusAction($status, $documentId, $documentType, $clientHash)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var UniversignManager $universignManager */
-        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        /** @var \projects_pouvoir $proxy */
-        $proxy = $entityManager->getRepository('projects_pouvoir');
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
-        /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
-
-        if (
-            $proxy->get($documentId)
-            && $client->get($clientHash, 'hash')
-            && $project->get($proxy->id_project)
-            && $company->get($project->id_company)
-            && $company->id_client_owner == $client->id_client
-            && $proxy->status == \projects_pouvoir::STATUS_PENDING
-        ) {
-
-            switch ($status) {
-                case 'success':
-                    $universignManager->signProxy($proxy);
-                    break;
-                case 'cancel':
-                    $proxy->status = \projects_pouvoir::STATUS_CANCELLED;
-                    $proxy->update();
-                    break;
-                case 'fail':
-                    $proxy->status = \projects_pouvoir::STATUS_FAILED;
-                    $proxy->update();
-                    break;
-                default:
-                    $logger->warning('Unknown proxy status (' . $status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-                    return $this->redirectToRoute('home');
-            }
-
-            $proxyStatusLabel = $this->getProxyStatusLabel($proxy);
-
-            if ($proxyStatusLabel) {
-                $template = [
-                    'pdf_link'    => $proxy->url_pdf,
-                    'pdf_display' => ($proxy->status == \projects_pouvoir::STATUS_SIGNED),
-                    'document'    => 'proxy',
-                    'status'      => $proxyStatusLabel
-                ];
-
-                return $this->render('pages/universign.html.twig', $template);
-            }
-        }
-
-        return $this->redirectToRoute('home');
+        return $this->redirectToRoute('universign_signature_status', ['documentType' => str_replace('_', '-', $documentType), 'documentId' => $documentId, 'clientHash' => $clientHash]);
     }
 
     /**
      * @Route(
-     *     "/universign/{status}/mandat/{documentId}/{clientHash}",
-     *     name="mandate_signature_status",
-     *     requirements={"status": "\w+"},
-     *     requirements={"documentId": "\d+"},
-     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
+     *     "/universign/{documentType}/{documentId}/{clientHash}",
+     *     name="universign_signature_status",
+     *     requirements={
+     *         "documentType": "^(pouvoir|mandat|cgv-emprunteurs|virement-emprunteurs)$",
+     *         "documentId": "\d+",
+     *         "clientHash": "[0-9a-f-]{32,36}"
+     *     }
      * )
-     * @param string $status
-     * @param int $documentId
+     * @param int    $documentId
+     * @param string $documentType
      * @param string $clientHash
+     *
      * @return Response
      */
-    public function mandateSignatureStatusAction($status, $documentId, $clientHash)
+    public function universignStatusAction($documentId, $documentType, $clientHash)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var UniversignManager $universignManager */
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        /** @var \clients_mandats $mandate */
-        $mandate = $entityManager->getRepository('clients_mandats');
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
 
-        if (
-            $client->get($clientHash, 'hash')
-            && $mandate->get($documentId)
-            && $mandate->id_client == $client->id_client
-            && $mandate->status == \clients_mandats::STATUS_PENDING
-        ) {
-            switch ($status) {
-                case 'success':
-                    $universignManager->signMandate($mandate);
-                    break;
-                case 'cancel':
-                    $mandate->status = \clients_mandats::STATUS_CANCELED;
-                    $mandate->update();
-                    break;
-                case 'fail':
-                    $mandate->status = \clients_mandats::STATUS_FAILED;
-                    $mandate->update();
-                    break;
-                default:
-                    $logger->warning('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
-                    return $this->redirectToRoute('home');
-            }
-
-            $mandateStatusLabel = $this->getMandateStatusLabel($mandate);
-
-            if ($mandateStatusLabel) {
-                $template = [
-                    'pdf_link'    => $mandate->url_pdf,
-                    'pdf_display' => ($mandate->status == \clients_mandats::STATUS_SIGNED),
-                    'document'    => 'mandate',
-                    'status'      => $mandateStatusLabel
-                ];
-
-                return $this->render('pages/universign.html.twig', $template);
-            }
+        switch ($documentType) {
+            case self::DOCUMENT_TYPE_PROXY:
+                $repository = 'UnilendCoreBusinessBundle:ProjectsPouvoir';
+                break;
+            case self::DOCUMENT_TYPE_MANDATE:
+                $repository = 'UnilendCoreBusinessBundle:ClientsMandats';
+                break;
+            case self::DOCUMENT_TYPE_TERM_OF_USER:
+                $repository = 'UnilendCoreBusinessBundle:ProjectCgv';
+                break;
+            case self::DOCUMENT_TYPE_WIRE_TRANSFER_OUT:
+                $repository = 'UnilendCoreBusinessBundle:WireTransferOutUniversign';
+                break;
+            default :
+                return $this->redirectToRoute('home');
         }
 
-        return $this->redirectToRoute('home');
-    }
+        /** @var UniversignEntityInterface|ProjectsPouvoir|ClientsMandats|ProjectCgv|WireTransferOutUniversign $universign */
+        $universign         = $entityManager->getRepository($repository)->find($documentId);
+        $client             = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $clientIdUniversign = null;
+        switch (get_class($universign)) {
+            case ProjectsPouvoir::class:
+            case ProjectCgv::class:
+                if ($universign->getIdProject() instanceof Projects && $universign->getIdProject()->getIdCompany() instanceof Companies) {
+                    $clientIdUniversign = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
+                }
+                break;
+            case ClientsMandats::class :
+                if ($universign->getIdClient() instanceof Clients) {
+                    $clientIdUniversign = $universign->getIdClient()->getIdClient();
+                }
+                break;
+            case WireTransferOutUniversign::class:
+                if ($universign->getIdWireTransferOut() instanceof Virements
+                    && $universign->getIdWireTransferOut()->getClient() instanceof Clients
+                ) {
+                    $clientIdUniversign = $universign->getIdWireTransferOut()->getClient()->getIdClient();
+                }
+                break;
+        }
 
-    /**
-     * @Route(
-     *     "/universign/{status}/cgv_emprunteurs/{documentId}/{clientHash}",
-     *     name="tos_signature_status",
-     *     requirements={"status": "\w+"},
-     *     requirements={"documentId": "\d+"},
-     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}
-     * )
-     * @param string $status
-     * @param int $documentId
-     * @param string $clientHash
-     * @return Response
-     */
-    public function tosSignatureStatusAction($status, $documentId, $clientHash)
-    {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var UniversignManager $universignManager */
-        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        /** @var \project_cgv $tos */
-        $tos = $entityManager->getRepository('project_cgv');
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
-        /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
+        if ($universign && $client && $clientIdUniversign === $client->getIdClient() && UniversignEntityInterface::STATUS_PENDING === $universign->getStatus()) {
+            $universignManager->sign($universign);
 
-        if (
-            $tos->get($documentId)
-            && $client->get($clientHash, 'hash')
-            && $project->get($tos->id_project)
-            && $company->get($project->id_company)
-            && $company->id_client_owner == $client->id_client
-            && $tos->status == \project_cgv::STATUS_NO_SIGN
-        ) {
-
-            switch ($status) {
-                case 'success':
-                    $universignManager->signTos($tos);
-                    break;
-                case 'cancel':
-                    $tos->status = \project_cgv::STATUS_SIGN_CANCELLED;
-                    $tos->update();
-                    break;
-                case 'fail':
-                    $tos->status = \project_cgv::STATUS_SIGN_FAILED;
-                    $tos->update();
-                    break;
-                default:
-                    $logger->warning('Tos unknown status', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
-                    return $this->redirectToRoute('home');
+            if ($universign instanceof WireTransferOutUniversign) {
+                $pdfLink = $this->generateUrl('wire_transfer_out_request_pdf', ['wireTransferOutId' => $universign->getIdWireTransferOut()->getIdVirement(), 'clientHash' => $clientHash]);
+            } elseif ($universign instanceof ProjectCgv) {
+                $pdfLink = $universign->getUrlPath();
+            } else {
+                $pdfLink = $universign->getUrlPdf();
             }
 
-            $tosStatusLabel = $this->getTosStatusLabel($tos);
-
-            if ($tosStatusLabel) {
-                $template = [
-                    'pdf_link'    => $tos->getUrlPath(),
-                    'pdf_display' => in_array($tos->status, [\project_cgv::STATUS_SIGN_UNIVERSIGN, \project_cgv::STATUS_SIGN_FO]),
-                    'document'    => 'tos',
-                    'status'      => $tosStatusLabel
-                ];
-
-                return $this->render('pages/universign.html.twig', $template);
-            }
+            return $this->render('pages/universign.html.twig', [
+                'pdfLink'             => $pdfLink,
+                'document'            => $this->getDocumentTypeTranslationLabel($universign),
+                'universign'          => $universign,
+                'status'              => $this->getStatusTranslationLabel($universign),
+                'borrowerAccountLink' => $this->generateUrl('borrower_account_profile')
+            ]);
         }
 
         return $this->redirectToRoute('home');
@@ -235,20 +149,18 @@ class UniversignController extends Controller
      *
      * @param int         $proxyId
      * @param null|string $universignUpdate
+     *
      * @return Response
      */
     public function createProxyAction($proxyId, $universignUpdate = null)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \projects_pouvoir $proxy */
-        $proxy = $entityManager->getRepository('projects_pouvoir');
-        /** @var UniversignManager $universignManager */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        $proxy             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($proxyId);
 
-        if ($proxy->get($proxyId) && $proxy->status == \projects_pouvoir::STATUS_PENDING) {
-            if ($universignUpdate == 'NoUpdateUniversign' && false === empty($proxy->url_universign) || $universignManager->createProxy($proxy)) {
-                return $this->redirect($proxy->url_universign);
+        if ($proxy && UniversignEntityInterface::STATUS_PENDING === $proxy->getStatus()) {
+            if ($universignUpdate == 'NoUpdateUniversign' && false === empty($proxy->getUrlUniversign()) || $universignManager->createProxy($proxy)) {
+                return $this->redirect($proxy->getUrlUniversign());
             }
         }
 
@@ -259,20 +171,18 @@ class UniversignController extends Controller
      * @Route("/universign/mandat/{mandateId}", name="mandate_generation", requirements={"mandateId":"\d+"})
      *
      * @param int $mandateId
+     *
      * @return Response
      */
     public function createMandateAction($mandateId)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \clients_mandats $mandate */
-        $mandate = $entityManager->getRepository('clients_mandats');
-        /** @var \Unilend\Bundle\FrontBundle\Service\UniversignManager $universignManager */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        $mandate           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->find($mandateId);
 
-        if ($mandate->get($mandateId) && $mandate->status == \clients_mandats::STATUS_PENDING) {
-            if (false === empty($mandate->url_universign) || $universignManager->createMandate($mandate)) {
-                return $this->redirect($mandate->url_universign);
+        if ($mandate && $mandate->getStatus() == UniversignEntityInterface::STATUS_PENDING) {
+            if (false === empty($mandate->getUrlUniversign()) || $universignManager->createMandate($mandate)) {
+                return $this->redirect($mandate->getUrlUniversign());
             }
         }
 
@@ -284,21 +194,21 @@ class UniversignController extends Controller
      *
      * @param int    $tosId
      * @param string $tosName
+     *
      * @return Response
      */
     public function createTosAction($tosId, $tosName)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \project_cgv $tos */
-        $tos = $entityManager->getRepository('project_cgv');
-        /** @var \Unilend\Bundle\FrontBundle\Service\UniversignManager $universignManager */
-        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
 
-        if ($tos->get($tosId) && $tos->status == \project_cgv::STATUS_NO_SIGN && $tosName === $tos->name) {
-            $tosLastUpdateDate = \DateTime::createFromFormat('Y-m-d H:i:s', $tos->updated);
-            if ($tosLastUpdateDate->format('Y-m-d') === date('Y-m-d') && false === empty($tos->url_universign) || $universignManager->createTos($tos)) {
-                return $this->redirect($tos->url_universign);
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        /** @var ProjectCgv $tos */
+        $tos = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->find($tosId);
+
+        if ($tos && $tos->getStatus() == UniversignEntityInterface::STATUS_PENDING && $tosName === $tos->getName()) {
+            $tosLastUpdateDate = $tos->getUpdated();
+            if ($tosLastUpdateDate->format('Y-m-d') === date('Y-m-d') && false === empty($tos->getUrlUniversign()) || $universignManager->createTos($tos)) {
+                return $this->redirect($tos->getUrlUniversign());
             }
         }
 
@@ -306,71 +216,123 @@ class UniversignController extends Controller
     }
 
     /**
-     * @param \projects_pouvoir $proxy
-     * @return null|string
+     * @Route("/pdf/virement_emprunteurs/{wireTransferOutId}/demande_virement_tiers_{clientHash}.pdf", name="wire_transfer_out_request_pdf", requirements={"wireTransferOutId":"\d+", "clientHash": "[0-9a-f-]{32,36}"})
+     *
+     * @param string  $clientHash
+     * @param int     $wireTransferOutId
+     *
+     * @return Response
      */
-    private function getProxyStatusLabel(\projects_pouvoir $proxy)
+    public function createWireTransferOutRequestPdfAction($clientHash, $wireTransferOutId)
     {
-        switch ($proxy->status) {
-            case \projects_pouvoir::STATUS_PENDING:
-                return 'pending';
-            case \projects_pouvoir::STATUS_SIGNED:
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        /** @var Virements $wireTransferOut */
+        $wireTransferOut = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($wireTransferOutId);
+
+        if (null === $wireTransferOut || null === $client) {
+            return $this->redirectToRoute('home');
+        }
+        $company        = $wireTransferOut->getProject()->getIdCompany();
+        $companyManager = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+        if ($companyManager !== $client) {
+            return $this->redirectToRoute('home');
+        }
+        $universign             = $wireTransferOut->getUniversign();
+        $wireTransferOutPdfRoot = $this->getParameter('path.protected') . 'pdf/wire_transfer_out';
+        if ($universign instanceof WireTransferOutUniversign
+            && UniversignEntityInterface::STATUS_SIGNED === $universign->getStatus()
+            && file_exists($wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName())
+        ) {
+            return new BinaryFileResponse($wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName());
+        }
+
+        if (null === $universign) {
+            $universign = new WireTransferOutUniversign();
+            $universign->setIdWireTransferOut($wireTransferOut)
+                ->setName('demande-virement-tiers-' . $clientHash . '-' . $wireTransferOutId . '.pdf')
+                ->setStatus(UniversignEntityInterface::STATUS_PENDING);
+            $entityManager->persist($universign);
+            $entityManager->flush($universign);
+        }
+        if (false === file_exists($wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName())) {
+            $company            = $wireTransferOut->getProject()->getIdCompany();
+            $companyManager     = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+            $bankAccount        = $wireTransferOut->getBankAccount();
+            $destinationCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $bankAccount->getIdClient()->getIdClient()]);
+            $pdfContent         = $this->renderView('/pdf/wire_transfer_out/borrower_request_third_party.html.twig', [
+                'companyManagerName'      => $companyManager->getNom(),
+                'companyManagerFirstName' => $companyManager->getPrenom(),
+                'companyManagerFunction'  => $companyManager->getFonction(),
+                'companyName'             => $company->getName(),
+                'amount'                  => $this->get('currency_formatter')->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
+                'destinationName'         => $bankAccount->getIdClient()->getNom(),
+                'destinationFirstName'    => $bankAccount->getIdClient()->getPrenom(),
+                'destinationCompanyName'  => $destinationCompany->getName(),
+                'iban'                    => $bankAccount->getIban(),
+            ]);
+            $snappy             = $this->get('knp_snappy.pdf');
+            $outputFile         = $wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName();
+            $options            = [
+                'footer-html'   => '',
+                'header-html'   => '',
+                'margin-top'    => 20,
+                'margin-right'  => 15,
+                'margin-bottom' => 10,
+                'margin-left'   => 15
+            ];
+            $snappy->generateFromHtml($pdfContent, $outputFile, $options, true);
+        }
+
+        if (UniversignEntityInterface::STATUS_PENDING === $universign->getStatus()) {
+            if ($universign->getUrlUniversign()) {
+                return $this->redirect($universign->getUrlUniversign());
+            }
+            $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+            if ($universignManager->createWireTransferOutRequest($universign)) {
+                return $this->redirect($universign->getUrlUniversign());
+            }
+        }
+
+        return $this->redirectToRoute('home');
+    }
+
+    private function getStatusTranslationLabel(UniversignEntityInterface $universign)
+    {
+        switch ($universign->getStatus()) {
+            case UniversignEntityInterface::STATUS_SIGNED:
                 return 'signed';
-            case \projects_pouvoir::STATUS_CANCELLED:
+            case UniversignEntityInterface::STATUS_PENDING:
+                return 'pending';
+            case UniversignEntityInterface::STATUS_CANCELED:
                 return 'cancel';
-            case \projects_pouvoir::STATUS_FAILED:
+            case UniversignEntityInterface::STATUS_FAILED:
                 return 'fail';
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown proxy status (' . $proxy->status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
+                $logger->warning('Unknown tos status (' . $universign->status . ') - Cannot create PDF for Universign (project ' . $universign->id_project . ')',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $universign->id_project]);
                 return null;
         }
     }
 
-    /**
-     * @param \clients_mandats $mandate
-     * @return null|string
-     */
-    private function getMandateStatusLabel(\clients_mandats $mandate)
+    private function getDocumentTypeTranslationLabel(UniversignEntityInterface $universign)
     {
-        switch ($mandate->status) {
-            case \clients_mandats::STATUS_SIGNED:
-                return 'signed';
-            case \clients_mandats::STATUS_PENDING:
-                return 'pending';
-            case \clients_mandats::STATUS_CANCELED:
-                return 'cancel';
-            case \clients_mandats::STATUS_FAILED:
-                return 'fail';
+        switch (get_class($universign)) {
+            case ClientsMandats::class:
+                return 'mandate';
+            case ProjectsPouvoir::class:
+                return 'proxy';
+            case ProjectCgv::class:
+                return 'tos';
+            case WireTransferOutUniversign::class:
+                return 'wire-transfer-out';
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
-                return null;
-        }
-    }
-
-    /**
-     * @param \project_cgv $tos
-     * @return null|string
-     */
-    private function getTosStatusLabel(\project_cgv $tos)
-    {
-        switch ($tos->status) {
-            case \project_cgv::STATUS_SIGN_FO:
-            case \project_cgv::STATUS_SIGN_UNIVERSIGN:
-                return 'signed';
-            case \project_cgv::STATUS_NO_SIGN:
-                return 'pending';
-            case \project_cgv::STATUS_SIGN_CANCELLED:
-                return 'cancel';
-            case \project_cgv::STATUS_SIGN_FAILED:
-                return 'fail';
-            default:
-                /** @var LoggerInterface $logger */
-                $logger = $this->get('logger');
-                $logger->warning('Unknown tos status (' . $tos->status . ') - Cannot create PDF for Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
+                $logger->warning('Unknown tos status (' . $universign->status . ') - Cannot create PDF for Universign (project ' . $universign->id_project . ')',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $universign->id_project]);
                 return null;
         }
     }

@@ -186,9 +186,6 @@
             <div class="project-single-menu-inner">
                 <nav class="project-single-nav">
                     <ul class="nav nav-anchors">
-                        {% if conditions.history %}
-                            <li role="presentation"><a href="#history">{% trans %} project-detail_project-history-title {% endtrans %}</a></li>
-                        {% endif %}
                         {% if conditions.bids %}
                             <li role="presentation"><a href="#offers">{% trans %} project-detail_presentation-title-offers {% endtrans %}</a></li>
                         {% endif %}
@@ -200,7 +197,7 @@
                 <div class="project-single-menu-info">
                     <div class="project-single-menu-col project-single-menu-title">
                         <div class="title">{{ project.title }}</div>
-                        <span class="rating rating-{{ classRating }}"><span class="sr-only">{% trans with {'%risk%' : project.risk|convertRisk }%} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
+                        <span class="rating rating-{{ classRating }}"><span class="sr-only">{% trans with {'%risk%' : project.risk|convertRisk|localizednumber} %} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
                     </div><!-- /.project-single-menu-title -->
                     <div class="project-single-menu-col project-single-menu-period">
                         {% if project.finished %}
@@ -223,9 +220,6 @@
                     <div class="col-lg-8 col-md-8">
                         <nav class="project-single-nav">
                             <ul class="nav nav-anchors">
-                                {% if conditions.history %}
-                                    <li role="presentation"><a href="#history">{% trans %} project-detail_project-history-title {% endtrans %}</a></li>
-                                {% endif %}
                                 {% if conditions.bids %}
                                     <li role="presentation"><a href="#offers">{% trans %} project-detail_presentation-title-offers {% endtrans %}</a></li>
                                 {% endif %}
@@ -233,44 +227,6 @@
                                 <li role="presentation"><a href="#finance">{% trans %} project-detail_presentation-title-financial-accounts {% endtrans %}</a></li>
                             </ul>
                         </nav><!-- /.project-single-nav -->
-
-                        {% if conditions.history %}
-                            <div id="history" data-watchscroll-nav>
-                                <section id="project-section-info" class="page-section">
-                                    <h3 class="h3">{% trans %} project-detail_project-history-title {% endtrans %}</h3>
-                                    <p>{% trans with {'%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde|localizednumber} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
-                                    <p>
-                                        {% if project.lender.loans.remainingToBeRepaid > 0 %}
-                                        {% trans with {
-                                            '%amountAlreadyPaidBack%' : project.lender.loans.amountAlreadyPaidBack|localizednumber,
-                                            '%remainingToBeRepaid%' : project.lender.loans.remainingToBeRepaid|localizednumber,
-                                            '%remainingMonths%' : project.lender.loans.remainingMonths
-                                        } %} project-detail_project-presentation-repayment-info-detail {% endtrans %}
-                                        {% else %}
-                                            {% trans with {'%amountAlreadyPaidBack%' : project.lender.loans.amountAlreadyPaidBack|localizednumber, } %} project-detail_project-presentation-repayment-info-detail-fully-repaid {% endtrans %}
-                                        {% endif %}
-                                    </p>
-
-                                    {% if project.lender.loans.amountAlreadyPaidBack > 0 %}
-                                        {% for history in project.statusHistory %}
-                                            {% if 'project_detail_project-presentation-repayment-info-project-status-#{history.status}'|trans != 'project_detail_project-presentation-repayment-info-project-status-#{history.status}' %}
-                                                <p>
-                                                    {{ history.added|date(d/m/Y) }}
-                                                    {{ 'project_detail_project-presentation-repayment-info-project-status-#{history.status}'|trans }}
-                                                    <br/>
-                                                    {% if history.site_content is not empty %}
-                                                        {{ history.content|nl2br }}
-                                                        {% if history.failure == 1 %}
-                                                            {% trans with {'%percentageRecovered%' : project.lender.loans.percentageRecovered|localizednumberwithprecision(1) } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
-                                                        {% endif %}
-                                                    {% endif %}
-                                                </p>
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endif %}
-                                </section><!-- /.page-section -->
-                            </div>
-                        {% endif %}
 
                         {% if conditions.bids %}
                             <div id="offers" data-watchscroll-nav>

@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="prelevements")
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PrelevementsRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Prelevements
 {
@@ -567,5 +568,23 @@ class Prelevements
     public function getIdPrelevement()
     {
         return $this->idPrelevement;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

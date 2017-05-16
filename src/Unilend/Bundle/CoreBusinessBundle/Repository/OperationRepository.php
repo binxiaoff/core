@@ -148,7 +148,7 @@ class OperationRepository extends EntityRepository
 
     /**
      * @param Wallet $wallet
-     * @param int $year
+     * @param int    $year
      *
      * @return bool|string
      */
@@ -162,11 +162,10 @@ class OperationRepository extends EntityRepository
                                   o.id,
                                   (SELECT lih.id_pays
                                    FROM lenders_imposition_history lih
-                                   WHERE id_lender = am.id_lender_account AND DATE(lih.added) <= DATE(o.added)
+                                   WHERE id_lender = o.id_wallet_creditor AND DATE(lih.added) <= DATE(o.added)
                                    ORDER BY lih.added DESC
                                    LIMIT 1) AS id_pays
                                 FROM operation o
-                                  INNER JOIN account_matching am ON o.id_wallet_creditor = am.id_wallet
                                   INNER JOIN operation_type ot ON o.id_type = ot.id
                                 WHERE ot.label = "' . OperationType::CAPITAL_REPAYMENT . '" AND o.id_wallet_creditor = :idWallet) AS tlih ON o_capital.id = tlih.id
                     WHERE o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
@@ -178,9 +177,10 @@ class OperationRepository extends EntityRepository
             'idWallet'     => $wallet->getId(),
             'eeaCountries' => PaysV2::EUROPEAN_ECONOMIC_AREA
         ];
-        $types = ['year'         => \PDO::PARAM_INT,
-                  'idWallet'     => \PDO::PARAM_INT,
-                  'eeaCountries' => Connection::PARAM_INT_ARRAY
+        $types = [
+            'year'         => \PDO::PARAM_INT,
+            'idWallet'     => \PDO::PARAM_INT,
+            'eeaCountries' => Connection::PARAM_INT_ARRAY
         ];
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $types)->fetchColumn();
@@ -219,11 +219,10 @@ class OperationRepository extends EntityRepository
                                   o.id,
                                   (SELECT lih.id_pays
                                    FROM lenders_imposition_history lih
-                                   WHERE id_lender = am.id_lender_account AND DATE(lih.added) <= DATE(o.added)
+                                   WHERE id_lender = o.id_wallet_creditor AND DATE(lih.added) <= DATE(o.added)
                                    ORDER BY lih.added DESC
                                    LIMIT 1) AS id_pays
                                 FROM operation o
-                                  INNER JOIN account_matching am ON o.id_wallet_creditor = am.id_wallet
                                   INNER JOIN operation_type ot ON o.id_type = ot.id
                                 WHERE ot.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '" AND o.id_wallet_creditor = :idWallet) AS tlih ON o_interest.id = tlih.id
                     WHERE o_interest.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
@@ -262,11 +261,10 @@ class OperationRepository extends EntityRepository
                                    o.id,
                                    (SELECT lih.id_pays
                                     FROM lenders_imposition_history lih
-                                      WHERE id_lender = am.id_lender_account AND added <= o.added
+                                      WHERE id_lender = o.id_wallet_creditor AND added <= o.added
                                     ORDER BY added DESC
                                     LIMIT 1) AS id_pays
                                  FROM operation o
-                                   INNER JOIN account_matching am ON o.id_wallet_creditor = am.id_wallet
                                    INNER JOIN operation_type ot ON o.id_type = ot.id
                                  WHERE ot.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '" AND o.id_wallet_creditor = :idWallet) AS tlih ON o_interest.id = tlih.id
                     WHERE o_interest.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")

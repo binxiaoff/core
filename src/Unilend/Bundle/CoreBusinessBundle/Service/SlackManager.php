@@ -8,6 +8,7 @@ use CL\Slack\Transport\ApiClientInterface;
 use Symfony\Component\Asset\Packages;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class SlackManager
 {
@@ -88,19 +89,19 @@ class SlackManager
         if ($project instanceof \projects) {
             $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
         }
-
         $title   = $project->getTitle();
         $backUrl = $this->backUrl . '/dossiers/edit/' . $project->getIdProject();
+        $company = $project->getIdCompany();
 
-        if (empty($title)) {
-            $title = $project->getIdCompany()->getName();
+        if (empty($title) && $company) {
+            $title = $company->getName();
         }
 
-        if (empty($title)) {
-            $title = $project->getIdCompany()->getSiren();
+        if (empty($title) && $company) {
+            $title = $company->getSiren();
         }
 
-        if ($project->getStatus() >= \projects_status::EN_FUNDING) {
+        if ($project->getStatus() >= ProjectsStatus::EN_FUNDING) {
             return '*<' . $this->frontUrl . '/projects/detail/' . $project->getSlug() . '|' . $title . '>* (<' . $backUrl . '|' . $project->getIdProject() . '>)';
         }
 

@@ -11,6 +11,26 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 
 class TaxManager
 {
+    const TAX_TYPE_EXEMPTED_LENDER = [
+        \tax_type::TYPE_CSG,
+        \tax_type::TYPE_SOCIAL_DEDUCTIONS,
+        \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+        \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
+        \tax_type::TYPE_CRDS
+    ];
+
+    const TAX_TYPE_TAXABLE_LENDER = [
+        \tax_type::TYPE_INCOME_TAX,
+        \tax_type::TYPE_CSG,
+        \tax_type::TYPE_SOCIAL_DEDUCTIONS,
+        \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+        \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
+        \tax_type::TYPE_CRDS
+    ];
+
+    const TAX_TYPE_FOREIGNER_LENDER    = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+    const TAX_TYPE_LEGAL_ENTITY_LENDER = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+
     /**
      * @var EntityManagerSimulator
      */
@@ -24,7 +44,7 @@ class TaxManager
      * TaxManager constructor.
      *
      * @param EntityManagerSimulator $entityManagerSimulator
-     * @param EntityManager $entityManager
+     * @param EntityManager          $entityManager
      */
     public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager)
     {

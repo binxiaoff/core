@@ -5,8 +5,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 
 class UnilendBankTransfertCommand extends ContainerAwareCommand
 {
@@ -31,14 +31,14 @@ class UnilendBankTransfertCommand extends ContainerAwareCommand
         $total             = $unilendWallet->getAvailableBalance();
 
         if ($total > 0) {
-            $wireTransferOut = new Virements();
-            $wireTransferOut->setMontant(bcmul($total, 100));
-            $wireTransferOut->setMotif('UNILEND_' . date('dmY'));
-            $wireTransferOut->setType(Virements::TYPE_UNILEND);
-            $wireTransferOut->setStatus(Virements::STATUS_PENDING);
-            $entityManager->persist($wireTransferOut);
-
-            $this->getContainer()->get('unilend.service.operation_manager')->withdrawUnilendWallet($wireTransferOut);
+            $wireTransferOutManager = $this->getContainer()->get('unilend.service.wire_transfer_out_manager');
+            try {
+                $wireTransferOutManager->createTransfer($unilendWallet, $total, null, null, null, null, 'UNILEND_' . date('dmY'));
+            } catch (\Exception $exception) {
+                $this->getContainer()
+                     ->get('monolog.logger.console')
+                     ->error('Failed to create Unilend wire transfer out. Error: ' . $exception->getMessage());
+            }
         }
     }
 }

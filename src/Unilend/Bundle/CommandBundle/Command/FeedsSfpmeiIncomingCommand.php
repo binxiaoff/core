@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -540,7 +541,7 @@ EOF
             if ($clients->status == 1) {
                 $transactions->get($reception->getIdReception(), 'status = ' . \transactions::STATUS_VALID . ' AND id_virement');
 
-                $notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
+                $notifications->type      = Notifications::TYPE_BANK_TRANSFER_CREDIT;
                 $notifications->id_lender = $wallet->getId();
                 $notifications->amount    = $reception->getMontant();
                 $notifications->create();

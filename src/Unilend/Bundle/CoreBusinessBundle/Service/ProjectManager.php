@@ -5,8 +5,14 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
@@ -115,7 +121,7 @@ class ProjectManager
                     && WalletType::LENDER === $wallet->getIdType()->getLabel()
                 ) {
                     $this->notificationManager->create(
-                        $bid['status'] == \bids::STATUS_BID_PENDING ? \notifications::TYPE_BID_PLACED : \notifications::TYPE_BID_REJECTED,
+                        $bid['status'] == \bids::STATUS_BID_PENDING ? Notifications::TYPE_BID_PLACED : Notifications::TYPE_BID_REJECTED,
                         $bid['id_autobid'] > 0 ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ($bid['status'] == \bids::STATUS_BID_PENDING ? \clients_gestion_type_notif::TYPE_BID_PLACED : \clients_gestion_type_notif::TYPE_BID_REJECTED),
                         $wallet->getIdClient()->getIdClient(),
                         $bid['status'] == \bids::STATUS_BID_PENDING ? 'sendBidConfirmation' : 'sendBidRejected',
@@ -723,44 +729,54 @@ class ProjectManager
     }
 
     /**
-     * @param int       $userId
-     * @param int       $projectStatus
-     * @param \projects $project
-     * @param int       $reminderNumber
-     * @param string    $content
+     * @param int                $userId
+     * @param int                $projectStatus
+     * @param \projects|Projects $project
+     * @param int                $reminderNumber
+     * @param string             $content
      */
-    public function addProjectStatus($userId, $projectStatus, \projects &$project, $reminderNumber = 0, $content = '')
+    public function addProjectStatus($userId, $projectStatus, $project, $reminderNumber = 0, $content = '')
     {
-        $originStatus = $project->status;
+        if ($project instanceof \projects) {
+            $projectEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        } else {
+            $projectEntity = $project;
+        }
+
+        $originStatus = $projectEntity->getStatus();
         /** @var \projects_status_history $projectsStatusHistory */
         $projectsStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
         /** @var \projects_status $projectStatusEntity */
         $projectStatusEntity = $this->entityManagerSimulator->getRepository('projects_status');
         $projectStatusEntity->get($projectStatus, 'status');
 
-        $projectsStatusHistory->id_project        = $project->id_project;
+        $projectsStatusHistory->id_project        = $projectEntity->getIdProject();
         $projectsStatusHistory->id_project_status = $projectStatusEntity->id_project_status;
         $projectsStatusHistory->id_user           = $userId;
         $projectsStatusHistory->numero_relance    = $reminderNumber;
         $projectsStatusHistory->content           = $content;
         $projectsStatusHistory->create();
 
-        $project->status = $projectStatus;
-        $project->update();
+        $projectEntity->setStatus($projectStatus);
+        $this->entityManager->flush($projectEntity);
+
+        if ($project instanceof \projects) {
+            $project->status = $projectStatus;
+        }
 
         if ($originStatus != $projectStatus) {
-            $this->projectStatusUpdateTrigger($projectStatusEntity, $project, $userId);
+            $this->projectStatusUpdateTrigger($projectStatusEntity, $projectEntity, $userId);
         }
     }
 
     /**
      * @param \projects_status $projectStatus
-     * @param \projects        $project
+     * @param Projects         $project
      * @param int              $userId
      */
-    private function projectStatusUpdateTrigger(\projects_status $projectStatus, \projects $project, $userId)
+    private function projectStatusUpdateTrigger(\projects_status $projectStatus, Projects $project, $userId)
     {
-        if ($project->status >= \projects_status::COMPLETE_REQUEST) {
+        if ($project->getStatus() >= ProjectsStatus::COMPLETE_REQUEST) {
             $userRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users');
             $message        = $this->slackManager->getProjectName($project) . ' passé en statut *' . $projectStatus->label . '*';
 
@@ -769,18 +785,18 @@ class ProjectManager
             }
 
             if (
-                $project->id_commercial > 0
-                && $userId != $project->id_commercial
-                && ($user = $userRepository->find($project->id_commercial))
+                $project->getIdCommercial() > 0
+                && $userId != $project->getIdCommercial()
+                && ($user = $userRepository->find($project->getIdCommercial()))
                 && false === empty($user->getSlack())
             ) {
                 $this->slackManager->sendMessage($message, '@' . $user->getSlack());
             }
 
             if (
-                $project->id_analyste > 0
-                && $userId != $project->id_analyste
-                && ($user = $userRepository->find($project->id_analyste))
+                $project->getIdAnalyste() > 0
+                && $userId != $project->getIdAnalyste()
+                && ($user = $userRepository->find($project->getIdAnalyste()))
                 && false === empty($user->getSlack())
             ) {
                 $this->slackManager->sendMessage($message, '@' . $user->getSlack());
@@ -789,7 +805,7 @@ class ProjectManager
             $this->slackManager->sendMessage($message, '#statuts-projets');
         }
 
-        switch ($project->status) {
+        switch ($project->getStatus()) {
             case \projects_status::COMMERCIAL_REJECTION:
             case \projects_status::ANALYSIS_REJECTION:
             case \projects_status::COMITY_REJECTION:
@@ -805,21 +821,19 @@ class ProjectManager
     }
 
     /**
-     * @param \projects $project
-     * @param int       $userId
+     * @param Projects $project
+     * @param int      $userId
      */
-    public function abandonOlderProjects(\projects $project, $userId)
+    private function abandonOlderProjects(Projects $project, $userId)
     {
-        /** @var \companies $company */
-        $company = $this->entityManagerSimulator->getRepository('companies');
-        $company->get($project->id_company);
-
-        $previousProjects = $project->getPreviousProjectsWithSameSiren($company->siren, $project->added);
-
+        /** @var \projects $projectData */
+        $projectData      = $this->entityManagerSimulator->getRepository('projects');
+        $previousProjects = $projectData->getPreviousProjectsWithSameSiren($project->getIdCompany()->getSiren(), $project->getAdded()->format('Y-m-d H:i:s'));
+        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         foreach ($previousProjects as $previousProject) {
             if (in_array($previousProject['status'], [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {
-                $project->get($previousProject['id_project'], 'id_project');
-                $this->addProjectStatus($userId, \projects_status::ABANDONED, $project, 0, 'same_company_project_rejected');
+                $previousProjectEntity = $projectRepository->find($previousProject['id_project']);
+                $this->addProjectStatus($userId, ProjectsStatus::ABANDONED, $previousProjectEntity, 0, 'same_company_project_rejected');
             }
         }
     }
@@ -956,9 +970,9 @@ class ProjectManager
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
      */
-    public function cancelProxyAndMandate(\projects $project)
+    public function cancelProxyAndMandate(Projects $project)
     {
         /** @var \projects_pouvoir $mandate */
         $mandate = $this->entityManagerSimulator->getRepository('clients_mandats');
@@ -967,8 +981,8 @@ class ProjectManager
 
         $client = new soapClient($this->universignUrl);
 
-        if ($mandate->get($project->id_project, 'id_project')) {
-            $mandate->status = \clients_mandats::STATUS_CANCELED;
+        if ($mandate->get($project->getIdProject(), 'id_project')) {
+            $mandate->status = UniversignEntityInterface::STATUS_CANCELED;
             $mandate->update();
 
             $request          = new soapRequest('requester.cancelTransaction', array(new documentId($mandate->id_universign, "string")));
@@ -980,11 +994,11 @@ class ProjectManager
                 $this->logger->info('Mandate canceled (project ' . $mandate->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project));
             }
         } else {
-            $this->logger->info('Cannot get Mandate', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+            $this->logger->info('Cannot get Mandate', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->getIdProject()]);
         }
 
-        if ($proxy->get($project->id_project, 'id_project')) {
-            $proxy->status = \projects_pouvoir::STATUS_CANCELLED;
+        if ($proxy->get($project->getIdProject(), 'id_project')) {
+            $proxy->status = UniversignEntityInterface::STATUS_CANCELED;
             $proxy->update();
 
             $request          = new soapRequest('requester.cancelTransaction', array(new documentId($proxy->id_universign, "string")));
@@ -996,7 +1010,51 @@ class ProjectManager
                 $this->logger->info('Proxy canceled (project ' . $proxy->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project));
             }
         } else {
-            $this->logger->info('Cannot get Proxy', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+            $this->logger->info('Cannot get Proxy', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->getIdProject()]);
         }
+    }
+
+    /**
+     * @param Projects $project
+     * @param boolean  $inclTax
+     *
+     * @return float
+     */
+    public function getCommissionFunds(Projects $project, $inclTax)
+    {
+        $commissionRate = bcdiv($project->getCommissionRateFunds(), 100, 4);
+        $commission     = round(bcmul($project->getAmount(), $commissionRate, 4), 2);
+
+        if ($inclTax) {
+            $vatTax     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+            $vatRate    = bcadd(1, bcdiv($vatTax->getRate(), 100, 4), 4);
+            $commission = round(bcmul($vatRate, $commission, 4), 2);
+        }
+
+        return $commission;
+    }
+
+    /**
+     * @param Projects $project
+     * @param boolean  $includePendingRequest
+     *
+     * @return string
+     */
+    public function getRestOfFundsToRelease(Projects $project, $includePendingRequest)
+    {
+        $fundsToRelease = bcsub($project->getAmount(), $this->getCommissionFunds($project, true), 2);
+        if ($includePendingRequest) {
+            $status = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED];
+        } else {
+            $status = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_CLIENT_VALIDATED, Virements::STATUS_PENDING];
+        }
+        $wireTransferOuts = $project->getWireTransferOuts();
+        foreach ($wireTransferOuts as $wireTransferOut) {
+            if (false === in_array($wireTransferOut->getStatus(), $status)) {
+                $fundsToRelease = bcsub($fundsToRelease, round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2), 2);
+            }
+        }
+
+        return $fundsToRelease;
     }
 }

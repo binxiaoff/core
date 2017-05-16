@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
@@ -85,7 +86,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $euros             = ($availableBalance >= 2) ? ' euros' : ' euro';
                     $solde             = $ficelle->formatNumber($availableBalance) . $euros;
 
-                    $notifications->type       = \notifications::TYPE_REPAYMENT;
+                    $notifications->type       = Notifications::TYPE_REPAYMENT;
                     $notifications->id_lender  = $echeanciers->id_lender;
                     $notifications->id_project = $echeanciers->id_project;
                     $notifications->amount     = bcmul($rembNet, 100);
