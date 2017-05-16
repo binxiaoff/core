@@ -1724,11 +1724,11 @@ class dossiersController extends bootstrap
         $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
         $this->transactions                  = $this->loadData('transactions');
         $this->notifications                 = $this->loadData('notifications');
-        $this->bank_unilend                  = $this->loadData('bank_unilend');
         $this->projects_remb                 = $this->loadData('projects_remb');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->settings                      = $this->loadData('settings');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
         $operationManager                    = $this->get('unilend.service.operation_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                       = $this->get('doctrine.orm.entity_manager');
@@ -1955,7 +1955,7 @@ class dossiersController extends bootstrap
                 $this->companies              = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
-                $loanRepository  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans');
+                $loanRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
@@ -1992,12 +1992,10 @@ class dossiersController extends bootstrap
 
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
 
-                    $montant_total = 0;
 
                     foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $item) {
-                        $loan               = $loanRepository->find($item['id_loan']);
-                        $outstandingCapital = $operationManager->earlyRepayment($loan);
-                        $montant_total += $outstandingCapital;
+                        $loan = $loanRepository->find($item['id_loan']);
+                        $operationManager->earlyRepayment($loan);
                     }
 
                     $this->bdd->query('
@@ -2010,42 +2008,6 @@ class dossiersController extends bootstrap
                             status_email_remb = 1
                         WHERE id_project = ' . $this->projects->id_project . ' AND status = 0'
                     );
-
-                    // partie a retirer de bank unilend
-                    if ($montant_total != 0) {
-                        $this->transactions->montant                  = 0;
-                        $this->transactions->id_echeancier            = 0; // on reinitialise
-                        $this->transactions->id_client                = 0; // on reinitialise
-                        $this->transactions->montant_unilend          = bcmul($montant_total, -100);
-                        $this->transactions->montant_etat             = 0; // pas d'argent pour l'état
-                        $this->transactions->id_echeancier_emprunteur = 0; // pas d'echeance emprunteur
-                        $this->transactions->id_langue                = 'fr';
-                        $this->transactions->date_transaction         = date('Y-m-d H:i:s');
-                        $this->transactions->status                   = \transactions::STATUS_VALID;
-                        $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
-                        $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
-                        $this->transactions->id_loan_remb             = 0;
-                        $this->transactions->id_project               = $this->projects->id_project;
-                        $this->transactions->create();
-
-                        $this->bank_unilend->id_transaction         = $this->transactions->id_transaction;
-                        $this->bank_unilend->id_project             = $this->projects->id_project;
-                        $this->bank_unilend->montant                = bcmul($montant_total, -100);
-                        $this->bank_unilend->etat                   = 0; // pas d'argent pour l'état
-                        $this->bank_unilend->type                   = 2; // remb unilend
-                        $this->bank_unilend->id_echeance_emprunteur = 0; // pas d'echeance emprunteur
-                        $this->bank_unilend->status                 = 1;
-                        $this->bank_unilend->create();
-                    }
-
-                    $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC'); // on ajoute la restriction pour BT 17882
-
-                    // On parcourt les remb non reversé aux preteurs dans bank unilend et on met a jour le satut pour dire que c'est remb
-                    foreach ($lesRembEmprun as $r) {
-                        $this->bank_unilend->get($r['id_unilend'], 'id_unilend');
-                        $this->bank_unilend->status = 1;
-                        $this->bank_unilend->update();
-                    }
 
                     header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
                     die;

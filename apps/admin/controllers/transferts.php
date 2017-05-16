@@ -67,8 +67,6 @@ class transfertsController extends bootstrap
         $this->nonAttributedReceptions = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findNonAttributed();
 
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
-            $bank_unilend = $this->loadData('bank_unilend');
-            $transactions = $this->loadData('transactions');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
             $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);

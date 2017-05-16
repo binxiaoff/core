@@ -513,8 +513,6 @@ class OperationManager
         $operationSubType   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
 
         $this->repaymentGeneric($borrowerWallet, $lenderWallet, $outstandingCapital, 0, $operationSubType, $loan);
-
-        return $outstandingCapital;
     }
 
     /**
