@@ -1543,8 +1543,6 @@ class dossiersController extends bootstrap
         $this->companies = $this->loadData('companies');
         /** @var projects projects */
         $this->projects = $this->loadData('projects');
-        /** @var \partner $partnerData */
-        $partnerData = $this->loadData('partner');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
         $partnerManager    = $this->get('unilend.service.partner_manager');
         $defaultPartner    = $partnerManager->getDefaultPartner();
@@ -3611,7 +3609,7 @@ class dossiersController extends bootstrap
             $this->project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
             $this->borrowerMotif     = $borrowerManager->getBorrowerBankTransferLabel($this->project);
             $this->bankAccounts[]    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->project->getIdCompany()->getIdClientOwner());
-            $this->bankAccounts      = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getPartner()));
+            $this->bankAccounts      = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getIdPartner()));
             $restFunds               = $projectManager->getRestOfFundsToRelease($this->project, true);
             $this->restFunds         = $currencyFormatter->formatCurrency($restFunds, 'EUR');
 

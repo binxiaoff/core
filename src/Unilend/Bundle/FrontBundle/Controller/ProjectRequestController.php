@@ -890,7 +890,7 @@ class ProjectRequestController extends Controller
         /** @var Projects $project */
         $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
 
-        $partnerAttachments = $project->getPartner()->getAttachmentTypes();
+        $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
         $template['attachmentTypes']    = [];
         $labels    = [];
         foreach ($partnerAttachments as $partnerAttachment) {
@@ -1191,7 +1191,7 @@ class ProjectRequestController extends Controller
         $project       = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find( $this->project->id_project);
 
         $projectAttachments = $project->getAttachments();
-        $partnerAttachments = $project->getPartner()->getAttachmentTypes();
+        $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
         $attachmentTypes    = [];
         foreach ($partnerAttachments as $partnerAttachment) {
             $attachmentTypes[] = $partnerAttachment->getAttachmentType();
