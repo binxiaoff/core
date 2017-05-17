@@ -145,6 +145,7 @@
                                         <tbody data-sortable-content>
                                         {% for project in borrowers %}
                                             <tr id="project-{{ project.id }}" class="table-projects-item{% if loop.index is divisibleby(2) %} even{% else %} odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
+                                                data-hash="{{ project.hash }}"
                                                 data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                                 data-details-tos="{{ projectTosDates|json_encode|escape('html_attr') }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
@@ -390,7 +391,7 @@
     </div><!-- /#modal-partner-prospect -->
 
     <div id="modal-partner-project-tos" data-modal>
-        <form action="" method="post" data-formvalidation>
+        <form action="{{ path('partner_project_tos') }}" method="post">
             <input type="hidden" name="hash" value>
             <div class="modal-body text-align-center">
                 {% if projectTosDates|length > 0 %}

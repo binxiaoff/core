@@ -3,7 +3,9 @@
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -17,6 +19,7 @@ class ProjectsListController extends Controller
 {
     /**
      * @Route("partenaire/emprunteurs", name="partner_projects_list")
+     * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @return Response
@@ -40,6 +43,37 @@ class ProjectsListController extends Controller
             'rejected'       => $this->formatProject($rejected, true),
             'abandonReasons' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
         ]);
+    }
+
+    /**
+     * @Route("partenaire/emprunteurs", name="partner_project_tos")
+     * @Method("POST")
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function projectRequestDetailsFormAction(Request $request)
+    {
+        $hash = $request->request->getAlnum('hash');
+
+        if (1 !== preg_match('/^[0-9a-f]{32}$/', $hash)) {
+            return $this->redirect($request->headers->get('referer'));
+        }
+
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $project           = $projectRepository->findOneBy(['hash' => $hash]);
+        $userCompanies     = $this->getUserCompanies();
+
+        if (false === ($project instanceof Projects) || false === in_array($project->getIdCompanySubmitter(), $userCompanies)) {
+            return $this->redirectToRoute('partner_projects_list');
+        }
+
+        // @todo
+
+        return $this->redirectToRoute('partner_projects_list');
     }
 
     /**

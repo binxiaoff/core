@@ -21,6 +21,7 @@ $doc
         $modal.find('.ui-modal-output-company').html($prospect.data('sortable-borrower'))
         $modal.uiModal('open')
     })
+
 // Partner Projects Table
 $doc
     .on(Utility.clickEvent, '.table-projects [data-action]:not([data-action="memos"])', function () {
@@ -59,7 +60,6 @@ $doc
         $modal.uiModal('open')
     })
 
-
 // Partner Statistics
 var partnerStatisticsTabs = $('.partner-statistics-tabs')
 
@@ -80,6 +80,3 @@ $doc
             })
         }
     })
-
-
-

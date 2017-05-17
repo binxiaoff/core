@@ -764,7 +764,7 @@ class dossiersController extends bootstrap
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
             $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
-            $this->transferFunds($project);
+            $this->transferFunds($this->projectEntity);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
