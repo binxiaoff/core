@@ -32,11 +32,11 @@ class DevAddDailyStateBalanceHistoryCommand extends ContainerAwareCommand
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-        $dayInterval = \DateInterval::createFromDateString('1 day');
+        $dayInterval = \DateInterval::createFromDateString('1 month');
         //$start       = new \DateTime('last day of january 2017');
         $start = \DateTime::createFromFormat('Y-m-d', '2013-11-21');
-        $end   = new \DateTime('NOW');
-        $end->sub($dayInterval);
+        $end   = \DateTime::createFromFormat('Y-m-d', '2016-12-31');
+        //$end->sub($dayInterval);
         $days = new \DatePeriod($start, $dayInterval, $end);
 
         /** @var \DateTime $date */
