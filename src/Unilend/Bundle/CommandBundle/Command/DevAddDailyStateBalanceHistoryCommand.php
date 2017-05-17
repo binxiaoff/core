@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Validator\Constraints\DateTime;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DailyStateBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -32,10 +33,11 @@ class DevAddDailyStateBalanceHistoryCommand extends ContainerAwareCommand
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
         $dayInterval = \DateInterval::createFromDateString('1 day');
-        $start       = new \DateTime('last day of january 2017');
-        $end         = new \DateTime('NOW');
+        //$start       = new \DateTime('last day of january 2017');
+        $start = \DateTime::createFromFormat('Y-m-d', '2013-11-21');
+        $end   = new \DateTime('NOW');
         $end->sub($dayInterval);
-        $days        = new \DatePeriod($start, $dayInterval, $end);
+        $days = new \DatePeriod($start, $dayInterval, $end);
 
         /** @var \DateTime $date */
         foreach ($days as $date) {
