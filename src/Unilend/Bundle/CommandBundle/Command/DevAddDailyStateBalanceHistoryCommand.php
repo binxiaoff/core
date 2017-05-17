@@ -34,7 +34,7 @@ class DevAddDailyStateBalanceHistoryCommand extends ContainerAwareCommand
 
         $dayInterval = \DateInterval::createFromDateString('1 month');
         //$start       = new \DateTime('last day of january 2017');
-        $start = \DateTime::createFromFormat('Y-m-d', '2013-11-21');
+        $start = \DateTime::createFromFormat('Y-m-d', '2013-11-31');
         $end   = \DateTime::createFromFormat('Y-m-d', '2016-12-31');
         //$end->sub($dayInterval);
         $days = new \DatePeriod($start, $dayInterval, $end);
