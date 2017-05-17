@@ -407,7 +407,6 @@ class bids extends bids_crud
                 id_lender_account,
                 id_project,
                 id_autobid,
-                id_lender_wallet_line,
                 amount,
                 rate,
                 ordre,

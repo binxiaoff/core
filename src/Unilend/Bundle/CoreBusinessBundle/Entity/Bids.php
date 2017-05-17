@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Bids
  *
- * @ORM\Table(name="bids", indexes={@ORM\Index(name="id_lender_account", columns={"id_lender_account"}), @ORM\Index(name="idprojectstatus", columns={"id_project", "status"}), @ORM\Index(name="idx_bids_id_lender_wallet_line", columns={"id_lender_wallet_line"}), @ORM\Index(name="idx_id_autobid", columns={"id_autobid"})})
+ * @ORM\Table(name="bids", indexes={@ORM\Index(name="id_lender_account", columns={"id_lender_account"}), @ORM\Index(name="idprojectstatus", columns={"id_project", "status"}), @ORM\Index(name="idx_id_autobid", columns={"id_autobid"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BidsRepository")
@@ -39,13 +39,6 @@ class Bids
      * })
      */
     private $idAutobid;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_lender_wallet_line", type="integer", nullable=false)
-     */
-    private $idLenderWalletLine;
 
     /**
      * @var integer
@@ -178,30 +171,6 @@ class Bids
     public function getIdLenderAccount()
     {
         return $this->idLenderAccount;
-    }
-
-    /**
-     * Set idLenderWalletLine
-     *
-     * @param integer $idLenderWalletLine
-     *
-     * @return Bids
-     */
-    public function setIdLenderWalletLine($idLenderWalletLine)
-    {
-        $this->idLenderWalletLine = $idLenderWalletLine;
-
-        return $this;
-    }
-
-    /**
-     * Get idLenderWalletLine
-     *
-     * @return integer
-     */
-    public function getIdLenderWalletLine()
-    {
-        return $this->idLenderWalletLine;
     }
 
     /**
