@@ -34,10 +34,9 @@ $doc
             var tosHtml = ''
             $.each(tos, function (i, item) {
                 tosHtml += Templating.replace('<tr>\
-                    <td>' + i + '</td>\
                     <td>{{ date }}</td>\
                 </tr>', {
-                    date: __.localizedDate(item.date),
+                    date: item.date,
                 })
             })
             $form.find('table tbody').html(tosHtml)

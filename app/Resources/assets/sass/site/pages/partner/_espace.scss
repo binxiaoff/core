@@ -199,7 +199,7 @@
       margin-top: 1em;
     }
     @include devices('sm', 'md', 'lg') {
-      min-width: 380px;
+      min-width: 420px;
     }
   }
 }
