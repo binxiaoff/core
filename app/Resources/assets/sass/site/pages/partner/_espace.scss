@@ -210,10 +210,22 @@
 }
 
 #modal-partner-project-tos {
-  .table {
-    .c-t3 {
-      display: inline-block;
-      margin-right: 20px;
+  .overflow-wrap {
+    p {
+      border-top: 1px solid #eceaed;
+      padding-top: .65em;
+      margin-bottom: 0
+    }
+  }
+  .table tr {
+    th {
+      &:first-child {
+        width: 10%;
+      }
+    }
+    td, th {
+      padding-left: 15px;
+      padding-right: 15px;
     }
   }
 }

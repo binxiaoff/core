@@ -10,11 +10,9 @@
     date: 'May 17, 2017 11:16'
 },
 {
-date: 'May 16, 2017 10:16'
+    date: 'May 16, 2017 10:16'
 }
 ] %}
-
-
 
 
 {% block dashboardContent %}
@@ -148,6 +146,7 @@ date: 'May 16, 2017 10:16'
                                         {% for project in borrowers %}
                                             <tr id="project-{{ project.id }}" class="table-projects-item{% if loop.index is divisibleby(2) %} even{% else %} odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
                                                 data-details="{{ project.memos|json_encode|escape('html_attr') }}"
+                                                data-details-tos="{{ projectTosDates|json_encode|escape('html_attr') }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
@@ -394,23 +393,23 @@ date: 'May 16, 2017 10:16'
         <form action="" method="post" data-formvalidation>
             <input type="hidden" name="hash" value>
             <div class="modal-body text-align-center">
-                <p>{% trans %} partner-project-list_popup-project-tos {% endtrans %}</p>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th class="text-align-center">{% trans %} partner-project-list_popup-project-tos-th {% endtrans %}</th>
-                        </tr>
-                    </thead>
-                    {% if projectTosDates|length > 0 %}
-                        <tbody>
-                            {% for tosDate in projectTosDates %}
-                            <tr>
-                                <td><span class="c-t3">#{{ loop.index }}</span> {{ tosDate.date|localizeddate('medium', 'short', app.request.locale) }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    {% endif %}
-                </table>
+                {% if projectTosDates|length > 0 %}
+                    <h3>{% trans %} partner-project-list_popup-project-tos-title {% endtrans %}</h3>
+                    <div class="overflow-wrap overflow-vertical">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th><span class="c-t3"></span>{% trans %} partner-project-list_popup-project-tos-th {% endtrans %}</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <p>{% trans %} partner-project-list_popup-project-tos {% endtrans %}</p>
+                    </div>
+                {% else %}
+                    <p>{% trans %} partner-project-list_popup-project-tos {% endtrans %}</p>
+                {% endif %}
             </div>
             <footer class="modal-footer">
                 <div class="btn-controls">
