@@ -756,7 +756,7 @@ class MailerManager
 
         foreach ($loans->getProjectLoansByLender($project->getIdProject()) as $lendersId) {
             /** @var Loans $loan */
-            $loan = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($lendersId['loan']);
+            $loan = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($lendersId['loans']);
             /** @var \echeanciers $paymentSchedule */
             $paymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
             /** @var \accepted_bids $acceptedBids */

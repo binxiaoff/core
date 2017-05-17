@@ -18,7 +18,12 @@
     {% endif %}
 
     <tr id="operation-{{ i }}" {% if isCommission %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
-        <td class="table-myoperations-borrower-item-type">{{ ('borrower-operation_' ~ op.label)|trans }}</td>
+        <td class="table-myoperations-borrower-item-type">
+            {{ ('borrower-operation_' ~ op.label)|trans }}
+            {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::BORROWER_WITHDRAW') and op.third_party_company is not empty %}
+                - {{ op.third_party_company.name }}
+            {% endif %}
+        </td>
         <td class="table-myoperations-borrower-item-project">{{ op.idProject }}</td>
         <td class="table-myoperations-borrower-item-date">{{ op.date|localizeddate('short', 'none') }}</td>
         <td class="table-myoperations-borrower-item-amount">{{ op.amount|localizedcurrency('EUR') }}</td>

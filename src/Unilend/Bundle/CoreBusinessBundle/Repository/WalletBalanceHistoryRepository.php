@@ -178,7 +178,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
         $qb = $this->createQueryBuilder('wbh');
         $qb->select('o.id,
                             CASE 
-                                WHEN(o.idWalletDebtor= wbh.idWallet)  
+                                WHEN(o.idWalletDebtor = wbh.idWallet)  
                                 THEN -SUM(o.amount) 
                                 ELSE SUM(o.amount)
                             END AS amount, 
