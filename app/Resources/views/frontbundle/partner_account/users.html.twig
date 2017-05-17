@@ -52,7 +52,7 @@
                                     <td class="table-users-item-action">
                                         {% if user.client.hash != app.user.hash %}
                                             {% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}
-                                                <a role="button" class="btn-default" data-action="password" title="{{ 'partner-users-list_table-item-action-password'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-envelope"></span></a>
+                                                <a role="button" class="btn-default" data-action="password" title="{{ 'partner-users-list_table-item-action-password'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-lock-u16"></span></a>
                                                 <a role="button" class="btn-default" data-action="deactivate" title="{{ 'partner-users-list_table-item-action-deactivate'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-close"></span></a>
                                             {% else %}
                                                 <a role="button" class="btn-default" data-action="activate" title="{{ 'partner-users-list_table-item-action-activate'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-repeat"></span></a>

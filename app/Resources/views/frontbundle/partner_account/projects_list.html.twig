@@ -166,10 +166,10 @@
                                                     <span class="ui-project-status">{{ ('partner-project-list_status-' ~ project.status)|trans }}</span>
                                                 </td>
                                                 <td class="table-projects-item-action">
+                                                    <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-tos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="tos"><span class="icon fa-file-u16"></span></a>
                                                     {% if project.memos|length > 0 %}
                                                         <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="memos"><span class="icon fa-info-u16"></span></a>
                                                     {% endif %}
-                                                    <a role="button" class="btn-default" title="{{ 'partner-project-list_projects-table-action-tos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="tos"><span class="icon fa-envelope"></span></a>
                                                 </td>
                                             </tr>
                                         {% endfor %}
