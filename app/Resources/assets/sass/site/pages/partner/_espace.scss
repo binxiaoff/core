@@ -228,6 +228,27 @@
       padding-right: 15px;
     }
   }
+  .ui-ajax-feedback-button, .ui-ajax-feedback-message {
+    display: none;
+  }
+  &.ui-ajax-feedback {
+    .btn-primary:not(.ui-ajax-feedback-button), .btn-default, .overflow-wrap {
+      display: none;
+    }
+    .ui-ajax-feedback-button {
+      display: inline-block;
+    }
+    &.success {
+      .ui-ajax-feedback-message.c-success {
+        display: block;
+      }
+    }
+    &.error {
+      .ui-ajax-feedback-message.c-error {
+        display: block;
+      }
+    }
+  }
 }
 
 // Utilisateurs

@@ -44,8 +44,41 @@ $doc
         }
 
         $form.find('[name="hash"]').val($project.data('hash'))
+
+        if ($modal.is('.ui-ajax-feedback')) {
+            $modal.removeClass('ui-ajax-feedback').removeClass('success').removeClass('error')
+        }
         $modal.uiModal('open')
     })
+
+$doc
+    .on('submit','#modal-partner-project-tos form', function(event) {
+        event.preventDefault()
+        var $form = $(this)
+        var $modal = $(this).parents('[data-modal]')
+        var hash = $form.find('[name="hash"]').val()
+        $.ajax({
+            url: '/tos',
+            method: 'POST',
+            data: {
+                hash: hash,
+                action: 'tos'
+            }
+        })
+        .done(function (response) {
+            if (response === 'success') {
+                $modal.addClass('ui-ajax-feedback').addClass('success')
+            } else {
+                $modal.addClass('ui-ajax-feedback').addClass('error')
+            }
+            $modal.uiModal('update')
+        })
+        .fail(function () {
+            $modal.uiModal('update')
+            $modal.addClass('ui-ajax-feedback').addClass('error')
+        })
+    })
+
 // Partner Users Table
 $doc
     .on(Utility.clickEvent, '.table-users [data-action]', function () {
