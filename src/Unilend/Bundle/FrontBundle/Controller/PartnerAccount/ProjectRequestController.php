@@ -21,7 +21,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
-use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 
 class ProjectRequestController extends Controller
@@ -188,9 +187,6 @@ class ProjectRequestController extends Controller
         if (empty($client->getIdClient())) {
             return $this->redirect($request->headers->get('referer'));
         }
-
-//        $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
-//        $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $client->getIdClient());
 
         /** @var UserPartner $user */
         $user = $this->getUser();

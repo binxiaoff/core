@@ -116,7 +116,7 @@
                                     <div class="row">
                                         <div class="form-field col-lg-12 col-md-12{% if form.errors.project.description is defined %} ui-formvalidation-error{% endif %}">
                                             <div class="row">
-                                                <p>{{ ('partner-project-details_description-instructions-' ~ app.user.partner.label)|trans }}</p>
+                                                <p>{{ ('partner-project-details_description-instructions-' ~ app.user.partner.label)|trans|raw }}</p>
                                             </div>
                                             <textarea id="form-project-details-description" name="project[description]" class="input-field" rows="5" placeholder="{{ 'partner-project-details_description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
                                             {% if form.errors.project.description is defined %}
@@ -129,7 +129,7 @@
                                 <fieldset class="form-project-details-fieldset last">
                                     <h4>{% trans %} partner-project-details_documents-section-title {% endtrans %}</h4>
                                     <div class="row">
-                                        <p>{{ ('partner-project-details_documents-instructions-' ~ app.user.partner.label)|trans }}</p>
+                                        <p>{{ ('partner-project-details_documents-instructions-' ~ app.user.partner.label)|trans|raw }}</p>
                                     </div>
                                     {% for attachment in attachments %}
                                         <div class="row">
