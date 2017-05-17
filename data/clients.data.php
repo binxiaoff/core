@@ -602,12 +602,13 @@ class clients extends clients_crud
                 id_project IN (' . implode(',', $aProjects) . ')
                 AND id_client = ' . $iClientId . '
                 AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
-                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
-            GROUP BY id_project';
+                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDataForBorrowerOperations[] = $record;
+            if ($record['montant'] != 0) {
+                $aDataForBorrowerOperations[] = $record;
+            }
         }
         return $aDataForBorrowerOperations;
     }
@@ -745,7 +746,7 @@ class clients extends clients_crud
                     WHERE
                         `id_project` IN (' . implode(',', $aProjects) . ')
                         AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                        AND type_commission = ' . \factures::TYPE_COMMISSION_FINANCEMENT;
+                        AND type_commission = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -1091,12 +1092,13 @@ class clients extends clients_crud
                              INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner
                          WHERE clients.status = '. ClientEntity::STATUS_ONLINE .' AND lenders_accounts.status = 1
                          AND (clients_adresses.id_pays_fiscal = ' . \pays_v2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . \pays_v2::COUNTRY_FRANCE . ')) AS client_base
-                    GROUP BY insee_region_code';
+                    GROUP BY insee_region_code
+                    HAVING insee_region_code != "0"';
 
         $statement = $this->bdd->executeQuery($query);
         $regionsCount  = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $regionsCount[$row['insee_region_code']] = $row['count'];
+            $regionsCount[] = $row;
         }
 
         return $regionsCount;

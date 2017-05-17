@@ -3,35 +3,48 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 
 class PartnerManager
 {
     /** @var EntityManager */
     private $entityManager;
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
 
     /**
-     * @param EntityManager          $entityManager
-     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManager $entityManager
      */
-    public function __construct(EntityManager $entityManager, EntityManagerSimulator $entityManagerSimulator)
+    public function __construct(EntityManager $entityManager)
     {
-        $this->entityManager          = $entityManager;
-        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager = $entityManager;
     }
 
     /**
-     * @return \partner
+     * @return Partner
      */
     public function getDefaultPartner()
     {
-        /** @var \partner $partner */
-        $partner = $this->entityManagerSimulator->getRepository('partner');
-        $partner->get(\partner::PARTNER_UNILEND_LABEL, 'label');
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findOneBy(['label' => Partner::PARTNER_UNILEND_LABEL]);
+    }
 
-        return $partner;
+    /**
+     * @param Partner $partner
+     *
+     * @return BankAccount[]
+     */
+    public function getPartnerThirdPartyBankAccounts(Partner $partner)
+    {
+        $bankAccounts = [];
+        $thirdParties = $partner->getPartnerThirdParties();
+        foreach ($thirdParties as $thirdParty) {
+            $client      = $thirdParty->getIdCompany()->getIdClientOwner();
+            $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+            if ($bankAccount) {
+                $bankAccounts[] = $bankAccount;
+            }
+        }
+
+        return $bankAccounts;
     }
 
     /**

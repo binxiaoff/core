@@ -11,14 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class ClientsMandats
+class ClientsMandats implements UniversignEntityInterface
 {
-    const STATUS_PENDING  = 0;
-    const STATUS_SIGNED   = 1;
-    const STATUS_CANCELED = 2;
-    const STATUS_FAILED   = 3;
-    const STATUS_ARCHIVED = 4;
-
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
@@ -376,12 +370,7 @@ class ClientsMandats
         return $this->added;
     }
 
-    /**
-     * Get idMandat
-     *
-     * @return integer
-     */
-    public function getIdMandat()
+    public function getId()
     {
         return $this->idMandat;
     }

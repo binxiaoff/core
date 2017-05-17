@@ -55,7 +55,7 @@ var Sortable = function (elem, options) {
     // Save the original order
     saveOriginalOrder: true,
 
-    // Add responsive filter (control visibility by targeting `[data-sortable-responsive-filters]` in CSS)
+    // Add responsive filter (control visibility by targeting `[data-sortable-responsivefilters]` in CSS)
     responsiveFilters: true,
 
     // Sorting function
@@ -65,7 +65,7 @@ var Sortable = function (elem, options) {
   ElementAttrsObject(elem, {
     columns: 'data-sortable-columns',
     content: 'data-sortable-content',
-    responsiveFilter: 'data-sortable-responsivefilters',
+    responsiveFilters: 'data-sortable-responsivefilters',
     saveOriginalOrder: 'data-sortable-saveoriginalorder'
   }),
   // -- Override with options set via JS

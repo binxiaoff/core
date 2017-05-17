@@ -128,7 +128,7 @@ class FrontBundleExtension extends \Twig_Extension
         $sWidthAttr               = (isset($iWidth) ? ' width="' . $iWidth . '"' : '');
         $sHeightAttr              = (isset($iHeight) ? ' height="' . $iHeight . '"' : '');
         $sPreserveAspectRatioAttr = (isset($sSizing) ? ' preserveAspectRatio="' . $aSupportedSizes[$sSizing] . '"' : '');
-        $sSvgHtml                 = '<svg role="img"' . $sTitleAttr . $sWidthAttr . $sHeightAttr . $sPreserveAspectRatioAttr . ' class="svg-icon' . $sUseId . '"' . $sSvgHeaders . '>' . $sUses . '</svg>';
+        $sSvgHtml                 = '<svg role="img"' . $sTitleAttr . $sWidthAttr . $sHeightAttr . $sPreserveAspectRatioAttr . ' class="svg-icon svg-icon-' . $sUseId . '"' . $sSvgHeaders . '>' . $sUses . '</svg>';
 
         return $sSvgHtml;
     }

@@ -1,0 +1,68 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block cssFiles %}
+    {{ parent() }}
+    <style>
+        body {
+            font-size: 14px;
+            line-height: 22px;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+        }
+        h3 {
+            font-size: 16px;
+        }
+        header {
+            text-align: center;
+            margin:
+        }
+        header > h1 {
+            font-size: 24px;
+            margin: 1.25em 0 1em;
+        }
+        table, tr, td {
+            font-size: 12px !important;
+            page-break-inside: avoid !important;
+            text-transform: uppercase;
+            background: #eceaed;
+        }
+        .rib-nom-th, .rib-iban-th {
+            width: 120px;
+            color: #787679;
+        }
+        .rib-nom-td, .rib-iban-td {
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <header>
+        <h1>Demande de versement sur un compte tiers</h1>
+    </header>
+    <div class="row" style="page-break-after: auto;">
+        <p style="margin-bottom: 2em">Je soussigné, <b>{{ companyManagerFirstName }} {{ companyManagerName }}</b>
+            , en ma qualité de <b>{{ companyManagerFunction }}</b> de <b>{{ companyName }}</b>
+            , autorise le versement de <b>{{ amount }}</b> de mon compte Unilend-bénéficiaire vers le compte tiers suivant:</p>
+
+        <table class="table">
+            <tbody>
+            <tr>
+                <td class="rib-nom-th">Titulaire</td>
+                <td class="rib-nom-td">{{ destinationCompanyName }}</td>
+            </tr>
+            <tr>
+                <td class="rib-nom-th"></td>
+                <td class="rib-nom-td">{{ destinationFirstName }} {{ destinationName }}</td>
+            </tr>
+            <tr>
+                <td class="rib-iban-th">IBAN</td>
+                <td class="rib-iban-td">{{ iban|split('', 4)|join(' ') }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

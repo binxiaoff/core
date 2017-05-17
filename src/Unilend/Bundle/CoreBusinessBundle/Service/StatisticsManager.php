@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\librairies\CacheKeys;
@@ -24,7 +24,7 @@ class StatisticsManager
     private $entityManager;
     /** @var IRRManager */
     private $IRRManager;
-    /** @var MemcacheCachePool */
+    /** @var CacheItemPoolInterface */
     private $cachePool;
     /** @var LocationManager */
     private $locationManager;
@@ -32,7 +32,7 @@ class StatisticsManager
     public function __construct(
         EntityManager $entityManager,
         IRRManager $IRRManager,
-        MemcacheCachePool $cachePool,
+        CacheItemPoolInterface $cachePool,
         LocationManager $locationManager
     ) {
         $this->entityManager   = $entityManager;

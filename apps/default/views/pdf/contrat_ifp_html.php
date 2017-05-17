@@ -149,7 +149,7 @@
             <h5>Désignation du prêteur</h5>
             <div class="list">
                 <ul>
-                    <?php if (in_array($this->clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) : ?>
+                    <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
                         <li>Nom
                             <div class="col-small"><?= $this->clients->nom ?></div>
                         </li>

@@ -59,8 +59,8 @@ class AttachmentManager
         if (file_exists($destinationAbsolute . DIRECTORY_SEPARATOR . $fileFullName)) {
             $fileFullName = $this->sanitizer($fileName . '_' . md5(uniqid())) . '.' . $file->getClientOriginalExtension();
         }
-        $file->move($destinationAbsolute, $fileFullName);
 
+        $file->move($destinationAbsolute, $fileFullName);
         $attachmentsToArchive = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy(['idClient' => $client, 'idType' => $attachmentType, 'archived' => null]);
         foreach ($attachmentsToArchive as $toArchive) {
             $toArchive->setArchived(new \DateTime());
@@ -69,7 +69,8 @@ class AttachmentManager
         $attachment = new Attachment();
         $attachment->setPath($destinationRelative . DIRECTORY_SEPARATOR . $fileFullName)
                    ->setClient($client)
-                   ->setType($attachmentType);
+                   ->setType($attachmentType)
+                   ->setOriginalName($file->getClientOriginalName());
         $this->entityManager->persist($attachment);
         $this->entityManager->flush();
 

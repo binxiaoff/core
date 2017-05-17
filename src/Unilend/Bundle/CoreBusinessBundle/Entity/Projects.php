@@ -384,16 +384,36 @@ class Projects
      */
     private $notes;
 
+    /**
+     * @var ProjectsPouvoir
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir", mappedBy="idProject")
+     */
+    private $proxy;
 
+    /**
+     * @var ProjectCgv
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv", mappedBy="idProject")
+     */
+    private $termOfUser;
+
+    /**
+     * @var Virements[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Virements", mappedBy="idProject")
+     */
+    private $wireTransferOuts;
 
     /**
      * Projects constructor.
      */
     public function __construct()
     {
-        $this->attachments = new ArrayCollection();
-        $this->mandats     = new ArrayCollection();
-        $this->notes       = new ArrayCollection();
+        $this->attachments      = new ArrayCollection();
+        $this->mandats          = new ArrayCollection();
+        $this->notes            = new ArrayCollection();
+        $this->wireTransferOuts = new ArrayCollection();
     }
 
     /**
@@ -1552,5 +1572,33 @@ class Projects
             ->orderBy(['added' => Criteria::DESC]);
 
         return $this->notes->matching($criteria);
+    }
+
+    /**
+     * Get project proxy
+     *
+     * @return ProjectsPouvoir
+     */
+    public function getProxy()
+    {
+        return $this->proxy;
+    }
+
+    /**
+     * Get project term of user
+     *
+     * @return ProjectCgv
+     */
+    public function getTermOfUser()
+    {
+        return $this->termOfUser;
+    }
+
+    /**
+     * @return Virements[]
+     */
+    public function getWireTransferOuts()
+    {
+        return $this->wireTransferOuts;
     }
 }

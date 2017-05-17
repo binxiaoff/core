@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
@@ -273,7 +274,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     $oInvoice->id_company      = $companies->id_company;
                     $oInvoice->id_project      = $projects->id_project;
                     $oInvoice->ordre           = $r['ordre'];
-                    $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
+                    $oInvoice->type_commission = Factures::TYPE_COMMISSION_REPAYMENT;
                     $oInvoice->commission      = $projects->commission_rate_repayment;
                     $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                     $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;

@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class NotificationManager
@@ -120,22 +121,6 @@ class NotificationManager
         $mailNotification->id_transaction  = $transactionId;
         $mailNotification->id_loan         = $loanId;
         $mailNotification->create();
-    }
-
-    /**
-     * @param \clients $client
-     *
-     * @return int
-     */
-    public function countUnreadNotificationsForClient(\clients $client)
-    {
-        /** @var \notifications $notifications */
-        $notifications  = $this->entityManager->getRepository('notifications');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
-
-        return $notifications->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND status = ' . \notifications::STATUS_UNREAD);
     }
 
     /**

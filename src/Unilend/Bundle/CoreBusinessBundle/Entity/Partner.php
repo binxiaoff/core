@@ -17,6 +17,9 @@ class Partner
     const STATUS_VALIDATED = 2;
     const STATUS_DISABLED  = 3;
 
+    const PARTNER_UNILEND_LABEL = 'unilend';
+    const PARTNER_U_CAR_LABEL   = 'u_car';
+
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
      *
@@ -106,10 +109,18 @@ class Partner
     private $attachmentTypes;
 
     /**
+     * @var PartnerThirdParty[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdParty", mappedBy="idPartner")
+     */
+    private $partnerThirdParties;
+
+    /**
      * Projects constructor.
      */
     public function __construct() {
-        $this->attachmentTypes = new ArrayCollection();
+        $this->attachmentTypes     = new ArrayCollection();
+        $this->partnerThirdParties = new ArrayCollection();
     }
 
     /**
@@ -359,5 +370,10 @@ class Partner
         }
 
         return $this->attachmentTypes;
+    }
+
+    public function getPartnerThirdParties()
+    {
+        return $this->partnerThirdParties;
     }
 }

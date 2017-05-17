@@ -17,7 +17,7 @@ class WalletType
     const LENDER                               = 'lender';
     const PARTNER                              = 'partner';
     const TAX_FR_ADDITIONAL_CONTRIBUTIONS      = 'tax_fr_contributions_additionnelles';
-    const TAX_FR_CRDS                          = 'tax_crds';
+    const TAX_FR_CRDS                          = 'tax_fr_crds';
     const TAX_FR_CSG                           = 'tax_fr_csg';
     const TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE = 'tax_fr_retenues_a_la_source';
     const TAX_FR_SOCIAL_DEDUCTIONS             = 'tax_fr_prelevements_sociaux';

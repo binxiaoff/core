@@ -52,6 +52,7 @@ var Templating = require('Templating')
 var UserNotifications = require('UserNotifications')
 var UserNotificationsList = require('UserNotificationsList')
 var UserNotificationsDrop = require('UserNotificationsDrop')
+var ProjectNotifications = require('./app/components/ProjectNotifications')
 var AutoComplete = require('AutoComplete')
 var WatchScroll = require('WatchScroll')
 var TextCount = require('TextCount')
@@ -74,7 +75,7 @@ var ModalTOS = require('./app/components/ModalTOS')
 var CookieCheck = require('./app/components/Cookies')
 var BidsDetail = require('./app/components/BidsDetail')
 var ProgressBar = require('ProgressBar')
-
+var Paginate = require('./app/components/Paginate')
 // @debug
 // CacheData.clearAll()
 

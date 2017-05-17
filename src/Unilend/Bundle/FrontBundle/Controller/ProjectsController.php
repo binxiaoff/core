@@ -313,7 +313,6 @@ class ProjectsController extends Controller
             'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
             'finance'              => $isFullyConnectedUser,
-            'history'              => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
             'canBid'               => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
             'warningLending'       => true,
             'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
@@ -489,9 +488,9 @@ class ProjectsController extends Controller
                         if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
                             $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
                         }
-                        $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
-                        $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
-                        $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
+                        $currencyFormatter = $this->get('currency_formatter');
+                        $amountRest        = $currencyFormatter->formatCurrency($amountRest, 'EUR');
+                        $amountMax         = $currencyFormatter->formatCurrency($amountMax, 'EUR');
 
                         $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0,['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
                     }
@@ -868,10 +867,11 @@ class ProjectsController extends Controller
      */
     public function preCheckBidAction($projectSlug, $amount, $rate, Request $request)
     {
-        $entityManager  = $this->get('unilend.service.entity_manager');
-        $cipManager     = $this->get('unilend.service.cip_manager');
-        $translator     = $this->get('translator');
-        $productManager = $this->get('unilend.service_product.product_manager');
+        $entityManager     = $this->get('unilend.service.entity_manager');
+        $cipManager        = $this->get('unilend.service.cip_manager');
+        $translator        = $this->get('translator');
+        $productManager    = $this->get('unilend.service_product.product_manager');
+        $currencyFormatter = $this->get('currency_formatter');
 
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
@@ -889,7 +889,6 @@ class ProjectsController extends Controller
         $amountMin = (int) trim($settings->value);
 
         if ($amount < $amountMin) {
-            $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
             $amountMin = $currencyFormatter->formatCurrency($amountMin, 'EUR');
             return new JsonResponse([
                 'error'   => true,
@@ -946,7 +945,6 @@ class ProjectsController extends Controller
                 if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
                     $amountRest = $productManager->getAmountLenderCanStillBid($lender, $project);
                 }
-                $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
                 $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
                 $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
 

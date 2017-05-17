@@ -3,6 +3,7 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 
 class pdfController extends bootstrap
 {
@@ -151,24 +152,6 @@ class pdfController extends bootstrap
         }
     }
 
-    public function _mandat_preteur()
-    {
-        if ($this->clients->get($this->params[0], 'hash')) {
-            $sFile          = $this->path . 'protected/pdf/mandat/mandat_preteur-' . $this->params[0] . '.pdf';
-            $sNamePdfClient = 'MANDAT-UNILEND-' . $this->clients->id_client;
-
-            if (false === file_exists($sFile)) {
-                $this->GenerateWarrantyHtml();
-                $this->WritePdf($sFile, 'warranty');
-            }
-
-            $this->ReadPdf($sFile, $sNamePdfClient);
-        } else {
-            header('Location: ' . $this->lurl);
-            die;
-        }
-    }
-
     // mandat emprunteur
     public function _mandat()
     {
@@ -184,7 +167,6 @@ class pdfController extends bootstrap
         $company = $this->loadData('companies');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-
         if (
             $this->clients->get($this->params[0], 'hash')
             && $project->get($this->params[1], 'id_project')
@@ -192,16 +174,11 @@ class pdfController extends bootstrap
             && $project->id_company == $company->id_company
             && $project->status != \projects_status::PRET_REFUSE
         ) {
-            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
-            if (null === $bankAccount) {
-                header('Location: ' . $this->lurl);
-                die;
-            }
             $path            = $this->path . 'protected/pdf/mandat/';
             $namePDFClient   = 'MANDAT-UNILEND-' . $project->slug . '-' . $this->clients->id_client;
             $mandates        = $this->loadData('clients_mandats');
             $projectMandates = $mandates->select(
-                'id_project = ' . $project->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . \clients_mandats::STATUS_PENDING . ',' . \clients_mandats::STATUS_SIGNED . ')',
+                'id_project = ' . $project->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . UniversignEntityInterface::STATUS_PENDING . ',' . UniversignEntityInterface::STATUS_SIGNED . ')',
                 'id_mandat DESC'
             );
 
@@ -210,32 +187,37 @@ class pdfController extends bootstrap
 
                 foreach ($projectMandates as $mandateToArchive) {
                     $mandates->get($mandateToArchive['id_mandat']);
-                    $mandates->status = \clients_mandats::STATUS_ARCHIVED;
+                    $mandates->status = UniversignEntityInterface::STATUS_ARCHIVED;
                     $mandates->update();
                 }
 
-                if (\clients_mandats::STATUS_SIGNED == $mandate['status']) {
+                if (UniversignEntityInterface::STATUS_SIGNED == $mandate['status']) {
                     $this->ReadPdf($path . $mandate['name'], $namePDFClient);
                     die;
-                } elseif (\clients_mandats::STATUS_CANCELED == $mandate['status']) {
+                } elseif (UniversignEntityInterface::STATUS_CANCELED == $mandate['status']) {
                     header('Location: ' . $this->lurl . '/espace_emprunteur/operations');
                     die;
                 }
 
                 $mandates->get($mandate['id_mandat']);
             } else {
+                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
+                if (null === $bankAccount) {
+                    header('Location: ' . $this->lurl);
+                    die;
+                }
                 $mandates->id_client  = $this->clients->id_client;
                 $mandates->url_pdf    = '/pdf/mandat/' . $this->params[0] . '/' . $this->params[1];
                 $mandates->name       = 'mandat-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
                 $mandates->id_project = $project->id_project;
-                $mandates->status     = \clients_mandats::STATUS_PENDING;
+                $mandates->status     = UniversignEntityInterface::STATUS_PENDING;
                 $mandates->iban       = $bankAccount->getIban();
                 $mandates->bic        = $bankAccount->getBic();
                 $mandates->create();
             }
 
             if (false === file_exists($path . $mandates->name)) {
-                $this->GenerateWarrantyHtml();
+                $this->GenerateWarrantyHtml($mandates);
                 $this->WritePdf($path . $mandates->name, 'warranty');
             }
 
@@ -247,12 +229,10 @@ class pdfController extends bootstrap
         }
     }
 
-    private function GenerateWarrantyHtml()
+    private function GenerateWarrantyHtml($mandates)
     {
         $this->pays             = $this->loadData('pays');
         $this->oLendersAccounts = $this->loadData('lenders_accounts');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
         $this->pays->get($this->clients->id_langue, 'id_langue');
@@ -262,13 +242,9 @@ class pdfController extends bootstrap
         } else {
             $this->entreprise = false;
         }
-        $this->iban  = '';
-        $this->bic   = '';
-        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
-        if ($bankAccount) {
-            $this->iban = $bankAccount->getIban();
-            $this->bic  = $bankAccount->getBic();
-        }
+
+        $this->iban  = $mandates->iban;
+        $this->bic   = $mandates->bic;
 
         // pour savoir si Preteur ou emprunteur
         if (isset($this->params[1]) && $this->projects->get($this->params[1], 'id_project')) {
@@ -335,7 +311,7 @@ class pdfController extends bootstrap
 
                 if (false === is_null($projectPouvoirToTreat)) {
                     $this->oProjectsPouvoir->get($projectPouvoirToTreat['id_pouvoir'], 'id_pouvoir');
-                    if ($this->oProjectsPouvoir->status == \projects_pouvoir::STATUS_CANCELLED) {
+                    if ($this->oProjectsPouvoir->status == UniversignEntityInterface::STATUS_CANCELED) {
                         header('Location: ' . $this->lurl . '/espace_emprunteur/operations');
                         die;
                     }
@@ -346,7 +322,7 @@ class pdfController extends bootstrap
                         die;
                     }
 
-                    $signed        = $projectPouvoirToTreat['status'] == \projects_pouvoir::STATUS_SIGNED;
+                    $signed        = $projectPouvoirToTreat['status'] == UniversignEntityInterface::STATUS_SIGNED;
                     $instantCreate = false;
 
                     if (false === file_exists($path . $projectPouvoirToTreat['name'])) {
@@ -411,7 +387,7 @@ class pdfController extends bootstrap
             }
 
             // and if it's signed
-            if (in_array($oProjectCgv->status, array(project_cgv::STATUS_SIGN_FO, project_cgv::STATUS_SIGN_UNIVERSIGN)) && file_exists($path . $oProjectCgv->name)) {
+            if ($oProjectCgv->status == UniversignEntityInterface::STATUS_SIGNED && file_exists($path . $oProjectCgv->name)) {
                 $this->ReadPdf($path . $oProjectCgv->name, $sNamePdfClient);
                 return;
             }
@@ -815,7 +791,7 @@ class pdfController extends bootstrap
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        $aInvoices = $this->factures->select('type_commission = ' . \factures::TYPE_COMMISSION_FINANCEMENT . ' AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
+        $aInvoices = $this->factures->select('type_commission = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS . ' AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
 
         if (empty($aInvoices)) {
             header('Location: ' . $this->lurl);
@@ -879,7 +855,7 @@ class pdfController extends bootstrap
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        $aInvoices = $this->factures->select('ordre = ' . $iOrdre . ' AND  type_commission = ' . \factures::TYPE_COMMISSION_REMBOURSEMENT . ' AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
+        $aInvoices = $this->factures->select('ordre = ' . $iOrdre . ' AND  type_commission = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_REPAYMENT . ' AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
 
         if (empty($aInvoices)) {
             header('Location: ' . $this->lurl);
