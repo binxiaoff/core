@@ -5,6 +5,7 @@
 
 var $ = require('jquery')
 var Utility = require('Utility')
+var Templating = require('Templating')
 
 // Partner Prospects Table
 $doc
@@ -27,6 +28,19 @@ $doc
         var action = $(this).data('action')
         var $modal = $('#modal-partner-project-' + action)
         var $form = $modal.find('form')
+
+        if (action === 'tos') {
+            var tos = Utility.convertStringToJson($project.data('details-tos'))
+            var tosHtml = ''
+            $.each(tos, function (i, item) {
+                tosHtml += Templating.replace('<tr>\
+                    <td>{{ date }}</td>\
+                </tr>', {
+                    date: item.date,
+                })
+            })
+            $form.find('table tbody').html(tosHtml)
+        }
 
         $form.find('[name="hash"]').val($project.data('hash'))
         $modal.uiModal('open')
