@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
 
@@ -123,5 +124,23 @@ class EcheanciersRepository extends EntityRepository
             $qb->setMaxResults($limit);
         }
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param Loans|integer $loan
+     *
+     * @return float
+     */
+    public function getEarlyRepaidCapitalByLoan($loan)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+
+        $queryBuilder->select('ROUND(SUM(e.capitalRembourse) / 100, 2)')
+            ->where('e.idLoan = :loan')
+            ->andWhere('e.statusRa = :earlyRepaid')
+            ->setParameter('loan', $loan)
+            ->setParameter('earlyRepaid', Echeanciers::IS_EARLY_REPAID);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

@@ -16,8 +16,8 @@ class Echeanciers
     const STATUS_PENDING                  = 0;
     const STATUS_REPAID                   = 1;
     const STATUS_PARTIALLY_REPAID         = 2;
-    const IS_NOT_EARLY_REFUND             = 0;
-    const IS_EARLY_REFUND                 = 1;
+    const IS_NOT_EARLY_REPAID             = 0;
+    const IS_EARLY_REPAID                 = 1;
     const STATUS_REPAYMENT_EMAIL_NOT_SENT = 0;
     const STATUS_REPAYMENT_EMAIL_SENT     = 1;
 
@@ -172,7 +172,6 @@ class Echeanciers
      * })
      */
     private $idLender;
-
 
     /**
      * Set idProject

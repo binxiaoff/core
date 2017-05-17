@@ -4,8 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -72,36 +71,22 @@ class LoanManager
     }
 
     /**
-     * @param \loans $loan
+     * @param \loans|Loans $loan
      *
-     * @return Clients
+     * @return Clients|null
      */
-    public function getFormerOwner(\loans $loan)
+    public function getFormerOwner($loan)
     {
-        /** @var \loan_transfer $loanTransfer */
-        $loanTransfer = $this->entityManagerSimulator->getRepository('loan_transfer');
-        $loanTransfer->get($loan->id_transfer);
+        if ($loan instanceof \loans) {
+            $loan = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($loan->id_loan);
+        }
 
-        /** @var \transfer $transfer */
-        $transfer = $this->entityManagerSimulator->getRepository('transfer');
-        $transfer->get($loanTransfer->id_transfer);
+        $loanTransfer = $loan->getIdTransfer();
+        if ($loanTransfer) {
+            return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($loanTransfer->getIdTransfer()->getClientOrigin());
+        }
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($transfer->id_client_origin);
-    }
-
-    /**
-     * @param \loans $loan
-     *
-     * @return \DateTime
-     */
-    public function getLoanTransferDate(\loans $loan)
-    {
-        /** @var \loan_transfer $loanTransfer */
-        $loanTransfer = $this->entityManagerSimulator->getRepository('loan_transfer');
-        $loanTransfer->get($loan->id_transfer);
-
-        $transferDate = new \DateTime($loanTransfer->added);
-        return $transferDate;
+        return null;
     }
 
     /**

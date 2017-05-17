@@ -1047,7 +1047,6 @@ class preteursController extends bootstrap
         $this->loans            = $this->loadData('loans');
         $this->projects         = $this->loadData('projects');
         $this->echeanciers      = $this->loadData('echeanciers');
-        $this->tax              = $this->loadData('tax');
         /** @var underlying_contract contract */
         $this->contract = $this->loadData('underlying_contract');
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */

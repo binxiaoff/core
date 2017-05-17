@@ -1563,14 +1563,12 @@ class MailerManager
                                 <br/><br/>
                                 Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $oTransaction->id_loan_remb])) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($wallet->getId(), $oProject->id_project), 1) . " %.</span><br/><br/> ";
                         } else {
-                            /** @var \tax $tax */
-                            $tax = $this->entityManagerSimulator->getRepository('tax');
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
                             $fRepaymentCapital              = bcdiv($oLenderRepayment->capital_rembourse, 100, 2);
                             $fRepaymentInterestsTaxIncluded = bcdiv($oLenderRepayment->interets_rembourses, 100, 2);
                             if (false == empty($oLenderRepayment->id_echeancier)) {
-                                $fRepaymentTax = bcdiv($tax->getAmountByRepaymentId($oLenderRepayment->id_echeancier), 100, 2);
+                                $fRepaymentTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTaxAmountByRepaymentScheduleId($oLenderRepayment->id_echeancier);
                             } else {
                                 $fRepaymentTax = 0;
                             }

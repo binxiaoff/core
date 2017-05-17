@@ -2046,34 +2046,30 @@ class dossiersController extends bootstrap
 
     public function _detail_echeance_preteur()
     {
-        $this->clients                 = $this->loadData('clients');
-        $this->loans                   = $this->loadData('loans');
-        $this->echeanciers             = $this->loadData('echeanciers');
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->receptions              = $this->loadData('receptions');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository walletRepository */
-        $this->walletRepository        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-
-        /** @var \loans loan */
-        $this->loan = $this->loadData('loans');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var NumberFormatter numberFormatter */
+        $this->numberFormatter = $this->get('number_formatter');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
         $this->loanManager = $this->get('unilend.service.loan_manager');
-        $this->loan->get($this->params[1]);
 
-        $this->lRemb = $this->echeanciers->getRepaymentWithTaxDetails($this->params[1]);
+        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $this->walletRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $this->operationRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
+        $this->loan    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
+        $this->client  = $this->loan->getIdLender()->getIdClient();
+        $this->lRemb   = $repaymentScheduleRepository->findBy(['idLoan' =>$this->loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
 
         // on check si on est en remb anticipé
         // ON recup la date de statut remb
-        $dernierStatut = $this->projects_status_history->select('id_project = ' . $this->params[0], 'added DESC, id_project_status_history DESC', 0, 1);
+        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
 
-        $this->projects_status->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
         $this->montant_ra = 0;
 
-        if (true === isset($dernierStatut[0]['id_project_status']) && $dernierStatut[0]['id_project_status'] == $this->projects_status->id_project_status) {
-            $this->montant_ra = $this->echeanciers->getEarlyRepaidCapital(array('id_loan' => $this->params[1]));
-            $this->date_ra    = $dernierStatut[0]['added'];
+        if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
+            $this->montant_ra = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($this->loan);
+            $this->date_ra    = $repaymentScheduleRepository->findOneBy(['idLoan' => $this->loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
         }
     }
 

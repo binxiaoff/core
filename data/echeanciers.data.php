@@ -216,15 +216,6 @@ class echeanciers extends echeanciers_crud
      * @param array $selector
      * @return string
      */
-    public function getEarlyRepaidCapital(array $selector)
-    {
-        return $this->getPartialSum('capital_rembourse', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID), 1);
-    }
-
-    /**
-     * @param array $selector
-     * @return string
-     */
     public function getRepaidInterests(array $selector)
     {
         return $this->getPartialSum('interets_rembourses', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID), 0);
@@ -675,31 +666,6 @@ class echeanciers extends echeanciers_crud
         );
 
         return $this->bdd->fetch_assoc($resultat);
-    }
-
-    /**
-     * @param int $iLoanId
-     * @param int $iAnticipatedRepaymentStatus
-     * @param string $sOrder
-     * @return array
-     */
-    public function getRepaymentWithTaxDetails($iLoanId, $iAnticipatedRepaymentStatus = 0, $sOrder = 'e.ordre ASC')
-    {
-        $sql = '
-            SELECT e.*, SUM(IFNULL(tax.amount, 0)) AS tax
-            FROM echeanciers e
-                LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                LEFT JOIN tax ON t.id_transaction = tax.id_transaction
-            WHERE e.id_loan = ' . $iLoanId . ' AND e.status_ra = ' . $iAnticipatedRepaymentStatus . '
-            GROUP BY e.id_echeancier
-            ORDER BY ' . $sOrder;
-
-        $result  = $this->bdd->query($sql);
-        $aReturn = array();
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aReturn[] = $record;
-        }
-        return $aReturn;
     }
 
     /**
