@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Doctrine\ORM\EntityManager;
+use Knp\Snappy\GeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -468,65 +469,55 @@ class BorrowerAccountController extends Controller
 
     /**
      * @param Request $request
+     *
      * @return StreamedResponse
      */
     private function operationsPrint(Request $request)
     {
-        $client              = $this->getClient();
-        $projectsPostFunding = $this->getProjectsPostFunding();
-        $projectsIds         = array_column($projectsPostFunding, 'id_project');
-
         $filter    = $request->query->get('filter');
         if (
             false === isset($filter['start'], $filter['end'], $filter['op'])
             && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['start'])
             && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['end'])
         ) {
-            throw new RouteNotFoundException('Invalid operation CSV export parameters');
+            throw new RouteNotFoundException('Invalid operation PDF export parameters');
         }
 
-        $start     = \DateTime::createFromFormat('d/m/Y', $filter['start']);
-        $end       = \DateTime::createFromFormat('d/m/Y', $filter['end']);
-        $operation = filter_var($filter['op'], FILTER_SANITIZE_STRING);
+        $start               = \DateTime::createFromFormat('d/m/Y', $filter['start']);
+        $end                 = \DateTime::createFromFormat('d/m/Y', $filter['end']);
+        $operation           = filter_var($filter['op'], FILTER_SANITIZE_STRING);
+        $projectsPostFunding = $this->getProjectsPostFunding();
+        $projectsIds         = array_column($projectsPostFunding, 'id_project');
 
         if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
             $projectsIds = [$filter['project']];
         }
 
-        $rootDir = $this->get('kernel')->getRootDir() . '/..';
+        $entityManager       = $this->get('doctrine.orm.entity_manager');
+        $client              = $this->getClient();
+        $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::BORROWER);
+        $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()->getIdClient()]);
 
-        include $rootDir . '/apps/default/bootstrap.php';
-        include $rootDir . '/apps/default/controllers/pdf.php';
+        $fileName            = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
+        $borrowerOperations  = $this->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
 
-        $pdfCommand    = new \Command('pdf', 'setDisplay', 'fr');
-        $pdfController = new \pdfController($pdfCommand, 'default', $request);
-        $pdfController->setContainer($this->container);
-        $pdfController->initialize();
+        $pdfContent = $this->renderView('pdf/borrower_operations.html.twig', [
+            'operations'        => $borrowerOperations,
+            'client'            => $wallet->getIdClient(),
+            'company'           => $company,
+            'available_balance' => $wallet->getAvailableBalance()
+        ]);
 
-        $fileName = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
-        $fullPath = $rootDir . '/protected/operations_export_pdf/' . $client->id_client . '/' . $fileName;
+        /** @var GeneratorInterface $snappy */
+        $snappy = $this->get('knp_snappy.pdf');
 
-        $translator = $this->get('translator');
-
-        $pdfController->translator          = $translator;
-        $pdfController->aBorrowerOperations = $this->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
-        $pdfController->companies = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        $pdfController->companies->get($client->id_client, 'id_client_owner');
-        $pdfController->setDisplay('operations_emprunteur_pdf_html');
-        $pdfController->WritePdf($fullPath, 'operations');
-
-        $response = new StreamedResponse();
-        $response->setCallback(function () use ($fullPath) {
-            $handle = fopen('php://output', 'w+');
-            readfile($fullPath);
-            fclose($handle);
-        });
-
-        $response->setStatusCode(200);
-        $response->headers->set('Content-Type', 'application/force-download');
-        $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileName . '"');
-
-        return $response;
+        return new Response(
+            $snappy->getOutputFromHtml($pdfContent),
+            200, [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName)
+            ]
+        );
     }
 
     /**
@@ -876,11 +867,11 @@ class BorrowerAccountController extends Controller
         /** @var WalletBalanceHistoryRepository $walletBalanceHistoryRepository */
         $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
         /** @var OperationRepository $operationRepository */
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $walletHistory                  = $walletBalanceHistoryRepository->getBorrowerWalletOperations($wallet, $start, $end, $projectsIds);
-        $borrowerOperations             = [];
-        $lenderRepayment                = [];
-        $recoveryCommissionKeys         = array_keys(array_column($walletHistory, 'label'), OperationType::COLLECTION_COMMISSION_PROVISION);
+        $operationRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $walletHistory          = $walletBalanceHistoryRepository->getBorrowerWalletOperations($wallet, $start, $end, $projectsIds);
+        $borrowerOperations     = [];
+        $lenderRepayment        = [];
+        $recoveryCommissionKeys = array_keys(array_column($walletHistory, 'label'), OperationType::COLLECTION_COMMISSION_PROVISION);
 
         foreach ($walletHistory as $index => $operation){
             if (

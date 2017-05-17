@@ -1,0 +1,103 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block cssFiles %}
+    {{ parent() }}
+    <style>
+
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-6 col-lg-6">
+            <p>
+                <b>Unilend – Société Française pour le financement des PME</b><br/>
+                6 Rue du général Clergerie<br/>
+                75116 Paris
+            </p>
+        </div>
+        <div class="col-md-6 col-lg-6">
+            <p class="text-align-right">
+                <b>{% trans with {'%date%' : 'now'|date('d/m/Y')} %}borrower-operation_pdf-location-date{% endtrans %}</b><br/>
+                <b>{{ company.name }}</b><br/>
+                {{ company.adresse1 }} <br/>
+                {{ company.zip }} {{ company.city }}
+            </p>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 col-lg-8">
+            <p>
+                <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with { '%idClient%' : client.idClient } %}borrower-operation_pdf-subject-line{% endtrans %}</b><br/>
+                {% trans %} borrower-operation_pdf-owner-line{% endtrans %} {{ company.name }} <br/>
+                <b>{% trans %} borrower-operation_pdf-company-representative {% endtrans %}{{ client.civilite }} {{ client.prenom }} {{ client.nom }}</b><br/>
+            </p>
+        </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th class="table-column table-myoperations-borrower-item-type">
+                <span class="label" title="{{ 'borrower-operation_operation'|trans|e('html_attr') }}">{% trans %} borrower-operation_operation {% endtrans %}</span>
+            </th>
+            <th class="table-column table-myoperations-borrower-item-project">
+                <span class="label" title="{{ 'borrower-operation_project'|trans|e('html_attr') }}">{% trans %} borrower-operation_project {% endtrans %}</span>
+            </th>
+            <th class="table-column table-myoperations-borrower-item-date">
+                <span class="label" title="{{ 'borrower-operation_operation-date'|trans|e('html_attr') }}">{% trans %} borrower-operation_operation-date {% endtrans %}</span>
+            </th>
+            <th class="table-column table-myoperations-borrower-item-amount">
+                <span class="label" title="{{ 'borrower-operation_amount'|trans|e('html_attr') }}">{% trans %} borrower-operation_amount {% endtrans %}</span>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for i, op in operations %}
+            {% set classAmount = op.amount > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
+            <tr id="operation-{{ i }}" class="table-myoperations-borrower-item {{ classAmount }}">
+                <td class="table-myoperations-borrower-item-type">{{ ('borrower-operation_' ~ op.label)|trans }}</td>
+                <td class="table-myoperations-borrower-item-project">{{ op.idProject }}</td>
+                <td class="table-myoperations-borrower-item-date">{{ op.date|localizeddate('short', 'none') }}</td>
+                <td class="table-myoperations-borrower-item-amount">{{ op.amount|localizedcurrency('EUR') }}</td>
+            </tr>
+            {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %}
+                <tr>
+                    <td colspan="3">
+                        <dl>
+                            <dt>{% trans %}borrower-operation_commission-excl-tax{% endtrans %}</dt>
+                            <dd><span class="ui-value-positive">{{ op.netCommission|localizedcurrency('EUR') }}</span></dd>
+                            <dt>{% trans %}borrower-operation_vat{% endtrans %}</dt>
+                            <dd><span class="ui-value-positive">{{ op.vat|localizedcurrency('EUR') }}</span></dd>
+                        </dl>
+                    </td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+        <tr class="tfooter">
+            <td class="tf tf-label" colspan="3">
+                {% trans %}lender-operations_pdf-balance{% endtrans %}
+            </td>
+            <td class="tf tf-date text-aling-left" colspan="2">
+                {{ 'NOW'|date('d/m/Y') }}
+            </td>
+            <td class="tf tf-amount text-aling-left">
+                {{ available_balance|localizedcurrency('EUR') }}
+            </td>
+        </tr>
+    </table>
+    <div class="footer">
+        <p class="small">
+            {% trans %} lender-operations_pdf-unilend-description {% endtrans %}
+        </p>
+        <p class="small">
+            {% trans %} lender-operations_pdf-spfmei-description {% endtrans %}
+        </p>
+    </div>
+{% endblock %}
