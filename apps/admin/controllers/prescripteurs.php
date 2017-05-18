@@ -8,7 +8,7 @@ class prescripteursController extends bootstrap
 
         $this->catchAll = true;
 
-        // Controle d'acces Ã  la rubrique
+        // Controle d'acces à la rubrique
         $this->users->checkAccess('emprunteurs');
 
         // Activation du menu
@@ -116,7 +116,7 @@ class prescripteursController extends bootstrap
     {
         $this->hideDecoration();
 
-        if (isset($_POST['send_add_prescripteur'])) {
+        if (false === empty($_POST)) {
             $this->autoFireView = false;
 
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);

@@ -52,8 +52,8 @@
                 <?php endif; ?>
                 <tr>
                     <td colspan="2">
-                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" style="white-space: nowrap;" class="btn_link">Générer un nouveau mot de passe</a>
-                        <input type="submit" value="Valider" title="Valider" name="send_users" id="send_users" class="btn" style="float: right" />
+                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" class="btn-default">Générer un nouveau mot de passe</a>
+                        <button type="submit" class="btn-primary">Valider</button>
                         <input type="hidden" name="form_mod_users" id="form_mod_users"/>
                     </td>
                 </tr>

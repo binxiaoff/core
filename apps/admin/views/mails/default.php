@@ -8,8 +8,14 @@
     });
 </script>
 <div id="contenu">
-    <h1>Liste des emails du site</h1>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/mails/add" class="btn_link" title="Ajouter un email">Ajouter un email</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Liste des emails du site</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/mails/add" class="btn-primary pull-right">Ajouter un email</a>
+        </div>
+    </div>
     <?php if (count($this->lMails) > 0) : ?>
         <table class="tablesorter">
             <thead>

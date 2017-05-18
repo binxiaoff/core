@@ -8,9 +8,13 @@
     });
 </script>
 <div id="contenu">
-    <h1>Historiques des connexions à la partie d'administration du site</h1>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/users/export_logs" class="btn_link">Export</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Historiques des connexions à la partie d'administration du site</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/users/export_logs" class="btn-primary pull-right thickbox">Export</a>
+        </div>
     </div>
     <?php if (count($this->L_Recuperation_logs) > 0) : ?>
         <table class="tablesorter">

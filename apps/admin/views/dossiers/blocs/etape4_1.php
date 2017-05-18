@@ -540,9 +540,7 @@
             </table>
             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                 <div id="valid_etape4_1" class="valid_etape"><br>Données sauvegardées</div>
-                <div class="btnDroite">
-                    <input type="submit" class="btn_link" value="Sauvegarder">
-                </div>
+                <button type="submit" class="btn-primary pull-right">Sauvegarder</button>
                 <br>
             <?php endif; ?>
             <h2>Capital restant dû à date : <?= $this->ficelle->formatNumber($this->fCompanyOwedCapital) ?> €</h2>

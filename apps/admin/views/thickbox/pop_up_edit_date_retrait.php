@@ -35,7 +35,7 @@
                     </td>
                     <td>
                         <input type="hidden" name="send_form_date_retrait">
-                        <input type="submit" name="modifier" value="Valider" class="btn">
+                        <button type="submit" class="btn-primary">Valider</button>
                     </td>
                 </tr>
             </table>

@@ -36,7 +36,7 @@
                         <td><input type="hidden" id="id_project" name="id_project" value="<?= $this->params[0] ?>"/></td>
                     </tr>
                 </table>
-                <input type="submit" value="Sélectionner" name="valider_search_prescripteur" style="float:right" class="btn">
+                <button type="submit" class="btn-primary">Sélectionner</button>
             </form>
         <?php endif; ?>
         <div class="clear"></div>

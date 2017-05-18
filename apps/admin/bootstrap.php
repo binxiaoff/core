@@ -181,6 +181,7 @@ class bootstrap extends Controller
         $this->loadJs('admin/ajax');
         $this->loadJs('admin/main');
 
+        $this->loadCss('admin/bootstrap');
         $this->loadCss('../scripts/admin/freeow/freeow');
         $this->loadCss('../scripts/admin/external/jquery/plugin/colorbox/colorbox');
         $this->loadCss('../scripts/admin/treeview/jquery.treeview');
