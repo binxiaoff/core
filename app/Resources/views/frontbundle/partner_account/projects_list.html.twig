@@ -5,16 +5,6 @@
     classNames: 'partner-account'
 } %}
 
-{% set projectTosDates = [
-{
-    date: 'May 17, 2017 11:16'
-},
-{
-    date: 'May 16, 2017 10:16'
-}
-] %}
-
-
 {% block dashboardContent %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
@@ -147,7 +137,7 @@
                                             <tr id="project-{{ project.id }}" class="table-projects-item{% if loop.index is divisibleby(2) %} even{% else %} odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
                                                 data-hash="{{ project.hash }}"
                                                 data-details="{{ project.memos|json_encode|escape('html_attr') }}"
-                                                data-details-tos="{{ projectTosDates|json_encode|escape('html_attr') }}"
+                                                data-details-tos="{{ project.tos|json_encode|escape('html_attr') }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
@@ -394,22 +384,18 @@
         <form action="{{ path('partner_project_tos') }}" method="post">
             <input type="hidden" name="hash" value>
             <div class="modal-body text-align-center">
-                {% if projectTosDates|length > 0 %}
-                    <h3>{% trans %} partner-project-list_popup-project-tos-title {% endtrans %}</h3>
-                    <div class="overflow-wrap overflow-vertical">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th><span class="c-t3"></span>{% trans %} partner-project-list_popup-project-tos-table-heading {% endtrans %}</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        <p>{% trans %} partner-project-list_popup-project-tos-message {% endtrans %}</p>
-                    </div>
-                {% else %}
+                <h3>{% trans %} partner-project-list_popup-project-tos-title {% endtrans %}</h3>
+                <div class="overflow-wrap overflow-vertical">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th><span class="c-t3"></span>{% trans %} partner-project-list_popup-project-tos-table-heading {% endtrans %}</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                     <p>{% trans %} partner-project-list_popup-project-tos-message {% endtrans %}</p>
-                {% endif %}
+                </div>
                 <p class="ui-ajax-feedback-message c-success">{% trans %} partner-project-list_popup-project-tos-message-success {% endtrans %}</p>
                 <p class="ui-ajax-feedback-message c-error">{% trans %} partner-project-list_popup-project-tos-message-error {% endtrans %}</p>
             </div>

@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -13,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 
 class ProjectsListController extends Controller
@@ -46,7 +48,7 @@ class ProjectsListController extends Controller
     }
 
     /**
-     * @Route("partenaire/emprunteurs", name="partner_project_tos")
+     * @Route("partenaire/emprunteurs", name="partner_project_tos", condition="request.isXmlHttpRequest()")
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER')")
      *
@@ -62,18 +64,51 @@ class ProjectsListController extends Controller
             return $this->redirect($request->headers->get('referer'));
         }
 
+        $translator        = $this->get('translator');
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
         $userCompanies     = $this->getUserCompanies();
 
         if (false === ($project instanceof Projects) || false === in_array($project->getIdCompanySubmitter(), $userCompanies)) {
-            return $this->redirectToRoute('partner_projects_list');
+            return new JsonResponse([
+                'error'   => true,
+                'message' => $translator->trans('partner-project-list_popup-project-tos-message-error')
+            ]);
         }
 
-        // @todo
+        try {
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->sendTermsOfSaleEmail($project);
+        } catch (\Exception $exception) {
+            switch ($exception->getCode()) {
+                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_EMAIL:
+                    return new JsonResponse([
+                        'error'   => true,
+                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-email')
+                    ]);
+                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_PHONE_NUMBER:
+                    return new JsonResponse([
+                        'error'   => true,
+                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-phone-number')
+                    ]);
+                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_PDF_FILE_NOT_FOUND:
+                    return new JsonResponse([
+                        'error'   => true,
+                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-file-not-found')
+                    ]);
+                default:
+                    return new JsonResponse([
+                        'error'   => true,
+                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error')
+                    ]);
+            }
+        }
 
-        return $this->redirectToRoute('partner_projects_list');
+        return new JsonResponse([
+            'success' => true,
+            'message' => $translator->trans('partner-project-list_popup-project-tos-message-success')
+        ]);
     }
 
     /**
@@ -121,8 +156,8 @@ class ProjectsListController extends Controller
      */
     private function formatProject(array $projects, $loadNotes, $abandoned = false)
     {
-        $display       = [];
-        $translator    = $this->get('translator');
+        $display    = [];
+        $translator = $this->get('translator');
 
         if ($abandoned) {
             $entityManager        = $this->get('doctrine.orm.entity_manager');
@@ -145,8 +180,13 @@ class ProjectsListController extends Controller
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
                 'memos'      => $loadNotes ? $this->formatNotes($project->getPublicNotes()) : [],
-                'hasChanged' => $loadNotes ? $this->hasProjectChanged($project) : false
+                'hasChanged' => $loadNotes ? $this->hasProjectChanged($project) : false,
+                'tos'        => []
             ];
+
+            if ($termsOfSale = $project->getTermOfUser()) {
+                $display[$project->getIdProject()]['tos'][] = $termsOfSale->getAdded()->format('d/m/Y');
+            }
 
             if ($abandoned) {
                 $history = $historyRepository->findOneBy([
