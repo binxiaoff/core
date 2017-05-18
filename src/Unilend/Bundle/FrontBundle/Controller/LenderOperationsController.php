@@ -12,6 +12,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
@@ -81,6 +84,11 @@ class LenderOperationsController extends Controller
      */
     public function indexAction(Request $request)
     {
+//        var_dump($this->getProjectInformation(1124));die;
+//        $projectManager = $this->get('unilend.service.project_manager');
+//        $projectInformation = $projectManager->getProjectEventsDetail(1124, 424);
+//        var_dump($projectInformation);
+//        die;
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \indexage_vos_operations $lenderOperationsIndex */
@@ -902,15 +910,8 @@ class LenderOperationsController extends Controller
     public function loadProjectNotificationsAction($projectId)
     {
         try {
-            $notificationDisplayManager   = $this->get('unilend.frontbundle.notification_display_manager');
-            $lenderNotificationsByProject = $notificationDisplayManager->getLenderNotificationsByProject($this->getUser()->getClientId(), $projectId);
-            $projectInformation           = $this->getProjectInformation($projectId);
-            $data                         = array_merge($projectInformation, $lenderNotificationsByProject);
-
-            if (false === empty($projectInformation) && false === empty($lenderNotificationsByProject)) {
-                usort($data, [$this, 'sortArrayByDate']);
-            }
-            $code = Response::HTTP_OK;
+            $data = $this->getProjectInformation($projectId);
+            $code               = Response::HTTP_OK;
         } catch (\Exception $exception) {
             $data = [];
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
@@ -932,24 +933,212 @@ class LenderOperationsController extends Controller
      */
     private function getProjectInformation($projectId)
     {
-        $entityManager        = $this->get('doctrine.orm.entity_manager');
-        $project              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-        $projectNotifications = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNotification')->findBy(['idProject' => $project], ['notificationDate' => 'DESC']);
-        $data                 = [];
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $project            = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        $projectManager     = $this->get('unilend.service.project_manager');
+        $projectInformation = $projectManager->getProjectEventsDetail($projectId, $this->getUser()->getClientId());
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
 
-        foreach ($projectNotifications as $projectNotification) {
-            $data[] = [
-                'id'       => $projectNotification->getId(),
-                'image'    => 'information',
-                'type'     => 'information',
-                'title'    => $projectNotification->getSubject(),
-                'datetime' => $projectNotification->getNotificationDate(),
-                'iso-8601' => $projectNotification->getNotificationDate()->format('c'),
-                'content'  => $projectNotification->getContent(),
-                'status'   => 'read'
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        $data       = [];
+
+        foreach ($projectInformation['projectStatus'] as $projectStatus) {
+            $titleAndContent = $this->getProjectStatusTitleAndContent($projectStatus, $project, $translator);
+            $data[]          = [
+                'id'        => 0,
+                'projectId' => $projectId,
+                'type'      => 'account',
+                'image'     => 'account',
+                'title'     => $titleAndContent['title'],
+                'content'   => $titleAndContent['content'],
+                'datetime'  => $projectStatus['added'],
+                'iso-8601'  => $projectStatus['added']->format('c'),
+                'status'    => 'read'
             ];
         }
+        foreach ($projectInformation['projectNotifications'] as $projectNotification) {
+            $data[] = [
+                'id'        => 0,
+                'projectId' => $projectNotification->getIdProject()->getIdProject(),
+                'image'     => 'information',
+                'type'      => 'account',
+                'title'     => $projectNotification->getSubject(),
+                'datetime'  => $projectNotification->getNotificationDate(),
+                'iso-8601'  => $projectNotification->getNotificationDate()->format('c'),
+                'content'   => $projectNotification->getContent(),
+                'status'    => 'read'
+            ];
+        }
+        foreach ($projectInformation['recoveryAndEarlyRepayments'] as $repayment) {
+            $titleAndContent = $this->getRepaymentTitleAndContent($repayment, $project, $translator, $ficelle);
+
+            if (empty($titleAndContent['content'])) {
+                continue;
+            }
+            $data[] = [
+                'id'        => 0,
+                'projectId' => $projectId,
+                'image'     => 'remboursement',
+                'type'      => 'remboursement',
+                'title'     => $titleAndContent['title'],
+                'content'   => $titleAndContent['content'],
+                'datetime'  => $repayment['added'],
+                'iso-8601'  => $repayment['added']->format('c'),
+                'status'    => 'read'
+            ];
+        }
+        foreach ($projectInformation['scheduledRepayments'] as $repayment) {
+            $titleAndContent = $this->getRepaymentTitleAndContent($repayment, $project, $translator, $ficelle);
+
+            if (empty($titleAndContent['content'])) {
+                continue;
+            }
+            $data[] = [
+                'id'        => 0,
+                'projectId' => $projectId,
+                'image'     => 'remboursement',
+                'type'      => 'remboursement',
+                'title'     => $titleAndContent['title'],
+                'content'   => $titleAndContent['content'],
+                'datetime'  => $repayment->getAdded(),
+                'iso-8601'  => $repayment->getAdded()->format('c'),
+                'status'    => 'read'
+            ];
+        }
+
+        if (false === empty($data)) {
+            usort($data, [$this, 'sortArrayByDate']);
+        }
         return $data;
+    }
+
+    /**
+     * @param array               $projectStatus
+     * @param Projects            $project
+     * @param TranslatorInterface $translator
+     *
+     * @return array
+     */
+    private function getProjectStatusTitleAndContent(array $projectStatus, Projects $project, TranslatorInterface $translator)
+    {
+        switch ($projectStatus['status']) {
+            case ProjectsStatus::REMBOURSE:
+                $title   = $translator->trans('lender-notifications_repaid-title');
+                $content = $translator->trans('lender-notifications_repaid-content', [
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
+                $title   = $translator->trans('lender-notifications_early-repaid-title');
+                $content = $translator->trans('lender-notifications_early-repaid-content', [
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case ProjectsStatus::PROBLEME:
+                $title   = $translator->trans('lender-notifications_late-repayment-title');
+                $content = $translator->trans('lender-notifications_late-repayment-content', [
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case ProjectsStatus::PROBLEME_J_X:
+                $title   = $translator->trans('lender-notifications_late-repayment-x-days-title');
+                $content = $translator->trans('lender-notifications_late-repayment-x-days-content', [
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case ProjectsStatus::RECOUVREMENT:
+                $title   = $translator->trans('lender-notifications_recovery-title');
+                $content = $translator->trans('lender-notifications_recovery-content', [
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
+                $title   = $translator->trans('lender-notifications_precautionary-process-title');
+                $content = $translator->trans('lender-notifications_precautionary-process-content', [
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
+                $title   = $translator->trans('lender-notifications_receivership-title');
+                $content = $translator->trans('lender-notifications_receivership-content', [
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
+                $title   = $translator->trans('lender-notifications_compulsory-liquidation-title');
+                $content = $translator->trans('lender-notifications_compulsory-liquidation-content', [
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case ProjectsStatus::DEFAUT:
+                $title   = $translator->trans('lender-notifications_company-failure-title');
+                $content = $translator->trans('lender-notifications_company-failure-content', [
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            default:
+                $title   = $projectStatus['label'];
+                $content = '';
+                break;
+        }
+        $content .= (false === empty($projectStatus['siteContent'])) ? '<br>' . $projectStatus['siteContent'] : '';
+
+        return ['title' => $title, 'content' => $content];
+    }
+
+    /**
+     * @param array|Echeanciers   $repayment
+     * @param Projects            $project
+     * @param TranslatorInterface $translator
+     * @param \ficelle            $ficelle
+     * @return array
+     */
+    private function getRepaymentTitleAndContent($repayment, Projects $project, TranslatorInterface $translator, \ficelle $ficelle)
+    {
+        if ($repayment instanceof Echeanciers) {
+            $title   = $translator->trans('lender-notifications_repayment-title');
+            $content = $translator->trans('lender-notifications_repayment-content', [
+                '%amount%'     => $ficelle->formatNumber($repayment->getMontant() / 100, 2),
+                '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                '%company%'    => $project->getIdCompany()->getName()
+            ]);
+        } else {
+            switch ($repayment['typeTransaction']) {
+                case \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT:
+                    $title   = $translator->trans('lender-notifications_early-repayment-title');
+                    $content = $translator->trans('lender-notifications_early-repayment-content', [
+                        '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
+                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                        '%company%'    => $project->getIdCompany()->getName()
+                    ]);
+                    break;
+                case \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT:
+                    $title   = $translator->trans('lender-notifications_recovery-repayment-title');
+                    $content = $translator->trans('lender-notifications_recovery-repayment-content', [
+                        '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
+                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                        '%company%'    => $project->getIdCompany()->getName()
+                    ]);
+                    break;
+                default:
+                    $title   = '';
+                    $content = '';
+                    break;
+            }
+        }
+
+        return ['title' => $title, 'content' => $content];
     }
 
     /**

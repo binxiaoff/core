@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TransactionsTypes;
@@ -66,16 +67,6 @@ class NotificationDisplayManager
     public function getLenderNotificationsByProject($clientId, $projectId, $offset = null, $length = null)
     {
         return $this->getLenderNotificationsDetail($clientId, $projectId, $offset, $length);
-    }
-
-    private function getProjectEventsDetail($clientId, $projectId)
-    {
-        $projectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
-            ->getHistoryFromGivenStatus($projectId, ProjectsStatus::REMBOURSEMENT);
-
-        $anticipatedAndEarlyRepaymentOperations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Transactions')
-            ->getLenderAnticipatedAndEarlyTransactions($projectId, $clientId);
-
     }
 
     /**
@@ -234,7 +225,7 @@ class NotificationDisplayManager
                         '%duration%'        => $project->period
                     ]);
                     break;
-                case Notifications::TYPE_PROJECT_PROBLEM:
+                case Notifications::TYPE_PROJECT_PROBLEM: //  \projects_status::PROBLEME:
                     $project->get($notification['id_project'], 'id_project');
                     $company->get($project->id_company);
 
@@ -258,7 +249,7 @@ class NotificationDisplayManager
                         '%company%'    => $company->name
                     ]);
                     break;
-                case Notifications::TYPE_PROJECT_RECOVERY:
+                case Notifications::TYPE_PROJECT_RECOVERY: // \projects_status::RECOUVREMENT
                     $project->get($notification['id_project'], 'id_project');
                     $company->get($project->id_company);
 
