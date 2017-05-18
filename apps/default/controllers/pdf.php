@@ -652,7 +652,7 @@ class pdfController extends bootstrap
 
         $fundReleasingCommissionRate = bcdiv($this->projects->commission_rate_funds, 100, 5);
 
-        $this->fCommissionProject = $fundReleasingCommissionRate * $oLoans->amount / 100 / (1 + $fVat);;
+        $this->fCommissionProject = $fundReleasingCommissionRate * $oLoans->amount / 100;
         $this->fInterestTotal     = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
         $contract->get($oLoans->id_type_contract);
