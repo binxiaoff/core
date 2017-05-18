@@ -73,6 +73,6 @@
         </div>
     </form>
     <div style="display:none;">
-        <iframe id="upload_target" name="upload_target" src="#"></iframe>
+        <iframe id="upload_target" name="upload_target" src="about:blank"></iframe>
     </div>
 </div>
