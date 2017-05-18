@@ -2,6 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -2582,121 +2583,39 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        /** @var \clients $oClients */
-        $oClients = $this->loadData('clients');
-        /** @var \projects $oProjects */
-        $oProjects = $this->loadData('projects');
-        /** @var \companies $oCompanies */
-        $oCompanies = $this->loadData('companies');
-        /** @var \project_cgv $oProjectCgv */
-        $oProjectCgv = $this->loadData('project_cgv');
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        if (false === isset($this->params[0]) || ! $oProjects->get($this->params[0], 'id_project')) {
+        if (
+            empty($this->params[0])
+            || $this->params[0] != (int) $this->params[0]
+            || null === ($project = $projectRepository->find($this->params[0]))
+        ) {
             $this->result = 'project id invalid';
             return;
         }
-        if (! $oCompanies->get($oProjects->id_company, 'id_company')) {
-            $this->result = 'company id invalid';
-            return;
-        }
-        if (! $oClients->get($oCompanies->id_client_owner, 'id_client')) {
-            $this->result = 'client id invalid';
-            return;
-        }
 
-        // @todo intl - for the moment, we use language but real value must be a country code
-        if (false === $this->ficelle->isMobilePhoneNumber($oClients->telephone, $this->language)) {
-            $this->result = 'Le numéro de téléphone du dirigeant n\'est pas un numéro de portable';
-            return;
-        }
-
-        if ($oProjectCgv->get($oProjects->id_project, 'id_project')) {
-            if (empty($oProjectCgv->id_tree)) {
-                $oSettings->get('Lien conditions generales depot dossier', 'type');
-                $iTreeId = $oSettings->value;
-
-                if (! $iTreeId) {
-                    $this->result = 'tree id invalid';
+        try {
+            /** @var ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->sendTermsOfSaleEmail($project);
+        } catch (\Exception $exception) {
+            switch ($exception->getCode()) {
+                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_EMAIL:
+                    $this->result = 'Erreur : L\'adresse mail du client est vide';
                     return;
-                }
-
-                $oProjects->id_tree = $iTreeId;
+                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_PHONE_NUMBER:
+                    $this->result = 'Le numéro de téléphone du dirigeant n\'est pas un numéro de portable';
+                    return;
+                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_PDF_FILE_NOT_FOUND:
+                    $this->result = 'file not found';
+                    return;
+                default:
+                    $this->result = $exception->getMessage();
+                    return;
             }
-
-            $sCgvLink = $this->surl . $oProjectCgv->getUrlPath();
-
-            if (empty($oProjectCgv->name)) {
-                $oProjectCgv->name = $oProjectCgv->generateFileName();
-            }
-            $oProjectCgv->update();
-        } else {
-            $oSettings->get('Lien conditions generales depot dossier', 'type');
-            $iTreeId = $oSettings->value;
-
-            if (! $iTreeId) {
-                $this->result = 'tree id invalid';
-                return;
-            }
-
-            $oProjectCgv->id_project = $oProjects->id_project;
-            $oProjectCgv->id_tree    = $iTreeId;
-            $oProjectCgv->name       = $oProjectCgv->generateFileName();
-            $oProjectCgv->status     = UniversignEntityInterface::STATUS_PENDING;
-            $oProjectCgv->create();
-
-            $sCgvLink = $this->surl . $oProjectCgv->getUrlPath();
         }
-
-        // Recuperation du pdf du tree
-        $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = ' . \elements::TYPE_PDF_CGU . ' AND id_langue = "' . $this->language . '"');
-
-        if (false === isset($elements[0]['value']) || '' == $elements[0]['value']) {
-            $this->result = 'element id invalid';
-            return;
-        }
-        $sPdfPath = $this->path . 'public/default/var/fichiers/' . $elements[0]['value'];
-
-        if (false === file_exists($sPdfPath)) {
-            $this->result = 'file not found';
-            return;
-        }
-
-        if (false === is_dir($this->path . project_cgv::BASE_PATH)) {
-            mkdir($this->path . project_cgv::BASE_PATH);
-        }
-        if (false === file_exists($this->path . project_cgv::BASE_PATH . $oProjectCgv->name)) {
-            copy($sPdfPath, $this->path . project_cgv::BASE_PATH . $oProjectCgv->name);
-        }
-
-        $oSettings->get('Facebook', 'type');
-        $facebookUrl = $oSettings->value;
-
-        $oSettings->get('Twitter', 'type');
-        $twitterUrl = $oSettings->value;
-
-        $varMail = array(
-            'surl'                 => $this->surl,
-            'url'                  => $this->furl,
-            'prenom_p'             => $oClients->prenom,
-            'lien_cgv_universign'  => $sCgvLink,
-            'lien_tw'              => $twitterUrl,
-            'lien_fb'              => $facebookUrl,
-            'commission_deblocage' => $this->ficelle->formatNumber($oProjects->commission_rate_funds, 1),
-            'commission_crd'       => $this->ficelle->formatNumber($oProjects->commission_rate_repayment, 1),
-        );
-
-        if (empty($oClients->email)) {
-            $this->result = 'Erreur : L\'adresse mail du client est vide';
-            return;
-        }
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('signature-universign-de-cgv', $varMail);
-        $message->setTo($oClients->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
 
         $this->result = 'CGV envoyées avec succès';
     }

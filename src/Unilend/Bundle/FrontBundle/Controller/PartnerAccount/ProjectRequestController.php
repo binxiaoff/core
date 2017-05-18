@@ -22,6 +22,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
+use Unilend\core\Loader;
 
 class ProjectRequestController extends Controller
 {
@@ -430,7 +431,10 @@ class ProjectRequestController extends Controller
         if (empty($request->request->get('contact')['firstname'])) {
             $errors['contact']['firstname'] = true;
         }
-        if (empty($request->request->get('contact')['mobile'])) {
+        if (
+            empty($request->request->get('contact')['mobile'])
+            || false === Loader::loadLib('ficelle')->isMobilePhoneNumber($request->request->get('contact')['mobile'])
+        ) {
             $errors['contact']['mobile'] = true;
         }
         if (empty($request->request->get('contact')['function'])) {

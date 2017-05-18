@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
@@ -1960,6 +1961,30 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('ouverture-espace-partenaire', $variables);
+        $message->setTo($client->getEmail());
+        $this->mailer->send($message);
+    }
+
+    /**
+     * @param ProjectCgv $termsOfSale
+     */
+    public function sendProjectTermsOfSale(ProjectCgv $termsOfSale)
+    {
+        $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($termsOfSale->getIdProject()->getIdCompany()->getIdClientOwner());
+        $keywords = [
+            'surl'                 => $this->sSUrl,
+            'url'                  => $this->sFUrl,
+            'prenom_p'             => $client->getPrenom(),
+            'lien_cgv_universign'  => $this->sSUrl . $termsOfSale->getUrlPath(),
+            'commission_deblocage' => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateFunds(), 1),
+            'commission_crd'       => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateRepayment(), 1),
+            'lien_fb'              => $this->getFacebookLink(),
+            'lien_tw'              => $this->getTwitterLink(),
+            'year'                 => date('Y')
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('signature-universign-de-cgv', $keywords);
         $message->setTo($client->getEmail());
         $this->mailer->send($message);
     }

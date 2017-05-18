@@ -53,13 +53,13 @@
                                         <dd id="simulator-output-duration">{% transchoice averageFundingDuration with {'%numberDays%': averageFundingDuration} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
                                         <dt id="simulator-label-monthly-payment">{% trans %} partner-project-request_simulator-eligibility-monthly-payment-label {% endtrans %}</dt>
                                         <dd id="simulator-output-monthly-payment">{% trans with {
-                                            '%minimumMonthlyPayment%': payment.monthly.min,
-                                            '%maximumMonthlyPayment%': payment.monthly.max
+                                            '%minimumMonthlyPayment%': payment.monthly.min|localizednumberwithprecision(0),
+                                            '%maximumMonthlyPayment%': payment.monthly.max|localizednumberwithprecision(0)
                                             } %} partner-project-request_simulator-eligibility-monthly-payment-value {% endtrans %}</dd>
                                         <dt id="simulator-label-interests">{% trans %} partner-project-request_simulator-eligibility-interests-label {% endtrans %}</dt>
                                         <dd id="simulator-output-interests">{% trans with {
-                                            '%minimumInterests%': payment.interests.min,
-                                            '%maximumInterests%': payment.interests.max
+                                            '%minimumInterests%': payment.interests.min|localizednumberwithprecision(0),
+                                            '%maximumInterests%': payment.interests.max|localizednumberwithprecision(0)
                                             } %} partner-project-request_simulator-eligibility-interests-value {% endtrans %}</dd>
                                     </dl>
                                 </div>

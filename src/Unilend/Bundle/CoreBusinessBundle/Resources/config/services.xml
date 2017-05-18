@@ -87,6 +87,8 @@
             <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
             <argument type="service" id="unilend.service.slack_manager"/>
             <argument>%url.universign%</argument>
+            <argument>%kernel.default_locale%</argument>
+            <argument>%kernel.root_dir%</argument>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>

@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectCgv implements UniversignEntityInterface
 {
+    const BASE_PATH = 'protected/pdf/cgv_emprunteurs/';
+
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *

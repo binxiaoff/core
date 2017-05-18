@@ -92,7 +92,7 @@
                                         <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.mobile is defined %} ui-formvalidation-error{% endif %}">
                                             <label for="form-project-details-identity-mobile">{% trans %} common_phone {% endtrans %}</label>
                                             <div class="input-group">
-                                                <input id="form-project-details-identity-mobile" type="text" name="contact[mobile]" value="{{ form.values.contact.mobile|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone">
+                                                <input id="form-project-details-identity-mobile" type="text" name="contact[mobile]" value="{{ form.values.contact.mobile|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="mobile">
                                                 {% if form.errors.contact.mobile is defined %}
                                                     <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                 {% endif %}
