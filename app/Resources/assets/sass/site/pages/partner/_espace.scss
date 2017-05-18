@@ -238,15 +238,8 @@
     .ui-ajax-feedback-button {
       display: inline-block;
     }
-    &.success {
-      .ui-ajax-feedback-message.c-success {
-        display: block;
-      }
-    }
-    &.error {
-      .ui-ajax-feedback-message.c-error {
-        display: block;
-      }
+    .ui-ajax-feedback-message {
+      display: block;
     }
   }
 }

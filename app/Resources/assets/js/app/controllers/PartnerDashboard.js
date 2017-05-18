@@ -56,21 +56,18 @@ $doc
         event.preventDefault()
         var $form = $(this)
         var $modal = $(this).parents('[data-modal]')
-        var hash = $form.find('[name="hash"]').val()
         $.ajax({
-            url: '/tos',
+            url: $form.attr('action'),
             method: 'POST',
-            data: {
-                hash: hash,
-                action: 'tos'
-            }
+            data: $form.serialize()
         })
         .done(function (response) {
-            if (response === 'success') {
+            if (response.success) {
                 $modal.addClass('ui-ajax-feedback').addClass('success')
             } else {
                 $modal.addClass('ui-ajax-feedback').addClass('error')
             }
+            $modal.find('.ui-ajax-feedback-message').html(response.message)
             $modal.uiModal('update')
         })
         .fail(function () {
