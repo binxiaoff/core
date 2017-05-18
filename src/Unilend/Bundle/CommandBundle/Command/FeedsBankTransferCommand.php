@@ -33,8 +33,6 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $counter = $entityManagerSimulator->getRepository('compteur_transferts');
         /** @var \settings $settings */
         $settings = $entityManagerSimulator->getRepository('settings');
-        /** @var \transactions $transaction */
-        $transaction = $entityManagerSimulator->getRepository('transactions');
 
         $settings->get('Virement - BIC', 'type');
         $bic = $settings->value;
@@ -67,9 +65,9 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $counter->create();
 
         foreach ($pendingBankTransfers as $pendingBankTransfer) {
-            $transaction->get($pendingBankTransfer->getIdTransaction(), 'id_transaction');
+            $withDrawalOperation = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferOut' => $pendingBankTransfer]);
 
-            if (\DateTime::createFromFormat('Y-m-d H:i:s', $transaction->date_transaction) < new \DateTime('today')) {
+            if ($withDrawalOperation && $withDrawalOperation->getAdded() < new \DateTime('today')) {
                 $bankAccount = $pendingBankTransfer->getBankAccount();
                 $client      = $pendingBankTransfer->getClient();
                 if ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {

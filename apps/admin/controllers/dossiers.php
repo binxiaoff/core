@@ -985,8 +985,11 @@ class dossiersController extends bootstrap
 
     private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository $walletRepository */
-        $walletRepository   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager       = $this->get('doctrine.orm.entity_manager');
+        $walletRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
         $this->transactions = $this->loadData('transactions');
 
         $this->settings->get('Facebook', 'type');
@@ -1082,7 +1085,9 @@ class dossiersController extends bootstrap
                 $fLoansAmount    = $aLoans['amount'];
 
                 foreach ($this->echeanciers->select('id_loan IN (' . $aLoans['loans'] . ') AND id_project = ' . $this->projects->id_project . ' AND status = 1') as $aPayment) {
-                    $fTotalPayedBack += $this->transactions->getRepaymentTransactionsAmount($aPayment['id_echeancier']);
+                    $grossRepayment  = $operationRepository->getGrossAmountByRepaymentScheduleId($aPayment['id_echeancier']);
+                    $tax             = $operationRepository->getTaxAmountByRepaymentScheduleId($aPayment['id_echeancier']);
+                    $fTotalPayedBack += (float) bcsub($grossRepayment, $tax, 2);
                 }
 
                 $this->notifications->type       = $iNotificationType;
