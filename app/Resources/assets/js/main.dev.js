@@ -22,7 +22,6 @@ var $ = require('jquery') // Gets the global (see package.json)
 var videojs = require('videojs') // Gets the global (see package.json)
 var svg4everybody = require('svg4everybody')
 var Swiper = require('Swiper')
-var DataTable = require('./vendor/datatables/datatables.js')
 var Iban = require('iban')
 var raf = require('raf')
 var Clipboard = require('clipboard')
@@ -76,6 +75,7 @@ var CookieCheck = require('./app/components/Cookies')
 var BidsDetail = require('./app/components/BidsDetail')
 var ProgressBar = require('ProgressBar')
 var Paginate = require('./app/components/Paginate')
+var DataTable = require('./app/components/DataTable')
 // @debug
 // CacheData.clearAll()
 
@@ -122,7 +122,6 @@ require('./app/controllers/ProjectRequest')
 require('./app/controllers/Autolend')
 require('./app/controllers/ProjectDetails')
 require('./app/controllers/PartnerDashboard')
-require('./app/controllers/DataTable.js')
 
 $doc.ready(function ($) {
   // @debug

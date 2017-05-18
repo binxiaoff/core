@@ -1,7 +1,7 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
-var DataTable = require('DataTable')
+var DataTable = require('datatables.net')
 
 var DataTables = function (elem, options) {
     var self = this

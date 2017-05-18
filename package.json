@@ -32,6 +32,7 @@
     "cldr-data": "29.0.1",
     "clipboard": "1.5.10",
     "compression": "1.6.1",
+    "datatables.net": "^1.10.15",
     "deep-assign": "2.0.0",
     "del": "2.2.0",
     "express": "4.13.4",
@@ -113,8 +114,7 @@
     "vinyl-source-stream": "1.1.0",
     "vinyl-transform": "1.0.0",
     "watchify": "3.7.0",
-    "yargs": "4.3.2",
-    "datatable": "latest"
+    "yargs": "4.3.2"
   },
   "license": "MIT",
   "dependencies": {
@@ -173,8 +173,7 @@
     "gsap.TimelineLite": "./node_modules/gsap/src/uncompressed/TimelineLite.js",
     "gsap.TimelineMax": "./node_modules/gsap/src/uncompressed/TimelineMax.js",
     "gsap.CSSPlugin": "./node_modules/gsap/src/uncompressed/plugins/CSSPlugin.js",
-    "gsap.jquery": "./node_modules/gsap/src/uncompressed/jquery.gsap.js",
-    "datatable": "./app/Resources/assets/js/vendor/datatables/datatables.js"
+    "gsap.jquery": "./node_modules/gsap/src/uncompressed/jquery.gsap.js"
   },
   "browserify": {
     "transform": [
@@ -186,7 +185,6 @@
     "mapbox.js": "global:L",
     "videojs": "global:videojs",
     "Swiper": "global:Swiper",
-    "DataTable": "global:DataTable",
     "jquery-ui": {
       "depends": [
         "jquery"
