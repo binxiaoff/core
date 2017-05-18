@@ -407,12 +407,11 @@ class OperationRepository extends EntityRepository
         return $movements;
     }
 
-    public function sumMovementsForDailyStateByMonth($year, array $operationTypes)
+    public function sumMovementsForDailyStateByMonth(\DateTime $requestedDate, array $operationTypes)
     {
-        $start = new \DateTime('First day of january ' . $year);
+        $start = new \DateTime('First day of january ' . $requestedDate->format('Y'));
         $start->setTime(0,0,0);
-        $end = new \DateTime('Last day of december' . $year);
-        $end->setTime(23,59,59);
+        $requestedDate->setTime(23,59,59);
 
         $query = 'SELECT
                   MONTH(o.added) AS month,
@@ -437,7 +436,7 @@ class OperationRepository extends EntityRepository
                 ORDER BY o.added ASC;';
 
         $result = $this->getEntityManager()->getConnection()
-            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])->fetchAll(\PDO::FETCH_ASSOC);
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $requestedDate->format('Y-m-d H:i:s')])->fetchAll(\PDO::FETCH_ASSOC);
 
         $movements = [];
         foreach ($result as $row) {

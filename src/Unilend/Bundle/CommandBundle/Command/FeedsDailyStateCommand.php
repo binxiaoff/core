@@ -150,14 +150,14 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $movements = array_merge([
             OperationType::BORROWER_PROVISION,
             OperationType::BORROWER_PROVISION_CANCEL,
-            OperationType::LENDER_PROVISION,
             OperationType::BORROWER_WITHDRAW,
             OperationType::BORROWER_COMMISSION,
+            OperationType::LENDER_PROVISION,
             OperationType::LENDER_WITHDRAW,
-            OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION,
             OperationType::LENDER_LOAN,
             OperationType::CAPITAL_REPAYMENT,
             OperationType::GROSS_INTEREST_REPAYMENT,
+            OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION,
             OperationType::UNILEND_PROMOTIONAL_OPERATION,
             OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL,
             OperationType::UNILEND_LENDER_REGULARIZATION,
@@ -166,7 +166,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         ], OperationType::TAX_TYPES_FR);
 
         $dailyMovements   = $operationRepository->sumMovementsForDailyState($firstDay, $requestedDate, $movements);
-        $monthlyMovements = $operationRepository->sumMovementsForDailyStateByMonth($requestedDate->format('Y'), $movements);
+        $monthlyMovements = $operationRepository->sumMovementsForDailyStateByMonth($requestedDate, $movements);
 
         $this->addMovementLines($activeSheet, $dailyMovements, $specificRows['firstDay'], $specificRows['totalDay']);
         $this->addMovementLines($activeSheet, $monthlyMovements, $specificRows['firstMonth'], $specificRows['totalMonth']);
@@ -206,7 +206,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $wireTransfersMonth = [
             'out'         => $wireTransferOutRepository->sumWireTransferOutByMonth($requestedDate->format('Y'), Virements::STATUS_SENT),
             'unilend'     => $wireTransferOutRepository->sumWireTransferOutByMonth($requestedDate->format('Y'), Virements::STATUS_SENT, Virements::TYPE_UNILEND),
-            'taxes'       => $operationRepository->sumMovementsForDailyStateByMonth($requestedDate->format('Y'), $taxWithdrawTypes),
+            'taxes'       => $operationRepository->sumMovementsForDailyStateByMonth($requestedDate, $taxWithdrawTypes),
             'directDebit' => $directDebitRepository->sumDirectDebitByMonth($requestedDate->format('Y'))
         ];
         $this->addWireTransferLines($activeSheet, $wireTransfersMonth, $specificRows['totalMonth'], $specificRows['coordinatesMonth']);
@@ -253,23 +253,25 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows);
 
             if ($date === $requestedDate->format('Y-m-d')) {
-                $this->addBalanceLine($activeSheet, $balanceHistory, $specificRows['totalDay'], $specificRows);
+                $this->addBalanceLine($activeSheet, $balanceHistory, $specificRows['totalDay'], $specificRows, true);
             }
         }
 
-        $previousYear            = new \DateTime('Last day of december' . $requestedDate->format('Y'));
-        $previousBalanceHistory  = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $previousYear->format('Y-m-d')]);
-        //$this->addBalanceLine($activeSheet, $previousBalanceHistory, $specificRows['previousYear'], $specificRows);
-            //TODO once all data as been aded to the daily-state-balance-history, uncomment this line.
+        $previousYear = new \DateTime('Last day of december ' . $requestedDate->format('Y'));
+        $previousYear->sub(\DateInterval::createFromDateString('1 year'));
+        $previousBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $previousYear->format('Y-m-d')]);
+        $this->addBalanceLine($activeSheet, $previousBalanceHistory, $specificRows['previousYear'], $specificRows);
+
         foreach ($specificRows['coordinatesMonth'] as $month => $row) {
-            $lastDayOfMonth = \DateTime::createFromFormat('mY', $month . $requestedDate->format('Y'));
+            $lastDayOfMonth = \DateTime::createFromFormat('n-Y', $month . '-' . $requestedDate->format('Y'));
             if ($month == $requestedDate->format('n')) {
                 $balanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $requestedDate->format('Y-m-d')]);
+                $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows, true);
             } else {
                 $balanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $lastDayOfMonth->format('Y-m-t')]);
-            }
-            if (null !== $balanceHistory) {
-                $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows);
+                if (null !== $balanceHistory) {
+                    $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows);
+                }
             }
         }
     }
@@ -433,8 +435,8 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $this->formatHeader($activeSheet, $specificRows['headerStartDay']);
         $this->formatHeader($activeSheet, $specificRows['headerStartMonth']);
 
-        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalMonth'])->getFont()->setBold(true);
-        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalDay'])->getFont()->setBold(true);
+        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalMonth'] . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])->getFont()->setBold(true);
+        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalDay'] . ':' . self::LAST_COLUMN . $specificRows['totalDay'])->getFont()->setBold(true);
 
         $activeSheet->setCellValue(self::DATE_COLUMN . $specificRows['totalDay'], 'Total mois');
         $activeSheet->setCellValue(self::DATE_COLUMN . $specificRows['totalMonth'], 'Total année');
@@ -514,7 +516,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $totalPromotionOffer         = bcadd($lenderRegularization, bcadd($borrowerRegularization, bcsub($promotionalOffers, $promotionalOffersCancel, 2), 2), 2);
             $netInterest                 = bcsub($grossInterest, $totalTax, 2);
             $repaymentAssignment         = bcadd($borrowerCommissionPayment, bcadd($capitalRepayment, $grossInterest, 2), 2);
-            $fiscalDifference            = bcsub($repaymentAssignment, bcsub($borrowerCommissionPayment, bcsub($capitalRepayment, $netInterest, 2), 2), 2);
+            $fiscalDifference            = bcsub($repaymentAssignment, bcadd($borrowerCommissionPayment, bcadd($capitalRepayment, bcadd($netInterest, $totalTax, 2), 2), 2), 2);
 
             $calculatedTotals['financialMovements']    = bcadd($calculatedTotals['financialMovements'], $totalFinancialMovementsLine, 2);
             $calculatedTotals['netInterest']           = bcadd($calculatedTotals['netInterest'], $netInterest, 2);
@@ -522,7 +524,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $calculatedTotals['fiscalDifference']      = bcadd($calculatedTotals['fiscalDifference'], $fiscalDifference, 2);
             $calculatedTotals['realBorrowerProvision'] = bcadd($calculatedTotals['realBorrowerProvision'], $realBorrowerProvision, 2);
             $calculatedTotals['promotionProvision']    = bcadd($calculatedTotals['promotionProvision'], $promotionProvision, 2);
-            $calculatedTotals['promotionalOffer']      = bcadd($calculatedTotals['promotionalOffer'], $promotionalOffers, 2);
+            $calculatedTotals['promotionalOffer']      = bcadd($calculatedTotals['promotionalOffer'], $totalPromotionOffer, 2);
 
             /* Financial Movements */
             $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_CARD_COLUMN . $row, $lenderProvisionCreditCard, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
@@ -595,7 +597,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
      * @param int                      $row
      * @param array                    $specificRows
      */
-    private function addBalanceLine(\PHPExcel_Worksheet $activeSheet, DailyStateBalanceHistory $dailyBalances, $row, array $specificRows)
+    private function addBalanceLine(\PHPExcel_Worksheet $activeSheet, DailyStateBalanceHistory $dailyBalances, $row, array $specificRows, $addTotal = false)
     {
         $realBalance = bcadd($dailyBalances->getLenderBorrowerBalance(), $dailyBalances->getUnilendPromotionalBalance(), 2);
 
@@ -605,14 +607,24 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValueExplicit(self::TAX_BALANCE_COLUMN  . $row, $dailyBalances->getTaxBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
         if (false === in_array($row, [$specificRows['previousMonth'], $specificRows['previousYear']])) {
-            $previousRow                   = $row - 1;
-            $previousBalance = $activeSheet->getCell(self::BALANCE_COLUMN . $previousRow)->getValue();
-            $totalMovements                = $activeSheet->getCell(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $row)->getValue();
-            $theoreticalBalance            = bcadd($previousBalance, $totalMovements, 2);
-            $activeSheet->setCellValueExplicit(self::THEORETICAL_BALANCE_COLUMN . $row, $theoreticalBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $previousRow        = $row - 1;
+            $previousBalance    = $activeSheet->getCell(self::BALANCE_COLUMN . $previousRow)->getValue();
+            $totalMovements     = $activeSheet->getCell(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $row)->getValue();
+            $theoreticalBalance = bcadd($previousBalance, $totalMovements, 2);
+            $globalDifference   = bcsub($theoreticalBalance, $realBalance, 2);
 
-            $globalDifference = bcsub($theoreticalBalance, $realBalance, 2);
+            $activeSheet->setCellValueExplicit(self::THEORETICAL_BALANCE_COLUMN . $row, $theoreticalBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::BALANCE_DIFFERENCE_COLUMN . $row, $globalDifference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+            if ($addTotal) {
+                $totalRow = in_array($row, array_values($specificRows['coordinatesDay'])) ? $specificRows['totalDay'] : $specificRows['totalMonth'];
+                $activeSheet->setCellValueExplicit(self::BALANCE_COLUMN . $totalRow, $realBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicit(self::UNILEND_PROMOTIONAL_BALANCE_COLUMN . $totalRow, $dailyBalances->getUnilendPromotionalBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicit(self::UNILEND_BALANCE_COLUMN . $totalRow, $dailyBalances->getUnilendBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicit(self::TAX_BALANCE_COLUMN  . $totalRow, $dailyBalances->getTaxBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicit(self::THEORETICAL_BALANCE_COLUMN . $totalRow, $theoreticalBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicit(self::BALANCE_DIFFERENCE_COLUMN . $totalRow, $globalDifference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            }
         }
     }
 
