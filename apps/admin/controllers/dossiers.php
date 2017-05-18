@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsRemb;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 
 class dossiersController extends bootstrap
 {
@@ -361,10 +362,7 @@ class dossiersController extends bootstrap
                 }
             } elseif (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
                 if ($this->projects->status < \projects_status::PRET_REFUSE) {
-                    /** @var \loans $loans */
-                    $loans = $this->loadData('loans');
-                    /** @var \transactions $transactions */
-                    $transactions = $this->loadData('transactions');
+                    $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
                     /** @var \echeanciers $echeanciers */
                     $echeanciers = $this->loadData('echeanciers');
 
@@ -374,30 +372,28 @@ class dossiersController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $twitterLink = $this->settings->value;
 
-                    $lendersCount = $loans->getNbPreteurs($this->projects->id_project);
+                    $lendersCount = $loanRepository->getLendersNb($this->projects->id_project);
 
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects);
 
                     //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
                     $echeanciers->delete($this->projects->id_project, 'id_project');
 
-                    foreach ($loans->select('id_project = ' . $this->projects->id_project) as $l) {
-                        if (false === $transactions->get($l['id_loan'], 'id_loan_remb')) {
-                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-                            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($l['id_lender']);
+                    $loans = $loanRepository->findBy(['idProject' => $this->projects->id_project, 'status' => Loans::STATUS_ACCEPTED]);
+                    $entityManager->getConnection()->beginTransaction();
+                    try {
+                        foreach ($loans as $loan) {
+                            $loan->setStatus(Loans::STATUS_REJECTED);
+                            $entityManager->flush($loan);
 
-                            $loans->get($l['id_loan'], 'id_loan');
-                            $loans->status = \loans::STATUS_REJECTED;
-                            $loans->update();
-
-                            $loan = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans')->find($loans->id_loan);
                             $this->get('unilend.service.operation_manager')->refuseLoan($loan);
 
+                            $wallet  = $loan->getIdLender();
                             $varMail = [
                                 'surl'              => $this->surl,
                                 'url'               => $this->furl,
                                 'prenom_p'          => $wallet->getIdClient()->getPrenom(),
-                                'valeur_bid'        => $this->ficelle->formatNumber($l['amount'] / 100, 0),
+                                'valeur_bid'        => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
                                 'nom_entreprise'    => $this->companies->name,
                                 'nb_preteurMoinsUn' => $lendersCount - 1,
                                 'motif_virement'    => $wallet->getWireTransferPattern(),
@@ -411,6 +407,14 @@ class dossiersController extends bootstrap
                             $mailer = $this->get('mailer');
                             $mailer->send($message);
                         }
+                        $entityManager->getConnection()->commit();
+                    } catch (Exception $exception) {
+                        $entityManager->getConnection()->rollBack();
+
+                        $_SESSION['freeow']['title']   = 'Refus de prêt';
+                        $_SESSION['freeow']['message'] = 'Une erreur est survenu. Le prêt n\'a pas été refusé';
+
+                        $this->get('logger')->error('Error occurs when refuse the loans. The process has benn rollbacked. Error: ' . $exception->getMessage());
                     }
 
                     $_SESSION['freeow']['title']   = 'Refus de prêt';
@@ -990,8 +994,6 @@ class dossiersController extends bootstrap
         $walletRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        $this->transactions = $this->loadData('transactions');
-
         $this->settings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
 
@@ -1104,7 +1106,6 @@ class dossiersController extends bootstrap
                     $this->clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
                     $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM;
                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                    $this->clients_gestion_mails_notif->id_transaction  = 0;
                     $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                     $this->clients_gestion_mails_notif->id_loan         = 0;
                     $this->clients_gestion_mails_notif->immediatement   = 1;
@@ -1627,27 +1628,26 @@ class dossiersController extends bootstrap
         $companyEntity       = new Companies();
         $clientAddressEntity = new ClientsAdresses();
 
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
-        $em->beginTransaction();
-
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $entityManager->getConnection()->beginTransaction();
         try {
-            $em->persist($clientEntity);
-            $em->flush($clientEntity);
+            $entityManager->persist($clientEntity);
+            $entityManager->flush($clientEntity);
 
             $clientAddressEntity->setIdClient($clientEntity);
-            $em->persist($clientAddressEntity);
+            $entityManager->persist($clientAddressEntity);
 
             $companyEntity->setSiren($siren);
             $companyEntity->setIdClientOwner($clientEntity->getIdClient());
             $companyEntity->setStatusAdresseCorrespondance(1);
-            $em->persist($companyEntity);
-            $em->flush($companyEntity);
+            $entityManager->persist($companyEntity);
+            $entityManager->flush($companyEntity);
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
-            $em->commit();
+            $entityManager->getConnection()->commit();
         } catch (Exception $exception) {
-            $em->getConnection()->rollBack();
+            $entityManager->getConnection()->rollBack();
             $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
@@ -1727,7 +1727,6 @@ class dossiersController extends bootstrap
         $this->loans                         = $this->loadData('loans');
         $this->echeanciers                   = $this->loadData('echeanciers');
         $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
-        $this->transactions                  = $this->loadData('transactions');
         $this->notifications                 = $this->loadData('notifications');
         $this->projects_remb                 = $this->loadData('projects_remb');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
@@ -1954,7 +1953,6 @@ class dossiersController extends bootstrap
                 $this->echeanciers            = $this->loadData('echeanciers');
                 $this->receptions             = $this->loadData('receptions');
                 $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-                $this->transactions           = $this->loadData('transactions');
                 $this->clients                = $this->loadData('clients');
                 $this->mail_template          = $this->loadData('mail_templates');
                 $this->companies              = $this->loadData('companies');

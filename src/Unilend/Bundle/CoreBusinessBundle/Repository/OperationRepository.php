@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
 
@@ -283,12 +284,12 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-           ->where('ot.label IN (:taxTypes)')
-           ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
-           ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
-           ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
-           ->setCacheable(true);
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:taxTypes)')
+            ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
+            ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
+            ->setCacheable(true);
 
         return $qb->getQuery()->getSingleScalarResult();
     }
@@ -362,5 +363,96 @@ class OperationRepository extends EntityRepository
             ->setParameter('project', $project);
 
         return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    private function getcohortQuery()
+    {
+        return 'SELECT
+                  CASE LEFT(MIN(psh.added), 4)
+                  WHEN 2013 THEN "2013-2014"
+                  WHEN 2014 THEN "2013-2014"
+                  ELSE LEFT(psh.added, 4)
+                  END AS date_range
+                FROM projects_status_history psh
+                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND o.id_project = psh.id_project
+                GROUP BY psh.id_project';
+    }
+
+    /**
+     * @param $repaymentType
+     *
+     * @return array
+     */
+    public function getTotalRepaymentByCohort($repaymentType)
+    {
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getcohortQuery() . ' ) AS cohort
+                  FROM operation o
+                  WHERE o.id_type = (SELECT id FROM operation_type WHERE label = :repayment_type)
+                  GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, ['repayment_type' => $repaymentType]);
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    public function getTotalDebtCollectionRepaymentByCohort($isHealthy)
+    {
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getcohortQuery() . ' ) AS cohort
+                  FROM operation o
+                  INNER JOIN projects p ON o.id_project = p.id_project
+                  WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = :capital_repayment_debt_collection)
+                  AND IF (
+                      p.status IN (130,140,150,160)
+                      OR (p.status IN (100,110,120)
+                          AND DATEDIFF(NOW(), (
+                        SELECT psh2.added
+                        FROM projects_status_history psh2
+                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                        WHERE ps2.status = 100
+                              AND psh2.id_project = o.id_project
+                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                        LIMIT 1)) > 180), FALSE, TRUE) = :isHealthy
+                  GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery(
+            $query,
+            ['isHealthy' => $isHealthy, 'capital_repayment_debt_collection' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]
+        );
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    public function getTotalDebtCollectionLenderCommissionByCohort($isHealthy)
+    {
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getcohortQuery() . ' ) AS cohort
+                  FROM operation o
+                  INNER JOIN projects p ON o.id_project = p.id_project
+                  WHERE o.id_type = (SELECT id FROM operation_type WHERE label = :collection_commission_lender)
+                  AND IF (
+                      p.status IN (130,140,150,160)
+                      OR (p.status IN (100,110,120)
+                          AND DATEDIFF(NOW(), (
+                        SELECT psh2.added
+                        FROM projects_status_history psh2
+                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                        WHERE ps2.status = 100
+                              AND psh2.id_project = o.id_project
+                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                        LIMIT 1)) > 180), FALSE, TRUE) = :isHealthy
+                  GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery(
+            $query,
+            ['isHealthy' => $isHealthy, 'collection_commission_lender' => OperationType::COLLECTION_COMMISSION_LENDER]
+        );
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
     }
 }

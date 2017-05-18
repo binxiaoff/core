@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Loans
 {
+    const STATUS_ACCEPTED = 0;
+    const STATUS_REJECTED = 1;
+
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\LoanTransfer
      *

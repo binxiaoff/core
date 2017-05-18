@@ -168,16 +168,12 @@ class transfertsController extends bootstrap
 
         /** @var \clients $preteurs */
         $preteurs = $this->loadData('clients');
-        /** @var \transactions $transactions */
-        $transactions = $this->loadData('transactions');
         /** @var \notifications notifications */
         $this->notifications = $this->loadData('notifications');
         /** @var \clients_gestion_notifications clients_gestion_notifications */
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif clients_gestion_mails_notif */
         $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-        $this->loadData('clients_gestion_type_notif'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
-        $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
         /** @var \settings setting */
         $this->setting = $this->loadData('settings');
 
@@ -211,11 +207,17 @@ class transfertsController extends bootstrap
                     $this->notifications->amount    = $reception->getMontant();
                     $this->notifications->create();
 
-                    $this->clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
-                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
-                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                    $this->clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
+                    $provisionOperation   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferIn' => $reception]);
+                    $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
+                        'idOperation' => $provisionOperation,
+                        'idWallet'    => $wallet
+                    ]);
+
+                    $this->clients_gestion_mails_notif->id_client                 = $wallet->getIdClient()->getIdClient();
+                    $this->clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                    $this->clients_gestion_mails_notif->date_notif                = date('Y-m-d H:i:s');
+                    $this->clients_gestion_mails_notif->id_notification           = $this->notifications->id_notification;
+                    $this->clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
                     $this->clients_gestion_mails_notif->create();
 
                     $preteurs->get($_POST['id_client'], 'id_client');

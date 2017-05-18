@@ -111,15 +111,15 @@ class LoansRepository extends EntityRepository
                           WHERE wallet.id = :lenderId ) AS client_base
                     GROUP BY insee_region_code';
 
-        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $type);
+        $statement    = $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $type);
         $regionsCount = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         return $regionsCount;
     }
 
     /**
-     * @param Projects|integer  $project
-     * @param Clients[] $clients
+     * @param Projects|integer $project
+     * @param Clients[]        $clients
      *
      * @return Loans[]
      */
@@ -127,17 +127,17 @@ class LoansRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('l');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
-           ->where('l.idProject = :project')
-           ->andWhere('w.idClient IN (:clients)')
-           ->setParameter('project', $project)
-           ->setParameter('clients', $clients);
+            ->where('l.idProject = :project')
+            ->andWhere('w.idClient IN (:clients)')
+            ->setParameter('project', $project)
+            ->setParameter('clients', $clients);
 
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * @param Projects|integer  $project
-     * @param Clients[] $clients
+     * @param Projects|integer $project
+     * @param Clients[]        $clients
      *
      * @return float
      */
@@ -145,11 +145,26 @@ class LoansRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('l');
         $queryBuilder->select('SUM(ROUND(l.amount/100, 2))')
-           ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
-           ->where('l.idProject = :project')
-           ->andWhere('w.idClient IN (:clients)')
-           ->setParameter('project', $project)
-           ->setParameter('clients', $clients);
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
+            ->where('l.idProject = :project')
+            ->andWhere('w.idClient IN (:clients)')
+            ->setParameter('project', $project)
+            ->setParameter('clients', $clients);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|integer $project
+     *
+     * @return integer
+     */
+    public function getLendersNb($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
+        $queryBuilder->select('COUNT(DISTINCT l.idLender) ')
+            ->where('l.idProject = :project')
+            ->setParameter('project', $project);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
