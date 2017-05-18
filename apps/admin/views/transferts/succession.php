@@ -62,7 +62,7 @@
         </table>
             <div style="text-align: center;">
                 <input type="hidden" name="succession_validate">
-                <button type="submit" class="btn-primary">Valider le transfer</button>
+                <button type="submit" class="btn-primary">Valider le transfert</button>
             </div>
         </form>
     </div>

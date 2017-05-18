@@ -8,7 +8,7 @@
                 <input type="hidden" name="siren" value="<?= $this->siren ?>">
                 <div style="text-align: right">
                     <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
-                    <button type="submit" class="btn-primary">Valider</button>
+                    <button type="submit" class="btn-primary">Créer l'emprunteur</button>
                 </div>
             </form>
         <?php else : ?>
@@ -40,7 +40,7 @@
                         <td><input type="text" name="siren" id="search-siren" class="input_moy" placeholder="SIREN" pattern="[0-9]{9}" required></td>
                         <td style="text-align: right">
                             <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
-                            <button type="submit" class="btn-primary">Valider</button>
+                            <button type="submit" class="btn-primary">Rechercher</button>
                         </td>
                     </tr>
                 </table>

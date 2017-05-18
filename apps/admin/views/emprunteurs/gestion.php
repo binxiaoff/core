@@ -64,7 +64,7 @@
                         <th colspan="4" style="text-align:center;">
                             <input type="hidden" name="form_search_emprunteur" id="form_search_emprunteur"/>
                             <button type="submit" class="btn-primary" style="margin-right: 5px;">Rechercher</button>
-                            <button type="submit" id="Reset" class="btn-default">Réinitialiser</button>
+                            <button type="button" id="Reset" class="btn-default">Réinitialiser</button>
                         </th>
                     </tr>
                 </table>

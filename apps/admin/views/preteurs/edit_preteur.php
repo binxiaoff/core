@@ -836,7 +836,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
             <br/><br/><br/><br/>
             <input type="hidden" name="statut_valider_preteur" id="statut_valider_preteur" value="0"/>
             <input type="hidden" name="send_edit_preteur" id="send_edit_preteur"/>
-            <button type="submit" id="save_etape_1" class="btn-primary">Sauvegarder</button>
+            <button type="submit" class="btn-primary">Sauvegarder</button>
         </form>
     <?php endif; ?>
 </div>
