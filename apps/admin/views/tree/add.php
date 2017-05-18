@@ -138,7 +138,7 @@
             <tr>
                 <td>
                     <input type="hidden" name="form_add_tree" id="form_add_tree"/>
-                    <input type="submit" value="Valider l'ajout de la page" name="send_tree" id="send_tree" class="btn"/>
+                    <button type="submit" class="btn-primary">Valider l'ajout de la page</button>
                 </td>
             </tr>
         </table>

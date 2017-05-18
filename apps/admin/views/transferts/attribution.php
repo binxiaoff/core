@@ -48,7 +48,7 @@
                         <td>&nbsp;</td>
                         <th>
                             <input type="hidden" name="id_reception" value="<?= $this->receptions->id_reception ?>"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_preteur" class="btn"/>
+                            <button type="submit" class="btn-primary">Valider</button>
                         </th>
                     </tr>
                 </table>

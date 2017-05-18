@@ -33,14 +33,18 @@
         });
 
         <?php if (false === isset($this->emails)) : ?>
-            $('.btnDroite .btn_link.lightbox').click();
+            $('.btn-primary.thickbox').trigger('click');
         <?php endif; ?>
     });
 </script>
 <div id="contenu">
-    <h1>Historique des emails</h1>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/mails/recherche" class="btn_link lightbox">Rechercher</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Historique des emails</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/mails/recherche" class="btn-primary pull-right thickbox">Rechercher</a>
+        </div>
     </div>
     <?php if (isset($this->emails) && count($this->emails) > 0) : ?>
         <table class="tablesorter">

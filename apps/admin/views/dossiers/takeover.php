@@ -7,8 +7,8 @@
             <form method="post" action="<?= $this->lurl ?>/dossiers/takeover/<?= $this->projects->id_project ?>/create">
                 <input type="hidden" name="siren" value="<?= $this->siren ?>">
                 <div style="text-align: right">
-                    <a href="javascript:parent.$.fn.colorbox.close()" class="btn btn_link btnDisabled">Annuler</a>
-                    <input type="submit" value="Créer l'emprunteur" class="btn">
+                    <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
+                    <button type="submit" class="btn-primary">Créer l'emprunteur</button>
                 </div>
             </form>
         <?php else : ?>
@@ -39,8 +39,8 @@
                         <th><label for="search-siren"></label></th>
                         <td><input type="text" name="siren" id="search-siren" class="input_moy" placeholder="SIREN" pattern="[0-9]{9}" required></td>
                         <td style="text-align: right">
-                            <a href="javascript:parent.$.fn.colorbox.close()" class="btn btn_link btnDisabled">Annuler</a>
-                            <input type="submit" value="Rechercher" class="btn">
+                            <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
+                            <button type="submit" class="btn-primary">Rechercher</button>
                         </td>
                     </tr>
                 </table>

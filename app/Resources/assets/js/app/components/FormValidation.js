@@ -904,6 +904,7 @@ FormValidation.prototype.rules = {
             })
           }
           break
+
         case 'currency':
           if (!(/^[\d]+((,|\.)([\d]{1,2}))?$/.test(inputValidation.value))) {
             inputValidation.errors.push({
@@ -912,14 +913,23 @@ FormValidation.prototype.rules = {
             })
           }
           break
+
         case 'tel':
         case 'phone':
         case 'telephone':
-        case 'mobile':
           if (!/^0[0-9]{9}$/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid telephone number', 'error-field-input-type-telephone')
+            })
+          }
+          break
+
+        case 'mobile':
+          if (!/^0[67][0-9]{8}$/.test(inputValidation.value)) {
+            inputValidation.errors.push({
+              type: 'inputType',
+              description: __.__('Not a valid telephone number', 'error-field-input-type-mobile')
             })
           }
           break

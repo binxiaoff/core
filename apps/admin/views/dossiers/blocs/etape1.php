@@ -40,8 +40,6 @@
             </tr>
         </table>
         <div id="error_etape1" class="error_etape"></div>
-        <div class="btnDroite">
-            <input type="submit" class="btn_link" value="Sauvegarder">
-        </div>
+        <button type="submit" class="btn-primary pull-right">Sauvegarder</button>
     </form>
 </div>

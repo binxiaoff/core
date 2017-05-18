@@ -1,14 +1,14 @@
 <div id="contenu">
     <h1>Liste des traductions</h1>
-    <div class="btnGauche">
-        <a href="<?= $this->lurl ?>/traductions/regenerateTranslationCache" class="btn_link" style="background-color: slateblue;">
-            Appliquer les modifications des trads
-        </a>
-    </div>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/traductions/add" class="btn_link thickbox">Ajouter une traduction</a>&nbsp;&nbsp;
-        <a href="<?= $this->lurl ?>/traductions/export" class="btn_link">Export</a>&nbsp;&nbsp;
-        <a href="<?= $this->lurl ?>/traductions/import" class="btn_link thickbox">Import</a>
+    <div class="row form-group">
+        <div class="col-sm-12">
+            <a href="<?= $this->lurl ?>/traductions/regenerateTranslationCache" class="btn-primary pull-left">
+                Appliquer les modifications
+            </a>
+            <a href="<?= $this->lurl ?>/traductions/add" class="btn-primary pull-left thickbox" style="margin-left: 10px;">Ajouter une traduction</a>&nbsp;
+            <a href="<?= $this->lurl ?>/traductions/export" class="btn-default pull-left" style="margin-left: 10px;">Export</a>&nbsp;&nbsp;
+            <a href="<?= $this->lurl ?>/traductions/import" class="btn-default pull-left thickbox" style="margin-left: 10px;">Import</a>
+        </div>
     </div>
     <?php if (count($this->lSections) > 0) : ?>
         <table class="large">
@@ -41,7 +41,7 @@
                 <td>&nbsp;</td>
                 <th>
                     <a href="<?= $this->lurl ?>/traductions/add/<?= ((isset($this->params[0]) && $this->params[0] != '') ? $this->params[0] : '') ?>" id="btnAjouterTraduction"
-                       class="btn_link thickbox"<?= ((isset($this->params[0]) && $this->params[0] != '') ? ' style="display:block;"' : ' style="display:none;"') ?>>
+                       class="btn-primary thickbox"<?= ((isset($this->params[0]) && $this->params[0] != '') ? ' style="display:block;"' : ' style="display:none;"') ?>>
                         Ajouter une traduction pour la section
                     </a>
                 </th>
@@ -64,9 +64,8 @@
                         <tr>
                             <th colspan="2">
                                 <input type="hidden" name="form_mod_traduction" id="form_mod_traduction" value="0"/>
-                                <input type="submit" value="Modifier" name="send_traduction" id="send_traduction" class="btn"/>
-                                &nbsp;&nbsp;&nbsp;&nbsp;
-                                <input type="submit" value="Supprimer" name="del_traduction" id="del_traduction" class="btnRouge" onClick="if(confirm('Êtes vous certain ?')){ document.getElementById('form_mod_traduction').value = 'delete'; } else { return false; }"/>
+                                <input type="submit" value="Supprimer" name="del_traduction" id="del_traduction" class="btn-default" onclick="if(confirm('Êtes vous certain ?')){ document.getElementById('form_mod_traduction').value = 'delete'; } else { return false; }" />input
+                                <input type="submit" value="Modifier" name="send_traduction" id="send_traduction" class="btn-primary"/>
                             </th>
                         </tr>
                     </table>
