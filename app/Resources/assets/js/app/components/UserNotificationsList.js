@@ -165,6 +165,7 @@ UserNotificationsList.prototype.renderNotification = function (notificationObjec
   // Default rendering notification operation
   return Templating.replace(self.templates.listItem, {
     id: notificationObject.id || Utility.randomString(),
+    projectId: notificationObject.projectId,
     type: notificationObject.type || 'default',
     status: notificationObject.status || 'unread',
     datetime: notificationObject.datetime,
@@ -184,7 +185,7 @@ UserNotificationsList.prototype.templates = {
     </ul>',
 
   // The drop's notification list item, which represents a single notification
-  listItem: '<li class="notification notification-type-{{ type }} ui-notification-status-{{ status }} {{ classOpen }}" data-notification-id="{{ id }}" tabindex="10">\
+  listItem: '<li class="notification notification-type-{{ type }} ui-notification-status-{{ status }} {{ classOpen }}" data-notification-id="{{ id }}" data-notification-project-id="{{ projectId }}" tabindex="10">\
       <header class="notification-header">\
         <h5 class="notification-datetime" title="{{ datetime }}">{{ datetimeRelative }}</h5>\
         <h4 class="notification-title">{{ title }}</h4>\

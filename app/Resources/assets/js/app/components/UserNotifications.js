@@ -822,23 +822,6 @@ $doc.on('ready', function () {
       return false
     })
 
-    // Focus a notification to show its details
-    // .on('focus', '[data-notification-id]', function (event) {
-    //   var $target = $(event.target)
-    //
-    //   // Toggle the notification's open class
-    //   var $notification = $(this)
-    //   var notificationId = $notification.attr('data-notification-id')
-    //
-    //   // Toggle notification
-    //   UserNotifications.openNotification(notificationId)
-    //
-    //   // If notification unread, mark as read
-    //   if ($notification.is('.ui-notification-status-unread')) {
-    //     UserNotifications.markRead(notificationId)
-    //   }
-    // })
-
     // Click on an element to show/hide its details
     .on(Utility.inputStartEvent + ' keydown', '[data-notification-id]', function (event) {
       var $target = $(event.target)
@@ -851,12 +834,25 @@ $doc.on('ready', function () {
         var $notification = $(this)
         var notificationId = $notification.attr('data-notification-id')
 
-        // Toggle notification (if not a project or an ignore-toggle notification)
-        if ($target.closest('[data-ignore-toggle]').length === 0 && $target.closest('[data-proj-notification]').length === 0) {
+        // Toggle notification
+        if ($target.closest('[data-ignore-toggle]').length === 0) {
           UserNotifications.toggleNotification(notificationId)
           // If notification unread, mark as read
           if ($notification.is('.ui-notification-status-unread')) {
             UserNotifications.markRead(notificationId)
+          }
+          // Toggle project view in myloans table
+          var notificationProjectId = 407 // TODO
+          if (notificationProjectId) {
+            var $loansTab = $('#loans')
+            var $project = $('#loan-' + notificationProjectId)
+
+            if ($loansTab.length && $loansTab.find($project).length) {
+              if (!$loansTab.is('.active')) {
+                $('.nav-dashboard-tabs a[href="#loans"]').trigger('click')
+              }
+              $project.find('.ui-show-table-myloans-item-activity').trigger('click')
+            }
           }
         }
       }
