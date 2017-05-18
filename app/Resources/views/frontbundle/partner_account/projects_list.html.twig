@@ -385,19 +385,16 @@
             <input type="hidden" name="hash" value>
             <div class="modal-body text-align-center">
                 <h3>{% trans %} partner-project-list_popup-project-tos-title {% endtrans %}</h3>
-                <div class="overflow-wrap overflow-vertical">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th><span class="c-t3"></span>{% trans %} partner-project-list_popup-project-tos-table-heading {% endtrans %}</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                    <p>{% trans %} partner-project-list_popup-project-tos-message {% endtrans %}</p>
-                </div>
-                <p class="ui-ajax-feedback-message c-success">{% trans %} partner-project-list_popup-project-tos-message-success {% endtrans %}</p>
-                <p class="ui-ajax-feedback-message c-error">{% trans %} partner-project-list_popup-project-tos-message-error {% endtrans %}</p>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th><span class="c-t3"></span>{% trans %} partner-project-list_popup-project-tos-table-heading {% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <p class="tos-message">{% trans %} partner-project-list_popup-project-tos-message {% endtrans %}</p>
+                <p class="ui-ajax-feedback-message"></p>
             </div>
             <footer class="modal-footer">
                 <div class="btn-controls">

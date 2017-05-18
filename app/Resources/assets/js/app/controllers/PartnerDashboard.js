@@ -31,16 +31,20 @@ $doc
         var $form = $modal.find('form')
 
         if (action === 'tos') {
+            $form.find('table').hide()
             var tos = Utility.convertStringToJson($project.data('details-tos'))
-            var tosHtml = ''
-            $.each(tos, function (i, item) {
-                tosHtml += Templating.replace('<tr>\
+            if (tos.length > 0) {
+                var tosHtml = ''
+                $.each(tos, function (i, item) {
+                    tosHtml += Templating.replace('<tr>\
                     <td>{{ date }}</td>\
                 </tr>', {
-                    date: item.date,
+                        date: item.date,
+                    })
                 })
-            })
-            $form.find('table tbody').html(tosHtml)
+                $form.find('table').show()
+                $form.find('table tbody').html(tosHtml)
+            }
         }
 
         $form.find('[name="hash"]').val($project.data('hash'))

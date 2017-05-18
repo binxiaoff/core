@@ -210,29 +210,24 @@
 }
 
 #modal-partner-project-tos {
-  .overflow-wrap {
-    p {
-      border-top: 1px solid #eceaed;
-      padding-top: .65em;
-      margin-bottom: 0
-    }
-  }
-  .table tr {
-    th {
-      &:first-child {
-        width: 10%;
+  .table {
+    tr {
+      th {
+        &:first-child {
+          width: 10%;
+        }
       }
-    }
-    td, th {
-      padding-left: 15px;
-      padding-right: 15px;
+      td, th {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
     }
   }
   .ui-ajax-feedback-button, .ui-ajax-feedback-message {
     display: none;
   }
   &.ui-ajax-feedback {
-    .btn-primary:not(.ui-ajax-feedback-button), .btn-default, .overflow-wrap {
+    .btn-primary:not(.ui-ajax-feedback-button), .btn-default, .tos-message {
       display: none;
     }
     .ui-ajax-feedback-button {
