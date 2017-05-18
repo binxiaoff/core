@@ -19,7 +19,7 @@
             <tr>
                 <td style="text-align:center;">
                     <input type="hidden" name="send_completude" id="send_completude">
-                    <input type="submit" value="Envoyer l'email" title="Envoyer l'email" name="envoyer" id="envoyer" class="btn"/>
+                    <button type="submit" class="btn-primary">Envoyer</button>
                 </td>
             </tr>
         </table>

@@ -1513,22 +1513,21 @@ class dossiersController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $result = [];
+        $_POST   = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        $aResult = array();
-
-        if (isset($_POST['project_attachment_id'])) {
+        if (isset($_POST['attachment_id'])) {
             $entityManager =  $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
-            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['project_attachment_id']);
+            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['attachment_id']);
             if ($projectAttachment) {
                 $entityManager->remove($projectAttachment);
                 $entityManager->flush($projectAttachment);
             }
-            $aResult[$_POST['project_attachment_id']] = 'ok';
+            $result[$_POST['attachment_id']] = 'ok';
         }
 
-        echo json_encode($aResult);
+        echo json_encode($result);
     }
 
     public function _add()
@@ -2451,7 +2450,7 @@ class dossiersController extends bootstrap
 
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        if ($_POST['send_completude']) {
+        if (false === empty($_POST)) {
             /** @var \projects $oProjects */
             $oProjects = $this->loadData('projects');
             /** @var \clients $oClients */

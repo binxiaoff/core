@@ -550,7 +550,7 @@ class transfertsController extends bootstrap
         $this->oWelcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue');
     }
 
-    public function _deblocage() //TODO delete lenders_accounts after merge of transfer progressif
+    public function _deblocage()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -615,8 +615,6 @@ class transfertsController extends bootstrap
             $notificationManager = $this->get('unilend.service.notification_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
-            /** @var \lenders_accounts $lender */
-            $lender = $this->loadData('lenders_accounts');
             /** @var \echeanciers_emprunteur $paymentSchedule */
             $paymentSchedule = $this->loadData('echeanciers_emprunteur');
             /** @var \projects_status_history $projectsStatusHistory */
@@ -677,16 +675,16 @@ class transfertsController extends bootstrap
                 $lastLoans       = array();
 
                 foreach ($allAcceptedBids as $bid) {
-                    $lender->get($bid['id_lender']);
-
-                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $project->getIdProject(), $bid['amount'],
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Bids $bidEntity */
+                    $bidEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($bid['id_bid']);
+                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), $project->getIdProject(), $bid['amount'],
                         $bid['id_bid']);
 
                     $loansForBid = $acceptedBids->select('id_bid = ' . $bid['id_bid']);
 
                     foreach ($loansForBid as $loan) {
                         if (in_array($loan['id_loan'], $lastLoans) === false) {
-                            $notificationManager->createEmailNotification($notification->id_notification, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, null, null,
+                            $notificationManager->createEmailNotification($notification->id_notification, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), null, null,
                                 $loan['id_loan']);
                             $lastLoans[] = $loan['id_loan'];
                         }

@@ -8,9 +8,13 @@
     });
 </script>
 <div id="contenu">
-    <h1>Utilisateurs</h1>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/users/add" class="btn_link thickbox">Ajouter un utilisateur</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Utilisateurs</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/users/add" class="btn-primary pull-right thickbox">Ajouter un utilisateu</a>
+        </div>
     </div>
     <?php foreach ($this->users as $userStatus => $users) : ?>
         <?php if ($userStatus == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE) : ?>

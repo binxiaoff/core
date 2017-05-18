@@ -33,7 +33,7 @@
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_edit_part" id="form_edit_part"/>
-                        <input type="submit" value="Valider" title="Valider" name="send_part" id="send_part" class="btn"/>
+                        <button type="submit" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>
