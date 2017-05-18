@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectCgv
  *
- * @ORM\Table(name="project_cgv", uniqueConstraints={@ORM\UniqueConstraint(name="id_project", columns={"id_project"})}, indexes={@ORM\Index(name="id_project_2", columns={"id_project"})})
+ * @ORM\Table(name="project_cgv", uniqueConstraints={@ORM\UniqueConstraint(name="id_project", columns={"id_project"})})
  * @ORM\Entity
  */
 class ProjectCgv implements UniversignEntityInterface
@@ -15,7 +15,7 @@ class ProjectCgv implements UniversignEntityInterface
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="termOfUser")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="termOfUse")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })
