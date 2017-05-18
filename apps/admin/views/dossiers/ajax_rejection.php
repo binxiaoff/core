@@ -9,11 +9,11 @@
         </select>
         <br/><br/>
         <div class="right">
-            <button type="button" onclick="parent.$.fn.colorbox.close();" class="btn btnDisabled">Annuler</button>
+            <button type="button" onclick="parent.$.fn.colorbox.close();" class="btn-default">Annuler</button>
             <?php if (0 == $this->iStep) : ?>
-                <input type="submit" class="btn_link" value="Valider">
+                <button type="submit" class="btn-primary">Valider</button>
             <?php else : ?>
-                <button type="submit" class="btn">Rejeter</button>
+                <button type="submit" class="btn-primary">Rejeter</button>
             <?php endif; ?>
         </div>
     </form>

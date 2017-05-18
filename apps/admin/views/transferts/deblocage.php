@@ -60,7 +60,7 @@
                                 && $aProject['status_mandat'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                                 && $aProject['authority_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                             ) : ?>
-                                <input type="submit" name="validateProxy" class="btn" value="Débloquer les fonds" />
+                                <input type="submit" name="validateProxy" class="btn-primary" value="Débloquer les fonds" />
                                 <input type="hidden" name="id_project" value="<?= $aProject['id_project'] ?>"/>
                             <?php endif; ?>
                         </form>

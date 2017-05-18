@@ -21,7 +21,7 @@
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_edit_template" id="form_edit_template" />
-                        <input type="submit" value="Valider" name="send_template" id="send_template" class="btn" />
+                        <button type="submit" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>

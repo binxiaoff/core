@@ -47,7 +47,7 @@
                 <tr>
                     <td>
                         <input type="hidden" name="form_add_mail" id="form_add_mail"/>
-                        <input type="submit" value="Valider" title="Valider" name="send_mail" id="send_mail" class="btn"/>
+                        <button type="submit" class="btn-primary">Valider</button>
                     </td>
                 </tr>
             </table>

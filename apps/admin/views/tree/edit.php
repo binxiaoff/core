@@ -172,7 +172,7 @@
                         <tr>
                             <td>
                                 <input type="hidden" name="form_edit_tree" id="form_edit_tree" />
-                                <input type="submit" value="Valider la modification de la page" name="send_tree" id="send_tree" class="btn" />
+                                <button type="submit" class="btn-primary">Valider la modification de la page</button>
                             </td>
                         </tr>
                     </table>
@@ -191,7 +191,7 @@
                             <tr>
                                 <td colspan="2">
                                     <input type="hidden" name="form_edit_tree" id="form_edit_tree" />
-                                    <input onclick="document.getElementById('edit_tree').action = '';document.getElementById('edit_tree').target = '_self';" type="submit" value="Valider la modification de la page" name="send_tree" id="send_tree" class="btn" />
+                                    <button type="submit" onclick="document.getElementById('edit_tree').action = '';document.getElementById('edit_tree').target = '_self';">Valider la modification de la page</button>
                                 </td>
                             </tr>
                         </table>

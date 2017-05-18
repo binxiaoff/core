@@ -40,7 +40,7 @@
         <div id="problematic_status_error">Vous devez saisir tous les champs<br/><br/></div>
         <div style="text-align:right">
             <input type="hidden" name="problematic_status" value="<?= $this->projects_status->status ?>"/>
-            <input type="submit" class="btn_link" value="Sauvegarder"/>
+            <button type="submit" class="btn-primary">Sauvegarder</button>
         </div>
     </form>
 </div>

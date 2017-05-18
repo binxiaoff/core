@@ -2789,7 +2789,7 @@ class dossiersController extends bootstrap
 
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        if ($_POST['send_completude']) {
+        if (false === empty($_POST)) {
             /** @var \projects $oProjects */
             $oProjects = $this->loadData('projects');
             /** @var \clients $oClients */

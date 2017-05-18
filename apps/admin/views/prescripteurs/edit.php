@@ -53,7 +53,7 @@
             <tr>
                 <th colspan="4">
                     <input type="hidden" name="form_edit_prescripteur" id="form_edit_prescripteur" />
-                    <input type="submit" value="Valider" title="Valider" name="send_edit_prescripteur" id="send_edit_prescripteur" class="btn" />
+                    <button type="submit" class="btn-primary">Valider</button>
                 </th>
             </tr>
         </table>
