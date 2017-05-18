@@ -35,11 +35,11 @@ $doc
             var tos = Utility.convertStringToJson($project.data('details-tos'))
             if (tos.length > 0) {
                 var tosHtml = ''
-                $.each(tos, function (i, item) {
+                $.each(tos, function (i, date) {
                     tosHtml += Templating.replace('<tr>\
                     <td>{{ date }}</td>\
                 </tr>', {
-                        date: item.date,
+                        date: date,
                     })
                 })
                 $form.find('table').show()

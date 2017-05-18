@@ -1146,7 +1146,7 @@ class ProjectManager
             throw new \Exception('Invalid client mobile phone number', self::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_PHONE_NUMBER);
         }
 
-        $termsOfSale = $project->getTermOfUser();
+        $termsOfSale = $project->getTermsOfSale();
 
         if (null === $termsOfSale) {
             $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Lien conditions generales depot dossier']);
@@ -1159,6 +1159,8 @@ class ProjectManager
             $termsOfSale->setIdProject($project);
             $termsOfSale->setIdTree($tree->getValue());
             $termsOfSale->setName($termsOfSale->generateFileName());
+            $termsOfSale->setIdUniversign('');
+            $termsOfSale->setUrlUniversign('');
             $termsOfSale->setStatus(UniversignEntityInterface::STATUS_PENDING);
 
             $this->entityManager->persist($termsOfSale);

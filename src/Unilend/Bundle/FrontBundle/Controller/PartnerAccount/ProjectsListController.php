@@ -184,8 +184,9 @@ class ProjectsListController extends Controller
                 'tos'        => []
             ];
 
-            if ($termsOfSale = $project->getTermOfUser()) {
-                $display[$project->getIdProject()]['tos'][] = $termsOfSale->getAdded()->format('d/m/Y');
+            if ($termsOfSale = $project->getTermsOfSale()) {
+                $numberFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT);
+                $display[$project->getIdProject()]['tos'][] = $numberFormatter->format($termsOfSale->getAdded());
             }
 
             if ($abandoned) {
