@@ -1,8 +1,12 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TransactionsTypes;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -10,21 +14,24 @@ use Unilend\core\Loader;
 
 class NotificationDisplayManager
 {
-    /** @var EntityManager $entityManager */
-    private $entityManager;
+    /** @var EntityManagerSimulator $entityManagerSimulator */
+    private $entityManagerSimulator;
     /** @var AutoBidSettingsManager */
     private $autoBidSettingsManager;
     /** @var TranslatorInterface */
     private $translator;
     /** @var RouterInterface */
     private $router;
+    /** @var  EntityManager */
+    private $entityManager;
 
-    public function __construct(EntityManager $entityManager, AutoBidSettingsManager $autoBidSettingsManager, TranslatorInterface $translator, RouterInterface $router)
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, AutoBidSettingsManager $autoBidSettingsManager, TranslatorInterface $translator, RouterInterface $router, EntityManager $entityManager)
     {
-        $this->entityManager          = $entityManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->translator             = $translator;
         $this->router                 = $router;
+        $this->entityManager          = $entityManager;
     }
 
     /**
@@ -61,6 +68,16 @@ class NotificationDisplayManager
         return $this->getLenderNotificationsDetail($clientId, $projectId, $offset, $length);
     }
 
+    private function getProjectEventsDetail($clientId, $projectId)
+    {
+        $projectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->getHistoryFromGivenStatus($projectId, ProjectsStatus::REMBOURSEMENT);
+
+        $anticipatedAndEarlyRepaymentOperations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Transactions')
+            ->getLenderAnticipatedAndEarlyTransactions($projectId, $clientId);
+
+    }
+
     /**
      * @param int      $clientId
      * @param null|int $projectId
@@ -72,23 +89,23 @@ class NotificationDisplayManager
     private function getLenderNotificationsDetail($clientId, $projectId = null, $offset = null, $length = null)
     {
         /** @var \accepted_bids $acceptedBid */
-        $acceptedBid = $this->entityManager->getRepository('accepted_bids');
+        $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
         /** @var \autobid $autobid */
-        $autobid = $this->entityManager->getRepository('autobid');
+        $autobid = $this->entityManagerSimulator->getRepository('autobid');
         /** @var \bids $bid */
-        $bid = $this->entityManager->getRepository('bids');
+        $bid = $this->entityManagerSimulator->getRepository('bids');
         /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
+        $client = $this->entityManagerSimulator->getRepository('clients');
         /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
+        $company = $this->entityManagerSimulator->getRepository('companies');
         /** @var \notifications $notifications */
-        $notifications = $this->entityManager->getRepository('notifications');
+        $notifications = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \projects $project */
-        $project = $this->entityManager->getRepository('projects');
+        $project = $this->entityManagerSimulator->getRepository('projects');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
         /** @var \lenders_accounts $lender */
-        $lender = $this->entityManager->getRepository('lenders_accounts');
+        $lender = $this->entityManagerSimulator->getRepository('lenders_accounts');
         $lender->get($clientId, 'id_client_owner');
 
         $result = [];
@@ -187,8 +204,8 @@ class NotificationDisplayManager
                     ]);
                     break;
                 case Notifications::TYPE_CREDIT_CARD_CREDIT:
-                    $type  = 'remboursement';
-                    $image = 'account-cb';
+                    $type    = 'remboursement';
+                    $image   = 'account-cb';
                     $title   = $this->translator->trans('lender-notifications_credit-card-credit-title');
                     $content = $this->translator->trans('lender-notifications_credit-card-credit-content', [
                         '%amount%' => $ficelle->formatNumber($notification['amount'] / 100, 2)
