@@ -1085,17 +1085,14 @@ class ProjectManager
      */
     public function getProjectEventsDetail($projectId, $clientId)
     {
-        $lender = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LendersAccounts')
-            ->findOneBy(['idClientOwner' => $clientId]);
-
         $projectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
             ->getHistoryAfterGivenStatus($projectId, ProjectsStatus::REMBOURSEMENT_ANTICIPE);
 
         $anticipatedAndEarlyRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Transactions')
             ->getLenderAnticipatedAndEarlyTransactions($projectId, $clientId);
 
-        $scheduledRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
-            ->findBy(['idProject' => $projectId, 'idLender' => $lender->getIdLenderAccount(), 'status' => \echeanciers::STATUS_REPAID, 'statusRa' => \echeanciers::IS_NOT_EARLY_REFUND], ['dateEcheanceReel' => 'DESC']);
+        $scheduledRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Transactions')
+            ->getLenderScheduledRepayments($projectId, $clientId);
 
         $projectNotifications = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNotification')->findBy(['idProject' => $projectId], ['notificationDate' => 'DESC']);
 

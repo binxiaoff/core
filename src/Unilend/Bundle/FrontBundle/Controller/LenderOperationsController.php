@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -1000,8 +999,8 @@ class LenderOperationsController extends Controller
                 'type'      => 'remboursement',
                 'title'     => $titleAndContent['title'],
                 'content'   => $titleAndContent['content'],
-                'datetime'  => $repayment['added'],
-                'iso-8601'  => $repayment['added']->format('c'),
+                'datetime'  => $repayment['dateTransaction'],
+                'iso-8601'  => $repayment['dateTransaction']->format('c'),
                 'status'    => 'read'
             ];
         }
@@ -1018,8 +1017,8 @@ class LenderOperationsController extends Controller
                 'type'      => 'remboursement',
                 'title'     => $titleAndContent['title'],
                 'content'   => $titleAndContent['content'],
-                'datetime'  => $repayment->getDateEcheanceReel(),
-                'iso-8601'  => $repayment->getDateEcheanceReel()->format('c'),
+                'datetime'  => $repayment['dateTransaction'],
+                'iso-8601'  => $repayment['dateTransaction']->format('c'),
                 'status'    => 'read'
             ];
         }
@@ -1104,44 +1103,44 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param array|Echeanciers   $repayment
+     * @param array               $repayment
      * @param Projects            $project
      * @param TranslatorInterface $translator
      * @param \ficelle            $ficelle
      * @return array
      */
-    private function getRepaymentTitleAndContent($repayment, Projects $project, TranslatorInterface $translator, \ficelle $ficelle)
+    private function getRepaymentTitleAndContent(array $repayment, Projects $project, TranslatorInterface $translator, \ficelle $ficelle)
     {
-        if ($repayment instanceof Echeanciers) {
+        switch ($repayment['typeTransaction']) {
+            case \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT:
+                $title   = $translator->trans('lender-notifications_early-repayment-title');
+                $content = $translator->trans('lender-notifications_early-repayment-content', [
+                    '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT:
+                $title   = $translator->trans('lender-notifications_recovery-repayment-title');
+                $content = $translator->trans('lender-notifications_recovery-repayment-content', [
+                    '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]);
+                break;
+            case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
+            case \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL:
             $title   = $translator->trans('lender-notifications_repayment-title');
             $content = $translator->trans('lender-notifications_repayment-content', [
-                '%amount%'     => $ficelle->formatNumber($repayment->getMontant() / 100, 2),
+                '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
                 '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
                 '%company%'    => $project->getIdCompany()->getName()
             ]);
-        } else {
-            switch ($repayment['typeTransaction']) {
-                case \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT:
-                    $title   = $translator->trans('lender-notifications_early-repayment-title');
-                    $content = $translator->trans('lender-notifications_early-repayment-content', [
-                        '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                        '%company%'    => $project->getIdCompany()->getName()
-                    ]);
-                    break;
-                case \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT:
-                    $title   = $translator->trans('lender-notifications_recovery-repayment-title');
-                    $content = $translator->trans('lender-notifications_recovery-repayment-content', [
-                        '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                        '%company%'    => $project->getIdCompany()->getName()
-                    ]);
-                    break;
-                default:
-                    $title   = '';
-                    $content = '';
-                    break;
-            }
+            break;
+            default:
+                $title   = '';
+                $content = '';
+                break;
         }
 
         return ['title' => $title, 'content' => $content];

@@ -2,11 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TransactionsTypes;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -23,16 +19,14 @@ class NotificationDisplayManager
     private $translator;
     /** @var RouterInterface */
     private $router;
-    /** @var  EntityManager */
-    private $entityManager;
 
-    public function __construct(EntityManagerSimulator $entityManagerSimulator, AutoBidSettingsManager $autoBidSettingsManager, TranslatorInterface $translator, RouterInterface $router, EntityManager $entityManager)
+
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, AutoBidSettingsManager $autoBidSettingsManager, TranslatorInterface $translator, RouterInterface $router)
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->translator             = $translator;
         $this->router                 = $router;
-        $this->entityManager          = $entityManager;
     }
 
     /**
@@ -225,7 +219,7 @@ class NotificationDisplayManager
                         '%duration%'        => $project->period
                     ]);
                     break;
-                case Notifications::TYPE_PROJECT_PROBLEM: //  \projects_status::PROBLEME:
+                case Notifications::TYPE_PROJECT_PROBLEM:
                     $project->get($notification['id_project'], 'id_project');
                     $company->get($project->id_company);
 
@@ -249,7 +243,7 @@ class NotificationDisplayManager
                         '%company%'    => $company->name
                     ]);
                     break;
-                case Notifications::TYPE_PROJECT_RECOVERY: // \projects_status::RECOUVREMENT
+                case Notifications::TYPE_PROJECT_RECOVERY:
                     $project->get($notification['id_project'], 'id_project');
                     $company->get($project->id_company);
 
