@@ -111,6 +111,7 @@
                     {% for notification in app.user.notifications %}
                         {% set notifications = notifications|merge([{
                             id: notification.id,
+                            projectId: notification.projectId,
                             type: notification.type,
                             title: notification.title,
                             'iso-8601': notification.datetime|date('c'),

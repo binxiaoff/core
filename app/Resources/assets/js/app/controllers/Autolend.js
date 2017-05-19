@@ -4,9 +4,6 @@ var __ = new Dictionary(window.UTILITY_LANG)
 
 var $doc = $(document)
 
-var autolendAbsoluteMin = 3.5
-var autolendAbsoluteMax = 10
-
 function getCellInfo(cellIndex) {
     var $inputRate = getInputRate(cellIndex)
 
