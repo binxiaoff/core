@@ -224,7 +224,6 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $previousDay                    = $firstDay->sub(\DateInterval::createFromDateString('1 day'));
         $previousBalanceHistory         = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $previousDay->format('Y-m-d')]);
         $this->addBalanceLine($activeSheet, $previousBalanceHistory, $specificRows['previousMonth'], $specificRows);
-        $lastBalanceLine = null;
 
         foreach ($specificRows['coordinatesDay'] as $date => $row) {
             $dateTime = \DateTime::createFromFormat('Y-m-d', $date);
@@ -262,10 +261,11 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
         foreach ($specificRows['coordinatesMonth'] as $month => $row) {
             $lastDayOfMonth = \DateTime::createFromFormat('n-Y', $month . '-' . $requestedDate->format('Y'));
-            if ($month == $requestedDate->format('n')) {
-                $balanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $requestedDate->format('Y-m-d')]);
-                $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows, true);
-            } else {
+            if ($month <= $requestedDate->format('n')) {
+                if ($month == $requestedDate->format('n')) {
+                    $balanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $requestedDate->format('Y-m-d')]);
+                    $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows, true);
+                }
                 $balanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $lastDayOfMonth->format('Y-m-t')]);
                 if (null !== $balanceHistory) {
                     $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows);
