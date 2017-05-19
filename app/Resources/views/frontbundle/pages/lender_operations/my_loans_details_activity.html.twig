@@ -1,12 +1,7 @@
 {% if projectNotifications|length > 0 %}
     <div class="list-notifications">
     {% for notification in projectNotifications %}
-        <div class="notification notification-type-{{ notification.type|default('message')|e('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" data-proj-notification>
-            <div class="notification-image">
-            {% if notification.image %}
-                <span class="svg-icon-wrap">{{ svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
-            {% endif %}
-            </div>
+        <div class="notification ui-notification-open">
             <div class="notification-info">
                 <h4 class="notification-title">{{ notification.title|raw }}</h4>
                 <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
