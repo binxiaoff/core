@@ -818,10 +818,7 @@ $doc.on('ready', function () {
       if (projectId) {
         var $loansTab = $('#loans')
         var $project = $loansTab.find('#loan-' + projectId)
-        if ($loansTab.length && $project.length) {
-          if (!$loansTab.is('.active')) {
-            $('.nav-dashboard-tabs a[href="#loans"]').trigger('click')
-          }
+        if ($loansTab.is('.active') && $project.length) {
           if (!$project.is('.ui-details-open')) {
             $('body').animate({
               scrollTop: $project.offset().top - 80,
@@ -839,7 +836,7 @@ $doc.on('ready', function () {
       if (projectId) {
         var $loansTab = $('#loans')
         var $project = $loansTab.find('#loan-' + projectId)
-        if ($project.is('.ui-details-open')) {
+        if ($loansTab.is('.active') && $project.is('.ui-details-open')) {
           $project.find('.ui-show-table-myloans-item-activity').trigger('click')
         }
       }
