@@ -787,31 +787,31 @@ class OperationManager
             $operationType = '';
             $walletType    = '';
             switch ($type) {
-                case TaxType::TYPE_INCOME_TAX :
+                case TaxType::TYPE_STATUTORY_CONTRIBUTIONS:
                     $operationType = OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS;
                     $walletType    = WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS;
                     break;
-                case TaxType::TYPE_CSG :
+                case TaxType::TYPE_CSG:
                     $operationType = OperationType::TAX_FR_CSG;
                     $walletType    = WalletType::TAX_FR_CSG;
                     break;
-                case TaxType::TYPE_SOCIAL_DEDUCTIONS :
+                case TaxType::TYPE_SOCIAL_DEDUCTIONS:
                     $operationType = OperationType::TAX_FR_SOCIAL_DEDUCTIONS;
                     $walletType    = WalletType::TAX_FR_SOCIAL_DEDUCTIONS;
                     break;
-                case TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS :
+                case TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS:
                     $operationType = OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS;
                     $walletType    = WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS;
                     break;
-                case TaxType::TYPE_SOLIDARITY_DEDUCTIONS :
+                case TaxType::TYPE_SOLIDARITY_DEDUCTIONS:
                     $operationType = OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS;
                     $walletType    = WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS;
                     break;
-                case TaxType::TYPE_CRDS :
+                case TaxType::TYPE_CRDS:
                     $operationType = OperationType::TAX_FR_CRDS;
                     $walletType    = WalletType::TAX_FR_CRDS;
                     break;
-                case TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE :
+                case TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE:
                     $operationType = OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE;
                     $walletType    = WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE;
                     break;

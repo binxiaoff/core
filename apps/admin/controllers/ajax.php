@@ -1,9 +1,9 @@
 <?php
 
-use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
 
 class ajaxController extends bootstrap
 {

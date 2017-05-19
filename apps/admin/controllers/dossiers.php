@@ -168,7 +168,7 @@ class dossiersController extends bootstrap
             $taxType = $this->loadData('tax_type');
 
             $taxRate        = $taxType->getTaxRateByCountry('fr');
-            $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+            $this->fVATRate = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
@@ -1253,7 +1253,7 @@ class dossiersController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate        = $taxType->getTaxRateByCountry('fr');
-        $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $this->fVATRate = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
         /** @var company_rating $oCompanyRating */
         $oCompanyRating = $this->loadData('company_rating');
@@ -1739,7 +1739,7 @@ class dossiersController extends bootstrap
         $oLogger = $this->get('logger');
 
         $taxRate   = $taxType->getTaxRateByCountry('fr');
-        $this->tva = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $this->tva = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
