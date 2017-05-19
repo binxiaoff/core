@@ -41,7 +41,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $taxRate             = $taxType->getTaxRateByCountry('fr', [1]);
+        $taxRate             = $taxType->getTaxRateByCountry('fr', [TaxType::TYPE_VAT]);
         $firstDayOfLastMonth = new \DateTime('first day of last month');
         $lastDayOfLastMonth  = new \DateTime('last day of last month');
         $data                = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getInterestAndTaxForFiscalState($firstDayOfLastMonth, $lastDayOfLastMonth);
