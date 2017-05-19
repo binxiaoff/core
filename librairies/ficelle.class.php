@@ -397,7 +397,7 @@ class ficelle
      * @param string $sCountry
      * @return bool
      */
-    public function isMobilePhoneNumber($sPhoneNumber, $sCountry)
+    public function isMobilePhoneNumber($sPhoneNumber, $sCountry = 'fr')
     {
         if ('fr' === $sCountry && 1 === preg_match('/(\+33|0033|0)[6-7][0-9]{8}/', str_replace(array(' ', '.', ','), '', $sPhoneNumber))) {
             return true;

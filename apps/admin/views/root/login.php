@@ -12,7 +12,7 @@
     <?= $this->callJs() ?>
 </head>
 <body class="loginBody">
-<div id="contener">
+<div id="contener" class="container">
     <script type="text/javascript">
         $(function() {
             <?php if (false === empty($_SESSION['msgErreur'])) : ?>
@@ -63,7 +63,7 @@
                     <tr>
                         <td colspan="2" class="center">
                             <div id="bloc_action">
-                                <input type="submit" value="Se connecter" title="Se connecter" name="connect" id="connect" class="btn"/>
+                                <button type="submit" name="connect" value="1" class="btn-primary">Se connecter</button>
                             </div>
                         </td>
                     </tr>

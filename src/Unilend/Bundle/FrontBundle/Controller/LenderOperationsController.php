@@ -67,7 +67,6 @@ class LenderOperationsController extends Controller
                 'loansStatusFilter'      => self::LOAN_STATUS_FILTER,
                 'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($wallet->getId()),
                 'lenderLoans'            => $loans['lenderLoans'],
-                'loanStatus'             => $loans['loanStatus'],
                 'seriesData'             => $loans['seriesData'],
                 'currentFilters'         => $filters
             ]
@@ -578,8 +577,12 @@ class LenderOperationsController extends Controller
     public function loadProjectNotificationsAction($projectId)
     {
         try {
-            $notificationDisplayManager   = $this->get('unilend.frontbundle.notification_display_manager');
-            $lenderNotificationsByProject = $notificationDisplayManager->getLenderNotificationsByProject($this->getUser()->getClientId(), $projectId);
+            $notificationDisplayManager = $this->get('unilend.frontbundle.notification_display_manager');
+            $entityManager              = $this->get('doctrine.orm.entity_manager');
+
+            $client                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+            $project                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            $lenderNotificationsByProject = $notificationDisplayManager->getLenderNotificationsByProject($client, $project);
             $projectInformation           = $this->getProjectInformation($projectId);
             $data                         = array_merge($projectInformation, $lenderNotificationsByProject);
 
@@ -590,7 +593,8 @@ class LenderOperationsController extends Controller
         } catch (\Exception $exception) {
             $data = [];
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-            $this->get('logger')->error('Exception while getting client notifications for id_project: ' . $projectId . ' Message: ' . $exception->getMessage(), ['id_client' => $this->getUser()->getClientId(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->get('logger')->error('Exception while getting client notifications for id_project: ' . $projectId . ' Message: ' . $exception->getMessage(),
+                ['id_client' => $this->getUser()->getClientId(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
         return new JsonResponse(

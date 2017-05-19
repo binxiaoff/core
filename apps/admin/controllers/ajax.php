@@ -349,7 +349,7 @@ class ajaxController extends bootstrap
                 $this->clients = $this->loadData('clients');
                 $this->clients->get($company->id_client_owner, 'id_client');
                 $this->clients->email     = $_POST['email_etape2'];
-                $this->clients->civilite  = $_POST['civilite_etape2'];
+                $this->clients->civilite  = isset($_POST['civilite_etape2']) ? $_POST['civilite_etape2'] : $this->clients->civilite;
                 $this->clients->nom       = $this->ficelle->majNom($_POST['nom_etape2']);
                 $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom_etape2']);
                 $this->clients->fonction  = $_POST['fonction_etape2'];

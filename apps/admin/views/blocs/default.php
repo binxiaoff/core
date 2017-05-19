@@ -8,8 +8,14 @@
     });
 </script>
 <div id="contenu">
-    <h1>Liste des blocs</h1>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/blocs/add" class="btn_link thickbox">Ajouter un bloc</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Liste des blocs</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/blocs/add" class="btn-primary pull-right thickbox">Ajouter un bloc</a>
+        </div>
+    </div>
     <?php if (count($this->lBlocs) > 0) : ?>
         <table class="tablesorter">
             <thead>

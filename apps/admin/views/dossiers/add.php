@@ -99,7 +99,7 @@
         <form action="<?= $this->lurl ?>/dossiers/add/create_etape1" method="post">
             <input type="hidden" id="id_client" name="id_client">
             <input type="hidden" id="send_create_etape1" name="send_create_etape1">
-            <div class="btnDroite" style="text-align:center;"><input type="submit" class="btn" value="Valider"></div>
+            <button type="submit" class="btn-primary pull-right">Valider</button>
         </form>
     <?php elseif (false === empty($this->projects->id_project)) : ?>
         <?php $this->fireView('blocs/etape1'); ?>

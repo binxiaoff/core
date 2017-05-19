@@ -52,7 +52,7 @@
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_add_users" id="form_add_users" />
-                        <input type="submit" value="Valider" title="Valider" name="send_users" id="send_users" class="btn" />
+                        <button type="submit" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>

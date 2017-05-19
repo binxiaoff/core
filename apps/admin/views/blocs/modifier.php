@@ -41,7 +41,7 @@
                             <tr>
                                 <td colspan="2">
                                     <input type="hidden" name="form_edit_bloc" id="form_edit_bloc"/>
-                                    <input type="submit" value="Valider" name="send_bloc" id="send_bloc" class="btn"/>
+                                    <button type="submit" class="btn-primary">Valider</button>
                                 </td>
                             </tr>
                         </table>

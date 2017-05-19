@@ -48,15 +48,19 @@
     }
 </style>
 <div id="contenu">
-    <h1>Sources Emprunteurs</h1>
-    <form method="post" name="recupCSV">
-        <input type="hidden" name="extraction_csv"/>
-        <input type="hidden" name="dateStart" value="<?= (false === empty($_POST['dateStart']) ? $_POST['dateStart'] : '' ) ?>"/>
-        <input type="hidden" name="dateEnd" value="<?= (false === empty($_POST['dateEnd']) ? $_POST['dateEnd'] : '' ) ?>"/>
-        <input type="hidden" name="queryOptions" value="<?= (false === empty($_POST['queryOptions']) ? $_POST['queryOptions'] : '' ) ?>" />
-    </form>
-    <div class="csv">
-        <a onclick="document.forms['recupCSV'].submit();" class="btn colorAdd">Recuperation du CSV</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Sources Emprunteurs</h1>
+        </div>
+        <div class="col-sm-6">
+            <form method="post" name="recupCSV">
+                <input type="hidden" name="extraction_csv"/>
+                <input type="hidden" name="dateStart" value="<?= (false === empty($_POST['dateStart']) ? $_POST['dateStart'] : '' ) ?>"/>
+                <input type="hidden" name="dateEnd" value="<?= (false === empty($_POST['dateEnd']) ? $_POST['dateEnd'] : '' ) ?>"/>
+                <input type="hidden" name="queryOptions" value="<?= (false === empty($_POST['queryOptions']) ? $_POST['queryOptions'] : '' ) ?>" />
+            </form>
+            <a role="button" onclick="document.forms['recupCSV'].submit();" class="btn-primary pull-right">Recuperation du CSV</a>
+        </div>
     </div>
     <div class="datepicker_table">
         <form method="post" name="date_select">
@@ -87,8 +91,7 @@
                         <td width = 15%>
                             <br>
                             <input type="hidden" name="spy_search" id="spy_search"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_query" id="send_query"
-                                   class="btn"/>
+                            <button type="submit" name="send_query" id="send_query" class="btn-primary">Rechercher</button>
                         </td>
                     </tr>
                 </table>

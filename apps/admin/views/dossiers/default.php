@@ -117,14 +117,20 @@
     </div>
 </div>
 <div id="contenu">
-    <?php if (isset($this->iCountProjects) && $this->iCountProjects == 0) : ?>
-        <h1>Aucun dossier trouvé</h1>
-    <?php elseif (isset($this->iCountProjects) && $this->iCountProjects == 1) : ?>
-        <h1>1 dossier trouvé</h1>
-    <?php elseif (isset($this->iCountProjects) && $this->iCountProjects > 0) : ?>
-        <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> dossiers trouvés</h1>
-    <?php endif; ?>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/add/create" class="btn_link">Créer un dossier</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <?php if (isset($this->iCountProjects) && $this->iCountProjects == 0) : ?>
+                <h1>Aucun dossier trouvé</h1>
+            <?php elseif (isset($this->iCountProjects) && $this->iCountProjects == 1) : ?>
+                <h1>1 dossier trouvé</h1>
+            <?php elseif (isset($this->iCountProjects) && $this->iCountProjects > 0) : ?>
+                <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> dossiers trouvés</h1>
+            <?php endif; ?>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/dossiers/add/create" class="btn-primary pull-right">Créer un dossier</a>
+        </div>
+    </div>
     <style>
         table.formColor {width: 1115px;}
         .select {width: 100px;}
@@ -205,8 +211,8 @@
                     <tr>
                         <th colspan="10" style="text-align:center;">
                             <input type="hidden" name="form_search_dossier" id="form_search_dossier">
-                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn">
-                            <input style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" type="button" value="Reset" title="Reset" name="Reset" id="Reset" class="btn">
+                            <button type="submit" id="send_dossier" class="btn-primary" style="margin-right: 5px;">Rechercher</button>
+                            <button type="submit" id="Reset" class="btn-default">Réinitialiser</button>
                         </th>
                     </tr>
                 </table>

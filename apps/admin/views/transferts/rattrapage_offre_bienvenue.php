@@ -43,9 +43,13 @@
     }
 </style>
 <div id="contenu">
-    <h1>Rattrapage offre de bienvenue</h1>
-    <div class="csv">
-        <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue/" class="btn colorAdd">Recuperation du CSV</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Rattrapage offre de bienvenue</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue/" class="btn-primary pull-right thickbox">Recuperation du CSV</a>
+        </div>
     </div>
     <div class="datepicker_table">
         <form method="post" name="date_select">
@@ -69,8 +73,7 @@
                         </td>
                         <td><br>
                             <input type="hidden" name="spy_search" id="spy_search"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier"
-                                   class="btn"/>
+                            <button type="submit" class="btn-primary">Rechercher</button>
                         </td>
                     </tr>
                 </table>

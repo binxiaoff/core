@@ -39,7 +39,7 @@
                     <td>
                         <input type="hidden" name="form_mod_mail"/>
                         <input type="hidden" name="lng_encours" value="<?= $this->language ?>"/>
-                        <input type="submit" value="Valider" class="btn"/>
+                        <button type="submit" class="btn-primary">Valider</button>
                     </td>
                 </tr>
             </table>

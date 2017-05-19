@@ -48,9 +48,13 @@
     });
 </script>
 <div id="contenu">
-    <h1>Opérations emprunteurs</h1>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn_link">Export CSV</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Opérations emprunteurs</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn-primary pull-right thickbox">Export CSV</a>
+        </div>
     </div>
     <table class="tablesorter">
         <thead>

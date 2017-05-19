@@ -85,7 +85,7 @@
                     <tr>
                         <th colspan="4" style="text-align:center;">
                             <input type="hidden" name="form_send_offres" id="form_send_offres"/>
-                            <input type="submit" value="Mettre à jour" title="Mettre à jour" name="send_offres" id="send_offres" class="btn"/>
+                            <button type="submit" class="btn-primary">Mettre à jour</button>
                         </th>
                     </tr>
                 </table>
