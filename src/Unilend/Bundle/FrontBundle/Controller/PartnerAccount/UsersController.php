@@ -208,6 +208,9 @@ class UsersController extends Controller
             $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::PARTNER);
 
             $entityManager->commit();
+
+            $mailerManager = $this->get('unilend.service.email_manager');
+            $mailerManager->sendPartnerAccountActivation($client);
         } catch (\Exception $exception) {
             $entityManager->getConnection()->rollBack();
             $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
