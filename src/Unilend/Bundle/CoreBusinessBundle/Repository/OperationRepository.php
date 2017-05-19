@@ -327,8 +327,8 @@ class OperationRepository extends EntityRepository
      */
     public function getInterestAndTaxForFiscalState(\DateTime $start, \DateTime $end)
     {
-        $start->setTime(0,0,0);
-        $end->setTime(23,59,59);
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
 
         $query = 'SELECT
                   CASE c.type
