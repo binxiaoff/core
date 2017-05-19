@@ -11,11 +11,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
-
 class FeedsDailyStateCommand extends ContainerAwareCommand
 {
-    const ROW_HEIGHT   = 20;
-    const COLUMN_WIDTH = 16;
+    const ROW_HEIGHT     = 20;
+    const COLUMN_WIDTH   = 16;
+    const DAY_HEADER_ROW = 2;
 
     const DATE_COLUMN                           = 'A';
     const LENDER_PROVISION_CARD_COLUMN          = 'B';
@@ -53,8 +53,6 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
     const DIRECT_DEBIT_COLUMN                   = 'AH';
     const LAST_COLUMN                           = self::DIRECT_DEBIT_COLUMN;
 
-    const DAY_HEADER_ROW = 2;
-
     /**
      * @see Command
      */
@@ -76,7 +74,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
         if (false === empty($date)) {
             if (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $date)) {
-                $requestedDate = \DateTime::createFromFormat('Y-m-d', $input->getArgument('day'));
+                $requestedDate = \DateTime::createFromFormat('Y-m-d', $date);
                 if (null === $requestedDate) {
                     $output->writeln('<error>Wrong date format ("Y-m-d" expected)</error>');
                     return;
@@ -227,8 +225,8 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
         foreach ($specificRows['coordinatesDay'] as $date => $row) {
             $dateTime = \DateTime::createFromFormat('Y-m-d', $date);
-            $dateTime->setTime(0,0,0);
-            $requestedDate->setTime(0,0,0);
+            $dateTime->setTime(0, 0, 0);
+            $requestedDate->setTime(0, 0, 0);
             if ($dateTime > $requestedDate) {
                 continue;
             }
@@ -399,7 +397,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $activeSheet->setCellValue(self::DATE_COLUMN . $row, strftime('%B', $month->getTimestamp()));
             $activeSheet->getStyle(self::DATE_COLUMN . $row)->getFont()->setBold(true);
             $coordinatesMonth[$month->format('n')] = $row;
-            $row ++;
+            $row++;
         }
 
         return $coordinatesMonth;

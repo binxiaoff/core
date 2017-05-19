@@ -441,46 +441,6 @@ class OperationRepository extends EntityRepository
         return $qb->getQuery()->getSingleScalarResult();
     }
 
-
-    /**
-     * @param Wallet           $wallet
-     * @param string|\DateTime $date
-     *
-     * @return mixed
-     */
-    public function getLenderRecoveryRepaymentDetailByDate(Wallet $wallet, $date)
-    {
-        if ($date instanceof \DateTime) {
-            $date = $date->format('y-m-d H:i:s');
-        }
-
-        $query = '
-                    SELECT
-                      o_capital.amount AS capital,
-                      o_recovery.amount AS commission,
-                      (SELECT available_balance
-                       FROM wallet_balance_history wbh
-                      WHERE wbh.id_operation = o_recovery.id AND wbh.id_wallet = o_recovery.id_wallet_debtor) AS available_balance
-                    FROM operation o_capital
-                      INNER JOIN operation o_recovery ON o_capital.id_project = o_recovery.id_project AND
-                                                         o_capital.id_wallet_creditor = o_recovery.id_wallet_debtor AND
-                                                         o_recovery.id_type = (SELECT id
-                                                                               FROM operation_type
-                                                                               WHERE label = "' . OperationType::COLLECTION_COMMISSION_LENDER . '")
-                                                         AND o_capital.added = o_recovery.added
-                    WHERE o_capital.id_wallet_creditor = :idWallet
-                      AND o_capital.added = :date
-                      AND o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
-                    GROUP BY IF(o_capital.id_repayment_schedule IS NOT NULL, o_capital.id_repayment_schedule, o_capital.id)';
-
-        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__ . $wallet->getId()));
-        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idWallet' => $wallet->getId(), 'date' => $date], ['idWallet' => \PDO::PARAM_INT, 'date' => \PDO::PARAM_STR], $qcProfile);
-        $result    = $statement->fetch();
-        $statement->closeCursor();
-
-        return $result;
-    }
-
     /**
      * @param \DateTime $start
      * @param \DateTime $end
@@ -515,8 +475,8 @@ class OperationRepository extends EntityRepository
                 ORDER BY o.added ASC;';
 
         $result = $this->getEntityManager()->getConnection()
-            ->executeQuery($query,
-                ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])->fetchAll(\PDO::FETCH_ASSOC);
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
 
         $movements = [];
         foreach ($result as $row) {
@@ -526,11 +486,17 @@ class OperationRepository extends EntityRepository
         return $movements;
     }
 
+    /**
+     * @param \DateTime $requestedDate
+     * @param array     $operationTypes
+     *
+     * @return array
+     */
     public function sumMovementsForDailyStateByMonth(\DateTime $requestedDate, array $operationTypes)
     {
         $start = new \DateTime('First day of january ' . $requestedDate->format('Y'));
-        $start->setTime(0,0,0);
-        $requestedDate->setTime(23,59,59);
+        $start->setTime(0, 0, 0);
+        $requestedDate->setTime(23, 59, 59);
 
         $query = 'SELECT
                   MONTH(o.added) AS month,
@@ -555,7 +521,8 @@ class OperationRepository extends EntityRepository
                 ORDER BY o.added ASC;';
 
         $result = $this->getEntityManager()->getConnection()
-            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $requestedDate->format('Y-m-d H:i:s')])->fetchAll(\PDO::FETCH_ASSOC);
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $requestedDate->format('Y-m-d H:i:s')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
 
         $movements = [];
         foreach ($result as $row) {

@@ -231,20 +231,14 @@ class WalletBalanceHistoryRepository extends EntityRepository
         $date->setTime(23, 59, 59);
 
         $query = 'SELECT
-                    IF(
-                          SUM(wbh_line.committed_balance) IS NOT NULL,
-                          (SUM(wbh_line.available_balance) + SUM(wbh_line.committed_balance)),
-                          SUM(wbh_line.available_balance)
-                      ) AS balance
+                    IF(SUM(wbh_line.committed_balance) IS NOT NULL,(SUM(wbh_line.available_balance) + SUM(wbh_line.committed_balance)),SUM(wbh_line.available_balance)) AS balance
                   FROM wallet_balance_history wbh_line
-                    INNER JOIN (
-                                   SELECT MAX(wbh_max.id) AS id FROM wallet_balance_history wbh_max
-                                     INNER JOIN wallet w ON wbh_max.id_wallet = w.id
-                                     INNER JOIN wallet_type wt ON w.id_type = wt.id
-                                   WHERE wbh_max.added <= :end
-                                         AND wt.label IN (:walletLabels)
-                                   GROUP BY wbh_max.id_wallet
-                                 ) wbh_max ON wbh_line.id = wbh_max.id';
+                    INNER JOIN (SELECT MAX(wbh_max.id) AS id FROM wallet_balance_history wbh_max
+                                  INNER JOIN wallet w ON wbh_max.id_wallet = w.id
+                                  INNER JOIN wallet_type wt ON w.id_type = wt.id
+                                WHERE wbh_max.added <= :end
+                                  AND wt.label IN (:walletLabels)
+                                GROUP BY wbh_max.id_wallet) wbh_max ON wbh_line.id = wbh_max.id';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query,
