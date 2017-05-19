@@ -7,9 +7,12 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
 
@@ -112,7 +115,6 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.idWalletCreditor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $creditorWallet);
-
         if (null !== $year) {
             $qb->andWhere('YEAR(o.added) = :year')
                 ->setParameter('year', $year);
@@ -137,7 +139,6 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.idWalletDebtor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $debtorWallet);
-
         if (null !== $year) {
             $qb->andWhere('YEAR(o.added) = :year')
                 ->setParameter('year', $year);
@@ -322,6 +323,29 @@ class OperationRepository extends EntityRepository
 
         return $result;
     }
+
+    /**
+     * @param Projects|integer $project
+     * @param Clients[]        $clients
+     *
+     * @return float
+     */
+    public function getTotalGrossDebtCollectionRepayment($project, array $clients)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor')
+            ->where('ost.label = :operationSubType')
+            ->andWhere('w.idClient IN (:clients)')
+            ->andWhere('o.idProject = :project')
+            ->setParameter('operationSubType', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION)
+            ->setParameter('clients', $clients)
+            ->setParameter('project', $project);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
 
     /**
      * @param Wallet           $wallet

@@ -156,7 +156,7 @@ class bank_accountController extends bootstrap
 
                     $nextDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->findOneBy(
                         ['idProject' => $project, 'status' => Prelevements::STATUS_PENDING],
-                        ['dateEcheanceEmprunteur' => 'DESC']
+                        ['dateEcheanceEmprunteur' => 'ASC']
                     );
 
                     if (null === $nextDirectDebit) {

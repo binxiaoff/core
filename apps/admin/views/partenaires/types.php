@@ -8,8 +8,14 @@
     });
 </script>
 <div id="contenu">
-    <h1>Liste des types de campagnes</h1>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/partenaires/addType" class="btn_link thickbox">Ajouter un type de campagne</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Liste des types de campagnes</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/partenaires/addType" class="btn-primary pull-right thickbox">Ajouter un type de campagne</a>
+        </div>
+    </div>
     <?php if (count($this->lTypes) > 0) : ?>
         <table class="tablesorter">
             <thead>

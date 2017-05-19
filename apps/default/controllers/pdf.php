@@ -641,13 +641,9 @@ class pdfController extends bootstrap
         $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, round(bcdiv($oProjects->commission_rate_repayment, 100, 4), 2), $fVat);
         $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
 
-        /** @var \transactions $transaction */
-        $transaction = $this->loadData('transactions');
-        $transaction->get($oProjects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project');
+        $fundReleasingCommissionRate = bcdiv($this->projects->commission_rate_funds, 100, 5);
 
-        $fundReleasingCommissionRate = $transaction->montant_unilend / $oProjects->amount / 100;
-
-        $this->fCommissionProject = $fundReleasingCommissionRate * $oLoans->amount / 100 / (1 + $fVat);;
+        $this->fCommissionProject = $fundReleasingCommissionRate * $oLoans->amount / 100;
         $this->fInterestTotal     = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
         $contract->get($oLoans->id_type_contract);
@@ -924,8 +920,6 @@ class pdfController extends bootstrap
         $clients = $this->loadData('clients');
         /** @var \loans $loans */
         $loans = $this->loadData('loans');
-        /** @var \projects $projects */
-        $projects = $this->loadData('projects');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
@@ -935,7 +929,7 @@ class pdfController extends bootstrap
         }
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_lender);
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($loans->id_lender);
 
         if (false === $wallet->getIdClient()->isLender()) {
             header('Location: ' . $this->lurl);
@@ -950,22 +944,23 @@ class pdfController extends bootstrap
         $namePdfClient = 'DECLARATION-DE-CREANCES-UNILEND-' . $clients->hash . '-' . $loans->id_loan;
 
         if (false === file_exists($filePath)) {
-            $this->GenerateClaimsHtml($clients, $loans, $projects);
+            $this->GenerateClaimsHtml($clients, $loans);
             $this->WritePdf($filePath, 'claims');
         }
 
         $this->ReadPdf($filePath, $namePdfClient);
     }
 
-    private function GenerateClaimsHtml(\clients $client, \loans $loan, \projects $projects)
+    private function GenerateClaimsHtml(\clients $client, \loans $loan)
     {
         /** @var \loans oLoans */
         $this->oLoans = $loan;
         /** @var \clients clients */
         $this->clients = $client;
         /** @var \projects projects */
-        $this->projects = $projects;
+        $this->projects = $this->loadData('projects');
 
+        $this->projects->get($loan->id_project);
         /** @var \pays_v2 pays */
         $this->pays = $this->loadData('pays_v2');
         /** @var \echeanciers echeanciers */
@@ -1014,20 +1009,20 @@ class pdfController extends bootstrap
             $projectStatusHistory = $this->loadData('projects_status_history');
             $projectStatusHistory->loadStatusForJudgementDate($this->projects->id_project, $status);
 
-            /** @var \projects_status_history_details $projectStatusHistoryDetails */
-            $projectStatusHistoryDetails = $this->loadData('projects_status_history_details');
-            $projectStatusHistoryDetails->get($projectStatusHistory->id_project_status_history, 'id_project_status_history');
+            $projectStatusHistoryDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistoryDetails')
+                ->findOneBy(['idProjectStatusHistory' => $projectStatusHistory->id_project_status_history]);
 
-            $this->date            = \DateTime::createFromFormat('Y-m-d', $projectStatusHistoryDetails->date);
-            $this->mandataires_var = $projectStatusHistoryDetails->receiver;
+            $this->date            = $projectStatusHistoryDetails->getDate();
+            $this->mandataires_var = $projectStatusHistoryDetails->getReceiver();
 
             /** @var projects_status $projectStatusType */
             $projectStatusType = $this->loadData('projects_status');
             $projectStatusType->get(\projects_status::RECOUVREMENT, 'status');
 
-            $recoveryStatus = $projectStatusHistory->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = ' . $projectStatusType->id_project_status, '', '', 1);
-            if (false === empty($recoveryStatus)) {
-                $expiration = \DateTime::createFromFormat('Y-m-d H:i:s', $recoveryStatus[0]['added']);
+            $debtCollectionStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+                ->findOneBy(['idProject' => $this->projects->id_project, 'idProjectStatus' => $projectStatusType->id_project_status]);
+            if ($debtCollectionStatus) {
+                $expiration = $debtCollectionStatus->getAdded();
             } else {
                 $expiration = $this->date;
             }
@@ -1052,40 +1047,36 @@ class pdfController extends bootstrap
             $this->echu        = $repaymentSchedule->getNonRepaidAmountInDateRange($wallet->getId(), new \DateTime($this->oLoans->added), $expiration, $this->oLoans->id_loan);
             $this->echoir      = $repaymentSchedule->getTotalComingCapital($wallet->getId(), $this->oLoans->id_loan, $expiration);
 
-            if (false === empty($recoveryStatus)) {
-                /** @var \transactions $transaction */
-                $transaction     = $this->loadData('transactions');
-                $where           = 'id_client = ' . $wallet->getIdClient()->getIdClient() . ' AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+            if ($debtCollectionStatus) {
+                $clients = [$wallet->getIdClient()];
 
                 if (false === empty($this->oLoans->id_transfer)) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
                     $loanManager = $this->get('unilend.service.loan_manager');
-                    /** @var Clients $formerOwner */
-                    $formerOwner = $loanManager->getFirstOwner($this->oLoans);
-                    $where       = 'id_client IN (' . implode(',', [$wallet->getIdClient()->getIdClient(), $formerOwner->getIdClient()]) . ') AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+                    $clients[]   = $loanManager->getFirstOwner($this->oLoans);
                 }
 
-                $totalAmountRecovered = bcdiv($transaction->sum($where, 'montant'), 100, 2);
-                $allLoans             = $this->oLoans->select('id_lender = ' . $wallet->getId() . ' AND id_project = ' . $this->projects->id_project);
-                $totalLoans           = $this->oLoans->sumPretsProjet($this->projects->id_project . ' AND id_lender = ' . $wallet->getId());
+                $loanRepository                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+                $totalGrossDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalGrossDebtCollectionRepayment($this->projects->id_project, $clients);
+                $allLoans                          = $loanRepository->findLoansByClients($this->projects->id_project, $clients);
+                $totalLoans                        = $loanRepository->getLoansSumByClients($this->projects->id_project, $clients);
 
-                $recoveryAmountsTaxExcl = [];
-                foreach ($allLoans as $index => $loan) {
-                    $prorataRecovery                          = round(bcdiv(bcmul(bcdiv($loan['amount'], 100, 3), $totalAmountRecovered), $totalLoans, 3), 2);
-                    $recoveryAmountsTaxExcl[$loan['id_loan']] = $prorataRecovery;
+                $debtCollectionGrossAmounts = [];
+                foreach ($allLoans as $loan) {
+                    $proportionDebtCollection                       = round(bcdiv(bcmul(bcdiv($loan->getAmount(), 100, 3), $totalGrossDebtCollectionRepayment, 3), $totalLoans, 3), 2);
+                    $debtCollectionGrossAmounts[$loan->getIdLoan()] = $proportionDebtCollection;
                 }
 
-                $roundDifference = round(bcsub(array_sum($recoveryAmountsTaxExcl), $totalAmountRecovered, 3), 2);
+                $roundDifference = round(bcsub(array_sum($debtCollectionGrossAmounts), $totalGrossDebtCollectionRepayment, 3), 2);
+
                 if (abs($roundDifference) > 0) {
-                    $maxAmountLoanId                          = array_keys($recoveryAmountsTaxExcl, max($recoveryAmountsTaxExcl))[0];
-                    $recoveryAmountsTaxExcl[$maxAmountLoanId] = bcsub($recoveryAmountsTaxExcl[$maxAmountLoanId], $roundDifference, 2);
+                    $maxAmountLoanId                              = array_keys($debtCollectionGrossAmounts, max($debtCollectionGrossAmounts))[0];
+                    $debtCollectionGrossAmounts[$maxAmountLoanId] = bcsub($debtCollectionGrossAmounts[$maxAmountLoanId], $roundDifference, 2);
                 }
 
-                $recoveryTaxExcl = $recoveryAmountsTaxExcl[$this->oLoans->id_loan];
-                // 0.844 is the rate for getting the total amount including the MCS commission and tax. Todo: replace it when doing the Recovery project
-                $recoveryTaxIncl = bcdiv($recoveryTaxExcl, 0.844, 5);
-                $this->echu      = bcsub(bcadd($this->echu, $this->echoir, 2), $recoveryTaxIncl, 2);
-                $this->echoir    = 0;
+                $debtCollectionTaxIncl = $debtCollectionGrossAmounts[$this->oLoans->id_loan];
+                $this->echu            = bcsub(bcadd($this->echu, $this->echoir, 2), $debtCollectionTaxIncl, 2);
+                $this->echoir          = 0;
             }
 
             $this->total        = bcadd($this->echu, $this->echoir, 2);

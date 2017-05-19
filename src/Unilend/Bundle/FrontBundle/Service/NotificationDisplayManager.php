@@ -120,7 +120,7 @@ class NotificationDisplayManager
 
         $result = [];
 
-        $where        = (null === $project) ? 'id_lender = ' . $wallet->getId() : 'id_lender = ' . $wallet->getId() . ' AND id_project = ' . $projectId;
+        $where        = (null === $projectId) ? 'id_lender = ' . $wallet->getId() : 'id_lender = ' . $wallet->getId() . ' AND id_project = ' . $projectId;
         $start        = (true === empty($offset)) ? '' : $offset - 1;
         $numberOfRows = (true === empty($length)) ? '' : $length;
 

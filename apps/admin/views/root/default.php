@@ -1,5 +1,5 @@
 <div id="contenu">
-    <div style="float: left; width: 350px;">
+    <div style="float: left; width: 320px;">
         <h1>Dossiers en cours</h1>
         <?php if (count($this->lStatus) > 0) : ?>
             <table class="tablesorter">
@@ -25,7 +25,7 @@
             <p>Il n'y a aucun statut pour le moment.</p>
         <?php endif; ?>
     </div>
-    <div style="float: right; width: 790px;">
+    <div style="float: right; width: 775px;">
         <h1><?= count($this->lProjectsNok) ?> incidents de remboursement :</h1>
         <?php if (count($this->lProjectsNok) > 0) : ?>
             <table class="tablesorter">

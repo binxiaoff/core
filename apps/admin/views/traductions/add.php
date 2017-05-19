@@ -23,7 +23,7 @@
                     <th>
                         <input type="hidden" name="id_langue" id="id_langue" value="<?= $this->dLanguage ?>"/>
                         <input type="hidden" name="form_add_traduction" id="form_add_traduction"/>
-                        <input type="submit" value="Valider" name="send_traduction" id="send_traduction" class="btn"/>
+                        <button type="submit" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>

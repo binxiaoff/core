@@ -3,6 +3,11 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\librairies\CacheKeys;
@@ -34,7 +39,7 @@ class LoansRepository extends EntityRepository
             $query,
             ['lenderId' => $wallet->getId(), 'loanStatus' => \loans::STATUS_ACCEPTED, 'projectStatus' => \projects_status::REMBOURSEMENT],
             ['lenderId' => \PDO::PARAM_INT, 'loanStatus' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT],
-            new \Doctrine\DBAL\Cache\QueryCacheProfile(CacheKeys::SHORT_TIME, __FUNCTION__)
+            new QueryCacheProfile(CacheKeys::SHORT_TIME, __FUNCTION__)
         );
         $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
         $statement->closeCursor();
@@ -110,5 +115,42 @@ class LoansRepository extends EntityRepository
         $regionsCount = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         return $regionsCount;
+    }
+
+    /**
+     * @param Projects|integer  $project
+     * @param Clients[] $clients
+     *
+     * @return Loans[]
+     */
+    public function findLoansByClients($project, array $clients)
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
+           ->where('l.idProject = :project')
+           ->andWhere('w.idClient IN (:clients)')
+           ->setParameter('project', $project)
+           ->setParameter('clients', $clients);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param Projects|integer  $project
+     * @param Clients[] $clients
+     *
+     * @return float
+     */
+    public function getLoansSumByClients($project, array $clients)
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
+        $queryBuilder->select('SUM(ROUND(l.amount/100, 2))')
+           ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
+           ->where('l.idProject = :project')
+           ->andWhere('w.idClient IN (:clients)')
+           ->setParameter('project', $project)
+           ->setParameter('clients', $clients);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }
