@@ -544,6 +544,7 @@ var UserNotifications = window.UserNotifications = {
     if (notification) {
       notification.isOpen = true
       $('[data-notification-id="' + notification.id + '"]').addClass('ui-notification-open')
+      $doc.trigger('UserNotifications:open', [notification.id, notification.projectId])
     }
   },
 
@@ -554,6 +555,7 @@ var UserNotifications = window.UserNotifications = {
     if (notification) {
       notification.isOpen = false
       $('[data-notification-id="' + notification.id + '"]').removeClass('ui-notification-open')
+      $doc.trigger('UserNotifications:close', [notification.id, notification.projectId])
     }
   },
 
@@ -811,6 +813,38 @@ $doc.on('ready', function () {
       UserNotifications.markAllRead()
     })
 
+    .on('UserNotifications:open', function(event, notificationId, projectId) {
+      // Open project in myloans table
+      if (projectId) {
+        var $loansTab = $('#loans')
+        var $project = $loansTab.find('#loan-' + projectId)
+        if ($loansTab.length && $project.length) {
+          if (!$loansTab.is('.active')) {
+            $('.nav-dashboard-tabs a[href="#loans"]').trigger('click')
+          }
+          if (!$project.is('.ui-details-open')) {
+            $('body').animate({
+              scrollTop: $project.offset().top - 80,
+              duration: 300
+            }, function () {
+              $project.find('.ui-show-table-myloans-item-activity').trigger('click')
+            });
+          }
+        }
+      }
+    })
+
+    .on('UserNotifications:close', function(event, notificationId, projectId) {
+      // Close project in myloans table
+      if (projectId) {
+        var $loansTab = $('#loans')
+        var $project = $loansTab.find('#loan-' + projectId)
+        if ($project.is('.ui-details-open')) {
+          $project.find('.ui-show-table-myloans-item-activity').trigger('click')
+        }
+      }
+    })
+
     // Click on element designated to trigger 'UserNotifications:markAllRead' event
     .on(Utility.clickEvent, '[data-usernotifications-markallread]', function (event) {
       event.preventDefault()
@@ -840,19 +874,6 @@ $doc.on('ready', function () {
           // If notification unread, mark as read
           if ($notification.is('.ui-notification-status-unread')) {
             UserNotifications.markRead(notificationId)
-          }
-          // Toggle project view in myloans table
-          var notificationProjectId = 407 // TODO
-          if (notificationProjectId) {
-            var $loansTab = $('#loans')
-            var $project = $('#loan-' + notificationProjectId)
-
-            if ($loansTab.length && $loansTab.find($project).length) {
-              if (!$loansTab.is('.active')) {
-                $('.nav-dashboard-tabs a[href="#loans"]').trigger('click')
-              }
-              $project.find('.ui-show-table-myloans-item-activity').trigger('click')
-            }
           }
         }
       }

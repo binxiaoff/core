@@ -336,7 +336,7 @@ class NotificationDisplayManager
 
             $result[] = [
                 'id'        => $notification['id_notification'],
-                'projectId' => $project->id_project,
+                'projectId' => $notification['id_project'],
                 'type'      => $type,
                 'title'     => $title,
                 'datetime'  => $added,

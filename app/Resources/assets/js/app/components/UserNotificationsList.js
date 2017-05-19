@@ -128,6 +128,7 @@ UserNotificationsList.prototype.render = function () {
       if (notifications instanceof Array && notifications.length > 0) {
         for (var i = 0; i < notifications.length; i++) {
           notificationsHTML += self.renderNotification(notifications[i])
+          console.log(notifications[i])
         }
       }
     }
