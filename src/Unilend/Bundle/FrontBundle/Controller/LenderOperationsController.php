@@ -453,16 +453,16 @@ class LenderOperationsController extends Controller
             if(in_array($aProjectLoans['project_status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
                 $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K'. ($iRowIndex + 2));
                 $oActiveSheet->setCellValue(
-                    'F' . ($iRowIndex + 2),
+                    'G' . ($iRowIndex + 2),
                     $this->get('translator')->trans(
                         'lender-operations_loans-table-project-status-label-repayment-finished-on-date',
-                        ['%date%' => date('d/m/Y', $aProjectLoans['final_repayment_date'])]
+                        ['%date%' => \DateTime::createFromFormat('Y-m-d H:i:s', $aProjectLoans['final_repayment_date'])->format('d/m/Y')]
                     )
                 );
             } elseif (in_array($aProjectLoans['project_status'], [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::RECOUVREMENT])) {
                 $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K'. ($iRowIndex + 2));
                 $oActiveSheet->setCellValue(
-                    'F' . ($iRowIndex + 2),
+                    'G' . ($iRowIndex + 2),
                     $this->get('translator')->transChoice(
                         'lender-operations_loans-table-project-procedure-in-progress',
                         $aProjectLoans['count']['declaration']
@@ -1045,59 +1045,65 @@ class LenderOperationsController extends Controller
         switch ($projectStatus['status']) {
             case ProjectsStatus::PROBLEME:
                 $title   = $translator->trans('lender-notifications_late-repayment-title');
-                $content = $translator->trans('lender-notifications_late-repayment-content', [
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
+                $content = (false === empty($projectStatus['siteContent'])) ? $projectStatus['siteContent'] :
+                    $translator->trans('lender-notifications_late-repayment-content', [
+                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                        '%company%'    => $project->getIdCompany()->getName()
+                    ]);
                 break;
             case ProjectsStatus::PROBLEME_J_X:
                 $title   = $translator->trans('lender-notifications_late-repayment-x-days-title');
-                $content = $translator->trans('lender-notifications_late-repayment-x-days-content', [
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
+                $content = (false === empty($projectStatus['siteContent'])) ? $projectStatus['siteContent'] :
+                    $translator->trans('lender-notifications_late-repayment-x-days-content', [
+                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                        '%company%'    => $project->getIdCompany()->getName()
+                    ]);
                 break;
             case ProjectsStatus::RECOUVREMENT:
                 $title   = $translator->trans('lender-notifications_recovery-title');
-                $content = $translator->trans('lender-notifications_recovery-content', [
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
+                $content = (false === empty($projectStatus['siteContent'])) ? $projectStatus['siteContent'] :
+                    $translator->trans('lender-notifications_recovery-content', [
+                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                        '%company%'    => $project->getIdCompany()->getName()
+                    ]);
                 break;
             case ProjectsStatus::PROCEDURE_SAUVEGARDE:
                 $title   = $translator->trans('lender-notifications_precautionary-process-title');
-                $content = $translator->trans('lender-notifications_precautionary-process-content', [
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
+                $content = (false === empty($projectStatus['siteContent'])) ? $projectStatus['siteContent'] :
+                    $translator->trans('lender-notifications_precautionary-process-content', [
+                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                        '%company%'    => $project->getIdCompany()->getName()
+                    ]);
                 break;
             case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
                 $title   = $translator->trans('lender-notifications_receivership-title');
-                $content = $translator->trans('lender-notifications_receivership-content', [
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
+                $content = (false === empty($projectStatus['siteContent'])) ? $projectStatus['siteContent'] :
+                    $translator->trans('lender-notifications_receivership-content', [
+                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                        '%company%'    => $project->getIdCompany()->getName()
+                    ]);
                 break;
             case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
                 $title   = $translator->trans('lender-notifications_compulsory-liquidation-title');
-                $content = $translator->trans('lender-notifications_compulsory-liquidation-content', [
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
+                $content = (false === empty($projectStatus['siteContent'])) ? $projectStatus['siteContent'] :
+                    $translator->trans('lender-notifications_compulsory-liquidation-content', [
+                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                        '%company%'    => $project->getIdCompany()->getName()
+                    ]);
                 break;
             case ProjectsStatus::DEFAUT:
                 $title   = $translator->trans('lender-notifications_company-failure-title');
-                $content = $translator->trans('lender-notifications_company-failure-content', [
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
+                $content = (false === empty($projectStatus['siteContent'])) ? $projectStatus['siteContent'] :
+                    $translator->trans('lender-notifications_company-failure-content', [
+                        '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
+                        '%company%'    => $project->getIdCompany()->getName()
+                    ]);
                 break;
             default:
                 $title   = $projectStatus['label'];
                 $content = '';
                 break;
         }
-        $content .= (false === empty($projectStatus['siteContent'])) ? '<br>' . $projectStatus['siteContent'] : '';
 
         return ['title' => $title, 'content' => $content];
     }
