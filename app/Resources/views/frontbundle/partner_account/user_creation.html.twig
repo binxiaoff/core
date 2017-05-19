@@ -40,11 +40,14 @@
                                     {% endif %}
                                 </div><!-- /.form-field -->
 
-                                <div class="form-field{% if form.errors.email is defined %} ui-formvalidation-error{% endif %}">
+                                <div class="form-field{% if form.errors.email is defined or form.errors.email_existing is defined %} ui-formvalidation-error{% endif %}">
                                     <label for="form-project-add-user-email">{% trans %} common_email {% endtrans %}</label>
                                     <input id="form-project-add-user-email" type="text" name="email" value="{{ form.values.email|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
                                     {% if form.errors.email is defined %}
                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                    {% endif %}
+                                    {% if form.errors.email_existing is defined %}
+                                        <ul class="ui-formvalidation-messages"><li>{% trans %} partner-users-add_form-existing-email-error {% endtrans %}</li></ul>
                                     {% endif %}
                                 </div><!-- /.form-field -->
 
