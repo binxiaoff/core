@@ -3,6 +3,7 @@
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
 
 class ajaxController extends bootstrap
 {
@@ -284,7 +285,21 @@ class ajaxController extends bootstrap
                 $eligibleProducts = $productManager->findEligibleProducts($project, true);
 
                 if (1 === count($eligibleProducts)) {
+                    /** @var \Doctrine\ORM\EntityManager $entityManager */
+                    $entityManager = $this->get('doctrine.orm.entity_manager');
+                    /** @var PartnerProduct $partnerProduct */
+                    $partnerProduct      = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $project->id_partner, 'idProduct' => $eligibleProducts[0]->id_product]);
                     $project->id_product = $eligibleProducts[0]->id_product;
+
+                    if (null != $partnerProduct) {
+                        $project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
+                        $project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
+                    } else {
+                        $this->get('logger')->warning(
+                            'Relation between partner and product not found',
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project, 'id_partner' => $project->id_partner, 'id_product' => $eligibleProducts[0]->id_product]
+                        );
+                    }
                     $project->update();
                 }
 
@@ -697,28 +712,30 @@ class ajaxController extends bootstrap
             $historyDetails->commercial_rejection_reason = $_POST['rejection_reason'];
             $historyDetails->create();
 
-            /** @var \settings $settings */
-            $settings = $this->loadData('settings');
-            $settings->get('Facebook', 'type');
-            $facebookLink = $settings->value;
+            if (false === empty($client->email)) {
+                /** @var \settings $settings */
+                $settings = $this->loadData('settings');
+                $settings->get('Facebook', 'type');
+                $facebookLink = $settings->value;
 
-            $settings->get('Twitter', 'type');
-            $twitterLink = $settings->value;
+                $settings->get('Twitter', 'type');
+                $twitterLink = $settings->value;
 
-            $keywords = array(
-                'surl'                   => $this->surl,
-                'url'                    => $this->furl,
-                'prenom_e'               => $client->prenom,
-                'link_compte_emprunteur' => $this->furl,
-                'lien_fb'                => $facebookLink,
-                'lien_tw'                => $twitterLink
-            );
+                $keywords = array(
+                    'surl'                   => $this->surl,
+                    'url'                    => $this->furl,
+                    'prenom_e'               => $client->prenom,
+                    'link_compte_emprunteur' => $this->furl,
+                    'lien_fb'                => $facebookLink,
+                    'lien_tw'                => $twitterLink
+                );
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-            $message->setTo($client->email);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+                $message->setTo($client->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            }
         }
 
         echo 'ok';
@@ -809,28 +826,30 @@ class ajaxController extends bootstrap
             $historyDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
             $historyDetails->create();
 
-            /** @var \settings $settings */
-            $settings = $this->loadData('settings');
-            $settings->get('Facebook', 'type');
-            $facebookLink = $settings->value;
+            if (false === empty($client->email)) {
+                /** @var \settings $settings */
+                $settings = $this->loadData('settings');
+                $settings->get('Facebook', 'type');
+                $facebookLink = $settings->value;
 
-            $settings->get('Twitter', 'type');
-            $twitterLink = $settings->value;
+                $settings->get('Twitter', 'type');
+                $twitterLink = $settings->value;
 
-            $keywords = array(
-                'surl'                   => $this->surl,
-                'url'                    => $this->furl,
-                'prenom_e'               => $client->prenom,
-                'link_compte_emprunteur' => $this->furl,
-                'lien_fb'                => $facebookLink,
-                'lien_tw'                => $twitterLink
-            );
+                $keywords = array(
+                    'surl'                   => $this->surl,
+                    'url'                    => $this->furl,
+                    'prenom_e'               => $client->prenom,
+                    'link_compte_emprunteur' => $this->furl,
+                    'lien_fb'                => $facebookLink,
+                    'lien_tw'                => $twitterLink
+                );
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-            $message->setTo($client->email);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+                $message->setTo($client->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            }
         }
 
         echo json_encode(['success' => true]);
@@ -946,28 +965,30 @@ class ajaxController extends bootstrap
             $historyDetails->comity_rejection_reason   = $_POST['rejection_reason'];
             $historyDetails->create();
 
-            /** @var \settings $settings */
-            $settings = $this->loadData('settings');
-            $settings->get('Facebook', 'type');
-            $facebookLink = $settings->value;
+            if (false === empty($client->email)) {
+                /** @var \settings $settings */
+                $settings = $this->loadData('settings');
+                $settings->get('Facebook', 'type');
+                $facebookLink = $settings->value;
 
-            $settings->get('Twitter', 'type');
-            $twitterLink = $settings->value;
+                $settings->get('Twitter', 'type');
+                $twitterLink = $settings->value;
 
-            $keywords = array(
-                'surl'                   => $this->surl,
-                'url'                    => $this->furl,
-                'prenom_e'               => $client->prenom,
-                'link_compte_emprunteur' => $this->furl,
-                'lien_fb'                => $facebookLink,
-                'lien_tw'                => $twitterLink
-            );
+                $keywords = array(
+                    'surl'                   => $this->surl,
+                    'url'                    => $this->furl,
+                    'prenom_e'               => $client->prenom,
+                    'link_compte_emprunteur' => $this->furl,
+                    'lien_fb'                => $facebookLink,
+                    'lien_tw'                => $twitterLink
+                );
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-            $message->setTo($client->email);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+                $message->setTo($client->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            }
         }
 
         if (

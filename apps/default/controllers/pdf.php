@@ -641,13 +641,9 @@ class pdfController extends bootstrap
         $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, round(bcdiv($oProjects->commission_rate_repayment, 100, 4), 2), $fVat);
         $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
 
-        /** @var \transactions $transaction */
-        $transaction = $this->loadData('transactions');
-        $transaction->get($oProjects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project');
+        $fundReleasingCommissionRate = bcdiv($this->projects->commission_rate_funds, 100, 5);
 
-        $fundReleasingCommissionRate = $transaction->montant_unilend / $oProjects->amount / 100;
-
-        $this->fCommissionProject = $fundReleasingCommissionRate * $oLoans->amount / 100 / (1 + $fVat);;
+        $this->fCommissionProject = $fundReleasingCommissionRate * $oLoans->amount / 100;
         $this->fInterestTotal     = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
         $contract->get($oLoans->id_type_contract);
