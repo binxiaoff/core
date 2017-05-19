@@ -116,7 +116,8 @@ class OperationRepository extends EntityRepository
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $creditorWallet);
         if (null !== $year) {
-            $qb->andWhere('YEAR(o.added) = :year')->setParameter('year', $year);
+            $qb->andWhere('YEAR(o.added) = :year')
+                ->setParameter('year', $year);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -139,7 +140,8 @@ class OperationRepository extends EntityRepository
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $debtorWallet);
         if (null !== $year) {
-            $qb->andWhere('YEAR(o.added) = :year')->setParameter('year', $year);
+            $qb->andWhere('YEAR(o.added) = :year')
+                ->setParameter('year', $year);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -437,5 +439,96 @@ class OperationRepository extends EntityRepository
             ->setParameter('project', $project);
 
         return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function sumMovementsForDailyState(\DateTime $start, \DateTime $end, array $operationTypes)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT
+                  LEFT(o.added, 10) AS day,
+                  SUM(o.amount) AS amount,
+                  CASE ot.label
+                   WHEN "'. OperationType::LENDER_PROVISION . '" THEN
+                      IF(o.id_backpayline IS NOT NULL,
+                       "lender_provision_credit_card",
+                        IF(o.id_wire_transfer_in IS NOT NULL,
+                           "lender_provision_wire_transfer_in",
+                           NULL)
+                        )
+                     WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
+                       IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
+                      ELSE ot.label END AS movement
+                FROM operation o USE INDEX (idx_operation_added)
+                INNER JOIN operation_type ot ON o.id_type = ot.id
+                WHERE
+                  o.added BETWEEN :start AND :end
+                  AND ot.label IN ("' . implode('","', $operationTypes) . '")
+                GROUP BY day, movement
+                ORDER BY o.added ASC;';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
+
+        $movements = [];
+        foreach ($result as $row) {
+            $movements[$row['day']][$row['movement']] = $row['amount'];
+        }
+
+        return $movements;
+    }
+
+    /**
+     * @param \DateTime $requestedDate
+     * @param array     $operationTypes
+     *
+     * @return array
+     */
+    public function sumMovementsForDailyStateByMonth(\DateTime $requestedDate, array $operationTypes)
+    {
+        $start = new \DateTime('First day of january ' . $requestedDate->format('Y'));
+        $start->setTime(0, 0, 0);
+        $requestedDate->setTime(23, 59, 59);
+
+        $query = 'SELECT
+                  MONTH(o.added) AS month,
+                  SUM(o.amount) AS amount,
+                  CASE ot.label
+                   WHEN "'. OperationType::LENDER_PROVISION . '" THEN
+                      IF(o.id_backpayline IS NOT NULL,
+                       "lender_provision_credit_card",
+                        IF(o.id_wire_transfer_in IS NOT NULL,
+                           "lender_provision_wire_transfer_in",
+                           NULL)
+                        )
+                     WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
+                       IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
+                      ELSE ot.label END AS movement
+                FROM operation o USE INDEX (idx_operation_added)
+                INNER JOIN operation_type ot ON o.id_type = ot.id
+                WHERE
+                  o.added BETWEEN :start AND :end
+                  AND ot.label IN ("' . implode('","', $operationTypes) . '")
+                GROUP BY month, movement
+                ORDER BY o.added ASC;';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $requestedDate->format('Y-m-d H:i:s')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
+
+        $movements = [];
+        foreach ($result as $row) {
+            $movements[$row['month']][$row['movement']] = $row['amount'];
+        }
+
+        return $movements;
     }
 }

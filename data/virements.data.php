@@ -88,17 +88,4 @@ class virements extends virements_crud
         $result = $this->bdd->query($sql);
         return (int) ($this->bdd->result($result, 0, 0));
     }
-
-    public function sumVirementsbyDay($date, $where = '')
-    {
-        if ($where != '') {
-            $where = 'AND ' . $where;
-        }
-
-        $sql = 'SELECT SUM(montant) FROM `virements` WHERE LEFT(added,10) = "' . $date . '" ' . $where;
-
-        $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
-        return $montant / 100;
-    }
 }
