@@ -10,7 +10,7 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
-var ProjectNotifications = require('../components/ProjectNotifications')
+// var ProjectNotifications = require('../components/ProjectNotifications')
 
 var $doc = $(document)
 
@@ -94,17 +94,17 @@ function Paginate(elem, options) {
     }
 
     // If there are notifications, mark them as read or open them
-    self.markRead = function(pageIndex) {
-        var $targetPage  = self.$el.find('[data-page-index="' + pageIndex + '"]')
-        var $notifs = $targetPage.find('[data-proj-notification]')
-        $notifs.each(function(){
-            if ($(this).is('.ui-notification-status-unread')) {
-                ProjectNotifications.markRead(this)
-            } else {
-                ProjectNotifications.openNotification(this)
-            }
-        })
-    }
+    // self.markRead = function(pageIndex) {
+    //     var $targetPage  = self.$el.find('[data-page-index="' + pageIndex + '"]')
+    //     var $notifs = $targetPage.find('[data-proj-notification]')
+    //     $notifs.each(function(){
+    //         if ($(this).is('.ui-notification-status-unread')) {
+    //             ProjectNotifications.markRead(this)
+    //         } else {
+    //             ProjectNotifications.openNotification(this)
+    //         }
+    //     })
+    // }
 
     // Trigger Initialised event
     self.$el.trigger('Paginate:initialised', 1)

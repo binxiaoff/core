@@ -84,11 +84,6 @@ class LenderOperationsController extends Controller
      */
     public function indexAction(Request $request)
     {
-//        var_dump($this->getProjectInformation(1124));die;
-//        $projectManager = $this->get('unilend.service.project_manager');
-//        $projectInformation = $projectManager->getProjectEventsDetail(1124, 424);
-//        var_dump($projectInformation);
-//        die;
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \indexage_vos_operations $lenderOperationsIndex */
@@ -455,11 +450,32 @@ class LenderOperationsController extends Controller
             $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), $this->get('translator')->trans('lender-operations_project-status-label-' . $aProjectLoans['project_status']));
             $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
             $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['start_date'])));
-            $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_payment_date'])));
-            $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['end_date'])));
-            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
-            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
-            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
+
+            if(in_array($aProjectLoans['project_status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
+                $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K'. ($iRowIndex + 2));
+                $oActiveSheet->setCellValue(
+                    'F' . ($iRowIndex + 2),
+                    $this->get('translator')->trans(
+                        'lender-operations_loans-table-project-status-label-repayment-finished-on-date',
+                        ['%date%' => date('d/m/Y', $aProjectLoans['final_repayment_date'])]
+                    )
+                );
+            } elseif (in_array($aProjectLoans['project_status'], [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::RECOUVREMENT])) {
+                $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K'. ($iRowIndex + 2));
+                $oActiveSheet->setCellValue(
+                    'F' . ($iRowIndex + 2),
+                    $this->get('translator')->transChoice(
+                        'lender-operations_loans-table-project-procedure-in-progress',
+                        $aProjectLoans['count']['declaration']
+                    )
+                );
+            } else {
+                $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_payment_date'])));
+                $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['end_date'])));
+                $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
+                $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
+                $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
+            }
 
             $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
             $sNote = $this->getProjectNote($sRisk);
@@ -947,7 +963,7 @@ class LenderOperationsController extends Controller
         foreach ($projectInformation['projectStatus'] as $projectStatus) {
             $titleAndContent = $this->getProjectStatusTitleAndContent($projectStatus, $project, $translator);
             $data[]          = [
-                'id'        => 0,
+                'id'        => count($data),
                 'projectId' => $projectId,
                 'type'      => 'account',
                 'image'     => 'account',
@@ -960,7 +976,7 @@ class LenderOperationsController extends Controller
         }
         foreach ($projectInformation['projectNotifications'] as $projectNotification) {
             $data[] = [
-                'id'        => 0,
+                'id'        => count($data),
                 'projectId' => $projectNotification->getIdProject()->getIdProject(),
                 'image'     => 'information',
                 'type'      => 'account',
@@ -978,7 +994,7 @@ class LenderOperationsController extends Controller
                 continue;
             }
             $data[] = [
-                'id'        => 0,
+                'id'        => count($data),
                 'projectId' => $projectId,
                 'image'     => 'remboursement',
                 'type'      => 'remboursement',
@@ -996,20 +1012,24 @@ class LenderOperationsController extends Controller
                 continue;
             }
             $data[] = [
-                'id'        => 0,
+                'id'        => count($data),
                 'projectId' => $projectId,
                 'image'     => 'remboursement',
                 'type'      => 'remboursement',
                 'title'     => $titleAndContent['title'],
                 'content'   => $titleAndContent['content'],
-                'datetime'  => $repayment->getAdded(),
-                'iso-8601'  => $repayment->getAdded()->format('c'),
+                'datetime'  => $repayment->getDateEcheanceReel(),
+                'iso-8601'  => $repayment->getDateEcheanceReel()->format('c'),
                 'status'    => 'read'
             ];
         }
 
         if (false === empty($data)) {
             usort($data, [$this, 'sortArrayByDate']);
+        }
+
+        foreach ($data as $index => $row) {
+            $data[$index]['status'] = ($row['datetime']->format('Y-m-d H:i:s') > $this->getUser()->getLastLoginDate()) ? 'unread' : 'read';
         }
         return $data;
     }
@@ -1024,20 +1044,6 @@ class LenderOperationsController extends Controller
     private function getProjectStatusTitleAndContent(array $projectStatus, Projects $project, TranslatorInterface $translator)
     {
         switch ($projectStatus['status']) {
-            case ProjectsStatus::REMBOURSE:
-                $title   = $translator->trans('lender-notifications_repaid-title');
-                $content = $translator->trans('lender-notifications_repaid-content', [
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
-                break;
-            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-                $title   = $translator->trans('lender-notifications_early-repaid-title');
-                $content = $translator->trans('lender-notifications_early-repaid-content', [
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]) . '#project-section-info',
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
-                break;
             case ProjectsStatus::PROBLEME:
                 $title   = $translator->trans('lender-notifications_late-repayment-title');
                 $content = $translator->trans('lender-notifications_late-repayment-content', [

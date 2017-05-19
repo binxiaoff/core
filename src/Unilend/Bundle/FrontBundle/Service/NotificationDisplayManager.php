@@ -341,14 +341,15 @@ class NotificationDisplayManager
             $added = new \DateTime($notification['added']);
 
             $result[] = [
-                'id'       => $notification['id_notification'],
-                'type'     => $type,
-                'title'    => $title,
-                'datetime' => $added,
-                'iso-8601' => $added->format('c'),
-                'content'  => $content,
-                'image'    => $image,
-                'status'   => $notification['status'] == Notifications::STATUS_READ ? 'read' : 'unread'
+                'id'        => $notification['id_notification'],
+                'projectId' => $project->id_project,
+                'type'      => $type,
+                'title'     => $title,
+                'datetime'  => $added,
+                'iso-8601'  => $added->format('c'),
+                'content'   => $content,
+                'image'     => $image,
+                'status'    => $notification['status'] == Notifications::STATUS_READ ? 'read' : 'unread'
             ];
         }
 
