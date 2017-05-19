@@ -412,9 +412,9 @@ class OperationRepository extends EntityRepository
                                                 WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
                 GROUP BY l.id_type_contract, client_type, fiscal_residence,  exemption_status';
 
-        $result = $this->getEntityManager()->getConnection()->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])->fetchAll(\PDO::FETCH_ASSOC);
-
-        return $result;
+        return $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**

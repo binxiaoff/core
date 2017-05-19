@@ -213,14 +213,14 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/Unilend_etat_fiscal_' . date('Ymd') . '.xls';
             file_put_contents($filePath, $table);
 
-            /** @var Settings $setting */
-            $setting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Adresse notification etat fiscal');
+            /** @var Settings $recipientSetting */
+            $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Adresse notification etat fiscal');
             $url     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
             $varMail = ['$surl' => $url, '$url' => $url];
 
             /** @var TemplateMessage $message */
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $varMail, false);
-            $message->setTo(explode(';', trim($setting->getValue())));
+            $message->setTo(explode(';', trim($recipientSetting->getValue())));
             $message->attach(\Swift_Attachment::fromPath($filePath));
             $mailer = $this->getContainer()->get('mailer');
             $mailer->send($message);
