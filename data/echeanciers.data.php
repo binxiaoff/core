@@ -314,17 +314,6 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param int $lenderId
-     * @param int $startDate
-     * @param int $endDate
-     * @return string
-     */
-    public function getRepaidCapitalInDateRange($lenderId, $startDate, $endDate)
-    {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse', [self::STATUS_PARTIALLY_REPAID, self::STATUS_REPAID]);
-    }
-
-    /**
-     * @param int $lenderId
      * @param string $startDate
      * @param string $endDate
      * @param int $loanId
