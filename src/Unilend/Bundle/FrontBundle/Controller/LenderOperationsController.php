@@ -331,7 +331,7 @@ class LenderOperationsController extends Controller
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
         $status             = isset($filters['status']) && in_array($filters['status'], array_keys(self::LOAN_STATUS_FILTER)) ? self::LOAN_STATUS_FILTER[$filters['status']] : null;
         $loanStatus         = array_fill_keys(array_keys(self::LOAN_STATUS_FILTER), 0);
-        $lenderLoans    = $loan->getSumLoansByProject($wallet->getId(), $sOrderBy, $year, $status);
+        $lenderLoans        = $loan->getSumLoansByProject($wallet->getId(), $sOrderBy, $year, $status);
         $lenderProjectLoans = [];
 
         foreach ($lenderLoans as $projectLoans) {

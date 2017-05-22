@@ -73,7 +73,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
 
         /** @var Wallet $wallet */
         foreach ($walletsWithMovements as $wallet) {
-            $sumLoans = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_LOAN], $year);
+            $sumLoans = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_LOAN], null, $year);
             if ($sumLoans > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
                 $activeSheet->setCellValueByColumnAndRow(2, $row, '117');
@@ -81,7 +81,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                 $row += 1;
             }
 
-            $grossInterest = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT], $year);
+            $grossInterest = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT], null, $year);
             if ($grossInterest > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
                 $activeSheet->setCellValueByColumnAndRow(2, $row, '53');
@@ -89,7 +89,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                 $row += 1;
             }
 
-            $deductedAtSource = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE], $year);
+            $deductedAtSource = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE], null, $year);
             if ($deductedAtSource > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
                 $activeSheet->setCellValueByColumnAndRow(2, $row, '2');
@@ -97,7 +97,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                 $row += 1;
             }
 
-            $statutoryContributions = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS], $year);
+            $statutoryContributions = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS], null, $year);
             if ($statutoryContributions > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
                 $activeSheet->setCellValueByColumnAndRow(2, $row, '54');
@@ -105,7 +105,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                 $row += 1;
             }
 
-            $capitalRepayments = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::CAPITAL_REPAYMENT], $year);
+            $capitalRepayments = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::CAPITAL_REPAYMENT], null, $year);
             if ($capitalRepayments > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
                 $activeSheet->setCellValueByColumnAndRow(2, $row, '118');

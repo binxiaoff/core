@@ -71,38 +71,6 @@ class partenaires extends partenaires_crud
     }
 
     /**
-     * Récupération du CA d'un partenaire
-     * @param int $id_partenaire
-     * @return mixed
-     */
-    public function recupCA($id_partenaire)
-    {
-        $sql = '
-            SELECT ROUND(SUM(montant) / 100, 2) 
-            FROM transactions 
-            WHERE id_partenaire = ' . $id_partenaire . ' AND status != ' . \transactions::STATUS_CANCELED;
-
-        $result = $this->bdd->query($sql);
-        return $this->bdd->result($result);
-    }
-
-    /**
-     * Récupération du nombre de commandes d'un partenaire
-     * @param int $id_partenaire
-     * @return mixed
-     */
-    public function recupCmde($id_partenaire)
-    {
-        $sql = '
-            SELECT COUNT(id_transaction) 
-            FROM transactions 
-            WHERE id_partenaire = ' . $id_partenaire . ' AND status != ' . \transactions::STATUS_CANCELED;
-
-        $result = $this->bdd->query($sql);
-        return $this->bdd->result($result);
-    }
-
-    /**
      * Récupération du nombre de clic global
      * @param int $id_partenaire
      * @return int

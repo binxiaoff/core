@@ -50,7 +50,7 @@ class ClientsGestionMailsNotif
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_transaction", type="integer", nullable=false)
+     * @ORM\Column(name="id_transaction", type="integer", nullable=true)
      */
     private $idTransaction;
 

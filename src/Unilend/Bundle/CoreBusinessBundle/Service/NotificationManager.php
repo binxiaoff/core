@@ -3,6 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -34,15 +35,15 @@ class NotificationManager
     }
 
     /**
-     * @param int        $notificationType
-     * @param int        $mailType
-     * @param int        $clientId
-     * @param null|int   $mailFunction
-     * @param null|int   $projectId
-     * @param null|float $amount
-     * @param null|int   $bidId
-     * @param null|int   $transactionId
-     * @param null|int   $loanId
+     * @param int                       $notificationType
+     * @param int                       $mailType
+     * @param int                       $clientId
+     * @param null|int                  $mailFunction
+     * @param null|int                  $projectId
+     * @param null|float                $amount
+     * @param null|int                  $bidId
+     * @param null|WalletBalanceHistory $walletBalanceHistory
+     * @param null|int                  $loanId
      */
     public function create(
         $notificationType,
@@ -52,7 +53,7 @@ class NotificationManager
         $projectId = null,
         $amount = null,
         $bidId = null,
-        $transactionId = null,
+        WalletBalanceHistory $walletBalanceHistory = null,
         $loanId = null
     ) {
         /** @var \clients_gestion_notifications $notificationSettings */
@@ -76,7 +77,7 @@ class NotificationManager
                 $mailNotification->immediatement = 0;
             }
 
-            $this->createEmailNotification($notification->id_notification, $mailType, $clientId, $transactionId, $projectId, $loanId);
+            $this->createEmailNotification($notification->id_notification, $mailType, $clientId, $walletBalanceHistory, $projectId, $loanId);
         }
     }
 
@@ -110,25 +111,25 @@ class NotificationManager
     }
 
     /**
-     * @param int      $notificationId
-     * @param int      $mailType
-     * @param int      $clientId
-     * @param int|null $transactionId
-     * @param int|null $projectId
-     * @param int|null $loanId
+     * @param int                       $notificationId
+     * @param int                       $mailType
+     * @param int                       $clientId
+     * @param WalletBalanceHistory|null $walletBalanceHistory
+     * @param int|null                  $projectId
+     * @param int|null                  $loanId
      */
-    public function createEmailNotification($notificationId, $mailType, $clientId, $transactionId = null, $projectId = null, $loanId = null)
+    public function createEmailNotification($notificationId, $mailType, $clientId, WalletBalanceHistory $walletBalanceHistory = null, $projectId = null, $loanId = null)
     {
         /** @var \clients_gestion_mails_notif $mailNotification */
         $mailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
 
-        $mailNotification->id_client       = $clientId;
-        $mailNotification->id_project      = $projectId;
-        $mailNotification->id_notif        = $mailType;
-        $mailNotification->date_notif      = date('Y-m-d H:i:s');
-        $mailNotification->id_notification = $notificationId;
-        $mailNotification->id_transaction  = $transactionId;
-        $mailNotification->id_loan         = $loanId;
+        $mailNotification->id_client                 = $clientId;
+        $mailNotification->id_project                = $projectId;
+        $mailNotification->id_notif                  = $mailType;
+        $mailNotification->date_notif                = date('Y-m-d H:i:s');
+        $mailNotification->id_notification           = $notificationId;
+        $mailNotification->id_wallet_balance_history = $walletBalanceHistory->getId();
+        $mailNotification->id_loan                   = $loanId;
         $mailNotification->create();
     }
 

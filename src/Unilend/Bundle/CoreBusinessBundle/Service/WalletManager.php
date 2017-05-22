@@ -62,6 +62,7 @@ class WalletManager
      * @param float  $amount
      * @param Bids   $bid
      *
+     * @return WalletBalanceHistory
      * @throws \Exception
      */
     public function engageBalance(Wallet $wallet, $amount, Bids $bid)
@@ -78,8 +79,10 @@ class WalletManager
             $wallet->setCommittedBalance($committedBalance);
             $this->entityManager->flush($wallet);
 
-            $this->snap($wallet, $bid);
+            $walletBalanceHistory = $this->snap($wallet, $bid);
             $this->entityManager->getConnection()->commit();
+
+            return $walletBalanceHistory;
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
             throw $e;
@@ -87,10 +90,11 @@ class WalletManager
     }
 
     /**
-     * @param Wallet $wallet
-     * @param        $amount
-     * @param        $origin
+     * @param Wallet       $wallet
+     * @param float        $amount
+     * @param array|object $origin
      *
+     * @return WalletBalanceHistory
      * @throws \Exception
      */
     public function releaseBalance(Wallet $wallet, $amount, $origin)
@@ -107,8 +111,10 @@ class WalletManager
             $wallet->setCommittedBalance($committedBalance);
             $this->entityManager->flush($wallet);
 
-            $this->snap($wallet, $origin);
+            $walletBalanceHistory = $this->snap($wallet, $origin);
             $this->entityManager->getConnection()->commit();
+
+            return $walletBalanceHistory;
         } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
             throw $e;
@@ -162,6 +168,8 @@ class WalletManager
     /**
      * @param Wallet       $wallet
      * @param array|object $parameters
+     *
+     * @return WalletBalanceHistory
      */
     private function snap(Wallet $wallet, $parameters)
     {
@@ -190,5 +198,7 @@ class WalletManager
         }
         $this->entityManager->persist($walletSnap);
         $this->entityManager->flush($walletSnap);
+
+        return $walletSnap;
     }
 }

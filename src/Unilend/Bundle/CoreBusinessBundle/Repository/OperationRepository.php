@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -104,11 +105,12 @@ class OperationRepository extends EntityRepository
     /**
      * @param Wallet $creditorWallet
      * @param array  $operationTypes
+     * @param array  $operationSubTypes
      * @param int    $year
      *
      * @return mixed
      */
-    public function sumCreditOperationsByTypeAndYear(Wallet $creditorWallet, $operationTypes, $year = null)
+    public function sumCreditOperationsByTypeAndYear(Wallet $creditorWallet, $operationTypes, $operationSubTypes = null, $year = null)
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
@@ -117,6 +119,13 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.idWalletCreditor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $creditorWallet);
+
+        if (null !== $operationSubTypes) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+                ->andWhere('ost.label IN (:operationSubTypes)')
+                ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
+        }
+
         if (null !== $year) {
             $qb->andWhere('YEAR(o.added) = :year')
                 ->setParameter('year', $year);
@@ -128,11 +137,12 @@ class OperationRepository extends EntityRepository
     /***
      * @param Wallet $debtorWallet
      * @param array  $operationTypes
+     * @param array  $operationSubTypes
      * @param int    $year
      *
      * @return mixed
      */
-    public function sumDebitOperationsByTypeAndYear(Wallet $debtorWallet, $operationTypes, $year = null)
+    public function sumDebitOperationsByTypeAndYear(Wallet $debtorWallet, $operationTypes, $operationSubTypes = null, $year = null)
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
@@ -141,6 +151,13 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.idWalletDebtor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $debtorWallet);
+
+        if (null !== $operationSubTypes) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+                ->andWhere('ost.label IN (:operationSubTypes)')
+                ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
+        }
+
         if (null !== $year) {
             $qb->andWhere('YEAR(o.added) = :year')
                 ->setParameter('year', $year);
@@ -477,14 +494,14 @@ class OperationRepository extends EntityRepository
                   LEFT(o.added, 10) AS day,
                   SUM(o.amount) AS amount,
                   CASE ot.label
-                   WHEN "'. OperationType::LENDER_PROVISION . '" THEN
+                   WHEN "' . OperationType::LENDER_PROVISION . '" THEN
                       IF(o.id_backpayline IS NOT NULL,
                        "lender_provision_credit_card",
                         IF(o.id_wire_transfer_in IS NOT NULL,
                            "lender_provision_wire_transfer_in",
                            NULL)
                         )
-                     WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
+                     WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN
                        IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
                       ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
@@ -523,14 +540,14 @@ class OperationRepository extends EntityRepository
                   MONTH(o.added) AS month,
                   SUM(o.amount) AS amount,
                   CASE ot.label
-                   WHEN "'. OperationType::LENDER_PROVISION . '" THEN
+                   WHEN "' . OperationType::LENDER_PROVISION . '" THEN
                       IF(o.id_backpayline IS NOT NULL,
                        "lender_provision_credit_card",
                         IF(o.id_wire_transfer_in IS NOT NULL,
                            "lender_provision_wire_transfer_in",
                            NULL)
                         )
-                     WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
+                     WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN
                        IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
                       ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
@@ -642,5 +659,23 @@ class OperationRepository extends EntityRepository
         $statement->closeCursor();
 
         return $result;
+    }
+
+    /**
+     * @param Loans|integer $loan
+     *
+     * @return float
+     */
+    public function getTotalEarlyRepaymentByLoan($loan)
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            ->where('ost.label = :earlyRepayment')
+            ->andWhere('o.idLoan = :loan')
+            ->setParameter('earlyRepayment', OperationSubType::CAPITAL_REPAYMENT_EARLY)
+            ->setParameter('loan', $loan);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

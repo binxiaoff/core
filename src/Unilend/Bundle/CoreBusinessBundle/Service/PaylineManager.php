@@ -10,6 +10,7 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -226,9 +227,10 @@ class PaylineManager
         $clientNotification = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clientMailNotification */
         $clientMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
-        $transaction->get($backPayline->getIdBackpayline(), 'type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND id_backpayline');
+
+        $lenderProvision      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationTypeon')->findOneBy(['label' => OperationType::LENDER_PROVISION]);
+        $provisionOperation   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idBackpayline' => $backPayline, 'idType' => $lenderProvision]);
+        $walletBalanceHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy(['idWallet' => $backPayline->getWallet(), 'idOperation' => $provisionOperation]);
 
         $amount = round(bcdiv($backPayline->getAmount(), 100, 4), 2);
 
@@ -237,11 +239,11 @@ class PaylineManager
         $notification->amount    = $backPayline->getAmount();
         $notification->create();
 
-        $clientMailNotification->id_client       = $backPayline->getWallet()->getIdClient()->getIdClient();
-        $clientMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT;
-        $clientMailNotification->date_notif      = date('Y-m-d H:i:s');
-        $clientMailNotification->id_notification = $notification->id_notification;
-        $clientMailNotification->id_transaction  = $transaction->id_transaction;
+        $clientMailNotification->id_client                 = $backPayline->getWallet()->getIdClient()->getIdClient();
+        $clientMailNotification->id_notif                  = \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT;
+        $clientMailNotification->date_notif                = date('Y-m-d H:i:s');
+        $clientMailNotification->id_notification           = $notification->id_notification;
+        $clientMailNotification->id_wallet_balance_history = $walletBalanceHistory->getId();
         $clientMailNotification->create();
 
         if ($clientNotification->getNotif($backPayline->getWallet()->getIdClient()->getIdClient(), 7, 'immediatement') == true) {

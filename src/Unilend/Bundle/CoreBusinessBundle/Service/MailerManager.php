@@ -7,6 +7,8 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
@@ -1483,8 +1485,8 @@ class MailerManager
         $oNotification = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \projects $oProject */
         $oProject = $this->entityManagerSimulator->getRepository('projects');
-        /** @var \transactions $oTransaction */
-        $oTransaction = $this->entityManagerSimulator->getRepository('transactions');
+        /** @var \transactions $transaction */
+        $transaction = $this->entityManagerSimulator->getRepository('transactions');
         /** @var \clients_gestion_mails_notif $oMailNotification */
         $oMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
@@ -1543,9 +1545,38 @@ class MailerManager
 
                         $oNotification->get($aMailNotification['id_notification']);
                         $oProject->get($oNotification->id_project);
-                        $oTransaction->get($aMailNotification['id_transaction']);
 
-                        if (\transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT == $oTransaction->type_transaction) {
+                        $isEarlyRepayment    = false;
+                        $amount              = 0;
+                        $loanId              = null;
+                        $repaymentScheduleId = null;
+
+                        if ($aMailNotification['id_wallet_balance_history']) {
+                            $walletBalanceHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->find($aMailNotification['id_wallet_balance_history']);
+                            /** @var Operation $operation */
+                            $operation = $walletBalanceHistory->getIdOperation();
+
+                            if ($operation) {
+                                if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $operation->getIdSubType()->getLabel()) {
+                                    $isEarlyRepayment = true;
+                                }
+
+                                $amount              = $operation->getAmount();
+                                $loanId              = $operation->getLoan()->getIdLoan();
+                                $repaymentScheduleId = $operation->getRepaymentSchedule()->getIdEcheancier();
+                            }
+
+                        } else {
+                            $transaction->get($aMailNotification['id_transaction']);
+                            if (\transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT == $transaction->type_transaction) {
+                                $isEarlyRepayment = true;
+                            }
+                            $amount              = round(bcdiv($transaction->montant, 100, 3), 2);
+                            $loanId              = $transaction->id_loan_remb;
+                            $repaymentScheduleId = $transaction->id_echeancier;
+                        }
+
+                        if ($isEarlyRepayment) {
                             /** @var \companies $oCompanies */
                             $oCompanies = $this->entityManagerSimulator->getRepository('companies');
                             $oCompanies->get($oProject->id_company);
@@ -1553,17 +1584,17 @@ class MailerManager
                             /** @var \loans $oLoan */
                             $oLoan = $this->entityManagerSimulator->getRepository('loans');
 
-                            $fRepaymentCapital              = $oTransaction->montant / 100;
+                            $fRepaymentCapital              = $amount;
                             $fRepaymentInterestsTaxIncluded = 0;
                             $fRepaymentTax                  = 0;
 
                             $sEarlyRepaymentContent = "
-                                Important : le remboursement de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oTransaction->montant / 100) . "&nbsp;&euro;</span> correspond au remboursement total du capital restant d&ucirc; de votre pr&egrave;t &agrave; <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span>.
+                                Important : le remboursement de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($amount) . "&nbsp;&euro;</span> correspond au remboursement total du capital restant d&ucirc; de votre pr&egrave;t &agrave; <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span>.
                                 Comme le pr&eacute;voient les r&egrave;gles d'Unilend, <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
                                 <br/><br/>
-                                Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $oTransaction->id_loan_remb])) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($wallet->getId(), $oProject->id_project), 1) . " %.</span><br/><br/> ";
+                                Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $loanId])) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($wallet->getId(), $oProject->id_project), 1) . " %.</span><br/><br/> ";
                         } else {
-                            $oLenderRepayment->get($oTransaction->id_echeancier);
+                            $oLenderRepayment->get($repaymentScheduleId);
 
                             $fRepaymentCapital              = bcdiv($oLenderRepayment->capital_rembourse, 100, 2);
                             $fRepaymentInterestsTaxIncluded = bcdiv($oLenderRepayment->interets_rembourses, 100, 2);
