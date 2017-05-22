@@ -371,9 +371,7 @@ function valid_etape2(id_project) {
     }
 
     $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
-        $("#title").val($("#raison_sociale_etape2").val());
-        $("#prenom").val($("#prenom_etape2").val());
-        $("#nom").val($("#nom_etape2").val());
+        $("#societe").val($("#raison_sociale_etape2").val());
 
         if ($("#same_address_etape2").prop('checked')) {
             $("#adresse").val($("#address_etape2").val());
