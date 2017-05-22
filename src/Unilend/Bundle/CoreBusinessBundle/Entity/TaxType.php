@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 class TaxType
 {
     const TYPE_VAT                                          = 1;
-    const TYPE_INCOME_TAX                                   = 2;
+    const TYPE_STATUTORY_CONTRIBUTIONS                      = 2;
     const TYPE_CSG                                          = 3;
     const TYPE_SOCIAL_DEDUCTIONS                            = 4;
     const TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS = 5;

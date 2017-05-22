@@ -680,7 +680,7 @@ class ProjectManager
         $taxType = $this->entityManagerSimulator->getRepository('tax_type');
 
         $taxRate = $taxType->getTaxRateByCountry('fr');
-        $fVAT    = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $fVAT    = $taxRate[TaxType::TYPE_VAT] / 100;
 
         $fAmount           = $oProject->amount;
         $iMonthNb          = $oProject->period;
@@ -1022,7 +1022,7 @@ class ProjectManager
      */
     public function getCommissionFunds(Projects $project, $inclTax)
     {
-        $commissionRate = bcdiv($project->getCommissionRateFunds(), 100, 4);
+        $commissionRate = round(bcdiv($project->getCommissionRateFunds(), 100, 5), 4);
         $commission     = round(bcmul($project->getAmount(), $commissionRate, 4), 2);
 
         if ($inclTax) {

@@ -72,7 +72,7 @@
                     </tr>
                 </tbody>
             </table>
-            <div style="text-align: right;"><button type="submit" class="btn">Valider</button></div>
+            <button type="submit" class="btn-primary pull-right">Rechercher</button>
         </fieldset>
     </form>
     <?php if (isset($this->history)) : ?>

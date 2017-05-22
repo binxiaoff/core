@@ -636,18 +636,14 @@ class pdfController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate = $taxType->getTaxRateByCountry('fr');
-        $fVat    = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $fVat    = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
         $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, round(bcdiv($oProjects->commission_rate_repayment, 100, 4), 2), $fVat);
         $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
 
-        /** @var \transactions $transaction */
-        $transaction = $this->loadData('transactions');
-        $transaction->get($oProjects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project');
+        $fundReleasingCommissionRate = bcdiv($this->projects->commission_rate_funds, 100, 5);
 
-        $fundReleasingCommissionRate = $transaction->montant_unilend / $oProjects->amount / 100;
-
-        $this->fCommissionProject = $fundReleasingCommissionRate * $oLoans->amount / 100 / (1 + $fVat);;
+        $this->fCommissionProject = $fundReleasingCommissionRate * $oLoans->amount / 100;
         $this->fInterestTotal     = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
         $contract->get($oLoans->id_type_contract);
@@ -797,7 +793,7 @@ class pdfController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate   = $taxType->getTaxRateByCountry('fr');
-        $this->tva = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $this->tva = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
         $aRepaymentDate             = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC, id_project_status_history DESC', 0, 1);
         $this->dateRemb             = $aRepaymentDate[0]['added'];
@@ -861,7 +857,7 @@ class pdfController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate   = $taxType->getTaxRateByCountry('fr');
-        $this->tva = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $this->tva = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
         $this->num_facture        = $aInvoices[0]['num_facture'];
         $this->ht                 = $aInvoices[0]['montant_ht'] / 100;

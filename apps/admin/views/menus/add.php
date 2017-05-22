@@ -25,7 +25,7 @@
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_add_menu" id="form_add_menu" />
-                        <input type="submit" value="Valider" name="send_menu" id="send_menu" class="btn" />
+                        <button type="submit" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>

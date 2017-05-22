@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Prelevements
  *
  * @ORM\Table(name="prelevements")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PrelevementsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Prelevements

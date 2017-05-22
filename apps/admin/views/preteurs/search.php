@@ -46,9 +46,9 @@
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
-                    <th>
+                    <th style="text-align: left">
                         <input type="hidden" name="form_search_preteur" id="form_search_preteur" />
-                        <input type="submit" value="Valider" title="Valider" name="send_preteur" id="send_preteur" class="btn" />
+                        <button type="submit" class="btn-primary">Rechercher</button>
                     </th>
                 </tr>
             </table>

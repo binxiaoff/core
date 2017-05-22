@@ -20,7 +20,7 @@
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_search_emprunteur" id="form_search_emprunteur" />
-                        <input type="submit" value="Valider" title="Valider" name="send_emprunteur" id="send_emprunteur" class="btn" />
+                        <button type="submit" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>

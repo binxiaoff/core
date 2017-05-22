@@ -168,7 +168,7 @@ class dossiersController extends bootstrap
             $taxType = $this->loadData('tax_type');
 
             $taxRate        = $taxType->getTaxRateByCountry('fr');
-            $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+            $this->fVATRate = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
@@ -1253,7 +1253,7 @@ class dossiersController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate        = $taxType->getTaxRateByCountry('fr');
-        $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $this->fVATRate = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
         /** @var company_rating $oCompanyRating */
         $oCompanyRating = $this->loadData('company_rating');
@@ -1506,22 +1506,21 @@ class dossiersController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $result = [];
+        $_POST   = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        $aResult = array();
-
-        if (isset($_POST['project_attachment_id'])) {
+        if (isset($_POST['attachment_id'])) {
             $entityManager =  $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
-            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['project_attachment_id']);
+            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['attachment_id']);
             if ($projectAttachment) {
                 $entityManager->remove($projectAttachment);
                 $entityManager->flush($projectAttachment);
             }
-            $aResult[$_POST['project_attachment_id']] = 'ok';
+            $result[$_POST['attachment_id']] = 'ok';
         }
 
-        echo json_encode($aResult);
+        echo json_encode($result);
     }
 
     public function _add()
@@ -1740,7 +1739,7 @@ class dossiersController extends bootstrap
         $oLogger = $this->get('logger');
 
         $taxRate   = $taxType->getTaxRateByCountry('fr');
-        $this->tva = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $this->tva = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
@@ -2769,7 +2768,7 @@ class dossiersController extends bootstrap
 
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        if ($_POST['send_completude']) {
+        if (false === empty($_POST)) {
             /** @var \projects $oProjects */
             $oProjects = $this->loadData('projects');
             /** @var \clients $oClients */
