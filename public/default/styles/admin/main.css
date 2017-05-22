@@ -294,7 +294,6 @@ table.lng label { cursor: pointer; font-weight: bold; }
 .autobid-param-advanced-table th {
     text-align: center;
     font-size: 14px;
-    text-transform: uppercase;
     color: #a1a5a7;
     font-weight: normal;
     background: #f5f6f6;
