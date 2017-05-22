@@ -862,7 +862,7 @@ class BorrowerAccountController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::BORROWER);
+        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::BORROWER);
         /** @var WalletBalanceHistoryRepository $walletBalanceHistoryRepository */
         $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
         /** @var OperationRepository $operationRepository */
@@ -926,9 +926,14 @@ class BorrowerAccountController extends Controller
             if (OperationType::BORROWER_WITHDRAW === $operation['label']) {
                 /** @var Operation $operationEntity */
                 $operationEntity                  = $operationRepository->find($operation['id']);
-                $thirdPartyClient                 = $operationEntity->getWireTransferOut()->getBankAccount()->getIdClient();
-                $thirdPartyCompany                = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $thirdPartyClient->getIdClient()]);
-                $operation['third_party_company'] = $thirdPartyCompany;
+                if (
+                    null !== $operationEntity->getWireTransferOut()->getBankAccount()
+                    && $operationEntity->getWireTransferOut()->getBankAccount()->getIdClient() !== $operationEntity->getWalletDebtor()->getIdClient()
+                ) {
+                    $thirdPartyClient                 = $operationEntity->getWireTransferOut()->getBankAccount()->getIdClient();
+                    $thirdPartyCompany                = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $thirdPartyClient->getIdClient()]);
+                    $operation['third_party_company'] = $thirdPartyCompany;
+                }
             }
 
             if ($borrowerOperationType === 'all' || $borrowerOperationType === $operation['label']) {
