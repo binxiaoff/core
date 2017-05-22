@@ -3,7 +3,58 @@
 {% block cssFiles %}
     {{ parent() }}
     <style>
-
+        .item-amount, .item-balance {
+            text-align: right;
+        }
+        .item-date {
+            text-align: left;
+        }
+        .table {
+            margin-bottom: 2em;
+        }
+        .table tr .th {
+            display: table-cell;
+            background-color: #eceaed;
+            color: #9f9d9f;
+            font-size: 10px!important;
+            padding-top: 1em;
+            padding-bottom: 1em;
+            line-height: 1em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .table tr td {
+            font-size: 0.725em!important;
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
+        }
+        .table tr td.item-project {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .table tr.details {
+            color: #9f9d9f;
+        }
+        .table tr.details > td:first-child {
+            padding-left: 30px!important;
+        }
+        .table tr, .table tr td {
+            page-break-inside: avoid;
+        }
+        .table tr td.tf {
+            padding-top: 1em;
+            padding-bottom: 1em;
+            font-weight: bold;
+            border-top: 1px solid #eceaed;
+            border-bottom: 1px solid #eceaed;
+        }
+        .footer .small {
+            font-size: 0.675em;
+        }
     </style>
 {% endblock %}
 
@@ -43,18 +94,10 @@
     <table class="table">
         <thead>
         <tr>
-            <th class="table-column table-myoperations-borrower-item-type">
-                <span class="label" title="{{ 'borrower-operation_operation'|trans|e('html_attr') }}">{% trans %} borrower-operation_operation {% endtrans %}</span>
-            </th>
-            <th class="table-column table-myoperations-borrower-item-project">
-                <span class="label" title="{{ 'borrower-operation_project'|trans|e('html_attr') }}">{% trans %} borrower-operation_project {% endtrans %}</span>
-            </th>
-            <th class="table-column table-myoperations-borrower-item-date">
-                <span class="label" title="{{ 'borrower-operation_operation-date'|trans|e('html_attr') }}">{% trans %} borrower-operation_operation-date {% endtrans %}</span>
-            </th>
-            <th class="table-column table-myoperations-borrower-item-amount">
-                <span class="label" title="{{ 'borrower-operation_amount'|trans|e('html_attr') }}">{% trans %} borrower-operation_amount {% endtrans %}</span>
-            </th>
+            <td class="th item-operation">{% trans %} borrower-operation_operation {% endtrans %}</td>
+            <td class="th item-project">{% trans %} borrower-operation_project {% endtrans %}</td>
+            <td class="th item-date">{% trans %} borrower-operation_operation-date {% endtrans %}</td>
+            <td class="th item-amount">{% trans %}  borrower-operation_amount {% endtrans %}</td>
         </tr>
         </thead>
         <tbody>
