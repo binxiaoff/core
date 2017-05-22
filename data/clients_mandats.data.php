@@ -28,12 +28,6 @@
 
 class clients_mandats extends clients_mandats_crud
 {
-    const STATUS_PENDING  = 0;
-    const STATUS_SIGNED   = 1;
-    const STATUS_CANCELED = 2;
-    const STATUS_FAILED   = 3;
-    const STATUS_ARCHIVED = 4;
-
     public function __construct($bdd, $params = '')
     {
         parent::clients_mandats($bdd, $params);

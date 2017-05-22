@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -88,7 +89,7 @@ class ProjectRequestManager
 
         /** @var \tax_type $taxType */
         $taxType = $this->entityManagerSimulator->getRepository('tax_type');
-        $taxType->get(\tax_type::TYPE_VAT);
+        $taxType->get(TaxType::TYPE_VAT);
         $fVATRate = $taxType->rate / 100;
 
         $fCommission    = ($oFinancial->PMT(round(bcdiv(\projects::DEFAULT_COMMISSION_RATE_REPAYMENT, 100, 4), 2) / 12, $period, - $amount) - $oFinancial->PMT(0, $period, - $amount)) * (1 + $fVATRate);
@@ -178,7 +179,7 @@ class ProjectRequestManager
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;
         $project->status                               = \projects_status::INCOMPLETE_REQUEST;
-        $project->id_partner                           = $this->partnerManager->getDefaultPartner()->id;
+        $project->id_partner                           = $this->partnerManager->getDefaultPartner()->getId();
         $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->create();

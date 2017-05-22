@@ -71,7 +71,7 @@
                         <td align="center"><?= $client['label_status'] . $sWaitingForGP ?></td>
                         <td align="center">
                             <?php if (in_array($client['status_client'], [clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION])) : ?>
-                                <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $client['id_client'] ?>" class="btn_link" style="padding: 3px;">Contrôler</a>
+                                <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $client['id_client'] ?>" class="btn-primary btn-sm">Contrôler</a>
                             <?php else : ?>
                                 <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $client['id_client'] ?>">Détails</a>
                             <?php endif; ?>

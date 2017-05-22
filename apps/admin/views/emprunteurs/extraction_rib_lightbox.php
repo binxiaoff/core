@@ -41,8 +41,8 @@
             </tr>
         </table>
         <div style="text-align: center">
-            <input type="submit" class="btn" value="Valider">
-            <button onclick="parent.$.fn.colorbox.close();" class='btn' style="margin-left:15px;">Fermer</button>
+            <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
+            <button type="submit" class="btn-primary">Valider</button>
         </div>
     </form>
     <?php endif; ?>

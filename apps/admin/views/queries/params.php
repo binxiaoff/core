@@ -18,7 +18,7 @@
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_envoi_params" id="form_envoi_params"/>
-                        <input type="submit" value="Valider" title="Valider" name="send_params" id="send_params" class="btn"/>
+                        <button type="submit" id="send_params" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>

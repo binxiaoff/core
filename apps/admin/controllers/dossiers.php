@@ -8,6 +8,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 
 class dossiersController extends bootstrap
 {
@@ -56,6 +61,9 @@ class dossiersController extends bootstrap
 
         $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
+
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator = $this->get('translator');
     }
 
     public function _default()
@@ -138,8 +146,6 @@ class dossiersController extends bootstrap
         $oProjectManager = $this->get('unilend.service.project_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
         $productManager = $this->get('unilend.service_product.product_manager');
-        /** @var \Symfony\Component\Translation\Translator translator */
-        $this->translator = $this->get('translator');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -162,7 +168,7 @@ class dossiersController extends bootstrap
             $taxType = $this->loadData('tax_type');
 
             $taxRate        = $taxType->getTaxRateByCountry('fr');
-            $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+            $this->fVATRate = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
@@ -202,6 +208,8 @@ class dossiersController extends bootstrap
                 $clientMandate = $this->loadData('clients_mandats');
                 $mandate = $clientMandate->select('id_project = ' . $this->projects->id_project, 'updated DESC');
                 $this->mandate = empty($mandate) ? [] : $mandate[0];
+
+                $this->validBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
             }
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
@@ -747,13 +755,32 @@ class dossiersController extends bootstrap
             if ($this->isTakeover()) {
                 $this->loadTargetCompany();
             }
-
-            $this->loadEarlyRepaymentInformation();
+            $this->loadEarlyRepaymentInformation(false);
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
             $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
+
+            $this->transferFunds($project);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
+        }
+    }
+
+    private function transferFunds(Projects $project)
+    {
+        if ($project->getStatus() >= ProjectsStatus::REMBOURSEMENT) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager              = $this->get('unilend.service.project_manager');
+            $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+            $this->currencyFormatter     = $this->get('currency_formatter');
+
+            $restFunds                   = $projectManager->getRestOfFundsToRelease($project, true);
+            $this->wireTransferOuts      = $project->getWireTransferOuts();
+            $this->restFunds             = $this->currencyFormatter->formatCurrency($restFunds, 'EUR');
+            $this->displayAddButton      = $restFunds > 0;
         }
     }
 
@@ -979,27 +1006,27 @@ class dossiersController extends bootstrap
 
         switch ($iStatus) {
             case \projects_status::PROBLEME:
-                $iNotificationType = \notifications::TYPE_PROJECT_PROBLEM;
+                $iNotificationType = Notifications::TYPE_PROJECT_PROBLEM;
                 $sEmailTypePerson  = 'preteur-projet-statut-probleme';
                 $sEmailTypeSociety = 'preteur-projet-statut-probleme';
                 break;
             case \projects_status::PROBLEME_J_X:
-                $iNotificationType = \notifications::TYPE_PROJECT_PROBLEM_REMINDER;
+                $iNotificationType = Notifications::TYPE_PROJECT_PROBLEM_REMINDER;
                 $sEmailTypePerson  = 'preteur-projet-statut-probleme-j-x';
                 $sEmailTypeSociety = 'preteur-projet-statut-probleme-j-x';
                 break;
             case \projects_status::RECOUVREMENT:
-                $iNotificationType = \notifications::TYPE_PROJECT_RECOVERY;
+                $iNotificationType = Notifications::TYPE_PROJECT_RECOVERY;
                 $sEmailTypePerson  = 'preteur-projet-statut-recouvrement';
                 $sEmailTypeSociety = 'preteur-projet-statut-recouvrement';
                 break;
             case \projects_status::PROCEDURE_SAUVEGARDE:
-                $iNotificationType = \notifications::TYPE_PROJECT_PRECAUTIONARY_PROCESS;
+                $iNotificationType = Notifications::TYPE_PROJECT_PRECAUTIONARY_PROCESS;
                 $sEmailTypePerson  = 'preteur-projet-statut-procedure-sauvegarde';
                 $sEmailTypeSociety = 'preteur-projet-statut-procedure-sauvegarde';
                 break;
             case \projects_status::REDRESSEMENT_JUDICIAIRE:
-                $iNotificationType  = \notifications::TYPE_PROJECT_RECEIVERSHIP;
+                $iNotificationType  = Notifications::TYPE_PROJECT_RECEIVERSHIP;
                 $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROCEDURE_SAUVEGARDE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
@@ -1011,7 +1038,7 @@ class dossiersController extends bootstrap
                 }
                 break;
             case \projects_status::LIQUIDATION_JUDICIAIRE:
-                $iNotificationType  = \notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
+                $iNotificationType  = Notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
                 $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . \projects_status::PROCEDURE_SAUVEGARDE . ', ' . \projects_status::REDRESSEMENT_JUDICIAIRE . '))', 'added ASC, id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
@@ -1023,7 +1050,7 @@ class dossiersController extends bootstrap
                 }
                 break;
             case \projects_status::DEFAUT:
-                $iNotificationType = \notifications::TYPE_PROJECT_FAILURE;
+                $iNotificationType = Notifications::TYPE_PROJECT_FAILURE;
                 $sEmailTypePerson  = 'preteur-projet-statut-defaut-personne-physique';
                 $sEmailTypeSociety = 'preteur-projet-statut-defaut-personne-morale';
 
@@ -1226,7 +1253,7 @@ class dossiersController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate        = $taxType->getTaxRateByCountry('fr');
-        $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $this->fVATRate = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
         /** @var company_rating $oCompanyRating */
         $oCompanyRating = $this->loadData('company_rating');
@@ -1442,7 +1469,7 @@ class dossiersController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\AttachmentTypeRepository $attachmentTypeRepo */
             $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
+            /** @var Projects $project */
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
             $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
@@ -1479,22 +1506,21 @@ class dossiersController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $result = [];
+        $_POST   = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        $aResult = array();
-
-        if (isset($_POST['project_attachment_id'])) {
+        if (isset($_POST['attachment_id'])) {
             $entityManager =  $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
-            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['project_attachment_id']);
+            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['attachment_id']);
             if ($projectAttachment) {
                 $entityManager->remove($projectAttachment);
                 $entityManager->flush($projectAttachment);
             }
-            $aResult[$_POST['project_attachment_id']] = 'ok';
+            $result[$_POST['attachment_id']] = 'ok';
         }
 
-        echo json_encode($aResult);
+        echo json_encode($result);
     }
 
     public function _add()
@@ -1507,10 +1533,12 @@ class dossiersController extends bootstrap
         $this->companies = $this->loadData('companies');
         /** @var projects projects */
         $this->projects = $this->loadData('projects');
+        /** @var \partner $partnerData */
+        $partnerData    = $this->loadData('partner');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
         $partnerManager    = $this->get('unilend.service.partner_manager');
         $defaultPartner    = $partnerManager->getDefaultPartner();
-        $this->partnerList = $defaultPartner->select('', 'name ASC');
+        $this->partnerList = $partnerData->select('', 'name ASC');
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
         $clientManager = $this->get('unilend.service.client_manager');
@@ -1542,13 +1570,13 @@ class dossiersController extends bootstrap
             } else {
                 $companyEntity = $this->createBlankCompany();
             }
-            $this->createProject($companyEntity, $defaultPartner->id);
+            $this->createProject($companyEntity, $defaultPartner->getId());
 
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
         } elseif (isset($this->params[0], $this->params[1]) && $this->params[0] === 'siren' && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])) {
             $companyEntity = $this->createBlankCompany($this->params[1]);
-            $this->createProject($companyEntity, $defaultPartner->id);
+            $this->createProject($companyEntity, $defaultPartner->getId());
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
@@ -1693,7 +1721,6 @@ class dossiersController extends bootstrap
         $this->echeanciers                   = $this->loadData('echeanciers');
         $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
         $this->transactions                  = $this->loadData('transactions');
-        $this->wallets_lines                 = $this->loadData('wallets_lines');
         $this->notifications                 = $this->loadData('notifications');
         $this->bank_unilend                  = $this->loadData('bank_unilend');
         $this->projects_remb                 = $this->loadData('projects_remb');
@@ -1712,7 +1739,7 @@ class dossiersController extends bootstrap
         $oLogger = $this->get('logger');
 
         $taxRate   = $taxType->getTaxRateByCountry('fr');
-        $this->tva = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $this->tva = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
@@ -1864,15 +1891,6 @@ class dossiersController extends bootstrap
 
                             $iTaxOnCapital = $taxManager->taxTransaction($this->transactions);
 
-                            $this->wallets_lines->id_lender                = $e['id_lender'];
-                            $this->wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
-                            $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                            $this->wallets_lines->status                   = 1;
-                            $this->wallets_lines->type                     = \wallets_lines::VIRTUAL;
-                            $this->wallets_lines->amount                   = $this->transactions->montant;
-                            $this->wallets_lines->create();
-                            $this->wallets_lines->unsetData();
-
                             $this->transactions->unsetData();
                             $this->transactions->id_client        = $lenderWallet->getIdClient()->getIdClient();
                             $this->transactions->montant          = $e['interets'];
@@ -1887,18 +1905,10 @@ class dossiersController extends bootstrap
                             $iTaxOnInterests = $taxManager->taxTransaction($this->transactions);
                             $iTotalTaxAmount = bcadd($iTotalTaxAmount, bcadd($iTaxOnCapital, $iTaxOnInterests));
 
-                            $this->wallets_lines->id_lender                = $e['id_lender'];
-                            $this->wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
-                            $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                            $this->wallets_lines->status                   = 1;
-                            $this->wallets_lines->type                     = \wallets_lines::VIRTUAL;
-                            $this->wallets_lines->amount                   = $this->transactions->montant;
-                            $this->wallets_lines->create();
-
                             $oLogger->debug('Manual repayment : repayment amount= ' . $e['montant'] . ' Interests tax= ' . $iTaxOnInterests . ' Capital tax= ' . $iTaxOnCapital, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
 
                             $iTotalEAT                       = $e['montant'] - $iTaxOnInterests - $iTaxOnCapital;
-                            $this->notifications->type       = \notifications::TYPE_REPAYMENT;
+                            $this->notifications->type       = Notifications::TYPE_REPAYMENT;
                             $this->notifications->id_lender  = $lenderWallet->getId();
                             $this->notifications->id_project = $this->projects->id_project;
                             $this->notifications->amount     = $iTotalEAT;
@@ -2150,7 +2160,7 @@ class dossiersController extends bootstrap
                         $oInvoice->id_company      = $companies->id_company;
                         $oInvoice->id_project      = $projects->id_project;
                         $oInvoice->ordre           = $e['ordre'];
-                        $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
+                        $oInvoice->type_commission = \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_REPAYMENT;
                         $oInvoice->commission      = $projects->commission_rate_repayment;
                         $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                         $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
@@ -2219,7 +2229,6 @@ class dossiersController extends bootstrap
                 $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                 $this->transactions           = $this->loadData('transactions');
                 $this->clients                = $this->loadData('clients');
-                $this->wallets_lines          = $this->loadData('wallets_lines');
                 $this->mail_template          = $this->loadData('mail_templates');
                 $this->companies              = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
@@ -2320,8 +2329,7 @@ class dossiersController extends bootstrap
                     die;
                 }
             }
-
-            $this->loadEarlyRepaymentInformation();
+            $this->loadEarlyRepaymentInformation(true);
         }
     }
 
@@ -2439,107 +2447,110 @@ class dossiersController extends bootstrap
         }
     }
 
-    //utilisé pour récup les infos affichées dans le cadre
-    private function loadEarlyRepaymentInformation()
+    /**
+     * @param boolean $displayActionButton
+     */
+    private function loadEarlyRepaymentInformation($displayActionButton)
     {
+        $this->earlyRepaymentPossible = true;
+        $this->displayActionButton    = $displayActionButton;
+
         if ($this->projects->status >= \projects_status::REMBOURSEMENT) {
-            $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-            $this->echeanciers            = $this->loadData('echeanciers');
-            $oBusinessDays                = $this->loadLib('jours_ouvres');
-
-            //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
-            $aLastOrder             = $this->echeanciers->getLastOrder($this->projects->id_project);
-            $iOrderEarlyRefund      = isset($aLastOrder['ordre']) ? $aLastOrder['ordre'] + 1 : 1;
-            $sLastOrderDate         = $aLastOrder['date_echeance'];
-            $iLastOrderDate         = strtotime($sLastOrderDate);
-            $sBusinessDaysOrderDate = '';
-
-            // Date 4 jours ouvrés avant $sLastOrderDate
-            if ($iLastOrderDate != '' && isset($iLastOrderDate)) {
-                $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
-            }
-
-            if (false === empty($aLastOrder)) {
-                // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
-                if ($sBusinessDaysOrderDate <= time()) {
-                    // Dans ce cas, on connait donc déjà la derniere echeance qui se déroulera normalement
-                    $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aLastOrder['date_echeance']);
-
-                    // on va recup la date de la derniere echeance qui suit le process de base
-                    $aNextEcheance = $this->echeanciers->select(" id_project = " . $this->projects->id_project . "
-                    AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW()
-                    AND id_lender = (SELECT id_lender
-                    FROM echeanciers where id_project = " . $this->projects->id_project . " LIMIT 1)
-                    AND ordre = " . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
-
-                    if (count($aNextEcheance) > 0) {
-                        // on refait le meme process pour la nouvelle date
-                        $aLastOrder             = $aNextEcheance[0];
-                        $sLastOrderDate         = $aLastOrder['date_echeance'];
-                        $iLastOrderDate         = strtotime($sLastOrderDate);
-                        $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
-                    } else {
-                        $this->nextRepaymentDate = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
-                    }
-                } else {
-                    // on va recup la date de la derniere echeance qui suit le process de base
-                    $aRepaymentSchedule                   = $this->echeanciers->select(' id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
-                    $this->date_derniere_echeance_normale = (false === empty($aRepaymentSchedule[0]['date_echeance'])) ? $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']) : '';
-                }
-            }
-
-            if (false === empty($sBusinessDaysOrderDate)) {
-                $this->nextRepaymentDate  = date('d/m/Y', $sBusinessDaysOrderDate);
-                $this->date_next_echeance = $this->dates->formatDateMysqltoFr_HourOut($sLastOrderDate);
-            }
-
-            $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($this->projects->id_project, $iOrderEarlyRefund);
-            $this->montant_restant_du_preteur    = $this->echeanciers->getRemainingCapitalAtDue($this->projects->id_project, $iOrderEarlyRefund);
-            $resultat_num                        = bcsub($this->montant_restant_du_preteur, $this->montant_restant_du_emprunteur, 2);
-            $this->ordre_echeance_ra             = $iOrderEarlyRefund;
-            $this->remb_anticipe_effectue        = false;
-
             if ($this->projects->status == \projects_status::REMBOURSEMENT_ANTICIPE) {
-                $this->phrase_resultat        = "<div style='color:green;'>Remboursement anticip&eacute; effectu&eacute;</div>";
-                $this->remb_anticipe_effectue = true;
+                $this->message                = '<div style="color:green;">Remboursement anticipé effectué</div>';
+                $this->earlyRepaymentPossible = false;
+
+                return;
+            }
+            /** @var \echeanciers $repaymentSchedule */
+            $repaymentSchedule = $this->loadData('echeanciers');
+            $lateRepayment     = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND DATE(date_echeance) <= "' . (new \DateTime())->format('Y-m-d') . '"', ' ordre ASC', 0, 1);
+
+            if (false === empty($lateRepayment)) {
+                $this->message                = '<div style="color:red;">Remboursement impossible. Toutes les échéances précédentes ne sont pas remboursées</div>';
+                $this->earlyRepaymentPossible = false;
+
+                return;
+            }
+            /** @var \echeanciers_emprunteur $paymentSchedule */
+            $paymentSchedule = $this->loadData('echeanciers_emprunteur');
+            $nextRepayment   = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $this->getLimitDate(new \DateTime('today midnight'))->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
+
+            if (false === empty($nextRepayment)) {
+                $this->earlyRepaymentLimitDate    = $this->getLimitDate(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), true);
+                $this->nextScheduledRepaymentDate = \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']);
+                $this->lenderOwedCapital          = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
+                $this->borrowerOwedCapital        = $paymentSchedule->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
+                $amountDifference                 = bcsub($this->lenderOwedCapital, $this->borrowerOwedCapital, 2);
+
+                if ($amountDifference == 0) {
+                    $this->message = '<div style="color:green;">Remboursement possible</div>';
+                } elseif ($amountDifference < 0) {
+                    $this->message = '<div style="color:orange;">Remboursement possible <br />(CRD Prêteurs :' . $this->lenderOwedCapital . '€ - CRD Emprunteur :' . $this->borrowerOwedCapital . '€)</div>';
+                } else {
+                    $this->earlyRepaymentPossible = false;
+                    $this->message                = '<div style="color:red;">Remboursement impossible <br />(CRD Prêteurs :' . $this->lenderOwedCapital . '€ - CRD Emprunteur :' . $this->borrowerOwedCapital . '€)</div>';
+
+                    return;
+                }
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ReceptionsRepository $receptionRepository */
+                $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+                $this->reception     = $receptionRepository->getBorrowerAnticipatedRepaymentWireTransfer(
+                    $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+                        ->find($this->projects->id_project)
+                );
+
+                if (1 === count($this->reception)) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions reception */
+                    $this->reception = $this->reception[0];
+
+                    if ($amountDifference == 0 && (bcdiv($this->reception->getMontant(), 100, 2)) >= $this->lenderOwedCapital) {
+                        $this->wireTransferAmountOk = true;
+                        $this->message              = '<div style="color:green;">Virement reçu conforme</div>';
+                    } elseif (bcdiv($this->reception->getMontant(), 100, 2) < $this->lenderOwedCapital) {
+                        $this->wireTransferAmountOk = false;
+                        $this->message              = '<div style="color:red;">Virement reçu - Probléme montant <br />(CRD Prêteurs :' . $this->lenderOwedCapital . '€ - Virement :' . ($this->reception->getMontant() / 100) . '€)</div>';
+                    }
+                }
             } else {
-                if ($resultat_num == 0) {
-                    $this->phrase_resultat = "<div style='color:green;'>Remboursement possible</div>";
-                } elseif ($resultat_num < 0) { // si emprunteur doit plus que les prets ==> Orange non bloquant
-                    $this->phrase_resultat = "<div style='color:orange;'>Remboursement possible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
-                } elseif ($resultat_num > 0) { // si preteurs doivent plus que les emprunteurs ==> rouge bloquant
-                    $this->phrase_resultat = "<div style='color:red;'>Remboursement impossible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
-                }
+                $this->message                = '<div style="color:orange;">Il n\'est plus possible de rembourser par anticipation</div>';
+                $this->earlyRepaymentPossible = false;
+
+                return;
             }
+        } else {
+            $this->earlyRepaymentPossible = false;
+            $this->message                = '<div>Le statut du projet ne  permet pas de faire un remboursement anticipé.</div>';
+        }
+    }
 
-            // on verifie si on a recu un virement anticipé pour ce projet
-            $this->receptions = $this->loadData('receptions');
-            $L_vrmt_anticipe  = $this->receptions->select('id_project = ' . $this->projects->id_project . ' AND status_bo IN(1, 2) AND type_remb = ' . \receptions::REPAYMENT_TYPE_EARLY . ' AND type = 2 AND status_virement = 1');
+    /**
+     * @param DateTime $date
+     * @param bool     $countDown
+     *
+     * @return DateTime
+     */
+    private function getLimitDate(\DateTime $date, $countDown = false)
+    {
+        /** @var \jours_ouvres $businessDays */
+        $businessDays = $this->loadLib('jours_ouvres');
+        $interval     = new DateInterval('P1D');
 
-            $this->virement_recu = false;
+        if ($countDown) {
+            $interval->invert = 1;
+        }
+        $workingDays = 1;
 
-            if (count($L_vrmt_anticipe) == 1 && $this->projects->status != \projects_status::REMBOURSEMENT_ANTICIPE) {
-                $this->virement_recu    = true;
-                $this->virement_recu_ok = false;
+        while ($workingDays <= 5) {
+            $date->add($interval);
 
-                $this->receptions->get($L_vrmt_anticipe[0]['id_reception']);
-                //on check si on a toujours le montant emprunteur Vs Preteur est toujours identique et si le virement recu est égal à ce qu'on doit
-                if ($resultat_num == 0 && ($this->receptions->montant / 100) >= $this->montant_restant_du_preteur) {
-                    $this->virement_recu_ok = true;
-                    $this->phrase_resultat  = "<div style='color:green;'>Virement re&ccedil;u conforme</div>";
-                } elseif (($this->receptions->montant / 100) < $this->montant_restant_du_preteur) {
-                    $this->phrase_resultat = "<div style='color:red;'>Virement re&ccedil;u - Probl&egrave;me montant <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - Virement :" . ($this->receptions->montant / 100) . "€)</div>";
-                }
-            }
-
-            // on check si les échéances avant le RA sont toutes payées - si on trouve quelque chose on bloque le RA
-            $L_echeance_avant            = $this->echeanciers->select(" id_project = " . $this->projects->id_project . " AND status = 0 AND ordre < " . $this->ordre_echeance_ra);
-            $this->ra_possible_all_payed = true;
-            if (count($L_echeance_avant) > 0) {
-                $this->phrase_resultat       = "<div style='color:red;'>Remboursement impossible <br />Toutes les &eacute;ch&eacute;ances pr&eacute;c&eacute;dentes ne sont pas rembours&eacute;es</div>";
-                $this->ra_possible_all_payed = false;
+            if ($businessDays->isHoliday($date->getTimestamp())) {
+                $workingDays++;
             }
         }
+        return $date;
     }
 
     public function _send_cgv_ajax()
@@ -2607,7 +2618,7 @@ class dossiersController extends bootstrap
             $oProjectCgv->id_project = $oProjects->id_project;
             $oProjectCgv->id_tree    = $iTreeId;
             $oProjectCgv->name       = $oProjectCgv->generateFileName();
-            $oProjectCgv->status     = project_cgv::STATUS_NO_SIGN;
+            $oProjectCgv->status     = UniversignEntityInterface::STATUS_PENDING;
             $oProjectCgv->id         = $oProjectCgv->create();
             $sCgvLink                = $this->surl . $oProjectCgv->getUrlPath();
         }
@@ -2757,7 +2768,7 @@ class dossiersController extends bootstrap
 
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        if ($_POST['send_completude']) {
+        if (false === empty($_POST)) {
             /** @var \projects $oProjects */
             $oProjects = $this->loadData('projects');
             /** @var \clients $oClients */
@@ -3203,7 +3214,7 @@ class dossiersController extends bootstrap
                     /** @var \clients $client */
                     $client            = $this->loadData('clients');
                     $client->id_langue = 'fr';
-                    $client->status    = \clients::STATUS_ONLINE;
+                    $client->status    = Clients::STATUS_ONLINE;
                     $client->create();
 
                     /** @var \clients_adresses $clientAddress */
@@ -3546,6 +3557,124 @@ class dossiersController extends bootstrap
             }
 
             echo json_encode($partnerProducts);
+        }
+    }
+
+    public function _add_wire_transfer_out_lightbox()
+    {
+        $this->hideDecoration();
+
+        if (false === empty($this->params[0])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
+            $borrowerManager = $this->get('unilend.service.borrower_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
+            $partnerManager = $this->get('unilend.service.partner_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
+            $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+            /** @var \NumberFormatter $currencyFormatter */
+            $currencyFormatter = $this->get('currency_formatter');
+
+            $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+            $this->borrowerMotif     = $borrowerManager->getBorrowerBankTransferLabel($this->project);
+            $this->bankAccounts[]    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->project->getIdCompany()->getIdClientOwner());
+            $this->bankAccounts      = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getPartner()));
+            $restFunds               = $projectManager->getRestOfFundsToRelease($this->project, true);
+            $this->restFunds         = $currencyFormatter->formatCurrency($restFunds, 'EUR');
+
+            if ($this->request->isMethod('POST')) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                $projectManager = $this->get('unilend.service.project_manager');
+
+                if ($this->request->request->get('date')) {
+                    $date = DateTime::createFromFormat('d/m/Y', $this->request->request->get('date'));
+                } else {
+                    $date = null;
+                }
+
+                if (null !== $date && $date <= new DateTime()) {
+                    $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. La date de transfert n\'est pas valide.';
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    die;
+                }
+
+                $amount = $this->loadLib('ficelle')->cleanFormatedNumber($this->request->request->get('amount'));
+                if ($amount <= 0) {
+                    $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Montant n\'est pas valide.';
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    die;
+                }
+
+                $restFunds = $projectManager->getRestOfFundsToRelease($this->project, true);
+                if ($amount > $restFunds) {
+                    $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Montant trop élévé.';
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    die;
+                }
+
+                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($this->request->request->get('bank_account'));
+                $wallet      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+                $user        = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
+                try {
+                    $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount, $this->project, $user, $date, $this->request->request->get('pattern'));
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error($exception->getMessage(), ['methode' => __METHOD__]);
+                    $_SESSION['freeow']['title']   = 'Transfert de fonds échoué';
+                    $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé';
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    die;
+                }
+
+                $_SESSION['freeow']['title']   = 'Transfert de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfert de fonds a été créé avec succès ';
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                die;
+            }
+        }
+    }
+
+    public function _refuse_wire_transfer_out_lightbox()
+    {
+        $this->hideDecoration();
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        if (false === empty($this->params[0])) {
+            /** @var \NumberFormatTest currencyFormatter */
+            $this->currencyFormatter = $this->get('currency_formatter');
+
+            $this->wireTransferOut       = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($this->params[0]);
+            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+            $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        }
+
+        if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $this->wireTransferOut) {
+            $forbiddenStatus = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_VALIDATED, Virements::STATUS_SENT];
+            if (false === in_array($this->wireTransferOut->getStatus(), $forbiddenStatus)) {
+                $this->wireTransferOut->setStatus(Virements::STATUS_DENIED);
+                $entityManager->flush($this->wireTransferOut);
+                $_SESSION['freeow']['title']   = 'Refus de transfert de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfert de fonds a été refusé avec succès ';
+            } else {
+                $_SESSION['freeow']['title']   = 'Refus de transfert de fonds';
+                $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a été refusé.';
+            }
+            if (false === empty($this->params[1]) && 'project' === $this->params[1]) {
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->wireTransferOut->getProject()->getIdProject());
+            } else {
+                header('Location: ' . $this->lurl . '/transferts/virement_emprunteur/');
+            }
+            die;
         }
     }
 }

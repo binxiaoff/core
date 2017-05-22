@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Cache\CacheItemPoolInterface;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
@@ -28,7 +28,7 @@ class StatisticsManager
     private $entityManager;
     /** @var IRRManager */
     private $IRRManager;
-    /** @var MemcacheCachePool */
+    /** @var CacheItemPoolInterface */
     private $cachePool;
     /** @var LocationManager */
     private $locationManager;
@@ -37,7 +37,7 @@ class StatisticsManager
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         IRRManager $IRRManager,
-        MemcacheCachePool $cachePool,
+        CacheItemPoolInterface $cachePool,
         LocationManager $locationManager
     )
     {

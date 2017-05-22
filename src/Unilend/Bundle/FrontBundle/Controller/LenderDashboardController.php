@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
@@ -54,8 +55,6 @@ class LenderDashboardController extends Controller
         $company = $entityManagerSimulator->getRepository('companies');
         /** @var \bids $bid */
         $bid = $entityManagerSimulator->getRepository('bids');
-        /** @var \wallets_lines $wallet_line */
-        $wallet_line = $entityManagerSimulator->getRepository('wallets_lines');
         /** @var \clients $client */
         $client = $entityManagerSimulator->getRepository('clients');
 
@@ -167,7 +166,7 @@ class LenderDashboardController extends Controller
                     'loaned_amount'     => round($loan->sumPrets($wallet->getId()), 2),
                     'blocked_amount'    => round($ongoingBidsSum, 2),
                     'expected_earnings' => round($repaidGrossInterests + $upcomingGrossInterests - $problematicProjects['interests'], 2),
-                    'deposited_amount'  => $wallet_line->getSumDepot($wallet->getId(), '10,30')
+                    'deposited_amount'  => $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION])
                 ],
                 'capitalDetails'     => [
                     'repaid_capital'        => round($lenderRepayment->getRepaidCapital(['id_lender' => $wallet->getId()]), 2),

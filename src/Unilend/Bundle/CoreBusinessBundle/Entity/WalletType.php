@@ -16,7 +16,7 @@ class WalletType
     const DEBT_COLLECTOR                       = 'debt_collector';
     const LENDER                               = 'lender';
     const TAX_FR_ADDITIONAL_CONTRIBUTIONS      = 'tax_fr_contributions_additionnelles';
-    const TAX_FR_CRDS                          = 'tax_crds';
+    const TAX_FR_CRDS                          = 'tax_fr_crds';
     const TAX_FR_CSG                           = 'tax_fr_csg';
     const TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE = 'tax_fr_retenues_a_la_source';
     const TAX_FR_SOCIAL_DEDUCTIONS             = 'tax_fr_prelevements_sociaux';
@@ -24,6 +24,16 @@ class WalletType
     const TAX_FR_STATUTORY_CONTRIBUTIONS       = 'tax_fr_prelevements_obligatoires';
     const UNILEND                              = 'unilend';
     const UNILEND_PROMOTIONAL_OPERATION        = 'unilend_promotional_operation';
+
+    const TAX_FR_WALLETS = [
+        WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE,
+        WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
+        WalletType::TAX_FR_CRDS,
+        WalletType::TAX_FR_CSG,
+        WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS,
+        WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS,
+        WalletType::TAX_FR_SOCIAL_DEDUCTIONS
+    ];
 
     /**
      * @var string

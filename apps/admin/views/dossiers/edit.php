@@ -1,3 +1,4 @@
+<?php use Unilend\Bundle\CoreBusinessBundle\Entity\Virements; ?>
 <style type="text/css">
     table.tablesorter tbody td.grisfonceBG, .grisfonceBG {
         background: #D2D2D2;
@@ -175,8 +176,8 @@
     function deleteWordingli(id) {
         var id_delete = id;
         var id_input = id.replace("delete", "input");
-        $("#"+id_delete).remove();
-        $("#"+id_input).remove();
+        $("#" + id_delete).remove();
+        $("#" + id_input).remove();
     }
 
     $(function () {
@@ -243,7 +244,7 @@
         })
         <?php endif; ?>
 
-        $('body').on('change', '#partner', function() {
+        $('body').on('change', '#partner', function () {
             var partnerId = $(this).find('option:selected').val()
 
             if (partnerId !== '') {
@@ -251,9 +252,9 @@
                     type: 'POST',
                     url: '<?= $this->lurl ?>/dossiers/partner_products/<?= $this->projects->id_project ?>/' + partnerId,
                     dataType: 'json',
-                    success: function(products) {
+                    success: function (products) {
                         $('#product').find('option').remove().end().append('<option value=""></option>')
-                        $.each(products, function(index, product) {
+                        $.each(products, function (index, product) {
                             $('#product').append('<option value="' + product.id + '">' + product.label + '</option>')
                         })
                     }
@@ -261,7 +262,7 @@
             }
         })
 
-        $(document).click(function(event) {
+        $(document).click(function (event) {
             var $clicked = $(event.target)
             if ($clicked.hasClass('tab_title')) {
                 $clicked.next().slideToggle()
@@ -272,14 +273,14 @@
             $(location.hash).next('.tab_content').addClass('expand')
         }
 
-        window.onhashchange = function() {
+        window.onhashchange = function () {
             if ($(location.hash) && $(location.hash).hasClass('tab_title')) {
                 $(location.hash).next('.tab_content').addClass('expand')
                 $(location.hash).scrollTop()
             }
         }
 
-        $('.regenerate-dirs').click(function(event) {
+        $('.regenerate-dirs').click(function (event) {
             if (!confirm('Vous allez régénéré le DIRS avec les nouvelles informations')) {
                 event.preventDefault()
                 return false
@@ -287,7 +288,7 @@
             return true
         });
 
-        $('#status').change(function() {
+        $('#status').change(function () {
             var status = $(this).val();
 
             if (
@@ -335,7 +336,7 @@
             }
         });
 
-        $('.icon_remove_attachment').click(function(e) {
+        $('.icon_remove_attachment').click(function (e) {
             e.preventDefault();
             var id = $(this).data('id');
             var type = $(this).data('label');
@@ -348,17 +349,17 @@
                     data: {
                         attachment_id: id
                     },
-                    error: function() {
+                    error: function () {
                         alert('An error has occurred');
                     },
-                    success: function(data) {
-                        if(false === $.isEmptyObject(data)) {
-                            $.each(data, function(fileId, value){
+                    success: function (data) {
+                        if (false === $.isEmptyObject(data)) {
+                            $.each(data, function (fileId, value) {
                                 if ('ok' == value) {
-                                    $("#statut_fichier_id_"+fileId).html('Supprimé');
+                                    $("#statut_fichier_id_" + fileId).html('Supprimé');
                                     $(this).remove;
-                                    $("#statut_fichier_id_"+fileId).parent().find('.label_col').html('');
-                                    $("#statut_fichier_id_"+fileId).parent().find('.remove_col').html('');
+                                    $("#statut_fichier_id_" + fileId).parent().find('.label_col').html('');
+                                    $("#statut_fichier_id_" + fileId).parent().find('.remove_col').html('');
                                 }
 
                             });
@@ -374,47 +375,47 @@
             }
         });
 
-        $(".add_wording").click(function(e) {
+        $(".add_wording").click(function (e) {
             e.preventDefault();
             var id = $(this).attr("id");
-            var content = $(".content-"+id).html();
-            if ($("#input-"+id).length == 0) {
-                var champ = "<input class=\"input_li\" type=\"text\" value=\""+content+"\" name=\"input-"+id+"\" id=\"input-"+id+"\">";
-                var clickdelete = '<a onclick="deleteWordingli(this.id)" class="delete_wording" id="delete-'+id+'"><img src="'+add_surl+'/images/admin/delete.png" ></a>';
-                $('.content_li_wording').append(champ+clickdelete);
+            var content = $(".content-" + id).html();
+            if ($("#input-" + id).length == 0) {
+                var champ = "<input class=\"input_li\" type=\"text\" value=\"" + content + "\" name=\"input-" + id + "\" id=\"input-" + id + "\">";
+                var clickdelete = '<a onclick="deleteWordingli(this.id)" class="delete_wording" id="delete-' + id + '"><img src="' + add_surl + '/images/admin/delete.png" ></a>';
+                $('.content_li_wording').append(champ + clickdelete);
             }
         });
 
-        $("#completude_preview").click(function() {
+        $("#completude_preview").click(function () {
             var content = $("#content_email_completude").val();
             var list = '';
-            $(".input_li").each(function() {
-                list = list + "<li>"+$(this).val()+"</li>";
+            $(".input_li").each(function () {
+                list = list + "<li>" + $(this).val() + "</li>";
             });
 
             $.post(
-                add_url+"/ajax/session_project_completude",
+                add_url + "/ajax/session_project_completude",
                 {
                     id_project: "<?= $this->projects->id_project ?>",
                     content: content,
                     list: list
                 }
-            ).done(function(data) {
-                if(data != 'nok'){
-                    $( "#send_completeness" ).get(0).click();
+            ).done(function (data) {
+                if (data != 'nok') {
+                    $("#send_completeness").get(0).click();
                 }
             });
         });
 
         <?php if (\projects_status::NOT_ELIGIBLE != $this->projects->status) : ?>
-            $('#commercial').change(function() {
-                if ($(this).val() > 0 && $('#current_commercial').val() == 0) {
-                    $(this).parents('form').submit()
-                }
-            })
+        $('#commercial').change(function () {
+            if ($(this).val() > 0 && $('#current_commercial').val() == 0) {
+                $(this).parents('form').submit()
+            }
+        })
         <?php endif; ?>
 
-        $('#analyste').change(function() {
+        $('#analyste').change(function () {
             if ($(this).val() > 0 && $('#current_analyst').val() == 0) {
                 $(this).parents('form').submit()
             }
@@ -600,7 +601,7 @@
                         <?php if (false === empty($this->fPredictAutoBid) && $this->projects->status < \projects_status::FUNDE) : ?>
                             <tr>
                                 <th><label for="autobid_statistic">Financement Autolend</label></th>
-                                <td><?= $this->ficelle->formatNumber($this->fPredictAutoBid, 0) ?> % </td>
+                                <td><?= $this->ficelle->formatNumber($this->fPredictAutoBid, 0) ?> %</td>
                             </tr>
                         <?php endif; ?>
                     </table>
@@ -683,49 +684,8 @@
                     </table>
                     <br><br>
                     <?php if ($this->projects->status == \projects_status::REMBOURSEMENT) : ?>
-                        <h2>Remboursement anticipé</h2>
-                        <table class="form" style="border: 1px solid #b20066">
-                            <tr>
-                                <td colspan="2" style="text-align: center"><strong><?= $this->phrase_resultat ?></strong></td>
-                            </tr>
-                            <?php if ($this->virement_recu) : ?>
-                                <tr>
-                                    <th>Virement reçu le</th>
-                                    <td><strong><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></strong></td>
-                                </tr>
-                                <tr>
-                                    <th>Identification virement</th>
-                                    <td><strong><?= $this->receptions->id_reception ?></strong></td>
-                                </tr>
-                                <tr>
-                                    <th>Montant virement</th>
-                                    <td><strong><?= $this->ficelle->formatNumber($this->receptions->montant / 100) ?>&nbsp;€</strong></td>
-                                </tr>
-                                <tr>
-                                    <th>Motif du virement</th>
-                                    <td><strong><?= $this->receptions->motif ?></strong></td>
-                                </tr>
-                            <?php else : ?>
-                                <tr>
-                                    <th>Virement à émettre avant le</th>
-                                    <td><strong><?= (isset($this->nextRepaymentDate)) ? $this->nextRepaymentDate : '' ?></strong></td>
-                                </tr>
-                            <?php endif; ?>
-                            <tr>
-                                <th>Montant CRD (*)</th>
-                                <td><strong><?= $this->ficelle->formatNumber($this->montant_restant_du_preteur) ?>&nbsp;€</strong></td>
-                            </tr>
-                            <?php if (false == $this->virement_recu) : ?>
-                                <tr>
-                                    <th>Motif à indiquer sur le virement</th>
-                                    <td><strong>RA-<?= $this->projects->id_project ?></strong></td>
-                                </tr>
-                            <?php endif; ?>
-                        </table>
-                        <?php if (! $this->virement_recu && ! $this->remb_anticipe_effectue && isset($this->date_next_echeance)) : ?>
-                            * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
-                        <?php endif; ?>
-                        <br><br><br><br>
+                        <?php $this->fireView('early_repayment'); ?>
+                        <br><br>
                     <?php endif; ?>
                     <h2>
                         Actions
@@ -931,19 +891,24 @@
                                 <td>
                                     <select name="pret_refuse" id="pret_refuse" class="select">
                                         <option value="0">Non</option>
+                                        <option value="1">Oui</option>
                                     </select>
                                 </td>
                             </tr>
-                            <?php if (empty($this->proxy) || $this->proxy['status'] != \projects_pouvoir::STATUS_VALIDATED) : ?>
+                            <?php if (empty($this->proxy) || $this->proxy['status'] != \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Pouvoir</th>
                                     <td><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                                 </tr>
                             <?php endif ?>
-                            <?php if (empty($this->mandate) || $this->mandate['status'] != \clients_mandats::STATUS_SIGNED) : ?>
+                            <?php if (empty($this->mandate) || $this->mandate['status'] != \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Mandat</th>
-                                    <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <?php if ($this->validBankAccount) : ?>
+                                        <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <?php else : ?>
+                                        <td>L'emprunteur n'a pas de RIB en vigueur.</td>
+                                    <?php endif ?>
                                 </tr>
                             <?php endif ?>
                         <?php endif; ?>
@@ -992,6 +957,67 @@
                             </td>
                         </tr>
                     </table>
+                    <?php if ($this->projects->status > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
+                        <h2>
+                            Transfert
+                            <?php if ($this->displayAddButton) : ?>
+                                <a href="<?= $this->lurl ?>/dossiers/add_wire_transfer_out_lightbox/<?= $this->projects->id_project ?>" class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                            <?php endif; ?>
+                        </h2>
+                        <p>
+                            Fonds restants : <?= $this->restFunds ?>
+                        </p>
+                        <?php if (count($this->wireTransferOuts) > 0) : ?>
+                            <table class="tablesorter">
+                                <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Bénéficiaire</th>
+                                    <th>Motif</th>
+                                    <th>Montant</th>
+                                    <th>Statut</th>
+                                    <th>Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php
+                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Virements $wireTransferOut */
+                                $i = 0;
+                                ?>
+                                <?php foreach ($this->wireTransferOuts as $wireTransferOut) : ?>
+                                    <?php
+                                    $bankAccount = $wireTransferOut->getBankAccount();
+                                    if (null === $bankAccount) {
+                                        $bankAccount = $this->bankAccountRepository->getClientValidatedBankAccount($wireTransferOut->getClient());
+                                    }
+                                    $beneficiary        = $bankAccount->getIdClient();
+                                    $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $beneficiary->getIdClient()]);
+                                    ?>
+                                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
+                                        <td><?= $wireTransferOut->getTransferAt() === null ? 'Dès validation' : $wireTransferOut->getTransferAt()->format('d/m/Y') ?></td>
+                                        <td>
+                                            <?= $beneficiaryCompany->getName() ?>
+                                            <?= ' (' . $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom() . ')' ?>
+                                        </td>
+                                        <td><?= $wireTransferOut->getMotif() ?></td>
+                                        <td><?= $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'); ?></td>
+                                        <td><?= $this->translator->trans('wire-transfer-out_status-' . $wireTransferOut->getStatus()) ?></td>
+                                        <td>
+                                            <?php if (false === in_array($wireTransferOut->getStatus(),
+                                                    [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_VALIDATED, Virements::STATUS_SENT])
+                                            ) : ?>
+                                                <a href="<?= $this->lurl ?>/dossiers/refuse_wire_transfer_out_lightbox/<?= $wireTransferOut->getIdVirement() ?>/project/" class="thickbox cboxElement">
+                                                    <img src="<?= $this->surl ?>/images/admin/delete.png">
+                                                </a>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php ++$i; ?>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </td>
             </tr>
             <tr<?php if (empty($this->projects->id_commercial) && \projects_status::NOT_ELIGIBLE != $this->projects->status) : ?> style="display: none"<?php endif; ?>>

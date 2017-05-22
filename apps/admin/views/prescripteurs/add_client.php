@@ -53,7 +53,7 @@
                     <tr><td><input type="hidden" name="id_project" value="<?= isset($this->params[0]) ? $this->params[0] : '' ?>"></td></tr>
                     <tr>
                         <th colspan="4">
-                            <input type="submit" value="Créer prescripteur" name="send_add_prescripteur" class="btn">
+                            <button type="submit" class="btn-primary">Créer prescripteur</button>
                         </th>
                     </tr>
                 </table>
@@ -95,6 +95,7 @@
                     $("#company_prescripteur").html(values.company_name);
                     $("#siren_prescripteur").html(values.siren);
                     $('.identification_prescripteur').show('slow');
+                    parent.$.fn.colorbox.close();
                 } else {
                     alert('An error has occurred');
                 }

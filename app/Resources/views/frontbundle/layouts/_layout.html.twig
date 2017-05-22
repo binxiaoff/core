@@ -50,8 +50,6 @@
                 {%  endif %}
             {% endblock %}
 
-
-
             <div class="site-content">
                 {% block siteContent %}
                 {% endblock %}
@@ -125,6 +123,8 @@
                 {% endif %}
 
                 var USERNOTIFICATIONS = JSON.parse('{{ notifications|json_encode|escape('js')|raw }}')
+
+
 
                 var UTILITY_LANG = JSON.parse('{{ dictionary('utility')|json_encode|escape('js')|raw }}')
                 var AUTOCOMPLETE_LANG = JSON.parse('{{ dictionary('auto-complete')|json_encode|escape('js')|raw }}')

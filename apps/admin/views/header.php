@@ -1,27 +1,33 @@
 <div id="header">
-    <div class="logo_header">
-        <a href="<?= $this->lurl ?>"><img src="<?= $this->surl ?>/styles/default/images/logo.png" alt="Unilend"/></a>
-    </div>
-    <div class="bloc_info_header">
-        <div>
-            <a href="<?= $this->lurl ?>/users/edit_perso/<?= $_SESSION['user']['id_user'] ?>" class="thickbox">
-                <?= $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] ?>
-            </a>
-            &nbsp;&nbsp;|&nbsp;&nbsp;
-            <a href="<?= $this->lurl ?>/logout" title="Se déconnecter"><strong>Se déconnecter</strong></a>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="logo_header">
+                <a href="<?= $this->lurl ?>"><img src="<?= $this->surl ?>/styles/default/images/logo.png" alt="Unilend"/></a>
+            </div>
         </div>
-        <form id="quick_search" method="post">
-            <?php if (in_array('emprunteurs', $this->lZonesHeader)) : ?>
-                <input type="text" name="projectName" title="Raison sociale" placeholder="Raison sociale" size="20" />
-                <input type="text" name="siren" title="SIREN" placeholder="SIREN" size="10" />
-                <input type="text" name="projectId" title="ID projet" placeholder="ID projet" size="10" />
-            <?php endif; ?>
-            <?php if (in_array('preteurs', $this->lZonesHeader)) : ?>
-                <input type="text" name="lender" title="ID client" placeholder="ID client" size="10" />
-            <?php endif; ?>
-            <!-- Trick for enabling submitting form in Safari and IE -->
-            <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" />
-        </form>
+        <div class="col-sm-6">
+            <div class="bloc_info_header">
+                <div>
+                    <a href="<?= $this->lurl ?>/users/edit_perso/<?= $_SESSION['user']['id_user'] ?>" class="thickbox">
+                        <?= $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] ?>
+                    </a>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    <a href="<?= $this->lurl ?>/logout" title="Se déconnecter"><strong>Se déconnecter</strong></a>
+                </div>
+                <form id="quick_search" method="post">
+                    <?php if (in_array('emprunteurs', $this->lZonesHeader)) : ?>
+                        <input type="text" name="projectName" title="Raison sociale" placeholder="Raison sociale" size="20" />
+                        <input type="text" name="siren" title="SIREN" placeholder="SIREN" size="10" />
+                        <input type="text" name="projectId" title="ID projet" placeholder="ID projet" size="10" />
+                    <?php endif; ?>
+                    <?php if (in_array('preteurs', $this->lZonesHeader)) : ?>
+                        <input type="text" name="lender" title="ID client" placeholder="ID client" size="10" />
+                    <?php endif; ?>
+                    <!-- Trick for enabling submitting form in Safari and IE -->
+                    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" />
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 <div id="navigation">
@@ -80,7 +86,7 @@
             </li>
         <?php endif; ?>
         <?php if (in_array('preteurs', $this->lZonesHeader)) : ?>
-            <li class="last">
+            <li>
                 <a href="<?= $this->lurl ?>/preteurs" title="preteurs"<?= ($this->menu_admin == 'preteurs' ? ' class="active"' : '') ?>>Prêteurs</a>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/preteurs/search" title="Recherche prêteurs">Recherche prêteurs</a></li>
@@ -92,7 +98,7 @@
             </li>
         <?php endif; ?>
         <?php if (in_array('emprunteurs', $this->lZonesHeader)) : ?>
-            <li class="last">
+            <li>
                 <span<?= ($this->menu_admin == 'emprunteurs' ? ' class="active"' : '') ?>>Emprunteurs</span>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/dossiers" title="Dossiers">Dossiers</a></li>
@@ -107,7 +113,7 @@
             </li>
         <?php endif; ?>
         <?php if (in_array('transferts', $this->lZonesHeader)) : ?>
-            <li class="last">
+            <li>
                 <span<?= ($this->menu_admin == 'transferts' ? ' class="active"' : '') ?>>Dépôt de fonds</span>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/transferts/preteurs" title="Prêteurs">Prêteurs</a></li>
@@ -121,7 +127,7 @@
             </li>
         <?php endif; ?>
         <?php if (in_array('admin', $this->lZonesHeader)) : ?>
-            <li class="last">
+            <li>
                 <span<?= ($this->menu_admin == 'admin' ? ' class="active"' : '') ?>>Administration</span>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/users" title="Utilisateurs">Utilisateurs</a></li>

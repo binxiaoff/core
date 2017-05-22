@@ -61,8 +61,8 @@ class OperationManager
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
-        $this->walletManager   = $walletManager;
-        $this->taxManager      = $taxManager;
+        $this->walletManager          = $walletManager;
+        $this->taxManager             = $taxManager;
     }
 
     /**
@@ -81,6 +81,11 @@ class OperationManager
         if (bccomp('0', $amount, 2) >= 0) {
             return true;
         }
+
+        if (null === $debtor && null === $creditor) {
+            throw new \InvalidArgumentException('Both the debtor and creditor wallets are null.');
+        }
+
         $this->entityManager->getConnection()->beginTransaction();
         try {
             $operation = new Operation();
@@ -231,18 +236,35 @@ class OperationManager
         $walletLine->create();
     }
 
+    public function withdraw(Virements $wireTransferOut)
+    {
+        switch ($wireTransferOut->getType()) {
+            case Virements::TYPE_LENDER:
+                $this->withdrawLenderWallet($wireTransferOut);
+                break;
+            case Virements::TYPE_BORROWER:
+                $this->withdrawBorrowerWallet($wireTransferOut);
+                break;
+            case Virements::TYPE_UNILEND:
+                $this->withdrawUnilendWallet($wireTransferOut);
+                break;
+            default :
+                throw new \InvalidArgumentException('Wire transfer out type ' . $wireTransferOut->getType() . ' is not supported.');
+        }
+    }
+
     /**
-     * @param Wallet    $wallet
      * @param Virements $wireTransferOut
      *
      * @return bool
      * @throws \Exception
      */
-    public function withdrawLenderWallet(Wallet $wallet, Virements $wireTransferOut)
+    private function withdrawLenderWallet(Virements $wireTransferOut)
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
             $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW]);
+            $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::LENDER);
             $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
             $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
@@ -304,7 +326,7 @@ class OperationManager
      * @return bool
      * @throws \Exception
      */
-    public function withdrawUnilendWallet(Virements $wireTransferOut)
+    private function withdrawUnilendWallet(Virements $wireTransferOut)
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
@@ -364,22 +386,21 @@ class OperationManager
     }
 
     /**
-     * @param Wallet    $wallet
      * @param Virements $wireTransferOut
-     * @param           $partUnilend
      *
      * @return Virements
      * @throws \Exception
      */
-    public function withdrawBorrowerWallet(Wallet $wallet, Virements $wireTransferOut, $partUnilend)
+    private function withdrawBorrowerWallet(Virements $wireTransferOut)
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
             $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
+            $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::BORROWER);
             $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
             $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
-            $this->legacyWithdrawBorrowerWallet($wallet, $wireTransferOut, $partUnilend);
+            $this->legacyWithdrawBorrowerWallet($wallet, $wireTransferOut->getProject()->getIdProject(), $wireTransferOut);
             $this->entityManager->getConnection()->commit();
             return $wireTransferOut;
         } catch (\Exception $e) {
@@ -391,9 +412,10 @@ class OperationManager
     /**
      * @param Wallet    $wallet
      * @param Virements $wireTransferOut
+     * @param Integer   $projectId
      * @param           $partUnilend
      */
-    private function legacyWithdrawBorrowerWallet(Wallet $wallet, Virements $wireTransferOut, $partUnilend)
+    private function legacyWithdrawBorrowerWallet(Wallet $wallet, $projectId, Virements $wireTransferOut = null, $partUnilend = 0)
     {
         /** @var \transactions $transaction */
         $transaction = $this->entityManagerSimulator->getRepository('transactions');
@@ -402,30 +424,36 @@ class OperationManager
         /** @var \platform_account_unilend $accountUnilend */
         $accountUnilend = $this->entityManagerSimulator->getRepository('platform_account_unilend');
 
+        $transferredAmount = $wireTransferOut === null ? 0 : $wireTransferOut->getMontant();
+
         $transaction->id_client        = $wallet->getIdClient()->getIdClient();
-        $transaction->montant          = -$wireTransferOut->getMontant();
+        $transaction->montant          = -$transferredAmount;
         $transaction->montant_unilend  = bcmul($partUnilend, 100);
         $transaction->id_langue        = 'fr';
-        $transaction->id_project       = $wireTransferOut->getProject()->getIdProject();
+        $transaction->id_project       = $projectId;
         $transaction->date_transaction = date('Y-m-d H:i:s');
         $transaction->status           = \transactions::STATUS_VALID;
-        $transaction->ip_client        = $_SERVER['REMOTE_ADDR'];
+        $transaction->ip_client        = (isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : '';
         $transaction->type_transaction = \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
         $transaction->create();
 
-        $bankUnilend->id_transaction = $transaction->id_transaction;
-        $bankUnilend->id_project     = $wireTransferOut->getProject()->getIdProject();
-        $bankUnilend->montant        = bcmul($partUnilend, 100);
-        $bankUnilend->create();
+        if ($partUnilend > 0) {
+            $bankUnilend->id_transaction = $transaction->id_transaction;
+            $bankUnilend->id_project     = $projectId;
+            $bankUnilend->montant        = bcmul($partUnilend, 100);
+            $bankUnilend->create();
 
-        $accountUnilend->id_transaction = $transaction->id_transaction;
-        $accountUnilend->id_project     = $wireTransferOut->getProject()->getIdProject();
-        $accountUnilend->amount         = bcmul($partUnilend, 100);
-        $accountUnilend->type           = \platform_account_unilend::TYPE_COMMISSION_PROJECT;
-        $accountUnilend->create();
+            $accountUnilend->id_transaction = $transaction->id_transaction;
+            $accountUnilend->id_project     = $projectId;
+            $accountUnilend->amount         = bcmul($partUnilend, 100);
+            $accountUnilend->type           = \platform_account_unilend::TYPE_COMMISSION_PROJECT;
+            $accountUnilend->create();
+        }
 
-        $wireTransferOut->setIdTransaction($transaction->id_transaction);
-        $this->entityManager->flush($wireTransferOut);
+        if ($wireTransferOut) {
+            $wireTransferOut->setIdTransaction($transaction->id_transaction);
+            $this->entityManager->flush($wireTransferOut);
+        }
     }
 
     /**
@@ -759,31 +787,31 @@ class OperationManager
             $operationType = '';
             $walletType    = '';
             switch ($type) {
-                case TaxType::TYPE_INCOME_TAX :
+                case TaxType::TYPE_STATUTORY_CONTRIBUTIONS:
                     $operationType = OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS;
                     $walletType    = WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS;
                     break;
-                case TaxType::TYPE_CSG :
+                case TaxType::TYPE_CSG:
                     $operationType = OperationType::TAX_FR_CSG;
                     $walletType    = WalletType::TAX_FR_CSG;
                     break;
-                case TaxType::TYPE_SOCIAL_DEDUCTIONS :
+                case TaxType::TYPE_SOCIAL_DEDUCTIONS:
                     $operationType = OperationType::TAX_FR_SOCIAL_DEDUCTIONS;
                     $walletType    = WalletType::TAX_FR_SOCIAL_DEDUCTIONS;
                     break;
-                case TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS :
+                case TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS:
                     $operationType = OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS;
                     $walletType    = WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS;
                     break;
-                case TaxType::TYPE_SOLIDARITY_DEDUCTIONS :
+                case TaxType::TYPE_SOLIDARITY_DEDUCTIONS:
                     $operationType = OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS;
                     $walletType    = WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS;
                     break;
-                case TaxType::TYPE_CRDS :
+                case TaxType::TYPE_CRDS:
                     $operationType = OperationType::TAX_FR_CRDS;
                     $walletType    = WalletType::TAX_FR_CRDS;
                     break;
-                case TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE :
+                case TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE:
                     $operationType = OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE;
                     $walletType    = WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE;
                     break;
@@ -874,16 +902,40 @@ class OperationManager
     /**
      * @param Projects $project
      * @param          $commission
+     *
+     * @throws \Exception
      */
     public function projectCommission(Projects $project, $commission)
     {
-        $borrowerWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
-        $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
-        $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
-        $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
-        $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_FUNDS]);
+        $this->entityManager->getConnection()->beginTransaction();
+        try {
+            $borrowerWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+            $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
+            $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+            $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
+            $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_FUNDS]);
 
-        $this->newOperation($commission, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, $project);
+            $this->newOperation($commission, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, $project);
+
+            $this->legacyWithdrawBorrowerWallet($borrowerWallet, $project->getIdProject(), null, $commission);
+            $this->entityManager->getConnection()->commit();
+        } catch (\Exception $e) {
+            $this->entityManager->getConnection()->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param float  $amount
+     * @param array
+     */
+    public function borrowerRegularisation(Wallet $wallet, $amount, $origins = [])
+    {
+        $unilendWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
+        $unilendWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $operationType     = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_BORROWER_REGULARIZATION]);
+        $this->newOperation($amount, $operationType, $unilendWallet, $wallet, $origins);
     }
 
     /**
@@ -1077,7 +1129,7 @@ class OperationManager
      * @param          $commission
      * @param Projects $project
      */
-    public function legacyRepaymentCollection(Wallet $wallet, $amount, $commission, Projects $project)
+    private function legacyRepaymentCollection(Wallet $wallet, $amount, $commission, Projects $project)
     {
         /** @var \transactions $transaction */
         $transaction = $this->entityManagerSimulator->getRepository('transactions');

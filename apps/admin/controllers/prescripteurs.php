@@ -8,7 +8,7 @@ class prescripteursController extends bootstrap
 
         $this->catchAll = true;
 
-        // Controle d'acces Ã  la rubrique
+        // Controle d'acces à la rubrique
         $this->users->checkAccess('emprunteurs');
 
         // Activation du menu
@@ -84,13 +84,15 @@ class prescripteursController extends bootstrap
             $this->companies->name  = $_POST['company_name'];
             $this->companies->update();
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
-            $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-            $clientEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->prescripteurs->id_client);
             try {
-                $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
-                if ($bankAccount) {
-                    $bankAccountManager->validateBankAccount($bankAccount);
+                if ($_POST['bic'] && $_POST['iban']) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                    $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                    $clientEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->prescripteurs->id_client);
+                    $bankAccount        = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
+                    if ($bankAccount) {
+                        $bankAccountManager->validateBankAccount($bankAccount);
+                    }
                 }
             } catch (Exception $exception) {
                 $_SESSION['freeow']['title']   = 'Error RIB';
@@ -114,7 +116,7 @@ class prescripteursController extends bootstrap
     {
         $this->hideDecoration();
 
-        if (isset($_POST['send_add_prescripteur'])) {
+        if (false === empty($_POST)) {
             $this->autoFireView = false;
 
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -139,20 +141,25 @@ class prescripteursController extends bootstrap
 
             /** @var \companies $company */
             $company      = $this->loadData('companies');
-            $sirenCompany = $company->select('siren = ' . $_POST['siren'], 'added ASC', 0, 1);
+            if ($_POST['siren']) {
+                $sirenCompany = $company->select('siren = ' . $_POST['siren'], 'added ASC', 0, 1);
+            }
 
-            if ($sirenCompany) {
+            if (false === empty($sirenCompany)) {
                 $companyId = $sirenCompany[0]['id_company'];
             } else {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
-                $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-                /** @var \Doctrine\ORM\EntityManager $entityManager */
-                $entityManager = $this->get('doctrine.orm.entity_manager');
-                $clientEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
                 try {
-                    $bankAccount = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
-                    if ($bankAccount) {
-                        $bankAccountManager->validateBankAccount($bankAccount);
+                    if ($_POST['bic'] && $_POST['iban']) {
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                        /** @var \Doctrine\ORM\EntityManager $entityManager */
+                        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+                        $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+                        $bankAccount  = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
+                        if ($bankAccount) {
+                            $bankAccountManager->validateBankAccount($bankAccount);
+                        }
                     }
                 } catch (Exception $exception) {
                     echo json_encode([

@@ -7,9 +7,12 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
 
@@ -63,15 +66,15 @@ class OperationRepository extends EntityRepository
     public function getWithdrawAndProvisionOperationByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
         $qb = $this->createQueryBuilder('o')
-                   ->where('o.idType IN (:walletType)')
-                   ->setParameter('walletType', [
-                       $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
-                       $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
-                   ])
-                   ->andWhere('o.idWalletCreditor = :idWallet OR o.idWalletDebtor = :idWallet')
-                   ->setParameter('idWallet', $wallet)
-                   ->andWhere('o.added >= :added')
-                   ->setParameter('added', $date);
+            ->where('o.idType IN (:walletType)')
+            ->setParameter('walletType', [
+                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
+                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
+            ])
+            ->andWhere('o.idWalletCreditor = :idWallet OR o.idWalletDebtor = :idWallet')
+            ->setParameter('idWallet', $wallet)
+            ->andWhere('o.added >= :added')
+            ->setParameter('added', $date);
 
         return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
@@ -89,7 +92,7 @@ class OperationRepository extends EntityRepository
 
         foreach ($criteria as $field => $value) {
             $qb->andWhere('op.' . $field . $operator[$field] . ':' . $field)
-               ->setParameter($field, $value);
+                ->setParameter($field, $value);
         }
         $qb->orderBy('op.added', 'ASC');
 
@@ -107,13 +110,14 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-           ->where('ot.label IN (:operationTypes)')
-           ->andWhere('o.idWalletCreditor = :idWallet')
-           ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-           ->setParameter('idWallet', $creditorWallet);
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletCreditor = :idWallet')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $creditorWallet);
         if (null !== $year) {
-            $qb->andWhere('YEAR(o.added) = :year')->setParameter('year', $year);
+            $qb->andWhere('YEAR(o.added) = :year')
+                ->setParameter('year', $year);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -130,13 +134,14 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-           ->where('ot.label IN (:operationTypes)')
-           ->andWhere('o.idWalletDebtor = :idWallet')
-           ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-           ->setParameter('idWallet', $debtorWallet);
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletDebtor = :idWallet')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $debtorWallet);
         if (null !== $year) {
-            $qb->andWhere('YEAR(o.added) = :year')->setParameter('year', $year);
+            $qb->andWhere('YEAR(o.added) = :year')
+                ->setParameter('year', $year);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -279,12 +284,12 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(amount')
-           ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-           ->where('ot.label IN (:taxTypes)')
-           ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
-           ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
-           ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
-           ->setCacheable(true);
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:taxTypes)')
+            ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
+            ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
+            ->setCacheable(true);
 
         return $qb->getQuery()->getSingleScalarResult();
     }
@@ -317,5 +322,213 @@ class OperationRepository extends EntityRepository
         $statement->closeCursor();
 
         return $result;
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function getInterestAndTaxForFiscalState(\DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT
+                  CASE c.type
+                  WHEN 2 THEN "legal_entity"
+                  WHEN 4 THEN "legal_entity"
+                  WHEN 1 THEN "person"
+                  WHEN 3 THEN "person"
+                  END AS client_type,
+                  l.id_type_contract,
+                  CASE IFNULL((SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = w.id AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1), 0)
+                    WHEN 0 THEN "fr"
+                    ELSE "ww"
+                  END AS fiscal_residence,
+                  CASE lte.id_lender
+                    WHEN e.id_lender THEN "non_taxable"
+                    ELSE "taxable"
+                  END AS exemption_status,
+                  SUM(o_interest.amount) AS interests,
+                  SUM(o_tax_fr_prelevements_obligatoires.amount)    AS "' . OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS . '",
+                  SUM(o_tax_fr_csg.amount)                          AS "' . OperationType::TAX_FR_CSG . '",
+                  SUM(o_tax_fr_prelevements_sociaux.amount)         AS "' . OperationType::TAX_FR_SOCIAL_DEDUCTIONS . '",
+                  SUM(o_tax_fr_contributions_additionnelles.amount) AS "' . OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS . '",
+                  SUM(o_tax_fr_prelevements_de_solidarite.amount)   AS "' . OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS . '",
+                  SUM(o_tax_fr_crds.amount)                         AS "' . OperationType::TAX_FR_CRDS . '",
+                  SUM(o_tax_fr_retenues_a_la_source.amount)         AS "' . OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE . '"
+                FROM operation o_interest USE INDEX (idx_operation_added)
+                  INNER JOIN wallet w ON o_interest.id_wallet_creditor = w.id
+                  INNER JOIN clients c ON w.id_client = c.id_client
+                  INNER JOIN echeanciers e ON o_interest.id_repayment_schedule = e.id_echeancier
+                  INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = 0
+                  LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(o_interest.added)
+                  LEFT JOIN operation o_tax_fr_contributions_additionnelles
+                    ON o_tax_fr_contributions_additionnelles.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_contributions_additionnelles.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_contributions_additionnelles.id_type = (SELECT id
+                                                                            FROM operation_type
+                                                                            WHERE label = "' . OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS . '")
+                  LEFT JOIN operation o_tax_fr_crds
+                    ON o_tax_fr_crds.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_crds.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_crds.id_type = (SELECT id
+                                                    FROM operation_type
+                                                    WHERE label = "' . OperationType::TAX_FR_CRDS . '")
+                  LEFT JOIN operation o_tax_fr_csg
+                    ON o_tax_fr_csg.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_csg.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_csg.id_type = (SELECT id
+                                                   FROM operation_type
+                                                   WHERE label = "' . OperationType::TAX_FR_CSG . '")
+                  LEFT JOIN operation o_tax_fr_prelevements_de_solidarite
+                    ON o_tax_fr_prelevements_de_solidarite.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_prelevements_de_solidarite.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_prelevements_de_solidarite.id_type = (SELECT id
+                                                                          FROM operation_type
+                                                                          WHERE label = "' . OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS . '")
+                  LEFT JOIN operation o_tax_fr_prelevements_obligatoires
+                    ON o_tax_fr_prelevements_obligatoires.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_prelevements_obligatoires.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_prelevements_obligatoires.id_type = (SELECT id
+                                                                         FROM operation_type
+                                                                         WHERE label = "' . OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS . '")
+                  LEFT JOIN operation o_tax_fr_prelevements_sociaux
+                    ON o_tax_fr_prelevements_sociaux.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_prelevements_sociaux.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_prelevements_sociaux.id_type = (SELECT id
+                                                                    FROM operation_type
+                                                                    WHERE label = "' . OperationType::TAX_FR_SOCIAL_DEDUCTIONS . '")
+                  LEFT JOIN operation o_tax_fr_retenues_a_la_source
+                    ON o_tax_fr_retenues_a_la_source.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_retenues_a_la_source.id_wallet_debtor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_retenues_a_la_source.id_type = (SELECT id
+                                                                    FROM operation_type
+                                                                    WHERE label = "' . OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE . '")
+                
+                WHERE o_interest.added BETWEEN :start AND :end
+                      AND o_interest.id_type = (SELECT id
+                                                FROM operation_type
+                                                WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
+                GROUP BY l.id_type_contract, client_type, fiscal_residence,  exemption_status';
+
+        return $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param Projects|integer $project
+     * @param Clients[]        $clients
+     *
+     * @return float
+     */
+    public function getTotalGrossDebtCollectionRepayment($project, array $clients)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor')
+            ->where('ost.label = :operationSubType')
+            ->andWhere('w.idClient IN (:clients)')
+            ->andWhere('o.idProject = :project')
+            ->setParameter('operationSubType', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION)
+            ->setParameter('clients', $clients)
+            ->setParameter('project', $project);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function sumMovementsForDailyState(\DateTime $start, \DateTime $end, array $operationTypes)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT
+                  LEFT(o.added, 10) AS day,
+                  SUM(o.amount) AS amount,
+                  CASE ot.label
+                   WHEN "'. OperationType::LENDER_PROVISION . '" THEN
+                      IF(o.id_backpayline IS NOT NULL,
+                       "lender_provision_credit_card",
+                        IF(o.id_wire_transfer_in IS NOT NULL,
+                           "lender_provision_wire_transfer_in",
+                           NULL)
+                        )
+                     WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
+                       IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
+                      ELSE ot.label END AS movement
+                FROM operation o USE INDEX (idx_operation_added)
+                INNER JOIN operation_type ot ON o.id_type = ot.id
+                WHERE
+                  o.added BETWEEN :start AND :end
+                  AND ot.label IN ("' . implode('","', $operationTypes) . '")
+                GROUP BY day, movement
+                ORDER BY o.added ASC;';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
+
+        $movements = [];
+        foreach ($result as $row) {
+            $movements[$row['day']][$row['movement']] = $row['amount'];
+        }
+
+        return $movements;
+    }
+
+    /**
+     * @param \DateTime $requestedDate
+     * @param array     $operationTypes
+     *
+     * @return array
+     */
+    public function sumMovementsForDailyStateByMonth(\DateTime $requestedDate, array $operationTypes)
+    {
+        $start = new \DateTime('First day of january ' . $requestedDate->format('Y'));
+        $start->setTime(0, 0, 0);
+        $requestedDate->setTime(23, 59, 59);
+
+        $query = 'SELECT
+                  MONTH(o.added) AS month,
+                  SUM(o.amount) AS amount,
+                  CASE ot.label
+                   WHEN "'. OperationType::LENDER_PROVISION . '" THEN
+                      IF(o.id_backpayline IS NOT NULL,
+                       "lender_provision_credit_card",
+                        IF(o.id_wire_transfer_in IS NOT NULL,
+                           "lender_provision_wire_transfer_in",
+                           NULL)
+                        )
+                     WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
+                       IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
+                      ELSE ot.label END AS movement
+                FROM operation o USE INDEX (idx_operation_added)
+                INNER JOIN operation_type ot ON o.id_type = ot.id
+                WHERE
+                  o.added BETWEEN :start AND :end
+                  AND ot.label IN ("' . implode('","', $operationTypes) . '")
+                GROUP BY month, movement
+                ORDER BY o.added ASC;';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $requestedDate->format('Y-m-d H:i:s')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
+
+        $movements = [];
+        foreach ($result as $row) {
+            $movements[$row['month']][$row['movement']] = $row['amount'];
+        }
+
+        return $movements;
     }
 }

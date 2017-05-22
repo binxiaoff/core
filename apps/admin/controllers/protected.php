@@ -32,8 +32,8 @@ class protectedController extends bootstrap
 
     public function _mandats()
     {
-        if (file_exists($this->path . 'protected/mandats/' . $this->params[0])) {
-            $url = ($this->path . 'protected/mandats/' . $this->params[0]);
+        if (file_exists($this->path . 'protected/pdf/mandat/' . $this->params[0])) {
+            $url = ($this->path . 'protected/pdf/mandat/' . $this->params[0]);
 
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
@@ -41,7 +41,7 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location:' . $this->lurl);
+            header('location: ' . $this->url . '/protected/document_not_found');
             die;
         }
     }
@@ -57,7 +57,7 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location:' . $this->lurl);
+            header('location: ' . $this->url . '/protected/document_not_found');
             die;
         }
     }
@@ -73,7 +73,7 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location:' . $this->lurl);
+            header('location: ' . $this->url . '/protected/document_not_found');
             die;
         }
     }

@@ -15,12 +15,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -217,7 +218,7 @@ class ProjectRequestController extends Controller
 
         if (empty($partnerId) || null === $em->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
             $partnerManager = $this->get('unilend.service.partner_manager');
-            $partnerId      = $partnerManager->getDefaultPartner()->id;
+            $partnerId      = $partnerManager->getDefaultPartner()->getId();
         }
 
         $this->project                                       = $entityManager->getRepository('projects');
@@ -382,10 +383,10 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
+        $settings = $entityManagerSimulator->getRepository('settings');
 
         $settings->get('Durée des prêts autorisées', 'type');
         $loanPeriods = explode(',', $settings->value);
@@ -467,9 +468,9 @@ class ProjectRequestController extends Controller
 
         if ('no' === $request->request->get('manager')) {
             /** @var \prescripteurs $advisor */
-            $advisor = $entityManager->getRepository('prescripteurs');
+            $advisor = $entityManagerSimulator->getRepository('prescripteurs');
             /** @var \clients $advisorClient */
-            $advisorClient = $entityManager->getRepository('clients');
+            $advisorClient = $entityManagerSimulator->getRepository('clients');
             $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
             if (false === empty($this->project->id_prescripteur)) {
@@ -479,7 +480,7 @@ class ProjectRequestController extends Controller
 
             /** @var ClientsRepository $clientRepo */
             $clientRepo = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-            $email = $request->request->get('advisor')['email'];
+            $email      = $request->request->get('advisor')['email'];
             if (
                 $clientRepo->existEmail($email)
                 && $this->removeEmailSuffix($advisorClient->email) !== $email
@@ -504,7 +505,7 @@ class ProjectRequestController extends Controller
                 $advisorClient->create();
 
                 /** @var \clients_adresses $advisorAddress */
-                $advisorAddress            = $entityManager->getRepository('clients_adresses');
+                $advisorAddress            = $entityManagerSimulator->getRepository('clients_adresses');
                 $advisorAddress->id_client = $advisorClient->id_client;
                 $advisorAddress->civilite  = $request->request->get('advisor')['civility'];
                 $advisorAddress->prenom    = $request->request->get('advisor')['firstname'];
@@ -513,7 +514,7 @@ class ProjectRequestController extends Controller
                 $advisorAddress->create();
 
                 /** @var \companies $advisorCompany */
-                $advisorCompany = $entityManager->getRepository('companies');
+                $advisorCompany = $entityManagerSimulator->getRepository('companies');
                 $advisorCompany->create();
 
                 $advisor->id_client = $advisorClient->id_client;
@@ -528,7 +529,7 @@ class ProjectRequestController extends Controller
             $this->project->id_prescripteur = 0;
 
             /** @var \acceptations_legal_docs $tosAcceptation */
-            $tosAcceptation = $entityManager->getRepository('acceptations_legal_docs');
+            $tosAcceptation = $entityManagerSimulator->getRepository('acceptations_legal_docs');
             $settings->get('Lien conditions generales depot dossier', 'type');
 
             if ($tosAcceptation->get($settings->value, 'id_client = ' . $this->client->getIdClient() . ' AND id_legal_doc')) {
@@ -548,8 +549,22 @@ class ProjectRequestController extends Controller
         $productManager = $this->get('unilend.service_product.product_manager');
         try {
             $products = $productManager->findEligibleProducts($this->project);
+
             if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                /** @var PartnerProduct $partnerProduct */
+                $partnerProduct            = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $this->project->id_partner, 'idProduct' => $products[0]->id_product]);
                 $this->project->id_product = $products[0]->id_product;
+
+                if (null != $partnerProduct) {
+                    $this->project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
+                    $this->project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
+                } else {
+                    $this->get('logger')->warning(
+                        'Relation between partner and product not found',
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->project->id_project, 'id_partner' => $this->project->id_partner, 'id_product' => $products[0]->id_product]
+                    );
+                }
                 $this->project->update();
             }
 
@@ -1357,7 +1372,7 @@ class ProjectRequestController extends Controller
         }
 
         $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'client_not_interested');
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'Désinscription relance email');
 
         return $this->render('pages/project_request/emails.html.twig');
     }
@@ -1385,7 +1400,7 @@ class ProjectRequestController extends Controller
 
         /** @var \tax_type $taxType */
         $taxType = $entityManager->getRepository('tax_type');
-        $taxType->get(\tax_type::TYPE_VAT);
+        $taxType->get(TaxType::TYPE_VAT);
         $vatRate = $taxType->rate / 100;
 
         if (false === empty($this->project->commission_rate_repayment)) {

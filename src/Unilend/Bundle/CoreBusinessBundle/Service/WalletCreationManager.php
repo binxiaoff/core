@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
-
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;

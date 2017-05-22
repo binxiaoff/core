@@ -3,7 +3,6 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
@@ -193,10 +192,6 @@ class ProjectDisplayManager
         $now = new \DateTime('NOW');
         if ($projectData['endDate'] <= $now && $projectData['status'] == \projects_status::EN_FUNDING) {
             $projectData['projectPending'] = true;
-        }
-
-        if ($projectData['status'] >= \projects_status::REMBOURSEMENT) {
-            $projectData['statusHistory'] = $projectStatusHistory->getHistoryDetails($project->id_project);
         }
 
         if (in_array($projectData['status'], [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE])) {

@@ -7,15 +7,18 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectCgv
  *
- * @ORM\Table(name="project_cgv", uniqueConstraints={@ORM\UniqueConstraint(name="id_project", columns={"id_project"})}, indexes={@ORM\Index(name="id_project_2", columns={"id_project"})})
+ * @ORM\Table(name="project_cgv", uniqueConstraints={@ORM\UniqueConstraint(name="id_project", columns={"id_project"})})
  * @ORM\Entity
  */
-class ProjectCgv
+class ProjectCgv implements UniversignEntityInterface
 {
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="termOfUse")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -77,16 +80,14 @@ class ProjectCgv
      */
     private $id;
 
-
-
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ProjectCgv
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -96,7 +97,7 @@ class ProjectCgv
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -279,5 +280,15 @@ class ProjectCgv
     public function getId()
     {
         return $this->id;
+    }
+
+    public function generateFileName()
+    {
+        return 'cgv-unilend-' . sha1($this->idProject->getIdProject() . '_' . $this->idTree) . '.pdf';
+    }
+
+    public function getUrlPath()
+    {
+        return '/pdf/cgv_emprunteurs/' . $this->idProject->getIdProject() . '/' . $this->generateFileName();
     }
 }

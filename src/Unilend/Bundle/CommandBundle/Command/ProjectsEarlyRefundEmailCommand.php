@@ -3,6 +3,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Input\InputOption;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -109,7 +110,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                 if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
                     $lenderRemainingCapital = $borrowerTransaction->sum('type_transaction = ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT .' AND id_client = ' . $client->id_client . ' AND id_loan_remb = ' . $projectLender['id_loan'] . ' AND id_project = ' . $project->id_project, 'montant');
 
-                    $notification->type       = \notifications::TYPE_REPAYMENT;
+                    $notification->type       = Notifications::TYPE_REPAYMENT;
                     $notification->id_lender  = $projectLender['id_lender'];
                     $notification->id_project = $project->id_project;
                     $notification->amount     = $lenderRemainingCapital;
