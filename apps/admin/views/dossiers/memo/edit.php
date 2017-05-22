@@ -4,7 +4,7 @@
     <table style="margin-bottom:15px;">
         <tr>
             <td>
-                <textarea name="content" id="content_memo" autofocus style="width:500px; height:150px;" class="select"><?= $this->content ?></textarea>
+                <textarea name="content" id="content_memo" style="width:600px; height:230px;" class="textarea memo"><?= $this->content ?></textarea>
             </td>
         </tr>
     </table>
@@ -15,3 +15,23 @@
     <?php endif; ?>
     <div class="clear"></div>
 </div>
+<script>
+    $(function() {
+        $(document).on('cbox_complete', function () {
+            if (CKEDITOR.instances['content_memo']) {
+                CKEDITOR.instances['content_memo'].destroy(true)
+            }
+            CKEDITOR.replace('content_memo', {
+                height: 170,
+                width: 610,
+                toolbar: 'Basic',
+                removePlugins: 'elementspath',
+                resize_enabled: false
+            })
+            setTimeout(function() {
+                CKEDITOR.instances['content_memo'].focus()
+                $(document).off('cbox_complete')
+            }, 150)
+        })
+    })
+</script>
