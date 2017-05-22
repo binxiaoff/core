@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -12,24 +13,24 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 class TaxManager
 {
     const TAX_TYPE_EXEMPTED_LENDER = [
-        \tax_type::TYPE_CSG,
-        \tax_type::TYPE_SOCIAL_DEDUCTIONS,
-        \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-        \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
-        \tax_type::TYPE_CRDS
+        TaxType::TYPE_CSG,
+        TaxType::TYPE_SOCIAL_DEDUCTIONS,
+        TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+        TaxType::TYPE_SOLIDARITY_DEDUCTIONS,
+        TaxType::TYPE_CRDS
     ];
 
     const TAX_TYPE_TAXABLE_LENDER = [
-        \tax_type::TYPE_INCOME_TAX,
-        \tax_type::TYPE_CSG,
-        \tax_type::TYPE_SOCIAL_DEDUCTIONS,
-        \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-        \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
-        \tax_type::TYPE_CRDS
+        TaxType::TYPE_STATUTORY_CONTRIBUTIONS,
+        TaxType::TYPE_CSG,
+        TaxType::TYPE_SOCIAL_DEDUCTIONS,
+        TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+        TaxType::TYPE_SOLIDARITY_DEDUCTIONS,
+        TaxType::TYPE_CRDS
     ];
 
-    const TAX_TYPE_FOREIGNER_LENDER    = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
-    const TAX_TYPE_LEGAL_ENTITY_LENDER = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+    const TAX_TYPE_FOREIGNER_LENDER    = [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+    const TAX_TYPE_LEGAL_ENTITY_LENDER = [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
 
     /**
      * @var EntityManagerSimulator
@@ -104,7 +105,7 @@ class TaxManager
 
     private function getLegalEntityLenderRepaymentInterestsTax($interestsGross)
     {
-        return $this->calculateTaxes($interestsGross, [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
+        return $this->calculateTaxes($interestsGross, [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
     }
 
     private function getNaturalPersonLenderRepaymentInterestsTax(Clients $client, $interestsGross, \DateTime $taxDate, UnderlyingContract $underlyingContract = null)
@@ -131,25 +132,25 @@ class TaxManager
 
             if ($taxExemption->get($wallet->getId() . '" AND year = "' . $taxDate->format('Y') . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
                 return $this->calculateTaxes($interestsGross, [
-                    \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-                    \tax_type::TYPE_CRDS,
-                    \tax_type::TYPE_CSG,
-                    \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
-                    \tax_type::TYPE_SOCIAL_DEDUCTIONS
+                    TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+                    TaxType::TYPE_CRDS,
+                    TaxType::TYPE_CSG,
+                    TaxType::TYPE_SOLIDARITY_DEDUCTIONS,
+                    TaxType::TYPE_SOCIAL_DEDUCTIONS
                 ]);
             } else {
                 return $this->calculateTaxes($interestsGross, [
-                    \tax_type::TYPE_INCOME_TAX,
-                    \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-                    \tax_type::TYPE_CRDS,
-                    \tax_type::TYPE_CSG,
-                    \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
-                    \tax_type::TYPE_SOCIAL_DEDUCTIONS
+                    TaxType::TYPE_STATUTORY_CONTRIBUTIONS,
+                    TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+                    TaxType::TYPE_CRDS,
+                    TaxType::TYPE_CSG,
+                    TaxType::TYPE_SOLIDARITY_DEDUCTIONS,
+                    TaxType::TYPE_SOCIAL_DEDUCTIONS
                 ]);
             }
         } else {
             if ($underlyingContract instanceof UnderlyingContract && UnderlyingContract::CONTRACT_IFP !== $underlyingContract->getLabel()) {
-                return $this->calculateTaxes($interestsGross, [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
+                return $this->calculateTaxes($interestsGross, [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
             }
         }
 

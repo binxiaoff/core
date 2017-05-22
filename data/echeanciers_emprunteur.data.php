@@ -165,6 +165,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         return $result;
     }
 
+
     public function getRepaidCapitalByCohort()
     {
         $query = 'SELECT
