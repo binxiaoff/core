@@ -1627,7 +1627,7 @@ class preteursController extends bootstrap
             $projectNotification = new ProjectNotification();
             $projectNotification->setIdProject($project)
                 ->setSubject(filter_var($_POST['notificationSubject'], FILTER_SANITIZE_STRING))
-                ->setContent(filter_var($_POST['notificationContent'], FILTER_SANITIZE_STRING))
+                ->setContent($_POST['notificationContent'])
                 ->setIdUser($user);
 
             if (isset($_POST['notificationDate']) && ($notificationDate = \DateTime::createFromFormat('d/m/Y', $_POST['notificationDate']))) {
