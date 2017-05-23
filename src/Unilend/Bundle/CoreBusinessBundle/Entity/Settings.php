@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Settings
  *
- * @ORM\Table(name="settings", uniqueConstraints={@ORM\UniqueConstraint(name="type", columns={"type", "id_template"})})
+ * @ORM\Table(name="settings")
  * @ORM\Entity
  */
 class Settings
