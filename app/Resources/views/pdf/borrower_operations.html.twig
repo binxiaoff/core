@@ -4,9 +4,9 @@
     {{ parent() }}
     <style>
         .th.item-operation {
-            width: 30%
+            width: 40%
         }
-        .item-amount, .item-balance {
+        .item-amount {
             text-align: right;
         }
         .table {
@@ -15,7 +15,7 @@
         .table tr .th {
             display: table-cell;
             background-color: #eceaed;
-            color: #9f9d9f;
+            color: #302a32;
             font-size: 10px!important;
             padding-top: 1em;
             padding-bottom: 1em;
@@ -111,7 +111,7 @@
             {% endif %}
 
             <tr id="operation-{{ i }}" class="transaction-{{ op.label }} {{ backgroundClass }}">
-                <td class="item-type">
+                <td class="item-operation">
                     {{ ('borrower-operation_' ~ op.label)|trans }}
                     {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::BORROWER_WITHDRAW') and op.third_party_company is defined and op.third_party_company is not empty %}
                         - {{ op.third_party_company.name }}
