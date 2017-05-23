@@ -1,78 +1,117 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
+<!DOCTYPE html>
+<html lang="fr" class="no-js">
 <head>
-    <title>UNILEND</title>
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-    <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/pdf_facture/style.css" type="text/css" media="all"/>
+<title><?=$this->lng['pdf-facture']['facture-ef']?></title>
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
+<link rel="stylesheet" href="<?=$this->surl?>/styles/admin/bootstrap.css"/>
+<link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf/new-style.css"/>
+<meta name="theme-color" content="#ffffff">
+<meta charset="UTF-8">
 </head>
-<body>
+<body class="pdf-invoice">
 <div class="container">
-    <div class="header clearfix">
-        <h1 class="logo"><a href="#">Unilend</a></h1><!-- /.logo -->
-    </div><!-- /.header -->
+    <div class="logo-wrapper">
+        <img src="<?=$this->surl?>/styles/default/pdf/images/logo.png">
+    </div>
+    <h1 id="document-title"><?=$this->lng['pdf-facture']['facture-ef']?></h1>
+    <div id="header">
+        <div class="row">
+            <div class="col-xs-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <b><?= $this->lng['pdf-facture']['facture'] ?></b>
+                    </div>
+                    <div class="panel-body">
+                        <?= $this->lng['pdf-facture']['facture-num'] ?>: <?= $this->num_facture ?> <br>
+                        <?= $this->lng['pdf-facture']['date'] ?>: <?= date('d/m/Y', strtotime($this->dateRemb)) ?> <br>
+                        <?= $this->lng['pdf-facture']['id-client'] ?>: <?= $this->clients->id_client ?>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 col-xs-offset-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <b><?= $this->lng['pdf-facture']['facture-a'] ?></b>
+                    </div>
+                    <div class="panel-body">
+                        <?= $this->companies->name ?> <br>
+                        <?= $this->companies->adresse1 ?> <br>
+                        <?= $this->companies->zip ?>  <?= $this->companies->city ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /#header -->
 
-    <div class="main">
-        <div class="section clearfix">
-            <h2><?= $this->lng['pdf-facture']['facture'] ?></h2>
+    <div id="subject">
+        <div class="row">
+            <div class="col-xs-12">
+                <h4><?= $this->lng['pdf-facture']['commission-de-financement-du-projet'] ?> &laquo; <?= $this->projects->nature_project ?> &raquo;</h4>
+            </div>
+        </div>
+    </div><!-- /#subject -->
 
-            <ul>
-                <li>&nbsp;</li>
-                <li><?= $this->lng['pdf-facture']['facture-num'] ?> <?= $this->num_facture ?></li>
-                <li><?= $this->lng['pdf-facture']['date'] ?> : <?= date('d/m/Y', strtotime($this->dateRemb)) ?></li>
-                <li><?= $this->lng['pdf-facture']['id-client'] ?> : <?= $this->clients->id_client ?></li>
-            </ul>
+    <div id="content">
+        <table class="table table-bordered">
+            <thead>
+            <th class="description"><?= $this->lng['pdf-facture']['table-heading-description'] ?></th>
+            <th class="value"><?= $this->lng['pdf-facture']['table-heading-value'] ?></th>
+            </thead>
+            <tbody>
+            <tr class="item-commission">
+                <td class="label">
+                    <?= str_replace('%commissionPercentage%', $this->commissionPercentage, $this->lng['pdf-facture']['commission-deblocage-ht']) ?>
+                </td>
+                <td class="value">
+                    <?= $this->ficelle->formatNumber($this->ht) ?> €
+                </td>
+            </tr>
+            <tr class="item-tva">
+                <td class="label">
+                    <?= $this->lng['pdf-facture']['tva'] ?> (<?= $this->ficelle->formatNumber(($this->tva * 100)) ?>%)
+                </td>
+                <td class="value">
+                    <?= $this->ficelle->formatNumber($this->taxes) ?> €
+                </td>
+            </tr>
+            <tr class="item-total">
+                <td class="label">
+                    <?= $this->lng['pdf-facture']['total-ttc'] ?>
+                </td>
+                <td class="value">
+                    <?= $this->ficelle->formatNumber($this->ttc) ?> €
+                </td>
+            </tr>
+            </tbody>
+        </table><!-- /.table -->
 
-            <ul>
-                <li><?= $this->lng['pdf-facture']['facture-a'] ?> :</li>
-                <li><?= $this->companies->name ?></li>
-                <li><?= $this->companies->adresse1 ?></li>
-                <li><?= $this->companies->zip ?>    <?= $this->companies->city ?></li>
-            </ul>
-        </div><!-- /.section -->
+        <div id="payment-info">
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <p>
+                        <?= $this->lng['pdf-facture']['echeance-a-reception'] ?> <br>
+                        <b><?= $this->lng['pdf-facture']['regle-par-prelevement-le'] ?> <?= date('d/m/Y', strtotime($this->dateRemb)) ?></b>
+                    </p>
+                </div>
+            </div>
+        </div><!-- /#payment-info -->
 
-        <div class="block clearfix">
-            <h4><?= $this->lng['pdf-facture']['commission-de-financement-du-projet'] ?> &laquo; <?= $this->projects->nature_project ?> &raquo;</h4>
+        <p><?= $this->lng['pdf-facture']['en-cas-de-non-paiement'] ?></p>
 
-            <ul>
-                <li>
-                    <span><?= str_replace('%commissionPercentage%', $this->commissionPercentage, $this->lng['pdf-facture']['commission-deblocage-ht']) ?> :</span>
-                    <span><?= $this->ficelle->formatNumber($this->ht) ?> €</span>
-                </li>
-                <li>
-                    <span><?= $this->lng['pdf-facture']['tva'] ?> (<?= $this->ficelle->formatNumber(($this->tva * 100)) ?>%)	:</span>
-                    <span><?= $this->ficelle->formatNumber($this->taxes) ?> €</span>
-                </li>
-                <li class="total">
-                    <span><?= $this->lng['pdf-facture']['total-ttc'] ?> :</span>
-                    <span><?= $this->ficelle->formatNumber($this->ttc) ?> €</span>
-                </li>
-                <li>
-                    <span>&nbsp;</span>
-                </li>
-                <li>
-                    <span><?= $this->lng['pdf-facture']['echeance-a-reception'] ?></span>
-                </li>
-                <li>
-                    <span>&nbsp;</span>
-                    <span><strong><?= $this->lng['pdf-facture']['regle-par-prelevement-le'] ?> <?= date('d/m/Y', strtotime($this->dateRemb)) ?>.</strong></span>
-                </li>
-            </ul>
-        </div><!-- /.block -->
+        <br>
 
-        <div class="info-block">
-            <div class="info-head">
-                <h4><?= $this->lng['pdf-facture']['votre-contact'] ?> :</h4>
-                <p><?= $this->lng['pdf-facture']['adresse-contact'] ?></p>
-            </div><!-- /.info-head -->
+        <div id="contact-us">
+            <h4><?= $this->lng['pdf-facture']['votre-contact'] ?></h4>
+            <p>
+                <?= $this->lng['pdf-facture']['adresse-contact'] ?>
+            </p>
+        </div><!-- /#contact-us -->
 
-            <div class="info-body">
-                <p><?= $this->lng['pdf-facture']['taux-de-tva-applicable'] ?> : <?= $this->ficelle->formatNumber(($this->tva * 100)) ?>%.</p>
-                <p><?= $this->lng['pdf-facture']['en-cas-de-non-paiement'] ?></p>
-            </div><!-- /.info-body -->
-        </div><!-- /.info-block -->
+    </div><!-- /#content -->
 
-        <?php $this->fireView('footer_facture'); ?>
-    </div><!-- /.main -->
+    <br><br>
+
+    <?php $this->fireView('footer_facture'); ?>
 </div><!-- /.container -->
 </body>
 </html>

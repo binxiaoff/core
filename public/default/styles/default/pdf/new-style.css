@@ -1,0 +1,36 @@
+.pdf-invoice {
+    font-family: 'Cabin';
+}
+.pdf-invoice h1, .pdf-invoice h2, .pdf-invoice h3, .pdf-invoice h4, .pdf-invoice h5, .pdf-invoice h6 {
+    color: #b20066;
+}
+.pdf-invoice p {
+    margin: 10px 0
+}
+.pdf-invoice #document-title {
+    margin: 40px 0;
+}
+.pdf-invoice #header {
+    margin-bottom: 20px;
+}
+.pdf-invoice #subject {
+    margin-bottom: 20px;
+}
+.pdf-invoice .panel {
+    border-radius: 0;
+    box-shadow: none;
+}
+.pdf-invoice .table th {
+    background: #f5f5f5;
+}
+
+/* Borrower Invoice */
+.pdf-invoice .table th.description {
+    width: 70%;
+}
+.pdf-invoice table th.value, .pdf-invoice .table td.value {
+    text-align: right
+}
+.pdf-invoice .table tr.item-total td {
+    font-weight: bold;
+}
