@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use \Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 class BidsRepository extends EntityRepository
 {
@@ -46,5 +47,23 @@ class BidsRepository extends EntityRepository
         $bidCount =  $qb->getQuery()->getScalarResult();
 
         return $bidCount;
+    }
+
+    /**
+     * @param Wallet    $wallet
+     * @param \DateTime $date
+     * @return mixed
+     */
+    public function getManualBidByDateAndWallet(Wallet $wallet, \DateTime $date)
+    {
+        $queryBuilder = $this->createQueryBuilder('b');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:AccountMatching', 'am', Join::WITH, 'am.idWallet = :walletId')
+            ->where('b.idLenderAccount = am.idLenderAccount')
+            ->andWhere('b.idAutobid IS NULL')
+            ->andWhere('b.added > :date')
+            ->setParameter('walletId', $wallet->getId())
+            ->setParameter('date', $date);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

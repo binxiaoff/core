@@ -495,7 +495,7 @@ class AutoBidSettingsManager
 
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
-        $settings = $oAutoBid->getSettings($wallet->getId(), null, null, \autobid::STATUS_ACTIVE, [], 1);
+        $settings = $oAutoBid->getSettings($wallet->getId(), null, null, [\autobid::STATUS_ACTIVE], [], 1);
         $amount   = null;
 
         if (true === isset($settings[0]['amount'])) {
