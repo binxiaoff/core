@@ -1,30 +1,6 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 
 class loans extends loans_crud
 {
@@ -262,7 +238,7 @@ class loans extends loans_crud
                 p.risk,
                 p.status AS project_status,
                 ps.label AS project_status_label,
-                IFNULL((SELECT added FROM projects_status_history WHERE id_project = p.id_project AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . implode(', ', [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE]) . '))), "") AS final_repayment_date,
+                IFNULL((SELECT MIN(added) FROM projects_status_history WHERE id_project = p.id_project AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . implode(', ', [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE]) . '))), "") AS final_repayment_date,
                 SUM(ROUND(l.amount / 100, 2)) AS amount,
                 ROUND(SUM(rate * l.amount) / SUM(l.amount), 2) AS rate,
                 COUNT(l.id_loan) AS nb_loan,
@@ -272,15 +248,12 @@ class loans extends loans_crud
                 DATE((SELECT MIN(e.date_echeance) FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1)) AS debut,
                 DATE((SELECT MAX(e1.date_echeance) FROM echeanciers e1 WHERE e1.id_loan = l.id_loan)) AS fin,
                 DATE((SELECT MIN(e2.date_echeance) FROM echeanciers e2 WHERE e2.id_loan = l.id_loan AND e2.status = 0)) AS next_echeance,
-                SUM((SELECT (ROUND(e3.montant / 100, 2) -
-                ROUND(
-                   (SELECT SUM(IFNULL(tax.amount, 0) / 100)
-                   FROM tax
-                   WHERE tax.id_transaction =
-                     (SELECT t.id_transaction
-                      FROM transactions t
-                      WHERE t.id_echeancier = e3.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '))
-                , 2)
+                SUM((SELECT (ROUND(e3.montant / 100, 2) - (
+                    SELECT SUM(o.amount)
+                    FROM operation o
+                    WHERE o.id_repayment_schedule = e3.id_echeancier
+                    AND id_type in (SELECT id FROM operation_type WHERE label in (\'' . implode('\', \'', OperationType::TAX_TYPES_FR) . '\'))
+                    )
                 ) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status IN (' . implode(', ', $repaidStatus) . ') AND e3.date_echeance = (SELECT MIN(e4.date_echeance) FROM echeanciers e4 WHERE e4.id_loan = l.id_loan AND e4.status IN (' . implode(', ', $repaidStatus) . ') ) LIMIT 1)) AS last_perceived_repayment,
                 (SELECT SUM(ROUND(e.montant / 100, 2)) FROM echeanciers e WHERE e.id_project = l.id_project AND e.ordre = 1 AND e.id_lender = l.id_lender) AS monthly_repayment_amount,
                 (SELECT ROUND(SUM(e5.capital - e5.capital_rembourse) / 100, 2) FROM echeanciers e5 WHERE e5.id_loan = l.id_loan) AS remaining_capital

@@ -214,16 +214,6 @@ class OperationRepository extends EntityRepository
      */
     public function sumNetInterestRepaymentsNotInEeaExceptFrance(Wallet $wallet, $year)
     {
-        $taxTypes = [
-            OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS,
-            OperationType::TAX_FR_SOCIAL_DEDUCTIONS,
-            OperationType::TAX_FR_CSG,
-            OperationType::TAX_FR_CRDS,
-            OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
-            OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE,
-            OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS
-        ];
-
         $query = 'SELECT
                       SUM(IF(tlih.id_pays IN (:eeaCountries), o_interest.amount, 0)) AS interest
                     FROM operation o_interest
@@ -252,7 +242,7 @@ class OperationRepository extends EntityRepository
         $bind  = [
             'year'          => $year,
             'idWallet'      => $wallet->getId(),
-            'taxOperations' => $taxTypes,
+            'taxOperations' => OperationType::TAX_TYPES_FR,
             'eeaCountries'  => PaysV2::EUROPEAN_ECONOMIC_AREA
         ];
         $types = [
