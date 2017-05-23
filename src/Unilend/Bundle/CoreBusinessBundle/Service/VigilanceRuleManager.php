@@ -19,7 +19,7 @@ class VigilanceRuleManager
     const VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_4_W          = 32000;
     const VIGILANCE_INACTIVE_WALLET_AMOUNT                 = 5000;
     const VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_LEGAL_ENTITY = 15000;
-    const VIGILANCE_RIB_CHANGE_FREQUENCY                   = 2;
+    const VIGILANCE_RIB_CHANGE_FREQUENCY                   = 3;
     const VIGILANCE_DEPOSIT_FOLLOWED_BY_WITHDRAW_AMOUNT    = 5000;
 
     /**
