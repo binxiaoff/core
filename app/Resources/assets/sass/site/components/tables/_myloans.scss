@@ -208,14 +208,15 @@
     border-bottom: 2px solid $c-bg2;
   }
   .notification {
-    padding: 10px 25px 10px 50px;
-    cursor: pointer;
+    padding: 10px 25px;
+    border-bottom-color: $c-bg1;
     .notification-image {
       right: auto;
       left: 5px;
       top: -5px;
     }
     .notification-title {
+      font-weight: bold;
       font-size: 14px;
       float: left;
       margin-right: 10px;

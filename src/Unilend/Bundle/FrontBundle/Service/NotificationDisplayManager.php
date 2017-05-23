@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
@@ -25,21 +26,16 @@ class NotificationDisplayManager
     /** @var  EntityManager */
     private $entityManager;
 
-    /**
+/**
      * NotificationDisplayManager constructor.
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param AutoBidSettingsManager $autoBidSettingsManager
      * @param TranslatorInterface    $translator
      * @param RouterInterface        $router
      * @param EntityManager          $entityManager
-     */
-    public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
-        AutoBidSettingsManager $autoBidSettingsManager,
-        TranslatorInterface $translator,
-        RouterInterface $router,
-        EntityManager $entityManager
-    ) {
+     */    public function __construct(EntityManagerSimulator $entityManagerSimulator, AutoBidSettingsManager $autoBidSettingsManager, TranslatorInterface $translator, RouterInterface $router,
+    EntityManager $entityManager
+    ){
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->translator             = $translator;
@@ -214,8 +210,8 @@ class NotificationDisplayManager
                     ]);
                     break;
                 case Notifications::TYPE_CREDIT_CARD_CREDIT:
-                    $type  = 'remboursement';
-                    $image = 'account-cb';
+                    $type    = 'remboursement';
+                    $image   = 'account-cb';
                     $title   = $this->translator->trans('lender-notifications_credit-card-credit-title');
                     $content = $this->translator->trans('lender-notifications_credit-card-credit-content', [
                         '%amount%' => $ficelle->formatNumber($notification['amount'] / 100, 2)
@@ -358,14 +354,15 @@ class NotificationDisplayManager
             $added = new \DateTime($notification['added']);
 
             $result[] = [
-                'id'       => $notification['id_notification'],
-                'type'     => $type,
-                'title'    => $title,
-                'datetime' => $added,
-                'iso-8601' => $added->format('c'),
-                'content'  => $content,
-                'image'    => $image,
-                'status'   => $notification['status'] == Notifications::STATUS_READ ? 'read' : 'unread'
+                'id'        => $notification['id_notification'],
+                'projectId' => $notification['id_project'],
+                'type'      => $type,
+                'title'     => $title,
+                'datetime'  => $added,
+                'iso-8601'  => $added->format('c'),
+                'content'   => $content,
+                'image'     => $image,
+                'status'    => $notification['status'] == Notifications::STATUS_READ ? 'read' : 'unread'
             ];
         }
 

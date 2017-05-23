@@ -62,6 +62,8 @@
                     <td><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
                     <?php if (in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE))) : ?>
                         <td colspan="2">Remboursé intégralement <br> le <?= $this->dates->formatDate($aProjectLoans['final_repayment_date'], 'd/m/Y')?></td>
+                    <?php elseif (in_array($aProjectLoans['project_status'], [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::RECOUVREMENT])) : ?>
+                        <td colspan="2">Procédure en cours</td>
                     <?php else : ?>
                         <td><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
                         <td><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
