@@ -42,17 +42,17 @@
         </tr>
         <tr>
             <th>Durée min (mois)</th>
-            <td><?= isset($this->duration['min'][0]) ? $this->duration['min'][0] : 'Pas de contrôle' ?></td>
+            <td><?= isset($this->duration['min'][0]) ? $this->duration['min'][0] : '<em>Pas de contrôle</em>' ?></td>
         </tr>
         <tr>
             <th>Durée max (mois)</th>
-            <td><?= isset($this->duration['max'][0]) ? $this->duration['max'][0] : 'Pas de contrôle' ?></td>
+            <td><?= isset($this->duration['max'][0]) ? $this->duration['max'][0] : '<em>Pas de contrôle</em>' ?></td>
         </tr>
         <tr>
             <th>Motif de l'emprunt</th>
             <td>
                 <?php if (empty($this->borrowerMotives)) : ?>
-                    Pas de contrôle
+                    <em>Pas de contrôle</em>
                 <?php else : ?>
                     <ul>
                         <?php foreach ($this->borrowerMotives as $motive) : ?>
@@ -64,21 +64,45 @@
         </tr>
         <tr>
             <th>Jours de création min</th>
-            <td><?= isset($this->creationDaysMin[0]) ? $this->creationDaysMin[0] : 'Pas de contrôle' ?></td>
+            <td><?= isset($this->creationDaysMin[0]) ? $this->creationDaysMin[0] : '<em>Pas de contrôle</em>' ?></td>
         </tr>
 
         <tr>
             <th>RCS</th>
-            <td><?= isset($this->rcs[0]) ? ($this->rcs[0] == 1 ? 'La société doit être RCS.' : 'La société doit être non RCS.') : 'Pas de contrôle' ?></td>
+            <td><?= isset($this->rcs[0]) ? ($this->rcs[0] == 1 ? 'La société doit être RCS.' : 'La société doit être non RCS.') : '<em>Pas de contrôle</em>' ?></td>
         </tr>
         <tr>
             <th>Codes NAF éligible</th>
             <td>
                 <?php if (empty($this->nafcodes)) : ?>
-                    Pas de contrôle
+                    <em>Pas de contrôle</em>
                 <?php else : ?>
                     <?php foreach ($this->nafcodes as $code) : ?>
                         <?= $code ?>
+                    <?php endforeach; ?>
+                <? endif ?>
+            </td>
+        </tr>
+        <tr>
+            <th>ID prêteur</th>
+            <td>
+                <?php if (empty($this->lenderId)) : ?>
+                    <em>Pas de contrôle</em>
+                <?php else : ?>
+                    <?php foreach ($this->lenderId as $lenderId) : ?>
+                        <?= $lenderId ?>
+                    <?php endforeach; ?>
+                <? endif ?>
+            </td>
+        </tr>
+        <tr>
+            <th>Type prêteur</th>
+            <td>
+                <?php if (empty($this->lenderType)) : ?>
+                    <em>Pas de contrôle</em>
+                <?php else : ?>
+                    <?php foreach ($this->lenderType as $lenderType) : ?>
+                        <?= $lenderType ?>
                     <?php endforeach; ?>
                 <? endif ?>
             </td>

@@ -265,30 +265,33 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function countSelectProjectsByStatus($status, $where = '', $bUseCache = false)
+    /**
+     * @param array  $status
+     * @param string $where
+     *
+     * @return int
+     */
+    public function countSelectProjectsByStatus(array $status, $where = '')
     {
-        if (true === $bUseCache) {
-            $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
-        } else {
-            $oQCProfile = null;
-        }
-        $aBind = array('status' => explode(',', $status));
-        $aType = array('status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
-
-        $sQuery = '
+        $bind  = ['status' => $status];
+        $type  = ['status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY];
+        $query = '
             SELECT COUNT(*) AS nb_project
             FROM projects
             WHERE status IN (:status)' . $where;
 
         try {
-            $statement = $this->bdd->executeQuery($sQuery, $aBind, $aType, $oQCProfile);
-            $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+            /** @var \Doctrine\DBAL\Driver\Statement $statement */
+            $statement = $this->bdd->executeQuery($query, $bind, $type);
+            $result    = $statement->fetchColumn();
             $statement->closeCursor();
+
             if (empty($result)) {
                 return 0;
             }
-            return array_shift($result);
-        } catch (\Doctrine\DBAL\DBALException $ex) {
+
+            return (int) $result;
+        } catch (\Doctrine\DBAL\DBALException $exception) {
             return 0;
         }
     }
@@ -434,17 +437,6 @@ class projects extends projects_crud
         $record = $this->bdd->result($result);
 
         return $record;
-    }
-
-    public function getProjectsStatusAndCount(array $sListStatus, array $tabOrderProject, $iStart, $iLimit)
-    {
-        $aProjects   = $this->selectProjectsByStatus($sListStatus, ' AND p.display = 0', $tabOrderProject, $iStart, $iLimit);
-        $anbProjects = $this->countSelectProjectsByStatus(implode(',', $sListStatus) . ',' . \projects_status::PRET_REFUSE, ' AND display = 0', true);
-        $aElements   = array(
-            'lProjectsFunding' => $aProjects,
-            'nbProjects'       => $anbProjects
-        );
-        return $aElements;
     }
 
     /**

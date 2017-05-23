@@ -1,6 +1,8 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -77,7 +79,7 @@ abstract class ProductManager
             }
         }
 
-        $durationProductMaxAttr = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+        $durationProductMaxAttr = $this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH);
         $durationProductMax     = empty($durationProductMaxAttr) ? null : $durationProductMaxAttr[0];
 
         if (null === $durationProductMax) {
@@ -96,7 +98,7 @@ abstract class ProductManager
      */
     public function getMinEligibleDuration(\product $product)
     {
-        $durationMinAttr = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
+        $durationMinAttr = $this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH);
         $durationMin     = empty($durationMinAttr) ? null : $durationMinAttr[0];
 
         return $durationMin;

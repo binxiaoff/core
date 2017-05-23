@@ -1,6 +1,8 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait ProjectChecker
@@ -16,7 +18,7 @@ trait ProjectChecker
      */
     public function isEligibleForMinDuration(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $minDuration = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
+        $minDuration = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH);
 
         if (empty($minDuration)) {
             return true;
@@ -34,7 +36,7 @@ trait ProjectChecker
      */
     public function isEligibleForMaxDuration(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $maxDuration = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+        $maxDuration = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH);
 
         if (empty($maxDuration)) {
             return $this->isEligibleForMaxContractDuration($project, $product, $productAttributeManager);
@@ -52,7 +54,7 @@ trait ProjectChecker
      */
     public function isEligibleForMotive(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $eligibleMotives = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWING_MOTIVE);
+        $eligibleMotives = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE);
         if (empty($eligibleMotives)) {
             return true;
         }
