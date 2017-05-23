@@ -186,7 +186,7 @@ class ProjectRepaymentManager
 
                 $this->sendPaymentScheduleInvoiceToBorrower($paymentSchedule);
 
-                $pendingRepaymentSchedule = $repaymentScheduleRepository->findByProject($project, null, null, Echeanciers::STATUS_PENDING, null, 0, 1);
+                $pendingRepaymentSchedule = $repaymentScheduleRepository->findByProject($project, null, null, Echeanciers::STATUS_PENDING, null, null, 0, 1);
 
                 if (0 === count($pendingRepaymentSchedule)) {
                     $this->projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::REMBOURSE, $project);

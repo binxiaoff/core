@@ -82,12 +82,13 @@ class EcheanciersRepository extends EntityRepository
      * @param Clients|integer|null $client
      * @param integer|null         $status
      * @param integer|null         $paymentStatus
+     * @param integer|null         $earlyRepaymentStatus
      * @param integer|null         $start
      * @param integer|null         $limit
      *
      * @return Echeanciers[]
      */
-    public function findByProject($project, $repaymentSequence = null, $client = null, $status = null, $paymentStatus = null, $start = null, $limit = null)
+    public function findByProject($project, $repaymentSequence = null, $client = null, $status = null, $paymentStatus = null, $earlyRepaymentStatus = null, $start = null, $limit = null)
     {
         $qb = $this->createQueryBuilder('e');
         $qb->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
@@ -114,6 +115,11 @@ class EcheanciersRepository extends EntityRepository
         if (null !== $paymentStatus) {
             $qb->andWhere('ee.statusEmprunteur = :paymentStatus')
                 ->setParameter('paymentStatus', $paymentStatus);
+        }
+
+        if (null !== $earlyRepaymentStatus) {
+            $qb->andWhere('e.statusRa = :earlyRepaymentStatus')
+                ->setParameter('earlyRepaymentStatus', $earlyRepaymentStatus);
         }
 
         if (null !== $start) {

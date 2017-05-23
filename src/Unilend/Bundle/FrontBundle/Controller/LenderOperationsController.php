@@ -15,6 +15,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -629,18 +632,22 @@ class LenderOperationsController extends Controller
      */
     private function getProjectInformation($projectId)
     {
-        $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $project            = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-        $projectManager     = $this->get('unilend.service.project_manager');
-        $projectInformation = $projectManager->getProjectEventsDetail($projectId, $this->getUser()->getClientId());
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $translator      = $this->get('translator');
+        $numberFormatter = $this->get('number_formatter');
 
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        $data       = [];
+        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        foreach ($projectInformation['projectStatus'] as $projectStatus) {
+        /** @var Projects $project */
+        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        /** @var Wallet $wallet */
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+
+        $data = [];
+
+        $projectStatusAfterEarlyRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->getHistoryAfterGivenStatus($project, ProjectsStatus::REMBOURSEMENT_ANTICIPE);
+        foreach ($projectStatusAfterEarlyRepayment as $projectStatus) {
             $titleAndContent = $this->getProjectStatusTitleAndContent($projectStatus, $project, $translator);
             $data[]          = [
                 'id'        => count($data),
@@ -654,7 +661,10 @@ class LenderOperationsController extends Controller
                 'status'    => 'read'
             ];
         }
-        foreach ($projectInformation['projectNotifications'] as $projectNotification) {
+
+        $projectNotifications = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNotification')
+            ->findBy(['idProject' => $project->getIdProject()], ['notificationDate' => 'DESC']);
+        foreach ($projectNotifications as $projectNotification) {
             $data[] = [
                 'id'        => count($data),
                 'projectId' => $projectNotification->getIdProject()->getIdProject(),
@@ -667,39 +677,83 @@ class LenderOperationsController extends Controller
                 'status'    => 'read'
             ];
         }
-        foreach ($projectInformation['recoveryAndEarlyRepayments'] as $repayment) {
-            $titleAndContent = $this->getRepaymentTitleAndContent($repayment, $project, $translator, $ficelle);
 
-            if (empty($titleAndContent['content'])) {
-                continue;
-            }
+        $capitalEarlyRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
+        /** @var Operation[] $earlyRepayments */
+        $earlyRepayments = $operationRepository->findBy([
+            'idProject'        => $project,
+            'idWalletCreditor' => $wallet,
+            'idSubType'        => $capitalEarlyRepaymentType
+        ]);
+        foreach ($earlyRepayments as $repayment) {
             $data[] = [
                 'id'        => count($data),
                 'projectId' => $projectId,
                 'image'     => 'remboursement',
                 'type'      => 'remboursement',
-                'title'     => $titleAndContent['title'],
-                'content'   => $titleAndContent['content'],
-                'datetime'  => $repayment['dateTransaction'],
-                'iso-8601'  => $repayment['dateTransaction']->format('c'),
+                'title'     => $translator->trans('lender-notifications_early-repayment-title'),
+                'content'   => $translator->trans('lender-notifications_early-repayment-content', [
+                    '%amount%'     => $numberFormatter->format((float) $repayment->getAmount()),
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]),
+                'datetime'  => $repayment->getAdded(),
+                'iso-8601'  => $repayment->getAdded()->format('c'),
                 'status'    => 'read'
             ];
         }
-        foreach ($projectInformation['scheduledRepayments'] as $repayment) {
-            $titleAndContent = $this->getRepaymentTitleAndContent($repayment, $project, $translator, $ficelle);
 
-            if (empty($titleAndContent['content'])) {
-                continue;
-            }
+        $capitalDebtCollectionRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
+        /** @var Operation[] $debtCollectionRepayments */
+        $debtCollectionRepayments = $operationRepository->findBy([
+            'idProject'        => $project,
+            'idWalletCreditor' => $wallet,
+            'idSubType'        => $capitalDebtCollectionRepaymentType
+        ]);
+        foreach ($debtCollectionRepayments as $repayment) {
             $data[] = [
                 'id'        => count($data),
                 'projectId' => $projectId,
                 'image'     => 'remboursement',
                 'type'      => 'remboursement',
-                'title'     => $titleAndContent['title'],
-                'content'   => $titleAndContent['content'],
-                'datetime'  => $repayment['dateTransaction'],
-                'iso-8601'  => $repayment['dateTransaction']->format('c'),
+                'title'     => $translator->trans('lender-notifications_recovery-repayment-title'),
+                'content'   => $translator->trans('lender-notifications_recovery-repayment-content', [
+                    '%amount%'     => $numberFormatter->format((float) $repayment->getAmount()),
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]),
+                'datetime'  => $repayment->getAdded(),
+                'iso-8601'  => $repayment->getAdded()->format('c'),
+                'status'    => 'read'
+            ];
+        }
+
+        $capitalRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
+        /** @var Operation[] $scheduledRepayments */
+        $scheduledRepayments = $operationRepository->findBy([
+            'idProject'        => $project,
+            'idWalletCreditor' => $wallet,
+            'idType'           => $capitalRepaymentType,
+            'idSubType'        => null
+        ]);
+        foreach ($scheduledRepayments as $repayment) {
+
+            $title   = $translator->trans('lender-notifications_repayment-title');
+            $content = $translator->trans('lender-notifications_repayment-content', [
+                '%amount%'     => $numberFormatter->format($operationRepository->getNetAmountByRepaymentScheduleId($repayment->getRepaymentSchedule())),
+                '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                '%company%'    => $project->getIdCompany()->getName()
+            ]);
+
+            $data[] = [
+                'id'        => count($data),
+                'projectId' => $projectId,
+                'image'     => 'remboursement',
+                'type'      => 'remboursement',
+                'title'     => $title,
+                'content'   => $content,
+                'datetime'  => $repayment->getAdded(),
+                'iso-8601'  => $repayment->getAdded()->format('c'),
                 'status'    => 'read'
             ];
         }
@@ -782,50 +836,6 @@ class LenderOperationsController extends Controller
                 break;
             default:
                 $title   = $projectStatus['label'];
-                $content = '';
-                break;
-        }
-
-        return ['title' => $title, 'content' => $content];
-    }
-
-    /**
-     * @param array               $repayment
-     * @param Projects            $project
-     * @param TranslatorInterface $translator
-     * @param \ficelle            $ficelle
-     * @return array
-     */
-    private function getRepaymentTitleAndContent(array $repayment, Projects $project, TranslatorInterface $translator, \ficelle $ficelle)
-    {
-        switch ($repayment['typeTransaction']) {
-            case \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT:
-                $title   = $translator->trans('lender-notifications_early-repayment-title');
-                $content = $translator->trans('lender-notifications_early-repayment-content', [
-                    '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
-                break;
-            case \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT:
-                $title   = $translator->trans('lender-notifications_recovery-repayment-title');
-                $content = $translator->trans('lender-notifications_recovery-repayment-content', [
-                    '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
-                break;
-            case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
-            case \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL:
-            $title   = $translator->trans('lender-notifications_repayment-title');
-            $content = $translator->trans('lender-notifications_repayment-content', [
-                '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                '%company%'    => $project->getIdCompany()->getName()
-            ]);
-            break;
-            default:
-                $title   = '';
                 $content = '';
                 break;
         }

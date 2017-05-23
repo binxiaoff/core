@@ -323,6 +323,16 @@ class OperationRepository extends EntityRepository
     }
 
     /**
+     * @param Echeanciers|int $idRepaymentSchedule
+     *
+     * @return null|float
+     */
+    public function getNetAmountByRepaymentScheduleId($idRepaymentSchedule)
+    {
+        return bcsub($this->getGrossAmountByRepaymentScheduleId($idRepaymentSchedule), $this->getTaxAmountByRepaymentScheduleId($idRepaymentSchedule), 2);
+    }
+
+    /**
      * @param int $idRepaymentSchedule
      *
      * @return mixed

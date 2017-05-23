@@ -1057,31 +1057,4 @@ class ProjectManager
 
         return $fundsToRelease;
     }
-
-    /**
-     * @param int $projectId
-     * @param int $clientId
-     *
-     * @return array
-     */
-    public function getProjectEventsDetail($projectId, $clientId)
-    {
-        $projectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
-            ->getHistoryAfterGivenStatus($projectId, ProjectsStatus::REMBOURSEMENT_ANTICIPE);
-
-        $anticipatedAndEarlyRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Transactions')
-            ->getLenderAnticipatedAndEarlyTransactions($projectId, $clientId);
-
-        $scheduledRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Transactions')
-            ->getLenderScheduledRepayments($projectId, $clientId);
-
-        $projectNotifications = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNotification')->findBy(['idProject' => $projectId], ['notificationDate' => 'DESC']);
-
-        return [
-            'projectStatus'              => $projectStatusHistory,
-            'projectNotifications'       => $projectNotifications,
-            'recoveryAndEarlyRepayments' => $anticipatedAndEarlyRepayments,
-            'scheduledRepayments'        => $scheduledRepayments
-        ];
-    }
 }
