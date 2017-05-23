@@ -367,7 +367,7 @@ class Projects
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv", mappedBy="idProject")
      */
-    private $termOfUser;
+    private $termOfUse;
 
     /**
      * @var Virements[]
@@ -1487,9 +1487,9 @@ class Projects
      *
      * @return ProjectCgv
      */
-    public function getTermOfUser()
+    public function getTermOfUse()
     {
-        return $this->termOfUser;
+        return $this->termOfUse;
     }
 
     /**

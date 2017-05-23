@@ -59,32 +59,62 @@ class WalletRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime  $inactiveSince
-     * @param null|float $minAvailableBalance
+     * @param \DateTime $inactiveSince
+     * @param           $minAvailableBalance
+     *
      * @return array
      */
-    public function getInactiveLenderWalletOnPeriod(\DateTime $inactiveSince, $minAvailableBalance = null)
+    public function getLenderWalletWithoutOperationInPeriod(\DateTime $inactiveSince, $minAvailableBalance)
     {
-        $qb = $this->createQueryBuilder('w')
-            ->select('MAX(wbh.added) AS lastOperationDate, IDENTITY(w.idClient) AS idClient, w.availableBalance, w.id AS walletId')
+        $withdrawSubQuery  = $this->getEntityManager()->createQueryBuilder()
+            ->select('otw.id')
+            ->from('UnilendCoreBusinessBundle:OperationType', 'otw')
+            ->where('otw.label = :lenderWithdraw');
+        $provisionSubQuery = $this->getEntityManager()->createQueryBuilder()
+            ->select('otp.id')
+            ->from('UnilendCoreBusinessBundle:OperationType', 'otp')
+            ->where('otp.label = :lenderProvision');
+
+        $queryBuilder = $this->createQueryBuilder('w');
+        $queryBuilder->select('MAX(COALESCE(op.added, ow.added)) AS lastOperationDate, IDENTITY(w.idClient) AS idClient, w.availableBalance, w.id AS walletId')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
-            ->leftJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
-            ->leftJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType AND ot.label IN (:operationType)')
-            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'b.idBid = wbh.idBid AND b.idAutobid IS NULL')
+            ->leftJoin('UnilendCoreBusinessBundle:Operation', 'op', Join::WITH, 'op.idWalletCreditor = w.id AND op.idType = (' . $provisionSubQuery->getDQL() . ')')
+            ->leftJoin('UnilendCoreBusinessBundle:Operation', 'ow', Join::WITH, 'ow.idWalletDebtor = w.id AND ow.idType = (' . $withdrawSubQuery->getDQL() . ')')
             ->where('wt.label = :lender')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter(':operationType', [OperationType::LENDER_PROVISION, OperationType::LENDER_WITHDRAW], Connection::PARAM_INT_ARRAY);
+            ->andWhere('w.availableBalance >= :minAvailableBalance')
+            ->setParameter('minAvailableBalance', $minAvailableBalance)
+            ->groupBy('w.id')
+            ->having('lastOperationDate <= :lastOperationDate')
+            ->setParameter('lastOperationDate', $inactiveSince)
+            ->setParameter('lenderWithdraw', OperationType::LENDER_WITHDRAW)
+            ->setParameter('lenderProvision', OperationType::LENDER_PROVISION);
 
-        if (null !== $minAvailableBalance) {
-            $qb->andWhere('w.availableBalance >= :availableBalance')
-                ->setParameter('availableBalance', $minAvailableBalance);
-        }
-        $qb->groupBy('w.id')
-            ->having('lastOperationDate <= :inactiveSince')
-            ->setParameter('inactiveSince', $inactiveSince);
+        return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
+    }
 
-        return $qb->getQuery()
-            ->getResult(AbstractQuery::HYDRATE_SCALAR);
+    /**
+     * @param \DateTime $inactiveSince
+     * @param           $minAvailableBalance
+     *
+     * @return array
+     */
+    public function getLenderWalletWithoutManualBidsInPeriod(\DateTime $inactiveSince, $minAvailableBalance)
+    {
+        $queryBuilder = $this->createQueryBuilder('w');
+        $queryBuilder->select('MAX(b.added) AS lastOperationDate, IDENTITY(w.idClient) AS idClient, w.availableBalance, w.id AS walletId')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
+            ->innerJoin('UnilendCoreBusinessBundle:AccountMatching', 'am', Join::WITH, 'am.idWallet = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'b.idLenderAccount = am.idLenderAccount')
+            ->where('b.idAutobid IS NULL')
+            ->andWhere('wt.label = :lender')
+            ->setParameter('lender', WalletType::LENDER)
+            ->andWhere('w.availableBalance >= :minAvailableBalance')
+            ->setParameter('minAvailableBalance', $minAvailableBalance)
+            ->groupBy('w.id')
+            ->having('lastOperationDate <= :lastOperationDate')
+            ->setParameter('lastOperationDate', $inactiveSince);
+
+        return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
 }

@@ -19,7 +19,7 @@ class VigilanceRuleManager
     const VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_4_W          = 32000;
     const VIGILANCE_INACTIVE_WALLET_AMOUNT                 = 5000;
     const VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_LEGAL_ENTITY = 15000;
-    const VIGILANCE_RIB_CHANGE_FREQUENCY                   = 2;
+    const VIGILANCE_RIB_CHANGE_FREQUENCY                   = 3;
     const VIGILANCE_DEPOSIT_FOLLOWED_BY_WITHDRAW_AMOUNT    = 5000;
 
     /**
@@ -70,8 +70,7 @@ class VigilanceRuleManager
                 $this->processDepositDetection($clientRepository->getClientsByDepositAmountAndDate(new \DateTime('4 weeks ago 00:00:00'), self::VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_4_W, true), $vigilanceRule, true);
                 break;
             case 'max_sold_without_operation_on_period':
-                $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-                $this->processInactiveWalletDetection($walletRepository->getInactiveLenderWalletOnPeriod(new \DateTime('45 days ago 00:00:00'), self::VIGILANCE_INACTIVE_WALLET_AMOUNT), $vigilanceRule);
+                $this->processInactiveWalletDetection($this->getInactiveLenderWalletOnPeriod(new \DateTime('45 days ago 00:00:00'), self::VIGILANCE_INACTIVE_WALLET_AMOUNT), $vigilanceRule);
                 break;
             case 'max_deposit_withdraw_without_operation':
                 $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
@@ -180,6 +179,9 @@ class VigilanceRuleManager
      */
     private function processInactiveWalletDetection(array $inactiveWallets, VigilanceRule $vigilanceRule)
     {
+        $walletRepository                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $bidsRepository                    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $operationRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $clientAtypicalOperationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation');
 
         foreach ($inactiveWallets as $wallet) {
@@ -188,10 +190,11 @@ class VigilanceRuleManager
                 $atypicalOperation = $clientAtypicalOperationRepository->findOneBy(['client' => $client, 'rule' => $vigilanceRule], ['added' => 'DESC']);
 
                 if (null !== $atypicalOperation) {
-                    $lenderWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($wallet['walletId']);
-                    $lenderOperation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getWithdrawAndProvisionOperationByDateAndWallet($lenderWallet, $atypicalOperation->getAdded());
+                    $lenderWallet = $walletRepository->find($wallet['walletId']);
 
-                    if (true === empty($lenderOperation)) {
+                    if (true === empty($operationRepository->getWithdrawAndProvisionOperationByDateAndWallet($lenderWallet, $atypicalOperation->getAdded()))
+                        && true === empty($bidsRepository->getManualBidByDateAndWallet($lenderWallet, $atypicalOperation->getAdded()))
+                    ) {
                         continue;
                     }
                 }
@@ -253,5 +256,29 @@ class VigilanceRuleManager
                     ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['idClient']]);
             }
         }
+    }
+
+    /**
+     * @param \DateTime $date
+     * @param  int      $amount
+     *
+     * @return array
+     */
+    private function getInactiveLenderWalletOnPeriod(\DateTime $date, $amount)
+    {
+        $result            = [];
+        $walletRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $withoutOperations = $walletRepository->getLenderWalletWithoutOperationInPeriod($date, $amount);
+        $withoutManualBids = $walletRepository->getLenderWalletWithoutManualBidsInPeriod($date, $amount);
+
+        foreach (array_merge($withoutOperations, $withoutManualBids) as $wallet) {
+            if (false === isset($result[$wallet['walletId']])) {
+                $result[$wallet['walletId']] = $wallet;
+            } elseif ($result[$wallet['walletId']]['lastOperationDate'] < $wallet['lastOperationDate']) {
+                $result[$wallet['walletId']] = $wallet;
+            }
+        }
+
+        return $result;
     }
 }
