@@ -991,7 +991,7 @@ class echeanciers extends echeanciers_crud
     public function getLenderOwedCapital($clientId, $year, array $projectIds)
     {
         $sql = '
-            SUM(IF (e.date_echeance >= "2017-01-01 00:00:00", e.capital, IF(e.status = 0, e.capital, (e.capital - e.capital_rembourse)))) AS crd
+            SUM(IF (e.date_echeance >= "2017-01-01 00:00:00", e.capital, (e.capital - e.capital_rembourse))) AS crd
             FROM echeanciers e
                 INNER JOIN lenders_accounts ON lenders_accounts.id_lender_account = e.id_lender
             WHERE (e.date_echeance_reel >= "' . $year . '-01-01" OR e.echeanciers.status IN (' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . '))
