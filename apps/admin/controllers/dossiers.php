@@ -374,14 +374,15 @@ class dossiersController extends bootstrap
 
                     $lendersCount = $loanRepository->getLendersNb($this->projects->id_project);
 
-                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects);
-
-                    //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
-                    $echeanciers->delete($this->projects->id_project, 'id_project');
-
-                    $loans = $loanRepository->findBy(['idProject' => $this->projects->id_project, 'status' => Loans::STATUS_ACCEPTED]);
                     $entityManager->getConnection()->beginTransaction();
                     try {
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects);
+
+                        //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
+                        $echeanciers->delete($this->projects->id_project, 'id_project');
+
+                        $loans = $loanRepository->findBy(['idProject' => $this->projects->id_project, 'status' => Loans::STATUS_ACCEPTED]);
+
                         foreach ($loans as $loan) {
                             $loan->setStatus(Loans::STATUS_REJECTED);
                             $entityManager->flush($loan);
