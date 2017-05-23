@@ -353,7 +353,7 @@ class Projects
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats", mappedBy="idProject")
      */
-    private $mandats;
+    private $mandates;
 
     /**
      * @var ProjectsPouvoir
@@ -382,7 +382,7 @@ class Projects
     public function __construct()
     {
         $this->attachments      = new ArrayCollection();
-        $this->mandats          = new ArrayCollection();
+        $this->mandates         = new ArrayCollection();
         $this->wireTransferOuts = new ArrayCollection();
     }
 
@@ -1463,13 +1463,13 @@ class Projects
     }
 
     /**
-     * Get project mandats
+     * Get project mandates
      *
      * @return ClientsMandats[]
      */
-    public function getMandats()
+    public function getMandates()
     {
-        return $this->mandats;
+        return $this->mandates;
     }
 
     /**
