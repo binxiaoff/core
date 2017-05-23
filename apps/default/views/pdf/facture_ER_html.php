@@ -54,8 +54,8 @@
     <div id="content">
         <table class="table table-bordered">
             <thead>
-                <th class="description"><?= $this->lng['pdf-facture']['table-heading-description'] ?></th>
-                <th class="value"><?= $this->lng['pdf-facture']['table-heading-value'] ?></th>
+                <th class="description"><?= $this->lng['pdf-facture']['table-description-label'] ?></th>
+                <th class="value"><?= $this->lng['pdf-facture']['table-value-label'] ?></th>
             </thead>
             <tbody>
                 <tr class="item-commission">
