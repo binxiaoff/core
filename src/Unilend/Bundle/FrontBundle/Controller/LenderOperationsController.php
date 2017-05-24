@@ -25,7 +25,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\core\Loader;
 
 class LenderOperationsController extends Controller
 {

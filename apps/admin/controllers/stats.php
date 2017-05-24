@@ -475,7 +475,7 @@ class statsController extends bootstrap
 
             $sql = 'SELECT
                       e.id_echeancier,
-                      e.id_lender,
+                      w.id_client,
                       e.id_project,
                       e.id_loan,
                       e.ordre,
@@ -496,6 +496,7 @@ class statsController extends bootstrap
                       e.date_echeance_emprunteur_reel,
                       e.status
                     FROM echeanciers e
+                      INNER JOIN wallet w ON w.id = e.id_lender
                       LEFT JOIN operation prelevements_obligatoires ON prelevements_obligatoires.id_repayment_schedule = e.id_echeancier AND prelevements_obligatoires.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS.'\')
                       LEFT JOIN operation retenues_source ON retenues_source.id_repayment_schedule = e.id_echeancier AND retenues_source.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE.'\')
                       LEFT JOIN operation csg ON csg.id_repayment_schedule = e.id_echeancier AND csg.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_CSG.'\')

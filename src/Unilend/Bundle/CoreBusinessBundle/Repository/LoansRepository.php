@@ -159,7 +159,7 @@ class LoansRepository extends EntityRepository
      *
      * @return integer
      */
-    public function getLendersNb($project)
+    public function getLenderNumber($project)
     {
         $queryBuilder = $this->createQueryBuilder('l');
         $queryBuilder->select('COUNT(DISTINCT l.idLender) ')

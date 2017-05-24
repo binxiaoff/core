@@ -372,13 +372,12 @@ class dossiersController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $twitterLink = $this->settings->value;
 
-                    $lendersCount = $loanRepository->getLendersNb($this->projects->id_project);
+                    $lendersCount = $loanRepository->getLenderNumber($this->projects->id_project);
 
                     $entityManager->getConnection()->beginTransaction();
                     try {
                         $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects);
 
-                        //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
                         $echeanciers->delete($this->projects->id_project, 'id_project');
 
                         $loans = $loanRepository->findBy(['idProject' => $this->projects->id_project, 'status' => Loans::STATUS_ACCEPTED]);
@@ -992,8 +991,11 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager       = $this->get('doctrine.orm.entity_manager');
+        /** @var NumberFormatter $numberFormatter */
+        $numberFormatter     = $this->get('number_formatter');
         $walletRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
 
         $this->settings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
@@ -1083,20 +1085,18 @@ class dossiersController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
                 $wallet = $walletRepository->find($aLoans['id_lender']);
 
-                $fTotalPayedBack = 0.0;
-                $iLoansCount     = $aLoans['cnt'];
-                $fLoansAmount    = $aLoans['amount'];
+                $netRepayment = 0.0;
+                $loansCount   = $aLoans['cnt'];
+                $loansAmount  = round(bcdiv($aLoans['amount'], 100, 4), 2);
 
                 foreach ($this->echeanciers->select('id_loan IN (' . $aLoans['loans'] . ') AND id_project = ' . $this->projects->id_project . ' AND status = 1') as $aPayment) {
-                    $grossRepayment  = $operationRepository->getGrossAmountByRepaymentScheduleId($aPayment['id_echeancier']);
-                    $tax             = $operationRepository->getTaxAmountByRepaymentScheduleId($aPayment['id_echeancier']);
-                    $fTotalPayedBack += (float) bcsub($grossRepayment, $tax, 2);
+                    $netRepayment += $operationRepository->getNetAmountByRepaymentScheduleId($aPayment['id_echeancier']);
                 }
 
                 $this->notifications->type       = $iNotificationType;
                 $this->notifications->id_lender  = $aLoans['id_lender'];
                 $this->notifications->id_project = $this->projects->id_project;
-                $this->notifications->amount     = $fLoansAmount;
+                $this->notifications->amount     = bcsub($loansAmount, 100);
                 $this->notifications->id_bid     = 0;
                 $this->notifications->create();
 
@@ -1115,11 +1115,11 @@ class dossiersController extends bootstrap
                     $aReplacements = $aCommonReplacements + [
                         'prenom_p'                    => $wallet->getIdClient()->getPrenom(),
                         'entreprise'                  => $this->companies->name,
-                        'montant_pret'                => $this->ficelle->formatNumber($fLoansAmount / 100, 0),
-                        'montant_rembourse'           => '<span style=\'color:#b20066;\'>' . $this->ficelle->formatNumber($fTotalPayedBack / 100) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
-                        'nombre_prets'                => $iLoansCount . ' ' . (($iLoansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
+                        'montant_pret'                => $numberFormatter->format($loansAmount),
+                        'montant_rembourse'           => '<span style=\'color:#b20066;\'>' . $numberFormatter->format($netRepayment) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
+                        'nombre_prets'                => $loansCount . ' ' . (($loansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
                         'date_prochain_remboursement' => $this->dates->formatDate($aNextRepayment[0]['date_echeance'], 'd/m/Y'), // @todo intl
-                        'CRD'                         => $this->ficelle->formatNumber(($fLoansAmount - $fTotalPayedBack) / 100)
+                        'CRD'                         => $numberFormatter->format($loansAmount - $netRepayment)
                     ];
 
                     $sMailType = ($wallet->getIdClient()->isNaturalPerson()) ? $sEmailTypePerson : $sEmailTypeSociety;
@@ -1127,7 +1127,7 @@ class dossiersController extends bootstrap
                     $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
                     $aReplacements['sujet'] = $this->mail_template->subject;
 
-                    /** @var LoggerInterface $logger */
+                    /** @var \Psr\Log\LoggerInterface $logger */
                     $logger = $this->get('logger');
                     $logger->debug('Mail to send : ' . $sMailType . ' Variables : ' . json_encode($aReplacements), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
 
@@ -1756,8 +1756,7 @@ class dossiersController extends bootstrap
             $this->projects_status->get($this->projects->status, 'status');
 
             $this->nbPeteurs = $this->loans->getNbPreteurs($this->projects->id_project);
-
-            $lRembs            = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project);
+            $lRembs          = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project);
 
             $this->nbRembEffet  = 0;
             $this->nbRembaVenir = 0;
@@ -1867,9 +1866,7 @@ class dossiersController extends bootstrap
                                     }
                                     $emailNB = 0;
                                     foreach ($repaymentSchedules as $repaymentSchedule) {
-                                        $grossRepayment       = $operationRepository->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
-                                        $tax                  = $operationRepository->getTaxAmountByRepaymentScheduleId($repaymentSchedule);
-                                        $netRepayment         = bcsub($grossRepayment, $tax, 2);
+                                        $netRepayment         = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
                                         $wallet               = $repaymentSchedule->getIdLoan()->getIdLender();
                                         $repaymentOperation   = $operationRepository->findOneBy(['idRepaymentSchedule' => $repaymentSchedule]);
                                         $walletBalanceHistory = $walletBalanceHistoryRepository->findOneBy(['idOperation' => $repaymentOperation, 'idWallet' => $wallet]);
