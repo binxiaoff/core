@@ -11,7 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
 {

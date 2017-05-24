@@ -24,6 +24,9 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 
 class MailerManager
 {
+    /** old transaction type for backwards compatibility. It can be removed one all transaction id is null in clients_gestion_mails_notif */
+    const TYPE_TRANSACTION_LENDER_ANTICIPATED_REPAYMENT = 23;
+
     /** @var \settings */
     private $oSettings;
 
@@ -1485,8 +1488,6 @@ class MailerManager
         $oNotification = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \projects $oProject */
         $oProject = $this->entityManagerSimulator->getRepository('projects');
-        /** @var \transactions $transaction */
-        $transaction = $this->entityManagerSimulator->getRepository('transactions');
         /** @var \clients_gestion_mails_notif $oMailNotification */
         $oMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
@@ -1557,18 +1558,19 @@ class MailerManager
                             $operation = $walletBalanceHistory->getIdOperation();
 
                             if ($operation) {
-                                if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $operation->getIdSubType()->getLabel()) {
+                                if ($operation->getSubType() && OperationSubType::CAPITAL_REPAYMENT_EARLY === $operation->getSubType()->getLabel()) {
                                     $isEarlyRepayment = true;
                                 }
-
                                 $amount              = $operation->getAmount();
                                 $loanId              = $operation->getLoan()->getIdLoan();
                                 $repaymentScheduleId = $operation->getRepaymentSchedule()->getIdEcheancier();
                             }
-
                         } else {
+                            /** @var \transactions $transaction */
+                            $transaction = $this->entityManagerSimulator->getRepository('transactions');
+                            /** old transaction for backwards compatibility. It can be removed one all transaction id is null in clients_gestion_mails_notif */
                             $transaction->get($aMailNotification['id_transaction']);
-                            if (\transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT == $transaction->type_transaction) {
+                            if (self::TYPE_TRANSACTION_LENDER_ANTICIPATED_REPAYMENT == $transaction->type_transaction) {
                                 $isEarlyRepayment = true;
                             }
                             $amount              = round(bcdiv($transaction->montant, 100, 3), 2);

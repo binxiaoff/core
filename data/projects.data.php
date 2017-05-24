@@ -5,7 +5,6 @@ use \Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects as ProjectsEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 
 class projects extends projects_crud

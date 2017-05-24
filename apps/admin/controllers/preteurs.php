@@ -820,7 +820,6 @@ class preteursController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $offres_bienvenues         = $this->loadData('offres_bienvenues');
         $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
         $this->clients             = $this->loadData('clients');

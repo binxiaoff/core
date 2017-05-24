@@ -253,8 +253,7 @@ class ProjectRepaymentManager
         $lender         = $repaymentSchedule->getIdLoan()->getIdLender()->getIdClient();
         $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
         $grossRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
-        $tax            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTaxAmountByRepaymentScheduleId($repaymentSchedule);
-        $netRepayment   = bcsub($grossRepayment, $tax, 2);
+        $netRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getNetAmountByRepaymentScheduleId($repaymentSchedule);
 
         $facebook = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();
         $twitter  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue();
@@ -296,9 +295,7 @@ class ProjectRepaymentManager
     {
         $lender         = $repaymentSchedule->getIdLoan()->getIdLender()->getIdClient();
         $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
-        $grossRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
-        $tax            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTaxAmountByRepaymentScheduleId($repaymentSchedule);
-        $netRepayment   = bcsub($grossRepayment, $tax, 2);
+        $netRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getNetAmountByRepaymentScheduleId($repaymentSchedule);
 
         $sRecoveryCompany = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Cabinet de recouvrement'])->getValue();
         $facebook         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();

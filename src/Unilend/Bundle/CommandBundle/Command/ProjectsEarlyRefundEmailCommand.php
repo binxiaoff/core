@@ -2,16 +2,12 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Input\InputOption;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\core\Loader;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -108,7 +104,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
             $mailer->send($message);
 
             foreach ($projectLenders as $projectLender) {
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
+                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($projectLender['id_lender']);
 
                 if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
                     $lenderRemainingCapital = $operationRepository->getTotalEarlyRepaymentByLoan($projectLender['id_loan']);
