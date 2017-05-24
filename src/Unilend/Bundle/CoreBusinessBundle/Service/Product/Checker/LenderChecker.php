@@ -1,13 +1,85 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 trait LenderChecker
 {
-    public function isLenderEligibleForType(\lenders_accounts $lender, \product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    /**
+     * @param \lenders_accounts       $lender
+     * @param \product                $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool
+     */
+    public function isEligibleForLenderId(\lenders_accounts $lender, \product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        /** @var \clients $client */
+        $client = $entityManager->getRepository('clients');
+        if (false === $client->get($lender->id_client_owner)) {
+            throw new \InvalidArgumentException('The client id ' . $lender->id_client_owner . ' does not exist');
+        }
+
+        $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_ID);
+
+        if (empty($attributes)) {
+            return true; // No limitation found
+        }
+
+        foreach ($attributes as $attribute) {
+            if ($client->id_client == $attribute) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param \lenders_accounts       $lender
+     * @param \product                $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool
+     */
+    public function isEligibleForLenderType(\lenders_accounts $lender, \product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        /** @var \clients $client */
+        $client = $entityManager->getRepository('clients');
+        if (false === $client->get($lender->id_client_owner)) {
+            throw new \InvalidArgumentException('The client id ' . $lender->id_client_owner . ' does not exist');
+        }
+
+        $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_TYPE);
+
+        if (empty($attributes)) {
+            return true; // No limitation found
+        }
+
+        foreach ($attributes as $attribute) {
+            if ($client->type == $attribute) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param \lenders_accounts       $lender
+     * @param \product                $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool
+     */
+    public function isContractEligibleForLenderType(\lenders_accounts $lender, \product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');

@@ -167,7 +167,7 @@ abstract class ProductManager
     }
 
     /**
-     * @return mixed
+     * @return \product[]
      */
     abstract public function getAvailableProducts();
 

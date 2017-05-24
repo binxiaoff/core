@@ -322,7 +322,7 @@
                 <th><label for="fonction_etape2">Fonction</label></th>
                 <td><input type="text" name="fonction_etape2" id="fonction_etape2" class="input_large" value="<?= $this->clients->fonction ?>"></td>
                 <th><label for="email_etape2">Email</label></th>
-                <td><input type="text" name="email_etape2" id="email_etape2" class="input_large" value="<?= $this->clients->email ?>"></td>
+                <td><input type="email" name="email_etape2" id="email_etape2" class="input_large" value="<?= $this->clients->email ?>"></td>
             </tr>
             <tr>
                 <th><label for="phone_new_etape2">Téléphone</label></th>

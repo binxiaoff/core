@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Psr\Cache\CacheItemPoolInterface;
@@ -54,7 +55,6 @@ class ContractAttributeManager
             }
         } else {
             $contractAttributes = $cachedItem->get();
-
         }
 
         return $contractAttributes;
