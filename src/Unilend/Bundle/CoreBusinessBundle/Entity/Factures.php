@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Factures
 {
-    const TYPE_COMMISSION_FUNDS   = 1;
+    const TYPE_COMMISSION_FUNDS     = 1;
     const TYPE_COMMISSION_REPAYMENT = 2;
 
     /**

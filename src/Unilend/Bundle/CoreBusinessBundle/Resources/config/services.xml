@@ -372,5 +372,12 @@
             <argument>%router.request_context.scheme%://%url.host_default%</argument>
             <argument>%router.request_context.scheme%://%url.host_admin%</argument>
         </service>
+
+        <service id="unilend.service.invoice_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\InvoiceManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="knp_snappy.pdf"/>
+            <argument type="service" id="twig" />
+            <argument>%path.protected%</argument>
+        </service>
     </services>
 </container>

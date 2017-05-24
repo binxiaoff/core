@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr" class="no-js">
+<head>
+    <title>{% trans %}invoice-pdf_header-title{% endtrans %}</title>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
+    <link rel="stylesheet" href="{{ absolute_url(asset('fonts/style.css', 'gulp')) }}"/>
+    <link rel="stylesheet" href="{{ absolute_url(asset('css/main.css', 'gulp')) }}"/>
+    <meta name="theme-color" content="#ffffff">
+    <meta charset="UTF-8">
+    <style>
+        .pdf-invoice {
+            font-family: 'Cabin';
+        }
+        .pdf-invoice h1, .pdf-invoice h2, .pdf-invoice h3, .pdf-invoice h4, .pdf-invoice h5, .pdf-invoice h6 {
+            color: #b20066;
+        }
+        .pdf-invoice p {
+            margin: 10px 0
+        }
+        .pdf-invoice #document-title {
+            margin: 40px 0;
+        }
+        .pdf-invoice #header {
+            margin-bottom: 20px;
+        }
+        .pdf-invoice #subject {
+            margin-bottom: 20px;
+        }
+        .pdf-invoice .panel {
+            border-radius: 0;
+            box-shadow: none;
+        }
+        .pdf-invoice .table th {
+            background: #f5f5f5;
+        }
+
+        /* Borrower Invoice */
+        .pdf-invoice .table th.description {
+            width: 70%;
+        }
+        .pdf-invoice table th.value, .pdf-invoice .table td.value {
+            text-align: right
+        }
+        .pdf-invoice .table tr.item-total td {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="pdf-invoice">
+<div class="container">
+    <div class="logo-wrapper">
+        <img src="<?=$this->surl?>/styles/default/pdf/images/logo.png">
+    </div>
+    <h1 id="document-title">{% trans %}invoice-pdf_header-title{% endtrans %}</h1>
+    <div id="header">
+        <div class="row">
+            <div class="col-xs-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                    </div>
+                    <div class="panel-body">
+                        {% trans with {'%invoiceNumber%' : invoice.numFacture } %}invoice-pdf_header-number-line{% endtrans %}<br>
+                        {% trans with {'%date%' : paymentDate|date('d/m/Y') }%}invoice-pdf_header-date-line{% endtrans %}<br>
+                        {% trans with {'%idClient%' : client.idClient }%}invoice-pdf_header-id-client-line{% endtrans %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 col-xs-offset-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <b>{% trans %}invoice-pdf_addressee-line{% endtrans %}</b>
+                    </div>
+                    <div class="panel-body">
+                        {{ project.idCompany.name }}<br>
+                        {{ project.idCompany.adresse1 }}<br>
+                        {{ project.idCompany.zip }} {{ project.idCompany.city }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /#header -->
+    {% block subject%}
+        <div id="subject">
+            <div class="row">
+                <div class="col-xs-12">
+                    <h4>{{ "invoice-pdf_commission-type-#{ invoice.typeCommission }"|trans }} &laquo; {{ project.natureProject }} &raquo;</h4>
+                </div>
+            </div>
+        </div><!-- /#subject -->
+    {% endblock %}
+    <div id="content">
+        {% block content %}
+            <table class="table table-bordered">
+                <thead>
+                <th class="description">{% trans %}invoice-pdf_table-description-label{% endtrans %}</th>
+                <th class="value">{% trans %}invoice-pdf_table-value-label{% endtrans %}</th>
+                </thead>
+                <tbody>
+                <tr class="item-commission">
+                    <td class="label">
+                        {% trans with {'%commissionPercentage%' : invoice.commission} %}invoice-pdf_commission-rate-net{% endtrans %}
+                    </td>
+                    <td class="value">
+                        {{ (invoice.montantHT/100)|localizedcurrency('EUR') }}
+                    </td>
+                </tr>
+                <tr class="item-tva">
+                    <td class="label">
+                        {% trans with {'%vatRate%' : vat.rate|localizednumberwithprecision(2)} %}invoice-pdf_table-vat-line{% endtrans %}
+                    </td>
+                    <td class="value">
+                        {{ (invoice.tva/100)|localizedcurrency('EUR') }}
+                    </td>
+                </tr>
+                <tr class="item-total">
+                    <td class="label">
+                        {% trans %}invoice-pdf_table-total-gross-line{% endtrans %}
+                    </td>
+                    <td class="value">
+                        {{ (invoice.montantTtc/100)|localizedcurrency('EUR') }}
+                    </td>
+                </tr>
+                </tbody>
+            </table><!-- /.table -->
+
+        {% endblock %}
+        <div id="payment-info">
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <p>
+                        {% trans %}invoice-pdf_due-at-line{% endtrans %} <br>
+                        <b>{% trans with {'%date%' : paymentDate|date('d/m/Y')}%}invoice-pdf_payed-at-line{% endtrans %} </b>
+                    </p>
+                </div>
+            </div>
+        </div><!-- /#payment-info -->
+
+        <p>{% trans with {'%vatRate%' : vat.rate|localizednumberwithprecision(2) } %}invoice-pdf_additional-information-vat-rate{% endtrans %}</p>
+        <p>{% trans %}invoice-pdf_additional-information-late-payments{% endtrans %}</p>
+        <br>
+        <div id="contact-us">
+            <h4>{% trans %}invoice-pdf_contact-title{% endtrans %}</h4>
+            <p>
+                {% trans %}invoice-pdf_contact-text{% endtrans %}
+            </p>
+        </div><!-- /#contact-us -->
+    </div><!-- /#content -->
+</div>
+{% block footer %}
+    <div id="footer">
+        <div class="row">
+            <div class="col-xs-12">
+                <p class="text-center">
+                    <small>
+                        {{ footer.unilendTitle }}<span>•</span>
+                        {{ footer.corporateName }} - {{ footer.unilend }}<span>•</span>
+                        {{ footer.capital }} <span>•</span> {{ footer.address }} <span>•</span>
+                        {{ footer.phone }} <span>•</span> {{ footer.rcs }} <span>•</span> {{ footer.intraCommunityVAT }}
+                    </small>
+                </p>
+            </div>
+        </div>
+    </div><!-- /#footer -->
+{% endblock %}
+</body>
+</html>
