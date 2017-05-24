@@ -48,8 +48,6 @@ class LenderOperationsController extends Controller
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $entityManagerSimulator->getRepository('projects_status');
 
         /** @var EntityManager $entityManager */
         $entityManager= $this->get('doctrine.orm.entity_manager');
