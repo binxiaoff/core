@@ -8,7 +8,6 @@ use Twig_Environment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use function var_dump;
 
 class InvoiceManager
 {
@@ -20,15 +19,6 @@ class InvoiceManager
     private $twig;
     /** @var string */
     private $protectedPath;
-    /** @var array  */
-    private $invoiceFileOptions = [
-        'footer-html'   => '',
-        'header-html'   => '',
-        'margin-top'    => 20,
-        'margin-right'  => 15,
-        'margin-bottom' => 10,
-        'margin-left'   => 15
-    ];
 
     /**
      * @param EntityManager      $entityManager
@@ -64,19 +54,8 @@ class InvoiceManager
         $projectStatusHistoryRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
         $repaymentStatus                     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => \projects_status::REMBOURSEMENT]);
         $projectsStatusHistoryFirstRepayment = $projectStatusHistoryRepository->findStatusFirstOccurrence($project, $repaymentStatus);
-        $client                              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-        $filePath                            = $this->protectedPath . '/pdf/facture/facture_EF-' . $client->getHash() . '-' . $project->getIdProject() . '.pdf';
 
-        $pdfContent = $this->twig->render('/pdf/commission_invoice.html.twig', [
-            'client'      => $client,
-            'project'     => $project,
-            'invoice'     => $invoice,
-            'paymentDate' => $projectsStatusHistoryFirstRepayment->getAdded(),
-            'vat'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT),
-            'footer'      => $this->getInvoiceFooterData()
-        ]);
-
-        $this->snappy->generateFromHtml($pdfContent, $filePath, $this->invoiceFileOptions, true);
+        $this->generateInvoice($invoice, $projectsStatusHistoryFirstRepayment->getAdded());
     }
 
     /**
@@ -98,24 +77,49 @@ class InvoiceManager
             throw new \Exception('The requested invoice does not exist in database');
         }
 
-        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
         $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
             'idProject' => $project->getIdProject(),
             'ordre'     => $order,
             'statusRa'  => \echeanciers_emprunteur::STATUS_NO_EARLY_REFUND
         ]);
-        $filePath = $this->protectedPath . '/pdf/facture/facture_ER-' . $client->getHash() . '-' . $project->getIdProject() . '-' . $paymentSchedule->getOrdre() . '.pdf';
+
+        $this->generateInvoice($invoice, $paymentSchedule->getDateEcheanceEmprunteurReel());
+    }
+
+    /**
+     * @param Factures  $invoice
+     * @param \DateTime $paymentDate
+     */
+    private function generateInvoice(Factures $invoice, \DateTime $paymentDate)
+    {
+        $options = [
+            'footer-html'   => '',
+            'header-html'   => '',
+            'margin-top'    => 20,
+            'margin-right'  => 15,
+            'margin-bottom' => 10,
+            'margin-left'   => 15
+        ];
+
+        $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($invoice->getIdProject());
+        $client  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+
+        if ($invoice->getOrdre() >= 1) {
+            $filePath = $this->protectedPath . '/pdf/facture/facture_ER-' . $client->getHash() . '-' . $project->getIdProject() . '-' . $invoice->getOrdre() . '.pdf';
+        } else {
+            $filePath = $this->protectedPath . '/pdf/facture/facture_EF-' . $client->getHash() . '-' . $project->getIdProject() . '.pdf';
+        }
 
         $pdfContent = $this->twig->render('/pdf/commission_invoice.html.twig', [
             'client'      => $client,
             'project'     => $project,
             'invoice'     => $invoice,
-            'paymentDate' => $paymentSchedule->getDateEcheanceEmprunteurReel(),
+            'paymentDate' => $paymentDate,
             'vat'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT),
             'footer'      => $this->getInvoiceFooterData()
         ]);
 
-        $this->snappy->generateFromHtml($pdfContent, $filePath, $this->invoiceFileOptions, true);
+        $this->snappy->generateFromHtml($pdfContent, $filePath, $options, true);
     }
 
     /**
