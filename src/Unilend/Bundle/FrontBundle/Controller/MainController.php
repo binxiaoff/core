@@ -78,14 +78,11 @@ class MainController extends Controller
      */
     public function homeLenderAction()
     {
-        /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var AuthorizationChecker $authorizationChecker */
-        $authorizationChecker = $this->get('security.authorization_checker');
-        /** @var WelcomeOfferManager $welcomeOfferManager */
-        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-        /** @var TestimonialManager $testimonialService */
-        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+        $authorizationChecker  = $this->get('security.authorization_checker');
+        $welcomeOfferManager   = $this->get('unilend.service.welcome_offer_manager');
+        $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
+        $user                  = $this->getUser();
 
         $template                     = [];
         $template['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
@@ -94,9 +91,6 @@ class MainController extends Controller
         $template['showSortable']     = false;
         $template['sortType']         = strtolower(\projects::SORT_FIELD_END);
         $template['sortDirection']    = strtolower(\projects::SORT_DIRECTION_DESC);
-
-        /** @var BaseUser $user */
-        $user = $this->getUser();
 
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
@@ -116,19 +110,20 @@ class MainController extends Controller
         } else {
             $template['projects'] = $projectDisplayManager->getProjectsList(
                 [],
-                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3
+                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
+                null,
+                3
             );
         }
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+        $translator        = $this->get('translator');
+        $projectRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        if (false === $isFullyConnectedUser) {
-            /** @var Translator $translator */
-            $translator = $this->get('translator');
-            array_walk($template['projects'], function(&$project) use ($translator) {
+        array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $user, $projectRepository) {
+            if (false === $projectDisplayManager->isVisibleToUser($projectRepository->find($project['projectId']), $user)) {
                 $project['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
-            });
-        }
+            }
+        });
 
         return $this->render('pages/homepage_lender.html.twig', $template);
     }

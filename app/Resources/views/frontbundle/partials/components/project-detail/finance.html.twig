@@ -310,7 +310,11 @@
                 </div><!-- /.section-tabs-nav -->
 
                 <div class="section-tabs-content tab-content">
-                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
+                    {% if app.user is null %}
+                        <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
+                    {% else %}
+                        <p>{% trans %} project-detail_anonymous-description {% endtrans %}</p>
+                    {% endif %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /tabs -->
         </section><!-- /.page-section -->
@@ -324,7 +328,11 @@
                 </div><!-- /.section-tabs-nav -->
 
                 <div class="section-tabs-content tab-content">
-                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
+                    {% if app.user is null %}
+                        <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
+                    {% else %}
+                        <p>{% trans %} project-detail_anonymous-description {% endtrans %}</p>
+                    {% endif %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /tabs -->
         </section><!-- /.page-section -->

@@ -1182,12 +1182,13 @@ class projects extends projects_crud
         }
 
         $query = '
-            SELECT p.slug AS slug,
+            SELECT
+              p.id_project,
+              p.slug AS slug,
               p.title AS title,
               (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status
             FROM projects p
-            WHERE p.display = 0
-              AND p.title LIKE :search
+            WHERE p.display = ' . self::DISPLAY_PROJECT_ON . ' AND p.title LIKE :search
             HAVING status >= ' . \projects_status::EN_FUNDING . '
             ORDER BY p.title ASC';
 
@@ -1199,8 +1200,9 @@ class projects extends projects_crud
         if (false === empty($searchProjectsResults)) {
             foreach ($searchProjectsResults as $recordProjects) {
                 $result[] = [
-                    'title' => $recordProjects['title'],
-                    'slug'  => 'projects/detail/' . $recordProjects['slug']
+                    'projectId' => $recordProjects['id_project'],
+                    'title'     => $recordProjects['title'],
+                    'slug'      => 'projects/detail/' . $recordProjects['slug']
                 ];
             }
 

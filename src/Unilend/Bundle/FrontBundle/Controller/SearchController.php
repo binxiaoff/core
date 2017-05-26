@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -6,10 +7,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Bundle\CoreBusinessBundle\Service\SearchService;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class SearchController extends Controller
 {
@@ -33,18 +30,34 @@ class SearchController extends Controller
      */
     public function resultAction($query)
     {
-        /** @var SearchService $search */
-        $search = $this->get('unilend.service.search_service');
-        $query  = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
+        $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
+        $search  = $this->get('unilend.service.search_service');
+        $results = $search->search($query);
 
-        /** @var BaseUser $user */
-        $user = $this->getUser();
+        if (false === empty($results['projects'])) {
+            if (null === $this->getUser()) {
+                unset($results['projects']);
+            } else {
+                $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+                $projectRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+                foreach ($results['projects'] as $index => $result) {
+                    $project = $projectRepository->find($result['projectId']);
+
+                    if (false === $projectDisplayManager->isVisibleToUser($project, $this->getUser())) {
+                        unset($results['projects'][$index]);
+                    }
+                }
+
+                if (empty($results['projects'])) {
+                    unset($results['projects']);
+                }
+            }
+        }
 
         $template = [
             'query'   => $query,
-            'results' => $search->search($query, $isFullyConnectedUser)
+            'results' => $results
         ];
 
         return $this->render('pages/search.html.twig', $template);

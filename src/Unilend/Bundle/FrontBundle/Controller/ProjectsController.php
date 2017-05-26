@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
@@ -13,14 +14,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
@@ -28,6 +27,10 @@ use Unilend\core\Loader;
 
 class ProjectsController extends Controller
 {
+    const VISIBILITY_FULL                 = 'full';
+    const VISIBILITY_NOT_VALIDATED_LENDER = 'not_validated_lender';
+    const VISIBILITY_ANONYMOUS            = 'anonymous';
+
     /**
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list")
      * @Template("pages/projects.html.twig")
@@ -35,6 +38,7 @@ class ProjectsController extends Controller
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
+     *
      * @return array
      */
     public function projectsListAction($page, $sortType, $sortDirection)
@@ -50,6 +54,7 @@ class ProjectsController extends Controller
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
+     *
      * @return array
      */
     public function lenderProjectsAction($page, $sortType, $sortDirection)
@@ -61,21 +66,19 @@ class ProjectsController extends Controller
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
+     *
      * @return array
      */
     private function getProjectsList($page, $sortType, $sortDirection)
     {
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var ProjectDisplayManager $projectDisplayManager */
+        $translator            = $this->get('translator');
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var AuthorizationChecker $authorizationChecker */
-        $authorizationChecker = $this->get('security.authorization_checker');
+        $authorizationChecker  = $this->get('security.authorization_checker');
+        $projectRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        /** @var BaseUser $user */
-        $user = $this->getUser();
 
         $template      = [];
+        $user          = $this->getUser();
         $pagination    = $this->getPaginationStartAndLimit($page);
         $limit         = $pagination['limit'];
         $start         = $pagination['start'];
@@ -102,13 +105,11 @@ class ProjectsController extends Controller
 
         $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $lenderAccount);
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
-
-        if (false === $isFullyConnectedUser) {
-            array_walk($template['projects'], function(&$project) use ($translator) {
+        array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $user, $projectRepository) {
+            if (false === $projectDisplayManager->isVisibleToUser($projectRepository->find($project['projectId']), $user)) {
                 $project['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
-            });
-        }
+            }
+        });
 
         /** @var \projects $projects */
         $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
@@ -185,13 +186,9 @@ class ProjectsController extends Controller
             return $project;
         }
 
-        /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var AuthorizationChecker $authorizationChecker */
-        $authorizationChecker = $this->get('security.authorization_checker');
-
-        /** @var BaseUser $user */
-        $user = $this->getUser();
+        $authorizationChecker  = $this->get('security.authorization_checker');
+        $user                  = $this->getUser();
 
         $template = [
             'project'  => $projectDisplayManager->getProjectData($project),
@@ -218,6 +215,7 @@ class ProjectsController extends Controller
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
             && $authorizationChecker->isGranted('ROLE_LENDER')
+            && $user instanceof UserLender
         ) {
             $request->getSession()->set('bidToken', $template['bidToken']);
 
@@ -265,10 +263,15 @@ class ProjectsController extends Controller
             $displayCipDisclaimer = in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($lenderAccount);
         }
 
-        $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower);
-        $isConnectedButNotValidated = ($user instanceof UserLender && false === in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]));
+        $visibility    = self::VISIBILITY_ANONYMOUS;
+        $projectEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
 
-        if ($isFullyConnectedUser) {
+        if ($user instanceof UserLender && false === in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION])) {
+            $visibility = self::VISIBILITY_NOT_VALIDATED_LENDER;
+        }
+
+        if ($projectDisplayManager->isVisibleToUser($projectEntity, $user)) {
+            $visibility = self::VISIBILITY_FULL;
 
             $template['finance']        = $projectDisplayManager->getProjectFinancialData($project, true);
             $template['financeColumns'] = [
@@ -286,9 +289,7 @@ class ProjectsController extends Controller
                 ];
             }
         } else {
-            /** @var TranslatorInterface $translator */
-            $translator = $this->get('translator');
-            /** @var EntityManager $entityManager */
+            $translator    = $this->get('translator');
             $entityManager = $this->get('unilend.service.entity_manager');
             /** @var \companies $company */
             $company = $entityManager->getRepository('companies');
@@ -307,12 +308,11 @@ class ProjectsController extends Controller
         }
 
         $template['conditions'] = [
-            'validatedUser'        => $isFullyConnectedUser,
-            'notValidatedUser'     => $isConnectedButNotValidated,
+            'visibility'           => $visibility,
             'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
-            'finance'              => $isFullyConnectedUser,
-            'canBid'               => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
+            'finance'              => self::VISIBILITY_FULL === $visibility,
+            'canBid'               => self::VISIBILITY_FULL === $visibility && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
             'warningLending'       => true,
             'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
             'displayCipDisclaimer' => $displayCipDisclaimer
