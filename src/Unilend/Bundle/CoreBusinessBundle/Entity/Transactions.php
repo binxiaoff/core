@@ -7,8 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Transactions
  *
- * @ORM\Table(name="transactions", indexes={@ORM\Index(name="id_transaction_old", columns={"id_transaction_old"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_partenaire", columns={"id_partenaire"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="id_echeancier", columns={"id_echeancier"}), @ORM\Index(name="type_transaction", columns={"type_transaction"}), @ORM\Index(name="id_bid_remb", columns={"id_bid_remb"}), @ORM\Index(name="id_loan_remb", columns={"id_loan_remb"}), @ORM\Index(name="date_transaction", columns={"date_transaction"}), @ORM\Index(name="id_backpayline", columns={"id_backpayline"})})
- * @ORM\Entity
+ * @ORM\Table(name="transactions", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_partenaire", columns={"id_partenaire"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="id_echeancier", columns={"id_echeancier"}), @ORM\Index(name="type_transaction", columns={"type_transaction"}), @ORM\Index(name="id_bid_remb", columns={"id_bid_remb"}), @ORM\Index(name="id_loan_remb", columns={"id_loan_remb"}), @ORM\Index(name="date_transaction", columns={"date_transaction"}), @ORM\Index(name="id_backpayline", columns={"id_backpayline"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TransactionsRepository")
  */
 class Transactions
 {
@@ -179,13 +179,6 @@ class Transactions
      * @ORM\Column(name="updated", type="datetime", nullable=false)
      */
     private $updated;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_transaction_old", type="integer", nullable=true)
-     */
-    private $idTransactionOld;
 
     /**
      * @var integer
@@ -772,30 +765,6 @@ class Transactions
     public function getUpdated()
     {
         return $this->updated;
-    }
-
-    /**
-     * Set idTransactionOld
-     *
-     * @param integer $idTransactionOld
-     *
-     * @return Transactions
-     */
-    public function setIdTransactionOld($idTransactionOld)
-    {
-        $this->idTransactionOld = $idTransactionOld;
-
-        return $this;
-    }
-
-    /**
-     * Get idTransactionOld
-     *
-     * @return integer
-     */
-    public function getIdTransactionOld()
-    {
-        return $this->idTransactionOld;
     }
 
     /**
