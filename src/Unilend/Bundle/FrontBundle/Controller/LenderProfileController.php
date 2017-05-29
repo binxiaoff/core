@@ -1,7 +1,6 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -9,12 +8,10 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
@@ -22,6 +19,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\BankAccountType;
@@ -501,7 +500,7 @@ class LenderProfileController extends Controller
             'lenderAccount' => [
                 'fiscal_info' => [
                     'documents'   => $ifu->select('id_client =' . $client->id_client . ' AND statut = 1', 'annee ASC'),
-                    'amounts'     => $this->getFiscalBalanceAndOwedCapital(),
+                    'amounts'     => $this->getFiscalBalanceAndOwedCapital($client),
                     'rib'         => $bankAccount->getAttachment(),
                     'fundsOrigin' => $this->getFundsOrigin($clientEntity->getType())
                 ]
@@ -1017,22 +1016,25 @@ class LenderProfileController extends Controller
     }
 
     /**
+     * @param \clients $client
+     *
      * @return array
      */
-    private function getFiscalBalanceAndOwedCapital()
+    private function getFiscalBalanceAndOwedCapital(\clients $client)
     {
-        /** @var \indexage_vos_operations $indexageVosOperations */
-        $indexageVosOperations = $this->get('unilend.service.entity_manager')->getRepository('indexage_vos_operations');
-        /** @var \projects_status_history $projectsStatusHistory */
-        $projectsStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('projects_status_history');
-        /** @var \echeanciers $echeancier */
-        $echeancier = $this->get('unilend.service.entity_manager')->getRepository('echeanciers');
+        $entityManager                  = $this->get('doctrine.orm.entity_manager');
+        $walletRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
+        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        $projects_en_remboursement = $projectsStatusHistory->select('id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ') AND added < "' . date('Y') . '-01-01 00:00:00"');
+        $lastYear = new \DateTime('Last day of december last year');
+        $wallet   = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
+        /** @var WalletBalanceHistory $history */
+        $history = $walletBalanceHistoryRepository->getBalanceOfTheDay($wallet, $lastYear);
 
         return [
-            'balance'     => $indexageVosOperations->getFiscalBalanceToDeclare($this->getUser()->getClientId(), date('Y')),
-            'owedCapital' => $echeancier->getLenderOwedCapital($this->getUser()->getClientId(), date('Y'), array_column($projects_en_remboursement, 'id_project'))
+            'balance'     => bcadd($history->getAvailableBalance(), $history->getCommittedBalance(), 2),
+            'owedCapital' => $operationRepository->getRemainingDueCapital($client->id_client, $lastYear)
         ];
     }
 

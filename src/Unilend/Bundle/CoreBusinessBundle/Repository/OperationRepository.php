@@ -88,4 +88,35 @@ class OperationRepository extends EntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * @param int       $idClient
+     * @param \DateTime $end
+     *
+     * @return bool|string
+     */
+    public function getRemainingDueCapital($idClient, \DateTime $end)
+    {
+        $query = '
+                    SELECT
+                      SUM(o_loan.amount) - SUM(o_repayment.amount)
+                    FROM wallet_balance_history wbh
+                      INNER JOIN wallet w ON wbh.id_wallet = w.id
+                      LEFT JOIN operation o_loan ON wbh.id_operation = o_loan.id AND o_loan.id_type = (SELECT id FROM operation_type WHERE label = \'lender_loan\')
+                      LEFT JOIN operation o_repayment ON wbh.id_operation = o_repayment.id AND o_repayment.id_type = (SELECT id FROM operation_type WHERE label = \'capital_repayment\')
+                    WHERE wbh.added <= :end
+                          AND wbh.id_project IN (SELECT
+                                                   DISTINCT (p.id_project)
+                                                 FROM projects p
+                                                   INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
+                                                   INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                                                 WHERE ps.status = 80
+                                                       AND psh.added <= :end
+                                                       AND p.status != 160)
+                          AND w.id_client = :idClient';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'idClient' => $idClient]);
+
+        return $statement->fetchColumn(0);
+    }
 }
