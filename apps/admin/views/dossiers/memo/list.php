@@ -2,10 +2,11 @@
     <table class="tablesorter">
         <thead>
         <tr>
+            <th width="16">&nbsp;</th>
             <th width="120" align="center">Date</th>
             <th width="150" align="center">Auteur</th>
             <th align="center">Contenu</th>
-            <th width="50">&nbsp;</th>
+            <th width="55">&nbsp;</th>
         </tr>
         </thead>
         <tbody>
@@ -13,6 +14,7 @@
         <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments $comment */ ?>
         <?php foreach ($this->projectComments as $comment) : ?>
             <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
+                <td><?php if (false == $comment->getPublic()) : ?><img src="<?= $this->surl ?>/images/admin/lock.png" alt="Privé" style="margin: 0"><?php endif; ?></td>
                 <td>
                     <?= $comment->getAdded()->format('d/m/Y H:i') ?>
                     <?php if ($comment->getUpdated()) : ?>
@@ -25,7 +27,7 @@
                         <?= $this->users->firstname ?> <?= $this->users->name ?>
                     <?php endif; ?>
                 </td>
-                <td><?= preg_replace('/(https?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i', '<a href="$1" target="_blank">$1</a>', nl2br($comment->getContent())) ?></td>
+                <td><?= preg_replace('/(https?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i', '<a href="$1" target="_blank">$1</a>', $comment->getContent()) ?></td>
                 <td align="center">
                     <?php if ($this->userEntity == $comment->getIdUser()) : ?>
                         <a href="<?= $this->lurl ?>/dossiers/memo/<?= $comment->getIdProject()->getIdProject() ?>/<?= $comment->getIdProjectComment() ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>

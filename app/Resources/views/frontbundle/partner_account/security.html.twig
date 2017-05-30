@@ -1,0 +1,78 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    id: 'partner-account-security',
+    classNames: 'partner-account'
+} %}
+
+{% block siteContent %}
+    <article id="partner-account-security" class="dashboard partner-account">
+        <div class="dashboard-inner">
+            <div class="site-wrap">
+                <div class="dashboard-content">
+                    <section class="dashboard-tabs tabs">
+                        <div class="dashboard-tabs-content tab-content">
+                            <article class="dashboard-tab-pane">
+                                <div class="panel">
+                                    {% if expired %}
+                                        <div class="message-error">{{ 'partner-security_expired-link-error-message'|trans }}</div>
+                                    {% else %}
+                                        <header class="panel-header">
+                                            <h3>{{ 'partner-security_title'|trans }}</h3>
+                                        </header>
+                                        <div class="panel-content">
+                                            {% if app.session.flashBag.has('error') %}
+                                                <div class="message-error">
+                                                    {% for error in app.session.flashBag.get('error') %}
+                                                        <p>{{ error }}</p>
+                                                    {% endfor %}
+                                                </div>
+                                            {% elseif app.session.flashBag.has('success') %}
+                                                <div class="message-success">
+                                                    {% for success in app.session.flashBag.get('success') %}
+                                                        <p>{{ success }}</p>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            <form action="{{ path('partner_security', {'token': token}) }}" method="post" id="form_mdp_question_emprunteur" name="form_mdp_question_emprunteur">
+                                                <div class="row row-multi-col">
+                                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                                        <div class="form-field">
+                                                            <label for="partner_security_password">{% trans %} common_password {% endtrans %}<span class="field-required">*</span></label>
+                                                            <input type="password" name="partner_security[password]" id="partner_security_password" required="required" class="input-field">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                                        <div class="form-field">
+                                                            <label for="partner_security_repeated-password">{% trans %} common_password-confirmation {% endtrans %}<span class="field-required">*</span></label>
+                                                            <input type="password" name="partner_security[repeated_password]" id="partner_security_repeated-password" required="required" class="input-field">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label for="partner_security_question">{% trans %} common_security-question {% endtrans %}<span class="field-required">*</span></label>
+                                                        <input type="text" name="partner_security[question]" id="partner_security_question" required="required" class="input-field">
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label for="partner_security_answer">{% trans %} common_security-answer {% endtrans %}<span class="field-required">*</span></label>
+                                                        <input type="text" name="partner_security[answer]" id="partner_security_answer" required="required" class="input-field">
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <button type="submit" class="btn-primary ui-dialog-confirm" data-spinnerbutton>{{ 'partner-security_form-submit-button'|trans }}</button>
+                                                </div>
+                                            </form>
+                                        </div><!-- /.panel-content -->
+                                    {% endif %}
+                                </div><!-- /.panel -->
+                            </article><!-- /.dashboard-tab-pane -->
+                        </div><!-- /.dashboard-tabs-content -->
+                    </section><!-- /.dashboard-tabs -->
+                </div><!-- /.dashboard-content -->
+            </div><!-- /.site-wrap -->
+        </div><!-- /.dashboard-inner -->
+    </article><!-- /.dashboard -->
+{% endblock %}

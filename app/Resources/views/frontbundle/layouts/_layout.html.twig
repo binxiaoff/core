@@ -34,7 +34,7 @@
         <meta name="theme-color" content="#ffffff">
         {% include 'partials/site/vwo_script.html.twig' %}
     </head>
-    <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }} {% if is_granted('ROLE_LENDER') %} ui-user-type-lender {% endif %} {% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower {% endif %} {% else %} ui-no-user {% endif %} {% if bodyClassNames is defined %} {{ bodyClassNames }} {% endif %}">
+    <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }}{% if is_granted('ROLE_LENDER') %} ui-user-type-lender{% endif %}{% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower{% endif %}{% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_DEFAULT')) %} ui-user-type-partner{% endif %}{% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %} ui-user-type-partner-admin{% endif %}{% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_USER')) %} ui-user-type-partner-user{% endif %}{% else %} ui-no-user{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
         {{ google_tag_manager() }}
         <div id="top" class="site">
             {% block siteCookie %}
@@ -45,6 +45,8 @@
                     {% include 'partials/site/connected_header_lender.html.twig' %}
                 {% elseif app.user is defined and is_granted('ROLE_BORROWER') %}
                     {% include 'borrower_account/connected_header_borrower.html.twig' %}
+                {% elseif app.user is defined and is_granted('ROLE_PARTNER') %}
+                    {% include 'partner_account/_connected_header.html.twig' %}
                 {% else %}
                     {% include 'partials/site/header.html.twig' %}
                 {%  endif %}

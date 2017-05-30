@@ -15,7 +15,7 @@
 <script>
     $(function() {
         $('#postpone_form').submit(function(event) {
-            if (! $('#postpone_comment').val()) {
+            if (! CKEDITOR.instances['postpone_comment'].getData()) {
                 event.preventDefault()
                 alert('Vous devez obligatoirement saisir un mémo')
             }

@@ -617,11 +617,23 @@
                                         <option value="" selected></option>
                                     <?php endif; ?>
                                     <?php foreach ($this->partnerList as $partner) : ?>
-                                        <option value="<?= $partner['id'] ?>"<?= $this->projects->id_partner === $partner['id'] ? ' selected' : '' ?>><?= $partner['name'] ?></option>
+                                        <option value="<?= $partner->getId() ?>"<?= $this->projects->id_partner == $partner->getId() ? ' selected' : '' ?>><?= $partner->getIdCompany()->getName() ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
                         </tr>
+                        <?php if (false === empty($this->projectEntity->getIdCompanySubmitter()->getIdCompany())) : ?>
+                            <tr>
+                                <th><label>Agence</label></th>
+                                <td><?= $this->projectEntity->getIdCompanySubmitter()->getName() ?></td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php if (false === empty($this->projectEntity->getIdClientSubmitter()->getIdClient())) : ?>
+                            <tr>
+                                <th><label>Déposant</label></th>
+                                <td><?= $this->projectEntity->getIdClientSubmitter()->getPrenom() ?> <?= $this->projectEntity->getIdClientSubmitter()->getNom() ?></td>
+                            </tr>
+                        <?php endif; ?>
                     </table>
                     <br><br>
                     <h2>Produit</h2>

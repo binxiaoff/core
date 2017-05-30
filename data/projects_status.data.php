@@ -53,7 +53,6 @@ class projects_status extends projects_status_crud
     const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI = 'euler_traffic_light_vs_unilend_xerfi';
     const NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI         = 'euler_grade_vs_unilend_xerfi';
     const NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE         = 'euler_grade_vs_altares_score';
-    const NON_ELIGIBLE_REASON_INFOGREFFE_UNKNOWN_PRIVILEGES        = 'unknown_infogreffe_privileges';
     const NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES                = 'has_infogreffe_privileges';
     const UNEXPECTED_RESPONSE                                      = 'unexpected_response_from_';
 

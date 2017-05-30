@@ -28,8 +28,6 @@
 
 class project_cgv extends project_cgv_crud
 {
-    const BASE_PATH = 'protected/pdf/cgv_emprunteurs/';
-
     public function __construct($bdd, $params = '')
     {
         parent::project_cgv($bdd, $params);

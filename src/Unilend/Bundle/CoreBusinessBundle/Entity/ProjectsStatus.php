@@ -12,9 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectsStatus
 {
-
     const IMPOSSIBLE_AUTO_EVALUATION = 1;
     const NOT_ELIGIBLE               = 2;
+    const SIMULATION                 = 3;
     const INCOMPLETE_REQUEST         = 5;
     const COMPLETE_REQUEST           = 10;
     const ABANDONED                  = 15;

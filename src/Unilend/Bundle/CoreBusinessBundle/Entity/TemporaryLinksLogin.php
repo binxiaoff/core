@@ -9,16 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="temporary_links_login", uniqueConstraints={@ORM\UniqueConstraint(name="id_link", columns={"id_link"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class TemporaryLinksLogin
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
-     */
-    private $idClient;
-
     /**
      * @var string
      *
@@ -63,16 +57,25 @@ class TemporaryLinksLogin
      */
     private $idLink;
 
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
+     */
+    private $idClient;
 
 
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param Clients $idClient
      *
      * @return TemporaryLinksLogin
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient)
     {
         $this->idClient = $idClient;
 
@@ -82,7 +85,7 @@ class TemporaryLinksLogin
     /**
      * Get idClient
      *
-     * @return integer
+     * @return Clients
      */
     public function getIdClient()
     {
@@ -217,5 +220,23 @@ class TemporaryLinksLogin
     public function getIdLink()
     {
         return $this->idLink;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

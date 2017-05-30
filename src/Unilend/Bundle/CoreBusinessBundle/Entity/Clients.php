@@ -47,48 +47,6 @@ class Clients
     private $idLangue = 'fr';
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_partenaire", type="integer", nullable=false)
-     */
-    private $idPartenaire = 0;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_partenaire_subcode", type="integer", nullable=false)
-     */
-    private $idPartenaireSubcode = 0;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="id_facebook", type="string", length=45, nullable=false)
-     */
-    private $idFacebook = '';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="id_linkedin", type="string", length=45, nullable=false)
-     */
-    private $idLinkedin = '';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="id_viadeo", type="string", length=45, nullable=false)
-     */
-    private $idViadeo = '';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="id_twitter", type="string", length=45, nullable=false)
-     */
-    private $idTwitter = '';
-
-    /**
      * @var string
      *
      * @ORM\Column(name="civilite", type="string", nullable=true)
@@ -404,150 +362,6 @@ class Clients
     public function getIdLangue()
     {
         return $this->idLangue;
-    }
-
-    /**
-     * Set idPartenaire
-     *
-     * @param integer $idPartenaire
-     *
-     * @return Clients
-     */
-    public function setIdPartenaire($idPartenaire)
-    {
-        $this->idPartenaire = $idPartenaire;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaire
-     *
-     * @return integer
-     */
-    public function getIdPartenaire()
-    {
-        return $this->idPartenaire;
-    }
-
-    /**
-     * Set idPartenaireSubcode
-     *
-     * @param integer $idPartenaireSubcode
-     *
-     * @return Clients
-     */
-    public function setIdPartenaireSubcode($idPartenaireSubcode)
-    {
-        $this->idPartenaireSubcode = $idPartenaireSubcode;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaireSubcode
-     *
-     * @return integer
-     */
-    public function getIdPartenaireSubcode()
-    {
-        return $this->idPartenaireSubcode;
-    }
-
-    /**
-     * Set idFacebook
-     *
-     * @param string $idFacebook
-     *
-     * @return Clients
-     */
-    public function setIdFacebook($idFacebook)
-    {
-        $this->idFacebook = $idFacebook;
-
-        return $this;
-    }
-
-    /**
-     * Get idFacebook
-     *
-     * @return string
-     */
-    public function getIdFacebook()
-    {
-        return $this->idFacebook;
-    }
-
-    /**
-     * Set idLinkedin
-     *
-     * @param string $idLinkedin
-     *
-     * @return Clients
-     */
-    public function setIdLinkedin($idLinkedin)
-    {
-        $this->idLinkedin = $idLinkedin;
-
-        return $this;
-    }
-
-    /**
-     * Get idLinkedin
-     *
-     * @return string
-     */
-    public function getIdLinkedin()
-    {
-        return $this->idLinkedin;
-    }
-
-    /**
-     * Set idViadeo
-     *
-     * @param string $idViadeo
-     *
-     * @return Clients
-     */
-    public function setIdViadeo($idViadeo)
-    {
-        $this->idViadeo = $idViadeo;
-
-        return $this;
-    }
-
-    /**
-     * Get idViadeo
-     *
-     * @return string
-     */
-    public function getIdViadeo()
-    {
-        return $this->idViadeo;
-    }
-
-    /**
-     * Set idTwitter
-     *
-     * @param string $idTwitter
-     *
-     * @return Clients
-     */
-    public function setIdTwitter($idTwitter)
-    {
-        $this->idTwitter = $idTwitter;
-
-        return $this;
-    }
-
-    /**
-     * Get idTwitter
-     *
-     * @return string
-     */
-    public function getIdTwitter()
-    {
-        return $this->idTwitter;
     }
 
     /**
@@ -1489,7 +1303,7 @@ class Clients
     }
 
     /**
-     * Dose client has a borrower wallet. Since a client can have only one wallet today, it works so far.
+     * Check whether client has a borrower wallet or not. Since a client can have only one wallet today, it works so far.
      *
      * @return bool
      */
@@ -1499,12 +1313,22 @@ class Clients
     }
 
     /**
-     * Dose client has a lender wallet. Since a client can have only one wallet today, it works so far.
+     * Check whether client has a lender wallet or not. Since a client can have only one wallet today, it works so far.
      *
      * @return bool
      */
     public function isLender()
     {
         return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::LENDER;
+    }
+
+    /**
+     * Check whether client has a partner wallet or not. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isPartner()
+    {
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::PARTNER;
     }
 }

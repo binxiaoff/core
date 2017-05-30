@@ -68,8 +68,8 @@
         </table>
         <div id="valid_etape5" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
-            <input type="hidden" name="send_etape5"/>
-            <button type="submit" class="btn-primary pull-right">Sauvegarder</button>
+            <input type="hidden" name="send_etape5">
+            <button type="submit" class="btn-primary">Sauvegarder</button>
         </div>
     </form>
     <div style="display:none;">
