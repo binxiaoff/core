@@ -15,7 +15,7 @@
     "gulp:watch": "gulp watch",
     "gulp:dev": "gulp",
     "gulp:demo": "gulp",
-    "gulp:preprod": "gulp",
+    "gulp:preprod": "gulp production",
     "gulp:prod": "gulp production",
     "dev": "npm install && gulp"
   },
