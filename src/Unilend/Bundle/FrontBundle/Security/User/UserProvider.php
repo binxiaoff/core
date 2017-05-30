@@ -213,7 +213,7 @@ class UserProvider implements UserProviderInterface
             throw new NotFoundHttpException('Invalid client hash');
         }
 
-        if ($clientEntity = $this->entityManagerSimulator->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $hash, 'status' => Clients::STATUS_ONLINE])) {
+        if ($clientEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $hash, 'status' => Clients::STATUS_ONLINE])) {
             return $this->setUser($clientEntity);
         }
 

@@ -87,7 +87,7 @@ class ProjectsController extends Controller
         $start         = $pagination['start'];
         $sort          = [];
         $sortDirection = strtoupper($sortDirection);
-        $wallet        = null;
+        $client        = null;
 
         if (
             in_array($sortType, [\projects::SORT_FIELD_SECTOR, \projects::SORT_FIELD_AMOUNT, \projects::SORT_FIELD_RATE, \projects::SORT_FIELD_RISK, \projects::SORT_FIELD_END])
@@ -101,10 +101,10 @@ class ProjectsController extends Controller
             && $authorizationChecker->isGranted('ROLE_LENDER')
             && $user instanceof UserLender
         ) {
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         }
 
-        $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $wallet);
+        $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $client);
 
         $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower || $user instanceof UserPartner);
 
@@ -227,7 +227,6 @@ class ProjectsController extends Controller
         ) {
             $request->getSession()->set('bidToken', $template['bidToken']);
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
             $productManager = $this->get('unilend.service_product.product_manager');
             /** @var \product $product */
@@ -242,11 +241,11 @@ class ProjectsController extends Controller
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
             $template['project']['lender'] = [
-                'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $wallet)
+                'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $client)
             ];
 
             if ($project->status >= \projects_status::FUNDE) {
-                $template['project']['lender']['loans'] = $lenderAccountDisplayManager->getLoansForProject($project->id_project, $wallet);
+                $template['project']['lender']['loans'] = $lenderAccountDisplayManager->getLoansForProject($project->id_project, $client);
             }
 
             if (false === empty($request->getSession()->get('bidResult'))) {
