@@ -102,6 +102,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             return $this->router->generate('borrower_account_projects');
         }
 
+        if (in_array('ROLE_PARTNER', $user->getRoles())) {
+            return $this->router->generate('partner_project_request');
+        }
+
         return $this->router->generate('home');
     }
 

@@ -3,28 +3,38 @@
     <form method="post" id="postpone_form" action="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>">
         <h1>Reporter un dossier</h1>
         <fieldset>
-            <table class="form">
-                <tr>
-                    <th><label for="postpone_comment">Mémo&nbsp;*</label></th>
-                    <td><textarea name="comment" id="postpone_comment" cols="75" rows="5" class="textarea" style="width: 480px" autofocus></textarea></td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="text-align: right">
-                        <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
-                        <button type="submit" class="btn-primary">Valider</button>
-                    </td>
-                </tr>
-            </table>
+            <label for="postpone_comment">Mémo&nbsp;*</label>
+            <textarea name="comment" id="postpone_comment" class="textarea memo" style="height:250px;"></textarea>
+            <p style="text-align:right; margin:15px 0 0 0;">
+                <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
+                <button type="submit" class="btn-primary">Valider</button>
+            </p>
         </fieldset>
     </form>
 </div>
 <script>
     $(function() {
         $('#postpone_form').submit(function(event) {
-            if (! $('#postpone_comment').val()) {
+            if (! CKEDITOR.instances['postpone_comment'].getData()) {
                 event.preventDefault()
                 alert('Vous devez obligatoirement saisir un mémo')
             }
+        })
+        $(document).on('cbox_complete', function () {
+            if (CKEDITOR.instances['postpone_comment']) {
+                CKEDITOR.instances['postpone_comment'].destroy(true)
+            }
+            CKEDITOR.replace('postpone_comment', {
+                height: 180,
+                width: 570,
+                toolbar: 'Basic',
+                removePlugins: 'elementspath',
+                resize_enabled: false
+            })
+            setTimeout(function() {
+                CKEDITOR.instances['postpone_comment'].focus()
+                $(document).off('cbox_complete')
+            }, 150)
         })
     })
 </script>

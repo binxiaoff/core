@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -31,13 +32,13 @@ class ClientManager
     private $tokenStorage;
     /** @var RequestStack */
     private $requestStack;
-    /** @var  RouterInterface */
+    /** @var RouterInterface */
     private $router;
     /** @var WalletCreationManager */
     private $walletCreationManager;
     /** @var EntityManager*/
     private $entityManager;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
 
     /**
@@ -179,7 +180,7 @@ class ClientManager
     }
 
     /**
-     * @param \clients | Clients $client
+     * @param \clients|Clients $client
      *
      * @return bool
      */
@@ -201,7 +202,7 @@ class ClientManager
     }
 
     /**
-     * @param \clients | Clients $client
+     * @param \clients|Clients $client
      *
      * @return bool
      */
@@ -220,6 +221,17 @@ class ClientManager
         }
 
         return false;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return bool
+     */
+    public function isPartner(Clients $client)
+    {
+        $partnerWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::PARTNER);
+        return null !== $partnerWallet;
     }
 
     /**
@@ -306,6 +318,7 @@ class ClientManager
 
     /**
      * @param Clients $client
+     *
      * @return string
      */
     public function getSubscriptionStepRedirectRoute(Clients $client)

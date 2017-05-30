@@ -29,7 +29,7 @@
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?><?php if (in_array($status, $this->collapsedStatus)) : ?> style="display: none;"<?php endif; ?>>
                     <td class="partner-logo">
                         <?php if (false === empty($project['partner_logo'])) : ?>
-                            <img src="<?= $this->surl ?>/images/admin/partner/<?= $project['partner_logo'] ?>" alt="<?= addslashes($project['partner_name']) ?>">
+                            <img src="<?= $this->surl ?>/images/admin/partner/<?= $project['partner_logo'] ?>" alt="<?= $project['partner_logo'] ?>">
                         <?php endif; ?>
                     </td>
                     <td data-project="<?= $project['id_project'] ?>"><?= $project['id_project'] ?></td>

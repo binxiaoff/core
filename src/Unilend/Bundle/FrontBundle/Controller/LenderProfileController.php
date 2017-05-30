@@ -1,7 +1,6 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -997,28 +996,25 @@ class LenderProfileController extends Controller
     }
 
     /**
+     * @param \clients $client
+     *
      * @return array
      */
-    private function getFiscalBalanceAndOwedCapital($client)
+    private function getFiscalBalanceAndOwedCapital(\clients $client)
     {
-        $walletRepository               = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $walletBalanceHistoryRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
+        $entityManager                  = $this->get('doctrine.orm.entity_manager');
+        $walletRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
+        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
         $lastYear = new \DateTime('Last day of december last year');
         $wallet   = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
         /** @var WalletBalanceHistory $history */
         $history = $walletBalanceHistoryRepository->getBalanceOfTheDay($wallet, $lastYear);
 
-        /** @var \projects_status_history $projectsStatusHistory */
-        $projectsStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('projects_status_history');
-        /** @var \echeanciers $echeancier */
-        $echeancier = $this->get('unilend.service.entity_manager')->getRepository('echeanciers');
-
-        $projects_en_remboursement = $projectsStatusHistory->select('id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ') AND added < "' . date('Y') . '-01-01 00:00:00"');
-
         return [
             'balance'     => bcadd($history->getAvailableBalance(), $history->getCommittedBalance(), 2),
-            'owedCapital' => $echeancier->getLenderOwedCapital($this->getUser()->getClientId(), date('Y'), array_column($projects_en_remboursement, 'id_project'))
+            'owedCapital' => $operationRepository->getRemainingDueCapitalAtDate($client->id_client, $lastYear)
         ];
     }
 

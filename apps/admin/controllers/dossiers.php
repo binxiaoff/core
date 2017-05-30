@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -7,7 +8,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
@@ -199,7 +199,7 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
-            $this->rejectionReasonMessage = $projectStatusManager->getRejectionMotiveTranslation($this->projects_status_history->content);
+            $this->rejectionReasonMessage = $projectStatusManager->getRejectionReasonTranslation($this->projects_status_history->content);
             $this->bHasAdvisor            = false;
 
             if ($this->projects->status == \projects_status::FUNDE) {
@@ -711,13 +711,13 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \partner $partnerData */
-            $partnerData = $this->loadData('partner');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
+            $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
 
             $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
             $this->selectedProduct  = $product;
             $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partnerData->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
+            $this->partnerList      = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
             $this->partnerProduct   = $this->loadData('partner_product');
 
             if (false === empty($this->projects->id_product)) {
@@ -740,19 +740,18 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $project                              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
-            $partner                              = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->projects->id_partner);
-            $this->aAttachments                   = $project->getAttachments();
+            $this->projectEntity                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $this->aAttachments                   = $this->projectEntity->getAttachments();
             $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
             $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
-            $partnerAttachments                   = $partner->getAttachmentTypes(true);
             $this->isFundsCommissionRateEditable  = $this->isFundsCommissionRateEditable();
             $this->lastBalanceSheet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
-                'idClient' => $project->getIdCompany()->getIdClientOwner(),
+                'idClient' => $this->projectEntity->getIdCompany()->getIdClientOwner(),
                 'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
             ]);
 
-            $this->aMandatoryAttachmentTypes      = [];
+            $this->aMandatoryAttachmentTypes = [];
+            $partnerAttachments              = $partnerRepository->find($this->projects->id_partner)->getAttachmentTypes(true);
             foreach ($partnerAttachments as $partnerAttachment) {
                 $this->aMandatoryAttachmentTypes[] = $partnerAttachment->getAttachmentType();
             }
@@ -764,7 +763,7 @@ class dossiersController extends bootstrap
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
             $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
-            $this->transferFunds($project);
+            $this->transferFunds($this->projectEntity);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
@@ -1345,11 +1344,14 @@ class dossiersController extends bootstrap
             && ($projectCommentEntity = $projectCommentRepository->find($this->params[1]))
             && $projectCommentEntity->getIdProject()->getIdProject() == $this->params[0]
         ) {
+            /** @var ProjectsComments $projectCommentEntity */
             $this->type    = 'edit';
             $this->content = $projectCommentEntity->getContent();
+            $this->public  = $projectCommentEntity->getPublic();
         } else {
             $this->type    = 'add';
             $this->content = '';
+            $this->public  = false;
         }
 
         $this->setView('memo/edit');
@@ -1379,7 +1381,9 @@ class dossiersController extends bootstrap
                 && $_SESSION['user']['id_user'] == $projectCommentEntity->getIdUser()->getIdUser()
             ) {
                 $projectCommentEntity->setContent($_POST['content']);
+                $projectCommentEntity->setPublic($_POST['public']);
 
+                $entityManager->persist($projectCommentEntity);
                 $entityManager->flush($projectCommentEntity);
 
                 $slackNotification = 'édité';
@@ -1387,6 +1391,7 @@ class dossiersController extends bootstrap
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity->setIdProject($projectEntity);
                 $projectCommentEntity->setContent($_POST['content']);
+                $projectCommentEntity->setPublic($_POST['public']);
                 $projectCommentEntity->setIdUser($this->userEntity);
 
                 $entityManager->persist($projectCommentEntity);
@@ -1533,6 +1538,8 @@ class dossiersController extends bootstrap
 
     public function _add()
     {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \clients clients */
         $this->clients = $this->loadData('clients');
         /** @var \clients_adresses clients_adresses */
@@ -1541,12 +1548,12 @@ class dossiersController extends bootstrap
         $this->companies = $this->loadData('companies');
         /** @var projects projects */
         $this->projects = $this->loadData('projects');
-        /** @var \partner $partnerData */
-        $partnerData    = $this->loadData('partner');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-        $partnerManager    = $this->get('unilend.service.partner_manager');
-        $defaultPartner    = $partnerManager->getDefaultPartner();
-        $this->partnerList = $partnerData->select('', 'name ASC');
+        $partnerManager = $this->get('unilend.service.partner_manager');
+        $defaultPartner = $partnerManager->getDefaultPartner();
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $this->partnerList = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
         $clientManager = $this->get('unilend.service.client_manager');
@@ -1563,11 +1570,9 @@ class dossiersController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] === 'create_etape2') {
             if (isset($this->params[1]) && is_numeric($this->params[1])) {
-                /** @var \Doctrine\ORM\EntityManager $entityManager */
-                $entityManager = $this->get('doctrine.orm.entity_manager');
                 /** @var Clients $clientEntity */
                 $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
-                if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)){
+                if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
                     $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
                 } else {
                     $_SESSION['freeow']['title']   = 'La création n\' pas abouti';
@@ -1578,6 +1583,7 @@ class dossiersController extends bootstrap
             } else {
                 $companyEntity = $this->createBlankCompany();
             }
+
             $this->createProject($companyEntity, $defaultPartner->getId());
 
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
@@ -2237,120 +2243,39 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        /** @var \clients $oClients */
-        $oClients = $this->loadData('clients');
-        /** @var \projects $oProjects */
-        $oProjects = $this->loadData('projects');
-        /** @var \companies $oCompanies */
-        $oCompanies = $this->loadData('companies');
-        /** @var \project_cgv $oProjectCgv */
-        $oProjectCgv = $this->loadData('project_cgv');
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        if (false === isset($this->params[0]) || ! $oProjects->get($this->params[0], 'id_project')) {
+        if (
+            empty($this->params[0])
+            || $this->params[0] != (int) $this->params[0]
+            || null === ($project = $projectRepository->find($this->params[0]))
+        ) {
             $this->result = 'project id invalid';
             return;
         }
-        if (! $oCompanies->get($oProjects->id_company, 'id_company')) {
-            $this->result = 'company id invalid';
-            return;
-        }
-        if (! $oClients->get($oCompanies->id_client_owner, 'id_client')) {
-            $this->result = 'client id invalid';
-            return;
-        }
 
-        // @todo intl - for the moment, we use language but real value must be a country code
-        if (false === $this->ficelle->isMobilePhoneNumber($oClients->telephone, $this->language)) {
-            $this->result = 'Le numéro de téléphone du dirigeant n\'est pas un numéro de portable';
-            return;
-        }
-
-        if ($oProjectCgv->get($oProjects->id_project, 'id_project')) {
-            if (empty($oProjectCgv->id_tree)) {
-                $oSettings->get('Lien conditions generales depot dossier', 'type');
-                $iTreeId = $oSettings->value;
-
-                if (! $iTreeId) {
-                    $this->result = 'tree id invalid';
+        try {
+            /** @var TermsOfSaleManager $termsOfSaleManager */
+            $termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
+            $termsOfSaleManager->sendBorrowerEmail($project);
+        } catch (\Exception $exception) {
+            switch ($exception->getCode()) {
+                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_EMAIL:
+                    $this->result = 'Erreur : L\'adresse mail du client est vide';
                     return;
-                }
-
-                $oProjects->id_tree = $iTreeId;
+                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_PHONE_NUMBER:
+                    $this->result = 'Le numéro de téléphone du dirigeant n\'est pas un numéro de portable';
+                    return;
+                case TermsOfSaleManager::EXCEPTION_CODE_PDF_FILE_NOT_FOUND:
+                    $this->result = 'file not found';
+                    return;
+                default:
+                    $this->result = $exception->getMessage();
+                    return;
             }
-
-            $sCgvLink = $this->surl . $oProjectCgv->getUrlPath();
-
-            if (empty($oProjectCgv->name)) {
-                $oProjectCgv->name = $oProjectCgv->generateFileName();
-            }
-            $oProjectCgv->update();
-        } else {
-            $oSettings->get('Lien conditions generales depot dossier', 'type');
-            $iTreeId = $oSettings->value;
-
-            if (! $iTreeId) {
-                $this->result = 'tree id invalid';
-                return;
-            }
-
-            $oProjectCgv->id_project = $oProjects->id_project;
-            $oProjectCgv->id_tree    = $iTreeId;
-            $oProjectCgv->name       = $oProjectCgv->generateFileName();
-            $oProjectCgv->status     = UniversignEntityInterface::STATUS_PENDING;
-            $oProjectCgv->id         = $oProjectCgv->create();
-            $sCgvLink                = $this->surl . $oProjectCgv->getUrlPath();
         }
-
-        // Recuperation du pdf du tree
-        $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = ' . \elements::TYPE_PDF_CGU . ' AND id_langue = "' . $this->language . '"');
-
-        if (false === isset($elements[0]['value']) || '' == $elements[0]['value']) {
-            $this->result = 'element id invalid';
-            return;
-        }
-        $sPdfPath = $this->path . 'public/default/var/fichiers/' . $elements[0]['value'];
-
-        if (false === file_exists($sPdfPath)) {
-            $this->result = 'file not found';
-            return;
-        }
-
-        if (false === is_dir($this->path . project_cgv::BASE_PATH)) {
-            mkdir($this->path . project_cgv::BASE_PATH);
-        }
-        if (false === file_exists($this->path . project_cgv::BASE_PATH . $oProjectCgv->name)) {
-            copy($sPdfPath, $this->path . project_cgv::BASE_PATH . $oProjectCgv->name);
-        }
-
-        $oSettings->get('Facebook', 'type');
-        $facebookUrl = $oSettings->value;
-
-        $oSettings->get('Twitter', 'type');
-        $twitterUrl = $oSettings->value;
-
-        $varMail = array(
-            'surl'                 => $this->surl,
-            'url'                  => $this->furl,
-            'prenom_p'             => $oClients->prenom,
-            'lien_cgv_universign'  => $sCgvLink,
-            'lien_tw'              => $twitterUrl,
-            'lien_fb'              => $facebookUrl,
-            'commission_deblocage' => $this->ficelle->formatNumber($oProjects->commission_rate_funds, 1),
-            'commission_crd'       => $this->ficelle->formatNumber($oProjects->commission_rate_repayment, 1),
-        );
-
-        if (empty($oClients->email)) {
-            $this->result = 'Erreur : L\'adresse mail du client est vide';
-            return;
-        }
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('signature-universign-de-cgv', $varMail);
-        $message->setTo($oClients->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
 
         $this->result = 'CGV envoyées avec succès';
     }
@@ -2712,7 +2637,7 @@ class dossiersController extends bootstrap
             $projectCommentEntity = new ProjectsComments();
             $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
             $projectCommentEntity->setIdUser($this->userEntity);
-            $projectCommentEntity->setContent("Projet reporté\n--\n" . $_POST['comment']);
+            $projectCommentEntity->setContent('<p><u>Report projet</u></p>' . $_POST['comment']);
 
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
@@ -2751,7 +2676,7 @@ class dossiersController extends bootstrap
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
                 $projectCommentEntity->setIdUser($this->userEntity);
-                $projectCommentEntity->setContent("Abandon projet\n--\n" . $_POST['comment']);
+                $projectCommentEntity->setContent('<p><u>Abandon projet</u></p>' . $_POST['comment']);
 
                 $entityManager->persist($projectCommentEntity);
                 $entityManager->flush($projectCommentEntity);
@@ -3262,7 +3187,7 @@ class dossiersController extends bootstrap
             $this->project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
             $this->borrowerMotif     = $borrowerManager->getBorrowerBankTransferLabel($this->project);
             $this->bankAccounts[]    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->project->getIdCompany()->getIdClientOwner());
-            $this->bankAccounts      = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getPartner()));
+            $this->bankAccounts      = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getIdPartner()));
             $restFunds               = $projectManager->getRestOfFundsToRelease($this->project, true);
             $this->restFunds         = $currencyFormatter->formatCurrency($restFunds, 'EUR');
 

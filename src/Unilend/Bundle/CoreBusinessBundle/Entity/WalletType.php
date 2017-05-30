@@ -15,6 +15,7 @@ class WalletType
     const BORROWER                             = 'borrower';
     const DEBT_COLLECTOR                       = 'debt_collector';
     const LENDER                               = 'lender';
+    const PARTNER                              = 'partner';
     const TAX_FR_ADDITIONAL_CONTRIBUTIONS      = 'tax_fr_contributions_additionnelles';
     const TAX_FR_CRDS                          = 'tax_fr_crds';
     const TAX_FR_CSG                           = 'tax_fr_csg';

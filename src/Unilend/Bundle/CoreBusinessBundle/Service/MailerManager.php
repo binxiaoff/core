@@ -5,22 +5,24 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
-use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
-use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\core\Loader;
 
 class MailerManager
 {
@@ -28,7 +30,7 @@ class MailerManager
     const TYPE_TRANSACTION_LENDER_ANTICIPATED_REPAYMENT = 23;
 
     /** @var \settings */
-    private $oSettings;
+    private $settings;
 
     /** @var \mail_templates */
     private $oMailTemplate;
@@ -90,7 +92,7 @@ class MailerManager
         $this->mailer                 = $mailer;
         $this->translator             = $translator;
 
-        $this->oSettings     = $this->entityManagerSimulator->getRepository('settings');
+        $this->settings      = $this->entityManagerSimulator->getRepository('settings');
         $this->oMailTemplate = $this->entityManagerSimulator->getRepository('mail_templates');
 
         $this->oFicelle    = Loader::loadLib('ficelle');
@@ -310,8 +312,8 @@ class MailerManager
             '$periode'      => $remainingDuration
         ];
 
-        $this->oSettings->get('Adresse notification projet funde a 100', 'type');
-        $recipient = $this->oSettings->value;
+        $this->settings->get('Adresse notification projet funde a 100', 'type');
+        $recipient = $this->settings->value;
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $keywords, false);
@@ -555,8 +557,8 @@ class MailerManager
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
 
-        $this->oSettings->get('Adresse notification projet fini', 'type');
-        $sRecipient = $this->oSettings->value;
+        $this->settings->get('Adresse notification projet fini', 'type');
+        $sRecipient = $this->settings->value;
 
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
         // si le solde des enchere est supperieur au montant du pret on affiche le montant du pret
@@ -609,14 +611,14 @@ class MailerManager
 
     private function getFacebookLink()
     {
-        $this->oSettings->get('Facebook', 'type');
-        return $this->oSettings->value;
+        $this->settings->get('Facebook', 'type');
+        return $this->settings->value;
     }
 
     private function getTwitterLink()
     {
-        $this->oSettings->get('Twitter', 'type');
-        return $this->oSettings->value;
+        $this->settings->get('Twitter', 'type');
+        return $this->settings->value;
     }
 
     /**
@@ -1828,7 +1830,7 @@ class MailerManager
     }
 
     /**
-     * @param \clients $client
+     * @param \clients           $client
      * @param \offres_bienvenues $welcomeOffer
      */
     public function sendWelcomeOfferEmail(\clients $client, \offres_bienvenues $welcomeOffer)
@@ -1878,5 +1880,51 @@ class MailerManager
             $message->setTo(explode(';', $destinataire));
             $this->mailer->send($message);
         }
+    }
+
+    /**
+     * @param Clients $client
+     */
+    public function sendPartnerAccountActivation(Clients $client)
+    {
+        $token     = $this->entityManagerSimulator->getRepository('temporary_links_login')->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
+        $variables = [
+            'staticUrl'      => $this->sSUrl,
+            'frontUrl'       => $this->sFUrl,
+            'prenom'         => $client->getPrenom(),
+            'activationLink' => $this->container->get('router')->generate('partner_security', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+            'facebookLink'   => $this->getFacebookLink(),
+            'twitterLink'    => $this->getTwitterLink(),
+            'year'           => date('Y')
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('ouverture-espace-partenaire', $variables);
+        $message->setTo($client->getEmail());
+        $this->mailer->send($message);
+    }
+
+    /**
+     * @param ProjectCgv $termsOfSale
+     */
+    public function sendProjectTermsOfSale(ProjectCgv $termsOfSale)
+    {
+        $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($termsOfSale->getIdProject()->getIdCompany()->getIdClientOwner());
+        $keywords = [
+            'surl'                 => $this->sSUrl,
+            'url'                  => $this->sFUrl,
+            'prenom_p'             => $client->getPrenom(),
+            'lien_cgv_universign'  => $this->sSUrl . $termsOfSale->getUrlPath(),
+            'commission_deblocage' => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateFunds(), 1),
+            'commission_crd'       => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateRepayment(), 1),
+            'lien_fb'              => $this->getFacebookLink(),
+            'lien_tw'              => $this->getTwitterLink(),
+            'year'                 => date('Y')
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('signature-universign-de-cgv', $keywords);
+        $message->setTo($client->getEmail());
+        $this->mailer->send($message);
     }
 }

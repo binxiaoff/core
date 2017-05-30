@@ -1,0 +1,64 @@
+{% extends 'partner_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'partner-account-contact',
+    classNames: 'partner-account'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} partner-contact_title {% endtrans %}</h3>
+                    </header>
+                    <section class="page-section">
+                        {% if app.session.flashBag.has('error') %}
+                            <div class="message-error">
+                                {% for error in app.session.flashBag.get('error') %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% elseif app.session.flashBag.has('success') %}
+                            <div class="message-success">
+                                {% for success in app.session.flashBag.get('success') %}
+                                    <p>{{ success }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {{ form_start(contact_form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
+                        <div class="row row-multi-col">
+                            <div class="col-lg-6 col-md-6 col-sm-4">
+                                {{ form_row(contact_form.phone) }}
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-4">
+                                {{ form_row(contact_form.email) }}
+                            </div>
+                        </div>
+
+                        {{ form_row(contact_form.message) }}
+
+                        <div class="row">
+                            <div class="form-field">
+                                <label for="form-partner-contact-attachment">{{ 'partner-contact_attachment-field-label'|trans }}</label>
+
+                                <div class="custom-input-file" id="form-partner-contact-attachment" data-fileattach-maxfiles="1"
+                                     data-fileattach data-fileattach-inputname="attachment"
+                                     data-formvalidation-input data-formvalidation-required='input[type="file"][name="attachment"]'></div>
+                                <ul class="ui-formvalidation-messages"></ul>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <button type="submit" class="btn-primary ui-dialog-confirm" data-spinnerbutton>{{ 'partner-contact_submit-button'|trans }}</button>
+                        </div>
+
+                        {{ form_end(contact_form) }}
+                    </section><!-- /.page-section -->
+                </div>
+            </article><!-- /.panel -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}

@@ -235,9 +235,10 @@ class ProjectRequestManager
     /**
      * @param \projects $project
      * @param int       $userId
+     *
      * @return null|array
      */
-    public function checkProjectRisk(\projects &$project, $userId)
+    public function checkProjectRisk(\projects $project, $userId)
     {
         /** @var \companies $company */
         $company = $this->entityManagerSimulator->getRepository('companies');

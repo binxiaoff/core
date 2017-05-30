@@ -1266,7 +1266,6 @@ class projects extends projects_crud
     {
         return $this->bdd->createQueryBuilder()
             ->select('p.id_project,
-                IFNULL(pa.name, "") AS partner_name,
                 IFNULL(pa.logo, "") AS partner_logo,
                 p.amount AS amount,
                 p.period AS duration,
@@ -1380,7 +1379,6 @@ class projects extends projects_crud
     {
         return $this->bdd->createQueryBuilder()
             ->select('p.id_project,
-                IFNULL(pa.name, "") AS partner_name,
                 IFNULL(pa.logo, "") AS partner_logo,
                 p.amount AS amount,
                 p.period AS duration,

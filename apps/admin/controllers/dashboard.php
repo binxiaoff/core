@@ -233,7 +233,7 @@ class dashboardController extends bootstrap
 
             if (null === $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user'])) {
                 $client->get($projectEntity->getIdCompany()->getIdClientOwner());
-                $status = empty($client->email) ? \projects_status::INCOMPLETE_REQUEST : \projects_status::COMPLETE_REQUEST;
+                $status = empty($client->telephone) ? \projects_status::INCOMPLETE_REQUEST : \projects_status::COMPLETE_REQUEST;
                 $projectManager->addProjectStatus($_SESSION['user']['id_user'], $status, $project);
             }
         }
