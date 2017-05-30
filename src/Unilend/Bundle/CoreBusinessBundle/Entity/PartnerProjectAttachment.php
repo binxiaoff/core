@@ -20,6 +20,13 @@ class PartnerProjectAttachment
     private $mandatory;
 
     /**
+     * @var int
+     *
+     * @ORM\Column(name="rank", type="integer", nullable=true)
+     */
+    private $rank;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -79,6 +86,30 @@ class PartnerProjectAttachment
     public function getMandatory()
     {
         return $this->mandatory;
+    }
+
+    /**
+     * Set rank
+     *
+     * @param int $rank
+     *
+     * @return PartnerProjectAttachment
+     */
+    public function setRank($rank)
+    {
+        $this->rank = $rank;
+
+        return $this;
+    }
+
+    /**
+     * Get rank
+     *
+     * @return int
+     */
+    public function getRank()
+    {
+        return $this->rank;
     }
 
     /**

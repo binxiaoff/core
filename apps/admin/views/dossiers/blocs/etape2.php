@@ -369,6 +369,8 @@
             </tr>
         </table>
         <div id="valid_etape2" class="valid_etape">Données sauvegardées</div>
-        <button type="submit" class="btn-primary pull-right">Sauvegarder</button>
+        <div class="btnDroite">
+            <button type="submit" class="btn-primary">Sauvegarder</button>
+        </div>
     </form>
 </div>

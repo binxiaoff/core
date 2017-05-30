@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Companies
  *
- * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"})})
+ * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"}), @ORM\Index(name="fk_companies_id_parent_company", columns={"id_parent_company"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -297,6 +297,16 @@ class Companies
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idCompany;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id_company")
+     * })
+     */
+    private $idParentCompany;
 
 
 
@@ -1196,6 +1206,30 @@ class Companies
     public function getIdCompany()
     {
         return $this->idCompany;
+    }
+
+    /**
+     * Set idParentCompany
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idParentCompany
+     *
+     * @return Companies
+     */
+    public function setIdParentCompany(\Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idParentCompany = null)
+    {
+        $this->idParentCompany = $idParentCompany;
+
+        return $this;
+    }
+
+    /**
+     * Get idParentCompany
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     */
+    public function getIdParentCompany()
+    {
+        return $this->idParentCompany;
     }
 
     /**

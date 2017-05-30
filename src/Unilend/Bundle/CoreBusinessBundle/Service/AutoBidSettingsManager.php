@@ -438,7 +438,7 @@ class AutoBidSettingsManager
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
-        $settings = $oAutoBid->getSettings($lender->id_lender_account, null, null, \autobid::STATUS_ACTIVE, [], 1);
+        $settings = $oAutoBid->getSettings($lender->id_lender_account, null, null, [\autobid::STATUS_ACTIVE], [], 1);
 
         $amount = null;
 

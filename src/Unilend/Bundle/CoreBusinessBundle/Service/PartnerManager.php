@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
-use Doctrine\ORM\EntityManager;
 
 class PartnerManager
 {
@@ -12,8 +12,6 @@ class PartnerManager
     private $entityManager;
 
     /**
-     * PartnerManager constructor.
-     *
      * @param EntityManager $entityManager
      */
     public function __construct(EntityManager $entityManager)
