@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
@@ -71,7 +70,7 @@ class OperationManager
      * @param OperationSubType|null $subType
      * @param Wallet|null           $debtor
      * @param Wallet|null           $creditor
-     * @param array                 $parameters
+     * @param array|object          $parameters
      *
      * @return bool
      * @throws \Exception
@@ -225,7 +224,6 @@ class OperationManager
     /**
      * @param Virements $wireTransferOut
      *
-     * @return bool
      */
     private function withdrawLenderWallet(Virements $wireTransferOut)
     {
@@ -234,14 +232,11 @@ class OperationManager
         $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
-
-        return true;
     }
 
     /**
      * @param Virements $wireTransferOut
      *
-     * @return bool
      * @throws \Exception
      */
     private function withdrawUnilendWallet(Virements $wireTransferOut)
@@ -252,14 +247,11 @@ class OperationManager
         $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
-
-        return true;
     }
 
     /**
      * @param Virements $wireTransferOut
      *
-     * @return Virements
      * @throws \Exception
      */
     private function withdrawBorrowerWallet(Virements $wireTransferOut)
@@ -269,9 +261,6 @@ class OperationManager
         $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
-
-        return $wireTransferOut;
-
     }
 
     /**
@@ -500,7 +489,6 @@ class OperationManager
     /**
      * @param Loans $loan
      *
-     * @return string
      */
     public function earlyRepayment(Loans $loan)
     {
@@ -533,15 +521,16 @@ class OperationManager
     }
 
     /**
-     * @param Wallet $wallet
-     * @param float  $amount
-     * @param array
+     * @param Wallet       $wallet
+     * @param float        $amount
+     * @param object|array $origins
      */
     public function borrowerRegularisation(Wallet $wallet, $amount, $origins = [])
     {
-        $unilendWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
-        $unilendWallet     = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
-        $operationType     = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_BORROWER_REGULARIZATION]);
+        $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_BORROWER_REGULARIZATION]);
+
         $this->newOperation($amount, $operationType, $unilendWallet, $wallet, $origins);
     }
 

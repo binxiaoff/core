@@ -228,7 +228,7 @@ class PaylineManager
         /** @var \clients_gestion_mails_notif $clientMailNotification */
         $clientMailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
 
-        $lenderProvision      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationTypeon')->findOneBy(['label' => OperationType::LENDER_PROVISION]);
+        $lenderProvision      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION]);
         $provisionOperation   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idBackpayline' => $backPayline, 'idType' => $lenderProvision]);
         $walletBalanceHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy(['idWallet' => $backPayline->getWallet(), 'idOperation' => $provisionOperation]);
 

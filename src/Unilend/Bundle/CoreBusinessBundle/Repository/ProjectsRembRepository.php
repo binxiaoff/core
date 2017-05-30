@@ -24,7 +24,7 @@ class ProjectsRembRepository extends EntityRepository
             ->andWhere('DATE(pr.dateRembPreteurs) <= :repaymentDate')
             ->setParameter('on', Projects::AUTO_REPAYMENT_ON)
             ->setParameter('pending', ProjectsRemb::STATUS_PENDING)
-            ->setParameter('repaymentDate', $repaymentDate)
+            ->setParameter('repaymentDate', $repaymentDate->format('Y-m-d'))
             ->setMaxResults($limit);
 
         return $qb->getQuery()->getResult();

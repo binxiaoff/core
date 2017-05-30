@@ -239,7 +239,7 @@ class ProjectRepaymentManager
             'annee'           => date('Y'),
             'lien_fb'         => $facebook,
             'lien_tw'         => $twitter,
-            'montantRemb'     => $this->numberFormatter->format(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 2))
+            'montantRemb'     => $this->numberFormatter->format(round(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 3), 2))
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -254,7 +254,7 @@ class ProjectRepaymentManager
     public function sendRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $settingsRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
         $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
         $lender         = $lenderWallet->getIdClient();
@@ -332,7 +332,7 @@ class ProjectRepaymentManager
     public function sendRegularisationRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $settingsRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
         $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
         $lender         = $lenderWallet->getIdClient();
