@@ -2977,7 +2977,7 @@ class dossiersController extends bootstrap
             $projectCommentEntity = new ProjectsComments();
             $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
             $projectCommentEntity->setIdUser($this->userEntity);
-            $projectCommentEntity->setContent("Projet reporté\n--\n" . $_POST['comment']);
+            $projectCommentEntity->setContent('<p><u>Report projet</u></p>' . $_POST['comment']);
 
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
@@ -3016,7 +3016,7 @@ class dossiersController extends bootstrap
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
                 $projectCommentEntity->setIdUser($this->userEntity);
-                $projectCommentEntity->setContent("Abandon projet\n--\n" . $_POST['comment']);
+                $projectCommentEntity->setContent('<p><u>Abandon projet</u></p>' . $_POST['comment']);
 
                 $entityManager->persist($projectCommentEntity);
                 $entityManager->flush($projectCommentEntity);

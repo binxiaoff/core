@@ -24,7 +24,7 @@
                 <tr>
                     <td colspan="2" style="text-align: right">
                         <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
-                        <button type="submit" class="btn-primary">Valider</button>
+                        <button type="submit" class="btn-primary">Abandonner le dossier</button>
                     </td>
                 </tr>
             </table>

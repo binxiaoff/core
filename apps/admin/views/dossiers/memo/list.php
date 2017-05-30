@@ -27,7 +27,7 @@
                         <?= $this->users->firstname ?> <?= $this->users->name ?>
                     <?php endif; ?>
                 </td>
-                <td><?= preg_replace('/(https?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i', '<a href="$1" target="_blank">$1</a>', nl2br($comment->getContent())) ?></td>
+                <td><?= preg_replace('/(https?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i', '<a href="$1" target="_blank">$1</a>', $comment->getContent()) ?></td>
                 <td align="center">
                     <?php if ($this->userEntity == $comment->getIdUser()) : ?>
                         <a href="<?= $this->lurl ?>/dossiers/memo/<?= $comment->getIdProject()->getIdProject() ?>/<?= $comment->getIdProjectComment() ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>

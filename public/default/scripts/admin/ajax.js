@@ -252,7 +252,7 @@ function editMemo(projectId, commentId) {
         data: {
             projectId: projectId,
             commentId: commentId,
-            content: $('#content_memo').val(),
+            content: CKEDITOR.instances['content_memo'].getData(),
             public: $('[name="public_memo"]:checked').val()
         },
         success: function(response) {
