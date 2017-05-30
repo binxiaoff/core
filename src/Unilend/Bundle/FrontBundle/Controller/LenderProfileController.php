@@ -1034,7 +1034,7 @@ class LenderProfileController extends Controller
 
         return [
             'balance'     => bcadd($history->getAvailableBalance(), $history->getCommittedBalance(), 2),
-            'owedCapital' => $operationRepository->getRemainingDueCapital($client->id_client, $lastYear)
+            'owedCapital' => $operationRepository->getRemainingDueCapitalAtDate($client->id_client, $lastYear)
         ];
     }
 
