@@ -1,8 +1,10 @@
+{% set isCommission = false %}
 {% for i, op in operations %}
     {% set classAmount = op.amount > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
-    {% if op.label == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\BorrowerAccountController::OP_MONTHLY_COMMISSION') %}
+    {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %}
+        {% set isCommission = true %}
         {% set data_details = {
-            "label":"commission-mensuelle",
+            "label":"",
             "items": [
                 {
                     "label": 'borrower-operation_commission-excl-tax'|trans,
@@ -15,8 +17,13 @@
         } %}
     {% endif %}
 
-    <tr id="operation-{{ i }}" {% if op.label == 'monthly-commission' %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
-        <td class="table-myoperations-borrower-item-type">{{ ('borrower-operation_' ~ op.label)|trans }}</td>
+    <tr id="operation-{{ i }}" {% if isCommission %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
+        <td class="table-myoperations-borrower-item-type">
+            {{ ('borrower-operation_' ~ op.label)|trans }}
+            {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::BORROWER_WITHDRAW') and op.third_party_company is defined and op.third_party_company is not empty %}
+                - {{ op.third_party_company.name }}
+            {% endif %}
+        </td>
         <td class="table-myoperations-borrower-item-project">{{ op.idProject }}</td>
         <td class="table-myoperations-borrower-item-date">{{ op.date|localizeddate('short', 'none') }}</td>
         <td class="table-myoperations-borrower-item-amount">{{ op.amount|localizedcurrency('EUR') }}</td>
