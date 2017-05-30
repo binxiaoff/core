@@ -245,10 +245,8 @@
                                     <p>{{ project.companyDescription|raw }}</p>
                                 {% elseif conditions.visibility == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ProjectsController::VISIBILITY_NOT_VALIDATED_LENDER') %}
                                     <p>{% trans %} project-detail_not-validated-description {% endtrans %}</p>
-                                {% elseif app.user is null %}
-                                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                                 {% else %}
-                                    <p>{% trans %} project-detail_anonymous-description {% endtrans %}</p>
+                                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                                 {% endif %}
                             </section><!-- /.page-section -->
 
@@ -258,10 +256,8 @@
                                     <p>{{ project.projectDescription|raw }}</p>
                                 {% elseif conditions.visibility == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ProjectsController::VISIBILITY_NOT_VALIDATED_LENDER') %}
                                     <p>{% trans %} project-detail_not-validated-description {% endtrans %}</p>
-                                {% elseif app.user is null %}
-                                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                                 {% else %}
-                                    <p>{% trans %} project-detail_anonymous-description {% endtrans %}</p>
+                                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                                 {% endif %}
                             </section><!-- /.page-section -->
                         </div>
@@ -274,10 +270,8 @@
                                 <p>{{ project.repaymentDescription|raw }}</p>
                             {% elseif conditions.visibility == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ProjectsController::VISIBILITY_NOT_VALIDATED_LENDER') %}
                                 <p>{% trans %} project-detail_not-validated-description {% endtrans %}</p>
-                            {% elseif app.user is null %}
-                                <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                             {% else %}
-                                <p>{% trans %} project-detail_anonymous-description {% endtrans %}</p>
+                                <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                             {% endif %}
 
                             {% if conditions.displayCipDisclaimer %}

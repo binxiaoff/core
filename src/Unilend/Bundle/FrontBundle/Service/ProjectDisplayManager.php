@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\librairies\CacheKeys;
 
 class ProjectDisplayManager
@@ -414,37 +415,18 @@ class ProjectDisplayManager
      */
     public function isVisibleToUser(Projects $project, BaseUser $user = null)
     {
-        if (null === $user) {
+        if (null === $user || $project->getStatus() < ProjectsStatus::EN_FUNDING) {
             return false;
         }
 
         if ($user instanceof UserLender) {
-            if (ProjectsStatus::EN_FUNDING == $project->getStatus()) {
-                if (ClientsStatus::VALIDATED == $user->getClientStatus()) {
-                    return true;
-                }
-
-                return false;
-            }
-
-            $lenderRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
-            $loansRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-            $loans            = $loansRepository->findBy([
-                'idLender'  => $lenderRepository->findOneBy(['idClientOwner' => $user->getClientId()]),
-                'idProject' => $project
-            ]);
-
-            if ($loans) {
+            if (ClientsStatus::VALIDATED == $user->getClientStatus()) {
                 return true;
             }
         } elseif ($user instanceof UserBorrower) {
-            $companiesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-            $company             = $companiesRepository->findOneBy(['idClientOwner' => $user->getClientId()]);
-
-            if ($project->getIdCompany() == $company) {
-                return true;
-            }
-      //} elseif ($user instanceof UserPartner) { @todo
+            return true;
+        } elseif ($user instanceof UserPartner) {
+            return true;
         }
 
         return false;
