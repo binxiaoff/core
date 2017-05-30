@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
 use Doctrine\ORM\EntityManager;
+use NumberFormatter;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Asset\Packages;
@@ -68,6 +69,9 @@ class PaylineManager
      */
     private $accessKey;
 
+    /** @var NumberFormatter */
+    private $numberFormatter;
+
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
@@ -77,6 +81,7 @@ class PaylineManager
         OperationManager $operationManager,
         RouterInterface $router,
         Packages $assetsPackages,
+        NumberFormatter $numberFormatter,
         $paylineFile,
         $environment,
         $merchantId,
@@ -96,6 +101,7 @@ class PaylineManager
         $this->isProduction           = $environment === 'prod' ? true : false;
         $this->merchantId             = (string) $merchantId; // PaylineSDK need string
         $this->accessKey              = $accessKey;
+        $this->numberFormatter        = $numberFormatter;
     }
 
     /**
@@ -263,8 +269,8 @@ class PaylineManager
                 'surl'            => $this->sUrl,
                 'url'             => $this->router->getContext()->getBaseUrl(),
                 'prenom_p'        => $backPayline->getWallet()->getIdClient()->getPrenom(),
-                'fonds_depot'     => number_format($amount, 2, ',', ' '),
-                'solde_p'         => number_format($backPayline->getWallet()->getAvailableBalance(), 2, ',', ' '),
+                'fonds_depot'     => $this->numberFormatter->format($amount),
+                'solde_p'         => $this->numberFormatter->format((float) $backPayline->getWallet()->getAvailableBalance()),
                 'link_mandat'     => $this->sUrl . '/images/default/mandat.jpg',
                 'motif_virement'  => $backPayline->getWallet()->getWireTransferPattern(),
                 'projets'         => $this->router->generate('home', ['type' => 'projets-a-financer']),

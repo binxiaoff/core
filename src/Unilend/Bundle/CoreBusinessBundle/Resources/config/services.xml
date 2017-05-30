@@ -305,6 +305,7 @@
             <argument type="service" id="unilend.service.operation_manager"/>
             <argument type="service" id="router"/>
             <argument type="service" id="assets.packages"/>
+            <argument type="service" id="number_formatter"/>
             <argument>%path.payline%include.php</argument>
             <argument>%kernel.environment%</argument>
             <argument>%payline.merchant_id%</argument>
