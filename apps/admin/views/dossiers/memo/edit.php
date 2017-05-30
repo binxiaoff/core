@@ -33,7 +33,7 @@
             setTimeout(function() {
                 CKEDITOR.instances['content_memo'].focus()
                 $(document).off('cbox_complete')
-            }, 150)
+            }, 300)
         })
     })
 </script>

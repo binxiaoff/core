@@ -52,7 +52,7 @@
             })
             setTimeout(function() {
                 $(document).off('cbox_complete')
-            }, 150)
+            }, 300)
         })
     })
 </script>

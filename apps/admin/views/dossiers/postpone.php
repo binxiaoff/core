@@ -34,7 +34,7 @@
             setTimeout(function() {
                 CKEDITOR.instances['postpone_comment'].focus()
                 $(document).off('cbox_complete')
-            }, 150)
+            }, 300)
         })
     })
 </script>
