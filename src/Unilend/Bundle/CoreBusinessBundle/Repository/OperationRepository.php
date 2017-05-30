@@ -105,8 +105,8 @@ class OperationRepository extends EntityRepository
               SUM(o_loan.amount) - SUM(o_repayment.amount)
             FROM wallet_balance_history wbh
               INNER JOIN wallet w ON wbh.id_wallet = w.id
-              LEFT JOIN operation o_loan ON wbh.id_operation = o_loan.id AND o_loan.id_type = (SELECT id FROM operation_type WHERE label = \'lender_loan\')
-              LEFT JOIN operation o_repayment ON wbh.id_operation = o_repayment.id AND o_repayment.id_type = (SELECT id FROM operation_type WHERE label = \'capital_repayment\')
+              LEFT JOIN operation o_loan ON wbh.id_operation = o_loan.id AND o_loan.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::LENDER_LOAN . '")
+              LEFT JOIN operation o_repayment ON wbh.id_operation = o_repayment.id AND o_repayment.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
             WHERE wbh.added <= :end
               AND wbh.id_project IN (SELECT DISTINCT (p.id_project) FROM projects p
                                        INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
