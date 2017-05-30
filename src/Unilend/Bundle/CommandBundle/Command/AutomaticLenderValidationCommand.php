@@ -10,11 +10,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 
@@ -30,12 +31,12 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $client = $entityManagerSimulator->getRepository('clients');
 
         try {
             $result = $this->getClientsForAutoValidation();
@@ -54,20 +55,22 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
      */
     private function getClientsForAutoValidation()
     {
-        //$clientStatus = [\clients_status::TO_BE_CHECKED, \clients_status::COMPLETENESS_REPLY, \clients_status::MODIFICATION];
-        $clientStatus   = [\clients_status::TO_BE_CHECKED]; // this is a temporary restriction. Waiting for a fix on the root cause of TMA-1613
-        $attachmentType = [AttachmentType::CNI_PASSPORTE, AttachmentType::JUSTIFICATIF_DOMICILE, AttachmentType::RIB];
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $clientStatus             = [\clients_status::TO_BE_CHECKED, \clients_status::COMPLETENESS_REPLY, \clients_status::MODIFICATION];
+        $attachmentType           = [AttachmentType::CNI_PASSPORTE, AttachmentType::JUSTIFICATIF_DOMICILE, AttachmentType::RIB];
+        $vigilanceStatusToExclude = [VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE];
 
-        $result            = $client->getClientsToAutoValidate($clientStatus, $attachmentType);
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var \clients $client */
+        $client = $entityManagerSimulator->getRepository('clients');
+
+        $result            = $client->getClientsToAutoValidate($clientStatus, $attachmentType, $vigilanceStatusToExclude);
         $clientsToValidate = [];
+
         if (false === empty($result)) {
             foreach ($result as $row) {
                 $clientsToValidate[$row['id_client']][$row['id_type']] = [
-                    'id_attachment'   => $row['id_attachment']
+                    'id_attachment' => $row['id_attachment']
                 ];
             }
             unset($result);
@@ -90,23 +93,23 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
     /**
      * @param \clients $client
      * @param array    $attachment
-     * @throws \Exception
      *
+     * @throws \Exception
      */
     private function validateLender(\clients $client, array $attachment)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var \clients_adresses $clientAddress */
-        $clientAddress = $entityManager->getRepository('clients_adresses');
+        $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $entityManager->getRepository('lenders_accounts');
+        $lenderAccount = $entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \users_history $userHistory */
-        $userHistory = $entityManager->getRepository('users_history');
+        $userHistory = $entityManagerSimulator->getRepository('users_history');
         /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $entityManager->getRepository('clients_status_history');
+        $clientStatusHistory = $entityManagerSimulator->getRepository('clients_status_history');
         /** @var WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->getContainer()->get('unilend.service.welcome_offer_manager');
         /** @var MailerManager $mailerManager */
@@ -156,5 +159,4 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         }
         $taxManager->addTaxToApply($client, $lenderAccount, $clientAddress, Users::USER_ID_CRON);
     }
-
 }
