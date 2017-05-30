@@ -121,7 +121,6 @@ class EcheanciersEmprunteur
      */
     private $idEcheancierEmprunteur;
 
-
     /**
      * Set idProject
      *

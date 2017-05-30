@@ -19,7 +19,6 @@ class Projects
     const AUTO_REPAYMENT_ON  = 0;
     const AUTO_REPAYMENT_OFF = 1;
 
-
     /**
      * @var string
      *

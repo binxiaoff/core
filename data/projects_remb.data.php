@@ -72,29 +72,4 @@ class projects_remb extends projects_remb_crud
         $result = $this->bdd->query('SELECT * FROM `projects_remb` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result) > 0);
     }
-
-    public function getProjectsToRepay(\DateTime $oRepaymentDate = null, $iLimit = null)
-    {
-        if (null === $oRepaymentDate) {
-            $oRepaymentDate = new \DateTime();
-        }
-        $sQuery = '
-            SELECT r.*
-            FROM projects_remb r
-            INNER JOIN projects p ON r.id_project = p.id_project
-            WHERE p.remb_auto = 0
-                AND r.status = ' . \projects_remb::STATUS_PENDING . '
-                AND DATE(r.date_remb_preteurs) <= "' . $oRepaymentDate->format('Y-m-d') . '"';
-
-        if (null !== $iLimit) {
-            $sQuery .= 'LIMIT ' . $iLimit;
-        }
-
-        $aResult  = array();
-        $arResult = $this->bdd->query($sQuery);
-        while ($aRecord = $this->bdd->fetch_assoc($arResult)) {
-            $aResult[] = $aRecord;
-        }
-        return $aResult;
-    }
 }

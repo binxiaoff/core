@@ -77,14 +77,14 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param Projects|integer     $project
-     * @param integer|null         $repaymentSequence
-     * @param Clients|integer|null $client
-     * @param integer|null         $status
-     * @param integer|null         $paymentStatus
-     * @param integer|null         $earlyRepaymentStatus
-     * @param integer|null         $start
-     * @param integer|null         $limit
+     * @param Projects|int     $project
+     * @param int|null         $repaymentSequence
+     * @param Clients|int|null $client
+     * @param int|null         $status
+     * @param int|null         $paymentStatus
+     * @param int|null         $earlyRepaymentStatus
+     * @param int|null         $start
+     * @param int|null         $limit
      *
      * @return Echeanciers[]
      */
@@ -133,7 +133,7 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param Loans|integer $loan
+     * @param Loans|int $loan
      *
      * @return float
      */

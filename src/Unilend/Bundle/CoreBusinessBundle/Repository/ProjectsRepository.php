@@ -12,9 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
-
-;
-
 class ProjectsRepository extends EntityRepository
 {
     /**

@@ -24,7 +24,7 @@ class ProjectRepaymentManager
     /** @var OperationManager */
     private $operationManager;
 
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
 
     /** @var Packages */
@@ -69,7 +69,7 @@ class ProjectRepaymentManager
      * @param RouterInterface         $router
      * @param LoggerInterface         $logger
      * @param Packages                $assetsPackages
-     * @param                         $frontUrl
+     * @param string                  $frontUrl
      */
     public function __construct(
         EntityManager $entityManager,
@@ -106,7 +106,7 @@ class ProjectRepaymentManager
      * Repay entirely a repayment schedule
      *
      * @param Projects $project
-     * @param          $repaymentSequence
+     * @param int      $repaymentSequence
      *
      * @return int
      * @throws \Exception
@@ -208,6 +208,9 @@ class ProjectRepaymentManager
         return $repaymentNb;
     }
 
+    /**
+     * @param EcheanciersEmprunteur $paymentSchedule
+     */
     private function sendPaymentScheduleInvoiceToBorrower(EcheanciersEmprunteur $paymentSchedule)
     {
         $borrower          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($paymentSchedule->getIdProject()->getIdCompany()->getIdClientOwner());
@@ -250,13 +253,15 @@ class ProjectRepaymentManager
      */
     public function sendRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
-        $lender         = $repaymentSchedule->getIdLoan()->getIdLender()->getIdClient();
-        $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
-        $grossRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
-        $netRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getNetAmountByRepaymentScheduleId($repaymentSchedule);
+        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
-        $facebook = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();
-        $twitter  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue();
+        $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
+        $lender         = $lenderWallet->getIdClient();
+        $grossRepayment = $operationRepository->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
+        $netRepayment   = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
+        $facebook       = $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
+        $twitter        = $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
 
         $varMail                  = [
             'surl'                  => $this->assetsPackages->getUrl(''),
@@ -293,19 +298,20 @@ class ProjectRepaymentManager
      */
     public function sendDebtCollectionRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
-        $lender         = $repaymentSchedule->getIdLoan()->getIdLender()->getIdClient();
-        $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
-        $netRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getNetAmountByRepaymentScheduleId($repaymentSchedule);
+        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
-        $sRecoveryCompany = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Cabinet de recouvrement'])->getValue();
-        $facebook         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();
-        $twitter          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue();
+        $lenderWallet  = $repaymentSchedule->getIdLoan()->getIdLender();
+        $lender        = $lenderWallet->getIdClient();
+        $netRepayment  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getNetAmountByRepaymentScheduleId($repaymentSchedule);
+        $debtCollector = $settingsRepository->findOneBy(['type' => 'Cabinet de recouvrement'])->getValue();
+        $facebook      = $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
+        $twitter       = $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
 
-        $varMail = array(
+        $varMail = [
             'surl'             => $this->assetsPackages->getUrl(''),
             'url'              => $this->frontUrl,
             'prenom_p'         => $lender->getPrenom(),
-            'cab_recouvrement' => $sRecoveryCompany,
+            'cab_recouvrement' => $debtCollector,
             'mensualite_p'     => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
             'nom_entreprise'   => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
             'solde_p'          => $this->currencyFormatter->formatCurrency($lenderWallet->getAvailableBalance(), 'EUR'),
@@ -313,7 +319,7 @@ class ProjectRepaymentManager
             'motif_virement'   => $lenderWallet->getWireTransferPattern(),
             'lien_fb'          => $facebook,
             'lien_tw'          => $twitter,
-        );
+        ];
 
         $message = $this->messageProvider->newMessage('preteur-dossier-recouvre', $varMail);
         $message->setTo($lender->getEmail());
@@ -325,13 +331,15 @@ class ProjectRepaymentManager
      */
     public function sendRegularisationRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
-        $lender         = $repaymentSchedule->getIdLoan()->getIdLender()->getIdClient();
+        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+
         $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
-        $grossRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
-        $tax            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTaxAmountByRepaymentScheduleId($repaymentSchedule);
-        $netRepayment   = bcsub($grossRepayment, $tax, 2);
-        $facebook       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();
-        $twitter        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue();
+        $lender         = $lenderWallet->getIdClient();
+        $grossRepayment = $operationRepository->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
+        $netRepayment   = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
+        $facebook       = $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
+        $twitter        = $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
 
         $varMail = [
             'surl'                  => $this->assetsPackages->getUrl(''),

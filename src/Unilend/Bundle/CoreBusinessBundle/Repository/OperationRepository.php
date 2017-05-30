@@ -570,6 +570,9 @@ class OperationRepository extends EntityRepository
         return $movements;
     }
 
+    /**
+     * @return string
+     */
     private function getcohortQuery()
     {
         return 'SELECT
@@ -603,6 +606,11 @@ class OperationRepository extends EntityRepository
         return $result;
     }
 
+    /**
+     * @param boolean $isHealthy
+     *
+     * @return array
+     */
     public function getTotalDebtCollectionRepaymentByCohort($isHealthy)
     {
         $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getcohortQuery() . ' ) AS cohort
@@ -632,6 +640,11 @@ class OperationRepository extends EntityRepository
         return $result;
     }
 
+    /**
+     * @param boolean $isHealthy
+     *
+     * @return array
+     */
     public function getTotalDebtCollectionLenderCommissionByCohort($isHealthy)
     {
         $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getcohortQuery() . ' ) AS cohort

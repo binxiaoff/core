@@ -1171,7 +1171,7 @@ class projects extends projects_crud
           (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112)) AS contributor_credit_institution_percentage
         FROM projects p
             INNER JOIN companies com ON  com.id_company = p.id_company
-            INNER JOIN loans l ON l.id_project = p.id_project AND l.status = " .Loans::STATUS_ACCEPTED . "
+            INNER JOIN loans l ON l.id_project = p.id_project AND l.status = " . Loans::STATUS_ACCEPTED . "
         WHERE p.status >= " . ProjectsStatus::REMBOURSEMENT . " AND p.status NOT IN (:status_to_exclude)
         GROUP BY p.id_project
         HAVING DATE(loan_date) <= :declaration_last_day

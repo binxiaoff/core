@@ -9,7 +9,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsRemb;
 
 class ProjectsRembRepository extends EntityRepository
 {
-
     /**
      * @param \DateTime $repaymentDate
      * @param int       $limit
@@ -18,10 +17,6 @@ class ProjectsRembRepository extends EntityRepository
      */
     public function getProjectsToRepay(\DateTime $repaymentDate, $limit)
     {
-        if (null === $repaymentDate) {
-            $repaymentDate = new \DateTime();
-        }
-
         $qb = $this->createQueryBuilder('pr');
         $qb->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'pr.idProject = p.idProject')
             ->where('p.rembAuto = :on')

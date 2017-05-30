@@ -7,7 +7,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -54,8 +53,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         /** @var \settings $settings */
         $settings = $entityManagerSimulator->getRepository('settings');
 
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-
+        $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $loanOperationType           = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_LOAN]);
         $earlyRepaymentOperationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
 
