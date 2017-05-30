@@ -470,7 +470,7 @@ class BorrowerAccountController extends Controller
     /**
      * @param Request $request
      *
-     * @return StreamedResponse
+     * @return Response
      */
     private function operationsPrint(Request $request)
     {
@@ -925,7 +925,7 @@ class BorrowerAccountController extends Controller
 
             if (OperationType::BORROWER_WITHDRAW === $operation['label']) {
                 /** @var Operation $operationEntity */
-                $operationEntity                  = $operationRepository->find($operation['id']);
+                $operationEntity = $operationRepository->find($operation['id']);
                 if (
                     null !== $operationEntity->getWireTransferOut()->getBankAccount()
                     && $operationEntity->getWireTransferOut()->getBankAccount()->getIdClient() !== $operationEntity->getWalletDebtor()->getIdClient()
@@ -941,8 +941,8 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        $recoveryCommissionKeys = array_keys(array_column($borrowerOperations, 'label'), OperationType::COLLECTION_COMMISSION_PROVISION);
-        foreach($recoveryCommissionKeys as $index){
+        $debtCollectionCommissionKeys = array_keys(array_column($borrowerOperations, 'label'), OperationType::COLLECTION_COMMISSION_PROVISION);
+        foreach ($debtCollectionCommissionKeys as $index) {
             unset($borrowerOperations[$index]);
         }
 

@@ -220,8 +220,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime $start
-     * @param \DateTime $end
+     * @param \DateTime $date
      * @param array     $walletTypes
      *
      * @return float
