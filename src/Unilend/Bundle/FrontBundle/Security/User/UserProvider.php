@@ -164,7 +164,7 @@ class UserProvider implements UserProviderInterface
                 $clientEntity->getNom(),
                 $company->siren,
                 $wallet->getAvailableBalance(),
-                $client->lastlogin
+                $clientEntity->getLastlogin()
             );
         }
 
