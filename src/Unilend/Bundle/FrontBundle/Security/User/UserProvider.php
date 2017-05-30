@@ -42,8 +42,8 @@ class UserProvider implements UserProviderInterface
      * @param ClientStatusManager        $clientStatusManager
      */
     public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
         ClientManager $clientManager,
         NotificationDisplayManager $notificationDisplayManager,
         LenderManager $lenderManager,
