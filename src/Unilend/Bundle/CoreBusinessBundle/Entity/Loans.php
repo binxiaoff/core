@@ -12,10 +12,16 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Loans
 {
+    const STATUS_ACCEPTED = 0;
+    const STATUS_REJECTED = 1;
+
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\LoanTransfer
      *
-     * @ORM\Column(name="id_transfer", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LoanTransfer")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_transfer", referencedColumnName="id_loan_transfer")
+     * })
      */
     private $idTransfer;
 
@@ -140,11 +146,11 @@ class Loans
     /**
      * Set idTransfer
      *
-     * @param integer $idTransfer
+     * @param LoanTransfer $idTransfer
      *
      * @return Loans
      */
-    public function setIdTransfer($idTransfer)
+    public function setIdTransfer(LoanTransfer $idTransfer)
     {
         $this->idTransfer = $idTransfer;
 
@@ -154,7 +160,7 @@ class Loans
     /**
      * Get idTransfer
      *
-     * @return integer
+     * @return LoanTransfer
      */
     public function getIdTransfer()
     {

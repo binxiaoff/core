@@ -49,6 +49,7 @@ class WelcomeOfferManager
      * @param \clients $client
      *
      * @return array
+     * @throws \Exception
      */
     public function createWelcomeOffer(\clients $client)
     {
@@ -63,24 +64,19 @@ class WelcomeOfferManager
 
         $offerIsValid                    = false;
         $enoughMoneyLeft                 = false;
-        $virtualWelcomeOfferTransactions = [
-            \transactions_types::TYPE_WELCOME_OFFER,
-            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION
-        ];
         $return                          = [];
 
         if ($welcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue')) {
             /** @var \offres_bienvenues_details $welcomeOfferDetail */
             $welcomeOfferDetail = $this->entityManagerSimulator->getRepository('offres_bienvenues_details');
-            /** @var \transactions $transaction */
-            $transaction = $this->entityManagerSimulator->getRepository('transactions');
             /** @var \settings $setting */
             $setting = $this->entityManagerSimulator->getRepository('settings');
 
+            $unilendPromotionalWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+            $unilendPromotionalWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionalWalletType]);
+
             $iSumOfAllWelcomeOffersDistributed = $welcomeOfferDetail->sum('type = 0 AND id_offre_bienvenue = ' . $welcomeOffer->id_offre_bienvenue . ' AND status <> 2', 'montant');
-            $sumUnilendOffers                  = $transaction->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
-            $sumTransactionOffers              = $transaction->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction IN(' . implode(', ', $virtualWelcomeOfferTransactions) . ')', 'montant');
-            $sumAvailableOffers                = $sumUnilendOffers - $sumTransactionOffers;
+            $sumAvailableOffers                = $unilendPromotionalWallet->getAvailableBalance();
 
             $startWelcomeOfferDate = \DateTime::createFromFormat('Y-m-d H:i:s', $welcomeOffer->debut . ' 00:00:00');
             $endWelcomeOfferDate   = \DateTime::createFromFormat('Y-m-d H:i:s', $welcomeOffer->fin . ' 23:59:59');

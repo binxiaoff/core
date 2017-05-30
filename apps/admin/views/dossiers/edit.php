@@ -957,7 +957,7 @@
                             </td>
                         </tr>
                     </table>
-                    <?php if ($this->projects->status > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
+                    <?php if ($this->projects->status >= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::REMBOURSEMENT) : ?>
                         <h2>
                             Transfert
                             <?php if ($this->displayAddButton) : ?>

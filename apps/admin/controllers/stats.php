@@ -473,9 +473,9 @@ class statsController extends bootstrap
             $csv = "";
             $csv .= $header . " \n";
 
-            $sql = 'SELECT 
+            $sql = 'SELECT
                       e.id_echeancier,
-                      e.id_lender,
+                      w.id_client,
                       e.id_project,
                       e.id_loan,
                       e.ordre,
@@ -483,28 +483,29 @@ class statsController extends bootstrap
                       e.capital,
                       SUM(e.capital - e.capital_rembourse) AS capitalRestant,
                       e.interets,
-                      ROUND(prelevements_obligatoires.amount / 100, 2) AS prelevements_obligatoires,
-                      ROUND(retenues_source.amount / 100, 2) AS retenues_source,
-                      ROUND(csg.amount / 100, 2) AS csg,
-                      ROUND(prelevements_sociaux.amount / 100, 2) AS prelevements_sociaux,
-                      ROUND(contributions_additionnelles.amount / 100, 2) AS contributions_additionnelles,
-                      ROUND(prelevements_solidarite.amount / 100, 2) AS prelevements_solidarite,
-                      ROUND(crds.amount / 100, 2) AS crds,
+                      SUM(prelevements_obligatoires.amount) AS prelevements_obligatoires,
+                      SUM(retenues_source.amount) AS retenues_source,
+                      SUM(csg.amount) AS csg,
+                      SUM(prelevements_sociaux.amount) AS prelevements_sociaux,
+                      SUM(contributions_additionnelles.amount) AS contributions_additionnelles,
+                      SUM(prelevements_solidarite.amount) AS prelevements_solidarite,
+                      SUM(crds.amount) AS crds,
                       e.date_echeance,
                       e.date_echeance_reel,
                       e.date_echeance_emprunteur,
                       e.date_echeance_emprunteur_reel,
-                      status
-                  FROM echeanciers e
-                      LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                      LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . TaxType::TYPE_STATUTORY_CONTRIBUTIONS . '
-                      LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE. '
-                      LEFT JOIN tax csg ON csg.id_transaction = t.id_transaction AND csg.id_tax_type = ' . TaxType::TYPE_CSG . '
-                      LEFT JOIN tax prelevements_sociaux ON prelevements_sociaux.id_transaction = t.id_transaction AND prelevements_sociaux.id_tax_type = ' . TaxType::TYPE_SOCIAL_DEDUCTIONS . '
-                      LEFT JOIN tax contributions_additionnelles ON contributions_additionnelles.id_transaction = t.id_transaction AND contributions_additionnelles.id_tax_type = ' . TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS . '
-                      LEFT JOIN tax prelevements_solidarite ON prelevements_solidarite.id_transaction = t.id_transaction AND prelevements_solidarite.id_tax_type = ' . TaxType::TYPE_SOLIDARITY_DEDUCTIONS . '
-                      LEFT JOIN tax crds ON crds.id_transaction = t.id_transaction AND crds.id_tax_type = ' . TaxType::TYPE_CRDS . '
-                  WHERE e.id_project=' . $_POST['id_projet'];
+                      e.status
+                    FROM echeanciers e
+                      INNER JOIN wallet w ON w.id = e.id_lender
+                      LEFT JOIN operation prelevements_obligatoires ON prelevements_obligatoires.id_repayment_schedule = e.id_echeancier AND prelevements_obligatoires.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS.'\')
+                      LEFT JOIN operation retenues_source ON retenues_source.id_repayment_schedule = e.id_echeancier AND retenues_source.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE.'\')
+                      LEFT JOIN operation csg ON csg.id_repayment_schedule = e.id_echeancier AND csg.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_CSG.'\')
+                      LEFT JOIN operation prelevements_sociaux ON prelevements_sociaux.id_repayment_schedule = e.id_echeancier AND prelevements_sociaux.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_SOCIAL_DEDUCTIONS.'\')
+                      LEFT JOIN operation contributions_additionnelles ON contributions_additionnelles.id_repayment_schedule = e.id_echeancier AND contributions_additionnelles.id_type  = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS.'\')
+                      LEFT JOIN operation prelevements_solidarite ON prelevements_solidarite.id_repayment_schedule = e.id_echeancier AND prelevements_solidarite.id_type  = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS.'\')
+                      LEFT JOIN operation crds ON crds.id_repayment_schedule = e.id_echeancier AND crds.id_type  = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_CRDS.'\')
+                    WHERE e.id_project = ' . $_POST['id_projet'] . '
+                    GROUP BY e.id_echeancier';
 
             $resultat = $this->bdd->query($sql);
             while ($record = $this->bdd->fetch_array($resultat)) {

@@ -7,6 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
@@ -123,8 +124,6 @@ class BidManager
     {
         /** @var \settings $oSettings */
         $oSettings = $this->entityManagerSimulator->getRepository('settings');
-        /** @var \transactions $oTransaction */
-        $oTransaction = $this->entityManagerSimulator->getRepository('transactions');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->entityManagerSimulator->getRepository('offres_bienvenues_details');
         /** @var \projects $legacyProject */
@@ -238,8 +237,9 @@ class BidManager
         $iBidNb ++;
         $bid->setOrdre($iBidNb);
         $this->entityManager->persist($bid);
-        $this->walletManager->engageBalance($wallet, $amount, $bid);
+        $walletBalanceHistory = $this->walletManager->engageBalance($wallet, $amount, $bid);
         $this->entityManager->flush($bid);
+
         // Liste des offres non utilisées
         $aAllOffers = $oWelcomeOfferDetails->select('id_client = ' . $iClientId . ' AND status = 0');
         if ($aAllOffers != false) {
@@ -282,7 +282,7 @@ class BidManager
                 $iProjectId,
                 $amount,
                 $bid->getIdBid(),
-                $oTransaction->id_transaction
+                $walletBalanceHistory
             );
         }
 
@@ -318,10 +318,10 @@ class BidManager
     public function reject(Bids $bid, $sendNotification = true)
     {
         if ($bid->getStatus() == Bids::STATUS_BID_PENDING || $bid->getStatus() == Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
-            $oTransaction = $this->creditRejectedBid($bid, $bid->getAmount() / 100);
+            $walletBalanceHistory = $this->creditRejectedBid($bid, $bid->getAmount() / 100);
 
             if ($sendNotification) {
-                $this->notificationRejection($bid, $oTransaction);
+                $this->notificationRejection($bid, $walletBalanceHistory);
             }
 
             $bid->setStatus(Bids::STATUS_BID_REJECTED);
@@ -336,8 +336,8 @@ class BidManager
     public function rejectPartially(Bids $bid, $fRepaymentAmount)
     {
         if ($bid->getStatus() == \bids::STATUS_BID_PENDING || $bid->getStatus() == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
-            $oTransaction = $this->creditRejectedBid($bid, $fRepaymentAmount);
-            $this->notificationRejection($bid, $oTransaction);
+            $walletBalanceHistory = $this->creditRejectedBid($bid, $fRepaymentAmount);
+            $this->notificationRejection($bid, $walletBalanceHistory);
             // Save new amount of the bid after repayment
             $amount = bcsub($bid->getAmount(), bcmul($fRepaymentAmount, 100));
             $bid->setAmount($amount)
@@ -390,13 +390,13 @@ class BidManager
      * @param Bids  $bid
      * @param float $fAmount
      *
-     * @return \transactions
+     * @return WalletBalanceHistory
      */
     private function creditRejectedBid(Bids $bid, $fAmount)
     {
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->entityManagerSimulator->getRepository('offres_bienvenues_details');
-        $oTransaction         = $this->walletManager->releaseBalance($bid->getIdLenderAccount(), $fAmount, $bid);
+        $walletBalanceHistory = $this->walletManager->releaseBalance($bid->getIdLenderAccount(), $fAmount, $bid);
         $fAmountX100          = $fAmount * 100;
 
         $iWelcomeOfferTotal = $oWelcomeOfferDetails->sum('id_client = ' . $bid->getIdLenderAccount()->getIdClient()->getIdClient() . ' AND id_bid = ' . $bid->getIdBid(), 'montant');
@@ -418,15 +418,15 @@ class BidManager
             }
         }
 
-        return $oTransaction;
+        return $walletBalanceHistory;
 
     }
 
     /**
      * @param Bids          $bid
-     * @param \transactions $oTransaction
+     * @param WalletBalanceHistory $walletBalanceHistory
      */
-    private function notificationRejection(Bids $bid, \transactions $oTransaction)
+    private function notificationRejection(Bids $bid, WalletBalanceHistory $walletBalanceHistory)
     {
         if (WalletType::LENDER === $bid->getIdLenderAccount()->getIdType()->getLabel()) {
             $this->oNotificationManager->create(
@@ -435,9 +435,9 @@ class BidManager
                 $bid->getIdLenderAccount()->getIdClient()->getIdClient(),
                 'sendBidRejected',
                 $bid->getProject()->getIdProject(),
-                $oTransaction->montant / 100,
+                $bid->getAmount() / 100,
                 $bid->getIdBid(),
-                $oTransaction->id_transaction
+                $walletBalanceHistory
             );
         }
     }

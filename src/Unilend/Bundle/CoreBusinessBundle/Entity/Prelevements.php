@@ -32,13 +32,6 @@ class Prelevements
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_transaction", type="integer", nullable=false)
-     */
-    private $idTransaction;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="id_project", type="integer", nullable=false)
      */
     private $idProject;
@@ -174,30 +167,6 @@ class Prelevements
     public function getIdClient()
     {
         return $this->idClient;
-    }
-
-    /**
-     * Set idTransaction
-     *
-     * @param integer $idTransaction
-     *
-     * @return Prelevements
-     */
-    public function setIdTransaction($idTransaction)
-    {
-        $this->idTransaction = $idTransaction;
-
-        return $this;
-    }
-
-    /**
-     * Get idTransaction
-     *
-     * @return integer
-     */
-    public function getIdTransaction()
-    {
-        return $this->idTransaction;
     }
 
     /**

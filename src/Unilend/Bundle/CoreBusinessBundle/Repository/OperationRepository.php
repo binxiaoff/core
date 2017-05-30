@@ -7,12 +7,15 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
 
@@ -102,11 +105,12 @@ class OperationRepository extends EntityRepository
     /**
      * @param Wallet $creditorWallet
      * @param array  $operationTypes
+     * @param array  $operationSubTypes
      * @param int    $year
      *
      * @return mixed
      */
-    public function sumCreditOperationsByTypeAndYear(Wallet $creditorWallet, $operationTypes, $year = null)
+    public function sumCreditOperationsByTypeAndYear(Wallet $creditorWallet, $operationTypes, $operationSubTypes = null, $year = null)
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
@@ -115,6 +119,13 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.idWalletCreditor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $creditorWallet);
+
+        if (null !== $operationSubTypes) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+                ->andWhere('ost.label IN (:operationSubTypes)')
+                ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
+        }
+
         if (null !== $year) {
             $qb->andWhere('YEAR(o.added) = :year')
                 ->setParameter('year', $year);
@@ -126,11 +137,12 @@ class OperationRepository extends EntityRepository
     /***
      * @param Wallet $debtorWallet
      * @param array  $operationTypes
+     * @param array  $operationSubTypes
      * @param int    $year
      *
      * @return mixed
      */
-    public function sumDebitOperationsByTypeAndYear(Wallet $debtorWallet, $operationTypes, $year = null)
+    public function sumDebitOperationsByTypeAndYear(Wallet $debtorWallet, $operationTypes, $operationSubTypes = null, $year = null)
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
@@ -139,6 +151,13 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.idWalletDebtor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $debtorWallet);
+
+        if (null !== $operationSubTypes) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+                ->andWhere('ost.label IN (:operationSubTypes)')
+                ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
+        }
+
         if (null !== $year) {
             $qb->andWhere('YEAR(o.added) = :year')
                 ->setParameter('year', $year);
@@ -195,16 +214,6 @@ class OperationRepository extends EntityRepository
      */
     public function sumNetInterestRepaymentsNotInEeaExceptFrance(Wallet $wallet, $year)
     {
-        $taxTypes = [
-            OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS,
-            OperationType::TAX_FR_SOCIAL_DEDUCTIONS,
-            OperationType::TAX_FR_CSG,
-            OperationType::TAX_FR_CRDS,
-            OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
-            OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE,
-            OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS
-        ];
-
         $query = 'SELECT
                       SUM(IF(tlih.id_pays IN (:eeaCountries), o_interest.amount, 0)) AS interest
                     FROM operation o_interest
@@ -233,7 +242,7 @@ class OperationRepository extends EntityRepository
         $bind  = [
             'year'          => $year,
             'idWallet'      => $wallet->getId(),
-            'taxOperations' => $taxTypes,
+            'taxOperations' => OperationType::TAX_TYPES_FR,
             'eeaCountries'  => PaysV2::EUROPEAN_ECONOMIC_AREA
         ];
         $types = [
@@ -276,14 +285,14 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param int $idRepaymentSchedule
+     * @param Echeanciers|int $idRepaymentSchedule
      *
      * @return null|float
      */
     public function getTaxAmountByRepaymentScheduleId($idRepaymentSchedule)
     {
         $qb = $this->createQueryBuilder('o');
-        $qb->select('SUM(amount')
+        $qb->select('SUM(o.amount)')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:taxTypes)')
             ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
@@ -292,6 +301,35 @@ class OperationRepository extends EntityRepository
             ->setCacheable(true);
 
         return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Echeanciers|int $idRepaymentSchedule
+     *
+     * @return null|float
+     */
+    public function getGrossAmountByRepaymentScheduleId($idRepaymentSchedule)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:repaymentTypes)')
+            ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
+            ->setParameter('repaymentTypes', [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT], Connection::PARAM_STR_ARRAY)
+            ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
+            ->setCacheable(true);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Echeanciers|int $idRepaymentSchedule
+     *
+     * @return null|float
+     */
+    public function getNetAmountByRepaymentScheduleId($idRepaymentSchedule)
+    {
+        return bcsub($this->getGrossAmountByRepaymentScheduleId($idRepaymentSchedule), $this->getTaxAmountByRepaymentScheduleId($idRepaymentSchedule), 2);
     }
 
     /**
@@ -456,14 +494,14 @@ class OperationRepository extends EntityRepository
                   LEFT(o.added, 10) AS day,
                   SUM(o.amount) AS amount,
                   CASE ot.label
-                   WHEN "'. OperationType::LENDER_PROVISION . '" THEN
+                   WHEN "' . OperationType::LENDER_PROVISION . '" THEN
                       IF(o.id_backpayline IS NOT NULL,
                        "lender_provision_credit_card",
                         IF(o.id_wire_transfer_in IS NOT NULL,
                            "lender_provision_wire_transfer_in",
                            NULL)
                         )
-                     WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
+                     WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN
                        IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
                       ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
@@ -502,14 +540,14 @@ class OperationRepository extends EntityRepository
                   MONTH(o.added) AS month,
                   SUM(o.amount) AS amount,
                   CASE ot.label
-                   WHEN "'. OperationType::LENDER_PROVISION . '" THEN
+                   WHEN "' . OperationType::LENDER_PROVISION . '" THEN
                       IF(o.id_backpayline IS NOT NULL,
                        "lender_provision_credit_card",
                         IF(o.id_wire_transfer_in IS NOT NULL,
                            "lender_provision_wire_transfer_in",
                            NULL)
                         )
-                     WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN
+                     WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN
                        IF(o.id_payment_schedule IS NULL, "borrower_commission_project", "borrower_commission_payment")
                       ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
@@ -530,5 +568,127 @@ class OperationRepository extends EntityRepository
         }
 
         return $movements;
+    }
+
+    /**
+     * @return string
+     */
+    private function getcohortQuery()
+    {
+        return 'SELECT
+                  CASE LEFT(MIN(psh.added), 4)
+                  WHEN 2013 THEN "2013-2014"
+                  WHEN 2014 THEN "2013-2014"
+                  ELSE LEFT(psh.added, 4)
+                  END AS date_range
+                FROM projects_status_history psh
+                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND o.id_project = psh.id_project
+                GROUP BY psh.id_project';
+    }
+
+    /**
+     * @param $repaymentType
+     *
+     * @return array
+     */
+    public function getTotalRepaymentByCohort($repaymentType)
+    {
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getcohortQuery() . ' ) AS cohort
+                  FROM operation o
+                  WHERE o.id_type = (SELECT id FROM operation_type WHERE label = :repayment_type)
+                  GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, ['repayment_type' => $repaymentType]);
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param boolean $isHealthy
+     *
+     * @return array
+     */
+    public function getTotalDebtCollectionRepaymentByCohort($isHealthy)
+    {
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getcohortQuery() . ' ) AS cohort
+                  FROM operation o
+                  INNER JOIN projects p ON o.id_project = p.id_project
+                  WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = :capital_repayment_debt_collection)
+                  AND IF (
+                      p.status IN (130,140,150,160)
+                      OR (p.status IN (100,110,120)
+                          AND DATEDIFF(NOW(), (
+                        SELECT psh2.added
+                        FROM projects_status_history psh2
+                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                        WHERE ps2.status = 100
+                              AND psh2.id_project = o.id_project
+                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                        LIMIT 1)) > 180), FALSE, TRUE) = :isHealthy
+                  GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery(
+            $query,
+            ['isHealthy' => $isHealthy, 'capital_repayment_debt_collection' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]
+        );
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param boolean $isHealthy
+     *
+     * @return array
+     */
+    public function getTotalDebtCollectionLenderCommissionByCohort($isHealthy)
+    {
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getcohortQuery() . ' ) AS cohort
+                  FROM operation o
+                  INNER JOIN projects p ON o.id_project = p.id_project
+                  WHERE o.id_type = (SELECT id FROM operation_type WHERE label = :collection_commission_lender)
+                  AND IF (
+                      p.status IN (130,140,150,160)
+                      OR (p.status IN (100,110,120)
+                          AND DATEDIFF(NOW(), (
+                        SELECT psh2.added
+                        FROM projects_status_history psh2
+                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                        WHERE ps2.status = 100
+                              AND psh2.id_project = o.id_project
+                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                        LIMIT 1)) > 180), FALSE, TRUE) = :isHealthy
+                  GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery(
+            $query,
+            ['isHealthy' => $isHealthy, 'collection_commission_lender' => OperationType::COLLECTION_COMMISSION_LENDER]
+        );
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param Loans|integer $loan
+     *
+     * @return float
+     */
+    public function getTotalEarlyRepaymentByLoan($loan)
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            ->where('ost.label = :earlyRepayment')
+            ->andWhere('o.idLoan = :loan')
+            ->setParameter('earlyRepayment', OperationSubType::CAPITAL_REPAYMENT_EARLY)
+            ->setParameter('loan', $loan);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

@@ -67,8 +67,6 @@ class transfertsController extends bootstrap
         $this->nonAttributedReceptions = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findNonAttributed();
 
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
-            $bank_unilend = $this->loadData('bank_unilend');
-            $transactions = $this->loadData('transactions');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
             $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
@@ -87,36 +85,12 @@ class transfertsController extends bootstrap
 
                 if ($_POST['type_remb'] === 'remboursement_anticipe') {
                     $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
-                    $transactions->id_virement      = $reception->getIdReception();
-                    $transactions->id_project       = $project->getIdProject();
-                    $transactions->montant          = $reception->getMontant();
-                    $transactions->id_langue        = 'fr';
-                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = \transactions::STATUS_VALID;
-                    $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
-                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $transactions->create();
                 } elseif ($_POST['type_remb'] === 'regularisation') {
                     $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                    $transactions->id_virement      = $reception->getIdReception();
-                    $transactions->montant          = $reception->getMontant();
-                    $transactions->id_langue        = 'fr';
-                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = \transactions::STATUS_VALID;
-                    $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
-                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $transactions->create();
                     $this->updateEcheances($project->getIdProject(), $reception->getMontant());
                 }
 
                 $entityManager->flush();
-
-                $bank_unilend->id_transaction = $transactions->id_transaction;
-                $bank_unilend->id_project     = $project->getIdProject();
-                $bank_unilend->montant        = $reception->getMontant();
-                $bank_unilend->type           = 1; // remb emprunteur
-                $bank_unilend->status         = 0; // chez unilend
-                $bank_unilend->create();
             }
 
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');
@@ -194,16 +168,12 @@ class transfertsController extends bootstrap
 
         /** @var \clients $preteurs */
         $preteurs = $this->loadData('clients');
-        /** @var \transactions $transactions */
-        $transactions = $this->loadData('transactions');
         /** @var \notifications notifications */
         $this->notifications = $this->loadData('notifications');
         /** @var \clients_gestion_notifications clients_gestion_notifications */
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif clients_gestion_mails_notif */
         $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-        $this->loadData('clients_gestion_type_notif'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
-        $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
         /** @var \settings setting */
         $this->setting = $this->loadData('settings');
 
@@ -237,11 +207,17 @@ class transfertsController extends bootstrap
                     $this->notifications->amount    = $reception->getMontant();
                     $this->notifications->create();
 
-                    $this->clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
-                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
-                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                    $this->clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
+                    $provisionOperation   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferIn' => $reception]);
+                    $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
+                        'idOperation' => $provisionOperation,
+                        'idWallet'    => $wallet
+                    ]);
+
+                    $this->clients_gestion_mails_notif->id_client                 = $wallet->getIdClient()->getIdClient();
+                    $this->clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                    $this->clients_gestion_mails_notif->date_notif                = date('Y-m-d H:i:s');
+                    $this->clients_gestion_mails_notif->id_notification           = $this->notifications->id_notification;
+                    $this->clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
                     $this->clients_gestion_mails_notif->create();
 
                     $preteurs->get($_POST['id_client'], 'id_client');
@@ -405,7 +381,7 @@ class transfertsController extends bootstrap
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
-                    $operationManager->rejectProvisionBorrowerWallet($wallet, $amount, $reception); //todo: replace it by cancelProvisionBorrowerWallet
+                    $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
                     $reception->setStatusBo(Receptions::STATUS_REJECTED);
                     $reception->setRemb(0);

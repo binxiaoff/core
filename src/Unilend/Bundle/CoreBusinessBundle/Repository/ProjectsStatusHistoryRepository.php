@@ -41,20 +41,24 @@ class ProjectsStatusHistoryRepository extends EntityRepository
     }
 
     /**
-     * @param int $projectId
+     * @param Projects|int $project
      * @param int $projectStatus
      *
      * @return array
      */
-    public function getHistoryAfterGivenStatus($projectId, $projectStatus)
+    public function getHistoryAfterGivenStatus($project, $projectStatus)
     {
+        if ($project instanceof Projects) {
+            $project = $project->getIdProject();
+        }
+
         $queryBuilder = $this->createQueryBuilder('psh');
         $queryBuilder->select('psh.idProject, psh.idProjectStatusHistory, ps.status, ps.label, pshd.siteContent, psh.added')
             ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
             ->leftJoin('UnilendCoreBusinessBundle:ProjectsStatusHistoryDetails', 'pshd', Join::WITH, 'psh.idProjectStatusHistory = pshd.idProjectStatusHistory')
             ->where('psh.idProject = :projectId')
             ->andWhere('ps.status > :status')
-            ->setParameters(['projectId' => $projectId, 'status' => $projectStatus])
+            ->setParameters(['projectId' => $project, 'status' => $projectStatus])
             ->orderBy('psh.added', 'DESC');
 
         return $queryBuilder->getQuery()->getResult(Query::HYDRATE_ARRAY);

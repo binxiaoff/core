@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -93,7 +94,7 @@ class Product
      */
     public function __construct()
     {
-        $this->idContract = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->idContract = new ArrayCollection();
     }
 
 

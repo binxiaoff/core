@@ -50,7 +50,6 @@ class bootstrap extends Controller
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->clients_history         = $this->loadData('clients_history');
         $this->villes                  = $this->loadData('villes');
-        $this->transactions            = $this->loadData('transactions');
         $this->clients_status          = $this->loadData('clients_status');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->convert_api_compteur    = $this->loadData('convert_api_compteur');

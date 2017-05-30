@@ -137,8 +137,6 @@ class LenderWalletController extends Controller
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \transactions $transaction */
-        $transaction = $entityManagerSimulator->getRepository('transactions');
         /** @var \notifications $notification */
         $notification = $entityManagerSimulator->getRepository('notifications');
         /** @var \clients_gestion_notifications $clientNotification */
@@ -198,8 +196,6 @@ class LenderWalletController extends Controller
                         $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
                         $wireTransferOut        = $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount);
 
-                        $transaction->get($wireTransferOut->getIdTransaction());
-
                         $notification->type      = Notifications::TYPE_DEBIT;
                         $notification->id_lender = $wallet->getId();
                         $notification->amount    = $amount * 100;
@@ -207,11 +203,17 @@ class LenderWalletController extends Controller
 
                         $this->getUser()->setBalance($wallet->getAvailableBalance());
 
-                        $clientMailNotification->id_client       = $client->getIdClient();
-                        $clientMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_DEBIT;
-                        $clientMailNotification->date_notif      = date('Y-m-d H:i:s');
-                        $clientMailNotification->id_notification = $notification->id_notification;
-                        $clientMailNotification->id_transaction  = $transaction->id_transaction;
+                        $withDrawalOperation  = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferOut' => $wireTransferOut]);
+                        $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
+                            'idOperation' => $withDrawalOperation,
+                            'idWallet'    => $wallet
+                        ]);
+
+                        $clientMailNotification->id_client                 = $client->getIdClient();
+                        $clientMailNotification->id_notif                  = \clients_gestion_type_notif::TYPE_DEBIT;
+                        $clientMailNotification->date_notif                = date('Y-m-d H:i:s');
+                        $clientMailNotification->id_notification           = $notification->id_notification;
+                        $clientMailNotification->id_wallet_balance_history = $walletBalanceHistory->getId();
                         $clientMailNotification->create();
 
                         if ($clientNotification->getNotif($client->getIdClient(), 8, 'immediatement') == true) {

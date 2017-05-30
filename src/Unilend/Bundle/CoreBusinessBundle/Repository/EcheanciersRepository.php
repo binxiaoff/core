@@ -1,17 +1,18 @@
 <?php
 
-
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
-
 
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
 
 class EcheanciersRepository extends EntityRepository
 {
-
     public function getLostCapitalForLender($idLender)
     {
         $projectStatusCollectiveProceeding = [
@@ -36,7 +37,7 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param int $idLender
+     * @param int    $idLender
      * @param string $timeFrame
      *
      * @return string
@@ -75,4 +76,77 @@ class EcheanciersRepository extends EntityRepository
         return $result[0]['amount'];
     }
 
+    /**
+     * @param Projects|int     $project
+     * @param int|null         $repaymentSequence
+     * @param Clients|int|null $client
+     * @param int|null         $status
+     * @param int|null         $paymentStatus
+     * @param int|null         $earlyRepaymentStatus
+     * @param int|null         $start
+     * @param int|null         $limit
+     *
+     * @return Echeanciers[]
+     */
+    public function findByProject($project, $repaymentSequence = null, $client = null, $status = null, $paymentStatus = null, $earlyRepaymentStatus = null, $start = null, $limit = null)
+    {
+        $qb = $this->createQueryBuilder('e');
+        $qb->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
+            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.idProject AND ee.ordre = e.ordre')
+            ->where('l.idProject = :project')
+            ->setParameter('project', $project);
+
+        if (null !== $repaymentSequence) {
+            $qb->andwhere('e.ordre = :repaymentSequence')
+                ->setParameter('repaymentSequence', $repaymentSequence);
+        }
+
+        if (null !== $client) {
+            $qb->andWhere('w.idClient = :client')
+                ->setParameter('client', $client);
+        }
+
+        if (null !== $status) {
+            $qb->andWhere('e.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        if (null !== $paymentStatus) {
+            $qb->andWhere('ee.statusEmprunteur = :paymentStatus')
+                ->setParameter('paymentStatus', $paymentStatus);
+        }
+
+        if (null !== $earlyRepaymentStatus) {
+            $qb->andWhere('e.statusRa = :earlyRepaymentStatus')
+                ->setParameter('earlyRepaymentStatus', $earlyRepaymentStatus);
+        }
+
+        if (null !== $start) {
+            $qb->setFirstResult($start);
+        }
+
+        if (null !== $limit) {
+            $qb->setMaxResults($limit);
+        }
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param Loans|int $loan
+     *
+     * @return float
+     */
+    public function getEarlyRepaidCapitalByLoan($loan)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+
+        $queryBuilder->select('ROUND(SUM(e.capitalRembourse) / 100, 2)')
+            ->where('e.idLoan = :loan')
+            ->andWhere('e.statusRa = :earlyRepaid')
+            ->setParameter('loan', $loan)
+            ->setParameter('earlyRepaid', Echeanciers::IS_EARLY_REPAID);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

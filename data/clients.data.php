@@ -29,6 +29,7 @@
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS clientEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 
 class clients extends clients_crud
 {
@@ -571,11 +572,12 @@ class clients extends clients_crud
                     ) AS date_validation
                 FROM
                     clients c
+                    INNER JOIN wallet w ON w.id_client = c.id_client
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
                 WHERE
                     DATE(c.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
                     AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT t.id_transaction FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
+                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::UNILEND_PROMOTIONAL_OPERATION . '\') AND o.id_wallet_creditor = w.id)
                     ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);

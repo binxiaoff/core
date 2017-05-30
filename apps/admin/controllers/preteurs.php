@@ -122,7 +122,6 @@ class preteursController extends bootstrap
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
 
-        $this->transactions     = $this->loadData('transactions');
         $this->clients          = $this->loadData('clients');
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->echeanciers      = $this->loadData('echeanciers');
@@ -186,8 +185,7 @@ class preteursController extends bootstrap
             $this->exemptionYears = array_column($lenderTaxExemption->select('id_lender = ' . $wallet->getId(), 'year DESC'), 'year');
 
             $this->solde        = $wallet->getAvailableBalance();
-            $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_WITHDRAWAL . ' AND id_client = ' . $this->clients->id_client, 'montant');
-            $this->soldeRetrait = abs($this->soldeRetrait / 100);
+            $this->soldeRetrait = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]);
 
             $start                  = new \DateTime('First day of january this year');
             $end                    = new \DateTime('NOW');
@@ -717,7 +715,6 @@ class preteursController extends bootstrap
     public function _activation()
     {
         $this->clients      = $this->loadData('clients');
-        $this->transactions = $this->loadData('transactions');
         $this->companies    = $this->loadData('companies');
 
         $aStatusNotValidated = [
@@ -821,9 +818,10 @@ class preteursController extends bootstrap
 
     public function _offres_de_bienvenue()
     {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         $offres_bienvenues         = $this->loadData('offres_bienvenues');
         $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
-        $transactions              = $this->loadData('transactions');
         $this->clients             = $this->loadData('clients');
         $this->settings            = $this->loadData('settings');
 
@@ -907,10 +905,9 @@ class preteursController extends bootstrap
 
         $this->sumOffres                  = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'montant');
         $this->lOffres                    = $offres_bienvenues_details->select('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'added DESC');
-        $sumVirementUnilendOffres         = $transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
-        $sumOffresTransac                 = $transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
-        $this->sumDispoPourOffres         = $sumVirementUnilendOffres - $sumOffresTransac;
-        $this->sumDispoPourOffresSelonMax = $this->montant_limit * 100 - $sumOffresTransac;
+        $unilendPromotionWalletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendPromotionWallet           = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
+        $this->sumDispoPourOffres         = $unilendPromotionWallet->getAvailableBalance();
     }
     public function _email_history()
     {
@@ -1047,7 +1044,6 @@ class preteursController extends bootstrap
         $this->loans            = $this->loadData('loans');
         $this->projects         = $this->loadData('projects');
         $this->echeanciers      = $this->loadData('echeanciers');
-        $this->tax              = $this->loadData('tax');
         /** @var underlying_contract contract */
         $this->contract = $this->loadData('underlying_contract');
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
