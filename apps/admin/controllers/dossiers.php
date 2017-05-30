@@ -1,8 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -10,7 +10,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
@@ -712,13 +711,13 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-            $partnerManager = $this->get('unilend.service.partner_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
+            $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
 
             $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
             $this->selectedProduct  = $product;
             $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partnerManager->getPartnersSortedByName(Partner::STATUS_VALIDATED);
+            $this->partnerList      = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
             $this->partnerProduct   = $this->loadData('partner_product');
 
             if (false === empty($this->projects->id_product)) {
@@ -741,19 +740,18 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $partner                              = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->projects->id_partner);
             $this->projectEntity                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
             $this->aAttachments                   = $this->projectEntity->getAttachments();
             $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
             $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
-            $partnerAttachments                   = $partner->getAttachmentTypes(true);
             $this->isFundsCommissionRateEditable  = $this->isFundsCommissionRateEditable();
             $this->lastBalanceSheet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
                 'idClient' => $this->projectEntity->getIdCompany()->getIdClientOwner(),
                 'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
             ]);
 
-            $this->aMandatoryAttachmentTypes      = [];
+            $this->aMandatoryAttachmentTypes = [];
+            $partnerAttachments              = $partnerRepository->find($this->projects->id_partner)->getAttachmentTypes(true);
             foreach ($partnerAttachments as $partnerAttachment) {
                 $this->aMandatoryAttachmentTypes[] = $partnerAttachment->getAttachmentType();
             }
@@ -1381,7 +1379,7 @@ class dossiersController extends bootstrap
                 $projectCommentEntity->setPublic($_POST['public']);
 
                 $entityManager->persist($projectCommentEntity);
-                $entityManager->flush();
+                $entityManager->flush($projectCommentEntity);
 
                 $slackNotification = 'édité';
             } else {
@@ -1392,7 +1390,7 @@ class dossiersController extends bootstrap
                 $projectCommentEntity->setIdUser($this->userEntity);
 
                 $entityManager->persist($projectCommentEntity);
-                $entityManager->flush();
+                $entityManager->flush($projectCommentEntity);
 
                 $slackNotification = 'ajouté';
             }
@@ -1535,6 +1533,8 @@ class dossiersController extends bootstrap
 
     public function _add()
     {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \clients clients */
         $this->clients = $this->loadData('clients');
         /** @var \clients_adresses clients_adresses */
@@ -1544,9 +1544,11 @@ class dossiersController extends bootstrap
         /** @var projects projects */
         $this->projects = $this->loadData('projects');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
-        $partnerManager    = $this->get('unilend.service.partner_manager');
-        $defaultPartner    = $partnerManager->getDefaultPartner();
-        $this->partnerList = $partnerManager->getPartnersSortedByName(Partner::STATUS_VALIDATED);
+        $partnerManager = $this->get('unilend.service.partner_manager');
+        $defaultPartner = $partnerManager->getDefaultPartner();
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $this->partnerList = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
         $clientManager = $this->get('unilend.service.client_manager');
@@ -1563,8 +1565,6 @@ class dossiersController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] === 'create_etape2') {
             if (isset($this->params[1]) && is_numeric($this->params[1])) {
-                /** @var \Doctrine\ORM\EntityManager $entityManager */
-                $entityManager = $this->get('doctrine.orm.entity_manager');
                 /** @var Clients $clientEntity */
                 $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
                 if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
@@ -2597,18 +2597,18 @@ class dossiersController extends bootstrap
         }
 
         try {
-            /** @var ProjectManager $projectManager */
-            $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->sendTermsOfSaleEmail($project);
+            /** @var TermsOfSaleManager $termsOfSaleManager */
+            $termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
+            $termsOfSaleManager->sendBorrowerEmail($project);
         } catch (\Exception $exception) {
             switch ($exception->getCode()) {
-                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_EMAIL:
+                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_EMAIL:
                     $this->result = 'Erreur : L\'adresse mail du client est vide';
                     return;
-                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_PHONE_NUMBER:
+                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_PHONE_NUMBER:
                     $this->result = 'Le numéro de téléphone du dirigeant n\'est pas un numéro de portable';
                     return;
-                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_PDF_FILE_NOT_FOUND:
+                case TermsOfSaleManager::EXCEPTION_CODE_PDF_FILE_NOT_FOUND:
                     $this->result = 'file not found';
                     return;
                 default:

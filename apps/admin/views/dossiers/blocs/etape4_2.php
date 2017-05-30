@@ -156,7 +156,9 @@
             <?php $this->fireView('blocs/balance_sheet/2035'); ?>
         <?php endif; ?>
         <?php if (false === empty($this->aBalanceSheets)) : ?>
-            <button type="submit" class="btn-primary pull-right">Sauvegarder les bilans</button>
+            <div class="btnDroite">
+                <button type="submit" class="btn-primary">Sauvegarder les bilans</button>
+            </div>
         <?php endif; ?>
     </form>
 </div>

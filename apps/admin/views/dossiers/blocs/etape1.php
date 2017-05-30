@@ -41,5 +41,6 @@
         </table>
         <div id="error_etape1" class="error_etape"></div>
         <button type="submit" class="btn-primary pull-right">Sauvegarder</button>
+        <div class="clear"></div>
     </form>
 </div>

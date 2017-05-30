@@ -1303,7 +1303,7 @@ class Clients
     }
 
     /**
-     * Dose client has a borrower wallet. Since a client can have only one wallet today, it works so far.
+     * Check whether client has a borrower wallet or not. Since a client can have only one wallet today, it works so far.
      *
      * @return bool
      */
@@ -1313,7 +1313,7 @@ class Clients
     }
 
     /**
-     * Dose client has a lender wallet. Since a client can have only one wallet today, it works so far.
+     * Check whether client has a lender wallet or not. Since a client can have only one wallet today, it works so far.
      *
      * @return bool
      */
@@ -1323,7 +1323,7 @@ class Clients
     }
 
     /**
-     * Dose client has a partner wallet. Since a client can have only one wallet today, it works so far.
+     * Check whether client has a partner wallet or not. Since a client can have only one wallet today, it works so far.
      *
      * @return bool
      */

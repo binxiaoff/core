@@ -75,13 +75,9 @@ class ProjectRequestController extends Controller
         $email    = null;
 
         try {
-            if (empty($request->request->get('simulator')) || false === is_array($request->request->get('simulator'))) {
-                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
-            }
-
             $formData = $request->request->get('simulator');
 
-            if (empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration']) || empty($formData['siren']) || empty($formData['email'])) {
+            if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration']) || empty($formData['siren']) || empty($formData['email'])) {
                 throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
@@ -103,8 +99,7 @@ class ProjectRequestController extends Controller
                 throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
-            $duration = $formData['duration'];
-
+            $duration    = $formData['duration'];
             $siren       = str_replace(' ', '', $formData['siren']);
             $sirenLength = strlen($siren);
 
@@ -201,7 +196,7 @@ class ProjectRequestController extends Controller
         $project->ca_declara_client                    = 0;
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;
-        $project->status                               = \projects_status::SIMULATION;
+        $project->status                               = ProjectsStatus::SIMULATION;
         $project->id_partner                           = $user->getPartner()->getId();
         $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
@@ -209,7 +204,7 @@ class ProjectRequestController extends Controller
         $project->id_client_submitter                  = $user->getClientId();
         $project->create();
 
-        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::SIMULATION, $project);
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::SIMULATION, $project);
 
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $riskCheck             = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
@@ -229,7 +224,7 @@ class ProjectRequestController extends Controller
                 }
 
                 if (empty($products)) {
-                    $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::NOT_ELIGIBLE, $project, 0, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                    $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::NOT_ELIGIBLE, $project, 0, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
                 }
             } catch (\Exception $exception) {
                 $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
@@ -240,7 +235,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility", requirements={"hash":"[0-9a-z]{32}"})
+     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility", requirements={"hash":"[0-9a-z]{32,36}"})
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
@@ -321,7 +316,7 @@ class ProjectRequestController extends Controller
             $template = $template + [
                     'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
                     'abandonReasons'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
-                    'prospect'                 => ! $this->getUser()->getPartner()->getProspect(),
+                    'prospect'                 => false === $this->getUser()->getPartner()->getProspect(),
                     'payment'                  => [
                         'monthly' => [
                             'min' => $monthlyPaymentBoundaries['minimum'],
@@ -339,7 +334,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details", requirements={"hash":"[0-9a-z]{32}"})
+     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details", requirements={"hash":"[0-9a-z]{32,36}"})
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
@@ -387,7 +382,7 @@ class ProjectRequestController extends Controller
             'errors' => $errors,
             'values' => [
                 'contact' => [
-                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $client->getCivilite(),
+                    'title'     => isset($values['contact']['title']) ? $values['contact']['title'] : $client->getCivilite(),
                     'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $client->getNom(),
                     'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $client->getPrenom(),
                     'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $client->getTelephone(),
@@ -403,7 +398,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details_form", requirements={"hash":"[0-9a-z]{32}"})
+     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details_form", requirements={"hash":"[0-9a-z]{32,36}"})
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER')")
      *
@@ -422,8 +417,8 @@ class ProjectRequestController extends Controller
 
         $errors = [];
 
-        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
-            $errors['contact']['civility'] = true;
+        if (empty($request->request->get('contact')['title']) || false === in_array($request->request->get('contact')['title'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
+            $errors['contact']['title'] = true;
         }
         if (empty($request->request->get('contact')['lastname'])) {
             $errors['contact']['lastname'] = true;
@@ -482,7 +477,7 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $hash]);
         }
 
-        $client->setCivilite($request->request->get('contact')['civility']);
+        $client->setCivilite($request->request->get('contact')['title']);
         $client->setNom($request->request->get('contact')['lastname']);
         $client->setPrenom($request->request->get('contact')['firstname']);
         $client->setTelephone($request->request->get('contact')['mobile']);
@@ -520,7 +515,7 @@ class ProjectRequestController extends Controller
     {
         $hash = $request->request->getAlnum('hash');
 
-        if (1 !== preg_match('/^[0-9a-f]{32}$/', $hash)) {
+        if (1 !== preg_match('/^[0-9a-f]{32,36}$/', $hash)) {
             return $this->redirect($request->headers->get('referer'));
         }
 
@@ -555,7 +550,7 @@ class ProjectRequestController extends Controller
     {
         $hash = $request->request->getAlnum('hash');
 
-        if (1 !== preg_match('/^[0-9a-f]{32}$/', $hash)) {
+        if (1 !== preg_match('/^[0-9a-f]{32,36}$/', $hash)) {
             return $this->redirect($request->headers->get('referer'));
         }
 
@@ -585,7 +580,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/fin/{hash}", name="partner_project_request_end", requirements={"hash":"[0-9a-z]{32}"})
+     * @Route("partenaire/depot/fin/{hash}", name="partner_project_request_end", requirements={"hash":"[0-9a-z]{32,36}"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string $hash

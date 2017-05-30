@@ -6,7 +6,7 @@
             <th width="120" align="center">Date</th>
             <th width="150" align="center">Auteur</th>
             <th align="center">Contenu</th>
-            <th width="50">&nbsp;</th>
+            <th width="55">&nbsp;</th>
         </tr>
         </thead>
         <tbody>

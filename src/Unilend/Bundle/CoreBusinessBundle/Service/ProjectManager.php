@@ -5,8 +5,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Elements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -24,10 +22,6 @@ use PhpXmlRpc\Value as documentId;
 
 class ProjectManager
 {
-    const EXCEPTION_CODE_TERMS_OF_SALE_INVALID_EMAIL        = 1;
-    const EXCEPTION_CODE_TERMS_OF_SALE_INVALID_PHONE_NUMBER = 2;
-    const EXCEPTION_CODE_TERMS_OF_SALE_PDF_FILE_NOT_FOUND   = 3;
-
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
     /** @var EntityManager */
@@ -52,10 +46,6 @@ class ProjectManager
     private $slackManager;
     /** @var string */
     private $universignUrl;
-    /** @var string */
-    private $locale;
-    /** @var string */
-    private $rootDirectory;
     /** @var \dates */
     private $datesManager;
     /** @var \jours_ouvres */
@@ -75,9 +65,7 @@ class ProjectManager
         ProductManager $productManager,
         ContractAttributeManager $contractAttributeManager,
         SlackManager $slackManager,
-        $universignUrl,
-        $locale,
-        $rootDirectory
+        $universignUrl
     )
     {
         $this->entityManagerSimulator     = $entityManagerSimulator;
@@ -92,8 +80,6 @@ class ProjectManager
         $this->contractAttributeManager   = $contractAttributeManager;
         $this->slackManager               = $slackManager;
         $this->universignUrl              = $universignUrl;
-        $this->locale                     = $locale;
-        $this->rootDirectory              = $rootDirectory;
 
         $this->datesManager = Loader::loadLib('dates');
         $this->workingDay   = Loader::loadLib('jours_ouvres');
@@ -979,10 +965,8 @@ class ProjectManager
         $minimumRate = min(array_column($rateSettings, 'rate_min'));
         $maximumRate = max(array_column($rateSettings, 'rate_max'));
 
-        /** @var \tax_type $taxType */
-        $taxType = $this->entityManagerSimulator->getRepository('tax_type');
-        $taxType->get(\tax_type::TYPE_VAT);
-        $vatRate = $taxType->rate / 100;
+        $taxType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $vatRate = $taxType->getRate() / 100;
 
         $commissionRateRepayment = round(bcdiv($repaymentCommissionRate, 100, 4), 2);
         $commission              = ($financialCalculation->PMT($commissionRateRepayment / 12, $duration, -$amount) - $financialCalculation->PMT(0, $duration, -$amount)) * (1 + $vatRate);
@@ -1126,72 +1110,6 @@ class ProjectManager
         }
 
         return $fundsToRelease;
-    }
-
-    /**
-     * @param Projects $project
-     *
-     * @throws \Exception
-     */
-    public function sendTermsOfSaleEmail(Projects $project)
-    {
-        $stringManager = Loader::loadLib('ficelle');
-        $client        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-
-        if (empty($client->getEmail())) {
-            throw new \Exception('Invalid client email', self::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_EMAIL);
-        }
-
-        if (empty($client->getTelephone()) || false === $stringManager->isMobilePhoneNumber($client->getTelephone())) {
-            throw new \Exception('Invalid client mobile phone number', self::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_PHONE_NUMBER);
-        }
-
-        $termsOfSale = $project->getTermsOfSale();
-
-        if (null === $termsOfSale) {
-            $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Lien conditions generales depot dossier']);
-
-            if (null === $tree) {
-                throw new \Exception('Unable to find tree element', self::EXCEPTION_CODE_TERMS_OF_SALE_PDF_FILE_NOT_FOUND);
-            }
-
-            $termsOfSale = new ProjectCgv();
-            $termsOfSale->setIdProject($project);
-            $termsOfSale->setIdTree($tree->getValue());
-            $termsOfSale->setName($termsOfSale->generateFileName());
-            $termsOfSale->setIdUniversign('');
-            $termsOfSale->setUrlUniversign('');
-            $termsOfSale->setStatus(UniversignEntityInterface::STATUS_PENDING);
-
-            $this->entityManager->persist($termsOfSale);
-            $this->entityManager->flush($termsOfSale);
-        }
-
-        $pdfElement = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TreeElements')->findOneBy([
-            'idTree'    => $termsOfSale->getIdTree(),
-            'idElement' => Elements::TYPE_PDF_TERMS_OF_SALE,
-            'idLangue'  => substr($this->locale, 0, 2)
-        ]);
-
-        if (null === $pdfElement || empty($pdfElement->getValue())) {
-            throw new \Exception('Unable to find PDF', self::EXCEPTION_CODE_TERMS_OF_SALE_PDF_FILE_NOT_FOUND);
-        }
-
-        $pdfPath = $this->rootDirectory . '/../public/default/var/fichiers/' . $pdfElement->getValue();
-
-        if (false === file_exists($pdfPath)) {
-            throw new \Exception('PDF file does not exist', self::EXCEPTION_CODE_TERMS_OF_SALE_PDF_FILE_NOT_FOUND);
-        }
-
-        if (false === is_dir($this->rootDirectory . '/../' . ProjectCgv::BASE_PATH)) {
-            mkdir($this->rootDirectory . '/../' . ProjectCgv::BASE_PATH);
-        }
-
-        if (false === file_exists($this->rootDirectory . '/../' . ProjectCgv::BASE_PATH . $termsOfSale->getName())) {
-            copy($pdfPath, $this->rootDirectory . '/../' . ProjectCgv::BASE_PATH . $termsOfSale->getName());
-        }
-
-        $this->mailerManager->sendProjectTermsOfSale($termsOfSale);
     }
 
     /**

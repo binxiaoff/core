@@ -47,25 +47,25 @@
                                 <fieldset class="form-project-details-fieldset">
                                     <h4>{% trans %} partner-project-details_identity-section-title {% endtrans %}</h4>
 
-                                    <div class="form-field form-field-multi{% if form.errors.contact.civility is defined %} ui-formvalidation-error{% endif %}">
+                                    <div class="form-field form-field-multi{% if form.errors.contact.title is defined %} ui-formvalidation-error{% endif %}">
                                         <div class="field-label">
                                             <label>{% trans %} common_title {% endtrans %}</label>
                                         </div>
                                         <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="contact[civility]" value="Mme"{% if 'Mme' == form.values.contact.civility %} checked{% endif %}>
+                                                    <input type="radio" name="contact[title]" value="Mme"{% if 'Mme' == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-female {% endtrans %}
                                                 </label>
                                             </li>
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="contact[civility]" value="M."{% if 'M.' == form.values.contact.civility %} checked{% endif %}>
+                                                    <input type="radio" name="contact[title]" value="M."{% if 'M.' == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-male {% endtrans %}
                                                 </label>
                                             </li>
                                         </ul>
-                                        {% if form.errors.contact.civility is defined %}
+                                        {% if form.errors.contact.title is defined %}
                                             <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-radio {% endtrans %}</li></ul>
                                         {% endif %}
                                     </div><!-- /.form-field -->

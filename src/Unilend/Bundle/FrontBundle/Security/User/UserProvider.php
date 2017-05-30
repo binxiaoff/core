@@ -105,14 +105,6 @@ class UserProvider implements UserProviderInterface
         $isActive = $this->clientManager->isActive($client);
         $roles    = ['ROLE_USER'];
 
-        try {
-            /** @var \clients_history $clientHistory */
-            $clientHistory = $this->entityManagerSimulator->getRepository('clients_history');
-            $lastLoginDate = $clientHistory->getClientLastLogin($clientEntity->getIdClient());
-        } catch (\Exception $exception) {
-            $lastLoginDate = null;
-        }
-
         if ($this->clientManager->isLender($clientEntity)) {
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->entityManagerSimulator->getRepository('lenders_accounts');
@@ -142,7 +134,7 @@ class UserProvider implements UserProviderInterface
                 $notifications,
                 $clientEntity->getEtapeInscriptionPreteur(),
                 $userLevel,
-                $lastLoginDate
+                $clientEntity->getLastlogin()
             );
         }
 
@@ -164,7 +156,7 @@ class UserProvider implements UserProviderInterface
                 $clientEntity->getPrenom(),
                 $clientEntity->getNom(),
                 $company->siren,
-                $lastLoginDate
+                $clientEntity->getLastlogin()
             );
         }
 
@@ -196,7 +188,7 @@ class UserProvider implements UserProviderInterface
                 $clientEntity->getNom(),
                 $partnerRole->getIdCompany(),
                 $partner,
-                $lastLoginDate
+                $clientEntity->getLastlogin()
             );
         }
     }

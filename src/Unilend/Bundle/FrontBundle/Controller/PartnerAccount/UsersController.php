@@ -254,7 +254,7 @@ class UsersController extends Controller
             $entityManager->persist($temporaryLinks);
             $entityManager->flush();
 
-            if ($request->isMethod('POST')) {
+            if ($request->isMethod(Request::METHOD_POST)) {
                 $translator = $this->get('translator');
                 /** @var \ficelle $ficelle */
                 $ficelle  = Loader::loadLib('ficelle');

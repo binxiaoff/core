@@ -53,13 +53,13 @@
 </script>
 <div id="contenu">
     <h1>Création Dossier</h1>
-    <?php if (isset($this->params['0']) && $this->params['0'] == 'create') : ?>
+    <?php if (isset($this->params[0]) && $this->params[0] == 'create') : ?>
         <form action="<?= $this->lurl ?>/dossiers/add" method="post" onsubmit="$('#link_search').trigger('click'); return false;">
             <div class="choose-client">
                 Client existant ?
                 <br/><br/>
-                <input checked="checked" type="radio" name="leclient" id="leclient1" value="1"/><label for="leclient1"> Oui</label>
-                <input type="radio" name="leclient" id="leclient2" value="2"/><label for="leclient2"> Non</label>
+                <label><input type="radio" name="leclient" id="leclient1" value="1" checked> Oui</label>
+                <label><input type="radio" name="leclient" id="leclient2" value="2"> Non</label>
             </div>
             <br/>
             <br/>
@@ -95,12 +95,13 @@
                 <br/>
             </div>
         </form>
-        <br/><br/>
-        <form action="<?= $this->lurl ?>/dossiers/add/create_etape1" method="post">
-            <input type="hidden" id="id_client" name="id_client">
-            <input type="hidden" id="send_create_etape1" name="send_create_etape1">
-            <button type="submit" class="btn-primary pull-right">Valider</button>
-        </form>
+        <div class="btnDroite">
+            <form action="<?= $this->lurl ?>/dossiers/add/create_etape1" method="post">
+                <input type="hidden" id="id_client" name="id_client">
+                <input type="hidden" name="send_create_etape1">
+                <button type="submit" class="btn-primary">Valider</button>
+            </form>
+        </div>
     <?php elseif (false === empty($this->projects->id_project)) : ?>
         <?php $this->fireView('blocs/etape1'); ?>
     <?php endif; ?>

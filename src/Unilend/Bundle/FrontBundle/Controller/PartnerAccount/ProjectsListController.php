@@ -14,7 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 
 class ProjectsListController extends Controller
@@ -78,21 +78,21 @@ class ProjectsListController extends Controller
         }
 
         try {
-            $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->sendTermsOfSaleEmail($project);
+            $termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
+            $termsOfSaleManager->sendBorrowerEmail($project);
         } catch (\Exception $exception) {
             switch ($exception->getCode()) {
-                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_EMAIL:
+                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_EMAIL:
                     return new JsonResponse([
                         'error'   => true,
                         'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-email')
                     ]);
-                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_INVALID_PHONE_NUMBER:
+                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_PHONE_NUMBER:
                     return new JsonResponse([
                         'error'   => true,
                         'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-phone-number')
                     ]);
-                case ProjectManager::EXCEPTION_CODE_TERMS_OF_SALE_PDF_FILE_NOT_FOUND:
+                case TermsOfSaleManager::EXCEPTION_CODE_PDF_FILE_NOT_FOUND:
                     return new JsonResponse([
                         'error'   => true,
                         'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-file-not-found')
@@ -185,8 +185,8 @@ class ProjectsListController extends Controller
             ];
 
             if ($termsOfSale = $project->getTermsOfSale()) {
-                $numberFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT);
-                $display[$project->getIdProject()]['tos'][] = $numberFormatter->format($termsOfSale->getAdded());
+                $dateFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT);
+                $display[$project->getIdProject()]['tos'][] = $dateFormatter->format($termsOfSale->getAdded());
             }
 
             if ($abandoned) {
@@ -231,7 +231,6 @@ class ProjectsListController extends Controller
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
         $projectStatusRepositoryHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
         $lastLoginDate                  = $this->getUser()->getLastLoginDate();
-        $lastLoginDate                  = $lastLoginDate ? new \DateTime($lastLoginDate) : null;
         $notes                          = $project->getPublicNotes();
 
         return (

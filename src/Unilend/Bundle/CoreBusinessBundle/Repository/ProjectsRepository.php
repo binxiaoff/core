@@ -58,27 +58,26 @@ class ProjectsRepository extends EntityRepository
     public function getPartnerProspects(array $companies)
     {
         $queryBuilder = $this->createQueryBuilder('p');
-
-        return $queryBuilder
+        $queryBuilder
             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'p.idCompany = co.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'cl', Join::WITH, 'co.idClientOwner = cl.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'co.idClientOwner = c.idClient')
             ->where('p.idCompanySubmitter IN (:userCompanies)')
             ->andWhere($queryBuilder->expr()->orX(
                 $queryBuilder->expr()->eq('p.status', ':projectStatus'),
                 $queryBuilder->expr()->andX(
                     $queryBuilder->expr()->eq('p.status', ':noAutoEvaluationStatus'),
                     $queryBuilder->expr()->orX(
-                        $queryBuilder->expr()->like('cl.telephone', $queryBuilder->expr()->literal('')),
-                        $queryBuilder->expr()->isNull('cl.telephone')
+                        $queryBuilder->expr()->like('c.telephone', $queryBuilder->expr()->literal('')),
+                        $queryBuilder->expr()->isNull('c.telephone')
                     )
                 )
             ))
             ->setParameter('userCompanies', $companies)
             ->setParameter('projectStatus', ProjectsStatus::SIMULATION)
             ->setParameter('noAutoEvaluationStatus', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION)
-            ->orderBy('p.added', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('p.added', 'DESC');
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -89,10 +88,9 @@ class ProjectsRepository extends EntityRepository
     public function getPartnerProjects(array $companies)
     {
         $queryBuilder = $this->createQueryBuilder('p');
-
-        return $queryBuilder
+        $queryBuilder
             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'p.idCompany = co.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'cl', Join::WITH, 'co.idClientOwner = cl.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'co.idClientOwner = c.idClient')
             ->where('p.idCompanySubmitter IN (:userCompanies)')
             ->andWhere($queryBuilder->expr()->orX(
                 $queryBuilder->expr()->andX(
@@ -101,7 +99,7 @@ class ProjectsRepository extends EntityRepository
                 ),
                 $queryBuilder->expr()->andX(
                     $queryBuilder->expr()->eq('p.status', ':noAutoEvaluationStatus'),
-                    $queryBuilder->expr()->notLike('cl.telephone', $queryBuilder->expr()->literal(''))
+                    $queryBuilder->expr()->notLike('c.telephone', $queryBuilder->expr()->literal(''))
                 )
             ))
             ->setParameter('userCompanies', $companies)
@@ -111,6 +109,8 @@ class ProjectsRepository extends EntityRepository
             ->orderBy('p.added', 'DESC')
             ->getQuery()
             ->getResult();
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -121,8 +121,7 @@ class ProjectsRepository extends EntityRepository
     public function getPartnerAbandoned(array $companies)
     {
         $queryBuilder = $this->createQueryBuilder('p');
-
-        return $queryBuilder
+        $queryBuilder
             ->where('p.idCompanySubmitter IN (:userCompanies)')
             ->andWhere($queryBuilder->expr()->in('p.status', ':projectStatus'))
             ->setParameter('userCompanies', $companies)
@@ -130,6 +129,8 @@ class ProjectsRepository extends EntityRepository
             ->orderBy('p.added', 'DESC')
             ->getQuery()
             ->getResult();
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -140,8 +141,7 @@ class ProjectsRepository extends EntityRepository
     public function getPartnerRejected(array $companies)
     {
         $queryBuilder = $this->createQueryBuilder('p');
-
-        return $queryBuilder
+        $queryBuilder
             ->where('p.idCompanySubmitter IN (:userCompanies)')
             ->andWhere($queryBuilder->expr()->in('p.status', ':projectStatus'))
             ->setParameter('userCompanies', $companies)
@@ -149,6 +149,8 @@ class ProjectsRepository extends EntityRepository
             ->orderBy('p.added', 'DESC')
             ->getQuery()
             ->getResult();
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -176,7 +178,7 @@ class ProjectsRepository extends EntityRepository
             'projectStatus' => $projectStatus
         ];
         $bindTypes = [
-            'startPeriod' => \PDO::PARAM_STR,
+            'startPeriod'   => \PDO::PARAM_STR,
             'projectStatus' => \PDO::PARAM_INT
         ];
         $query = '
@@ -201,8 +203,8 @@ class ProjectsRepository extends EntityRepository
         }
 
         if (null !== $client) {
-            $query .= ' AND id_client_submitter = :client';
-            $binds['client'] = $client;
+            $query               .= ' AND id_client_submitter = :client';
+            $binds['client']     = $client;
             $bindTypes['client'] = \PDO::PARAM_INT;
         }
 

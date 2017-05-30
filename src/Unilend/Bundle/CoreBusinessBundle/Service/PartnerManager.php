@@ -46,27 +46,4 @@ class PartnerManager
 
         return $bankAccounts;
     }
-
-    /**
-     * @param null|int $status
-     * @return array
-     */
-    public function getPartnersSortedByName($status)
-    {
-        $queryBuilder = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Partner')
-            ->createQueryBuilder('p')
-            ->join('p.idCompany', 'c')
-            ->orderBy('c.name');
-
-        if (null !== $status) {
-            $queryBuilder
-                ->where('p.status = :partnerStatus')
-                ->setParameter('partnerStatus', $status);
-        }
-
-        return $queryBuilder
-            ->getQuery()
-            ->getResult();
-    }
 }

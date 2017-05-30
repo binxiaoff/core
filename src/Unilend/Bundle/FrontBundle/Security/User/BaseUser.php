@@ -20,7 +20,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     private $lastLoginDate;
     private $encoderName;
 
-    public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, $lastLoginDate = null)
+    public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, \DateTime $lastLoginDate = null)
     {
         $this->username      = $username;
         $this->password      = $password;
@@ -176,7 +176,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     }
 
     /**
-     * @return string|null
+     * @return \DateTime|null
      */
     public function getLastLoginDate()
     {

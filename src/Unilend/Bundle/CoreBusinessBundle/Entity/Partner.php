@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Partner
  *
  * @ORM\Table(name="partner", uniqueConstraints={@ORM\UniqueConstraint(name="label", columns={"label"})}, indexes={@ORM\Index(name="fk_partner_partner_type_type", columns={"type"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository")
  */
 class Partner
 {
@@ -17,8 +17,10 @@ class Partner
     const STATUS_VALIDATED = 2;
     const STATUS_DISABLED  = 3;
 
-    const PARTNER_UNILEND_LABEL = 'unilend';
-    const PARTNER_U_CAR_LABEL   = 'u_car';
+    const PARTNER_AXA_LABEL      = 'axa';
+    const PARTNER_MEDILEND_LABEL = 'medilend';
+    const PARTNER_UNILEND_LABEL  = 'unilend';
+    const PARTNER_U_CAR_LABEL    = 'u_car';
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies

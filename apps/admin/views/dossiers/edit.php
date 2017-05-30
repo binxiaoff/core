@@ -622,13 +622,13 @@
                                 </select>
                             </td>
                         </tr>
-                        <?php if (false === empty($this->projectEntity->getIdCompanySubmitter())) : ?>
+                        <?php if (false === empty($this->projectEntity->getIdCompanySubmitter()->getIdCompany())) : ?>
                             <tr>
                                 <th><label>Agence</label></th>
                                 <td><?= $this->projectEntity->getIdCompanySubmitter()->getName() ?></td>
                             </tr>
                         <?php endif; ?>
-                        <?php if (false === empty($this->projectEntity->getIdClientSubmitter())) : ?>
+                        <?php if (false === empty($this->projectEntity->getIdClientSubmitter()->getIdClient())) : ?>
                             <tr>
                                 <th><label>Déposant</label></th>
                                 <td><?= $this->projectEntity->getIdClientSubmitter()->getPrenom() ?> <?= $this->projectEntity->getIdClientSubmitter()->getNom() ?></td>
