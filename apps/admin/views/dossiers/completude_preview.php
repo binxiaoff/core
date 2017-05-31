@@ -19,10 +19,9 @@
                     <td style="text-align:center;">
                         <input type="hidden" name="id_client" value="<?= $this->iClientId ?>">
                         <input type="hidden" name="id_project" value="<?= $this->iProjectId ?>">
-                        <input type="submit" value="Envoyer l'email" title="Envoyer l'email" name="send_completude" id="send_completude" class="btn" />
+                        <button type="submit" id="send_completude" class="btn-primary">Envoyer l'email</button>
                     </td>
                 </tr>
-
             </table>
         </form>
     </div>

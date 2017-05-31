@@ -370,7 +370,7 @@
         </table>
         <div id="valid_etape2" class="valid_etape">Données sauvegardées</div>
         <div class="btnDroite">
-            <input type="submit" class="btn_link" value="Sauvegarder">
+            <button type="submit" class="btn-primary">Sauvegarder</button>
         </div>
     </form>
 </div>

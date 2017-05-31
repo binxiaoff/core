@@ -178,7 +178,7 @@ class ProjectRequestManager
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;
         $project->status                               = \projects_status::INCOMPLETE_REQUEST;
-        $project->id_partner                           = $this->partnerManager->getDefaultPartner()->id;
+        $project->id_partner                           = $this->partnerManager->getDefaultPartner()->getId();
         $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->create();
@@ -234,9 +234,10 @@ class ProjectRequestManager
     /**
      * @param \projects $project
      * @param int       $userId
+     *
      * @return null|array
      */
-    public function checkProjectRisk(\projects &$project, $userId)
+    public function checkProjectRisk(\projects $project, $userId)
     {
         /** @var \companies $company */
         $company = $this->entityManagerSimulator->getRepository('companies');

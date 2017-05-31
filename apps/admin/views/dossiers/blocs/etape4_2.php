@@ -77,7 +77,7 @@
         <div style="text-align: right">
             <input type="hidden" name="id_annual_accounts">
             <input type="hidden" name="change_annual_accounts_info" value="1">
-            <input type="submit" value="Sauvegarder" class="btn_link">
+            <button type="submit" class="btn-primary pull-right">Sauvegarder</button>
         </div>
     </form>
     <br>
@@ -157,7 +157,7 @@
         <?php endif; ?>
         <?php if (false === empty($this->aBalanceSheets)) : ?>
             <div class="btnDroite">
-                <input type="submit" class="btn_link" value="Sauvegarder les bilans">
+                <button type="submit" class="btn-primary">Sauvegarder les bilans</button>
             </div>
         <?php endif; ?>
     </form>

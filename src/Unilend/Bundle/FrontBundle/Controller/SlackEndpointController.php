@@ -103,7 +103,7 @@ class SlackEndpointController extends Controller
         if (null !== $rejectionReason) {
             $eligibility     = 'Non éligible';
             $color           = 'danger';
-            $rejectionReason = $this->get('unilend.service.project_status_manager')->getRejectionMotiveTranslation($rejectionReason);
+            $rejectionReason = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($rejectionReason);
             $fields[]        = [
                 'title' => 'Motif de rejet',
                 'value' => $rejectionReason,

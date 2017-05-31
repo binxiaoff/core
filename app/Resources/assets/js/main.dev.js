@@ -73,7 +73,8 @@ var ModalTOS = require('./app/components/ModalTOS')
 var CookieCheck = require('./app/components/Cookies')
 var BidsDetail = require('./app/components/BidsDetail')
 var ProgressBar = require('ProgressBar')
-
+var Paginate = require('./app/components/Paginate')
+var DataTable = require('./app/components/DataTable')
 // @debug
 // CacheData.clearAll()
 
@@ -119,8 +120,8 @@ require('./app/controllers/BidConfirmation')
 require('./app/controllers/ProjectRequest')
 require('./app/controllers/Autolend')
 require('./app/controllers/ProjectDetails')
+require('./app/controllers/PartnerDashboard')
 
-//
 $doc.ready(function ($) {
   // @debug
   // window.__ = __
@@ -238,7 +239,7 @@ $doc.ready(function ($) {
    * @todo refactor into separate component
    */
   $doc
-    // Step 1
+  // Step 1
     .on('FormValidation:validate:error', '#esim1', function (event) {
       // Hide the continue button
       $('.emprunter-sim').removeClass('ui-emprunter-sim-estimate-show')
@@ -281,8 +282,8 @@ $doc.ready(function ($) {
               text = text.replace(/\.$/g, '')
 
               $('p[data-borrower-motive]')
-                .show()
-                .html(text + response.translationComplement + '.')
+                  .show()
+                  .html(text + response.translationComplement + '.')
             }
           },
           error: function() {
@@ -291,8 +292,8 @@ $doc.ready(function ($) {
         });
 
         $('a[href*="esim1"]')
-          .removeAttr("href data-toggle aria-expanded")
-          .attr("nohref", "nohref")
+            .removeAttr("href data-toggle aria-expanded")
+            .attr("nohref", "nohref")
       }
     })
 

@@ -18,6 +18,7 @@ framework:
         packages:
             gulp:
                 base_path: /assets
+        version_strategy: unilend.frontbundle.gulp_rev_version_strategy
     translator:
         enabled: true
         fallbacks: ["fr_FR"]
@@ -274,7 +275,7 @@ guzzle:
         euler:
             base_url: "%euler.url%"
             options:
-                timeout: 8
+                timeout: 16
                 http_errors: false
 
         codinf:

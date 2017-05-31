@@ -41,7 +41,7 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location:' . $this->lurl);
+            header('location: ' . $this->url . '/protected/document_not_found');
             die;
         }
     }
@@ -57,7 +57,7 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location:' . $this->lurl);
+            header('location: ' . $this->url . '/protected/document_not_found');
             die;
         }
     }
@@ -73,7 +73,7 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location:' . $this->lurl);
+            header('location: ' . $this->url . '/protected/document_not_found');
             die;
         }
     }

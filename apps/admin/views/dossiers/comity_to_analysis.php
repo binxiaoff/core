@@ -6,12 +6,12 @@
             <table class="form">
                 <tr>
                     <th><label for="comment">Mémo&nbsp;*</label></th>
-                    <td><textarea name="comment" id="comment" cols="75" rows="5" class="textarea" style="width: 480px" autofocus></textarea></td>
+                    <td><textarea name="comment" id="comment" cols="75" rows="5" class="textarea memo" style="width: 480px"></textarea></td>
                 </tr>
                 <tr>
                     <td colspan="2" style="text-align: right">
-                        <a href="javascript:parent.$.fn.colorbox.close()" class="btn btn_link btnDisabled">Annuler</a>
-                        <input type="submit" value="Valider" class="btn">
+                        <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
+                        <button type="submit" class="btn-primary">Valider</button>
                     </td>
                 </tr>
             </table>

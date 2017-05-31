@@ -602,12 +602,13 @@ class clients extends clients_crud
                 id_project IN (' . implode(',', $aProjects) . ')
                 AND id_client = ' . $iClientId . '
                 AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
-                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
-            GROUP BY id_project';
+                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDataForBorrowerOperations[] = $record;
+            if ($record['montant'] != 0) {
+                $aDataForBorrowerOperations[] = $record;
+            }
         }
         return $aDataForBorrowerOperations;
     }
@@ -745,7 +746,7 @@ class clients extends clients_crud
                     WHERE
                         `id_project` IN (' . implode(',', $aProjects) . ')
                         AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                        AND type_commission = ' . \factures::TYPE_COMMISSION_FINANCEMENT;
+                        AND type_commission = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -1091,12 +1092,13 @@ class clients extends clients_crud
                              INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner
                          WHERE clients.status = '. ClientEntity::STATUS_ONLINE .' AND lenders_accounts.status = 1
                          AND (clients_adresses.id_pays_fiscal = ' . \pays_v2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . \pays_v2::COUNTRY_FRANCE . ')) AS client_base
-                    GROUP BY insee_region_code';
+                    GROUP BY insee_region_code
+                    HAVING insee_region_code != "0"';
 
         $statement = $this->bdd->executeQuery($query);
         $regionsCount  = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $regionsCount[$row['insee_region_code']] = $row['count'];
+            $regionsCount[] = $row;
         }
 
         return $regionsCount;
@@ -1128,34 +1130,54 @@ class clients extends clients_crud
     /**
      * @param array $clientStatus
      * @param array $attachmentTypes
+     * @param array $vigilanceStatusExcluded
+     *
      * @return array
      */
-    public function getClientsToAutoValidate(array $clientStatus, array $attachmentTypes)
+    public function getClientsToAutoValidate(array $clientStatus, array $attachmentTypes, array $vigilanceStatusExcluded)
     {
-        $bind = ['client_status_id' => $clientStatus, 'attachment_type_id' => $attachmentTypes];
-        $type = ['client_status_id' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'attachment_type_id' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY];
+        $bind = [
+            'clientStatus'    => $clientStatus,
+            'attachmentType'  => $attachmentTypes,
+            'vigilanceStatus' => $vigilanceStatusExcluded
+        ];
+        $type = [
+            'clientStatus'    => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'attachmentType'  => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'vigilanceStatus' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+        ];
 
         $sql = "
         SELECT
           c.id_client,
           gpa.id_attachment,
           a.id_type,
-          (SELECT group_concat(validation_status SEPARATOR '') FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND a.id_type IN (:attachment_type_id) WHERE a.id_client = c.id_client) AS global_status
+          (SELECT group_concat(validation_status SEPARATOR '') FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND a.id_type IN (:attachmentType) WHERE a.id_client = c.id_client) AS global_status
         FROM clients_status_history csh
-          INNER JOIN attachment a ON a.id_client = csh.id_client AND a.id_type IN (:attachment_type_id)
+          INNER JOIN attachment a ON a.id_client = csh.id_client AND a.id_type IN (:attachmentType)
           INNER JOIN greenpoint_attachment gpa ON gpa.id_attachment = a.id
           INNER JOIN clients c ON c.id_client = csh.id_client
           INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
           INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
-        WHERE csh.id_client_status_history = (SELECT MAX(csh1.id_client_status_history)
-                                              FROM clients_status_history csh1
-                                              WHERE csh1.id_client = csh.id_client
+          LEFT JOIN (SELECT * FROM client_vigilance_status_history cvsh
+             WHERE cvsh.id = (
+               SELECT cvsh_max.id FROM client_vigilance_status_history cvsh_max
+               WHERE cvsh.id_client = cvsh_max.id_client
+               ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1
+             )) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
+        WHERE csh.id_client_status_history = (SELECT csh_max.id_client_status_history
+                                              FROM clients_status_history csh_max
+                                              WHERE csh_max.id_client = csh.id_client
+                                              ORDER BY csh_max.added DESC, csh_max.id_client_status_history DESC
                                               LIMIT 1)
-              AND cs.status IN (:client_status_id) AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
+              AND cs.status IN (:clientStatus)
+              AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
+              AND last_cvsh.id_client IS NULL
         HAVING global_status = 999";
 
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);
+
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

@@ -7,6 +7,7 @@ use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 class OperationRepository extends EntityRepository
@@ -87,5 +88,36 @@ class OperationRepository extends EntityRepository
         $qb->orderBy('op.added', 'ASC');
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param int       $idClient
+     * @param \DateTime $end
+     *
+     * @return bool|string
+     */
+    public function getRemainingDueCapitalAtDate($idClient, \DateTime $end)
+    {
+        $end->setTime(23, 59, 59);
+
+        $query = '
+            SELECT
+              SUM(o_loan.amount) - SUM(o_repayment.amount)
+            FROM wallet_balance_history wbh
+              INNER JOIN wallet w ON wbh.id_wallet = w.id
+              LEFT JOIN operation o_loan ON wbh.id_operation = o_loan.id AND o_loan.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::LENDER_LOAN . '")
+              LEFT JOIN operation o_repayment ON wbh.id_operation = o_repayment.id AND o_repayment.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
+            WHERE wbh.added <= :end
+              AND wbh.id_project IN (SELECT DISTINCT (p.id_project) FROM projects p
+                                       INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
+                                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                                     WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                                       AND psh.added <= :end
+                                       AND p.status != ' . ProjectsStatus::DEFAUT . ')
+              AND w.id_client = :idClient';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'idClient' => $idClient]);
+
+        return $statement->fetchColumn();
     }
 }

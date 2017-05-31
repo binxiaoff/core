@@ -8,9 +8,13 @@
     });
 </script>
 <div id="contenu">
-    <h1>Requete infosben</h1>
-    <div style="margin-bottom:20px; float:right;">
-        <a href="<?= $this->lurl ?>/stats/requete_infosben_csv" class="btn_link">Recuperation du CSV</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Requete infosben</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/stats/requete_infosben_csv" class="btn-primary pull-right">Recuperation du CSV</a>
+        </div>
     </div>
     <?php  if (count($this->aLenders) > 0) : ?>
         <table class="tablesorter">

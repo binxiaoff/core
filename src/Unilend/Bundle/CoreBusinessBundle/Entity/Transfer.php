@@ -81,10 +81,8 @@ class Transfer
      */
     private $attachments;
 
-    /**
-     * Projects constructor.
-     */
-    public function __construct() {
+    public function __construct()
+    {
         $this->attachments = new ArrayCollection();
     }
 

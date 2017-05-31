@@ -960,7 +960,8 @@ class projects extends projects_crud
                         INNER JOIN companies ON projects.id_company = companies.id_company
                         INNER JOIN clients ON clients.id_client = companies.id_client_owner
                         INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4) AS client_base
-                    GROUP BY insee_region_code';
+                    GROUP BY insee_region_code
+                    HAVING insee_region_code != "0"';
 
         $statement = $this->bdd->executeQuery($query);
         $regionsCount  = array();
@@ -1260,7 +1261,6 @@ class projects extends projects_crud
     {
         return $this->bdd->createQueryBuilder()
             ->select('p.id_project,
-                IFNULL(pa.name, "") AS partner_name,
                 IFNULL(pa.logo, "") AS partner_logo,
                 p.amount AS amount,
                 p.period AS duration,
@@ -1374,7 +1374,6 @@ class projects extends projects_crud
     {
         return $this->bdd->createQueryBuilder()
             ->select('p.id_project,
-                IFNULL(pa.name, "") AS partner_name,
                 IFNULL(pa.logo, "") AS partner_logo,
                 p.amount AS amount,
                 p.period AS duration,

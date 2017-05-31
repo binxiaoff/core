@@ -77,7 +77,7 @@
                     </tr>
                     <?php foreach ($this->aAutoBidSettings as $aPeriodSettings) : ?>
                         <tr>
-                            <th scope="row"><?= $this->translator->trans('autolend_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['%min%' => array_values($aPeriodSettings)[0]['period_min'], '%max%' => array_values($aPeriodSettings)[0]['period_max']]); ?></th>
+                            <th scope="row"><?= $this->translator->trans('autobid_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['[#SEPARATOR#]' => '<br>']); ?></th>
                             <?php foreach ($aPeriodSettings as $aSetting) : ?>
                                 <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
                                 <?= ($aSetting['rate_min'] <= round($aSetting['AverageRateUnilend'], 1) || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
@@ -121,8 +121,8 @@
                         <th style="text-align: left">Fin</th>
                         <th style="text-align: left">Dernière échéance perçue</th>
                         <th style="text-align: left">Documents <br> à télécharger</th>
-                        <?php if ($this->hasTransferredLoans) :?>
-                        <th style="text-align: left">Ancien proprietaire (id client)</th>
+                        <?php if ($this->hasTransferredLoans) : ?>
+                            <th style="text-align: left">Ancien proprietaire (id client)</th>
                         <?php endif; ?>
                     </tr>
                 </thead>
@@ -135,13 +135,13 @@
                         ?>
                         <tr class="<?= $iLoanIndex % 2 ? '' : 'odd' ?>">
                             <td<?= $rowspan ?>><?= $aProjectLoans['id_project'] ?></td>
-                            <td<?= $rowspan ?>><h5><a href="/dossiers/edit/<?= $aProjectLoans['id_project'] ?>"><?= $aProjectLoans['name'] ?></a></h5></td>
+                            <td<?= $rowspan ?>><h5><a href="/dossiers/edit/<?= $aProjectLoans['id_project'] ?>"><?= $aProjectLoans['title'] ?></a></h5></td>
                             <td<?= $rowspan ?>><?= $aProjectLoans['project_status_label'] ?></td>
                             <td><?= $this->ficelle->formatNumber($aProjectLoans['amount'], 0) ?> €</td>
                             <td><?= $this->ficelle->formatNumber($aProjectLoans['rate'], 1) ?> %</td>
                             <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
                             <?php if (in_array($aProjectLoans['project_status'], [\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE])) : ?>
-                                <td<?= $rowspan ?> colspan="3"><p>Remboursé intégralementle <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y') ?></p></td>
+                                <td<?= $rowspan ?> colspan="3"><p>Remboursé intégralement le <?= $this->dates->formatDate($aProjectLoans['final_repayment_date'], 'd/m/Y') ?></p></td>
                             <?php else : ?>
                                 <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
                                 <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>

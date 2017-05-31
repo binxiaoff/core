@@ -84,6 +84,13 @@ class Attachment
      */
     private $bankAccount;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="original_name", type="string", length=191, nullable=true)
+     */
+    private $originalName;
+
 
     /**
      * Set path
@@ -275,5 +282,29 @@ class Attachment
     public function getBankAccount()
     {
         return $this->bankAccount;
+    }
+
+    /**
+     * Set originalName
+     *
+     * @param string $originalName
+     *
+     * @return Attachment
+     */
+    public function setOriginalName($originalName)
+    {
+        $this->originalName = $originalName;
+
+        return $this;
+    }
+
+    /**
+     * Get originalName
+     *
+     * @return string
+     */
+    public function getOriginalName()
+    {
+        return $this->originalName;
     }
 }

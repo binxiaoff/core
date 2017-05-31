@@ -7,6 +7,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Unilend\Bundle\CoreBusinessBundle\Repository\NotificationsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
@@ -38,15 +39,15 @@ class NotificationsController extends Controller
         $user = $this->getUser();
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \notifications $notifications */
-        $notifications = $entityManager->getRepository('notifications');
+        /** @var NotificationsRepository $notificationsRepository */
+        $notificationsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Notifications');
         /** @var \lenders_accounts $lender */
         $lender = $entityManager->getRepository('lenders_accounts');
         $lender->get($user->getClientId(), 'id_client_owner');
 
         switch ($action) {
             case 'all_read':
-                $notifications->markAllLenderNotificationsAsRead($lender);
+                $notificationsRepository->markAllLenderNotificationsAsRead($lender->id_lender_account);
                 break;
             case 'read':
                 if (false === is_array($list)) {
@@ -56,8 +57,7 @@ class NotificationsController extends Controller
                         ]
                     ]);
                 }
-
-                $notifications->markLenderNotificationsAsRead($lender, $list);
+                $notificationsRepository->markLenderNotificationsAsRead($lender->id_lender_account, $list);
                 break;
         }
 

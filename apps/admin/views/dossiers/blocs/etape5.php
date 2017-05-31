@@ -68,11 +68,11 @@
         </table>
         <div id="valid_etape5" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
-            <input type="hidden" name="send_etape5"/>
-            <input type="submit" class="btn_link" value="Sauvegarder">
+            <input type="hidden" name="send_etape5">
+            <button type="submit" class="btn-primary">Sauvegarder</button>
         </div>
     </form>
     <div style="display:none;">
-        <iframe id="upload_target" name="upload_target" src="#"></iframe>
+        <iframe id="upload_target" name="upload_target" src="about:blank"></iframe>
     </div>
 </div>

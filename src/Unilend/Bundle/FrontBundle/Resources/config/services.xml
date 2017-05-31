@@ -26,6 +26,7 @@
         </service>
 
         <service id="unilend.frontbundle.security.user_provider" class="Unilend\Bundle\FrontBundle\Security\User\UserProvider">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.client_manager"/>
             <argument type="service" id="unilend.frontbundle.notification_display_manager"/>
@@ -101,6 +102,7 @@
             <argument type="service" id="logger" />
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="swiftmailer.mailer.default" />
+            <argument type="service" id="unilend.service.wire_transfer_out_manager"/>
             <argument>%url.universign%</argument>
             <argument>%kernel.root_dir%</argument>
         </service>
@@ -110,6 +112,12 @@
         <service id="unilend.frontbundle.service.form_manager" class="Unilend\Bundle\FrontBundle\Service\FormManager">
             <argument type="service" id="form.factory" />
             <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.frontbundle.gulp_rev_version_strategy" class="Unilend\Bundle\FrontBundle\Service\GulpRevVersionStrategy" public="false">
+            <argument>%kernel.root_dir%</argument>
+            <argument>%path.gulp_rev_manifest%</argument>
+            <argument type="service" id="logger"/>
         </service>
     </services>
 </container>

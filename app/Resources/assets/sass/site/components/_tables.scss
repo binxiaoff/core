@@ -10,6 +10,14 @@
   }
 }
 
+@mixin table-row-alt-2($row-bg: mix($c-bg3, $c-bg4)) {
+  &.alt,
+  &:nth-of-type(4n+1) {
+    background-color: $row-bg;
+    @content;
+  }
+}
+
 // Table scroll
 .table-scroll {
   width: 100%;
@@ -156,6 +164,15 @@ td {
     }
   }
 }
+.table-clickable {
+  tbody {
+    tr {
+      td {
+        cursor: pointer;
+      }
+    }
+  }
+}
 
 // Sortable table columns
 thead.table-sortable-columns {
@@ -175,8 +192,12 @@ thead.table-sortable-columns {
     max-width: 75%;
   }
 
+  &:focus {
+    outline: 0;
+  }
+
   // Currently sorted column
-  &#{$js-current-sortable-column} {
+  &#{$js-current-sortable-column}, &.sorting_asc, &.sorting_desc {
     color: $c-t1;
   }
 
@@ -187,13 +208,13 @@ thead.table-sortable-columns {
   }
 
   // Ascending
-  &#{$js-sortable-direction-asc}:after {
+  &#{$js-sortable-direction-asc}:after, &[aria-sort="ascending"]:after {
     // content: '\f0de'; // Sort asc
     content: $fa-sort-asc-u;
   }
 
   // Descending
-  &#{$js-sortable-direction-desc}:after {
+  &#{$js-sortable-direction-desc}:after, &[aria-sort="descending"]:after {
     // content: '\f0dd'; // Sort desc
     content: $fa-sort-desc-u;
   }

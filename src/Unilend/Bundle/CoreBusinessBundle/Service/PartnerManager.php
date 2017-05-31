@@ -2,7 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 
 class PartnerManager
 {
@@ -10,7 +12,6 @@ class PartnerManager
     private $entityManager;
 
     /**
-     * PartnerManager constructor.
      * @param EntityManager $entityManager
      */
     public function __construct(EntityManager $entityManager)
@@ -19,14 +20,30 @@ class PartnerManager
     }
 
     /**
-     * @return \partner
+     * @return Partner
      */
     public function getDefaultPartner()
     {
-        /** @var \partner $partner */
-        $partner = $this->entityManager->getRepository('partner');
-        $partner->get(\partner::PARTNER_UNILEND_LABEL, 'label');
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findOneBy(['label' => Partner::PARTNER_UNILEND_LABEL]);
+    }
 
-        return $partner;
+    /**
+     * @param Partner $partner
+     *
+     * @return BankAccount[]
+     */
+    public function getPartnerThirdPartyBankAccounts(Partner $partner)
+    {
+        $bankAccounts = [];
+        $thirdParties = $partner->getPartnerThirdParties();
+        foreach ($thirdParties as $thirdParty) {
+            $client      = $thirdParty->getIdCompany()->getIdClientOwner();
+            $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+            if ($bankAccount) {
+                $bankAccounts[] = $bankAccount;
+            }
+        }
+
+        return $bankAccounts;
     }
 }
