@@ -1381,7 +1381,7 @@ class dossiersController extends bootstrap
                 && $_SESSION['user']['id_user'] == $projectCommentEntity->getIdUser()->getIdUser()
             ) {
                 $projectCommentEntity->setContent($_POST['content']);
-                $projectCommentEntity->setPublic($_POST['public']);
+                $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
 
                 $entityManager->persist($projectCommentEntity);
                 $entityManager->flush($projectCommentEntity);
@@ -1391,7 +1391,7 @@ class dossiersController extends bootstrap
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity->setIdProject($projectEntity);
                 $projectCommentEntity->setContent($_POST['content']);
-                $projectCommentEntity->setPublic($_POST['public']);
+                $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
                 $projectCommentEntity->setIdUser($this->userEntity);
 
                 $entityManager->persist($projectCommentEntity);
@@ -3265,6 +3265,7 @@ class dossiersController extends bootstrap
 
         if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $this->wireTransferOut) {
             $forbiddenStatus = [Virements::STATUS_CLIENT_DENIED, Virements::STATUS_DENIED, Virements::STATUS_VALIDATED, Virements::STATUS_SENT];
+
             if (false === in_array($this->wireTransferOut->getStatus(), $forbiddenStatus)) {
                 $this->wireTransferOut->setStatus(Virements::STATUS_DENIED);
                 $entityManager->flush($this->wireTransferOut);
@@ -3274,6 +3275,7 @@ class dossiersController extends bootstrap
                 $_SESSION['freeow']['title']   = 'Refus de transfert de fonds';
                 $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a été refusé.';
             }
+
             if (false === empty($this->params[1]) && 'project' === $this->params[1]) {
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->wireTransferOut->getProject()->getIdProject());
             } else {
