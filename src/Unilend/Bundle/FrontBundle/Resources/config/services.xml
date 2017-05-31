@@ -117,6 +117,7 @@
         <service id="unilend.frontbundle.gulp_rev_version_strategy" class="Unilend\Bundle\FrontBundle\Service\GulpRevVersionStrategy" public="false">
             <argument>%kernel.root_dir%</argument>
             <argument>%path.gulp_rev_manifest%</argument>
+            <argument type="service" id="logger"/>
         </service>
     </services>
 </container>

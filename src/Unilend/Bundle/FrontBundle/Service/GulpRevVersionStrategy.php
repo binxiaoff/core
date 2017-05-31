@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\VersionStrategy\VersionStrategyInterface;
 
 class GulpRevVersionStrategy implements VersionStrategyInterface
@@ -10,21 +11,26 @@ class GulpRevVersionStrategy implements VersionStrategyInterface
     private $manifestPath;
 
     /** @var array */
-    private $paths;
+    private $paths = [];
 
     /** @var string */
     private $kernelRootDir;
 
+    /** @var LoggerInterface */
+    private $logger;
+
     /**
      * VersionStrategy constructor.
      *
-     * @param string $kernelRootDir
-     * @param string $manifestPath
+     * @param string          $kernelRootDir
+     * @param string          $manifestPath
+     * @param LoggerInterface $logger
      */
-    public function __construct($kernelRootDir, $manifestPath)
+    public function __construct($kernelRootDir, $manifestPath, LoggerInterface $logger)
     {
         $this->manifestPath  = $manifestPath;
         $this->kernelRootDir = $kernelRootDir;
+        $this->logger        = $logger;
     }
 
     /**
@@ -79,15 +85,15 @@ class GulpRevVersionStrategy implements VersionStrategyInterface
         $manifestFilename = basename($this->manifestPath);
 
         if (! is_file($this->manifestPath)) {
-            throw new \Exception(
+            $this->logger->warning(
                 sprintf(
                     'Manifest file "%s" not found in path "%s". You can generate this file running gulp',
                     $manifestFilename,
                     $this->manifestPath
                 )
             );
+        } else {
+            $this->paths = json_decode(file_get_contents($this->manifestPath), true);
         }
-
-        $this->paths = json_decode(file_get_contents($this->manifestPath), true);
     }
 }
